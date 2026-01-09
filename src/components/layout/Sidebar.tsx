@@ -13,7 +13,8 @@ import {
   Zap,
   LogOut,
   User,
-  CalendarDays
+  CalendarDays,
+  Bell
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,6 +39,7 @@ const menuItems = [
 ];
 
 const bottomMenuItems = [
+  { icon: Bell, label: 'Notificações', path: '/notificacoes' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
