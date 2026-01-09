@@ -189,11 +189,11 @@ export function Sidebar() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
               <User className="w-4 h-4 mr-2" />
               Meu Perfil
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
               <Settings className="w-4 h-4 mr-2" />
               Configurações
             </DropdownMenuItem>
