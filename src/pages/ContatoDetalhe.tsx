@@ -41,6 +41,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
+import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -84,6 +85,7 @@ const ContatoDetalhe = () => {
   const { id } = useParams();
   const [contact, setContact] = useState(mockContacts.find(c => c.id === id));
   const [isEditingBehavior, setIsEditingBehavior] = useState(false);
+  const [showWritingAssistant, setShowWritingAssistant] = useState(false);
   
   if (!contact) {
     return (
@@ -216,6 +218,15 @@ const ContatoDetalhe = () => {
                       )}
                     </div>
 
+                    {/* AI Writing Assistant Button */}
+                    <Button 
+                      onClick={() => setShowWritingAssistant(prev => !prev)}
+                      className="w-full mt-4 gap-2 bg-gradient-primary hover:opacity-90"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {showWritingAssistant ? 'Fechar Assistente' : 'Assistente de Escrita IA'}
+                    </Button>
+
                     {/* Contact Info */}
                     <div className="w-full space-y-3 mt-6 pt-6 border-t border-border">
                       {contact.phone && (
@@ -289,6 +300,21 @@ const ContatoDetalhe = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
+              {/* AI Writing Assistant */}
+              {showWritingAssistant && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <AIWritingAssistant 
+                    contact={contact}
+                    interactions={contactInteractions}
+                    onClose={() => setShowWritingAssistant(false)}
+                  />
+                </motion.div>
+              )}
+
               {/* AI Next Action Suggestion */}
               <NextActionSuggestion 
                 contact={contact}

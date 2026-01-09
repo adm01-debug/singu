@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.suggest-next-action]
 verify_jwt = false
+
+[functions.ai-writing-assistant]
+verify_jwt = false
