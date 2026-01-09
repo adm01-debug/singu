@@ -13,9 +13,11 @@ import {
   Video,
   FileText,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 import { InteractionsListSkeleton } from '@/components/skeletons/PageSkeletons';
+import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -430,25 +432,34 @@ const Interacoes = () => {
             </div>
 
             {filteredAndSortedInteractions.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Nenhuma interação encontrada' 
-                    : 'Nenhuma interação registrada'}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Tente ajustar seus filtros.' 
-                    : 'Registre suas comunicações para manter o histórico atualizado.'}
-                </p>
-                {!searchTerm && Object.keys(activeFilters).length === 0 && (
-                  <Button onClick={() => setIsFormOpen(true)}>
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Nova Interação
-                  </Button>
-                )}
-              </div>
+              searchTerm || Object.keys(activeFilters).length > 0 ? (
+                <SearchEmptyState
+                  searchTerm={searchTerm || 'filtros ativos'}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setActiveFilters({});
+                  }}
+                  entityName="interações"
+                />
+              ) : (
+                <EmptyState
+                  illustration="interactions"
+                  title="Documente suas conversas"
+                  description="Registre ligações, emails, reuniões e mensagens para ter um histórico completo de cada relacionamento."
+                  actions={[
+                    {
+                      label: 'Registrar Interação',
+                      onClick: () => setIsFormOpen(true),
+                      icon: Plus,
+                    },
+                  ]}
+                  tips={[
+                    'Selecione o tipo correto para melhor categorização',
+                    'Marque follow-ups para nunca perder um compromisso',
+                    'Use tags para vincular a projetos ou campanhas',
+                  ]}
+                />
+              )
             )}
           </>
         )}

@@ -17,9 +17,12 @@ import {
   Crown,
   Briefcase,
   ShoppingCart,
-  User
+  User,
+  UserPlus,
+  Upload
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
+import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -454,25 +457,40 @@ const Contatos = () => {
             )}
 
             {filteredAndSortedContacts.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Nenhum contato encontrado' 
-                    : 'Nenhum contato cadastrado'}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Tente ajustar seus filtros.' 
-                    : 'Comece adicionando seu primeiro contato.'}
-                </p>
-                {!searchTerm && Object.keys(activeFilters).length === 0 && (
-                  <Button onClick={() => setIsFormOpen(true)}>
-                    <Users className="w-4 h-4 mr-2" />
-                    Novo Contato
-                  </Button>
-                )}
-              </div>
+              searchTerm || Object.keys(activeFilters).length > 0 ? (
+                <SearchEmptyState
+                  searchTerm={searchTerm || 'filtros ativos'}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setActiveFilters({});
+                  }}
+                  entityName="contatos"
+                />
+              ) : (
+                <EmptyState
+                  illustration="contacts"
+                  title="Sua rede de contatos começa aqui"
+                  description="Adicione seu primeiro contato para começar a gerenciar seus relacionamentos profissionais de forma inteligente."
+                  actions={[
+                    {
+                      label: 'Adicionar Contato',
+                      onClick: () => setIsFormOpen(true),
+                      icon: UserPlus,
+                    },
+                    {
+                      label: 'Importar CSV',
+                      onClick: () => {},
+                      variant: 'outline',
+                      icon: Upload,
+                    },
+                  ]}
+                  tips={[
+                    'Adicione informações como cargo e empresa para contextualizar',
+                    'Use tags para organizar seus contatos por projeto ou área',
+                    'O perfil DISC ajuda a personalizar sua comunicação',
+                  ]}
+                />
+              )
             )}
           </>
         )}

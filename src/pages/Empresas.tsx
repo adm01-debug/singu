@@ -18,9 +18,11 @@ import {
   Landmark,
   Cpu,
   HeartPulse,
-  GraduationCap
+  GraduationCap,
+  Plus
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
+import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -360,25 +362,34 @@ const Empresas = () => {
             </div>
 
             {filteredAndSortedCompanies.length === 0 && !loading && (
-              <div className="text-center py-12">
-                <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Nenhuma empresa encontrada' 
-                    : 'Nenhuma empresa cadastrada'}
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  {searchTerm || Object.keys(activeFilters).length > 0 
-                    ? 'Tente ajustar seus filtros.' 
-                    : 'Comece adicionando sua primeira empresa.'}
-                </p>
-                {!searchTerm && Object.keys(activeFilters).length === 0 && (
-                  <Button onClick={() => setIsFormOpen(true)}>
-                    <Building2 className="w-4 h-4 mr-2" />
-                    Nova Empresa
-                  </Button>
-                )}
-              </div>
+              searchTerm || Object.keys(activeFilters).length > 0 ? (
+                <SearchEmptyState
+                  searchTerm={searchTerm || 'filtros ativos'}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setActiveFilters({});
+                  }}
+                  entityName="empresas"
+                />
+              ) : (
+                <EmptyState
+                  illustration="companies"
+                  title="Organize suas contas corporativas"
+                  description="Cadastre empresas para vincular contatos e ter uma visão completa dos seus relacionamentos B2B."
+                  actions={[
+                    {
+                      label: 'Cadastrar Empresa',
+                      onClick: () => setIsFormOpen(true),
+                      icon: Plus,
+                    },
+                  ]}
+                  tips={[
+                    'Adicione dados como segmento e porte para análises mais precisas',
+                    'Vincule contatos às empresas para contexto nas interações',
+                    'Use tags para agrupar empresas por oportunidade ou projeto',
+                  ]}
+                />
+              )
             )}
           </>
         )}
