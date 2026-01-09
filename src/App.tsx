@@ -15,6 +15,7 @@ import Insights from "./pages/Insights";
 import Configuracoes from "./pages/Configuracoes";
 import Calendario from "./pages/Calendario";
 import Notificacoes from "./pages/Notificacoes";
+import Network from "./pages/Network";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
@@ -91,6 +92,11 @@ const App = () => (
             <Route path="/notificacoes" element={
               <RequireAuth>
                 <Notificacoes />
+              </RequireAuth>
+            } />
+            <Route path="/network" element={
+              <RequireAuth>
+                <Network />
               </RequireAuth>
             } />
             
