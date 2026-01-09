@@ -37,6 +37,7 @@ import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
 import { DISCBadge } from '@/components/ui/disc-badge';
+import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -48,12 +49,7 @@ type Company = Tables<'companies'>;
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
 
-const healthConfig = {
-  growing: { label: 'Em Crescimento', color: 'bg-success/10 text-success', icon: TrendingUp },
-  stable: { label: 'Estável', color: 'bg-info/10 text-info', icon: Minus },
-  cutting: { label: 'Em Retração', color: 'bg-destructive/10 text-destructive', icon: TrendingDown },
-  unknown: { label: 'Desconhecido', color: 'bg-muted text-muted-foreground', icon: Minus },
-};
+type HealthStatus = 'growing' | 'stable' | 'cutting' | 'unknown';
 
 const interactionIcons: Record<string, typeof MessageSquare> = {
   whatsapp: MessageSquare,
@@ -154,8 +150,7 @@ const EmpresaDetalhe = () => {
     );
   }
 
-  const healthInfo = healthConfig[company.financial_health as keyof typeof healthConfig] || healthConfig.unknown;
-  const HealthIcon = healthInfo.icon;
+  const healthStatus = (company.financial_health as HealthStatus) || 'unknown';
 
   // Calculate aggregated stats
   const avgRelationshipScore = contacts.length > 0 
@@ -164,7 +159,16 @@ const EmpresaDetalhe = () => {
 
   const totalInteractions = interactions.length;
   const positiveInteractions = interactions.filter(i => i.sentiment === 'positive').length;
+  const positiveInteractionsRatio = totalInteractions > 0 ? positiveInteractions / totalInteractions : 0;
   const pendingFollowUps = interactions.filter(i => i.follow_up_required && !i.follow_up_date).length;
+  
+  // Calculate days since last interaction
+  const lastInteractionDate = interactions.length > 0 
+    ? new Date(interactions[0].created_at) 
+    : null;
+  const daysSinceLastInteraction = lastInteractionDate 
+    ? Math.floor((Date.now() - lastInteractionDate.getTime()) / (1000 * 60 * 60 * 24))
+    : undefined;
 
   return (
     <AppLayout>
@@ -225,10 +229,7 @@ const EmpresaDetalhe = () => {
                       <p className="text-muted-foreground">{company.industry}</p>
                       
                       <div className="flex items-center justify-center gap-2 mt-3">
-                        <Badge className={healthInfo.color}>
-                          <HealthIcon className="w-3 h-3 mr-1" />
-                          {healthInfo.label}
-                        </Badge>
+                        <CompanyHealthBadge financialHealth={healthStatus} />
                       </div>
                     </div>
 
@@ -366,6 +367,23 @@ const EmpresaDetalhe = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Company Health Score Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+              >
+                <CompanyHealthScore
+                  financialHealth={healthStatus}
+                  contactCount={contacts.length}
+                  avgRelationshipScore={avgRelationshipScore}
+                  totalInteractions={totalInteractions}
+                  positiveInteractionsRatio={positiveInteractionsRatio}
+                  pendingFollowUps={pendingFollowUps}
+                  daysSinceLastInteraction={daysSinceLastInteraction}
+                />
+              </motion.div>
+
               <Tabs defaultValue="contacts" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
