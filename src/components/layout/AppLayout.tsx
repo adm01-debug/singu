@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
@@ -22,6 +23,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         {children}
       </main>
       <GlobalSearch open={isOpen} onOpenChange={setIsOpen} />
+      <QuickAddButton />
     </div>
   );
 }
