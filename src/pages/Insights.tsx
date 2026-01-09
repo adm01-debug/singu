@@ -12,25 +12,33 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
 
-const categoryIcons = {
+import { AlertTriangle, Heart } from 'lucide-react';
+
+const categoryIcons: Record<string, React.ElementType> = {
   personality: Brain,
   preference: Target,
   behavior: TrendingUp,
   opportunity: Sparkles,
+  risk: AlertTriangle,
+  relationship: Heart,
 };
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   personality: 'bg-purple-100 text-purple-700 border-purple-200',
   preference: 'bg-blue-100 text-blue-700 border-blue-200',
   behavior: 'bg-green-100 text-green-700 border-green-200',
   opportunity: 'bg-amber-100 text-amber-700 border-amber-200',
+  risk: 'bg-red-100 text-red-700 border-red-200',
+  relationship: 'bg-pink-100 text-pink-700 border-pink-200',
 };
 
-const categoryLabels = {
+const categoryLabels: Record<string, string> = {
   personality: 'Personalidade',
   preference: 'Preferência',
   behavior: 'Comportamento',
   opportunity: 'Oportunidade',
+  risk: 'Risco',
+  relationship: 'Relacionamento',
 };
 
 const Insights = () => {
@@ -44,7 +52,7 @@ const Insights = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['personality', 'preference', 'behavior', 'opportunity'] as const;
+  const categories = ['personality', 'preference', 'behavior', 'opportunity', 'risk', 'relationship'] as const;
 
   return (
     <AppLayout>
