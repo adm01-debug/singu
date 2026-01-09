@@ -16,7 +16,8 @@ import {
   Bell,
   Search,
   Keyboard,
-  BarChart3
+  BarChart3,
+  Share2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,13 +52,14 @@ const menuItems = [
   { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3' },
   { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4' },
   { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5' },
-  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '6' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '7' },
+  { icon: Share2, label: 'Network', path: '/network', shortcut: '6' },
+  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8' },
 ];
 
 const bottomMenuItems = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '8' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '9' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0' },
 ];
 
 interface SidebarProps {
