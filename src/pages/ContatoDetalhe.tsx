@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -18,7 +19,10 @@ import {
   Sparkles,
   User,
   Users,
-  Briefcase
+  Briefcase,
+  Brain,
+  Target,
+  AlertCircle
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,10 +32,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { DISCBadge, DISCChart } from '@/components/ui/disc-badge';
+import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/relationship-stage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { mockContacts, mockInteractions, mockInsights } from '@/data/mockData';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
+import { mockContacts, mockInteractions, mockInsights, mockAlerts } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { DECISION_ROLE_LABELS, DECISION_SPEED_LABELS, CAREER_STAGE_LABELS } from '@/types';
 
 const interactionIcons = {
   whatsapp: MessageSquare,
@@ -53,7 +62,8 @@ const interactionColors = {
 
 const ContatoDetalhe = () => {
   const { id } = useParams();
-  const contact = mockContacts.find(c => c.id === id);
+  const [contact, setContact] = useState(mockContacts.find(c => c.id === id));
+  const [isEditingBehavior, setIsEditingBehavior] = useState(false);
   
   if (!contact) {
     return (
@@ -70,6 +80,7 @@ const ContatoDetalhe = () => {
 
   const contactInteractions = mockInteractions.filter(i => i.contactId === id);
   const contactInsights = mockInsights.filter(i => i.contactId === id);
+  const contactAlerts = mockAlerts.filter(a => a.contactId === id && !a.dismissed);
 
   return (
     <AppLayout>
@@ -119,6 +130,10 @@ const ContatoDetalhe = () => {
                       <div className="flex items-center justify-center gap-2 mt-2">
                         <RoleBadge role={contact.role} />
                         <SentimentIndicator sentiment={contact.sentiment} showLabel size="sm" />
+                      </div>
+
+                      <div className="flex items-center justify-center gap-2 mt-3">
+                        <RelationshipStageBadge stage={contact.relationshipStage} />
                       </div>
 
                       <div className="flex items-center justify-center gap-2 mt-4">

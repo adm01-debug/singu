@@ -1,10 +1,107 @@
-// Core Types for RelateIQ System
+// Core Types for RelateIQ System - Extended Behavioral Model
 
 export type ContactRole = 'owner' | 'manager' | 'buyer' | 'contact' | 'decision_maker' | 'influencer';
 
 export type InteractionType = 'whatsapp' | 'call' | 'email' | 'meeting' | 'note' | 'social';
 
 export type SentimentType = 'positive' | 'neutral' | 'negative';
+
+// DISC Profile Types
+export type DISCProfile = 'D' | 'I' | 'S' | 'C' | null;
+
+export type CommunicationStyle = 'formal' | 'casual' | 'technical' | 'emotional';
+
+export type PreferredChannel = 'whatsapp' | 'call' | 'email' | 'meeting' | 'video';
+
+export type MessageStyle = 'audio' | 'short_text' | 'long_text' | 'documents';
+
+export type DecisionSpeed = 'impulsive' | 'fast' | 'moderate' | 'slow';
+
+export type DecisionRole = 'final_decision' | 'technical' | 'economic' | 'user' | 'blocker' | 'champion';
+
+export type CareerStage = 'early' | 'growth' | 'established' | 'transition' | 'senior';
+
+export type CompanyHealth = 'growing' | 'stable' | 'cutting' | 'unknown';
+
+export type FormalityLevel = 1 | 2 | 3 | 4 | 5;
+
+export type RelationshipStage = 
+  | 'unknown' 
+  | 'prospect' 
+  | 'qualified_lead' 
+  | 'opportunity' 
+  | 'negotiation' 
+  | 'customer' 
+  | 'loyal_customer' 
+  | 'advocate' 
+  | 'at_risk' 
+  | 'lost';
+
+// Decision Criteria
+export type DecisionCriteria = 
+  | 'price' 
+  | 'quality' 
+  | 'relationship' 
+  | 'speed' 
+  | 'support' 
+  | 'innovation' 
+  | 'reputation' 
+  | 'referral';
+
+export const DISC_LABELS: Record<string, { name: string; description: string; color: string }> = {
+  D: { name: 'Dominante', description: 'Direto, decisivo, focado em resultados', color: 'bg-red-100 text-red-700 border-red-200' },
+  I: { name: 'Influente', description: 'Entusiasta, otimista, focado em pessoas', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  S: { name: 'Estável', description: 'Paciente, confiável, focado em segurança', color: 'bg-green-100 text-green-700 border-green-200' },
+  C: { name: 'Conforme', description: 'Analítico, preciso, focado em qualidade', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+};
+
+export const DECISION_ROLE_LABELS: Record<DecisionRole, string> = {
+  final_decision: 'Decisor Final',
+  technical: 'Influenciador Técnico',
+  economic: 'Influenciador Econômico',
+  user: 'Usuário Final',
+  blocker: 'Bloqueador',
+  champion: 'Defensor Interno',
+};
+
+export const CAREER_STAGE_LABELS: Record<CareerStage, string> = {
+  early: 'Início de Carreira',
+  growth: 'Crescimento',
+  established: 'Consolidado',
+  transition: 'Transição',
+  senior: 'Sênior/Experiente',
+};
+
+export const DECISION_SPEED_LABELS: Record<DecisionSpeed, string> = {
+  impulsive: 'Impulsivo',
+  fast: 'Rápido',
+  moderate: 'Moderado',
+  slow: 'Lento',
+};
+
+export const DECISION_CRITERIA_LABELS: Record<DecisionCriteria, string> = {
+  price: 'Preço',
+  quality: 'Qualidade',
+  relationship: 'Relacionamento',
+  speed: 'Velocidade',
+  support: 'Suporte',
+  innovation: 'Inovação',
+  reputation: 'Reputação',
+  referral: 'Indicação',
+};
+
+export const RELATIONSHIP_STAGE_LABELS: Record<RelationshipStage, string> = {
+  unknown: 'Desconhecido',
+  prospect: 'Prospect',
+  qualified_lead: 'Lead Qualificado',
+  opportunity: 'Oportunidade',
+  negotiation: 'Negociação',
+  customer: 'Cliente',
+  loyal_customer: 'Cliente Fiel',
+  advocate: 'Advogado da Marca',
+  at_risk: 'Em Risco',
+  lost: 'Perdido',
+};
 
 export interface Company {
   id: string;
@@ -21,8 +118,65 @@ export interface Company {
   tags: string[];
   contactCount: number;
   lastInteraction?: Date;
+  // New fields
+  financialHealth: CompanyHealth;
+  employeeCount?: string;
+  annualRevenue?: string;
+  competitors: string[];
+  challenges: string[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface LifeEvent {
+  id: string;
+  type: 'birthday' | 'anniversary' | 'promotion' | 'travel' | 'family' | 'achievement' | 'other';
+  title: string;
+  date: Date;
+  notes?: string;
+  reminder: boolean;
+}
+
+export interface ContactBehavior {
+  // DISC Profile
+  discProfile: DISCProfile;
+  discConfidence: number; // 0-100
+  discNotes?: string;
+  
+  // Motivations
+  primaryMotivation?: string;
+  primaryFear?: string;
+  careerStage?: CareerStage;
+  currentPressure?: string;
+  professionalGoals?: string;
+  
+  // Communication Preferences
+  preferredChannel: PreferredChannel;
+  messageStyle?: MessageStyle;
+  avgResponseTimeHours?: number;
+  bestContactWindow?: string;
+  formalityLevel: FormalityLevel;
+  
+  // Decision Making
+  decisionSpeed?: DecisionSpeed;
+  decisionCriteria: DecisionCriteria[];
+  needsApproval: boolean;
+  approverContactId?: string;
+  budgetAuthority?: string;
+  
+  // Influence & Power
+  decisionRole?: DecisionRole;
+  decisionPower: number; // 1-10
+  supportLevel: number; // 1-10
+  influencedByIds: string[];
+  influencesIds: string[];
+  
+  // Company Context
+  companyFinancialHealth?: CompanyHealth;
+  currentChallenges: string[];
+  competitorsUsed: string[];
+  bestTimeToApproach?: string;
+  seasonalNotes?: string;
 }
 
 export interface Contact {
@@ -43,19 +197,32 @@ export interface Contact {
   birthday?: Date;
   notes?: string;
   tags: string[];
-  // Personality Insights
-  communicationStyle?: 'formal' | 'casual' | 'technical' | 'emotional';
-  preferredContactMethod?: 'whatsapp' | 'call' | 'email' | 'meeting';
+  
+  // Communication Style (legacy - keeping for compatibility)
+  communicationStyle?: CommunicationStyle;
+  preferredContactMethod?: PreferredChannel;
   bestTimeToContact?: string;
+  
   // Personal Interests
   hobbies: string[];
   interests: string[];
   familyInfo?: string;
-  // Relationship
+  personalNotes?: string;
+  
+  // Relationship Status
+  relationshipStage: RelationshipStage;
   relationshipScore: number; // 0-100
   lastInteraction?: Date;
   interactionCount: number;
   sentiment: SentimentType;
+  daysSinceContact?: number;
+  
+  // Extended Behavioral Profile
+  behavior: ContactBehavior;
+  
+  // Life Events
+  lifeEvents: LifeEvent[];
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,28 +240,50 @@ export interface Interaction {
   tags: string[];
   duration?: number; // in seconds for calls
   attachments?: string[];
+  // New fields
+  initiatedBy: 'us' | 'them';
+  responseTime?: number; // in minutes
+  keyInsights?: string[];
+  followUpRequired: boolean;
+  followUpDate?: Date;
   createdAt: Date;
 }
 
 export interface Insight {
   id: string;
   contactId: string;
-  category: 'personality' | 'preference' | 'behavior' | 'opportunity';
+  category: 'personality' | 'preference' | 'behavior' | 'opportunity' | 'risk' | 'relationship';
   title: string;
   description: string;
   confidence: number; // 0-100
   source: string;
+  actionable: boolean;
+  actionSuggestion?: string;
+  expiresAt?: Date;
   createdAt: Date;
 }
 
 export interface Activity {
   id: string;
-  type: 'company_created' | 'contact_created' | 'interaction_added' | 'insight_generated' | 'tag_added';
+  type: 'company_created' | 'contact_created' | 'interaction_added' | 'insight_generated' | 'tag_added' | 'profile_updated' | 'alert_triggered';
   entityType: 'company' | 'contact' | 'interaction';
   entityId: string;
   entityName: string;
   description: string;
   createdAt: Date;
+}
+
+export interface Alert {
+  id: string;
+  contactId: string;
+  type: 'birthday' | 'no_contact' | 'sentiment_drop' | 'opportunity' | 'follow_up' | 'life_event';
+  priority: 'low' | 'medium' | 'high';
+  title: string;
+  description: string;
+  actionUrl?: string;
+  dismissed: boolean;
+  createdAt: Date;
+  expiresAt?: Date;
 }
 
 export interface DashboardStats {
@@ -105,4 +294,5 @@ export interface DashboardStats {
   topCompanies: Company[];
   recentActivities: Activity[];
   upcomingFollowUps: Contact[];
+  alerts: Alert[];
 }
