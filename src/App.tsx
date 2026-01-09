@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import Analytics from "./pages/Analytics";
 import Empresas from "./pages/Empresas";
 import EmpresaDetalhe from "./pages/EmpresaDetalhe";
 import Contatos from "./pages/Contatos";
@@ -70,6 +71,11 @@ const App = () => (
             <Route path="/insights" element={
               <RequireAuth>
                 <Insights />
+              </RequireAuth>
+            } />
+            <Route path="/analytics" element={
+              <RequireAuth>
+                <Analytics />
               </RequireAuth>
             } />
             <Route path="/configuracoes" element={
