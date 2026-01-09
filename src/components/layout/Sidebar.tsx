@@ -15,7 +15,8 @@ import {
   CalendarDays,
   Bell,
   Search,
-  Keyboard
+  Keyboard,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,11 +52,12 @@ const menuItems = [
   { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4' },
   { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5' },
   { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '6' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '7' },
 ];
 
 const bottomMenuItems = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '7' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '8' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '8' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '9' },
 ];
 
 interface SidebarProps {
@@ -108,7 +110,7 @@ function KeyboardShortcutsDialog() {
           ))}
           <div className="pt-4 border-t">
             <p className="text-xs text-muted-foreground">
-              <strong>Páginas:</strong> 1=Dashboard, 2=Empresas, 3=Contatos, 4=Interações, 5=Calendário, 6=Insights, 7=Notificações, 8=Configurações
+              <strong>Páginas:</strong> 1=Dashboard, 2=Empresas, 3=Contatos, 4=Interações, 5=Calendário, 6=Insights, 7=Analytics, 8=Notificações, 9=Configurações
             </p>
           </div>
         </div>
