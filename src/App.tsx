@@ -11,6 +11,7 @@ import Contatos from "./pages/Contatos";
 import ContatoDetalhe from "./pages/ContatoDetalhe";
 import Interacoes from "./pages/Interacoes";
 import Insights from "./pages/Insights";
+import Configuracoes from "./pages/Configuracoes";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +62,11 @@ const App = () => (
             <Route path="/insights" element={
               <RequireAuth>
                 <Insights />
+              </RequireAuth>
+            } />
+            <Route path="/configuracoes" element={
+              <RequireAuth>
+                <Configuracoes />
               </RequireAuth>
             } />
             

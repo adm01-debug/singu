@@ -1,0 +1,456 @@
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { 
+  User, 
+  Palette, 
+  Bell, 
+  Shield, 
+  Moon, 
+  Sun, 
+  Monitor,
+  Save,
+  Camera
+} from 'lucide-react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/components/theme/ThemeProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+
+interface ProfileData {
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
+
+export default function Configuracoes() {
+  const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState<ProfileData>({
+    first_name: '',
+    last_name: '',
+    avatar_url: null,
+  });
+
+  // Notification preferences
+  const [notifications, setNotifications] = useState({
+    emailNotifications: true,
+    pushNotifications: false,
+    weeklyDigest: true,
+    interactionReminders: true,
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('first_name, last_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    if (data && !error) {
+      setProfile({
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+        avatar_url: data.avatar_url,
+      });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update user metadata
+      await supabase.auth.updateUser({
+        data: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+        }
+      });
+
+      toast.success('Perfil atualizado com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao atualizar perfil');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const userInitials = profile.first_name && profile.last_name
+    ? `${profile.first_name[0]}${profile.last_name[0]}`
+    : user?.email?.[0]?.toUpperCase() || 'U';
+
+  const themeOptions = [
+    { value: 'light', label: 'Claro', icon: Sun },
+    { value: 'dark', label: 'Escuro', icon: Moon },
+    { value: 'system', label: 'Sistema', icon: Monitor },
+  ] as const;
+
+  return (
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-2"
+        >
+          <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
+          <p className="text-muted-foreground">
+            Gerencie seu perfil, preferências e configurações do sistema
+          </p>
+        </motion.div>
+
+        <Tabs defaultValue="profile" className="space-y-6">
+          <TabsList className="bg-muted/50 p-1">
+            <TabsTrigger value="profile" className="gap-2">
+              <User className="w-4 h-4" />
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="gap-2">
+              <Palette className="w-4 h-4" />
+              Aparência
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="w-4 h-4" />
+              Notificações
+            </TabsTrigger>
+            <TabsTrigger value="security" className="gap-2">
+              <Shield className="w-4 h-4" />
+              Segurança
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Informações do Perfil
+                  </CardTitle>
+                  <CardDescription>
+                    Atualize suas informações pessoais
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Avatar Section */}
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <Avatar className="w-24 h-24 border-4 border-primary/20">
+                        <AvatarImage src={profile.avatar_url || undefined} />
+                        <AvatarFallback className="bg-gradient-primary text-white text-2xl font-bold">
+                          {userInitials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg">
+                        <Camera className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">
+                        {profile.first_name && profile.last_name 
+                          ? `${profile.first_name} ${profile.last_name}` 
+                          : 'Seu Nome'}
+                      </h3>
+                      <p className="text-muted-foreground text-sm">{user?.email}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Membro desde {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Form Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">Nome</Label>
+                      <Input
+                        id="first_name"
+                        value={profile.first_name}
+                        onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                        placeholder="Seu nome"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Sobrenome</Label>
+                      <Input
+                        id="last_name"
+                        value={profile.last_name}
+                        onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                        placeholder="Seu sobrenome"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      value={user?.email || ''}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      O email não pode ser alterado
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button onClick={handleSaveProfile} disabled={loading} className="gap-2">
+                      <Save className="w-4 h-4" />
+                      {loading ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Appearance Tab */}
+          <TabsContent value="appearance">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-primary" />
+                    Aparência
+                  </CardTitle>
+                  <CardDescription>
+                    Personalize a aparência do sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <Label>Tema</Label>
+                    <div className="grid grid-cols-3 gap-4">
+                      {themeOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setTheme(option.value)}
+                          className={cn(
+                            'flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200',
+                            theme === option.value
+                              ? 'border-primary bg-primary/10 shadow-lg'
+                              : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                          )}
+                        >
+                          <div className={cn(
+                            'p-4 rounded-full',
+                            theme === option.value 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted text-muted-foreground'
+                          )}>
+                            <option.icon className="w-6 h-6" />
+                          </div>
+                          <span className={cn(
+                            'font-medium',
+                            theme === option.value ? 'text-primary' : 'text-foreground'
+                          )}>
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {theme === 'system' 
+                        ? 'O tema será ajustado automaticamente de acordo com as preferências do seu sistema.'
+                        : theme === 'dark'
+                        ? 'Tema escuro ativado. Ideal para ambientes com pouca luz.'
+                        : 'Tema claro ativado. Ideal para ambientes bem iluminados.'}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5 text-primary" />
+                    Notificações
+                  </CardTitle>
+                  <CardDescription>
+                    Configure como você deseja receber notificações
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-medium">Notificações por Email</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receba atualizações importantes por email
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.emailNotifications}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, emailNotifications: checked })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-medium">Notificações Push</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receba notificações em tempo real no navegador
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.pushNotifications}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, pushNotifications: checked })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-medium">Resumo Semanal</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receba um resumo semanal das suas atividades
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.weeklyDigest}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, weeklyDigest: checked })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-medium">Lembretes de Interação</p>
+                        <p className="text-sm text-muted-foreground">
+                          Receba lembretes para follow-ups pendentes
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notifications.interactionReminders}
+                        onCheckedChange={(checked) => 
+                          setNotifications({ ...notifications, interactionReminders: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* Security Tab */}
+          <TabsContent value="security">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="border-border/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-primary" />
+                    Segurança
+                  </CardTitle>
+                  <CardDescription>
+                    Gerencie suas configurações de segurança
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-medium">Alterar Senha</p>
+                          <p className="text-sm text-muted-foreground">
+                            Atualize sua senha de acesso
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Alterar
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-medium">Sessões Ativas</p>
+                          <p className="text-sm text-muted-foreground">
+                            Gerencie os dispositivos conectados à sua conta
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          Ver Sessões
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/5">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-medium text-destructive">Excluir Conta</p>
+                          <p className="text-sm text-muted-foreground">
+                            Exclua permanentemente sua conta e todos os dados
+                          </p>
+                        </div>
+                        <Button variant="destructive" size="sm">
+                          Excluir
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AppLayout>
+  );
+}
