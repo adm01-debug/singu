@@ -95,6 +95,7 @@ const Dashboard = () => {
         <Header 
           title="Dashboard" 
           subtitle="Visão geral do seu relacionamento com clientes"
+          showBreadcrumbs={false}
         />
         <DashboardSkeleton />
       </AppLayout>
@@ -106,6 +107,7 @@ const Dashboard = () => {
       <Header 
         title="Dashboard" 
         subtitle="Visão geral do seu relacionamento com clientes"
+        showBreadcrumbs={false}
       />
 
       <div className="p-6 space-y-6">

@@ -18,6 +18,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -229,22 +230,18 @@ const Insights = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
+      <Header 
+        title="Insights com IA" 
+        subtitle="Análise inteligente dos seus relacionamentos e interações"
+      />
+      
+      <div className="p-6 space-y-6">
+        {/* Header Actions */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          className="flex justify-end"
         >
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Sparkles className="w-8 h-8 text-primary" />
-              Insights com IA
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Análise inteligente dos seus relacionamentos e interações
-            </p>
-          </div>
           <Button 
             onClick={handleRefreshInsights} 
             disabled={generating}
