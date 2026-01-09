@@ -15,6 +15,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Calendario from "./pages/Calendario";
 import Notificacoes from "./pages/Notificacoes";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,11 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={
+              <RequireAuth>
+                <Onboarding />
+              </RequireAuth>
+            } />
             
             {/* Protected routes */}
             <Route path="/" element={

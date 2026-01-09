@@ -33,7 +33,8 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/');
+      // Check if user needs onboarding
+      navigate('/onboarding');
     }
   }, [user, navigate]);
 
@@ -92,7 +93,7 @@ const Auth = () => {
           toast.error(error.message);
         } else {
           toast.success('Bem-vindo de volta!');
-          navigate('/');
+          navigate('/onboarding');
         }
       } else {
         const { error } = await signUp(email, password, {
@@ -102,8 +103,8 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
-          toast.success('Conta criada com sucesso! Bem-vindo ao RelateIQ!');
-          navigate('/');
+          toast.success('Conta criada com sucesso! Vamos configurar sua conta!');
+          navigate('/onboarding');
         }
       }
     } finally {
