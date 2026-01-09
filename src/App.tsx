@@ -3,12 +3,14 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Empresas from "./pages/Empresas";
 import Contatos from "./pages/Contatos";
 import ContatoDetalhe from "./pages/ContatoDetalhe";
 import Interacoes from "./pages/Interacoes";
 import Insights from "./pages/Insights";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,16 +21,47 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/empresas" element={<Empresas />} />
-          <Route path="/contatos" element={<Contatos />} />
-          <Route path="/contatos/:id" element={<ContatoDetalhe />} />
-          <Route path="/interacoes" element={<Interacoes />} />
-          <Route path="/insights" element={<Insights />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Protected routes */}
+            <Route path="/" element={
+              <RequireAuth>
+                <Index />
+              </RequireAuth>
+            } />
+            <Route path="/empresas" element={
+              <RequireAuth>
+                <Empresas />
+              </RequireAuth>
+            } />
+            <Route path="/contatos" element={
+              <RequireAuth>
+                <Contatos />
+              </RequireAuth>
+            } />
+            <Route path="/contatos/:id" element={
+              <RequireAuth>
+                <ContatoDetalhe />
+              </RequireAuth>
+            } />
+            <Route path="/interacoes" element={
+              <RequireAuth>
+                <Interacoes />
+              </RequireAuth>
+            } />
+            <Route path="/insights" element={
+              <RequireAuth>
+                <Insights />
+              </RequireAuth>
+            } />
+            
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
