@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, 
@@ -6,7 +7,8 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
-  Sparkles
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -27,9 +29,18 @@ import {
   ContactDistributionChart,
   RelationshipScoreChart,
   SentimentChart,
+  type PeriodFilter,
 } from '@/components/dashboard/DashboardCharts';
 
+const periodOptions: { value: PeriodFilter; label: string }[] = [
+  { value: '7d', label: 'Última Semana' },
+  { value: '30d', label: 'Último Mês' },
+  { value: '90d', label: 'Últimos 3 Meses' },
+];
+
 const Dashboard = () => {
+  const [period, setPeriod] = useState<PeriodFilter>('7d');
+
   const stats = [
     {
       title: 'Total de Empresas',
@@ -86,17 +97,47 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Period Filter */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Calendar className="w-5 h-5" />
+            <span className="font-medium">Período dos Gráficos</span>
+          </div>
+          <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
+            {periodOptions.map((option) => (
+              <Button
+                key={option.value}
+                variant={period === option.value ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPeriod(option.value)}
+                className={`transition-all ${
+                  period === option.value 
+                    ? 'shadow-sm' 
+                    : 'hover:bg-secondary'
+                }`}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </motion.div>
+
         {/* Charts Row 1 - Activity and Evolution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ActivityChart />
-          <RelationshipEvolutionChart />
+          <ActivityChart period={period} />
+          <RelationshipEvolutionChart period={period} />
         </div>
 
         {/* Charts Row 2 - Distribution and Scores */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <ContactDistributionChart />
-          <RelationshipScoreChart />
-          <SentimentChart />
+          <RelationshipScoreChart period={period} />
+          <SentimentChart period={period} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
