@@ -14,7 +14,8 @@ import {
   LogOut,
   User,
   CalendarDays,
-  Bell
+  Bell,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,7 +44,11 @@ const bottomMenuItems = [
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onSearchClick?: () => void;
+}
+
+export function Sidebar({ onSearchClick }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -97,6 +102,26 @@ export function Sidebar() {
             <ChevronRight className="w-4 h-4" />
           ) : (
             <ChevronLeft className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      {/* Search Button */}
+      <div className="px-3 pt-4">
+        <button
+          onClick={onSearchClick}
+          className={cn(
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
+            'bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
+            'border border-sidebar-border/50'
+          )}
+        >
+          <Search className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && (
+            <>
+              <span className="flex-1 text-left text-sm text-sidebar-foreground/70">Buscar...</span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/50 rounded">⌘K</kbd>
+            </>
           )}
         </button>
       </div>
