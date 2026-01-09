@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -34,6 +34,7 @@ import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
+import { PriorityIndicator, PriorityBar } from '@/components/ui/priority-indicator';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -55,6 +56,7 @@ import { AdvancedFilters, type FilterConfig, type SortOption } from '@/component
 import { ContactForm } from '@/components/forms/ContactForm';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
+import { useInteractions } from '@/hooks/useInteractions';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
@@ -109,6 +111,7 @@ const sortOptions: SortOption[] = [
 const Contatos = () => {
   const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
   const { companies } = useCompanies();
+  const { interactions } = useInteractions();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -174,6 +177,13 @@ const Contatos = () => {
     if (!companyId) return null;
     const company = companies.find(c => c.id === companyId);
     return company?.name || null;
+  };
+
+  const getLastInteractionDate = (contactId: string): string | null => {
+    const contactInteractions = interactions
+      .filter(i => i.contact_id === contactId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return contactInteractions[0]?.created_at || null;
   };
 
   const handleCreate = async (data: any) => {
@@ -268,6 +278,7 @@ const Contatos = () => {
                 {filteredAndSortedContacts.map((contact, index) => {
                   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
                   const companyName = getCompanyName(contact.company_id);
+                  const lastInteraction = getLastInteractionDate(contact.id);
                   
                   return (
                     <motion.div
@@ -277,12 +288,19 @@ const Contatos = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                     >
                       <Card className="h-full card-hover group cursor-pointer overflow-hidden relative">
+                        {/* Priority Bar at the top */}
+                        <PriorityBar 
+                          relationshipScore={contact.relationship_score || 0} 
+                          lastInteractionDate={lastInteraction}
+                          className="absolute top-0 left-0 right-0 z-20"
+                        />
+                        
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white"
+                              className="absolute top-3 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white dark:bg-background/80 dark:hover:bg-background"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </Button>
@@ -303,14 +321,23 @@ const Contatos = () => {
                         <Link to={`/contatos/${contact.id}`}>
                           <CardContent className="p-0">
                             {/* Header with gradient */}
-                            <div className="h-16 bg-gradient-primary relative">
+                            <div className="h-16 bg-gradient-primary relative mt-1">
                               <div className="absolute -bottom-8 left-5">
-                                <Avatar className="w-16 h-16 border-4 border-card shadow-medium">
-                                  <AvatarImage src={contact.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
-                                    {contact.first_name[0]}{contact.last_name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
+                                <div className="relative">
+                                  <Avatar className="w-16 h-16 border-4 border-card shadow-medium">
+                                    <AvatarImage src={contact.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
+                                      {contact.first_name[0]}{contact.last_name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {/* Priority indicator on avatar */}
+                                  <div className="absolute -top-1 -right-1">
+                                    <PriorityIndicator 
+                                      relationshipScore={contact.relationship_score || 0}
+                                      lastInteractionDate={lastInteraction}
+                                    />
+                                  </div>
+                                </div>
                               </div>
                               <div className="absolute top-3 right-10">
                                 <RelationshipScore score={contact.relationship_score || 0} size="sm" />
@@ -383,6 +410,7 @@ const Contatos = () => {
                 {filteredAndSortedContacts.map((contact, index) => {
                   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
                   const companyName = getCompanyName(contact.company_id);
+                  const lastInteraction = getLastInteractionDate(contact.id);
                   
                   return (
                     <motion.div
@@ -391,16 +419,33 @@ const Contatos = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.03 }}
                     >
-                      <Card className="card-hover cursor-pointer group">
-                        <CardContent className="p-4">
+                      <Card className="card-hover cursor-pointer group overflow-hidden relative">
+                        {/* Priority Bar on left side */}
+                        <div className="absolute left-0 top-0 bottom-0 w-1">
+                          <PriorityBar 
+                            relationshipScore={contact.relationship_score || 0} 
+                            lastInteractionDate={lastInteraction}
+                            className="h-full w-full rounded-none"
+                          />
+                        </div>
+                        <CardContent className="p-4 pl-5">
                           <div className="flex items-center gap-4">
                             <Link to={`/contatos/${contact.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                              <Avatar className="w-12 h-12 border-2 border-primary/20">
-                                <AvatarImage src={contact.avatar_url || undefined} />
-                                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                  {contact.first_name[0]}{contact.last_name[0]}
-                                </AvatarFallback>
-                              </Avatar>
+                              <div className="relative">
+                                <Avatar className="w-12 h-12 border-2 border-primary/20">
+                                  <AvatarImage src={contact.avatar_url || undefined} />
+                                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                                    {contact.first_name[0]}{contact.last_name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {/* Priority indicator on avatar */}
+                                <div className="absolute -top-1 -right-1">
+                                  <PriorityIndicator 
+                                    relationshipScore={contact.relationship_score || 0}
+                                    lastInteractionDate={lastInteraction}
+                                  />
+                                </div>
+                              </div>
 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
