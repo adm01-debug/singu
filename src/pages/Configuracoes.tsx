@@ -12,6 +12,7 @@ import {
   Camera
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -117,18 +118,12 @@ export default function Configuracoes() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col gap-2"
-        >
-          <h1 className="text-3xl font-bold text-foreground">Configurações</h1>
-          <p className="text-muted-foreground">
-            Gerencie seu perfil, preferências e configurações do sistema
-          </p>
-        </motion.div>
+      <Header 
+        title="Configurações" 
+        subtitle="Gerencie seu perfil, preferências e configurações do sistema"
+      />
+      
+      <div className="p-6 space-y-6">
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="bg-muted/50 p-1">
