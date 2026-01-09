@@ -40,6 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
+import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -567,79 +568,13 @@ const ContatoDetalhe = () => {
                   </TabsList>
 
                   <TabsContent value="interactions" className="mt-4">
-                    <div className="flex justify-end mb-4">
-                      <Button className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        Registrar Interação
-                      </Button>
-                    </div>
-                    <div className="space-y-4">
-                      {contactInteractions.map((interaction, index) => {
-                        const Icon = interactionIcons[interaction.type];
-                        const colorClass = interactionColors[interaction.type];
-                        
-                        return (
-                          <motion.div
-                            key={interaction.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                          >
-                            <Card className="card-hover">
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-4">
-                                  <div className={`p-2.5 rounded-xl ${colorClass}`}>
-                                    <Icon className="w-5 h-5" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="flex items-center gap-2">
-                                        <h4 className="font-medium text-foreground">{interaction.title}</h4>
-                                        <Badge variant={interaction.initiatedBy === 'them' ? 'default' : 'outline'} className="text-xs">
-                                          {interaction.initiatedBy === 'them' ? 'Recebido' : 'Enviado'}
-                                        </Badge>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <SentimentIndicator sentiment={interaction.sentiment} size="sm" />
-                                        <span className="text-xs text-muted-foreground">
-                                          {format(interaction.createdAt, "d MMM 'às' HH:mm", { locale: ptBR })}
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{interaction.content}</p>
-                                    {interaction.keyInsights && interaction.keyInsights.length > 0 && (
-                                      <div className="mt-2 p-2 rounded bg-warning/10 border border-warning/20">
-                                        <p className="text-xs font-medium text-warning mb-1">💡 Insights capturados:</p>
-                                        <ul className="text-xs text-foreground">
-                                          {interaction.keyInsights.map((insight, i) => (
-                                            <li key={i}>• {insight}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-                                    {interaction.tags.length > 0 && (
-                                      <div className="flex flex-wrap gap-1.5 mt-3">
-                                        {interaction.tags.map(tag => (
-                                          <Badge key={tag} variant="outline" className="text-xs">
-                                            {tag}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </motion.div>
-                        );
-                      })}
-                      {contactInteractions.length === 0 && (
-                        <div className="text-center py-8">
-                          <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                          <p className="text-muted-foreground">Nenhuma interação registrada ainda</p>
-                        </div>
-                      )}
-                    </div>
+                    <InteractionTimeline 
+                      interactions={contactInteractions}
+                      onAddInteraction={() => {
+                        // TODO: Open add interaction dialog
+                        console.log('Add interaction');
+                      }}
+                    />
                   </TabsContent>
 
                   <TabsContent value="insights" className="mt-4">
