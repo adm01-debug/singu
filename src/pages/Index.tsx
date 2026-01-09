@@ -21,6 +21,13 @@ import { mockCompanies, mockContacts, mockActivities, mockInsights } from '@/dat
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import {
+  ActivityChart,
+  RelationshipEvolutionChart,
+  ContactDistributionChart,
+  RelationshipScoreChart,
+  SentimentChart,
+} from '@/components/dashboard/DashboardCharts';
 
 const Dashboard = () => {
   const stats = [
@@ -79,12 +86,25 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Charts Row 1 - Activity and Evolution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ActivityChart />
+          <RelationshipEvolutionChart />
+        </div>
+
+        {/* Charts Row 2 - Distribution and Scores */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ContactDistributionChart />
+          <RelationshipScoreChart />
+          <SentimentChart />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Top Contacts */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
+            transition={{ duration: 0.4, delay: 0.7 }}
             className="lg:col-span-2"
           >
             <Card className="h-full">
@@ -105,7 +125,7 @@ const Dashboard = () => {
                     key={contact.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
                     className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-4">
@@ -151,7 +171,7 @@ const Dashboard = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.5 }}
+            transition={{ duration: 0.4, delay: 0.8 }}
           >
             <Card className="h-full">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -171,8 +191,8 @@ const Dashboard = () => {
                     key={insight.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
-                    className="p-4 rounded-lg border border-border bg-card hover:shadow-medium transition-shadow"
+                    transition={{ duration: 0.3, delay: 0.9 + index * 0.1 }}
+                    className="p-4 rounded-lg border border-border bg-card hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <span className="text-xs font-medium px-2 py-1 rounded-full bg-warning/10 text-warning">
@@ -199,7 +219,7 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
+          transition={{ duration: 0.4, delay: 0.9 }}
         >
           <Card>
             <CardHeader>
@@ -215,7 +235,7 @@ const Dashboard = () => {
                     key={activity.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
+                    transition={{ duration: 0.3, delay: 1 + index * 0.05 }}
                     className="flex items-center gap-4 p-3 rounded-lg hover:bg-secondary/30 transition-colors"
                   >
                     <div className="w-2 h-2 rounded-full bg-primary" />
