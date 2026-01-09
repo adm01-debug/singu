@@ -8,7 +8,8 @@ import {
   ArrowRight,
   Clock,
   Sparkles,
-  Calendar
+  Calendar,
+  Bell
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -25,6 +26,7 @@ import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
+import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -165,7 +167,17 @@ const Dashboard = () => {
           <SentimentChart period={period} />
         </div>
 
+        {/* Smart Reminders + Top Contacts + Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Smart Reminders - Compact version */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.65 }}
+          >
+            <SmartRemindersPanel compact />
+          </motion.div>
+
           {/* Top Contacts */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

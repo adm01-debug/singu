@@ -12,7 +12,8 @@ import {
   Users,
   Lightbulb,
   Mail,
-  Loader2
+  Loader2,
+  Thermometer
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -23,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -47,6 +49,7 @@ const Notificacoes = () => {
     birthdays: true,
     insights: true,
     weeklyDigest: false,
+    relationshipDecay: true,
   });
 
   // Listen for install prompt
@@ -346,6 +349,15 @@ const Notificacoes = () => {
           </Card>
         </motion.div>
 
+        {/* Smart Reminders Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <SmartRemindersPanel />
+        </motion.div>
+
         {/* Notification Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -413,6 +425,25 @@ const Notificacoes = () => {
                 <Switch
                   checked={notificationSettings.insights}
                   onCheckedChange={() => handleSettingChange('insights')}
+                  disabled={!isSubscribed}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-red-500/10 rounded-lg">
+                    <Thermometer className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Relacionamentos Esfriando</p>
+                    <p className="text-sm text-muted-foreground">
+                      Alertas quando relacionamentos perdem força
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={notificationSettings.relationshipDecay}
+                  onCheckedChange={() => handleSettingChange('relationshipDecay')}
                   disabled={!isSubscribed}
                 />
               </div>
