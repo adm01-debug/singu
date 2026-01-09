@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -8,21 +8,23 @@ import {
   MessageSquare,
   Building2,
   Search,
-  Filter,
   Grid3X3,
   List,
-  Heart,
   Linkedin,
-  Instagram,
   Loader2,
-  MoreVertical
+  MoreVertical,
+  UserCheck,
+  UserX,
+  Crown,
+  Briefcase,
+  ShoppingCart,
+  User
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
@@ -46,15 +48,60 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
 
 type ViewMode = 'grid' | 'list';
+
+const filterConfigs: FilterConfig[] = [
+  {
+    key: 'role',
+    label: 'Papel',
+    multiple: true,
+    options: [
+      { value: 'owner', label: 'Proprietário', icon: Crown },
+      { value: 'manager', label: 'Gerente', icon: Briefcase },
+      { value: 'buyer', label: 'Comprador', icon: ShoppingCart },
+      { value: 'contact', label: 'Contato', icon: User },
+    ],
+  },
+  {
+    key: 'sentiment',
+    label: 'Sentimento',
+    multiple: false,
+    options: [
+      { value: 'positive', label: 'Positivo' },
+      { value: 'neutral', label: 'Neutro' },
+      { value: 'negative', label: 'Negativo' },
+    ],
+  },
+  {
+    key: 'relationship_stage',
+    label: 'Estágio',
+    multiple: true,
+    options: [
+      { value: 'lead', label: 'Lead' },
+      { value: 'prospect', label: 'Prospect' },
+      { value: 'negotiation', label: 'Negociação' },
+      { value: 'client', label: 'Cliente' },
+      { value: 'partner', label: 'Parceiro' },
+      { value: 'churned', label: 'Inativo' },
+      { value: 'unknown', label: 'Desconhecido' },
+    ],
+  },
+];
+
+const sortOptions: SortOption[] = [
+  { value: 'first_name', label: 'Nome' },
+  { value: 'relationship_score', label: 'Score de Relacionamento' },
+  { value: 'created_at', label: 'Data de Criação' },
+  { value: 'updated_at', label: 'Última Atualização' },
+];
 
 const Contatos = () => {
   const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
@@ -65,11 +112,60 @@ const Contatos = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Advanced filters state
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
+  const [sortBy, setSortBy] = useState('updated_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredContacts = contacts.filter(contact =>
-    `${contact.first_name} ${contact.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (contact.role_title && contact.role_title.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredAndSortedContacts = useMemo(() => {
+    let result = contacts.filter(contact => {
+      // Text search
+      const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase();
+      const matchesSearch = 
+        fullName.includes(searchTerm.toLowerCase()) ||
+        (contact.role_title && contact.role_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      if (!matchesSearch) return false;
+
+      // Advanced filters
+      for (const [key, values] of Object.entries(activeFilters)) {
+        if (values.length === 0) continue;
+        
+        const contactValue = contact[key as keyof Contact];
+        if (!contactValue || !values.includes(String(contactValue))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Sort
+    result.sort((a, b) => {
+      let aVal = a[sortBy as keyof Contact];
+      let bVal = b[sortBy as keyof Contact];
+
+      if (aVal === null || aVal === undefined) aVal = '' as any;
+      if (bVal === null || bVal === undefined) bVal = '' as any;
+
+      if (sortBy === 'relationship_score') {
+        const numA = Number(aVal) || 0;
+        const numB = Number(bVal) || 0;
+        return sortOrder === 'asc' ? numA - numB : numB - numA;
+      }
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        const comparison = aVal.localeCompare(bVal, 'pt-BR');
+        return sortOrder === 'asc' ? comparison : -comparison;
+      }
+
+      return 0;
+    });
+
+    return result;
+  }, [contacts, searchTerm, activeFilters, sortBy, sortOrder]);
 
   const getCompanyName = (companyId: string | null) => {
     if (!companyId) return null;
@@ -106,29 +202,23 @@ const Contatos = () => {
     <AppLayout>
       <Header 
         title="Contatos" 
-        subtitle={`${contacts.length} pessoas cadastradas`}
+        subtitle={`${filteredAndSortedContacts.length} de ${contacts.length} pessoas`}
         showAddButton
         addButtonLabel="Novo Contato"
         onAddClick={() => setIsFormOpen(true)}
       />
 
       <div className="p-6 space-y-6">
-        {/* Filters */}
+        {/* Search and View Toggle */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome, empresa ou cargo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="w-4 h-4" />
-              Filtros
-            </Button>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome, cargo ou email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
           <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
             <Button
@@ -150,6 +240,20 @@ const Contatos = () => {
           </div>
         </div>
 
+        {/* Advanced Filters */}
+        <AdvancedFilters
+          filters={filterConfigs}
+          sortOptions={sortOptions}
+          activeFilters={activeFilters}
+          onFiltersChange={setActiveFilters}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={(newSortBy, newSortOrder) => {
+            setSortBy(newSortBy);
+            setSortOrder(newSortOrder);
+          }}
+        />
+
         {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -160,7 +264,7 @@ const Contatos = () => {
             {/* Contacts Grid/List */}
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredContacts.map((contact, index) => {
+                {filteredAndSortedContacts.map((contact, index) => {
                   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
                   const companyName = getCompanyName(contact.company_id);
                   
@@ -275,7 +379,7 @@ const Contatos = () => {
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredContacts.map((contact, index) => {
+                {filteredAndSortedContacts.map((contact, index) => {
                   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
                   const companyName = getCompanyName(contact.company_id);
                   
@@ -351,16 +455,20 @@ const Contatos = () => {
               </div>
             )}
 
-            {filteredContacts.length === 0 && !loading && (
+            {filteredAndSortedContacts.length === 0 && !loading && (
               <div className="text-center py-12">
                 <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {searchTerm ? 'Nenhum contato encontrado' : 'Nenhum contato cadastrado'}
+                  {searchTerm || Object.keys(activeFilters).length > 0 
+                    ? 'Nenhum contato encontrado' 
+                    : 'Nenhum contato cadastrado'}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm ? 'Tente ajustar sua busca.' : 'Comece adicionando seu primeiro contato.'}
+                  {searchTerm || Object.keys(activeFilters).length > 0 
+                    ? 'Tente ajustar seus filtros.' 
+                    : 'Comece adicionando seu primeiro contato.'}
                 </p>
-                {!searchTerm && (
+                {!searchTerm && Object.keys(activeFilters).length === 0 && (
                   <Button onClick={() => setIsFormOpen(true)}>
                     <Users className="w-4 h-4 mr-2" />
                     Novo Contato

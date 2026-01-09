@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   MessageSquare, 
@@ -10,7 +10,11 @@ import {
   Calendar,
   Loader2,
   MoreVertical,
-  Trash2
+  Trash2,
+  Video,
+  FileText,
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -37,6 +41,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { InteractionForm } from '@/components/forms/InteractionForm';
 import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
@@ -49,7 +54,8 @@ const interactionIcons: Record<string, typeof MessageSquare> = {
   call: Phone,
   email: Mail,
   meeting: Users,
-  note: Edit,
+  video_call: Video,
+  note: FileText,
   social: MessageSquare,
 };
 
@@ -58,6 +64,7 @@ const interactionColors: Record<string, string> = {
   call: 'bg-info/10 text-info',
   email: 'bg-primary/10 text-primary',
   meeting: 'bg-warning/10 text-warning',
+  video_call: 'bg-purple-100 text-purple-600',
   note: 'bg-muted text-muted-foreground',
   social: 'bg-pink-100 text-pink-600',
 };
@@ -67,29 +74,135 @@ const interactionLabels: Record<string, string> = {
   call: 'Ligação',
   email: 'Email',
   meeting: 'Reunião',
+  video_call: 'Videochamada',
   note: 'Nota',
   social: 'Social',
 };
+
+const filterConfigs: FilterConfig[] = [
+  {
+    key: 'type',
+    label: 'Tipo',
+    multiple: true,
+    options: [
+      { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
+      { value: 'call', label: 'Ligação', icon: Phone },
+      { value: 'email', label: 'Email', icon: Mail },
+      { value: 'meeting', label: 'Reunião', icon: Users },
+      { value: 'video_call', label: 'Videochamada', icon: Video },
+      { value: 'note', label: 'Nota', icon: FileText },
+    ],
+  },
+  {
+    key: 'sentiment',
+    label: 'Sentimento',
+    multiple: false,
+    options: [
+      { value: 'positive', label: 'Positivo' },
+      { value: 'neutral', label: 'Neutro' },
+      { value: 'negative', label: 'Negativo' },
+    ],
+  },
+  {
+    key: 'follow_up_required',
+    label: 'Follow-up',
+    multiple: false,
+    options: [
+      { value: 'true', label: 'Pendente', icon: AlertCircle },
+      { value: 'false', label: 'Concluído' },
+    ],
+  },
+  {
+    key: 'initiated_by',
+    label: 'Iniciado por',
+    multiple: false,
+    options: [
+      { value: 'us', label: 'Nós' },
+      { value: 'them', label: 'Contato' },
+    ],
+  },
+];
+
+const sortOptions: SortOption[] = [
+  { value: 'created_at', label: 'Data' },
+  { value: 'title', label: 'Título' },
+  { value: 'type', label: 'Tipo' },
+  { value: 'duration', label: 'Duração' },
+];
 
 const Interacoes = () => {
   const { interactions, loading, createInteraction, updateInteraction, deleteInteraction } = useInteractions();
   const { contacts } = useContacts();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
   const [deletingInteraction, setDeletingInteraction] = useState<Interaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Advanced filters state
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredInteractions = interactions
-    .filter(interaction => {
-      const matchesSearch = interaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            (interaction.content && interaction.content.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesType = !selectedType || interaction.type === selectedType;
-      return matchesSearch && matchesType;
+  const filteredAndSortedInteractions = useMemo(() => {
+    let result = interactions.filter(interaction => {
+      // Text search
+      const matchesSearch = 
+        interaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (interaction.content && interaction.content.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      if (!matchesSearch) return false;
+
+      // Advanced filters
+      for (const [key, values] of Object.entries(activeFilters)) {
+        if (values.length === 0) continue;
+        
+        const interactionValue = interaction[key as keyof Interaction];
+        
+        // Handle boolean conversion for follow_up_required
+        if (key === 'follow_up_required') {
+          const boolValue = String(interactionValue);
+          if (!values.includes(boolValue)) return false;
+          continue;
+        }
+        
+        if (interactionValue === null || interactionValue === undefined) return false;
+        if (!values.includes(String(interactionValue))) return false;
+      }
+
+      return true;
     });
 
-  const types = ['whatsapp', 'call', 'email', 'meeting', 'note'];
+    // Sort
+    result.sort((a, b) => {
+      let aVal = a[sortBy as keyof Interaction];
+      let bVal = b[sortBy as keyof Interaction];
+
+      if (aVal === null || aVal === undefined) aVal = '' as any;
+      if (bVal === null || bVal === undefined) bVal = '' as any;
+
+      if (sortBy === 'duration') {
+        const numA = Number(aVal) || 0;
+        const numB = Number(bVal) || 0;
+        return sortOrder === 'asc' ? numA - numB : numB - numA;
+      }
+
+      if (sortBy === 'created_at') {
+        const dateA = new Date(aVal as string).getTime();
+        const dateB = new Date(bVal as string).getTime();
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        const comparison = aVal.localeCompare(bVal, 'pt-BR');
+        return sortOrder === 'asc' ? comparison : -comparison;
+      }
+
+      return 0;
+    });
+
+    return result;
+  }, [interactions, searchTerm, activeFilters, sortBy, sortOrder]);
 
   const getContactInfo = (contactId: string) => {
     return contacts.find(c => c.id === contactId);
@@ -120,53 +233,76 @@ const Interacoes = () => {
     setDeletingInteraction(null);
   };
 
+  // Stats
+  const stats = useMemo(() => {
+    const followUpCount = interactions.filter(i => i.follow_up_required).length;
+    const thisWeek = interactions.filter(i => {
+      const date = new Date(i.created_at);
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return date >= weekAgo;
+    }).length;
+
+    return { total: interactions.length, followUp: followUpCount, thisWeek };
+  }, [interactions]);
+
   return (
     <AppLayout>
       <Header 
         title="Interações" 
-        subtitle="Histórico de comunicações com seus contatos"
+        subtitle={`${filteredAndSortedInteractions.length} de ${interactions.length} interações`}
         showAddButton
         addButtonLabel="Nova Interação"
         onAddClick={() => setIsFormOpen(true)}
       />
 
       <div className="p-6 space-y-6">
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="relative flex-1 max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar interações..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant={selectedType === null ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedType(null)}
-            >
-              Todos
-            </Button>
-            {types.map(type => {
-              const Icon = interactionIcons[type];
-              return (
-                <Button
-                  key={type}
-                  variant={selectedType === type ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedType(type)}
-                  className="gap-1.5"
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {interactionLabels[type]}
-                </Button>
-              );
-            })}
-          </div>
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 max-w-lg">
+          <Card className="border-border/50">
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              <p className="text-xs text-muted-foreground">Total</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-warning">{stats.followUp}</p>
+              <p className="text-xs text-muted-foreground">Follow-ups</p>
+            </CardContent>
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-primary">{stats.thisWeek}</p>
+              <p className="text-xs text-muted-foreground">Esta semana</p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar interações..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* Advanced Filters */}
+        <AdvancedFilters
+          filters={filterConfigs}
+          sortOptions={sortOptions}
+          activeFilters={activeFilters}
+          onFiltersChange={setActiveFilters}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortChange={(newSortBy, newSortOrder) => {
+            setSortBy(newSortBy);
+            setSortOrder(newSortOrder);
+          }}
+        />
 
         {/* Loading State */}
         {loading ? (
@@ -180,7 +316,7 @@ const Interacoes = () => {
               <div className="absolute left-[27px] top-0 bottom-0 w-0.5 bg-border" />
               
               <div className="space-y-4">
-                {filteredInteractions.map((interaction, index) => {
+                {filteredAndSortedInteractions.map((interaction, index) => {
                   const contact = getContactInfo(interaction.contact_id);
                   const Icon = interactionIcons[interaction.type] || MessageSquare;
                   
@@ -200,14 +336,20 @@ const Interacoes = () => {
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <Badge variant="outline" className={`text-xs ${interactionColors[interaction.type].replace('bg-', 'border-').replace('/10', '/50')}`}>
                                   {interactionLabels[interaction.type]}
                                 </Badge>
                                 <SentimentIndicator sentiment={(interaction.sentiment as SentimentType) || 'neutral'} size="sm" />
                                 {interaction.follow_up_required && (
-                                  <Badge variant="outline" className="text-xs text-warning border-warning">
+                                  <Badge variant="outline" className="text-xs text-warning border-warning bg-warning/10">
+                                    <AlertCircle className="w-3 h-3 mr-1" />
                                     Follow-up
+                                  </Badge>
+                                )}
+                                {interaction.initiated_by === 'them' && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Recebido
                                   </Badge>
                                 )}
                               </div>
@@ -245,13 +387,14 @@ const Interacoes = () => {
                           </div>
 
                           {interaction.content && (
-                            <p className="text-sm text-muted-foreground mb-4">{interaction.content}</p>
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{interaction.content}</p>
                           )}
 
                           {interaction.duration && (
-                            <p className="text-xs text-muted-foreground mb-3">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
+                              <Clock className="w-3 h-3" />
                               Duração: {Math.floor(interaction.duration / 60)} min
-                            </p>
+                            </div>
                           )}
 
                           {interaction.tags && interaction.tags.length > 0 && (
@@ -288,16 +431,20 @@ const Interacoes = () => {
               </div>
             </div>
 
-            {filteredInteractions.length === 0 && !loading && (
+            {filteredAndSortedInteractions.length === 0 && !loading && (
               <div className="text-center py-12">
                 <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {searchTerm || selectedType ? 'Nenhuma interação encontrada' : 'Nenhuma interação registrada'}
+                  {searchTerm || Object.keys(activeFilters).length > 0 
+                    ? 'Nenhuma interação encontrada' 
+                    : 'Nenhuma interação registrada'}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm || selectedType ? 'Tente ajustar seus filtros.' : 'Registre suas comunicações para manter o histórico atualizado.'}
+                  {searchTerm || Object.keys(activeFilters).length > 0 
+                    ? 'Tente ajustar seus filtros.' 
+                    : 'Registre suas comunicações para manter o histórico atualizado.'}
                 </p>
-                {!searchTerm && !selectedType && (
+                {!searchTerm && Object.keys(activeFilters).length === 0 && (
                   <Button onClick={() => setIsFormOpen(true)}>
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Nova Interação
