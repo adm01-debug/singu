@@ -13,6 +13,7 @@ import Interacoes from "./pages/Interacoes";
 import Insights from "./pages/Insights";
 import Configuracoes from "./pages/Configuracoes";
 import Calendario from "./pages/Calendario";
+import Notificacoes from "./pages/Notificacoes";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -73,6 +74,11 @@ const App = () => (
             <Route path="/calendario" element={
               <RequireAuth>
                 <Calendario />
+              </RequireAuth>
+            } />
+            <Route path="/notificacoes" element={
+              <RequireAuth>
+                <Notificacoes />
               </RequireAuth>
             } />
             

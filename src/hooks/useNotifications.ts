@@ -1,0 +1,242 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface NotificationPermission {
+  permission: 'default' | 'granted' | 'denied';
+  supported: boolean;
+}
+
+interface ScheduledNotification {
+  id: string;
+  title: string;
+  body: string;
+  scheduledFor: Date;
+  data?: Record<string, unknown>;
+}
+
+export const useNotifications = () => {
+  const [permissionState, setPermissionState] = useState<NotificationPermission>({
+    permission: 'default',
+    supported: false,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Check if notifications are supported
+  useEffect(() => {
+    const supported = 'Notification' in window && 'serviceWorker' in navigator;
+    setPermissionState({
+      permission: supported ? (Notification.permission as NotificationPermission['permission']) : 'denied',
+      supported,
+    });
+  }, []);
+
+  // Request notification permission
+  const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (!permissionState.supported) {
+      toast({
+        title: 'Notificações não suportadas',
+        description: 'Seu navegador não suporta notificações push.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const permission = await Notification.requestPermission();
+      setPermissionState(prev => ({ ...prev, permission: permission as NotificationPermission['permission'] }));
+      
+      if (permission === 'granted') {
+        toast({
+          title: 'Notificações ativadas!',
+          description: 'Você receberá alertas de follow-up e eventos importantes.',
+        });
+        return true;
+      } else {
+        toast({
+          title: 'Permissão negada',
+          description: 'Você não receberá notificações push.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [permissionState.supported, toast]);
+
+  // Show a notification
+  const showNotification = useCallback(async (
+    title: string,
+    options?: NotificationOptions & { data?: Record<string, unknown> }
+  ): Promise<boolean> => {
+    if (permissionState.permission !== 'granted') {
+      const granted = await requestPermission();
+      if (!granted) return false;
+    }
+
+    try {
+      // Check if service worker is available
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(title, {
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
+          ...options,
+        });
+      } else {
+        // Fallback to regular notification
+        new Notification(title, {
+          icon: '/pwa-192x192.png',
+          ...options,
+        });
+      }
+      return true;
+    } catch (error) {
+      console.error('Error showing notification:', error);
+      return false;
+    }
+  }, [permissionState.permission, requestPermission]);
+
+  // Check for upcoming follow-ups and show notifications
+  const checkFollowUpAlerts = useCallback(async () => {
+    if (permissionState.permission !== 'granted') return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      // Fetch today's follow-ups
+      const { data: interactions, error } = await supabase
+        .from('interactions')
+        .select(`
+          id,
+          title,
+          follow_up_date,
+          contact_id
+        `)
+        .eq('user_id', user.id)
+        .eq('follow_up_required', true)
+        .gte('follow_up_date', today.toISOString().split('T')[0])
+        .lt('follow_up_date', tomorrow.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      if (interactions && interactions.length > 0) {
+        // Get contact names
+        const contactIds = [...new Set(interactions.map(i => i.contact_id))];
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('id, first_name, last_name')
+          .in('id', contactIds);
+
+        const contactMap = new Map(
+          contacts?.map(c => [c.id, `${c.first_name} ${c.last_name}`]) || []
+        );
+
+        // Show notification for each follow-up
+        for (const interaction of interactions) {
+          const contactName = contactMap.get(interaction.contact_id) || 'Contato';
+          await showNotification(
+            `Follow-up: ${interaction.title}`,
+            {
+              body: `Lembrete de follow-up com ${contactName}`,
+              tag: `followup-${interaction.id}`,
+              data: {
+                type: 'followup',
+                interactionId: interaction.id,
+                contactId: interaction.contact_id,
+              },
+            }
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error checking follow-up alerts:', error);
+    }
+  }, [permissionState.permission, showNotification]);
+
+  // Check for contact birthdays
+  const checkBirthdayAlerts = useCallback(async () => {
+    if (permissionState.permission !== 'granted') return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+
+      // Fetch contacts with birthday today
+      const { data: contacts, error } = await supabase
+        .from('contacts')
+        .select('id, first_name, last_name, birthday')
+        .eq('user_id', user.id)
+        .not('birthday', 'is', null);
+
+      if (error) throw error;
+
+      const birthdayContacts = contacts?.filter(contact => {
+        if (!contact.birthday) return false;
+        const birthday = new Date(contact.birthday);
+        return (
+          String(birthday.getMonth() + 1).padStart(2, '0') === month &&
+          String(birthday.getDate()).padStart(2, '0') === day
+        );
+      }) || [];
+
+      for (const contact of birthdayContacts) {
+        await showNotification(
+          `🎂 Aniversário: ${contact.first_name} ${contact.last_name}`,
+          {
+            body: 'Não esqueça de enviar uma mensagem de parabéns!',
+            tag: `birthday-${contact.id}`,
+            data: {
+              type: 'birthday',
+              contactId: contact.id,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error('Error checking birthday alerts:', error);
+    }
+  }, [permissionState.permission, showNotification]);
+
+  // Schedule periodic checks
+  useEffect(() => {
+    if (permissionState.permission !== 'granted') return;
+
+    // Check immediately on load
+    checkFollowUpAlerts();
+    checkBirthdayAlerts();
+
+    // Set up interval for periodic checks (every hour)
+    const intervalId = setInterval(() => {
+      checkFollowUpAlerts();
+      checkBirthdayAlerts();
+    }, 60 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [permissionState.permission, checkFollowUpAlerts, checkBirthdayAlerts]);
+
+  return {
+    permissionState,
+    isLoading,
+    requestPermission,
+    showNotification,
+    checkFollowUpAlerts,
+    checkBirthdayAlerts,
+  };
+};
