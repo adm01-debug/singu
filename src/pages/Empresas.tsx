@@ -9,7 +9,6 @@ import {
   Users,
   MoreVertical,
   Search,
-  Loader2,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -21,6 +20,7 @@ import {
   HeartPulse,
   GraduationCap
 } from 'lucide-react';
+import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -233,9 +233,7 @@ const Empresas = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          <CompaniesGridSkeleton />
         ) : (
           <>
             {/* Companies Grid */}

@@ -8,7 +8,6 @@ import {
   Edit,
   Search,
   Calendar,
-  Loader2,
   MoreVertical,
   Trash2,
   Video,
@@ -16,6 +15,7 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
+import { InteractionsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -306,9 +306,7 @@ const Interacoes = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          <InteractionsListSkeleton />
         ) : (
           <>
             {/* Timeline */}

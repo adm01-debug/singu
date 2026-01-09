@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, 
@@ -23,6 +23,7 @@ import { mockCompanies, mockContacts, mockActivities, mockInsights } from '@/dat
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -40,7 +41,13 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
 
 const Dashboard = () => {
   const [period, setPeriod] = useState<PeriodFilter>('7d');
+  const [loading, setLoading] = useState(true);
 
+  // Simulate loading for demo purposes
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
   const stats = [
     {
       title: 'Total de Empresas',
@@ -81,6 +88,18 @@ const Dashboard = () => {
     .slice(0, 4);
 
   const recentInsights = mockInsights.slice(0, 3);
+
+  if (loading) {
+    return (
+      <AppLayout>
+        <Header 
+          title="Dashboard" 
+          subtitle="Visão geral do seu relacionamento com clientes"
+        />
+        <DashboardSkeleton />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

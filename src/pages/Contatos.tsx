@@ -11,7 +11,6 @@ import {
   Grid3X3,
   List,
   Linkedin,
-  Loader2,
   MoreVertical,
   UserCheck,
   UserX,
@@ -20,6 +19,7 @@ import {
   ShoppingCart,
   User
 } from 'lucide-react';
+import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -256,9 +256,7 @@ const Contatos = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
         ) : (
           <>
             {/* Contacts Grid/List */}
