@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, 
@@ -10,9 +10,22 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Zap
+  Zap,
+  LogOut,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -29,6 +42,22 @@ const bottomMenuItems = [
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Até logo!');
+    navigate('/auth');
+  };
+
+  const userInitials = user?.user_metadata?.first_name && user?.user_metadata?.last_name
+    ? `${user.user_metadata.first_name[0]}${user.user_metadata.last_name[0]}`
+    : user?.email?.[0]?.toUpperCase() || 'U';
+
+  const userName = user?.user_metadata?.first_name && user?.user_metadata?.last_name
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+    : user?.email || 'Usuário';
 
   return (
     <motion.aside
@@ -131,6 +160,53 @@ export function Sidebar() {
             </Link>
           );
         })}
+      </div>
+
+      {/* User Profile */}
+      <div className="p-3 border-t border-sidebar-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className={cn(
+              'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-sidebar-accent transition-colors',
+              collapsed && 'justify-center'
+            )}>
+              <Avatar className="w-8 h-8 border-2 border-sidebar-primary/30">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex-1 text-left min-w-0"
+                >
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
+                  <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+                </motion.div>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="w-4 h-4 mr-2" />
+              Meu Perfil
+            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
+              <Settings className="w-4 h-4 mr-2" />
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              className="cursor-pointer text-destructive focus:text-destructive"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.aside>
   );
