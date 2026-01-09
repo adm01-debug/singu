@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  isPushSupported, 
+  subscribeToPush, 
+  unsubscribeFromPush, 
+  getSubscriptionStatus,
+  registerServiceWorker
+} from '@/lib/pushNotifications';
 
 interface NotificationPermission {
   permission: 'default' | 'granted' | 'denied';
   supported: boolean;
-}
-
-interface ScheduledNotification {
-  id: string;
-  title: string;
-  body: string;
-  scheduledFor: Date;
-  data?: Record<string, unknown>;
 }
 
 export const useNotifications = () => {
@@ -20,19 +19,35 @@ export const useNotifications = () => {
     permission: 'default',
     supported: false,
   });
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check if notifications are supported
+  // Check if notifications are supported and current subscription status
   useEffect(() => {
-    const supported = 'Notification' in window && 'serviceWorker' in navigator;
-    setPermissionState({
-      permission: supported ? (Notification.permission as NotificationPermission['permission']) : 'denied',
-      supported,
-    });
+    const checkStatus = async () => {
+      const supported = isPushSupported();
+      const permission = supported ? (Notification.permission as NotificationPermission['permission']) : 'denied';
+      
+      setPermissionState({ permission, supported });
+      
+      if (supported && permission === 'granted') {
+        const { isSubscribed: subscribed } = await getSubscriptionStatus();
+        setIsSubscribed(subscribed);
+      }
+    };
+    
+    checkStatus();
   }, []);
 
-  // Request notification permission
+  // Register service worker on mount
+  useEffect(() => {
+    if (isPushSupported()) {
+      registerServiceWorker();
+    }
+  }, []);
+
+  // Request notification permission and subscribe
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!permissionState.supported) {
       toast({
@@ -49,11 +64,24 @@ export const useNotifications = () => {
       setPermissionState(prev => ({ ...prev, permission: permission as NotificationPermission['permission'] }));
       
       if (permission === 'granted') {
-        toast({
-          title: 'Notificações ativadas!',
-          description: 'Você receberá alertas de follow-up e eventos importantes.',
-        });
-        return true;
+        // Subscribe to push notifications
+        const subscription = await subscribeToPush();
+        
+        if (subscription) {
+          setIsSubscribed(true);
+          toast({
+            title: 'Notificações ativadas!',
+            description: 'Você receberá alertas de follow-up, aniversários e insights.',
+          });
+          return true;
+        } else {
+          toast({
+            title: 'Erro ao ativar',
+            description: 'Não foi possível registrar as notificações push.',
+            variant: 'destructive',
+          });
+          return false;
+        }
       } else {
         toast({
           title: 'Permissão negada',
@@ -64,13 +92,39 @@ export const useNotifications = () => {
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
+      toast({
+        title: 'Erro',
+        description: 'Ocorreu um erro ao ativar as notificações.',
+        variant: 'destructive',
+      });
       return false;
     } finally {
       setIsLoading(false);
     }
   }, [permissionState.supported, toast]);
 
-  // Show a notification
+  // Unsubscribe from push notifications
+  const unsubscribe = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const success = await unsubscribeFromPush();
+      if (success) {
+        setIsSubscribed(false);
+        toast({
+          title: 'Notificações desativadas',
+          description: 'Você não receberá mais notificações push.',
+        });
+      }
+      return success;
+    } catch (error) {
+      console.error('Error unsubscribing:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  // Show a notification (fallback for when app is open)
   const showNotification = useCallback(async (
     title: string,
     options?: NotificationOptions & { data?: Record<string, unknown> }
@@ -148,9 +202,9 @@ export const useNotifications = () => {
         for (const interaction of interactions) {
           const contactName = contactMap.get(interaction.contact_id) || 'Contato';
           await showNotification(
-            `Follow-up: ${interaction.title}`,
+            `📅 Follow-up: ${interaction.title}`,
             {
-              body: `Lembrete de follow-up com ${contactName}`,
+              body: `Lembrete de acompanhamento com ${contactName}`,
               tag: `followup-${interaction.id}`,
               data: {
                 type: 'followup',
@@ -233,8 +287,10 @@ export const useNotifications = () => {
 
   return {
     permissionState,
+    isSubscribed,
     isLoading,
     requestPermission,
+    unsubscribe,
     showNotification,
     checkFollowUpAlerts,
     checkBirthdayAlerts,

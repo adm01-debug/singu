@@ -9,15 +9,20 @@ import {
   X,
   AlertCircle,
   Calendar,
-  Users
+  Users,
+  Lightbulb,
+  Mail,
+  Loader2
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -25,10 +30,18 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Notificacoes = () => {
-  const { permissionState, isLoading, requestPermission, showNotification } = useNotifications();
+  const { 
+    permissionState, 
+    isSubscribed,
+    isLoading, 
+    requestPermission, 
+    unsubscribe,
+    showNotification 
+  } = useNotifications();
   const { toast } = useToast();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
     followUps: true,
     birthdays: true,
@@ -72,42 +85,91 @@ const Notificacoes = () => {
 
   // Test notification
   const handleTestNotification = async () => {
-    const success = await showNotification(
-      'Teste de Notificação',
-      {
-        body: 'As notificações estão funcionando corretamente! 🎉',
-        tag: 'test-notification',
+    setIsTesting(true);
+    try {
+      const success = await showNotification(
+        '🔔 Teste de Notificação',
+        {
+          body: 'As notificações push estão funcionando corretamente! 🎉',
+          tag: 'test-notification',
+          data: {
+            type: 'test'
+          }
+        }
+      );
+      
+      if (success) {
+        toast({
+          title: 'Notificação enviada!',
+          description: 'Verifique suas notificações do sistema.',
+        });
       }
-    );
-    
-    if (success) {
-      toast({
-        title: 'Notificação enviada!',
-        description: 'Verifique suas notificações do sistema.',
-      });
+    } finally {
+      setIsTesting(false);
     }
   };
 
-  const handleSettingChange = (key: keyof typeof notificationSettings) => {
-    setNotificationSettings(prev => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-    
-    // Save to localStorage for persistence
+  // Toggle subscription
+  const handleToggleSubscription = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+    } else {
+      await requestPermission();
+    }
+  };
+
+  const handleSettingChange = async (key: keyof typeof notificationSettings) => {
     const newSettings = {
       ...notificationSettings,
       [key]: !notificationSettings[key],
     };
+    
+    setNotificationSettings(newSettings);
     localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
+
+    // Update in database if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from('profiles')
+        .update({ 
+          preferences: { 
+            notifications: newSettings 
+          } 
+        })
+        .eq('id', user.id);
+    }
   };
 
-  // Load settings from localStorage
+  // Load settings from localStorage and database
   useEffect(() => {
-    const savedSettings = localStorage.getItem('notificationSettings');
-    if (savedSettings) {
-      setNotificationSettings(JSON.parse(savedSettings));
-    }
+    const loadSettings = async () => {
+      // First try localStorage
+      const savedSettings = localStorage.getItem('notificationSettings');
+      if (savedSettings) {
+        setNotificationSettings(JSON.parse(savedSettings));
+      }
+      
+      // Then try database
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferences')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.preferences) {
+          const prefs = profile.preferences as { notifications?: typeof notificationSettings };
+          if (prefs.notifications) {
+            setNotificationSettings(prefs.notifications);
+            localStorage.setItem('notificationSettings', JSON.stringify(prefs.notifications));
+          }
+        }
+      }
+    };
+    
+    loadSettings();
   }, []);
 
   return (
@@ -134,7 +196,7 @@ const Notificacoes = () => {
                     <div>
                       <h3 className="font-semibold text-foreground">Instalar App</h3>
                       <p className="text-sm text-muted-foreground">
-                        Adicione o RelateIQ à sua tela inicial para acesso rápido
+                        Adicione o RelateIQ à sua tela inicial para acesso rápido e notificações
                       </p>
                     </div>
                   </div>
@@ -154,11 +216,11 @@ const Notificacoes = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="border-success/50 bg-success/5">
+            <Card className="border-green-500/50 bg-green-500/5">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-success/10 rounded-full">
-                    <Check className="w-6 h-6 text-success" />
+                  <div className="p-3 bg-green-500/10 rounded-full">
+                    <Check className="w-6 h-6 text-green-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">App Instalado</h3>
@@ -180,17 +242,26 @@ const Notificacoes = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {permissionState.permission === 'granted' ? (
-                  <Bell className="w-5 h-5 text-success" />
-                ) : (
-                  <BellOff className="w-5 h-5 text-muted-foreground" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    {isSubscribed ? (
+                      <Bell className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <BellOff className="w-5 h-5 text-muted-foreground" />
+                    )}
+                    Push Notifications
+                  </CardTitle>
+                  <CardDescription>
+                    Receba alertas mesmo com o navegador fechado
+                  </CardDescription>
+                </div>
+                {isSubscribed && (
+                  <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                    Ativo
+                  </Badge>
                 )}
-                Status das Notificações
-              </CardTitle>
-              <CardDescription>
-                Ative as notificações para receber alertas importantes
-              </CardDescription>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {!permissionState.supported ? (
@@ -212,28 +283,62 @@ const Notificacoes = () => {
                     </p>
                   </div>
                 </div>
-              ) : permissionState.permission === 'granted' ? (
-                <div className="flex items-center justify-between p-4 bg-success/10 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-success" />
-                    <p className="text-sm font-medium text-success">
-                      Notificações ativadas
-                    </p>
+              ) : isSubscribed ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-green-500/10 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Check className="w-5 h-5 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium text-green-600">
+                          Notificações push ativadas
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Você receberá alertas de follow-ups, aniversários e insights
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handleTestNotification}
+                        disabled={isTesting}
+                      >
+                        {isTesting ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Testar'
+                        )}
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleToggleSubscription}
+                        disabled={isLoading}
+                        className="text-muted-foreground"
+                      >
+                        Desativar
+                      </Button>
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm" onClick={handleTestNotification}>
-                    Testar
-                  </Button>
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-foreground">Ativar notificações</p>
+                    <p className="font-medium text-foreground">Ativar notificações push</p>
                     <p className="text-sm text-muted-foreground">
-                      Receba alertas de follow-ups e eventos importantes
+                      Receba alertas mesmo quando o app estiver fechado
                     </p>
                   </div>
                   <Button onClick={requestPermission} disabled={isLoading}>
-                    {isLoading ? 'Ativando...' : 'Ativar'}
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Ativando...
+                      </>
+                    ) : (
+                      'Ativar'
+                    )}
                   </Button>
                 </div>
               )}
@@ -251,30 +356,34 @@ const Notificacoes = () => {
             <CardHeader>
               <CardTitle>Tipos de Notificação</CardTitle>
               <CardDescription>
-                Escolha quais notificações deseja receber
+                Escolha quais alertas deseja receber
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-primary" />
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Calendar className="w-5 h-5 text-blue-500" />
+                  </div>
                   <div>
                     <p className="font-medium text-foreground">Follow-ups</p>
                     <p className="text-sm text-muted-foreground">
-                      Lembretes de acompanhamento com contatos
+                      Lembretes de acompanhamento agendados
                     </p>
                   </div>
                 </div>
                 <Switch
                   checked={notificationSettings.followUps}
                   onCheckedChange={() => handleSettingChange('followUps')}
-                  disabled={permissionState.permission !== 'granted'}
+                  disabled={!isSubscribed}
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Users className="w-5 h-5 text-warning" />
+                  <div className="p-2 bg-amber-500/10 rounded-lg">
+                    <Users className="w-5 h-5 text-amber-500" />
+                  </div>
                   <div>
                     <p className="font-medium text-foreground">Aniversários</p>
                     <p className="text-sm text-muted-foreground">
@@ -285,13 +394,15 @@ const Notificacoes = () => {
                 <Switch
                   checked={notificationSettings.birthdays}
                   onCheckedChange={() => handleSettingChange('birthdays')}
-                  disabled={permissionState.permission !== 'granted'}
+                  disabled={!isSubscribed}
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-info" />
+                  <div className="p-2 bg-purple-500/10 rounded-lg">
+                    <Lightbulb className="w-5 h-5 text-purple-500" />
+                  </div>
                   <div>
                     <p className="font-medium text-foreground">Insights</p>
                     <p className="text-sm text-muted-foreground">
@@ -302,13 +413,15 @@ const Notificacoes = () => {
                 <Switch
                   checked={notificationSettings.insights}
                   onCheckedChange={() => handleSettingChange('insights')}
-                  disabled={permissionState.permission !== 'granted'}
+                  disabled={!isSubscribed}
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-accent" />
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Mail className="w-5 h-5 text-green-500" />
+                  </div>
                   <div>
                     <p className="font-medium text-foreground">Resumo Semanal</p>
                     <p className="text-sm text-muted-foreground">
@@ -319,7 +432,7 @@ const Notificacoes = () => {
                 <Switch
                   checked={notificationSettings.weeklyDigest}
                   onCheckedChange={() => handleSettingChange('weeklyDigest')}
-                  disabled={permissionState.permission !== 'granted'}
+                  disabled={!isSubscribed}
                 />
               </div>
             </CardContent>
@@ -334,27 +447,33 @@ const Notificacoes = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Como funcionam as notificações</CardTitle>
+              <CardTitle>Como funcionam as notificações push</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-primary">1.</span>
-                  <span>Ative as notificações clicando no botão acima</span>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">1</span>
+                  <span>Ative as notificações push clicando no botão "Ativar"</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-primary">2.</span>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">2</span>
                   <span>Permita as notificações quando o navegador solicitar</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-primary">3.</span>
-                  <span>Instale o app na tela inicial para melhor experiência</span>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">3</span>
+                  <span>Instale o app na tela inicial para melhor experiência (recomendado)</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="font-bold text-primary">4.</span>
-                  <span>Você receberá alertas de follow-ups e eventos mesmo com o app fechado</span>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">4</span>
+                  <span>Você receberá alertas de follow-ups, aniversários e insights mesmo com o navegador fechado</span>
                 </li>
               </ul>
+              
+              <div className="mt-6 p-4 bg-amber-500/10 rounded-lg">
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  <strong>Dica:</strong> Para receber notificações em dispositivos móveis, adicione o app à tela inicial do seu celular.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
