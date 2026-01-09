@@ -1,1 +1,13 @@
 project_id = "rqodmqosrotmtrjnnjul"
+
+[functions.check-notifications]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
+
+[functions.generate-insights]
+verify_jwt = false
+
+[functions.suggest-next-action]
+verify_jwt = false
