@@ -1,0 +1,136 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+
+export type Company = Tables<'companies'>;
+export type CompanyInsert = TablesInsert<'companies'>;
+export type CompanyUpdate = TablesUpdate<'companies'>;
+
+export function useCompanies() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchCompanies = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      setCompanies(data || []);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      toast({
+        title: 'Erro ao carregar empresas',
+        description: 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
+
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
+
+  const createCompany = async (company: Omit<CompanyInsert, 'user_id'>) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .insert({ ...company, user_id: user.id })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCompanies(prev => [data, ...prev]);
+      toast({
+        title: 'Empresa criada',
+        description: `${data.name} foi adicionada com sucesso.`,
+      });
+      return data;
+    } catch (error) {
+      console.error('Error creating company:', error);
+      toast({
+        title: 'Erro ao criar empresa',
+        description: 'Verifique os dados e tente novamente.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  };
+
+  const updateCompany = async (id: string, updates: CompanyUpdate) => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCompanies(prev => prev.map(c => c.id === id ? data : c));
+      toast({
+        title: 'Empresa atualizada',
+        description: 'As alterações foram salvas.',
+      });
+      return data;
+    } catch (error) {
+      console.error('Error updating company:', error);
+      toast({
+        title: 'Erro ao atualizar empresa',
+        description: 'Verifique os dados e tente novamente.',
+        variant: 'destructive',
+      });
+      return null;
+    }
+  };
+
+  const deleteCompany = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCompanies(prev => prev.filter(c => c.id !== id));
+      toast({
+        title: 'Empresa removida',
+        description: 'A empresa foi excluída com sucesso.',
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      toast({
+        title: 'Erro ao excluir empresa',
+        description: 'Não foi possível excluir a empresa.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
+  return {
+    companies,
+    loading,
+    fetchCompanies,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+  };
+}
