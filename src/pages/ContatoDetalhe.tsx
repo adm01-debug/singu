@@ -11,18 +11,19 @@ import {
   Clock,
   Heart,
   Linkedin,
-  Instagram,
-  Twitter,
   Star,
   Edit,
   Plus,
   Sparkles,
   User,
   Users,
-  Briefcase,
   Brain,
   Target,
-  AlertCircle
+  AlertCircle,
+  Zap,
+  TrendingUp,
+  Shield,
+  Bell
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,12 +36,18 @@ import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge, DISCChart } from '@/components/ui/disc-badge';
 import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/relationship-stage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { DECISION_ROLE_LABELS, DECISION_SPEED_LABELS, CAREER_STAGE_LABELS } from '@/types';
+import { 
+  DECISION_ROLE_LABELS, 
+  DECISION_SPEED_LABELS, 
+  CAREER_STAGE_LABELS,
+  DECISION_CRITERIA_LABELS,
+  ContactBehavior
+} from '@/types';
 
 const interactionIcons = {
   whatsapp: MessageSquare,
@@ -58,6 +65,16 @@ const interactionColors = {
   meeting: 'bg-warning/10 text-warning',
   note: 'bg-muted text-muted-foreground',
   social: 'bg-pink-100 text-pink-600',
+};
+
+const lifeEventIcons = {
+  birthday: '🎂',
+  anniversary: '🎉',
+  promotion: '🚀',
+  travel: '✈️',
+  family: '👨‍👩‍👧‍👦',
+  achievement: '🏆',
+  other: '📌',
 };
 
 const ContatoDetalhe = () => {
@@ -82,6 +99,11 @@ const ContatoDetalhe = () => {
   const contactInsights = mockInsights.filter(i => i.contactId === id);
   const contactAlerts = mockAlerts.filter(a => a.contactId === id && !a.dismissed);
 
+  const handleSaveBehavior = (behavior: ContactBehavior) => {
+    setContact(prev => prev ? { ...prev, behavior } : prev);
+    setIsEditingBehavior(false);
+  };
+
   return (
     <AppLayout>
       <div className="min-h-screen">
@@ -95,7 +117,13 @@ const ContatoDetalhe = () => {
               </Button>
             </Link>
           </div>
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {contactAlerts.length > 0 && (
+              <div className="bg-white/10 backdrop-blur rounded-full px-3 py-1.5 flex items-center gap-2 text-white text-sm">
+                <Bell className="w-4 h-4" />
+                {contactAlerts.length} alerta{contactAlerts.length > 1 ? 's' : ''}
+              </div>
+            )}
             <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
               <Edit className="w-4 h-4 mr-2" />
               Editar
@@ -127,9 +155,10 @@ const ContatoDetalhe = () => {
                       </h1>
                       <p className="text-muted-foreground">{contact.roleTitle}</p>
                       
-                      <div className="flex items-center justify-center gap-2 mt-2">
+                      <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
                         <RoleBadge role={contact.role} />
-                        <SentimentIndicator sentiment={contact.sentiment} showLabel size="sm" />
+                        <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
+                        <SentimentIndicator sentiment={contact.sentiment} size="sm" />
                       </div>
 
                       <div className="flex items-center justify-center gap-2 mt-3">
@@ -144,6 +173,11 @@ const ContatoDetalhe = () => {
 
                     <div className="w-full mt-6">
                       <RelationshipScore score={contact.relationshipScore} size="lg" showLabel />
+                    </div>
+
+                    {/* Relationship Funnel */}
+                    <div className="w-full mt-4">
+                      <RelationshipFunnel currentStage={contact.relationshipStage} />
                     </div>
 
                     {/* Contact Actions */}
@@ -190,10 +224,10 @@ const ContatoDetalhe = () => {
                           <span className="text-sm">{format(contact.birthday, "d 'de' MMMM", { locale: ptBR })}</span>
                         </div>
                       )}
-                      {contact.bestTimeToContact && (
+                      {contact.behavior.bestContactWindow && (
                         <div className="flex items-center gap-3">
                           <Clock className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">Melhor horário: {contact.bestTimeToContact}</span>
+                          <span className="text-sm">Melhor horário: {contact.behavior.bestContactWindow}</span>
                         </div>
                       )}
                     </div>
@@ -213,21 +247,206 @@ const ContatoDetalhe = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Alerts Card */}
+              {contactAlerts.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.15 }}
+                >
+                  <Card className="mt-4 border-warning/50 bg-warning/5">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm flex items-center gap-2 text-warning">
+                        <AlertCircle className="w-4 h-4" />
+                        Alertas Ativos
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {contactAlerts.slice(0, 3).map(alert => (
+                        <div key={alert.id} className="p-2 rounded-lg bg-card border border-border">
+                          <p className="text-sm font-medium">{alert.title}</p>
+                          <p className="text-xs text-muted-foreground">{alert.description}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* About / Personality */}
+              {/* Behavioral Profile Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
               >
                 <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-primary" />
+                      Perfil Comportamental
+                    </CardTitle>
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingBehavior(true)}>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Editar Perfil
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* DISC Profile */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-3">Perfil DISC</h4>
+                          <DISCBadge 
+                            profile={contact.behavior.discProfile} 
+                            confidence={contact.behavior.discConfidence}
+                            size="md"
+                          />
+                          {contact.behavior.discNotes && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {contact.behavior.discNotes}
+                            </p>
+                          )}
+                        </div>
+                        <DISCChart profile={contact.behavior.discProfile} />
+                      </div>
+
+                      {/* Decision Making */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+                            <Target className="w-4 h-4" />
+                            Tomada de Decisão
+                          </h4>
+                          <div className="space-y-3">
+                            {contact.behavior.decisionRole && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Papel:</span>
+                                <Badge variant="outline">
+                                  {DECISION_ROLE_LABELS[contact.behavior.decisionRole]}
+                                </Badge>
+                              </div>
+                            )}
+                            {contact.behavior.decisionSpeed && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Velocidade:</span>
+                                <Badge variant="secondary">
+                                  {DECISION_SPEED_LABELS[contact.behavior.decisionSpeed]}
+                                </Badge>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Poder:</span>
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: 10 }).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-2 h-4 rounded-sm ${
+                                      i < contact.behavior.decisionPower
+                                        ? 'bg-primary'
+                                        : 'bg-muted'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Apoio:</span>
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: 10 }).map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-2 h-4 rounded-sm ${
+                                      i < contact.behavior.supportLevel
+                                        ? 'bg-success'
+                                        : 'bg-muted'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {contact.behavior.decisionCriteria.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-muted-foreground mb-2">
+                              Critérios de Decisão (por prioridade)
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5">
+                              {contact.behavior.decisionCriteria.map((criteria, index) => (
+                                <Badge key={criteria} variant="outline" className="text-xs">
+                                  <span className="mr-1 text-primary font-bold">{index + 1}.</span>
+                                  {DECISION_CRITERIA_LABELS[criteria]}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Motivations Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
+                      {contact.behavior.primaryMotivation && (
+                        <div className="p-4 rounded-lg bg-success/5 border border-success/20">
+                          <h4 className="text-sm font-medium text-success mb-1 flex items-center gap-1.5">
+                            <Zap className="w-4 h-4" />
+                            Motivação Principal
+                          </h4>
+                          <p className="text-sm text-foreground">{contact.behavior.primaryMotivation}</p>
+                        </div>
+                      )}
+                      {contact.behavior.primaryFear && (
+                        <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+                          <h4 className="text-sm font-medium text-destructive mb-1 flex items-center gap-1.5">
+                            <Shield className="w-4 h-4" />
+                            Medo/Preocupação
+                          </h4>
+                          <p className="text-sm text-foreground">{contact.behavior.primaryFear}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Context Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      {contact.behavior.careerStage && (
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground mb-1">Carreira</p>
+                          <p className="text-sm font-medium">{CAREER_STAGE_LABELS[contact.behavior.careerStage]}</p>
+                        </div>
+                      )}
+                      {contact.behavior.budgetAuthority && (
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground mb-1">Orçamento</p>
+                          <p className="text-sm font-medium">{contact.behavior.budgetAuthority}</p>
+                        </div>
+                      )}
+                      {contact.behavior.avgResponseTimeHours && (
+                        <div className="text-center p-3 rounded-lg bg-muted/50">
+                          <p className="text-xs text-muted-foreground mb-1">Tempo de Resposta</p>
+                          <p className="text-sm font-medium">~{contact.behavior.avgResponseTimeHours}h</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              {/* About / Personal Info */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+              >
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <User className="w-5 h-5 text-primary" />
-                      Sobre {contact.firstName}
+                      Informações Pessoais
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -236,19 +455,6 @@ const ContatoDetalhe = () => {
                       <div>
                         <h4 className="text-sm font-medium text-muted-foreground mb-2">Observações</h4>
                         <p className="text-foreground">{contact.notes}</p>
-                      </div>
-                    )}
-
-                    {/* Communication Style */}
-                    {contact.communicationStyle && (
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground mb-2">Estilo de Comunicação</h4>
-                        <Badge variant="outline" className="capitalize">
-                          {contact.communicationStyle === 'formal' && 'Formal'}
-                          {contact.communicationStyle === 'casual' && 'Casual'}
-                          {contact.communicationStyle === 'technical' && 'Técnico'}
-                          {contact.communicationStyle === 'emotional' && 'Emocional'}
-                        </Badge>
                       </div>
                     )}
 
@@ -293,6 +499,33 @@ const ContatoDetalhe = () => {
                         <p className="text-foreground text-sm">{contact.familyInfo}</p>
                       </div>
                     )}
+
+                    {/* Life Events */}
+                    {contact.lifeEvents.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
+                          Próximos Eventos
+                        </h4>
+                        <div className="space-y-2">
+                          {contact.lifeEvents.map(event => (
+                            <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                              <span className="text-2xl">{lifeEventIcons[event.type]}</span>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">{event.title}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {format(event.date, "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                                  {event.notes && ` • ${event.notes}`}
+                                </p>
+                              </div>
+                              {event.reminder && (
+                                <Bell className="w-4 h-4 text-warning" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -301,7 +534,7 @@ const ContatoDetalhe = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
               >
                 <Tabs defaultValue="interactions" className="w-full">
                   <TabsList className="w-full justify-start bg-card border-b border-border rounded-none px-0">
@@ -342,7 +575,12 @@ const ContatoDetalhe = () => {
                                   </div>
                                   <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
-                                      <h4 className="font-medium text-foreground">{interaction.title}</h4>
+                                      <div className="flex items-center gap-2">
+                                        <h4 className="font-medium text-foreground">{interaction.title}</h4>
+                                        <Badge variant={interaction.initiatedBy === 'them' ? 'default' : 'outline'} className="text-xs">
+                                          {interaction.initiatedBy === 'them' ? 'Recebido' : 'Enviado'}
+                                        </Badge>
+                                      </div>
                                       <div className="flex items-center gap-2">
                                         <SentimentIndicator sentiment={interaction.sentiment} size="sm" />
                                         <span className="text-xs text-muted-foreground">
@@ -351,6 +589,16 @@ const ContatoDetalhe = () => {
                                       </div>
                                     </div>
                                     <p className="text-sm text-muted-foreground">{interaction.content}</p>
+                                    {interaction.keyInsights && interaction.keyInsights.length > 0 && (
+                                      <div className="mt-2 p-2 rounded bg-warning/10 border border-warning/20">
+                                        <p className="text-xs font-medium text-warning mb-1">💡 Insights capturados:</p>
+                                        <ul className="text-xs text-foreground">
+                                          {interaction.keyInsights.map((insight, i) => (
+                                            <li key={i}>• {insight}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
                                     {interaction.tags.length > 0 && (
                                       <div className="flex flex-wrap gap-1.5 mt-3">
                                         {interaction.tags.map(tag => (
@@ -400,6 +648,8 @@ const ContatoDetalhe = () => {
                                         {insight.category === 'personality' && 'Personalidade'}
                                         {insight.category === 'preference' && 'Preferência'}
                                         {insight.category === 'behavior' && 'Comportamento'}
+                                        {insight.category === 'risk' && 'Risco'}
+                                        {insight.category === 'relationship' && 'Relacionamento'}
                                       </Badge>
                                     </div>
                                     <span className="text-xs text-muted-foreground">
@@ -407,6 +657,12 @@ const ContatoDetalhe = () => {
                                     </span>
                                   </div>
                                   <p className="text-sm text-muted-foreground">{insight.description}</p>
+                                  {insight.actionSuggestion && (
+                                    <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
+                                      <p className="text-xs font-medium text-primary mb-1">🎯 Ação sugerida:</p>
+                                      <p className="text-xs text-foreground">{insight.actionSuggestion}</p>
+                                    </div>
+                                  )}
                                   <p className="text-xs text-muted-foreground mt-2">
                                     Fonte: {insight.source}
                                   </p>
@@ -430,6 +686,17 @@ const ContatoDetalhe = () => {
           </div>
         </div>
       </div>
+
+      {/* Behavior Profile Edit Dialog */}
+      <Dialog open={isEditingBehavior} onOpenChange={setIsEditingBehavior}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <BehaviorProfileForm
+            behavior={contact.behavior}
+            onSave={handleSaveBehavior}
+            onCancel={() => setIsEditingBehavior(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };

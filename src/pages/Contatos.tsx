@@ -12,7 +12,8 @@ import {
   List,
   Heart,
   Linkedin,
-  Instagram
+  Instagram,
+  Brain
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -24,6 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { DISCBadge } from '@/components/ui/disc-badge';
+import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
 import { mockContacts } from '@/data/mockData';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -131,9 +134,14 @@ const Contatos = () => {
                           <span className="text-sm text-muted-foreground">{contact.companyName}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
                           <RoleBadge role={contact.role} />
+                          <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
                           <SentimentIndicator sentiment={contact.sentiment} size="sm" />
+                        </div>
+
+                        <div className="mb-4">
+                          <RelationshipStageBadge stage={contact.relationshipStage} />
                         </div>
 
                         {/* Hobbies */}
@@ -206,17 +214,20 @@ const Contatos = () => {
                         </Avatar>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-semibold text-foreground truncate">
                               {contact.firstName} {contact.lastName}
                             </h3>
                             <RoleBadge role={contact.role} />
+                            <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
                             <SentimentIndicator sentiment={contact.sentiment} size="sm" />
                           </div>
                           <div className="flex items-center gap-3 text-sm text-muted-foreground">
                             <span>{contact.roleTitle}</span>
                             <span>•</span>
                             <span>{contact.companyName}</span>
+                            <span>•</span>
+                            <RelationshipStageBadge stage={contact.relationshipStage} />
                           </div>
                         </div>
 
