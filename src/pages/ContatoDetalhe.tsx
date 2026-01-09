@@ -39,7 +39,8 @@ import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/rela
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
-import { mockContacts, mockInteractions, mockInsights, mockAlerts } from '@/data/mockData';
+import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
+import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -99,6 +100,7 @@ const ContatoDetalhe = () => {
   const contactInteractions = mockInteractions.filter(i => i.contactId === id);
   const contactInsights = mockInsights.filter(i => i.contactId === id);
   const contactAlerts = mockAlerts.filter(a => a.contactId === id && !a.dismissed);
+  const contactCompany = mockCompanies.find(c => c.id === contact.companyId);
 
   const handleSaveBehavior = (behavior: ContactBehavior) => {
     setContact(prev => prev ? { ...prev, behavior } : prev);
@@ -286,6 +288,13 @@ const ContatoDetalhe = () => {
 
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
+              {/* AI Next Action Suggestion */}
+              <NextActionSuggestion 
+                contact={contact}
+                interactions={contactInteractions}
+                company={contactCompany}
+              />
+
               {/* Behavioral Profile Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
