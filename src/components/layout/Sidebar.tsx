@@ -12,7 +12,8 @@ import {
   ChevronRight,
   Zap,
   LogOut,
-  User
+  User,
+  CalendarDays
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -32,6 +33,7 @@ const menuItems = [
   { icon: Building2, label: 'Empresas', path: '/empresas' },
   { icon: Users, label: 'Contatos', path: '/contatos' },
   { icon: MessageSquare, label: 'Interações', path: '/interacoes' },
+  { icon: CalendarDays, label: 'Calendário', path: '/calendario' },
   { icon: Lightbulb, label: 'Insights', path: '/insights' },
 ];
 

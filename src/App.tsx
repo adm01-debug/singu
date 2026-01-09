@@ -12,6 +12,7 @@ import ContatoDetalhe from "./pages/ContatoDetalhe";
 import Interacoes from "./pages/Interacoes";
 import Insights from "./pages/Insights";
 import Configuracoes from "./pages/Configuracoes";
+import Calendario from "./pages/Calendario";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -67,6 +68,11 @@ const App = () => (
             <Route path="/configuracoes" element={
               <RequireAuth>
                 <Configuracoes />
+              </RequireAuth>
+            } />
+            <Route path="/calendario" element={
+              <RequireAuth>
+                <Calendario />
               </RequireAuth>
             } />
             
