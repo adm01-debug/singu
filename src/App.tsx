@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Empresas from "./pages/Empresas";
+import EmpresaDetalhe from "./pages/EmpresaDetalhe";
 import Contatos from "./pages/Contatos";
 import ContatoDetalhe from "./pages/ContatoDetalhe";
 import Interacoes from "./pages/Interacoes";
@@ -35,6 +36,11 @@ const App = () => (
             <Route path="/empresas" element={
               <RequireAuth>
                 <Empresas />
+              </RequireAuth>
+            } />
+            <Route path="/empresas/:id" element={
+              <RequireAuth>
+                <EmpresaDetalhe />
               </RequireAuth>
             } />
             <Route path="/contatos" element={

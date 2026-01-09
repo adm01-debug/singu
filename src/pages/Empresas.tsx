@@ -73,6 +73,7 @@ const Empresas = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
+              <Link to={`/empresas/${company.id}`}>
               <Card className="h-full card-hover group cursor-pointer">
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between mb-4">
@@ -148,6 +149,7 @@ const Empresas = () => {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             </motion.div>
           ))}
         </div>
