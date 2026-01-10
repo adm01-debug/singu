@@ -66,6 +66,10 @@ export type PersuasionScenario =
   | 'price_objection'           // Objeção de preço
   | 'indecisive_client'         // Cliente indeciso
   | 'lost_client_reactivation'  // Reativação de cliente perdido
+  | 'initial_negotiation'       // Negociação inicial
+  | 'upsell_crosssell'          // Upsell / Cross-sell
+  | 'contract_renewal'          // Renovação de contrato
+  | 'timing_objection'          // Objeção de timing
   | 'general';                  // Cenário geral
 
 export interface PersuasionTemplate {
