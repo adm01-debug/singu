@@ -52,13 +52,17 @@ const channelLabels = {
   any: 'Universal',
 };
 
-type ScenarioFilter = 'all' | 'price_objection' | 'indecisive' | 'reactivation' | 'general';
+type ScenarioFilter = 'all' | 'price_objection' | 'indecisive' | 'reactivation' | 'initial_negotiation' | 'upsell_crosssell' | 'contract_renewal' | 'timing_objection' | 'general';
 
 const scenarioFilters: { id: ScenarioFilter; label: string; icon: typeof LayoutGrid; description: string }[] = [
   { id: 'all', label: 'Todos', icon: LayoutGrid, description: 'Todos os templates' },
-  { id: 'price_objection', label: 'Objeção de Preço', icon: DollarSign, description: 'Cliente questionando valor' },
-  { id: 'indecisive', label: 'Cliente Indeciso', icon: HelpCircle, description: 'Ajudar na decisão' },
-  { id: 'reactivation', label: 'Reativação', icon: UserPlus, description: 'Recuperar clientes perdidos' },
+  { id: 'initial_negotiation', label: 'Inicial', icon: MessageSquare, description: 'Primeiras conversas' },
+  { id: 'price_objection', label: 'Preço', icon: DollarSign, description: 'Cliente questionando valor' },
+  { id: 'indecisive', label: 'Indeciso', icon: HelpCircle, description: 'Ajudar na decisão' },
+  { id: 'timing_objection', label: 'Timing', icon: Filter, description: 'Não é o momento' },
+  { id: 'upsell_crosssell', label: 'Upsell', icon: Sparkles, description: 'Vendas adicionais' },
+  { id: 'contract_renewal', label: 'Renovação', icon: Users, description: 'Renovar contratos' },
+  { id: 'reactivation', label: 'Reativação', icon: UserPlus, description: 'Recuperar perdidos' },
   { id: 'general', label: 'Geral', icon: FileText, description: 'Templates genéricos' },
 ];
 
@@ -165,7 +169,13 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
     // Filtro de cenário
     if (activeScenario === 'all') return discMatch;
     if (activeScenario === 'general') return discMatch && !t.scenario;
-    return discMatch && t.scenario === activeScenario;
+    
+    // Map filter keys to scenario values
+    const scenarioValue = activeScenario === 'indecisive' ? 'indecisive_client'
+      : activeScenario === 'reactivation' ? 'lost_client_reactivation'
+      : activeScenario;
+    
+    return discMatch && t.scenario === scenarioValue;
   });
   
   // Conta templates por cenário
@@ -175,12 +185,16 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
     
     acc.all++;
     if (t.scenario) {
-      acc[t.scenario as ScenarioFilter] = (acc[t.scenario as ScenarioFilter] || 0) + 1;
+      // Map scenario values to filter keys
+      const scenarioKey = t.scenario === 'indecisive_client' ? 'indecisive' 
+        : t.scenario === 'lost_client_reactivation' ? 'reactivation'
+        : t.scenario as ScenarioFilter;
+      acc[scenarioKey] = (acc[scenarioKey] || 0) + 1;
     } else {
       acc.general++;
     }
     return acc;
-  }, { all: 0, price_objection: 0, indecisive: 0, reactivation: 0, general: 0 } as Record<ScenarioFilter, number>);
+  }, { all: 0, price_objection: 0, indecisive: 0, reactivation: 0, initial_negotiation: 0, upsell_crosssell: 0, contract_renewal: 0, timing_objection: 0, general: 0 } as Record<ScenarioFilter, number>);
   
   // Agrupa por gatilho
   const templatesByTrigger = filteredTemplates.reduce((acc, template) => {
