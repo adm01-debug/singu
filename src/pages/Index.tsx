@@ -9,7 +9,8 @@ import {
   Clock,
   Sparkles,
   Calendar,
-  Bell
+  Bell,
+  BarChart3
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -27,6 +28,7 @@ import { Link } from 'react-router-dom';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
+import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -166,6 +168,19 @@ const Dashboard = () => {
           <RelationshipScoreChart period={period} />
           <SentimentChart period={period} />
         </div>
+
+        {/* Relationship Statistics Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <BarChart3 className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Estatísticas de Relacionamento</h2>
+          </div>
+          <RelationshipStatsPanel />
+        </motion.div>
 
         {/* Smart Reminders + Top Contacts + Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
