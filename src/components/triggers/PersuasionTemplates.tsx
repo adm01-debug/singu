@@ -16,6 +16,8 @@ import {
   HelpCircle,
   UserPlus,
   LayoutGrid,
+  Search,
+  X,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -160,22 +162,43 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
   const { allTemplates, analysis } = useClientTriggers(contact);
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
   const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   
-  // Filtra templates por cenário e perfil DISC
+  // Normaliza texto para busca (remove acentos e lowercase)
+  const normalizeText = (text: string) => 
+    text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  // Filtra templates por cenário, perfil DISC e busca
   const filteredTemplates = allTemplates.filter(t => {
     // Filtro de perfil DISC
     const discMatch = t.discProfile === null || t.discProfile === contact.behavior?.discProfile;
     
     // Filtro de cenário
-    if (activeScenario === 'all') return discMatch;
-    if (activeScenario === 'general') return discMatch && !t.scenario;
+    let scenarioMatch = true;
+    if (activeScenario !== 'all') {
+      if (activeScenario === 'general') {
+        scenarioMatch = !t.scenario;
+      } else {
+        const scenarioValue = activeScenario === 'indecisive' ? 'indecisive_client'
+          : activeScenario === 'reactivation' ? 'lost_client_reactivation'
+          : activeScenario;
+        scenarioMatch = t.scenario === scenarioValue;
+      }
+    }
     
-    // Map filter keys to scenario values
-    const scenarioValue = activeScenario === 'indecisive' ? 'indecisive_client'
-      : activeScenario === 'reactivation' ? 'lost_client_reactivation'
-      : activeScenario;
+    // Filtro de busca por texto
+    let searchMatch = true;
+    if (searchQuery.trim()) {
+      const query = normalizeText(searchQuery);
+      const titleMatch = normalizeText(t.title).includes(query);
+      const templateMatch = normalizeText(t.template).includes(query);
+      const tipsMatch = t.tips.some(tip => normalizeText(tip).includes(query));
+      const triggerName = MENTAL_TRIGGERS[t.trigger as keyof typeof MENTAL_TRIGGERS]?.name || '';
+      const triggerMatch = normalizeText(triggerName).includes(query);
+      searchMatch = titleMatch || templateMatch || tipsMatch || triggerMatch;
+    }
     
-    return discMatch && t.scenario === scenarioValue;
+    return discMatch && scenarioMatch && searchMatch;
   });
   
   // Conta templates por cenário
@@ -258,22 +281,58 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
           })}
         </div>
         
-        <ScrollArea className="h-[350px] pr-4">
+        {/* Campo de busca */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar templates por título, conteúdo ou gatilho..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+        
+        <ScrollArea className="h-[300px] pr-4">
           <div className="space-y-4">
             {sortedTriggers.length === 0 && (
               <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Filter className="w-8 h-8 text-muted-foreground mb-2" />
+                <Search className="w-8 h-8 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">
-                  Nenhum template encontrado para este cenário
+                  {searchQuery 
+                    ? `Nenhum template encontrado para "${searchQuery}"` 
+                    : 'Nenhum template encontrado para este cenário'}
                 </p>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  onClick={() => setActiveScenario('all')}
-                  className="mt-2"
-                >
-                  Ver todos os templates
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  {searchQuery && (
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Limpar busca
+                    </Button>
+                  )}
+                  {activeScenario !== 'all' && (
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      onClick={() => setActiveScenario('all')}
+                    >
+                      Ver todos os templates
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
             {sortedTriggers.map(triggerId => {
