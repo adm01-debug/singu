@@ -153,6 +153,25 @@ export const useSmartReminders = (autoFetch = true) => {
     });
   }, [toast]);
 
+  const completeReminder = useCallback((reminder: SmartReminder) => {
+    // Dismiss from local state
+    setDismissedIds(prev => {
+      const updated = new Set(prev);
+      updated.add(reminder.id);
+      
+      const stored = localStorage.getItem('dismissedReminders');
+      const parsed = stored ? JSON.parse(stored) : {};
+      parsed[reminder.id] = Date.now();
+      localStorage.setItem('dismissedReminders', JSON.stringify(parsed));
+      
+      return updated;
+    });
+    
+    setReminders(prev => prev.filter(r => r.id !== reminder.id));
+    
+    return reminder; // Return for celebration handling
+  }, []);
+
   const getHighPriorityCount = useCallback(() => {
     return reminders.filter(r => r.priority === 'high').length;
   }, [reminders]);
@@ -188,6 +207,7 @@ export const useSmartReminders = (autoFetch = true) => {
     fetchReminders,
     dismissReminder,
     snoozeReminder,
+    completeReminder,
     getHighPriorityCount,
     getRemindersByType
   };

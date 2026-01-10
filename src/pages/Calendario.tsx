@@ -29,6 +29,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCelebration } from '@/components/celebrations/CelebrationProvider';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Interaction = Tables<'interactions'>;
@@ -60,6 +61,7 @@ const interactionTypeLabels: Record<string, string> = {
 
 export default function Calendario() {
   const { user } = useAuth();
+  const { celebrate } = useCelebration();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
@@ -134,6 +136,8 @@ export default function Calendario() {
 
   const markAsCompleted = async (id: string) => {
     try {
+      const followUp = followUps.find(f => f.id === id);
+      
       await supabase
         .from('interactions')
         .update({ follow_up_required: false })
@@ -141,6 +145,16 @@ export default function Calendario() {
       
       setFollowUps(prev => prev.filter(f => f.id !== id));
       setSelectedFollowUp(null);
+      
+      // Trigger celebration
+      celebrate({
+        type: 'follow-up-complete',
+        title: 'Follow-up Concluído! 🎉',
+        subtitle: followUp?.contact 
+          ? `Ótimo trabalho com ${followUp.contact.first_name}!`
+          : 'Continue mantendo seus relacionamentos em dia!',
+        duration: 3000,
+      });
     } catch (error) {
       console.error('Error marking as completed:', error);
     }
