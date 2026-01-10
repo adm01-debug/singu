@@ -42,6 +42,8 @@ import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
 import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
+import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
+import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -321,6 +323,12 @@ const ContatoDetalhe = () => {
                 interactions={contactInteractions}
                 company={contactCompany}
               />
+
+              {/* Mental Triggers Panel */}
+              <ClientTriggerPanel contact={contact} />
+
+              {/* Persuasion Templates */}
+              <PersuasionTemplates contact={contact} />
 
               {/* Behavioral Profile Card */}
               <motion.div
