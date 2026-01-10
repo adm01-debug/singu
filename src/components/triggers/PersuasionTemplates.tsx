@@ -11,6 +11,11 @@ import {
   Phone,
   Users,
   Edit3,
+  Filter,
+  DollarSign,
+  HelpCircle,
+  UserPlus,
+  LayoutGrid,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +51,16 @@ const channelLabels = {
   meeting: 'Reunião',
   any: 'Universal',
 };
+
+type ScenarioFilter = 'all' | 'price_objection' | 'indecisive' | 'reactivation' | 'general';
+
+const scenarioFilters: { id: ScenarioFilter; label: string; icon: typeof LayoutGrid; description: string }[] = [
+  { id: 'all', label: 'Todos', icon: LayoutGrid, description: 'Todos os templates' },
+  { id: 'price_objection', label: 'Objeção de Preço', icon: DollarSign, description: 'Cliente questionando valor' },
+  { id: 'indecisive', label: 'Cliente Indeciso', icon: HelpCircle, description: 'Ajudar na decisão' },
+  { id: 'reactivation', label: 'Reativação', icon: UserPlus, description: 'Recuperar clientes perdidos' },
+  { id: 'general', label: 'Geral', icon: FileText, description: 'Templates genéricos' },
+];
 
 interface TemplateFillerProps {
   template: PersuasionTemplate;
@@ -140,14 +155,35 @@ function TemplateFiller({ template, contact, onClose }: TemplateFillerProps) {
 export function PersuasionTemplates({ contact, className }: PersuasionTemplatesProps) {
   const { allTemplates, analysis } = useClientTriggers(contact);
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
+  const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
   
-  // Filtra templates relevantes para o contato
-  const relevantTemplates = allTemplates.filter(t => 
-    t.discProfile === null || t.discProfile === contact.behavior?.discProfile
-  );
+  // Filtra templates por cenário e perfil DISC
+  const filteredTemplates = allTemplates.filter(t => {
+    // Filtro de perfil DISC
+    const discMatch = t.discProfile === null || t.discProfile === contact.behavior?.discProfile;
+    
+    // Filtro de cenário
+    if (activeScenario === 'all') return discMatch;
+    if (activeScenario === 'general') return discMatch && !t.scenario;
+    return discMatch && t.scenario === activeScenario;
+  });
+  
+  // Conta templates por cenário
+  const scenarioCounts = allTemplates.reduce((acc, t) => {
+    const discMatch = t.discProfile === null || t.discProfile === contact.behavior?.discProfile;
+    if (!discMatch) return acc;
+    
+    acc.all++;
+    if (t.scenario) {
+      acc[t.scenario as ScenarioFilter] = (acc[t.scenario as ScenarioFilter] || 0) + 1;
+    } else {
+      acc.general++;
+    }
+    return acc;
+  }, { all: 0, price_objection: 0, indecisive: 0, reactivation: 0, general: 0 } as Record<ScenarioFilter, number>);
   
   // Agrupa por gatilho
-  const templatesByTrigger = relevantTemplates.reduce((acc, template) => {
+  const templatesByTrigger = filteredTemplates.reduce((acc, template) => {
     if (!acc[template.trigger]) acc[template.trigger] = [];
     acc[template.trigger].push(template);
     return acc;
@@ -167,14 +203,65 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
           <FileText className="w-5 h-5 text-primary" />
           Templates de Persuasão
           <Badge variant="secondary" className="ml-auto">
-            {relevantTemplates.length} templates
+            {filteredTemplates.length} de {scenarioCounts.all}
           </Badge>
         </CardTitle>
       </CardHeader>
       
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+      <CardContent className="space-y-4">
+        {/* Filtros por cenário */}
+        <div className="flex flex-wrap gap-2">
+          {scenarioFilters.map(scenario => {
+            const Icon = scenario.icon;
+            const count = scenarioCounts[scenario.id];
+            const isActive = activeScenario === scenario.id;
+            
+            return (
+              <Button
+                key={scenario.id}
+                variant={isActive ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveScenario(scenario.id)}
+                className={cn(
+                  "gap-1.5 text-xs transition-all",
+                  isActive && "shadow-md"
+                )}
+                title={scenario.description}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {scenario.label}
+                <Badge 
+                  variant={isActive ? "secondary" : "outline"} 
+                  className={cn(
+                    "ml-1 h-5 min-w-[20px] px-1.5",
+                    isActive ? "bg-background/20 text-primary-foreground" : "bg-muted"
+                  )}
+                >
+                  {count}
+                </Badge>
+              </Button>
+            );
+          })}
+        </div>
+        
+        <ScrollArea className="h-[350px] pr-4">
           <div className="space-y-4">
+            {sortedTriggers.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Filter className="w-8 h-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Nenhum template encontrado para este cenário
+                </p>
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  onClick={() => setActiveScenario('all')}
+                  className="mt-2"
+                >
+                  Ver todos os templates
+                </Button>
+              </div>
+            )}
             {sortedTriggers.map(triggerId => {
               const trigger = MENTAL_TRIGGERS[triggerId as keyof typeof MENTAL_TRIGGERS];
               const templates = templatesByTrigger[triggerId];
