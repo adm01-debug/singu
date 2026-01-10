@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PartyPopper, Rocket, Check, ArrowLeft, Users, Building2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OnboardingData } from '../OnboardingWizard';
+import { useCelebration } from '@/components/celebrations/CelebrationProvider';
 
 interface CompletionStepProps {
   data: OnboardingData;
@@ -10,9 +12,19 @@ interface CompletionStepProps {
   isLoading: boolean;
 }
 
-const confettiColors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-
 const CompletionStep = ({ data, onComplete, onBack, isLoading }: CompletionStepProps) => {
+  const { celebrate } = useCelebration();
+
+  useEffect(() => {
+    // Trigger celebration when completing onboarding
+    celebrate({
+      type: 'goal-achieved',
+      title: 'Configuração Completa! 🎯',
+      subtitle: `Bem-vindo ao RelateIQ, ${data.profile.firstName}!`,
+      duration: 4000,
+    });
+  }, []);
+
   const summaryItems = [
     {
       icon: Users,
@@ -42,38 +54,6 @@ const CompletionStep = ({ data, onComplete, onBack, isLoading }: CompletionStepP
 
   return (
     <div className="text-center">
-      {/* Confetti animation */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {[...Array(50)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ 
-              y: -20, 
-              x: Math.random() * window.innerWidth,
-              rotate: 0,
-              opacity: 1,
-            }}
-            animate={{ 
-              y: window.innerHeight + 20,
-              rotate: 360 * (Math.random() > 0.5 ? 1 : -1),
-              opacity: 0,
-            }}
-            transition={{ 
-              duration: 3 + Math.random() * 2,
-              delay: Math.random() * 0.5,
-              ease: 'easeIn',
-            }}
-            style={{
-              position: 'absolute',
-              width: 10,
-              height: 10,
-              backgroundColor: confettiColors[i % confettiColors.length],
-              borderRadius: Math.random() > 0.5 ? '50%' : '0%',
-            }}
-          />
-        ))}
-      </div>
-
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}

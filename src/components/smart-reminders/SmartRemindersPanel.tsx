@@ -15,7 +15,8 @@ import {
   Filter,
   Eye,
   EyeOff,
-  MessageSquare
+  MessageSquare,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useSmartReminders, SmartReminder } from '@/hooks/useSmartReminders';
+import { useCelebration } from '@/components/celebrations/CelebrationProvider';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
@@ -78,6 +80,7 @@ const priorityBadgeColors = {
 
 export const SmartRemindersPanel = ({ className, compact = false }: SmartRemindersPanelProps) => {
   const navigate = useNavigate();
+  const { celebrate } = useCelebration();
   const {
     reminders,
     summary,
@@ -85,7 +88,8 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
     isLoading,
     fetchReminders,
     dismissReminder,
-    snoozeReminder
+    snoozeReminder,
+    completeReminder
   } = useSmartReminders();
 
   const [activeTab, setActiveTab] = useState('all');
@@ -98,6 +102,40 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
 
   const handleContactClick = (contactId: string) => {
     navigate(`/contatos/${contactId}`);
+  };
+
+  const handleComplete = (reminder: SmartReminder) => {
+    completeReminder(reminder);
+    
+    // Trigger appropriate celebration based on type
+    const celebrationConfig = {
+      follow_up: {
+        type: 'follow-up-complete' as const,
+        title: 'Follow-up Concluído! 🎉',
+        subtitle: `Ótimo trabalho com ${reminder.contactName}!`,
+      },
+      birthday: {
+        type: 'birthday-wished' as const,
+        title: 'Parabéns Enviados! 🎂',
+        subtitle: `${reminder.contactName} vai adorar sua mensagem!`,
+      },
+      decay: {
+        type: 'relationship-milestone' as const,
+        title: 'Relacionamento Reativado! 💝',
+        subtitle: `Você reconectou com ${reminder.contactName}!`,
+      },
+      milestone: {
+        type: 'goal-achieved' as const,
+        title: 'Marco Alcançado! 🎯',
+        subtitle: `Celebre este momento com ${reminder.contactName}!`,
+      },
+    };
+
+    const config = celebrationConfig[reminder.type];
+    celebrate({
+      ...config,
+      duration: 3000,
+    });
   };
 
   const renderReminder = (reminder: SmartReminder, index: number) => {
@@ -185,10 +223,23 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Button
                             size="sm"
                             variant="default"
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleComplete(reminder);
+                            }}
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Concluir
+                          </Button>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="h-7 text-xs"
                             onClick={(e) => {
                               e.stopPropagation();
