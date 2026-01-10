@@ -62,6 +62,12 @@ export interface TriggerSuggestion {
   context?: string;
 }
 
+export type PersuasionScenario = 
+  | 'price_objection'           // Objeção de preço
+  | 'indecisive_client'         // Cliente indeciso
+  | 'lost_client_reactivation'  // Reativação de cliente perdido
+  | 'general';                  // Cenário geral
+
 export interface PersuasionTemplate {
   id: string;
   trigger: TriggerType;
@@ -72,6 +78,7 @@ export interface PersuasionTemplate {
   template: string;
   variables: string[];
   tips: string[];
+  scenario?: PersuasionScenario;
 }
 
 export interface ClientTriggerAnalysis {
