@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   ExternalLink,
   BarChart3,
-  Briefcase
+  Briefcase,
+  Network
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
@@ -38,6 +39,7 @@ import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
+import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -385,10 +387,14 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     Contatos ({contacts.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="stakeholders" className="flex items-center gap-2">
+                    <Network className="w-4 h-4" />
+                    Stakeholders
                   </TabsTrigger>
                   <TabsTrigger value="interactions" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
@@ -481,6 +487,17 @@ const EmpresaDetalhe = () => {
                         </CardContent>
                       </Card>
                     )}
+                  </motion.div>
+                </TabsContent>
+
+                {/* Stakeholders Tab */}
+                <TabsContent value="stakeholders" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <StakeholderMap contacts={contacts} interactions={interactions} />
                   </motion.div>
                 </TabsContent>
 
