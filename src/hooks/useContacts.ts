@@ -8,30 +8,63 @@ export type Contact = Tables<'contacts'>;
 export type ContactInsert = TablesInsert<'contacts'>;
 export type ContactUpdate = TablesUpdate<'contacts'>;
 
+// Tipo para listagem otimizada (campos essenciais)
+export type ContactListItem = Pick<Contact, 
+  | 'id'
+  | 'first_name'
+  | 'last_name'
+  | 'email'
+  | 'phone'
+  | 'role'
+  | 'role_title'
+  | 'company_id'
+  | 'relationship_score'
+  | 'relationship_stage'
+  | 'sentiment'
+  | 'tags'
+  | 'avatar_url'
+  | 'updated_at'
+  | 'created_at'
+>;
+
 export function useContacts(companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const pageSize = 50;
 
-  const fetchContacts = useCallback(async () => {
+  const fetchContacts = useCallback(async (pageNum = 0, append = false) => {
     if (!user) return;
     
     setLoading(true);
     try {
       let query = supabase
         .from('contacts')
-        .select('*')
-        .order('updated_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('updated_at', { ascending: false })
+        .range(pageNum * pageSize, (pageNum + 1) * pageSize - 1);
 
       if (companyId) {
         query = query.eq('company_id', companyId);
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      setContacts(data || []);
+      
+      if (append) {
+        setContacts(prev => [...prev, ...(data || [])]);
+      } else {
+        setContacts(data || []);
+      }
+      
+      setHasMore((data?.length || 0) === pageSize);
+      setPage(pageNum);
+      
+      return { data, count, hasMore: (data?.length || 0) === pageSize };
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast({
@@ -39,10 +72,17 @@ export function useContacts(companyId?: string) {
         description: 'Tente novamente mais tarde.',
         variant: 'destructive',
       });
+      return { data: [], count: 0, hasMore: false };
     } finally {
       setLoading(false);
     }
   }, [user, companyId, toast]);
+
+  const loadMore = useCallback(() => {
+    if (hasMore && !loading) {
+      fetchContacts(page + 1, true);
+    }
+  }, [hasMore, loading, page, fetchContacts]);
 
   useEffect(() => {
     fetchContacts();
@@ -134,7 +174,9 @@ export function useContacts(companyId?: string) {
   return {
     contacts,
     loading,
+    hasMore,
     fetchContacts,
+    loadMore,
     createContact,
     updateContact,
     deleteContact,
