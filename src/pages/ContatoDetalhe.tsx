@@ -46,6 +46,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
+import { InteractionForm } from '@/components/forms/InteractionForm';
 import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
 import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
@@ -120,6 +121,8 @@ const ContatoDetalhe = () => {
   const [contact, setContact] = useState(mockContacts.find(c => c.id === id));
   const [isEditingBehavior, setIsEditingBehavior] = useState(false);
   const [showWritingAssistant, setShowWritingAssistant] = useState(false);
+  const [showAddInteraction, setShowAddInteraction] = useState(false);
+  const [isSubmittingInteraction, setIsSubmittingInteraction] = useState(false);
   
   if (!contact) {
     return (
@@ -857,10 +860,7 @@ const ContatoDetalhe = () => {
                   <TabsContent value="interactions" className="mt-4">
                     <InteractionTimeline 
                       interactions={contactInteractions}
-                      onAddInteraction={() => {
-                        // TODO: Open add interaction dialog
-                        console.log('Add interaction');
-                      }}
+                      onAddInteraction={() => setShowAddInteraction(true)}
                     />
                   </TabsContent>
 
@@ -934,6 +934,51 @@ const ContatoDetalhe = () => {
             behavior={contact.behavior}
             onSave={handleSaveBehavior}
             onCancel={() => setIsEditingBehavior(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Interaction Dialog */}
+      <Dialog open={showAddInteraction} onOpenChange={setShowAddInteraction}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <InteractionForm
+            contacts={[{ 
+              id: contact.id, 
+              first_name: contact.firstName, 
+              last_name: contact.lastName,
+              email: contact.email || null,
+              phone: contact.phone || null,
+              company_id: contact.companyId || null,
+              user_id: '',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              avatar_url: null,
+              behavior: contact.behavior || null,
+              birthday: contact.birthday ? contact.birthday.toISOString() : null,
+              family_info: contact.familyInfo || null,
+              hobbies: contact.hobbies || null,
+              instagram: null,
+              interests: contact.interests || null,
+              life_events: null,
+              linkedin: contact.linkedin || null,
+              notes: contact.notes || null,
+              personal_notes: contact.personalNotes || null,
+              relationship_score: contact.relationshipScore || null,
+              relationship_stage: contact.relationshipStage || null,
+              role: contact.role || null,
+              role_title: contact.roleTitle || null,
+              sentiment: contact.sentiment || null,
+              tags: contact.tags || null,
+              twitter: null,
+              whatsapp: contact.whatsapp || null,
+            } as any]}
+            defaultContactId={contact.id}
+            defaultCompanyId={contact.companyId}
+            onSubmit={async () => {
+              setShowAddInteraction(false);
+            }}
+            onCancel={() => setShowAddInteraction(false)}
+            isSubmitting={isSubmittingInteraction}
           />
         </DialogContent>
       </Dialog>
