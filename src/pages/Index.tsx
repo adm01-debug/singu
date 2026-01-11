@@ -10,7 +10,10 @@ import {
   Sparkles,
   Calendar,
   Bell,
-  BarChart3
+  BarChart3,
+  AlertTriangle,
+  Phone,
+  Target
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -31,6 +34,9 @@ import { SmartRemindersPanel } from '@/components/smart-reminders/SmartReminders
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
+import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
+import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
+import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -185,6 +191,23 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold text-foreground">Estatísticas de Relacionamento</h2>
           </div>
           <RelationshipStatsPanel />
+        </motion.div>
+
+        {/* AI Insights Section - Churn, Best Time, Deal Velocity */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.55 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Target className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Inteligência de Negócios</h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <ChurnPredictionPanel compact />
+            <BestTimeToContactPanel compact />
+            <DealVelocityPanel compact />
+          </div>
         </motion.div>
 
         {/* Smart Reminders + Compatibility Alerts + Top Contacts + Insights */}
