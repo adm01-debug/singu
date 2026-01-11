@@ -21,7 +21,8 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { MessageSquare, Loader2 } from 'lucide-react';
+import { MessageSquare, Loader2, Mic } from 'lucide-react';
+import { VoiceInput } from '@/components/voice/VoiceInput';
 import type { Interaction } from '@/hooks/useInteractions';
 import type { Contact } from '@/hooks/useContacts';
 
@@ -205,14 +206,31 @@ export function InteractionForm({
             name="content"
             render={({ field }) => (
               <FormItem className="md:col-span-2">
-                <FormLabel>Detalhes</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Detalhes</FormLabel>
+                  <VoiceInput
+                    onTranscription={(text) => {
+                      const currentContent = field.value || '';
+                      const newContent = currentContent 
+                        ? `${currentContent}\n\n${text}` 
+                        : text;
+                      field.onChange(newContent);
+                    }}
+                    placeholder="Gravar por voz"
+                    className="text-xs"
+                  />
+                </div>
                 <FormControl>
                   <Textarea 
-                    placeholder="Descreva os detalhes da interação..."
+                    placeholder="Descreva os detalhes da interação ou use o microfone para gravar..."
                     className="min-h-[120px]"
                     {...field} 
                   />
                 </FormControl>
+                <FormDescription className="flex items-center gap-1 text-xs">
+                  <Mic className="w-3 h-3" />
+                  Use o microfone para adicionar notas por voz
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
