@@ -701,6 +701,104 @@ export type Database = {
         }
         Relationships: []
       }
+      health_alert_settings: {
+        Row: {
+          check_frequency_hours: number | null
+          created_at: string
+          critical_threshold: number | null
+          email_address: string | null
+          email_notifications: boolean | null
+          id: string
+          notify_on_critical: boolean | null
+          notify_on_warning: boolean | null
+          push_notifications: boolean | null
+          updated_at: string
+          user_id: string
+          warning_threshold: number | null
+        }
+        Insert: {
+          check_frequency_hours?: number | null
+          created_at?: string
+          critical_threshold?: number | null
+          email_address?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          notify_on_critical?: boolean | null
+          notify_on_warning?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id: string
+          warning_threshold?: number | null
+        }
+        Update: {
+          check_frequency_hours?: number | null
+          created_at?: string
+          critical_threshold?: number | null
+          email_address?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          notify_on_critical?: boolean | null
+          notify_on_warning?: boolean | null
+          push_notifications?: boolean | null
+          updated_at?: string
+          user_id?: string
+          warning_threshold?: number | null
+        }
+        Relationships: []
+      }
+      health_alerts: {
+        Row: {
+          alert_type: string
+          contact_id: string
+          created_at: string
+          description: string | null
+          dismissed: boolean | null
+          factors: Json | null
+          health_score: number
+          id: string
+          notified_via: string[] | null
+          previous_score: number | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string
+          contact_id: string
+          created_at?: string
+          description?: string | null
+          dismissed?: boolean | null
+          factors?: Json | null
+          health_score: number
+          id?: string
+          notified_via?: string[] | null
+          previous_score?: number | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          contact_id?: string
+          created_at?: string
+          description?: string | null
+          dismissed?: boolean | null
+          factors?: Json | null
+          health_score?: number
+          id?: string
+          notified_via?: string[] | null
+          previous_score?: number | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_alerts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hidden_objections: {
         Row: {
           contact_id: string
