@@ -14,6 +14,7 @@ import {
   Brain,
   GraduationCap,
   FileText,
+  Smartphone,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -35,6 +36,7 @@ import { SalespersonProfileSettings } from '@/components/triggers/SalespersonPro
 import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
 import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityAlertSettings';
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
+import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 
 interface ProfileData {
   first_name: string;
@@ -163,6 +165,10 @@ export default function Configuracoes() {
             <TabsTrigger value="security" className="gap-2">
               <Shield className="w-4 h-4" />
               Segurança
+            </TabsTrigger>
+            <TabsTrigger value="app" className="gap-2">
+              <Smartphone className="w-4 h-4" />
+              App
             </TabsTrigger>
           </TabsList>
 
@@ -504,6 +510,11 @@ export default function Configuracoes() {
                 </CardContent>
               </Card>
             </motion.div>
+          </TabsContent>
+
+          {/* App/Tour Tab */}
+          <TabsContent value="app">
+            <TourPreferencesPanel />
           </TabsContent>
         </Tabs>
       </div>

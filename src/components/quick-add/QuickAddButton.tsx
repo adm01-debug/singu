@@ -196,6 +196,7 @@ export function QuickAddButton() {
 
         {/* Main FAB */}
         <motion.button
+          data-tour="quick-add"
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             'w-14 h-14 rounded-full shadow-xl flex items-center justify-center',
