@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import { isPushSupported, getSubscriptionStatus } from '@/lib/pushNotifications';
 
 export interface StakeholderAlert {
   id: string;
@@ -65,6 +66,50 @@ export function useStakeholderAlerts(companyId?: string) {
   const [alerts, setAlerts] = useState<StakeholderAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [storedMetrics, setStoredMetrics] = useState<StoredMetrics[]>([]);
+
+  // Function to send push notification for critical stakeholder alerts
+  const sendPushNotification = useCallback(async (
+    title: string,
+    body: string,
+    contactId: string,
+    severity: string
+  ) => {
+    // Check if push notifications are supported and subscribed
+    if (!isPushSupported()) return;
+    
+    try {
+      const { isSubscribed } = await getSubscriptionStatus();
+      if (!isSubscribed) return;
+      
+      // Check if permission is granted
+      if (Notification.permission !== 'granted') return;
+
+      // Show notification via service worker
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        const registration = await navigator.serviceWorker.ready;
+        const notificationOptions: NotificationOptions & { 
+          vibrate?: number[];
+          requireInteraction?: boolean;
+          data?: Record<string, unknown>;
+        } = {
+          body,
+          icon: '/pwa-192x192.png',
+          badge: '/pwa-192x192.png',
+          tag: `stakeholder-${contactId}-${Date.now()}`,
+          data: {
+            type: 'stakeholder_alert',
+            contactId,
+            severity,
+            url: `/contatos/${contactId}`
+          }
+        };
+        
+        await registration.showNotification(title, notificationOptions);
+      }
+    } catch (error) {
+      console.error('Error sending stakeholder push notification:', error);
+    }
+  }, []);
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -174,6 +219,9 @@ export function useStakeholderAlerts(companyId?: string) {
           description: description,
           duration: 5000
         });
+        
+        // Send push notification for critical/high severity alerts
+        sendPushNotification(title, description, contactId, severity);
       }
 
       fetchAlerts();

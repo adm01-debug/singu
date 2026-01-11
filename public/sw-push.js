@@ -51,6 +51,10 @@ self.addEventListener('notificationclick', function(event) {
     targetUrl = `/contatos/${data.contactId}`;
   } else if (data.type === 'insight' && data.contactId) {
     targetUrl = `/contatos/${data.contactId}`;
+  } else if (data.type === 'stakeholder_alert' && data.contactId) {
+    targetUrl = `/contatos/${data.contactId}`;
+  } else if (data.type === 'stakeholder_alert' && data.url) {
+    targetUrl = data.url;
   } else if (data.url) {
     targetUrl = data.url;
   }
