@@ -32,27 +32,90 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Starting weekly digest generation...');
-
-    // Get all users with profiles
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name');
-
-    if (profilesError) {
-      console.error('Error fetching profiles:', profilesError);
-      throw profilesError;
+    // Check if called from cron
+    let requestBody: { source?: string; userId?: string } = {};
+    try {
+      requestBody = await req.json();
+    } catch {
+      // No body, that's fine
     }
 
-    console.log(`Found ${profiles?.length || 0} users`);
+    const isCronJob = requestBody.source === 'cron';
+    const specificUserId = requestBody.userId;
+
+    console.log(`Starting weekly digest generation... Source: ${isCronJob ? 'cron' : 'manual'}`);
+
+    // Get current day and time
+    const now = new Date();
+    const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getUTCDay()];
+    const currentHour = now.getUTCHours();
+
+    // Get users with enabled weekly report settings
+    let settingsQuery = supabase
+      .from('weekly_report_settings')
+      .select('*')
+      .eq('enabled', true);
+
+    // If it's a cron job, filter by day (allow 1 hour window)
+    if (isCronJob) {
+      settingsQuery = settingsQuery.eq('send_day', currentDay);
+    }
+
+    // If specific user, only get their settings
+    if (specificUserId) {
+      settingsQuery = settingsQuery.eq('user_id', specificUserId);
+    }
+
+    const { data: reportSettings, error: settingsError } = await settingsQuery;
+
+    if (settingsError) {
+      console.error('Error fetching report settings:', settingsError);
+      throw settingsError;
+    }
+
+    // Filter by hour if cron job
+    const eligibleSettings = isCronJob 
+      ? (reportSettings || []).filter(s => {
+          if (!s.send_time) return currentHour === 9;
+          const settingHour = parseInt(s.send_time.split(':')[0], 10);
+          return Math.abs(settingHour - currentHour) <= 1;
+        })
+      : reportSettings || [];
+
+    console.log(`Found ${eligibleSettings.length} users eligible for report generation`);
+
+    if (eligibleSettings.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'No users eligible for report at this time',
+          digestsGenerated: 0 
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
 
     const digests: WeeklyDigestData[] = [];
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    for (const profile of profiles || []) {
+    for (const settings of eligibleSettings) {
+      const userId = settings.user_id;
+
+      // Get user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .eq('id', userId)
+        .single();
+
+      if (!profile) continue;
+
       // Get user's email from auth
-      const { data: userData } = await supabase.auth.admin.getUserById(profile.id);
+      const { data: userData } = await supabase.auth.admin.getUserById(userId);
       
       if (!userData?.user?.email) continue;
 
@@ -60,21 +123,21 @@ serve(async (req) => {
       const { data: interactions } = await supabase
         .from('interactions')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .gte('created_at', oneWeekAgo.toISOString());
 
       // Get new contacts from last week
       const { data: newContacts } = await supabase
         .from('contacts')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .gte('created_at', oneWeekAgo.toISOString());
 
       // Get all contacts for analysis
       const { data: allContacts } = await supabase
         .from('contacts')
         .select('*')
-        .eq('user_id', profile.id);
+        .eq('user_id', userId);
 
       // Check for upcoming birthdays (next 7 days)
       const today = new Date();
@@ -96,7 +159,7 @@ serve(async (req) => {
       const { data: pendingFollowUps } = await supabase
         .from('interactions')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .eq('follow_up_required', true)
         .lte('follow_up_date', new Date().toISOString());
 
@@ -107,7 +170,7 @@ serve(async (req) => {
       const { data: recentInteractions } = await supabase
         .from('interactions')
         .select('contact_id')
-        .eq('user_id', profile.id)
+        .eq('user_id', userId)
         .gte('created_at', thirtyDaysAgo.toISOString());
 
       const contactsWithRecentInteraction = new Set(
@@ -118,33 +181,37 @@ serve(async (req) => {
         c => !contactsWithRecentInteraction.has(c.id)
       );
 
-      // Generate highlights
+      // Generate highlights based on user settings
       const highlights: string[] = [];
-      if ((interactions?.length || 0) > 10) {
-        highlights.push(`Semana produtiva! Você teve ${interactions?.length} interações.`);
+      if (settings.include_performance_metrics !== false) {
+        if ((interactions?.length || 0) > 10) {
+          highlights.push(`Semana produtiva! Você teve ${interactions?.length} interações.`);
+        }
+        if ((newContacts?.length || 0) > 0) {
+          highlights.push(`${newContacts?.length} novo(s) contato(s) adicionado(s).`);
+        }
       }
-      if ((newContacts?.length || 0) > 0) {
-        highlights.push(`${newContacts?.length} novo(s) contato(s) adicionado(s).`);
-      }
-      if (upcomingBirthdays.length > 0) {
+      if (settings.include_upcoming_dates !== false && upcomingBirthdays.length > 0) {
         highlights.push(`${upcomingBirthdays.length} aniversário(s) esta semana.`);
       }
 
       // Generate recommendations
       const recommendations: string[] = [];
-      if (atRiskContacts.length > 5) {
+      if (settings.include_at_risk_clients !== false && atRiskContacts.length > 5) {
         recommendations.push(`Atenção: ${atRiskContacts.length} contatos sem interação há mais de 30 dias.`);
       }
-      if ((pendingFollowUps?.length || 0) > 0) {
-        recommendations.push(`Você tem ${pendingFollowUps?.length} follow-up(s) pendente(s).`);
-      }
-      if ((interactions?.length || 0) < 5) {
-        recommendations.push('Considere aumentar a frequência de contato esta semana.');
+      if (settings.include_recommendations !== false) {
+        if ((pendingFollowUps?.length || 0) > 0) {
+          recommendations.push(`Você tem ${pendingFollowUps?.length} follow-up(s) pendente(s).`);
+        }
+        if ((interactions?.length || 0) < 5) {
+          recommendations.push('Considere aumentar a frequência de contato esta semana.');
+        }
       }
 
-      digests.push({
-        userId: profile.id,
-        email: userData.user.email,
+      const digestData: WeeklyDigestData = {
+        userId,
+        email: settings.email_address || userData.user.email,
         firstName: profile.first_name || 'Usuário',
         stats: {
           totalInteractions: interactions?.length || 0,
@@ -155,31 +222,27 @@ serve(async (req) => {
         },
         highlights,
         recommendations,
+      };
+
+      digests.push(digestData);
+
+      // Save the report to history
+      await supabase.from('weekly_reports').insert({
+        user_id: userId,
+        report_data: digestData,
+        sent_via: ['system'],
       });
+
+      // Update last_sent_at
+      await supabase
+        .from('weekly_report_settings')
+        .update({ last_sent_at: new Date().toISOString() })
+        .eq('user_id', userId);
+
+      console.log(`Generated and saved report for user ${userId}`);
     }
 
     console.log(`Generated ${digests.length} digests`);
-
-    // In production, you would send emails here using Resend or similar
-    // For now, we'll just return the digest data
-    
-    // Example email sending (requires RESEND_API_KEY):
-    /*
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (resendApiKey) {
-      const { Resend } = await import('npm:resend@2.0.0');
-      const resend = new Resend(resendApiKey);
-      
-      for (const digest of digests) {
-        await resend.emails.send({
-          from: 'RelateIQ <noreply@yourdomain.com>',
-          to: [digest.email],
-          subject: `Seu Resumo Semanal - RelateIQ`,
-          html: generateEmailHtml(digest),
-        });
-      }
-    }
-    */
 
     return new Response(
       JSON.stringify({ 
