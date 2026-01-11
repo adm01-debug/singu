@@ -13,7 +13,6 @@ import {
   Linkedin,
   Star,
   Edit,
-  Plus,
   Sparkles,
   User,
   Users,
@@ -21,13 +20,13 @@ import {
   Target,
   AlertCircle,
   Zap,
-  TrendingUp,
   Shield,
   Bell,
   Package,
   Settings2,
   CalendarHeart,
-  CalendarClock
+  CalendarClock,
+  Loader2
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
@@ -39,10 +38,10 @@ import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge, DISCChart } from '@/components/ui/disc-badge';
-import { VAKBadge } from '@/components/ui/vak-badge';
 import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/relationship-stage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
@@ -77,8 +76,9 @@ import { CommunicationPreferencesForm } from '@/components/forms/CommunicationPr
 import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
-import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
-import { format, formatDistanceToNow } from 'date-fns';
+import { useContactDetail } from '@/hooks/useContactDetail';
+import { useContacts } from '@/hooks/useContacts';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
   DECISION_ROLE_LABELS, 
@@ -106,7 +106,7 @@ const interactionColors = {
   social: 'bg-pink-100 text-pink-600',
 };
 
-const lifeEventIcons = {
+const lifeEventIcons: Record<string, string> = {
   birthday: '🎂',
   anniversary: '🎉',
   promotion: '🚀',
@@ -116,19 +116,169 @@ const lifeEventIcons = {
   other: '📌',
 };
 
+// Helper function to transform database contact to component-compatible format
+const transformContact = (contact: any, companyName?: string) => {
+  const behavior = contact.behavior || {};
+  return {
+    id: contact.id,
+    companyId: contact.company_id,
+    companyName: companyName || '',
+    firstName: contact.first_name,
+    lastName: contact.last_name,
+    role: contact.role || 'contact',
+    roleTitle: contact.role_title || '',
+    email: contact.email,
+    phone: contact.phone,
+    whatsapp: contact.whatsapp,
+    linkedin: contact.linkedin,
+    instagram: contact.instagram,
+    twitter: contact.twitter,
+    avatar: contact.avatar_url,
+    birthday: contact.birthday ? new Date(contact.birthday) : undefined,
+    notes: contact.notes,
+    tags: contact.tags || [],
+    hobbies: contact.hobbies || [],
+    interests: contact.interests || [],
+    familyInfo: contact.family_info,
+    personalNotes: contact.personal_notes,
+    relationshipStage: contact.relationship_stage || 'unknown',
+    relationshipScore: contact.relationship_score || 0,
+    sentiment: contact.sentiment || 'neutral',
+    interactionCount: 0,
+    behavior: {
+      discProfile: behavior.discProfile || null,
+      discConfidence: behavior.discConfidence || 0,
+      discNotes: behavior.discNotes,
+      vakProfile: behavior.vakProfile,
+      primaryMotivation: behavior.primaryMotivation,
+      primaryFear: behavior.primaryFear,
+      careerStage: behavior.careerStage,
+      currentPressure: behavior.currentPressure,
+      professionalGoals: behavior.professionalGoals,
+      preferredChannel: behavior.preferredChannel || 'email',
+      messageStyle: behavior.messageStyle,
+      avgResponseTimeHours: behavior.avgResponseTimeHours,
+      bestContactWindow: behavior.bestContactWindow,
+      formalityLevel: behavior.formalityLevel || 3,
+      decisionSpeed: behavior.decisionSpeed,
+      decisionCriteria: behavior.decisionCriteria || [],
+      needsApproval: behavior.needsApproval || false,
+      approverContactId: behavior.approverContactId,
+      budgetAuthority: behavior.budgetAuthority,
+      decisionRole: behavior.decisionRole,
+      decisionPower: behavior.decisionPower || 5,
+      supportLevel: behavior.supportLevel || 5,
+      influencedByIds: behavior.influencedByIds || [],
+      influencesIds: behavior.influencesIds || [],
+      companyFinancialHealth: behavior.companyFinancialHealth,
+      currentChallenges: behavior.currentChallenges || [],
+      competitorsUsed: behavior.competitorsUsed || [],
+      bestTimeToApproach: behavior.bestTimeToApproach,
+      seasonalNotes: behavior.seasonalNotes,
+    },
+    lifeEvents: (contact.life_events || []).map((e: any) => ({
+      id: e.id || crypto.randomUUID(),
+      type: e.type || 'other',
+      title: e.title || '',
+      date: new Date(e.date || Date.now()),
+      notes: e.notes,
+      reminder: e.reminder || false,
+    })),
+    createdAt: new Date(contact.created_at),
+    updatedAt: new Date(contact.updated_at),
+  };
+};
+
+// Helper function to transform database interaction to component-compatible format
+const transformInteraction = (interaction: any) => ({
+  id: interaction.id,
+  contactId: interaction.contact_id,
+  companyId: interaction.company_id,
+  type: interaction.type,
+  title: interaction.title,
+  content: interaction.content || '',
+  audioUrl: interaction.audio_url,
+  transcription: interaction.transcription,
+  sentiment: interaction.sentiment || 'neutral',
+  tags: interaction.tags || [],
+  duration: interaction.duration,
+  attachments: interaction.attachments,
+  initiatedBy: interaction.initiated_by || 'us',
+  responseTime: interaction.response_time,
+  keyInsights: interaction.key_insights,
+  followUpRequired: interaction.follow_up_required || false,
+  followUpDate: interaction.follow_up_date ? new Date(interaction.follow_up_date) : undefined,
+  createdAt: new Date(interaction.created_at),
+});
+
+// Loading skeleton component
+const ContactDetailSkeleton = () => (
+  <AppLayout>
+    <div className="min-h-screen">
+      <div className="px-6 pt-4">
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="h-48 bg-gradient-primary relative" />
+      <div className="px-6 -mt-24 pb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardContent className="pt-0">
+              <div className="flex flex-col items-center -mt-16">
+                <Skeleton className="w-32 h-32 rounded-full" />
+                <Skeleton className="h-6 w-40 mt-4" />
+                <Skeleton className="h-4 w-32 mt-2" />
+                <div className="flex gap-2 mt-4">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+                <Skeleton className="h-24 w-full mt-6" />
+              </div>
+            </CardContent>
+          </Card>
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </AppLayout>
+);
+
 const ContatoDetalhe = () => {
   const { id } = useParams();
-  const [contact, setContact] = useState(mockContacts.find(c => c.id === id));
+  const { 
+    contact: rawContact, 
+    company: rawCompany, 
+    interactions: rawInteractions, 
+    insights, 
+    alerts, 
+    loading, 
+    error,
+    updateBehavior,
+    refetch
+  } = useContactDetail(id);
+  
+  const { contacts: allContacts } = useContacts();
+  
   const [isEditingBehavior, setIsEditingBehavior] = useState(false);
   const [showWritingAssistant, setShowWritingAssistant] = useState(false);
   const [showAddInteraction, setShowAddInteraction] = useState(false);
   const [isSubmittingInteraction, setIsSubmittingInteraction] = useState(false);
-  
-  if (!contact) {
+
+  // Show loading state
+  if (loading) {
+    return <ContactDetailSkeleton />;
+  }
+
+  // Show error state
+  if (error || !rawContact) {
     return (
       <AppLayout>
         <div className="p-6 text-center">
-          <p className="text-muted-foreground">Contato não encontrado</p>
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground mb-4">{error || 'Contato não encontrado'}</p>
           <Link to="/contatos">
             <Button variant="link">Voltar para contatos</Button>
           </Link>
@@ -137,13 +287,14 @@ const ContatoDetalhe = () => {
     );
   }
 
-  const contactInteractions = mockInteractions.filter(i => i.contactId === id);
-  const contactInsights = mockInsights.filter(i => i.contactId === id);
-  const contactAlerts = mockAlerts.filter(a => a.contactId === id && !a.dismissed);
-  const contactCompany = mockCompanies.find(c => c.id === contact.companyId);
+  // Transform data to component-compatible format
+  const contact = transformContact(rawContact, rawCompany?.name);
+  const contactInteractions = rawInteractions.map(transformInteraction);
+  const contactInsights = insights;
+  const contactAlerts = alerts;
 
-  const handleSaveBehavior = (behavior: ContactBehavior) => {
-    setContact(prev => prev ? { ...prev, behavior } : prev);
+  const handleSaveBehavior = async (behavior: ContactBehavior) => {
+    await updateBehavior(behavior as unknown as Record<string, unknown>);
     setIsEditingBehavior(false);
   };
 
@@ -208,7 +359,9 @@ const ContatoDetalhe = () => {
                       
                       <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
                         <RoleBadge role={contact.role} />
-                        <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
+                        {contact.behavior?.discProfile && (
+                          <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
+                        )}
                         <SentimentIndicator sentiment={contact.sentiment} size="sm" />
                       </div>
 
@@ -216,10 +369,12 @@ const ContatoDetalhe = () => {
                         <RelationshipStageBadge stage={contact.relationshipStage} />
                       </div>
 
-                      <div className="flex items-center justify-center gap-2 mt-4">
-                        <Building2 className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">{contact.companyName}</span>
-                      </div>
+                      {contact.companyName && (
+                        <div className="flex items-center justify-center gap-2 mt-4">
+                          <Building2 className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{contact.companyName}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="w-full mt-6">
@@ -332,7 +487,7 @@ const ContatoDetalhe = () => {
                           <span className="text-sm">{format(contact.birthday, "d 'de' MMMM", { locale: ptBR })}</span>
                         </div>
                       )}
-                      {contact.behavior.bestContactWindow && (
+                      {contact.behavior?.bestContactWindow && (
                         <div className="flex items-center gap-3">
                           <Clock className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">Melhor horário: {contact.behavior.bestContactWindow}</span>
@@ -476,7 +631,7 @@ const ContatoDetalhe = () => {
 
               {/* Important Dates Panel */}
               <ImportantDatesPanel 
-                contacts={mockContacts}
+                contacts={allContacts.map(c => transformContact(c))}
                 interactions={contactInteractions}
                 singleContact={contact}
               />
@@ -485,7 +640,27 @@ const ContatoDetalhe = () => {
               <NextActionSuggestion 
                 contact={contact}
                 interactions={contactInteractions}
-                company={contactCompany}
+                company={rawCompany ? {
+                  id: rawCompany.id,
+                  name: rawCompany.name,
+                  industry: rawCompany.industry || '',
+                  website: rawCompany.website,
+                  phone: rawCompany.phone,
+                  email: rawCompany.email,
+                  address: rawCompany.address,
+                  city: rawCompany.city,
+                  state: rawCompany.state,
+                  notes: rawCompany.notes,
+                  tags: rawCompany.tags || [],
+                  contactCount: 0,
+                  financialHealth: (rawCompany.financial_health as any) || 'unknown',
+                  employeeCount: rawCompany.employee_count,
+                  annualRevenue: rawCompany.annual_revenue,
+                  competitors: rawCompany.competitors || [],
+                  challenges: rawCompany.challenges || [],
+                  createdAt: new Date(rawCompany.created_at),
+                  updatedAt: new Date(rawCompany.updated_at),
+                } : undefined}
               />
 
               {/* Unified NLP Dashboard */}
@@ -610,17 +785,17 @@ const ContatoDetalhe = () => {
                         <div>
                           <h4 className="text-sm font-medium text-muted-foreground mb-3">Perfil DISC</h4>
                           <DISCBadge 
-                            profile={contact.behavior.discProfile} 
-                            confidence={contact.behavior.discConfidence}
+                            profile={contact.behavior?.discProfile} 
+                            confidence={contact.behavior?.discConfidence}
                             size="md"
                           />
-                          {contact.behavior.discNotes && (
+                          {contact.behavior?.discNotes && (
                             <p className="text-sm text-muted-foreground mt-2">
                               {contact.behavior.discNotes}
                             </p>
                           )}
                         </div>
-                        <DISCChart profile={contact.behavior.discProfile} />
+                        <DISCChart profile={contact.behavior?.discProfile} />
                       </div>
 
                       {/* Decision Making */}
@@ -631,7 +806,7 @@ const ContatoDetalhe = () => {
                             Tomada de Decisão
                           </h4>
                           <div className="space-y-3">
-                            {contact.behavior.decisionRole && (
+                            {contact.behavior?.decisionRole && (
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Papel:</span>
                                 <Badge variant="outline">
@@ -639,7 +814,7 @@ const ContatoDetalhe = () => {
                                 </Badge>
                               </div>
                             )}
-                            {contact.behavior.decisionSpeed && (
+                            {contact.behavior?.decisionSpeed && (
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Velocidade:</span>
                                 <Badge variant="secondary">
@@ -654,7 +829,7 @@ const ContatoDetalhe = () => {
                                   <div
                                     key={i}
                                     className={`w-2 h-4 rounded-sm ${
-                                      i < contact.behavior.decisionPower
+                                      i < (contact.behavior?.decisionPower || 0)
                                         ? 'bg-primary'
                                         : 'bg-muted'
                                     }`}
@@ -669,7 +844,7 @@ const ContatoDetalhe = () => {
                                   <div
                                     key={i}
                                     className={`w-2 h-4 rounded-sm ${
-                                      i < contact.behavior.supportLevel
+                                      i < (contact.behavior?.supportLevel || 0)
                                         ? 'bg-success'
                                         : 'bg-muted'
                                     }`}
@@ -680,7 +855,7 @@ const ContatoDetalhe = () => {
                           </div>
                         </div>
 
-                        {contact.behavior.decisionCriteria.length > 0 && (
+                        {contact.behavior?.decisionCriteria && contact.behavior.decisionCriteria.length > 0 && (
                           <div>
                             <h4 className="text-sm font-medium text-muted-foreground mb-2">
                               Critérios de Decisão (por prioridade)
@@ -689,7 +864,7 @@ const ContatoDetalhe = () => {
                               {contact.behavior.decisionCriteria.map((criteria, index) => (
                                 <Badge key={criteria} variant="outline" className="text-xs">
                                   <span className="mr-1 text-primary font-bold">{index + 1}.</span>
-                                  {DECISION_CRITERIA_LABELS[criteria]}
+                                  {DECISION_CRITERIA_LABELS[criteria as keyof typeof DECISION_CRITERIA_LABELS] || criteria}
                                 </Badge>
                               ))}
                             </div>
@@ -700,7 +875,7 @@ const ContatoDetalhe = () => {
 
                     {/* Motivations Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-6 border-t border-border">
-                      {contact.behavior.primaryMotivation && (
+                      {contact.behavior?.primaryMotivation && (
                         <div className="p-4 rounded-lg bg-success/5 border border-success/20">
                           <h4 className="text-sm font-medium text-success mb-1 flex items-center gap-1.5">
                             <Zap className="w-4 h-4" />
@@ -709,7 +884,7 @@ const ContatoDetalhe = () => {
                           <p className="text-sm text-foreground">{contact.behavior.primaryMotivation}</p>
                         </div>
                       )}
-                      {contact.behavior.primaryFear && (
+                      {contact.behavior?.primaryFear && (
                         <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
                           <h4 className="text-sm font-medium text-destructive mb-1 flex items-center gap-1.5">
                             <Shield className="w-4 h-4" />
@@ -722,19 +897,19 @@ const ContatoDetalhe = () => {
 
                     {/* Context Row */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                      {contact.behavior.careerStage && (
+                      {contact.behavior?.careerStage && (
                         <div className="text-center p-3 rounded-lg bg-muted/50">
                           <p className="text-xs text-muted-foreground mb-1">Carreira</p>
                           <p className="text-sm font-medium">{CAREER_STAGE_LABELS[contact.behavior.careerStage]}</p>
                         </div>
                       )}
-                      {contact.behavior.budgetAuthority && (
+                      {contact.behavior?.budgetAuthority && (
                         <div className="text-center p-3 rounded-lg bg-muted/50">
                           <p className="text-xs text-muted-foreground mb-1">Orçamento</p>
                           <p className="text-sm font-medium">{contact.behavior.budgetAuthority}</p>
                         </div>
                       )}
-                      {contact.behavior.avgResponseTimeHours && (
+                      {contact.behavior?.avgResponseTimeHours && (
                         <div className="text-center p-3 rounded-lg bg-muted/50">
                           <p className="text-xs text-muted-foreground mb-1">Tempo de Resposta</p>
                           <p className="text-sm font-medium">~{contact.behavior.avgResponseTimeHours}h</p>
@@ -819,7 +994,7 @@ const ContatoDetalhe = () => {
                         <div className="space-y-2">
                           {contact.lifeEvents.map(event => (
                             <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
-                              <span className="text-2xl">{lifeEventIcons[event.type]}</span>
+                              <span className="text-2xl">{lifeEventIcons[event.type] || '📌'}</span>
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{event.title}</p>
                                 <p className="text-xs text-muted-foreground">
@@ -897,10 +1072,10 @@ const ContatoDetalhe = () => {
                                     </span>
                                   </div>
                                   <p className="text-sm text-muted-foreground">{insight.description}</p>
-                                  {insight.actionSuggestion && (
+                                  {insight.action_suggestion && (
                                     <div className="mt-2 p-2 rounded bg-primary/10 border border-primary/20">
                                       <p className="text-xs font-medium text-primary mb-1">🎯 Ação sugerida:</p>
-                                      <p className="text-xs text-foreground">{insight.actionSuggestion}</p>
+                                      <p className="text-xs text-foreground">{insight.action_suggestion}</p>
                                     </div>
                                   )}
                                   <p className="text-xs text-muted-foreground mt-2">
@@ -949,15 +1124,15 @@ const ContatoDetalhe = () => {
               email: contact.email || null,
               phone: contact.phone || null,
               company_id: contact.companyId || null,
-              user_id: '',
+              user_id: rawContact?.user_id || '',
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-              avatar_url: null,
-              behavior: contact.behavior || null,
+              avatar_url: contact.avatar || null,
+              behavior: rawContact?.behavior || null,
               birthday: contact.birthday ? contact.birthday.toISOString() : null,
               family_info: contact.familyInfo || null,
               hobbies: contact.hobbies || null,
-              instagram: null,
+              instagram: contact.instagram || null,
               interests: contact.interests || null,
               life_events: null,
               linkedin: contact.linkedin || null,
@@ -969,13 +1144,14 @@ const ContatoDetalhe = () => {
               role_title: contact.roleTitle || null,
               sentiment: contact.sentiment || null,
               tags: contact.tags || null,
-              twitter: null,
+              twitter: contact.twitter || null,
               whatsapp: contact.whatsapp || null,
             } as any]}
             defaultContactId={contact.id}
             defaultCompanyId={contact.companyId}
             onSubmit={async () => {
               setShowAddInteraction(false);
+              refetch();
             }}
             onCancel={() => setShowAddInteraction(false)}
             isSubmitting={isSubmittingInteraction}
