@@ -2,12 +2,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
 import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardShortcutsDialogEnhanced";
 import { InstallPrompt, OfflineIndicator, NetworkStatusBadge } from "@/components/pwa/PWAComponents";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
+import { PageTransition } from "@/components/page-transition/PageTransition";
+import { useEasterEggs } from "@/hooks/useEasterEggs";
+import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Empresas from "./pages/Empresas";
@@ -24,98 +27,123 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// Easter eggs component
+const EasterEggsProvider = () => {
+  useEasterEggs();
+  return null;
+};
+
+// Animated routes wrapper
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public routes */}
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/onboarding" element={
+          <RequireAuth>
+            <PageTransition><Onboarding /></PageTransition>
+          </RequireAuth>
+        } />
+        
+        {/* Protected routes */}
+        <Route path="/" element={
+          <RequireAuth>
+            <PageTransition><Index /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/empresas" element={
+          <RequireAuth>
+            <PageTransition><Empresas /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/empresas/:id" element={
+          <RequireAuth>
+            <PageTransition><EmpresaDetalhe /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/contatos" element={
+          <RequireAuth>
+            <PageTransition><Contatos /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/contatos/:id" element={
+          <RequireAuth>
+            <PageTransition><ContatoDetalhe /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/interacoes" element={
+          <RequireAuth>
+            <PageTransition><Interacoes /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/insights" element={
+          <RequireAuth>
+            <PageTransition><Insights /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/analytics" element={
+          <RequireAuth>
+            <PageTransition><Analytics /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/configuracoes" element={
+          <RequireAuth>
+            <PageTransition><Configuracoes /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/calendario" element={
+          <RequireAuth>
+            <PageTransition><Calendario /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/notificacoes" element={
+          <RequireAuth>
+            <PageTransition><Notificacoes /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/network" element={
+          <RequireAuth>
+            <PageTransition><Network /></PageTransition>
+          </RequireAuth>
+        } />
+            
+        {/* Catch-all */}
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
 
 const App = () => (
   <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
     <QueryClientProvider client={queryClient}>
       <CelebrationProvider>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <OfflineIndicator />
-      <InstallPrompt />
-      <NetworkStatusBadge />
-      <BrowserRouter>
-        <KeyboardShortcutsDialogEnhanced />
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={
-              <RequireAuth>
-                <Onboarding />
-              </RequireAuth>
-            } />
-            
-            {/* Protected routes */}
-            <Route path="/" element={
-              <RequireAuth>
-                <Index />
-              </RequireAuth>
-            } />
-            <Route path="/empresas" element={
-              <RequireAuth>
-                <Empresas />
-              </RequireAuth>
-            } />
-            <Route path="/empresas/:id" element={
-              <RequireAuth>
-                <EmpresaDetalhe />
-              </RequireAuth>
-            } />
-            <Route path="/contatos" element={
-              <RequireAuth>
-                <Contatos />
-              </RequireAuth>
-            } />
-            <Route path="/contatos/:id" element={
-              <RequireAuth>
-                <ContatoDetalhe />
-              </RequireAuth>
-            } />
-            <Route path="/interacoes" element={
-              <RequireAuth>
-                <Interacoes />
-              </RequireAuth>
-            } />
-            <Route path="/insights" element={
-              <RequireAuth>
-                <Insights />
-              </RequireAuth>
-            } />
-            <Route path="/analytics" element={
-              <RequireAuth>
-                <Analytics />
-              </RequireAuth>
-            } />
-            <Route path="/configuracoes" element={
-              <RequireAuth>
-                <Configuracoes />
-              </RequireAuth>
-            } />
-            <Route path="/calendario" element={
-              <RequireAuth>
-                <Calendario />
-              </RequireAuth>
-            } />
-            <Route path="/notificacoes" element={
-              <RequireAuth>
-                <Notificacoes />
-              </RequireAuth>
-            } />
-            <Route path="/network" element={
-              <RequireAuth>
-                <Network />
-              </RequireAuth>
-            } />
-            
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <InstallPrompt />
+          <NetworkStatusBadge />
+          <BrowserRouter>
+            <EasterEggsProvider />
+            <KeyboardShortcutsDialogEnhanced />
+            <AuthProvider>
+              <AnimatedRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
       </CelebrationProvider>
     </QueryClientProvider>
   </ErrorBoundary>
