@@ -1,0 +1,400 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { addMinutes, isWithinInterval, parseISO, format } from 'date-fns';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Contact = Tables<'contacts'>;
+type Interaction = Tables<'interactions'>;
+type Company = Tables<'companies'>;
+
+interface VAKProfile {
+  visual: number;
+  auditory: number;
+  kinesthetic: number;
+  digital: number;
+  dominant: string;
+}
+
+interface EmotionalProfile {
+  currentState: string;
+  trend: 'improving' | 'stable' | 'declining';
+  resistanceLevel: number;
+}
+
+interface NLPBriefing {
+  contact: Contact;
+  company: Company | null;
+  interaction: Interaction;
+  vakProfile: VAKProfile;
+  discProfile: { type: string; description: string };
+  emotionalProfile: EmotionalProfile;
+  topValues: string[];
+  wordsToUse: string[];
+  wordsToAvoid: string[];
+  openingTips: string[];
+  closingMoment: string;
+  recentObjections: string[];
+  rapportScore: number;
+  lastInteractionSummary: string | null;
+  minutesUntilMeeting: number;
+}
+
+export interface PreContactBriefingData {
+  upcomingBriefings: NLPBriefing[];
+  activeBriefing: NLPBriefing | null;
+  loading: boolean;
+  dismissBriefing: (interactionId: string) => void;
+  showBriefingFor: (interactionId: string) => void;
+}
+
+// Helper to detect VAK from text
+function analyzeVAK(texts: string[]): VAKProfile {
+  const content = texts.join(' ').toLowerCase();
+  
+  const vakPatterns = {
+    visual: ['ver', 'visualizar', 'claro', 'brilhante', 'imagem', 'perspectiva', 'olhar', 'mostrar', 'aparência', 'foco', 'ilustrar', 'cores'],
+    auditory: ['ouvir', 'som', 'escutar', 'ritmo', 'tom', 'harmonia', 'conversar', 'dizer', 'discutir', 'volume', 'silêncio', 'ressoar'],
+    kinesthetic: ['sentir', 'toque', 'concreto', 'sólido', 'peso', 'pressão', 'mover', 'ação', 'prático', 'experiência', 'impacto', 'conexão'],
+    digital: ['pensar', 'lógico', 'analisar', 'processo', 'sistema', 'compreender', 'sentido', 'dados', 'fatos', 'considerar', 'raciocínio']
+  };
+
+  const scores = {
+    visual: 0,
+    auditory: 0,
+    kinesthetic: 0,
+    digital: 0
+  };
+
+  Object.entries(vakPatterns).forEach(([type, words]) => {
+    words.forEach(word => {
+      const regex = new RegExp(word, 'gi');
+      const matches = content.match(regex);
+      if (matches) {
+        scores[type as keyof typeof scores] += matches.length;
+      }
+    });
+  });
+
+  const total = Object.values(scores).reduce((a, b) => a + b, 0) || 1;
+  const normalized = {
+    visual: Math.round((scores.visual / total) * 100),
+    auditory: Math.round((scores.auditory / total) * 100),
+    kinesthetic: Math.round((scores.kinesthetic / total) * 100),
+    digital: Math.round((scores.digital / total) * 100),
+    dominant: ''
+  };
+
+  const dominant = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  normalized.dominant = dominant.charAt(0).toUpperCase() + dominant.slice(1);
+
+  return normalized;
+}
+
+// Helper to detect emotional state
+function analyzeEmotionalState(texts: string[]): EmotionalProfile {
+  const content = texts.join(' ').toLowerCase();
+  
+  const emotionPatterns = {
+    positive: ['satisfeito', 'feliz', 'animado', 'otimista', 'confiante', 'empolgado', 'interessado', 'entusiasmado'],
+    neutral: ['ok', 'bem', 'normal', 'considerando', 'pensando', 'avaliando'],
+    negative: ['preocupado', 'hesitante', 'inseguro', 'frustrado', 'irritado', 'desconfiado', 'cético']
+  };
+
+  const scores = { positive: 0, neutral: 0, negative: 0 };
+  
+  Object.entries(emotionPatterns).forEach(([type, words]) => {
+    words.forEach(word => {
+      if (content.includes(word)) {
+        scores[type as keyof typeof scores]++;
+      }
+    });
+  });
+
+  const dominant = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  
+  return {
+    currentState: dominant === 'positive' ? 'Positivo' : dominant === 'negative' ? 'Cauteloso' : 'Neutro',
+    trend: scores.positive > scores.negative ? 'improving' : scores.negative > scores.positive ? 'declining' : 'stable',
+    resistanceLevel: Math.min(100, scores.negative * 20)
+  };
+}
+
+// Get DISC profile from contact behavior
+function getDISCProfile(contact: Contact): { type: string; description: string } {
+  const behavior = contact.behavior as any;
+  if (!behavior?.disc) {
+    return { type: 'N/A', description: 'Perfil não identificado ainda' };
+  }
+  
+  const discDescriptions: Record<string, string> = {
+    D: 'Dominante - Direto, orientado a resultados, decisivo',
+    I: 'Influente - Entusiasta, otimista, colaborativo',
+    S: 'Estável - Paciente, confiável, bom ouvinte',
+    C: 'Consciente - Analítico, preciso, orientado a qualidade'
+  };
+
+  return {
+    type: behavior.disc,
+    description: discDescriptions[behavior.disc] || 'Perfil misto'
+  };
+}
+
+// Generate opening tips based on profile
+function generateOpeningTips(vakProfile: VAKProfile, discProfile: { type: string }): string[] {
+  const tips: string[] = [];
+
+  // VAK-based tips
+  if (vakProfile.dominant === 'Visual') {
+    tips.push('📊 Use gráficos ou apresentações visuais');
+    tips.push('🎨 Descreva cenários e "pinte o quadro"');
+  } else if (vakProfile.dominant === 'Auditory') {
+    tips.push('🎵 Mantenha tom de voz agradável e ritmado');
+    tips.push('💬 Use histórias e exemplos verbais');
+  } else if (vakProfile.dominant === 'Kinesthetic') {
+    tips.push('🤝 Crie conexão pessoal primeiro');
+    tips.push('💪 Fale de resultados práticos e tangíveis');
+  } else {
+    tips.push('📋 Apresente dados e fatos concretos');
+    tips.push('🔍 Seja lógico e estruturado');
+  }
+
+  // DISC-based tips
+  if (discProfile.type === 'D') {
+    tips.push('⚡ Seja direto e objetivo');
+  } else if (discProfile.type === 'I') {
+    tips.push('😊 Comece com conversa leve e entusiasmo');
+  } else if (discProfile.type === 'S') {
+    tips.push('🕐 Dê tempo para ele processar');
+  } else if (discProfile.type === 'C') {
+    tips.push('📝 Tenha detalhes e documentação prontos');
+  }
+
+  return tips.slice(0, 4);
+}
+
+// Generate words to use/avoid based on VAK
+function getRecommendedWords(vakProfile: VAKProfile): { use: string[]; avoid: string[] } {
+  const wordSets: Record<string, { use: string[]; avoid: string[] }> = {
+    Visual: {
+      use: ['veja', 'imagine', 'claro', 'perspectiva', 'visualize', 'demonstro'],
+      avoid: ['ouça', 'sinta', 'processo longo']
+    },
+    Auditory: {
+      use: ['ouvindo você', 'conversar', 'isso soa bem', 'harmonia', 'ressoar'],
+      avoid: ['veja só', 'olhe', 'imagine']
+    },
+    Kinesthetic: {
+      use: ['sente-se confortável', 'concreto', 'prático', 'impacto', 'experiência'],
+      avoid: ['abstrato', 'teórico', 'conceitual']
+    },
+    Digital: {
+      use: ['faz sentido', 'lógico', 'analisando', 'dados mostram', 'processo'],
+      avoid: ['intuição', 'feeling', 'parece']
+    }
+  };
+
+  return wordSets[vakProfile.dominant] || wordSets.Digital;
+}
+
+export function usePreContactBriefing(): PreContactBriefingData {
+  const { user } = useAuth();
+  const [upcomingBriefings, setUpcomingBriefings] = useState<NLPBriefing[]>([]);
+  const [activeBriefing, setActiveBriefing] = useState<NLPBriefing | null>(null);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+
+  const fetchUpcomingMeetings = useCallback(async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const in60Minutes = addMinutes(now, 60);
+
+      // Fetch upcoming follow-ups (calls/meetings in next 60 min)
+      const { data: interactions, error: interactionsError } = await supabase
+        .from('interactions')
+        .select('*')
+        .eq('follow_up_required', true)
+        .not('follow_up_date', 'is', null)
+        .in('type', ['call', 'meeting', 'video_call'])
+        .order('follow_up_date', { ascending: true });
+
+      if (interactionsError) throw interactionsError;
+
+      // Filter to those within next 60 minutes
+      const upcomingInteractions = (interactions || []).filter(interaction => {
+        if (!interaction.follow_up_date) return false;
+        const followUpDate = parseISO(interaction.follow_up_date);
+        return isWithinInterval(followUpDate, { start: now, end: in60Minutes });
+      });
+
+      if (upcomingInteractions.length === 0) {
+        setUpcomingBriefings([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique contact IDs
+      const contactIds = [...new Set(upcomingInteractions.map(i => i.contact_id))];
+
+      // Fetch contacts, companies, and recent interactions in parallel
+      const [contactsResult, companiesResult, recentInteractionsResult, valuesResult, objectionsResult, vakResult] = await Promise.all([
+        supabase.from('contacts').select('*').in('id', contactIds),
+        supabase.from('companies').select('*'),
+        supabase.from('interactions').select('*').in('contact_id', contactIds).order('created_at', { ascending: false }).limit(50),
+        supabase.from('client_values').select('*').in('contact_id', contactIds).order('importance', { ascending: false }),
+        supabase.from('hidden_objections').select('*').in('contact_id', contactIds).eq('resolved', false),
+        supabase.from('vak_analysis_history').select('*').in('contact_id', contactIds).order('created_at', { ascending: false })
+      ]);
+
+      const contacts = contactsResult.data || [];
+      const companies = companiesResult.data || [];
+      const recentInteractions = recentInteractionsResult.data || [];
+      const clientValues = valuesResult.data || [];
+      const objections = objectionsResult.data || [];
+      const vakHistory = vakResult.data || [];
+
+      const contactMap = new Map(contacts.map(c => [c.id, c]));
+      const companyMap = new Map(companies.map(c => [c.id, c]));
+
+      // Build briefings
+      const briefings: NLPBriefing[] = upcomingInteractions
+        .filter(interaction => !dismissedIds.has(interaction.id))
+        .map(interaction => {
+          const contact = contactMap.get(interaction.contact_id);
+          if (!contact) return null;
+
+          const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
+          
+          // Get contact's recent interactions for analysis
+          const contactInteractions = recentInteractions.filter(i => i.contact_id === contact.id);
+          const texts = contactInteractions.map(i => (i.content || '') + ' ' + (i.transcription || '')).filter(Boolean);
+
+          // Check for stored VAK analysis
+          const storedVAK = vakHistory.find(v => v.contact_id === contact.id);
+          let vakProfile: VAKProfile;
+          
+          if (storedVAK) {
+            const total = (storedVAK.visual_score || 0) + (storedVAK.auditory_score || 0) + 
+                         (storedVAK.kinesthetic_score || 0) + (storedVAK.digital_score || 0) || 1;
+            
+            const scores = {
+              visual: storedVAK.visual_score || 0,
+              auditory: storedVAK.auditory_score || 0,
+              kinesthetic: storedVAK.kinesthetic_score || 0,
+              digital: storedVAK.digital_score || 0
+            };
+            
+            const dominant = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+            vakProfile = {
+              visual: Math.round((scores.visual / total) * 100),
+              auditory: Math.round((scores.auditory / total) * 100),
+              kinesthetic: Math.round((scores.kinesthetic / total) * 100),
+              digital: Math.round((scores.digital / total) * 100),
+              dominant: dominant.charAt(0).toUpperCase() + dominant.slice(1)
+            };
+          } else {
+            vakProfile = analyzeVAK(texts);
+          }
+
+          const discProfile = getDISCProfile(contact);
+          const emotionalProfile = analyzeEmotionalState(texts);
+          
+          // Get top values for this contact
+          const contactValues = clientValues
+            .filter(v => v.contact_id === contact.id)
+            .slice(0, 3)
+            .map(v => v.value_name);
+
+          // Get recent objections
+          const contactObjections = objections
+            .filter(o => o.contact_id === contact.id)
+            .slice(0, 2)
+            .map(o => o.objection_type);
+
+          const words = getRecommendedWords(vakProfile);
+          const openingTips = generateOpeningTips(vakProfile, discProfile);
+
+          // Calculate minutes until meeting
+          const followUpDate = parseISO(interaction.follow_up_date!);
+          const minutesUntil = Math.round((followUpDate.getTime() - now.getTime()) / 60000);
+
+          // Get last interaction summary
+          const lastInteraction = contactInteractions[0];
+          const lastSummary = lastInteraction 
+            ? `${format(parseISO(lastInteraction.created_at), 'dd/MM')}: ${lastInteraction.title}`
+            : null;
+
+          return {
+            contact,
+            company,
+            interaction,
+            vakProfile,
+            discProfile,
+            emotionalProfile,
+            topValues: contactValues.length > 0 ? contactValues : ['Não identificados'],
+            wordsToUse: words.use,
+            wordsToAvoid: words.avoid,
+            openingTips,
+            closingMoment: emotionalProfile.resistanceLevel < 30 ? 'Alto potencial' : 
+                          emotionalProfile.resistanceLevel < 60 ? 'Moderado' : 'Trabalhar objeções primeiro',
+            recentObjections: contactObjections,
+            rapportScore: Math.max(0, 100 - emotionalProfile.resistanceLevel),
+            lastInteractionSummary: lastSummary,
+            minutesUntilMeeting: minutesUntil
+          };
+        })
+        .filter(Boolean) as NLPBriefing[];
+
+      setUpcomingBriefings(briefings);
+      
+      // Auto-activate first briefing if within 30 minutes and none active
+      if (briefings.length > 0 && !activeBriefing) {
+        const imminent = briefings.find(b => b.minutesUntilMeeting <= 30);
+        if (imminent) {
+          setActiveBriefing(imminent);
+        }
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching pre-contact briefings:', error);
+      setLoading(false);
+    }
+  }, [user, dismissedIds, activeBriefing]);
+
+  useEffect(() => {
+    fetchUpcomingMeetings();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchUpcomingMeetings, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchUpcomingMeetings]);
+
+  const dismissBriefing = useCallback((interactionId: string) => {
+    setDismissedIds(prev => new Set([...prev, interactionId]));
+    if (activeBriefing?.interaction.id === interactionId) {
+      setActiveBriefing(null);
+    }
+    setUpcomingBriefings(prev => prev.filter(b => b.interaction.id !== interactionId));
+  }, [activeBriefing]);
+
+  const showBriefingFor = useCallback((interactionId: string) => {
+    const briefing = upcomingBriefings.find(b => b.interaction.id === interactionId);
+    if (briefing) {
+      setActiveBriefing(briefing);
+    }
+  }, [upcomingBriefings]);
+
+  return {
+    upcomingBriefings,
+    activeBriefing,
+    loading,
+    dismissBriefing,
+    showBriefingFor
+  };
+}
