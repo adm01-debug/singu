@@ -134,7 +134,7 @@ export function useApproachRecommendation({
           : 'Parceria Estável';
       }
       if (discProfile === 'C') {
-        return metaprogramProfile?.decisionStyle === 'procedures'
+        return metaprogramProfile?.workingStyle === 'procedures'
           ? 'Processo Estruturado'
           : 'Análise Profunda';
       }
@@ -159,7 +159,7 @@ export function useApproachRecommendation({
       if (hiddenObjections.length > 2) riskScore += 30;
       else if (hiddenObjections.length > 0) riskScore += 15;
       
-      if (biasResult && biasResult.biasProfile.resistances.length > 2) riskScore += 25;
+      if (biasResult && biasResult.resistances.length > 2) riskScore += 25;
       
       if (contact.sentiment === 'negative') riskScore += 25;
       else if (contact.sentiment === 'neutral') riskScore += 10;
@@ -195,7 +195,7 @@ export function useApproachRecommendation({
       else if (hiddenObjections.length > 0) rate -= 8;
       
       if (contact.sentiment === 'negative') rate -= 15;
-      if (biasResult && biasResult.biasProfile.resistances.length > 2) rate -= 10;
+      if (biasResult && biasResult.resistances.length > 2) rate -= 10;
       
       return Math.max(15, Math.min(95, rate));
     };
@@ -306,7 +306,7 @@ export function useApproachRecommendation({
         actions: presentationActions,
         techniques: ['Storytelling', 'Demonstração', 'Proof of concept'],
         scripts: presentationScripts,
-        warnings: biasResult?.biasProfile.resistances.map(r => `Atenção ao viés: ${r}`) || [],
+        warnings: biasResult?.resistances.map(r => `Atenção ao viés: ${r.bias}`) || [],
         timing: 'Após descoberta completa',
         duration: '10-15 minutos',
         successIndicators: ['Interesse visível', 'Perguntas específicas', 'Concordância com benefícios'],
@@ -557,9 +557,9 @@ export function useApproachRecommendation({
       }
       
       // Bias-based warnings
-      if (biasResult?.biasProfile.resistances) {
-        biasResult.biasProfile.resistances.slice(0, 2).forEach(r => {
-          dontList.push(`Evite estratégias que ativem: ${r}`);
+      if (biasResult?.resistances) {
+        biasResult.resistances.slice(0, 2).forEach(r => {
+          dontList.push(`Evite estratégias que ativem: ${r.bias}`);
         });
       }
       

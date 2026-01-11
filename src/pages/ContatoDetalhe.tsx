@@ -60,6 +60,7 @@ import { EmotionalIntelligencePanel } from '@/components/analytics/EmotionalInte
 import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPanel';
 import { BehaviorEvolutionChart } from '@/components/analytics/BehaviorEvolutionChart';
 import { UnifiedBehavioralProfilePanel } from '@/components/analytics/UnifiedBehavioralProfilePanel';
+import { ApproachRecommendationPanel } from '@/components/analytics/ApproachRecommendationPanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -357,6 +358,17 @@ const ContatoDetalhe = () => {
 
               {/* Executive Behavior Summary - Consolidated Profile */}
               <ExecutiveBehaviorSummary 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
+              />
+
+              {/* Approach Recommendation Panel - AI Strategy */}
+              <ApproachRecommendationPanel 
                 contact={contact}
                 interactions={contactInteractions.map(i => ({
                   id: i.id,
