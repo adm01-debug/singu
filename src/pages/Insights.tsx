@@ -29,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PortfolioCompatibilityReport } from '@/components/triggers/PortfolioCompatibilityReport';
+import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -261,8 +262,15 @@ const Insights = () => {
             </Button>
           </div>
 
-          <TabsContent value="compatibility" className="mt-0">
-            <PortfolioCompatibilityReport />
+          <TabsContent value="compatibility" className="mt-0 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <PortfolioCompatibilityReport />
+              </div>
+              <div>
+                <CompatibilityAlertsList maxItems={10} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="insights" className="mt-0 space-y-6">

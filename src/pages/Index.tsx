@@ -29,6 +29,8 @@ import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
+import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
+import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -47,6 +49,9 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
 const Dashboard = () => {
   const [period, setPeriod] = useState<PeriodFilter>('7d');
   const [loading, setLoading] = useState(true);
+  
+  // Check for compatibility alerts
+  useCompatibilityAlerts();
 
   // Simulate loading for demo purposes
   useEffect(() => {
@@ -182,15 +187,17 @@ const Dashboard = () => {
           <RelationshipStatsPanel />
         </motion.div>
 
-        {/* Smart Reminders + Top Contacts + Insights */}
+        {/* Smart Reminders + Compatibility Alerts + Top Contacts + Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Smart Reminders - Compact version */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.65 }}
+            className="space-y-6"
           >
             <SmartRemindersPanel compact />
+            <CompatibilityAlertsList maxItems={3} />
           </motion.div>
 
           {/* Top Contacts */}
