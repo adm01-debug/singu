@@ -417,7 +417,7 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
           </h4>
           <div className="space-y-2">
             {data.highlights.map((highlight: string, i: number) => (
-              <div key={i} className="p-3 rounded-lg bg-green-500/10 text-sm">
+              <div key={`highlight-${i}-${highlight.slice(0, 15)}`} className="p-3 rounded-lg bg-green-500/10 text-sm">
                 {highlight}
               </div>
             ))}
@@ -434,7 +434,7 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
           </h4>
           <div className="space-y-2">
             {data.recommendations.map((rec: string, i: number) => (
-              <div key={i} className="p-3 rounded-lg bg-amber-500/10 text-sm flex items-start gap-2">
+              <div key={`rec-${i}-${rec.slice(0, 15)}`} className="p-3 rounded-lg bg-amber-500/10 text-sm flex items-start gap-2">
                 <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 {rec}
               </div>

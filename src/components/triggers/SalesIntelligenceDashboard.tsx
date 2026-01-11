@@ -425,11 +425,11 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg border bg-green-50">
                     <h5 className="text-xs font-medium text-green-700 mb-2">🚀 Motivadores</h5>
-                    {valuesMap.motivationalDrivers.map((d, i) => <p key={i} className="text-xs mb-1">{d}</p>)}
+                    {valuesMap.motivationalDrivers.map((d) => <p key={`motivator-${d.slice(0, 20)}`} className="text-xs mb-1">{d}</p>)}
                   </div>
                   <div className="p-3 rounded-lg border bg-amber-50">
                     <h5 className="text-xs font-medium text-amber-700 mb-2">⚠️ Medos</h5>
-                    {valuesMap.fearDrivers.map((d, i) => <p key={i} className="text-xs mb-1">{d}</p>)}
+                    {valuesMap.fearDrivers.map((d) => <p key={`fear-${d.slice(0, 20)}`} className="text-xs mb-1">{d}</p>)}
                   </div>
                 </div>
               </div>
@@ -518,7 +518,7 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
                         <div className="p-3 bg-muted/50 rounded whitespace-pre-line text-sm">{section.script}</div>
                         <div className="flex flex-wrap gap-1">
                           <span className="text-xs text-muted-foreground mr-1">Palavras mágicas:</span>
-                          {section.magicWords.map((w, j) => <Badge key={j} variant="outline" className="text-xs">{w}</Badge>)}
+                          {section.magicWords.map((w) => <Badge key={`magic-${section.stage}-${w}`} variant="outline" className="text-xs">{w}</Badge>)}
                         </div>
                         <Button size="sm" variant="outline" className="gap-1" onClick={() => handleCopy(section.script, section.stage)}>
                           {copiedText === section.stage ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} Copiar Script
