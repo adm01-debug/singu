@@ -23,7 +23,10 @@ import {
   Zap,
   TrendingUp,
   Shield,
-  Bell
+  Bell,
+  Package,
+  Settings2,
+  CalendarHeart
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
@@ -67,6 +70,9 @@ import { ImportantDatesPanel } from '@/components/analytics/ImportantDatesPanel'
 import { SatisfactionScorePanel } from '@/components/analytics/SatisfactionScorePanel';
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
+import { PurchaseHistoryForm } from '@/components/forms/PurchaseHistoryForm';
+import { CommunicationPreferencesForm } from '@/components/forms/CommunicationPreferencesForm';
+import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -251,6 +257,40 @@ const ContatoDetalhe = () => {
                       <Sparkles className="w-4 h-4" />
                       {showWritingAssistant ? 'Fechar Assistente' : 'Assistente de Escrita IA'}
                     </Button>
+
+                    {/* Quick Action Forms */}
+                    <div className="w-full mt-4 pt-4 border-t border-border space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Cadastro Rápido</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        <PurchaseHistoryForm 
+                          contactId={contact.id}
+                          trigger={
+                            <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                              <Package className="w-4 h-4" />
+                              Registrar Compra
+                            </Button>
+                          }
+                        />
+                        <CommunicationPreferencesForm 
+                          contactId={contact.id}
+                          trigger={
+                            <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                              <Settings2 className="w-4 h-4" />
+                              Preferências de Contato
+                            </Button>
+                          }
+                        />
+                        <LifeEventForm 
+                          contactId={contact.id}
+                          trigger={
+                            <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                              <CalendarHeart className="w-4 h-4" />
+                              Evento Importante
+                            </Button>
+                          }
+                        />
+                      </div>
+                    </div>
 
                     {/* Contact Info */}
                     <div className="w-full space-y-3 mt-6 pt-6 border-t border-border">
