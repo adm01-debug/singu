@@ -47,6 +47,7 @@ import { AdvancedFilters, type FilterConfig, type SortOption } from '@/component
 import { InteractionForm } from '@/components/forms/InteractionForm';
 import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
+import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { SentimentType } from '@/types';
@@ -141,6 +142,9 @@ const Interacoes = () => {
   const [deletingInteraction, setDeletingInteraction] = useState<Interaction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Mini celebration hook
+  const celebration = useMiniCelebration();
+  
   // Advanced filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
   const [sortBy, setSortBy] = useState('created_at');
@@ -210,22 +214,34 @@ const Interacoes = () => {
     return contacts.find(c => c.id === contactId);
   };
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: any, event?: React.MouseEvent) => {
     setIsSubmitting(true);
     const result = await createInteraction(data);
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      // Trigger celebration
+      if (event) {
+        celebration.trigger(event, { variant: 'success', message: 'Interação criada!' });
+      } else {
+        celebration.trigger({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }, { variant: 'success', message: 'Interação criada!' });
+      }
     }
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: any, event?: React.MouseEvent) => {
     if (!editingInteraction) return;
     setIsSubmitting(true);
     const result = await updateInteraction(editingInteraction.id, data);
     setIsSubmitting(false);
     if (result) {
       setEditingInteraction(null);
+      // Trigger celebration
+      if (event) {
+        celebration.trigger(event, { variant: 'star', message: 'Atualizado!' });
+      } else {
+        celebration.trigger({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }, { variant: 'star', message: 'Atualizado!' });
+      }
     }
   };
 
@@ -507,6 +523,9 @@ const Interacoes = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Mini Celebration */}
+      {celebration.MiniCelebrationComponent}
     </AppLayout>
   );
 };
