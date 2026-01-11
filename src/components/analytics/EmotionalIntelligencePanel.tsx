@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, 
@@ -12,7 +12,10 @@ import {
   MessageSquare,
   Info,
   BarChart3,
-  Heart
+  Heart,
+  History,
+  Save,
+  CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,9 +27,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useEmotionalIntelligence } from '@/hooks/useEmotionalIntelligence';
+import { useEQPersistence } from '@/hooks/useEQPersistence';
 import { EQPillar, EQPillarScore } from '@/types/emotional-intelligence';
 import { EQ_PILLAR_INFO, EQ_LEVEL_INFO } from '@/data/emotionalIntelligenceData';
 import { Contact } from '@/types';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Interaction {
   id: string;
@@ -46,10 +52,38 @@ export function EmotionalIntelligencePanel({
   interactions,
   className
 }: EmotionalIntelligencePanelProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'pillars' | 'sales'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'pillars' | 'sales' | 'history'>('overview');
   const [expandedPillar, setExpandedPillar] = useState<EQPillar | null>(null);
+  const [autoSaved, setAutoSaved] = useState(false);
+  const lastInteractionCountRef = useRef(interactions.length);
   
   const { analysisResult } = useEmotionalIntelligence(contact, interactions);
+  const { 
+    history, 
+    isLoading: isLoadingHistory, 
+    saveAnalysis, 
+    isSaving,
+    evolutionData 
+  } = useEQPersistence(contact.id);
+
+  // Auto-save when new interactions are detected
+  useEffect(() => {
+    if (
+      analysisResult && 
+      interactions.length > 0 && 
+      interactions.length !== lastInteractionCountRef.current
+    ) {
+      lastInteractionCountRef.current = interactions.length;
+      
+      // Save the new analysis
+      saveAnalysis(analysisResult);
+      setAutoSaved(true);
+      
+      // Reset the auto-saved indicator after 3 seconds
+      const timer = setTimeout(() => setAutoSaved(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [interactions.length, analysisResult, saveAnalysis]);
 
   const getTrendIcon = (trend: 'improving' | 'stable' | 'declining') => {
     switch (trend) {
@@ -233,9 +267,26 @@ export function EmotionalIntelligencePanel({
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5" />
               Inteligência Emocional (QE)
+              {autoSaved && (
+                <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Salvo
+                </Badge>
+              )}
+              {isSaving && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Save className="w-3 h-3 animate-pulse" />
+                  Salvando...
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>
               5 Pilares de Daniel Goleman
+              {history.length > 0 && (
+                <span className="ml-2 text-xs">
+                  • {history.length} análise{history.length > 1 ? 's' : ''} salva{history.length > 1 ? 's' : ''}
+                </span>
+              )}
             </CardDescription>
           </div>
           <TooltipProvider>
@@ -248,9 +299,14 @@ export function EmotionalIntelligencePanel({
                   )}>
                     {analysisResult.overallScore}%
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {EQ_LEVEL_INFO[analysisResult.overallLevel].namePt}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs">
+                      {EQ_LEVEL_INFO[analysisResult.overallLevel].namePt}
+                    </Badge>
+                    {evolutionData && (
+                      <span>{getTrendIcon(evolutionData.trend)}</span>
+                    )}
+                  </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -258,6 +314,12 @@ export function EmotionalIntelligencePanel({
                 <p className="text-xs text-muted-foreground">
                   Baseado em {analysisResult.indicators.length} indicadores
                 </p>
+                {evolutionData && (
+                  <p className="text-xs text-muted-foreground">
+                    Tendência: {evolutionData.trend === 'improving' ? 'Melhorando' : 
+                      evolutionData.trend === 'declining' ? 'Caindo' : 'Estável'}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -266,22 +328,52 @@ export function EmotionalIntelligencePanel({
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="gap-1">
               <BarChart3 className="w-4 h-4" />
-              Visão Geral
+              <span className="hidden sm:inline">Visão Geral</span>
             </TabsTrigger>
             <TabsTrigger value="pillars" className="gap-1">
               <Brain className="w-4 h-4" />
-              Pilares
+              <span className="hidden sm:inline">Pilares</span>
             </TabsTrigger>
             <TabsTrigger value="sales" className="gap-1">
               <MessageSquare className="w-4 h-4" />
-              Vendas
+              <span className="hidden sm:inline">Vendas</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-1">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Histórico</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
+            {/* Evolution Summary */}
+            {evolutionData && evolutionData.history.length > 1 && (
+              <div className="p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-blue-600" />
+                  <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    Evolução do QE
+                  </h4>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                  <div>
+                    <div className="font-bold text-lg">{Math.round(evolutionData.averageScore)}%</div>
+                    <div className="text-xs text-muted-foreground">Média</div>
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-green-600">{evolutionData.highestScore}%</div>
+                    <div className="text-xs text-muted-foreground">Máximo</div>
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg text-orange-600">{evolutionData.lowestScore}%</div>
+                    <div className="text-xs text-muted-foreground">Mínimo</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Summary Card */}
             <div className="p-4 rounded-lg bg-muted/50">
               <p className="text-sm">{analysisResult.profileSummary}</p>
@@ -442,6 +534,90 @@ export function EmotionalIntelligencePanel({
                 </p>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-4 mt-4">
+            {isLoadingHistory ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                <p>Carregando histórico...</p>
+              </div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhuma análise salva ainda</p>
+                <p className="text-sm">As análises serão salvas automaticamente</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3">
+                  {history.map((record, index) => (
+                    <motion.div
+                      key={record.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="p-4 rounded-lg border hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={cn(
+                            'text-2xl font-bold',
+                            getLevelColor(record.overallScore)
+                          )}>
+                            {record.overallScore}%
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {record.overallLevel}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(record.analyzedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-5 gap-2">
+                        {(['self_awareness', 'self_regulation', 'motivation', 'empathy', 'social_skills'] as EQPillar[]).map(pillar => {
+                          const pillarScore = record.pillarScores[pillar] || 0;
+                          const info = EQ_PILLAR_INFO[pillar];
+                          return (
+                            <TooltipProvider key={pillar}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="text-center p-2 rounded bg-muted/50">
+                                    <div className="text-lg">{info.icon}</div>
+                                    <div className={cn(
+                                      'text-sm font-bold',
+                                      getLevelColor(pillarScore)
+                                    )}>
+                                      {pillarScore}%
+                                    </div>
+                                    {evolutionData?.pillarTrends[pillar] && (
+                                      <div className="mt-1">
+                                        {getTrendIcon(evolutionData.pillarTrends[pillar])}
+                                      </div>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{info.namePt}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          );
+                        })}
+                      </div>
+
+                      {record.profileSummary && (
+                        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+                          {record.profileSummary}
+                        </p>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Brain, 
@@ -11,7 +11,13 @@ import {
   BarChart3,
   Info,
   Zap,
-  Eye
+  Eye,
+  History,
+  Save,
+  CheckCircle2,
+  TrendingUp,
+  TrendingDown,
+  Minus
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +28,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useCognitiveBiases } from '@/hooks/useCognitiveBiases';
+import { useCognitiveBiasPersistence } from '@/hooks/useCognitiveBiasPersistence';
 import { CognitiveBiasType, BiasCategory, DetectedBias } from '@/types/cognitive-biases';
 import { COGNITIVE_BIAS_INFO, BIAS_CATEGORY_INFO } from '@/data/cognitiveBiasesData';
 import { Contact } from '@/types';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface Interaction {
   id: string;
@@ -44,10 +53,49 @@ export function CognitiveBiasesPanel({
   interactions,
   className
 }: CognitiveBiasesPanelProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'biases' | 'strategies'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'biases' | 'strategies' | 'history'>('overview');
   const [expandedBias, setExpandedBias] = useState<CognitiveBiasType | null>(null);
+  const [autoSaved, setAutoSaved] = useState(false);
+  const lastInteractionCountRef = useRef(interactions.length);
   
   const { analysisResult } = useCognitiveBiases(contact, interactions);
+  const {
+    history,
+    isLoading: isLoadingHistory,
+    saveAnalysis,
+    isSaving,
+    evolutionData
+  } = useCognitiveBiasPersistence(contact.id);
+
+  // Auto-save when new interactions are detected
+  useEffect(() => {
+    if (
+      analysisResult &&
+      interactions.length > 0 &&
+      interactions.length !== lastInteractionCountRef.current
+    ) {
+      lastInteractionCountRef.current = interactions.length;
+      
+      // Save the new analysis
+      saveAnalysis(analysisResult);
+      setAutoSaved(true);
+      
+      // Reset the auto-saved indicator after 3 seconds
+      const timer = setTimeout(() => setAutoSaved(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [interactions.length, analysisResult, saveAnalysis]);
+
+  const getTrendIcon = (trend: 'increasing' | 'stable' | 'decreasing') => {
+    switch (trend) {
+      case 'increasing':
+        return <TrendingUp className="w-4 h-4 text-orange-500" />;
+      case 'decreasing':
+        return <TrendingDown className="w-4 h-4 text-green-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
 
   const getPolarityColor = (polarity: DetectedBias['polarity']) => {
     switch (polarity) {
@@ -204,9 +252,26 @@ export function CognitiveBiasesPanel({
             <CardTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5" />
               Vieses Cognitivos
+              {autoSaved && (
+                <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Salvo
+                </Badge>
+              )}
+              {isSaving && (
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Save className="w-3 h-3 animate-pulse" />
+                  Salvando...
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>
               Padrões de pensamento detectados
+              {history.length > 0 && (
+                <span className="ml-2 text-xs">
+                  • {history.length} análise{history.length > 1 ? 's' : ''} salva{history.length > 1 ? 's' : ''}
+                </span>
+              )}
             </CardDescription>
           </div>
           <TooltipProvider>
@@ -223,6 +288,11 @@ export function CognitiveBiasesPanel({
               </TooltipTrigger>
               <TooltipContent>
                 <p>{totalBiases} detecções em {interactions.length} interações</p>
+                {evolutionData && evolutionData.mostFrequentBiases.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Mais frequente: {COGNITIVE_BIAS_INFO[evolutionData.mostFrequentBiases[0].bias]?.namePt}
+                  </p>
+                )}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -231,22 +301,49 @@ export function CognitiveBiasesPanel({
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="gap-1">
               <BarChart3 className="w-4 h-4" />
-              Visão Geral
+              <span className="hidden sm:inline">Visão Geral</span>
             </TabsTrigger>
             <TabsTrigger value="biases" className="gap-1">
               <Brain className="w-4 h-4" />
-              Vieses
+              <span className="hidden sm:inline">Vieses</span>
             </TabsTrigger>
             <TabsTrigger value="strategies" className="gap-1">
               <Target className="w-4 h-4" />
-              Estratégias
+              <span className="hidden sm:inline">Estratégias</span>
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-1">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Histórico</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 mt-4">
+            {/* Evolution Summary */}
+            {evolutionData && evolutionData.mostFrequentBiases.length > 0 && (
+              <div className="p-3 rounded-lg border bg-purple-50 dark:bg-purple-950/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-purple-600" />
+                  <h4 className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                    Vieses Mais Frequentes (Histórico)
+                  </h4>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {evolutionData.mostFrequentBiases.slice(0, 4).map(({ bias, count }) => {
+                    const info = COGNITIVE_BIAS_INFO[bias];
+                    return (
+                      <Badge key={bias} variant="outline" className="gap-1">
+                        <span>{info?.icon}</span>
+                        {info?.namePt} ({count}x)
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Summary */}
             <div className="p-4 rounded-lg bg-muted/50">
               <p className="text-sm">{analysisResult.profileSummary}</p>
@@ -433,6 +530,107 @@ export function CognitiveBiasesPanel({
                 ))}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-4 mt-4">
+            {isLoadingHistory ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-3" />
+                <p>Carregando histórico...</p>
+              </div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhuma análise salva ainda</p>
+                <p className="text-sm">As análises serão salvas automaticamente</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3">
+                  {history.map((record, index) => (
+                    <motion.div
+                      key={record.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="p-4 rounded-lg border hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="text-2xl font-bold text-primary">
+                            {record.dominantBiases.length}
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            vieses detectados
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {format(new Date(record.analyzedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {record.dominantBiases.slice(0, 5).map(biasType => {
+                          const info = COGNITIVE_BIAS_INFO[biasType];
+                          return info ? (
+                            <TooltipProvider key={biasType}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="gap-1">
+                                    <span>{info.icon}</span>
+                                    {info.namePt}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{info.descriptionPt}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null;
+                        })}
+                        {record.dominantBiases.length > 5 && (
+                          <Badge variant="secondary">
+                            +{record.dominantBiases.length - 5}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Category Distribution for this record */}
+                      <div className="grid grid-cols-5 gap-1">
+                        {(Object.entries(record.categoryDistribution) as [BiasCategory, number][])
+                          .map(([category, count]) => {
+                            const info = BIAS_CATEGORY_INFO[category];
+                            return (
+                              <TooltipProvider key={category}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className={cn(
+                                      'text-center p-1 rounded text-xs',
+                                      count > 0 ? info.color.replace('text-', 'bg-').replace('-600', '-100') : 'bg-muted/50'
+                                    )}>
+                                      <div>{info.icon}</div>
+                                      <div className="font-bold">{count}</div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{info.namePt}: {count} detecções</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })}
+                      </div>
+
+                      {record.profileSummary && (
+                        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+                          {record.profileSummary}
+                        </p>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>
