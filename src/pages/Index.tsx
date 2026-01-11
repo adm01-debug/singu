@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
-import { mockCompanies, mockContacts, mockActivities, mockInsights } from '@/data/mockData';
+import { mockCompanies, mockContacts, mockActivities, mockInsights, mockInteractions } from '@/data/mockData';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -40,6 +40,7 @@ import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPane
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
+import { PortfolioHealthDashboard } from '@/components/dashboard/PortfolioHealthDashboard';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -138,6 +139,12 @@ const Dashboard = () => {
 
         {/* Your Day Section */}
         <YourDaySection />
+
+        {/* Portfolio Health Dashboard */}
+        <PortfolioHealthDashboard 
+          contacts={mockContacts}
+          interactions={mockInteractions}
+        />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
