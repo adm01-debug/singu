@@ -357,7 +357,10 @@ const ContatoDetalhe = () => {
               />
 
               {/* AI Closing Score */}
-              <ClosingScorePanel contactId={contact.id} />
+              <ClosingScorePanel 
+                contactId={contact.id} 
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
 
               {/* Sales Intelligence Dashboard - Raio-X Completo */}
               <SalesIntelligenceDashboard 

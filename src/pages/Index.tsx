@@ -33,6 +33,7 @@ import { YourDaySection } from '@/components/dashboard/YourDaySection';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
+import { ClosingScoreAlertsList } from '@/components/analytics/ClosingScoreAlertsList';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
@@ -227,6 +228,7 @@ const Dashboard = () => {
             className="space-y-6"
           >
             <SmartRemindersPanel compact />
+            <ClosingScoreAlertsList maxItems={3} compact />
             <CompatibilityAlertsList maxItems={3} />
           </motion.div>
 

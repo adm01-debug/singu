@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { differenceInDays, parseISO } from 'date-fns';
@@ -16,7 +16,7 @@ interface ScoreFactor {
   recommendation?: string;
 }
 
-interface ClosingScoreResult {
+export interface ClosingScoreResult {
   overallScore: number;
   probability: 'high' | 'medium' | 'low' | 'very_low';
   factors: ScoreFactor[];
@@ -33,6 +33,13 @@ interface ClosingScoreData {
   loading: boolean;
   analyzing: boolean;
   recalculate: () => Promise<void>;
+}
+
+// Hook to track score changes across contacts
+interface ScoreTracker {
+  contactId: string;
+  lastProbability: 'high' | 'medium' | 'low' | 'very_low' | null;
+  lastScore: number | null;
 }
 
 // Emotional state scoring
@@ -63,12 +70,12 @@ const DISC_CLOSING_FACTORS: Record<string, { speed: number; style: string }> = {
   'C': { speed: 0.4, style: 'Analítico - requer dados e garantias detalhadas' }
 };
 
-export function useClosingScore(contactId: string): ClosingScoreData {
+export function useClosingScore(contactId: string, contactName?: string): ClosingScoreData {
   const { user } = useAuth();
   const [score, setScore] = useState<ClosingScoreResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
-
+  const hasCheckedAlert = useRef(false);
   const calculateScore = useCallback(async () => {
     if (!user || !contactId) {
       setLoading(false);
@@ -388,14 +395,91 @@ export function useClosingScore(contactId: string): ClosingScoreData {
       };
 
       setScore(result);
+
+      // Check for significant score changes and create alerts
+      if (!hasCheckedAlert.current && contactName) {
+        hasCheckedAlert.current = true;
+        checkAndCreateAlert(
+          contactId, 
+          contactName || `${contact.first_name} ${contact.last_name}`,
+          overallScore,
+          probability
+        );
+      }
     } catch (error) {
       console.error('Error calculating closing score:', error);
     } finally {
       setLoading(false);
       setAnalyzing(false);
     }
-  }, [user, contactId]);
+  }, [user, contactId, contactName]);
 
+  // Function to check and create alerts for score changes
+  const checkAndCreateAlert = async (
+    cId: string, 
+    cName: string, 
+    currentScore: number, 
+    currentProbability: 'high' | 'medium' | 'low' | 'very_low'
+  ) => {
+    if (!user) return;
+
+    try {
+      // Get the last stored score from alerts
+      const { data: lastAlerts } = await supabase
+        .from('alerts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('contact_id', cId)
+        .eq('type', 'closing_score_change')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      let previousProbability: string | null = null;
+      let previousScore: number | null = null;
+
+      if (lastAlerts && lastAlerts.length > 0) {
+        const parts = (lastAlerts[0].description || '').split('|');
+        previousProbability = parts[2] || null;
+        previousScore = parts[4] ? parseInt(parts[4]) : null;
+      }
+
+      // Check for significant changes
+      let changeType: 'improved_to_high' | 'dropped_to_very_low' | null = null;
+
+      // Improved to high (from any other state)
+      if (currentProbability === 'high' && previousProbability !== 'high') {
+        changeType = 'improved_to_high';
+      }
+      // Dropped to very low (from any other state)
+      else if (currentProbability === 'very_low' && previousProbability !== 'very_low' && previousProbability !== null) {
+        changeType = 'dropped_to_very_low';
+      }
+
+      if (changeType) {
+        const title = changeType === 'improved_to_high'
+          ? `🎯 ${cName}: Score de Fechamento em ALTA!`
+          : `⚠️ ${cName}: Score de Fechamento caiu para MUITO BAIXA`;
+
+        const priority = changeType === 'improved_to_high' ? 'high' : 'critical';
+        const description = `${cName}|${previousProbability || ''}|${currentProbability}|${previousScore || ''}|${currentScore}|${changeType}`;
+
+        await supabase
+          .from('alerts')
+          .insert({
+            user_id: user.id,
+            contact_id: cId,
+            type: 'closing_score_change',
+            title,
+            description,
+            priority,
+            action_url: `/contatos/${cId}`,
+            dismissed: false
+          });
+      }
+    } catch (error) {
+      console.error('Error checking score alert:', error);
+    }
+  };
   useEffect(() => {
     calculateScore();
   }, [calculateScore]);
