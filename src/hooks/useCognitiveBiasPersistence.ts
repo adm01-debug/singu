@@ -151,7 +151,10 @@ export function useCognitiveBiasPersistence(contactId: string) {
 
     // Calculate category trends
     const categories: BiasCategory[] = ['decision_making', 'social', 'memory', 'probability', 'self_perception'];
-    const categoryTrends: Record<BiasCategory, 'increasing' | 'stable' | 'decreasing'> = {} as any;
+    const categoryTrends = categories.reduce((acc, category) => {
+      acc[category] = 'stable';
+      return acc;
+    }, {} as Record<BiasCategory, 'increasing' | 'stable' | 'decreasing'>);
 
     categories.forEach(category => {
       if (history.length >= 2) {

@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
 import { 
   MessageSquare, 
@@ -179,35 +180,11 @@ const Interacoes = () => {
       return true;
     });
 
-    // Sort
-    result.sort((a, b) => {
-      let aVal = a[sortBy as keyof Interaction];
-      let bVal = b[sortBy as keyof Interaction];
-
-      if (aVal === null || aVal === undefined) aVal = '' as any;
-      if (bVal === null || bVal === undefined) bVal = '' as any;
-
-      if (sortBy === 'duration') {
-        const numA = Number(aVal) || 0;
-        const numB = Number(bVal) || 0;
-        return sortOrder === 'asc' ? numA - numB : numB - numA;
-      }
-
-      if (sortBy === 'created_at') {
-        const dateA = new Date(aVal as string).getTime();
-        const dateB = new Date(bVal as string).getTime();
-        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-      }
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        const comparison = aVal.localeCompare(bVal, 'pt-BR');
-        return sortOrder === 'asc' ? comparison : -comparison;
-      }
-
-      return 0;
+    // Sort using type-safe utility
+    return sortArray(result, sortBy as keyof Interaction, sortOrder, {
+      dateFields: ['created_at', 'follow_up_date'],
+      numericFields: ['duration', 'response_time']
     });
-
-    return result;
   }, [interactions, searchTerm, activeFilters, sortBy, sortOrder]);
 
   const getContactInfo = (contactId: string) => {

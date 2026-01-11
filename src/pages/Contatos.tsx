@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -152,29 +153,11 @@ const Contatos = () => {
       return true;
     });
 
-    // Sort
-    result.sort((a, b) => {
-      let aVal = a[sortBy as keyof Contact];
-      let bVal = b[sortBy as keyof Contact];
-
-      if (aVal === null || aVal === undefined) aVal = '' as any;
-      if (bVal === null || bVal === undefined) bVal = '' as any;
-
-      if (sortBy === 'relationship_score') {
-        const numA = Number(aVal) || 0;
-        const numB = Number(bVal) || 0;
-        return sortOrder === 'asc' ? numA - numB : numB - numA;
-      }
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        const comparison = aVal.localeCompare(bVal, 'pt-BR');
-        return sortOrder === 'asc' ? comparison : -comparison;
-      }
-
-      return 0;
+    // Sort using type-safe utility
+    return sortArray(result, sortBy as keyof Contact, sortOrder, {
+      dateFields: ['created_at', 'updated_at', 'birthday'],
+      numericFields: ['relationship_score']
     });
-
-    return result;
   }, [contacts, searchTerm, activeFilters, sortBy, sortOrder]);
 
   const getCompanyName = (companyId: string | null) => {
