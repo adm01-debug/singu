@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { addMinutes, isWithinInterval, parseISO, format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { getContactBehavior } from '@/lib/contact-utils';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -120,10 +121,12 @@ function analyzeEmotionalState(texts: string[]): EmotionalProfile {
   };
 }
 
-// Get DISC profile from contact behavior
-function getDISCProfile(contact: Contact): { type: string; description: string } {
-  const behavior = contact.behavior as any;
-  if (!behavior?.disc) {
+// Get DISC profile from contact behavior - using type-safe utility
+function getDISCProfileFromContact(contact: Contact): { type: string; description: string } {
+  const behavior = getContactBehavior(contact);
+  const disc = behavior?.disc || behavior?.discProfile;
+  
+  if (!disc) {
     return { type: 'N/A', description: 'Perfil não identificado ainda' };
   }
   
@@ -135,8 +138,8 @@ function getDISCProfile(contact: Contact): { type: string; description: string }
   };
 
   return {
-    type: behavior.disc,
-    description: discDescriptions[behavior.disc] || 'Perfil misto'
+    type: disc,
+    description: discDescriptions[disc] || 'Perfil misto'
   };
 }
 
@@ -301,7 +304,7 @@ export function usePreContactBriefing(): PreContactBriefingData {
             vakProfile = analyzeVAK(texts);
           }
 
-          const discProfile = getDISCProfile(contact);
+          const discProfile = getDISCProfileFromContact(contact);
           const emotionalProfile = analyzeEmotionalState(texts);
           
           // Get top values for this contact

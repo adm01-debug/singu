@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ValuesMap, ClientValue, DecisionCriterion, ValueCategory } from '@/types/nlp-advanced';
 import { VALUE_CATEGORY_INFO } from '@/data/nlpAdvancedData';
 import { Contact } from '@/types';
+import { getContactBehavior, getMetaprogramProfile } from '@/lib/contact-utils';
 
 interface Interaction {
   id: string;
@@ -29,12 +30,14 @@ export function useClientValues(contact: Contact, interactions: Interaction[]) {
   }, []);
 
   const valuesMap = useMemo((): ValuesMap => {
-    const valueScores: Record<ValueCategory, { count: number; phrases: string[] }> = {} as any;
-
-    // Initialize
-    (Object.keys(VALUE_CATEGORY_INFO) as ValueCategory[]).forEach(cat => {
-      valueScores[cat] = { count: 0, phrases: [] };
-    });
+    // Initialize with proper typing
+    const valueScores = (Object.keys(VALUE_CATEGORY_INFO) as ValueCategory[]).reduce(
+      (acc, cat) => {
+        acc[cat] = { count: 0, phrases: [] };
+        return acc;
+      },
+      {} as Record<ValueCategory, { count: number; phrases: string[] }>
+    );
 
     // Analyze all interactions
     interactions.forEach(interaction => {
@@ -83,9 +86,9 @@ export function useClientValues(contact: Contact, interactions: Interaction[]) {
       template: `${contact.firstName}, ${VALUE_CATEGORY_INFO[value.category].benefitFraming.replace('...', ' [seu benefício específico]')}`
     }));
 
-    // Determine motivational and fear drivers
-    const behavior = contact.behavior as any;
-    const motivationDirection = behavior?.metaprogramProfile?.motivationDirection;
+    // Determine motivational and fear drivers using type-safe utility
+    const metaprogramProfile = getMetaprogramProfile(contact);
+    const motivationDirection = metaprogramProfile?.motivationDirection;
 
     const motivationalDrivers = coreValues
       .filter(v => ['growth', 'achievement', 'recognition', 'freedom', 'innovation'].includes(v.category))

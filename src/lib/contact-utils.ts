@@ -3,6 +3,13 @@
  */
 
 import { Contact, ContactBehavior, VAKProfile, DISCProfile, DecisionRole, CareerStage, DecisionSpeed } from '@/types';
+import { Json } from '@/integrations/supabase/types';
+
+// Type for raw Supabase contact (from Tables<'contacts'>)
+interface RawContact {
+  behavior?: Json | null;
+  [key: string]: unknown;
+}
 
 // Default VAK Profile
 export const DEFAULT_VAK_PROFILE: VAKProfile = {
@@ -30,12 +37,14 @@ export interface ExtendedBehavior extends Partial<ContactBehavior> {
 
 /**
  * Safely extracts behavior from a contact with proper typing
+ * Supports both app Contact type and raw Supabase Tables<'contacts'> type
  */
-export function getContactBehavior(contact: Contact | null | undefined): ExtendedBehavior | null {
+export function getContactBehavior(contact: Contact | RawContact | null | undefined): ExtendedBehavior | null {
   if (!contact) return null;
   
-  if (contact.behavior && typeof contact.behavior === 'object') {
-    return contact.behavior as ExtendedBehavior;
+  const behavior = contact.behavior;
+  if (behavior && typeof behavior === 'object' && !Array.isArray(behavior)) {
+    return behavior as ExtendedBehavior;
   }
   
   return null;
@@ -44,7 +53,7 @@ export function getContactBehavior(contact: Contact | null | undefined): Extende
 /**
  * Gets VAK profile with fallback to defaults
  */
-export function getVAKProfile(contact: Contact | null | undefined): VAKProfile {
+export function getVAKProfile(contact: Contact | RawContact | null | undefined): VAKProfile {
   const behavior = getContactBehavior(contact);
   return behavior?.vakProfile || DEFAULT_VAK_PROFILE;
 }
@@ -52,7 +61,7 @@ export function getVAKProfile(contact: Contact | null | undefined): VAKProfile {
 /**
  * Gets the dominant VAK type
  */
-export function getDominantVAK(contact: Contact | null | undefined): 'V' | 'A' | 'K' {
+export function getDominantVAK(contact: Contact | RawContact | null | undefined): 'V' | 'A' | 'K' {
   const vakProfile = getVAKProfile(contact);
   
   if (vakProfile.primary) return vakProfile.primary;
@@ -69,7 +78,7 @@ export function getDominantVAK(contact: Contact | null | undefined): 'V' | 'A' |
 /**
  * Gets DISC profile with null fallback
  */
-export function getDISCProfile(contact: Contact | null | undefined): DISCProfile {
+export function getDISCProfile(contact: Contact | RawContact | null | undefined): DISCProfile {
   const behavior = getContactBehavior(contact);
   return behavior?.discProfile || behavior?.disc || null;
 }
@@ -77,7 +86,7 @@ export function getDISCProfile(contact: Contact | null | undefined): DISCProfile
 /**
  * Gets metaprogram profile with null fallback
  */
-export function getMetaprogramProfile(contact: Contact | null | undefined): MetaprogramProfile | null {
+export function getMetaprogramProfile(contact: Contact | RawContact | null | undefined): MetaprogramProfile | null {
   const behavior = getContactBehavior(contact);
   return behavior?.metaprogramProfile || null;
 }
@@ -85,7 +94,7 @@ export function getMetaprogramProfile(contact: Contact | null | undefined): Meta
 /**
  * Gets DISC confidence score
  */
-export function getDISCConfidence(contact: Contact | null | undefined): number {
+export function getDISCConfidence(contact: Contact | RawContact | null | undefined): number {
   const behavior = getContactBehavior(contact);
   return behavior?.discConfidence || 0;
 }
@@ -93,7 +102,7 @@ export function getDISCConfidence(contact: Contact | null | undefined): number {
 /**
  * Gets decision role with null fallback
  */
-export function getDecisionRole(contact: Contact | null | undefined): DecisionRole | null {
+export function getDecisionRole(contact: Contact | RawContact | null | undefined): DecisionRole | null {
   const behavior = getContactBehavior(contact);
   return behavior?.decisionRole || null;
 }
@@ -101,7 +110,7 @@ export function getDecisionRole(contact: Contact | null | undefined): DecisionRo
 /**
  * Gets career stage with null fallback
  */
-export function getCareerStage(contact: Contact | null | undefined): CareerStage | null {
+export function getCareerStage(contact: Contact | RawContact | null | undefined): CareerStage | null {
   const behavior = getContactBehavior(contact);
   return behavior?.careerStage || null;
 }
@@ -109,7 +118,7 @@ export function getCareerStage(contact: Contact | null | undefined): CareerStage
 /**
  * Gets decision speed with null fallback
  */
-export function getDecisionSpeed(contact: Contact | null | undefined): DecisionSpeed | null {
+export function getDecisionSpeed(contact: Contact | RawContact | null | undefined): DecisionSpeed | null {
   const behavior = getContactBehavior(contact);
   return behavior?.decisionSpeed || null;
 }
@@ -117,7 +126,7 @@ export function getDecisionSpeed(contact: Contact | null | undefined): DecisionS
 /**
  * Gets decision power (1-10 scale)
  */
-export function getDecisionPower(contact: Contact | null | undefined): number {
+export function getDecisionPower(contact: Contact | RawContact | null | undefined): number {
   const behavior = getContactBehavior(contact);
   return behavior?.decisionPower || 5;
 }
@@ -125,7 +134,7 @@ export function getDecisionPower(contact: Contact | null | undefined): number {
 /**
  * Gets support level (1-10 scale)
  */
-export function getSupportLevel(contact: Contact | null | undefined): number {
+export function getSupportLevel(contact: Contact | RawContact | null | undefined): number {
   const behavior = getContactBehavior(contact);
   return behavior?.supportLevel || 5;
 }
@@ -133,7 +142,7 @@ export function getSupportLevel(contact: Contact | null | undefined): number {
 /**
  * Checks if contact has complete behavioral profile
  */
-export function hasCompleteBehaviorProfile(contact: Contact | null | undefined): boolean {
+export function hasCompleteBehaviorProfile(contact: Contact | RawContact | null | undefined): boolean {
   const behavior = getContactBehavior(contact);
   if (!behavior) return false;
   

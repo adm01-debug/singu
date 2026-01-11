@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { differenceInDays, parseISO, subDays } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { getDISCProfile as getContactDISC } from '@/lib/contact-utils';
 
 type Contact = Tables<'contacts'>;
 
@@ -181,9 +182,8 @@ export function useClosingScoreRanking(
       totalScore += valuesScore * 0.10;
       if (importantValues.length >= 3) strengths.push('Valores bem mapeados');
 
-      // 7. DISC Profile (5%)
-      const behavior = contact.behavior as any;
-      const discProfile = behavior?.disc || null;
+      // 7. DISC Profile (5%) - using type-safe utility
+      const discProfile = getContactDISC(contact);
       const discScore = discProfile ? 70 : 50;
       totalScore += discScore * 0.05;
 
