@@ -1042,6 +1042,72 @@ export type Database = {
         }
         Relationships: []
       }
+      stakeholder_alerts: {
+        Row: {
+          alert_type: string
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          current_value: Json | null
+          description: string | null
+          dismissed: boolean | null
+          dismissed_at: string | null
+          id: string
+          previous_value: Json | null
+          recommended_action: string | null
+          severity: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          current_value?: Json | null
+          description?: string | null
+          dismissed?: boolean | null
+          dismissed_at?: string | null
+          id?: string
+          previous_value?: Json | null
+          recommended_action?: string | null
+          severity?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          current_value?: Json | null
+          description?: string | null
+          dismissed?: boolean | null
+          dismissed_at?: string | null
+          id?: string
+          previous_value?: Json | null
+          recommended_action?: string | null
+          severity?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stakeholder_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stakeholder_alerts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trigger_usage_history: {
         Row: {
           channel: string | null

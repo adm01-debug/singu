@@ -497,7 +497,7 @@ const EmpresaDetalhe = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <StakeholderMap contacts={contacts} interactions={interactions} />
+                    <StakeholderMap contacts={contacts} interactions={interactions} companyId={id} />
                   </motion.div>
                 </TabsContent>
 
