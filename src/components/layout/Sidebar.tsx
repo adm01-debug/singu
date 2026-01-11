@@ -47,19 +47,19 @@ import {
 import { toast } from 'sonner';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1' },
-  { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2' },
-  { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3' },
-  { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4' },
-  { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5' },
-  { icon: Share2, label: 'Network', path: '/network', shortcut: '6' },
-  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
+  { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies' },
+  { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts' },
+  { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4', tourId: 'interactions' },
+  { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
+  { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
+  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
 ];
 
 const bottomMenuItems = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9', tourId: 'notifications' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0', tourId: 'settings' },
 ];
 
 interface SidebarProps {
@@ -250,6 +250,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                 <TooltipTrigger asChild>
                   <Link
                     to={item.path}
+                    data-tour={item.tourId}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative',
                       isActive
@@ -296,6 +297,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                 <TooltipTrigger asChild>
                   <Link
                     to={item.path}
+                    data-tour={item.tourId}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group',
                       isActive
