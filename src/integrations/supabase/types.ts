@@ -147,6 +147,69 @@ export type Database = {
           },
         ]
       }
+      cognitive_bias_history: {
+        Row: {
+          analyzed_at: string
+          category_distribution: Json | null
+          contact_id: string
+          created_at: string
+          detected_biases: Json
+          dominant_biases: string[] | null
+          id: string
+          interaction_id: string | null
+          profile_summary: string | null
+          resistances: string[] | null
+          sales_strategies: Json | null
+          user_id: string
+          vulnerabilities: string[] | null
+        }
+        Insert: {
+          analyzed_at?: string
+          category_distribution?: Json | null
+          contact_id: string
+          created_at?: string
+          detected_biases: Json
+          dominant_biases?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          profile_summary?: string | null
+          resistances?: string[] | null
+          sales_strategies?: Json | null
+          user_id: string
+          vulnerabilities?: string[] | null
+        }
+        Update: {
+          analyzed_at?: string
+          category_distribution?: Json | null
+          contact_id?: string
+          created_at?: string
+          detected_biases?: Json
+          dominant_biases?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          profile_summary?: string | null
+          resistances?: string[] | null
+          sales_strategies?: Json | null
+          user_id?: string
+          vulnerabilities?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cognitive_bias_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cognitive_bias_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -538,6 +601,78 @@ export type Database = {
           },
           {
             foreignKeyName: "emotional_states_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eq_analysis_history: {
+        Row: {
+          analyzed_at: string
+          areas_for_growth: string[] | null
+          communication_style: Json | null
+          confidence: number | null
+          contact_id: string
+          created_at: string
+          id: string
+          indicators: Json | null
+          interaction_id: string | null
+          overall_level: string
+          overall_score: number
+          pillar_scores: Json
+          profile_summary: string | null
+          sales_implications: Json | null
+          strengths: string[] | null
+          user_id: string
+        }
+        Insert: {
+          analyzed_at?: string
+          areas_for_growth?: string[] | null
+          communication_style?: Json | null
+          confidence?: number | null
+          contact_id: string
+          created_at?: string
+          id?: string
+          indicators?: Json | null
+          interaction_id?: string | null
+          overall_level: string
+          overall_score: number
+          pillar_scores: Json
+          profile_summary?: string | null
+          sales_implications?: Json | null
+          strengths?: string[] | null
+          user_id: string
+        }
+        Update: {
+          analyzed_at?: string
+          areas_for_growth?: string[] | null
+          communication_style?: Json | null
+          confidence?: number | null
+          contact_id?: string
+          created_at?: string
+          id?: string
+          indicators?: Json | null
+          interaction_id?: string | null
+          overall_level?: string
+          overall_score?: number
+          pillar_scores?: Json
+          profile_summary?: string | null
+          sales_implications?: Json | null
+          strengths?: string[] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eq_analysis_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eq_analysis_history_interaction_id_fkey"
             columns: ["interaction_id"]
             isOneToOne: false
             referencedRelation: "interactions"
