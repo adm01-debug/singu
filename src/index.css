@@ -83,6 +83,24 @@
     --role-manager: 221 83% 53%;
     --role-buyer: 142 76% 36%;
     --role-contact: 215 16% 47%;
+    
+    /* Surface Levels - Pilar 3.2 */
+    --surface-0: 0 0% 100%;
+    --surface-1: 222 47% 99%;
+    --surface-2: 222 47% 97%;
+    --surface-3: 222 47% 95%;
+    --surface-4: 222 47% 93%;
+    
+    /* Row States */
+    --row-hover: 221 83% 53% / 0.04;
+    --row-selected: 221 83% 53% / 0.08;
+    --row-active: 221 83% 53% / 0.12;
+    
+    /* Entity Colors */
+    --entity-contact: 221 83% 53%;
+    --entity-company: 280 67% 45%;
+    --entity-interaction: 142 76% 36%;
+    --entity-insight: 38 92% 50%;
   }
 
   .dark {
@@ -122,6 +140,18 @@
     --sidebar-accent-foreground: 215 20% 95%;
     --sidebar-border: 222 47% 12%;
     --sidebar-ring: 221 83% 53%;
+    
+    /* Surface Levels - Dark Mode */
+    --surface-0: 222 47% 6%;
+    --surface-1: 222 47% 8%;
+    --surface-2: 222 47% 10%;
+    --surface-3: 222 47% 12%;
+    --surface-4: 222 47% 14%;
+    
+    /* Row States - Dark Mode */
+    --row-hover: 221 83% 60% / 0.06;
+    --row-selected: 221 83% 60% / 0.10;
+    --row-active: 221 83% 60% / 0.14;
   }
 }
 
@@ -280,4 +310,87 @@
       opacity: 0.7;
     }
   }
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT - Pilar 7.4
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   SAFE AREA INSETS - Mobile Support
+   ============================================ */
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-inset-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-inset-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ============================================
+   SCROLLBAR HIDDEN UTILITY
+   ============================================ */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   SURFACE UTILITIES - Pilar 3.2
+   ============================================ */
+.surface-0 {
+  background-color: hsl(var(--surface-0));
+}
+
+.surface-1 {
+  background-color: hsl(var(--surface-1));
+}
+
+.surface-2 {
+  background-color: hsl(var(--surface-2));
+}
+
+.surface-3 {
+  background-color: hsl(var(--surface-3));
+}
+
+.surface-4 {
+  background-color: hsl(var(--surface-4));
+}
+
+/* ============================================
+   ROW STATE UTILITIES
+   ============================================ */
+.row-hover:hover {
+  background-color: hsl(var(--row-hover));
+}
+
+.row-selected {
+  background-color: hsl(var(--row-selected));
+}
+
+.row-active {
+  background-color: hsl(var(--row-active));
 }
