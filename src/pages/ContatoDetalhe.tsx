@@ -26,7 +26,8 @@ import {
   Bell,
   Package,
   Settings2,
-  CalendarHeart
+  CalendarHeart,
+  CalendarClock
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
@@ -73,6 +74,8 @@ import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel'
 import { PurchaseHistoryForm } from '@/components/forms/PurchaseHistoryForm';
 import { CommunicationPreferencesForm } from '@/components/forms/CommunicationPreferencesForm';
 import { LifeEventForm } from '@/components/forms/LifeEventForm';
+import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
+import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -258,6 +261,20 @@ const ContatoDetalhe = () => {
                       {showWritingAssistant ? 'Fechar Assistente' : 'Assistente de Escrita IA'}
                     </Button>
 
+                    {/* Cadence Setting */}
+                    <div className="w-full mt-4 pt-4 border-t border-border">
+                      <CadenceSettingsDialog
+                        contactId={contact.id}
+                        contactName={`${contact.firstName} ${contact.lastName}`}
+                        trigger={
+                          <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                            <CalendarClock className="w-4 h-4" />
+                            Definir Cadência de Contato
+                          </Button>
+                        }
+                      />
+                    </div>
+
                     {/* Quick Action Forms */}
                     <div className="w-full mt-4 pt-4 border-t border-border space-y-2">
                       <p className="text-xs font-medium text-muted-foreground mb-2">Cadastro Rápido</p>
@@ -379,6 +396,12 @@ const ContatoDetalhe = () => {
                   />
                 </motion.div>
               )}
+
+              {/* Contact Preferences Panel */}
+              <ContactPreferencesPanel
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
 
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
