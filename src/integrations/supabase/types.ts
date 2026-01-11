@@ -548,6 +548,72 @@ export type Database = {
         }
         Relationships: []
       }
+      vak_analysis_history: {
+        Row: {
+          analyzed_text: string | null
+          auditory_score: number | null
+          auditory_words: string[] | null
+          contact_id: string
+          created_at: string
+          digital_score: number | null
+          digital_words: string[] | null
+          id: string
+          interaction_id: string | null
+          kinesthetic_score: number | null
+          kinesthetic_words: string[] | null
+          user_id: string
+          visual_score: number | null
+          visual_words: string[] | null
+        }
+        Insert: {
+          analyzed_text?: string | null
+          auditory_score?: number | null
+          auditory_words?: string[] | null
+          contact_id: string
+          created_at?: string
+          digital_score?: number | null
+          digital_words?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          kinesthetic_score?: number | null
+          kinesthetic_words?: string[] | null
+          user_id: string
+          visual_score?: number | null
+          visual_words?: string[] | null
+        }
+        Update: {
+          analyzed_text?: string | null
+          auditory_score?: number | null
+          auditory_words?: string[] | null
+          contact_id?: string
+          created_at?: string
+          digital_score?: number | null
+          digital_words?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          kinesthetic_score?: number | null
+          kinesthetic_words?: string[] | null
+          user_id?: string
+          visual_score?: number | null
+          visual_words?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vak_analysis_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vak_analysis_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
