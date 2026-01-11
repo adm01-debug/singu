@@ -13,16 +13,20 @@ export function useInteractions(contactId?: string, companyId?: string) {
   const { toast } = useToast();
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const pageSize = 50;
 
-  const fetchInteractions = useCallback(async () => {
+  const fetchInteractions = useCallback(async (pageNum = 0, append = false) => {
     if (!user) return;
     
     setLoading(true);
     try {
       let query = supabase
         .from('interactions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(pageNum * pageSize, (pageNum + 1) * pageSize - 1);
 
       if (contactId) {
         query = query.eq('contact_id', contactId);
@@ -31,10 +35,20 @@ export function useInteractions(contactId?: string, companyId?: string) {
         query = query.eq('company_id', companyId);
       }
 
-      const { data, error } = await query.limit(100);
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      setInteractions(data || []);
+      
+      if (append) {
+        setInteractions(prev => [...prev, ...(data || [])]);
+      } else {
+        setInteractions(data || []);
+      }
+      
+      setHasMore((data?.length || 0) === pageSize);
+      setPage(pageNum);
+      
+      return { data, count, hasMore: (data?.length || 0) === pageSize };
     } catch (error) {
       console.error('Error fetching interactions:', error);
       toast({
@@ -42,10 +56,17 @@ export function useInteractions(contactId?: string, companyId?: string) {
         description: 'Tente novamente mais tarde.',
         variant: 'destructive',
       });
+      return { data: [], count: 0, hasMore: false };
     } finally {
       setLoading(false);
     }
   }, [user, contactId, companyId, toast]);
+
+  const loadMore = useCallback(() => {
+    if (hasMore && !loading) {
+      fetchInteractions(page + 1, true);
+    }
+  }, [hasMore, loading, page, fetchInteractions]);
 
   useEffect(() => {
     fetchInteractions();
@@ -137,7 +158,9 @@ export function useInteractions(contactId?: string, companyId?: string) {
   return {
     interactions,
     loading,
+    hasMore,
     fetchInteractions,
+    loadMore,
     createInteraction,
     updateInteraction,
     deleteInteraction,

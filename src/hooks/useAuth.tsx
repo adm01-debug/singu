@@ -1,5 +1,5 @@
-import { useState, useEffect, createContext, useContext, ReactNode, forwardRef } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { useState, useEffect, createContext, useContext, ReactNode, forwardRef, useCallback, useRef } from 'react';
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,33 +11,167 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Tempo antes da expiração para refresh automático (5 minutos)
+const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Função para agendar refresh automático
+  const scheduleTokenRefresh = useCallback((currentSession: Session | null) => {
+    // Limpar timeout anterior
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+
+    if (!currentSession?.expires_at) return;
+
+    const expiresAt = currentSession.expires_at * 1000; // Converter para ms
+    const now = Date.now();
+    const timeUntilExpiry = expiresAt - now;
+    const refreshTime = timeUntilExpiry - REFRESH_THRESHOLD_MS;
+
+    if (refreshTime > 0) {
+      refreshTimeoutRef.current = setTimeout(async () => {
+        console.log('🔄 Refreshing session token...');
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+          if (error) {
+            console.error('Failed to refresh session:', error);
+            // Sessão expirou, redirecionar para login
+            toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+          } else if (data.session) {
+            console.log('✅ Session refreshed successfully');
+            scheduleTokenRefresh(data.session);
+          }
+        } catch (err) {
+          console.error('Error refreshing session:', err);
+        }
+      }, refreshTime);
+    } else if (timeUntilExpiry <= 0) {
+      // Sessão já expirou
+      console.warn('⚠️ Session already expired');
+    }
+  }, []);
+
+  // Refresh manual da sessão
+  const refreshSession = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) throw error;
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        scheduleTokenRefresh(data.session);
+      }
+    } catch (err) {
+      console.error('Error refreshing session:', err);
+      toast.error('Erro ao atualizar sessão.');
+    }
+  }, [scheduleTokenRefresh]);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (event: AuthChangeEvent, newSession) => {
+        console.log('🔐 Auth event:', event);
+        
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
         setLoading(false);
+
+        // Tratar diferentes eventos de auth
+        switch (event) {
+          case 'SIGNED_IN':
+            scheduleTokenRefresh(newSession);
+            toast.success('Login realizado com sucesso!');
+            break;
+            
+          case 'SIGNED_OUT':
+            if (refreshTimeoutRef.current) {
+              clearTimeout(refreshTimeoutRef.current);
+              refreshTimeoutRef.current = null;
+            }
+            break;
+            
+          case 'TOKEN_REFRESHED':
+            console.log('🔄 Token refreshed via auth event');
+            scheduleTokenRefresh(newSession);
+            break;
+            
+          case 'USER_UPDATED':
+            toast.success('Perfil atualizado!');
+            break;
+            
+          case 'PASSWORD_RECOVERY':
+            toast.info('Siga as instruções para recuperar sua senha.');
+            break;
+        }
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
       setLoading(false);
+      
+      if (existingSession) {
+        scheduleTokenRefresh(existingSession);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Cleanup
+    return () => {
+      subscription.unsubscribe();
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [scheduleTokenRefresh]);
+
+  // Interceptar erros 401 globalmente
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      
+      if (response.status === 401) {
+        const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
+        
+        // Verificar se é uma requisição ao Supabase
+        if (url.includes('supabase')) {
+          console.warn('⚠️ 401 Unauthorized - attempting session refresh');
+          
+          try {
+            const { data, error } = await supabase.auth.refreshSession();
+            if (error || !data.session) {
+              // Sessão realmente expirou
+              toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+              await supabase.auth.signOut();
+            }
+          } catch (err) {
+            console.error('Failed to handle 401:', err);
+          }
+        }
+      }
+      
+      return response;
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
   }, []);
 
   const signUp = async (
@@ -91,13 +225,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    toast.success('Logout realizado com sucesso!');
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1505,6 +1505,53 @@ export type Database = {
         }
         Relationships: []
       }
+      score_history: {
+        Row: {
+          calculated_at: string
+          contact_id: string
+          created_at: string
+          factors: Json | null
+          id: string
+          metadata: Json | null
+          previous_value: number | null
+          score_type: string
+          score_value: number
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          contact_id: string
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          metadata?: Json | null
+          previous_value?: number | null
+          score_type: string
+          score_value: number
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string
+          contact_id?: string
+          created_at?: string
+          factors?: Json | null
+          id?: string
+          metadata?: Json | null
+          previous_value?: number | null
+          score_type?: string
+          score_value?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stakeholder_alerts: {
         Row: {
           alert_type: string
