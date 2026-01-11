@@ -57,6 +57,7 @@ import { QuickNLPInsights } from '@/components/triggers/QuickNLPInsights';
 import { ClosingScorePanel } from '@/components/analytics/ClosingScorePanel';
 import { EmotionalIntelligencePanel } from '@/components/analytics/EmotionalIntelligencePanel';
 import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPanel';
+import { BehaviorEvolutionChart } from '@/components/analytics/BehaviorEvolutionChart';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -384,6 +385,12 @@ const ContatoDetalhe = () => {
                   transcription: i.transcription,
                   createdAt: i.createdAt.toISOString()
                 }))}
+              />
+
+              {/* Behavior Evolution Chart */}
+              <BehaviorEvolutionChart 
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
               />
 
               {/* Sales Intelligence Dashboard - Raio-X Completo */}
