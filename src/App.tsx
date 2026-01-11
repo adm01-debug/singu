@@ -34,8 +34,8 @@ const App = () => (
       <OfflineIndicator />
       <InstallPrompt />
       <NetworkStatusBadge />
-      <KeyboardShortcutsDialogEnhanced />
       <BrowserRouter>
+        <KeyboardShortcutsDialogEnhanced />
         <AuthProvider>
           <Routes>
             {/* Public routes */}
