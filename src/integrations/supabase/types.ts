@@ -499,6 +499,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          nlp_profile: Json | null
           phone: string | null
           preferences: Json | null
           role_title: string | null
@@ -511,6 +512,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          nlp_profile?: Json | null
           phone?: string | null
           preferences?: Json | null
           role_title?: string | null
@@ -523,6 +525,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          nlp_profile?: Json | null
           phone?: string | null
           preferences?: Json | null
           role_title?: string | null

@@ -30,6 +30,7 @@ import {
   FileText
 } from 'lucide-react';
 import { ProfileBasedSuggestions } from './ProfileBasedSuggestions';
+import { CompatibilityScore } from './CompatibilityScore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -468,7 +469,12 @@ export function UnifiedNLPDashboard({
             </TabsContent>
 
             {/* Suggestions Tab */}
-            <TabsContent value="suggestions">
+            <TabsContent value="suggestions" className="space-y-4">
+              <CompatibilityScore
+                contact={contact}
+                vakProfile={vakProfile}
+                metaprogramProfile={metaProfile}
+              />
               <ProfileBasedSuggestions
                 contact={contact}
                 vakProfile={vakProfile}
