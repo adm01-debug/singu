@@ -837,8 +837,505 @@ Este documento identifica **42 melhorias principais** organizadas em 9 categoria
 
 ---
 
+## 🔧 PARTE 6: ANÁLISE EXAUSTIVA DAS EDGE FUNCTIONS
+
+> Esta seção apresenta uma análise detalhada de todas as Edge Functions do sistema, identificando problemas, melhorias necessárias e plano de implementação.
+
+---
+
+### 📊 Inventário Atual de Edge Functions
+
+| # | Função | Status | Propósito | Usa AI? |
+|---|--------|--------|-----------|---------|
+| 1 | `ai-writing-assistant` | ✅ Funcional | Gerar sugestões de mensagens personalizadas | ✅ Gemini |
+| 2 | `check-notifications` | ⚠️ Parcial | Verificar follow-ups, aniversários, insights | ❌ |
+| 3 | `generate-insights` | ✅ Funcional | Gerar insights de relacionamento | ✅ Gemini |
+| 4 | `send-push-notification` | ❌ Incompleto | Enviar notificações push | ❌ |
+| 5 | `smart-reminders` | ✅ Funcional | Lembretes inteligentes e decay detection | ⚠️ Opcional |
+| 6 | `suggest-next-action` | ✅ Funcional | Sugerir próxima ação com contato | ✅ Gemini |
+| 7 | `template-success-notifications` | ⚠️ Parcial | Notificar templates de alta performance | ❌ |
+| 8 | `voice-to-text` | ❌ Incompleto | Transcrição de áudio | ⚠️ Limitado |
+| 9 | `weekly-digest` | ⚠️ Parcial | Resumo semanal por email | ❌ |
+
+---
+
+### 🔴 PROBLEMAS CRÍTICOS IDENTIFICADOS
+
+---
+
+#### EF.1 `send-push-notification` - IMPLEMENTAÇÃO INCOMPLETA
+
+**Arquivo:** `supabase/functions/send-push-notification/index.ts`
+
+**Problemas Identificados:**
+
+1. **Web Push incompleto (L29-75):** A implementação não usa VAPID corretamente
+   - Linha 54: Headers VAPID não estão assinados com JWT
+   - Linha 48-58: Requisição POST sem criptografia AES-GCM adequada
+   - Resultado: Notificações NÃO são enviadas de fato
+
+2. **VAPID_PRIVATE_KEY hardcoded (L11):** 
+   ```typescript
+   const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || '';
+   ```
+   - Secret não está configurado
+   - Fallback vazio significa que nunca funciona
+
+3. **Sem biblioteca web-push:** 
+   - Comentário na linha 45-46 admite que precisa de biblioteca
+   - Implementação manual é insuficiente
+
+**Correção Necessária:**
+```typescript
+// Usar biblioteca web-push para Deno
+import webPush from "https://esm.sh/web-push@3.6.7";
+
+webPush.setVapidDetails(
+  'mailto:admin@relateiq.com',
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
+
+// Enviar corretamente
+await webPush.sendNotification(subscription, JSON.stringify(payload));
+```
+
+**Impacto:** 🔴 CRÍTICO - Nenhuma notificação push funciona
+
+---
+
+#### EF.2 `voice-to-text` - TRANSCRIÇÃO NÃO FUNCIONA
+
+**Arquivo:** `supabase/functions/voice-to-text/index.ts`
+
+**Problemas Identificados:**
+
+1. **Não faz transcrição real (L80-100):**
+   ```typescript
+   // Comentário admite: "In production, you'd integrate with a proper speech-to-text service"
+   content: `[Audio received - ${binaryAudio.length} bytes]. Please acknowledge...`
+   ```
+   - Apenas envia tamanho do áudio para o modelo
+   - Não usa API de transcrição de fato
+
+2. **Lovable AI não suporta transcrição direta:**
+   - Linha 69-70: Comentário "Lovable AI doesn't have direct audio transcription"
+   - Workaround atual retorna placeholder, não transcrição real
+
+3. **Fallback inadequado (L124):**
+   ```typescript
+   const transcribedText = result.choices?.[0]?.message?.content || 'Áudio recebido - transcrição em processamento';
+   ```
+
+**Correção Necessária:**
+- Integrar com serviço de STT externo (OpenAI Whisper, Google STT, Deepgram)
+- Requerer API key do usuário ou usar connector
+
+**Impacto:** 🔴 CRÍTICO - Funcionalidade de voz completamente quebrada
+
+---
+
+#### EF.3 `weekly-digest` - EMAIL NÃO ENVIADO
+
+**Arquivo:** `supabase/functions/weekly-digest/index.ts`
+
+**Problemas Identificados:**
+
+1. **Envio de email comentado (L167-181):**
+   ```typescript
+   // Example email sending (requires RESEND_API_KEY):
+   /*
+   const resendApiKey = Deno.env.get('RESEND_API_KEY');
+   ...
+   */
+   ```
+   - Código de envio está 100% comentado
+   - Função apenas gera dados, não envia emails
+
+2. **Sem agendamento:**
+   - Não há cron job configurado para executar semanalmente
+   - Função precisa ser chamada manualmente
+
+**Correção Necessária:**
+- Descomentar e configurar Resend
+- Configurar cron job no Supabase
+- Adicionar preferências de usuário (opt-in/out)
+
+**Impacto:** 🟠 ALTO - Weekly digest não funciona
+
+---
+
+### 🟠 PROBLEMAS IMPORTANTES
+
+---
+
+#### EF.4 `check-notifications` - PROBLEMAS DE QUERY
+
+**Arquivo:** `supabase/functions/check-notifications/index.ts`
+
+**Problemas Identificados:**
+
+1. **Sem agendamento automático:**
+   - Não há cron configurado
+   - Depende de chamada manual
+
+2. **Query de aniversário ineficiente (L72-99):**
+   ```typescript
+   const { data: contacts } = await supabaseClient
+     .from('contacts')
+     .select('id, first_name, last_name, birthday, user_id')
+     .not('birthday', 'is', null);
+   // Depois filtra em JavaScript
+   ```
+   - Puxa TODOS os contatos com aniversário
+   - Filtra no JavaScript ao invés do banco
+   - Não escala para muitos usuários
+
+3. **Sem rate limiting interno:**
+   - Pode enviar múltiplas notificações do mesmo tipo
+
+**Correção Necessária:**
+```sql
+-- Filtrar aniversários no banco
+SELECT * FROM contacts
+WHERE EXTRACT(MONTH FROM birthday) = $1
+AND EXTRACT(DAY FROM birthday) = $2;
+```
+
+**Impacto:** 🟠 ALTO - Performance ruim e sem execução automática
+
+---
+
+#### EF.5 `template-success-notifications` - LÓGICA COMPLEXA
+
+**Arquivo:** `supabase/functions/template-success-notifications/index.ts`
+
+**Problemas Identificados:**
+
+1. **N+1 Query Problem:**
+   - Loop em usuários (L56)
+   - Dentro do loop: query favorites, usageHistory, contacts
+   - 4+ queries por usuário = não escala
+
+2. **Threshold arbitrário:**
+   ```typescript
+   if (stats.totalUsages >= 3 && stats.successRate >= 70)
+   ```
+   - Valores hardcoded não são configuráveis
+   - Usuário não pode ajustar critérios
+
+3. **Sem debounce:**
+   - Pode notificar o mesmo template múltiplas vezes
+
+**Correção Necessária:**
+- Materializar estatísticas em view ou tabela
+- Adicionar configurações de threshold por usuário
+- Implementar tracking de notificações já enviadas
+
+**Impacto:** 🟠 MÉDIO - Funciona mas não escala
+
+---
+
+#### EF.6 `smart-reminders` - N+1 QUERIES
+
+**Arquivo:** `supabase/functions/smart-reminders/index.ts`
+
+**Problemas Identificados:**
+
+1. **N+1 Query crítico (L174-180):**
+   ```typescript
+   for (const contact of allContacts) {
+     const { data: lastInteraction } = await supabaseClient
+       .from('interactions')
+       .select('created_at')
+       .eq('contact_id', contact.id)
+       // Uma query POR contato!
+   ```
+   - 1 query por contato para buscar última interação
+   - Com 100 contatos = 100 queries adicionais
+
+2. **Sem cache:**
+   - Recalcula tudo a cada chamada
+   - Dados de decay poderiam ser cacheados
+
+**Correção Necessária:**
+```sql
+-- Query única com last interaction
+SELECT c.*, MAX(i.created_at) as last_interaction_date
+FROM contacts c
+LEFT JOIN interactions i ON i.contact_id = c.id
+WHERE c.user_id = $1
+GROUP BY c.id;
+```
+
+**Impacto:** 🟠 ALTO - Performance crítica para usuários com muitos contatos
+
+---
+
+### 🟡 MELHORIAS RECOMENDADAS
+
+---
+
+#### EF.7 `ai-writing-assistant` - ENHANCEMENTS
+
+**Arquivo:** `supabase/functions/ai-writing-assistant/index.ts`
+
+**Melhorias Sugeridas:**
+
+1. **Adicionar cache de sugestões:**
+   - Mesmo perfil + tipo = retornar cache
+   - TTL de 24h
+
+2. **Logging de uso:**
+   - Salvar sugestões geradas
+   - Track qual foi escolhida
+   - Feedback loop
+
+3. **Rate limiting por usuário:**
+   - Evitar abuso da API
+
+4. **Fallback para offline:**
+   - Templates pré-definidos quando AI indisponível
+
+---
+
+#### EF.8 `generate-insights` - ENHANCEMENTS
+
+**Arquivo:** `supabase/functions/generate-insights/index.ts`
+
+**Melhorias Sugeridas:**
+
+1. **Persistir insights no banco:**
+   - Atualmente só retorna, não salva
+   - Deveria inserir na tabela `insights`
+
+2. **Deduplicação:**
+   - Evitar insights repetidos
+   - Hash do conteúdo para verificar
+
+3. **Priorização inteligente:**
+   - Insights mais acionáveis primeiro
+
+4. **Agendamento:**
+   - Rodar automaticamente diariamente
+
+---
+
+#### EF.9 `suggest-next-action` - ENHANCEMENTS
+
+**Arquivo:** `supabase/functions/suggest-next-action/index.ts`
+
+**Melhorias Sugeridas:**
+
+1. **Histórico de sugestões:**
+   - Salvar todas as sugestões feitas
+   - Evitar repetir ações rejeitadas
+
+2. **Feedback:**
+   - Usuário marca "Funcionou" / "Não funcionou"
+   - Ajustar futuras sugestões
+
+3. **Contexto mais rico:**
+   - Incluir análise VAK e Metaprogramas
+   - Considerar valores do cliente
+
+---
+
+### 📋 EDGE FUNCTIONS - PLANO DE IMPLEMENTAÇÃO
+
+---
+
+#### Semana 1: Correções Críticas
+
+| # | Tarefa | Esforço | Prioridade |
+|---|--------|---------|------------|
+| 1.1 | Implementar web-push corretamente em `send-push-notification` | 4h | 🔴 |
+| 1.2 | Configurar VAPID keys como secrets | 1h | 🔴 |
+| 1.3 | Integrar serviço STT real em `voice-to-text` | 4h | 🔴 |
+| 1.4 | Descomentar e testar envio em `weekly-digest` | 2h | 🟠 |
+| 1.5 | Configurar Resend API key | 1h | 🟠 |
+
+---
+
+#### Semana 2: Otimização de Performance
+
+| # | Tarefa | Esforço | Prioridade |
+|---|--------|---------|------------|
+| 2.1 | Refatorar N+1 queries em `smart-reminders` | 3h | 🟠 |
+| 2.2 | Otimizar query de aniversários em `check-notifications` | 2h | 🟠 |
+| 2.3 | Criar view materializada para estatísticas de templates | 3h | 🟡 |
+| 2.4 | Adicionar índices necessários | 1h | 🟡 |
+
+---
+
+#### Semana 3: Agendamento e Automação
+
+| # | Tarefa | Esforço | Prioridade |
+|---|--------|---------|------------|
+| 3.1 | Configurar cron para `check-notifications` (diário 8am) | 1h | 🟠 |
+| 3.2 | Configurar cron para `weekly-digest` (semanal domingo 10am) | 1h | 🟠 |
+| 3.3 | Configurar cron para `generate-insights` (diário 6am) | 1h | 🟡 |
+| 3.4 | Configurar cron para `template-success-notifications` (semanal) | 1h | 🟡 |
+
+---
+
+#### Semana 4: Persistência e Tracking
+
+| # | Tarefa | Esforço | Prioridade |
+|---|--------|---------|------------|
+| 4.1 | Persistir insights gerados no banco | 2h | 🟡 |
+| 4.2 | Criar tabela `ai_suggestions_log` | 2h | 🟡 |
+| 4.3 | Implementar deduplicação de insights | 2h | 🟡 |
+| 4.4 | Adicionar tracking de notificações enviadas | 2h | 🟡 |
+
+---
+
+### 🆕 NOVAS EDGE FUNCTIONS SUGERIDAS
+
+---
+
+#### Nova EF.1: `analyze-sentiment`
+
+**Propósito:** Análise automática de sentimento em interações
+
+```typescript
+// Fluxo:
+// 1. Recebe texto da interação
+// 2. Analisa sentimento com IA
+// 3. Atualiza campo sentiment na interação
+// 4. Detecta mudanças significativas e cria alertas
+```
+
+**Trigger:** Webhook após INSERT em interactions
+
+---
+
+#### Nova EF.2: `enrich-contact`
+
+**Propósito:** Enriquecer dados de contato com informações externas
+
+```typescript
+// Fluxo:
+// 1. Recebe email ou LinkedIn do contato
+// 2. Busca informações em APIs externas
+// 3. Atualiza contato com dados encontrados
+```
+
+**APIs:** Clearbit, Hunter.io, LinkedIn
+
+---
+
+#### Nova EF.3: `calculate-scores`
+
+**Propósito:** Calcular e persistir todos os scores
+
+```typescript
+// Scores:
+// - Closing Score
+// - Churn Risk Score
+// - Relationship Health Score
+// - Engagement Score
+```
+
+**Trigger:** Cron diário ou após interações
+
+---
+
+#### Nova EF.4: `sync-calendar`
+
+**Propósito:** Sincronizar com Google Calendar
+
+```typescript
+// Fluxo:
+// 1. Webhook de mudanças no Google Calendar
+// 2. Criar/atualizar eventos locais
+// 3. Push de lembretes 15 min antes
+```
+
+---
+
+#### Nova EF.5: `export-data`
+
+**Propósito:** Gerar exportações assíncronas
+
+```typescript
+// Formatos:
+// - CSV de contatos/empresas
+// - Excel com múltiplas abas
+// - PDF de perfil completo
+```
+
+**Storage:** Salvar no bucket e retornar URL
+
+---
+
+### 📊 MATRIZ DE DEPENDÊNCIAS
+
+```
+send-push-notification
+    └── check-notifications (usa para enviar)
+    └── template-success-notifications (usa para enviar)
+    └── smart-reminders (poderia usar)
+    
+generate-insights
+    └── weekly-digest (poderia incluir)
+    
+ai-writing-assistant
+    └── (standalone)
+    
+suggest-next-action
+    └── smart-reminders (poderia integrar)
+    
+voice-to-text
+    └── (standalone, precisa de serviço externo)
+```
+
+---
+
+### 🔒 SEGURANÇA - CHECKLIST
+
+- [ ] Validar tokens JWT em todas as functions
+- [ ] Rate limiting por usuário
+- [ ] Sanitização de inputs
+- [ ] Logs de erros sem expor dados sensíveis
+- [ ] VAPID keys como secrets (não hardcoded)
+- [ ] Timeouts adequados para evitar runaway
+- [ ] Retry logic com backoff exponencial
+
+---
+
+### 📈 MÉTRICAS DE SUCESSO
+
+| Métrica | Atual | Meta |
+|---------|-------|------|
+| Push Notifications funcionais | 0% | 100% |
+| Voice-to-text funcional | 0% | 100% |
+| Weekly digest enviado | 0% | 100% |
+| Cron jobs configurados | 0/4 | 4/4 |
+| N+1 queries resolvidos | 0 | 2 |
+| Tempo médio de resposta | ~3s | <1s |
+
+---
+
+## 🏁 CONCLUSÃO FINAL
+
+Este documento agora inclui:
+- **42 melhorias gerais** (Partes 1-5)
+- **9 Edge Functions analisadas** (Parte 6)
+- **3 Edge Functions críticas** para corrigir urgentemente
+- **5 novas Edge Functions** sugeridas
+- **Plano de 4 semanas** específico para backend
+
+### ⚡ Top 3 Ações Urgentes - Edge Functions:
+
+1. 🔴 **Corrigir `send-push-notification`** - Notificações não funcionam
+2. 🔴 **Corrigir `voice-to-text`** - Transcrição não funciona  
+3. 🟠 **Configurar cron jobs** - Automação inexistente
+
+---
+
 > **Próximo Passo Recomendado:**  
-> Iniciar pela **Fase 1** - remover mock data e estabelecer fundação sólida antes de adicionar novas funcionalidades.
+> Iniciar pela **Fase 1** - remover mock data e corrigir Edge Functions críticas antes de adicionar novas funcionalidades.
 
 ---
 
