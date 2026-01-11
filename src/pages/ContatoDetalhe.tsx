@@ -55,6 +55,8 @@ import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
 import { SalesIntelligenceDashboard } from '@/components/triggers/SalesIntelligenceDashboard';
 import { QuickNLPInsights } from '@/components/triggers/QuickNLPInsights';
 import { ClosingScorePanel } from '@/components/analytics/ClosingScorePanel';
+import { EmotionalIntelligencePanel } from '@/components/analytics/EmotionalIntelligencePanel';
+import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -360,6 +362,28 @@ const ContatoDetalhe = () => {
               <ClosingScorePanel 
                 contactId={contact.id} 
                 contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Emotional Intelligence Analysis (Goleman's 5 Pillars) */}
+              <EmotionalIntelligencePanel 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
+              />
+
+              {/* Cognitive Biases Detection */}
+              <CognitiveBiasesPanel 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
               />
 
               {/* Sales Intelligence Dashboard - Raio-X Completo */}
