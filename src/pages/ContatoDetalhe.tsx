@@ -53,6 +53,7 @@ import { MetaprogramTemplateLibrary } from '@/components/triggers/MetaprogramTem
 import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
 import { SalesIntelligenceDashboard } from '@/components/triggers/SalesIntelligenceDashboard';
+import { QuickNLPInsights } from '@/components/triggers/QuickNLPInsights';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -325,6 +326,17 @@ const ContatoDetalhe = () => {
                   />
                 </motion.div>
               )}
+
+              {/* Quick NLP Insights - Resumo no Topo */}
+              <QuickNLPInsights 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
+              />
 
               {/* AI Next Action Suggestion */}
               <NextActionSuggestion 
