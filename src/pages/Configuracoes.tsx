@@ -13,6 +13,7 @@ import {
   Sparkles,
   Brain,
   GraduationCap,
+  FileText,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -33,6 +34,7 @@ import { TemplateNotificationSettings } from '@/components/triggers/TemplateNoti
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
 import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
 import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityAlertSettings';
+import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 
 interface ProfileData {
   first_name: string;
@@ -133,7 +135,7 @@ export default function Configuracoes() {
       <div className="p-6 space-y-6">
 
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1">
+          <TabsList className="bg-muted/50 p-1 flex-wrap">
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
               Perfil
@@ -145,6 +147,10 @@ export default function Configuracoes() {
             <TabsTrigger value="training" className="gap-2">
               <GraduationCap className="w-4 h-4" />
               Treinamento
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Relatórios
             </TabsTrigger>
             <TabsTrigger value="appearance" className="gap-2">
               <Palette className="w-4 h-4" />
@@ -268,6 +274,16 @@ export default function Configuracoes() {
               animate={{ opacity: 1, y: 0 }}
             >
               <CommunicationTrainingMode />
+            </motion.div>
+          </TabsContent>
+
+          {/* Weekly Reports Tab */}
+          <TabsContent value="reports">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <WeeklyReportPanel />
             </motion.div>
           </TabsContent>
 

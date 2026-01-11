@@ -1323,6 +1323,84 @@ export type Database = {
           },
         ]
       }
+      weekly_report_settings: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          enabled: boolean | null
+          id: string
+          include_at_risk_clients: boolean | null
+          include_health_alerts: boolean | null
+          include_performance_metrics: boolean | null
+          include_portfolio_summary: boolean | null
+          include_recommendations: boolean | null
+          include_upcoming_dates: boolean | null
+          last_sent_at: string | null
+          send_day: string | null
+          send_time: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          enabled?: boolean | null
+          id?: string
+          include_at_risk_clients?: boolean | null
+          include_health_alerts?: boolean | null
+          include_performance_metrics?: boolean | null
+          include_portfolio_summary?: boolean | null
+          include_recommendations?: boolean | null
+          include_upcoming_dates?: boolean | null
+          last_sent_at?: string | null
+          send_day?: string | null
+          send_time?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          enabled?: boolean | null
+          id?: string
+          include_at_risk_clients?: boolean | null
+          include_health_alerts?: boolean | null
+          include_performance_metrics?: boolean | null
+          include_portfolio_summary?: boolean | null
+          include_recommendations?: boolean | null
+          include_upcoming_dates?: boolean | null
+          last_sent_at?: string | null
+          send_day?: string | null
+          send_time?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_reports: {
+        Row: {
+          created_at: string
+          id: string
+          report_data: Json
+          sent_via: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          report_data: Json
+          sent_via?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          report_data?: Json
+          sent_via?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
