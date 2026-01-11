@@ -34,6 +34,7 @@ import { SmartRemindersPanel } from '@/components/smart-reminders/SmartReminders
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
 import { ClosingScoreAlertsList } from '@/components/analytics/ClosingScoreAlertsList';
+import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
@@ -216,6 +217,9 @@ const Dashboard = () => {
             <BestTimeToContactPanel compact />
             <DealVelocityPanel compact />
           </div>
+          
+          {/* Closing Score Ranking - Compact */}
+          <ClosingScoreRanking maxItems={5} showStats={false} compact className="mt-6" />
         </motion.div>
 
         {/* Smart Reminders + Compatibility Alerts + Top Contacts + Insights */}

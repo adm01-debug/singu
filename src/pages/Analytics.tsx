@@ -54,6 +54,7 @@ import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPane
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
+import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -487,6 +488,9 @@ const Analytics = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
+              {/* Closing Score Ranking - New */}
+              <ClosingScoreRanking showStats maxItems={10} />
+
               {/* Churn Prediction - Full */}
               <ChurnPredictionPanel maxItems={10} />
 
