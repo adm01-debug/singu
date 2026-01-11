@@ -418,6 +418,112 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_cadence: {
+        Row: {
+          auto_remind: boolean | null
+          cadence_days: number
+          contact_id: string
+          created_at: string
+          id: string
+          last_contact_at: string | null
+          next_contact_due: string | null
+          notes: string | null
+          priority: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_remind?: boolean | null
+          cadence_days?: number
+          contact_id: string
+          created_at?: string
+          id?: string
+          last_contact_at?: string | null
+          next_contact_due?: string | null
+          notes?: string | null
+          priority?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_remind?: boolean | null
+          cadence_days?: number
+          contact_id?: string
+          created_at?: string
+          id?: string
+          last_contact_at?: string | null
+          next_contact_due?: string | null
+          notes?: string | null
+          priority?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_cadence_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_preferences: {
+        Row: {
+          avoid_days: string[] | null
+          avoid_times: string[] | null
+          communication_tips: string | null
+          contact_id: string
+          created_at: string
+          id: string
+          personal_notes: string | null
+          preferred_channel: string | null
+          preferred_days: string[] | null
+          preferred_times: string[] | null
+          restrictions: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avoid_days?: string[] | null
+          avoid_times?: string[] | null
+          communication_tips?: string | null
+          contact_id: string
+          created_at?: string
+          id?: string
+          personal_notes?: string | null
+          preferred_channel?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          restrictions?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avoid_days?: string[] | null
+          avoid_times?: string[] | null
+          communication_tips?: string | null
+          contact_id?: string
+          created_at?: string
+          id?: string
+          personal_notes?: string | null
+          preferred_channel?: string | null
+          preferred_days?: string[] | null
+          preferred_times?: string[] | null
+          restrictions?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_preferences_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_time_analysis: {
         Row: {
           avg_response_time_minutes: number | null

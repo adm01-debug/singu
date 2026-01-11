@@ -48,6 +48,7 @@ import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
+import { ContactCadencePanel } from '@/components/cadence/ContactCadencePanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
