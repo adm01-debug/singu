@@ -267,6 +267,27 @@ export type Database = {
           },
         ]
       }
+      favorite_templates: {
+        Row: {
+          created_at: string
+          id: string
+          template_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          template_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          template_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       insights: {
         Row: {
           action_suggestion: string | null
