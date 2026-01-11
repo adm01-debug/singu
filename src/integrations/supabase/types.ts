@@ -97,6 +97,56 @@ export type Database = {
           },
         ]
       }
+      client_values: {
+        Row: {
+          category: string
+          contact_id: string
+          created_at: string
+          detected_phrases: string[] | null
+          frequency: number | null
+          id: string
+          importance: number | null
+          last_mentioned: string | null
+          updated_at: string
+          user_id: string
+          value_name: string
+        }
+        Insert: {
+          category: string
+          contact_id: string
+          created_at?: string
+          detected_phrases?: string[] | null
+          frequency?: number | null
+          id?: string
+          importance?: number | null
+          last_mentioned?: string | null
+          updated_at?: string
+          user_id: string
+          value_name: string
+        }
+        Update: {
+          category?: string
+          contact_id?: string
+          created_at?: string
+          detected_phrases?: string[] | null
+          frequency?: number | null
+          id?: string
+          importance?: number | null
+          last_mentioned?: string | null
+          updated_at?: string
+          user_id?: string
+          value_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_values_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -350,6 +400,151 @@ export type Database = {
           },
         ]
       }
+      decision_criteria: {
+        Row: {
+          contact_id: string
+          created_at: string
+          criteria_type: string
+          detected_from: string | null
+          how_to_address: string | null
+          id: string
+          name: string
+          priority: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          criteria_type: string
+          detected_from?: string | null
+          how_to_address?: string | null
+          id?: string
+          name: string
+          priority?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          criteria_type?: string
+          detected_from?: string | null
+          how_to_address?: string | null
+          id?: string
+          name?: string
+          priority?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_criteria_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emotional_anchors: {
+        Row: {
+          anchor_type: string
+          contact_id: string
+          context: string | null
+          created_at: string
+          detected_at: string
+          emotional_state: string
+          id: string
+          strength: number | null
+          trigger_word: string
+          user_id: string
+        }
+        Insert: {
+          anchor_type: string
+          contact_id: string
+          context?: string | null
+          created_at?: string
+          detected_at?: string
+          emotional_state: string
+          id?: string
+          strength?: number | null
+          trigger_word: string
+          user_id: string
+        }
+        Update: {
+          anchor_type?: string
+          contact_id?: string
+          context?: string | null
+          created_at?: string
+          detected_at?: string
+          emotional_state?: string
+          id?: string
+          strength?: number | null
+          trigger_word?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emotional_anchors_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emotional_states_history: {
+        Row: {
+          confidence: number | null
+          contact_id: string
+          context: string | null
+          created_at: string
+          emotional_state: string
+          id: string
+          interaction_id: string | null
+          trigger: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          contact_id: string
+          context?: string | null
+          created_at?: string
+          emotional_state: string
+          id?: string
+          interaction_id?: string | null
+          trigger?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          contact_id?: string
+          context?: string | null
+          created_at?: string
+          emotional_state?: string
+          id?: string
+          interaction_id?: string | null
+          trigger?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emotional_states_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emotional_states_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorite_templates: {
         Row: {
           created_at: string
@@ -370,6 +565,72 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      hidden_objections: {
+        Row: {
+          contact_id: string
+          created_at: string
+          id: string
+          indicator: string
+          interaction_id: string | null
+          objection_type: string
+          possible_real_objection: string | null
+          probability: number | null
+          resolution_templates: string[] | null
+          resolved: boolean | null
+          resolved_at: string | null
+          severity: string
+          suggested_probe: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          id?: string
+          indicator: string
+          interaction_id?: string | null
+          objection_type: string
+          possible_real_objection?: string | null
+          probability?: number | null
+          resolution_templates?: string[] | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity: string
+          suggested_probe?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          id?: string
+          indicator?: string
+          interaction_id?: string | null
+          objection_type?: string
+          possible_real_objection?: string | null
+          probability?: number | null
+          resolution_templates?: string[] | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          severity?: string
+          suggested_probe?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hidden_objections_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hidden_objections_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       insights: {
         Row: {
