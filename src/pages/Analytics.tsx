@@ -37,6 +37,7 @@ import {
   Filter,
   Download,
   RefreshCw,
+  Brain,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -48,6 +49,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { TriggerAnalytics } from '@/components/triggers/TriggerAnalytics';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -459,10 +461,14 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-lg grid-cols-4">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="engagement">Engajamento</TabsTrigger>
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
+            <TabsTrigger value="triggers" className="gap-1">
+              <Brain className="w-3.5 h-3.5" />
+              Gatilhos
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -892,6 +898,11 @@ const Analytics = () => {
                 </Card>
               </motion.div>
             </div>
+          </TabsContent>
+
+          {/* Triggers Tab */}
+          <TabsContent value="triggers" className="space-y-6">
+            <TriggerAnalytics />
           </TabsContent>
         </Tabs>
       </div>
