@@ -11,6 +11,7 @@ import {
   Save,
   Camera,
   Sparkles,
+  Brain,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -28,6 +29,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
+import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
 
 interface ProfileData {
   first_name: string;
@@ -133,6 +135,10 @@ export default function Configuracoes() {
               <User className="w-4 h-4" />
               Perfil
             </TabsTrigger>
+            <TabsTrigger value="nlp" className="gap-2">
+              <Brain className="w-4 h-4" />
+              Meu PNL
+            </TabsTrigger>
             <TabsTrigger value="appearance" className="gap-2">
               <Palette className="w-4 h-4" />
               Aparência
@@ -235,6 +241,16 @@ export default function Configuracoes() {
                   </div>
                 </CardContent>
               </Card>
+            </motion.div>
+          </TabsContent>
+
+          {/* NLP Profile Tab */}
+          <TabsContent value="nlp">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <SalespersonProfileSettings />
             </motion.div>
           </TabsContent>
 
