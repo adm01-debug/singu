@@ -52,6 +52,7 @@ import { MetaprogramProfileCard } from '@/components/triggers/MetaprogramProfile
 import { MetaprogramTemplateLibrary } from '@/components/triggers/MetaprogramTemplateLibrary';
 import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
+import { SalesIntelligenceDashboard } from '@/components/triggers/SalesIntelligenceDashboard';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -339,6 +340,17 @@ const ContatoDetalhe = () => {
                   id: i.id,
                   content: i.content,
                   transcription: i.transcription
+                }))}
+              />
+
+              {/* Sales Intelligence Dashboard - Raio-X Completo */}
+              <SalesIntelligenceDashboard 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
                 }))}
               />
 
