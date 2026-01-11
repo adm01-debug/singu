@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.smart-reminders]
 verify_jwt = false
+
+[functions.voice-to-text]
+verify_jwt = false
+
+[functions.weekly-digest]
+verify_jwt = false
+
+[functions.template-success-notifications]
+verify_jwt = false
