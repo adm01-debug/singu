@@ -18,12 +18,13 @@ export function useEmotionalStates() {
     matchedWords: string[];
   } => {
     const lowerText = text.toLowerCase();
-    const stateScores: Record<EmotionalState, { score: number; words: string[] }> = {} as any;
-
-    // Initialize scores
-    (Object.keys(EMOTIONAL_STATE_KEYWORDS) as EmotionalState[]).forEach(state => {
-      stateScores[state] = { score: 0, words: [] };
-    });
+    const stateScores = (Object.keys(EMOTIONAL_STATE_KEYWORDS) as EmotionalState[]).reduce(
+      (acc, state) => {
+        acc[state] = { score: 0, words: [] };
+        return acc;
+      },
+      {} as Record<EmotionalState, { score: number; words: string[] }>
+    );
 
     // Count keyword matches for each state
     (Object.entries(EMOTIONAL_STATE_KEYWORDS) as [EmotionalState, string[]][]).forEach(([state, keywords]) => {

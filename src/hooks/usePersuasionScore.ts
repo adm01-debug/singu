@@ -4,15 +4,16 @@ import { Contact, DISCProfile } from '@/types';
 import { VAKType, VAK_PREDICATES } from '@/types/vak';
 import { POWER_WORDS } from '@/data/nlpAdvancedData';
 import { METAPROGRAM_KEYWORDS } from '@/types/metaprograms';
+import { getDominantVAK, getDISCProfile as getBehaviorDISC, getMetaprogramProfile } from '@/lib/contact-utils';
 
 export function usePersuasionScore(contact: Contact) {
   const [analyzing, setAnalyzing] = useState(false);
 
   const analyzeMessage = useCallback((message: string): MessageAnalysis => {
-    const behavior = contact.behavior as any;
-    const vakType = (behavior?.vakProfile?.primary as VAKType) || 'V';
-    const discProfile = (behavior?.discProfile as DISCProfile) || 'D';
-    const motivationDirection = behavior?.metaprogramProfile?.motivationDirection || 'toward';
+    const vakType = getDominantVAK(contact) as VAKType;
+    const discProfile = (getBehaviorDISC(contact) as DISCProfile) || 'D';
+    const metaprogram = getMetaprogramProfile(contact);
+    const motivationDirection = metaprogram?.motivationDirection || 'toward';
     const lowerMessage = message.toLowerCase();
 
     // Initialize scores

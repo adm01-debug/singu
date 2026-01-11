@@ -3,15 +3,17 @@ import { PersonalizedScript, ScriptSection, SalesStage } from '@/types/nlp-advan
 import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { SALES_STAGE_INFO, POWER_WORDS } from '@/data/nlpAdvancedData';
+import { getContactBehavior, getDominantVAK, getDISCProfile as getBehaviorDISC, getMetaprogramProfile, getVAKProfile, getDISCConfidence } from '@/lib/contact-utils';
 
 export function useSalesScript(contact: Contact) {
   const personalizedScript = useMemo((): PersonalizedScript => {
-    const behavior = contact.behavior as any;
-    const vakType = (behavior?.vakProfile?.primary as VAKType) || 'V';
-    const discProfile = (behavior?.discProfile as DISCProfile) || 'D';
-    const motivationDirection = behavior?.metaprogramProfile?.motivationDirection || 'toward';
-    const referenceFrame = behavior?.metaprogramProfile?.referenceFrame || 'external';
-    const workingStyle = behavior?.metaprogramProfile?.workingStyle || 'options';
+    const behavior = getContactBehavior(contact);
+    const vakType = getDominantVAK(contact) as VAKType;
+    const discProfile = (getBehaviorDISC(contact) as DISCProfile) || 'D';
+    const metaprogram = getMetaprogramProfile(contact);
+    const motivationDirection = metaprogram?.motivationDirection || 'toward';
+    const referenceFrame = metaprogram?.referenceFrame || 'external';
+    const workingStyle = metaprogram?.sortingStyle || 'options';
 
     const firstName = contact.firstName;
 
@@ -234,7 +236,8 @@ Aliás, você conhece alguém que também poderia se beneficiar disso?"`,
 
     // Calculate success probability
     const confidence = behavior?.discConfidence || 50;
-    const vakConfidence = behavior?.vakProfile?.confidence || 50;
+    const vakProfile = getVAKProfile(contact);
+    const vakConfidence = 50; // Default confidence since VAKProfile doesn't have confidence field
     const successProbability = Math.round((confidence + vakConfidence) / 2);
 
     return {

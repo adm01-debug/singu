@@ -2,12 +2,14 @@ import { useMemo } from 'react';
 import { SimulationResult, NegotiationScenario, NegotiationPath } from '@/types/nlp-advanced';
 import { Contact, DISCProfile } from '@/types';
 import { OBJECTION_PATTERNS } from '@/data/nlpAdvancedData';
+import { getDISCProfile as getBehaviorDISC, getMetaprogramProfile, getDISCConfidence, getContactBehavior } from '@/lib/contact-utils';
 
 export function useNegotiationSimulator(contact: Contact) {
   const simulationResult = useMemo((): SimulationResult => {
-    const behavior = contact.behavior as any;
-    const discProfile = (behavior?.discProfile as DISCProfile) || 'D';
-    const motivationDirection = behavior?.metaprogramProfile?.motivationDirection || 'toward';
+    const behavior = getContactBehavior(contact);
+    const discProfile = (getBehaviorDISC(contact) as DISCProfile) || 'D';
+    const metaprogram = getMetaprogramProfile(contact);
+    const motivationDirection = metaprogram?.motivationDirection || 'toward';
     const firstName = contact.firstName;
 
     // Generate scenarios based on profile
