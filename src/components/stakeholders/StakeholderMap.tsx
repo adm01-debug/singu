@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -27,6 +27,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStakeholderAnalysis, StakeholderData } from '@/hooks/useStakeholderAnalysis';
+import { useStakeholderAlerts } from '@/hooks/useStakeholderAlerts';
+import { StakeholderAlertsList } from './StakeholderAlertsList';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Contact = Tables<'contacts'>;
@@ -35,6 +37,7 @@ type Interaction = Tables<'interactions'>;
 interface StakeholderMapProps {
   contacts: Contact[];
   interactions: Interaction[];
+  companyId?: string;
 }
 
 const QUADRANT_CONFIG = {
@@ -426,9 +429,33 @@ function StakeholderDetail({ stakeholder, onClose }: { stakeholder: StakeholderD
   );
 }
 
-export function StakeholderMap({ contacts, interactions }: StakeholderMapProps) {
+export function StakeholderMap({ contacts, interactions, companyId }: StakeholderMapProps) {
   const [selectedStakeholder, setSelectedStakeholder] = useState<StakeholderData | null>(null);
   const { stakeholders, summary, recommendations } = useStakeholderAnalysis(contacts, interactions);
+  const { checkForChanges, alerts } = useStakeholderAlerts(companyId);
+
+  // Check for stakeholder changes when analysis updates
+  useEffect(() => {
+    if (stakeholders.length > 0) {
+      stakeholders.forEach(stakeholder => {
+        const contactName = `${stakeholder.contact.first_name} ${stakeholder.contact.last_name}`;
+        checkForChanges(
+          stakeholder.contact.id,
+          contactName,
+          companyId || null,
+          {
+            power: stakeholder.metrics.power * 10,
+            interest: stakeholder.metrics.interest * 10,
+            influence: stakeholder.metrics.influence * 10,
+            support: stakeholder.metrics.support * 10 + 50, // Convert from -5 to 5 scale to 0-100
+            engagement: stakeholder.metrics.engagement * 10,
+            quadrant: stakeholder.quadrant,
+            riskLevel: stakeholder.riskLevel
+          }
+        );
+      });
+    }
+  }, [stakeholders, companyId, checkForChanges]);
 
   if (contacts.length === 0) {
     return (
@@ -475,9 +502,17 @@ export function StakeholderMap({ contacts, interactions }: StakeholderMapProps) 
         </AnimatePresence>
 
         <Tabs defaultValue="matrix">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="matrix">Matriz Poder-Interesse</TabsTrigger>
             <TabsTrigger value="list">Lista Priorizada</TabsTrigger>
+            <TabsTrigger value="alerts" className="relative">
+              Alertas
+              {alerts.length > 0 && (
+                <Badge className="ml-1.5 h-5 w-5 p-0 justify-center text-xs bg-destructive">
+                  {alerts.length}
+                </Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="insights">Insights</TabsTrigger>
           </TabsList>
 
@@ -498,6 +533,14 @@ export function StakeholderMap({ contacts, interactions }: StakeholderMapProps) 
                 />
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            <StakeholderAlertsList 
+              companyId={companyId} 
+              maxItems={10}
+              showHeader={false}
+            />
           </TabsContent>
 
           <TabsContent value="insights">
