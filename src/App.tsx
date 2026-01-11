@@ -7,6 +7,7 @@ import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
 import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardShortcutsDialogEnhanced";
 import { InstallPrompt, OfflineIndicator, NetworkStatusBadge } from "@/components/pwa/PWAComponents";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Empresas from "./pages/Empresas";
@@ -26,8 +27,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <CelebrationProvider>
+  <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
+    <QueryClientProvider client={queryClient}>
+      <CelebrationProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -114,8 +116,9 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
-    </CelebrationProvider>
-  </QueryClientProvider>
+      </CelebrationProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
