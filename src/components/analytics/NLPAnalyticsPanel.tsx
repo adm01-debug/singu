@@ -33,15 +33,37 @@ import {
   Target,
   Sparkles,
   Activity,
+  Calendar,
+  RefreshCw,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+
+type PeriodFilter = '7d' | '30d' | '90d' | '365d';
+
+const periodOptions = [
+  { value: '7d', label: 'Últimos 7 dias' },
+  { value: '30d', label: 'Últimos 30 dias' },
+  { value: '90d', label: 'Últimos 90 dias' },
+  { value: '365d', label: 'Último ano' },
+];
+
+const getPeriodDays = (period: PeriodFilter): number => {
+  switch (period) {
+    case '7d': return 7;
+    case '30d': return 30;
+    case '90d': return 90;
+    case '365d': return 365;
+  }
+};
 
 interface NLPStats {
   totalAnalyses: number;
@@ -127,6 +149,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function NLPAnalyticsPanel() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<PeriodFilter>('30d');
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState<NLPStats>({
     totalAnalyses: 0,
@@ -142,42 +165,55 @@ export function NLPAnalyticsPanel() {
     if (user) {
       fetchNLPStats();
     }
-  }, [user]);
+  }, [user, period]);
+
+  const getDateFilter = () => {
+    const days = getPeriodDays(period);
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString();
+  };
 
   const fetchNLPStats = async () => {
     if (!user) return;
     setLoading(true);
 
+    const dateFilter = getDateFilter();
+
     try {
-      // Fetch emotional states
+      // Fetch emotional states with date filter
       const { data: emotionalData } = await supabase
         .from('emotional_states_history')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', dateFilter);
 
-      // Fetch VAK analysis
+      // Fetch VAK analysis with date filter
       const { data: vakData } = await supabase
         .from('vak_analysis_history')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', dateFilter);
 
-      // Fetch contacts for DISC profiles
+      // Fetch contacts for DISC profiles (no date filter - always all)
       const { data: contactsData } = await supabase
         .from('contacts')
         .select('behavior')
         .eq('user_id', user.id);
 
-      // Fetch client values
+      // Fetch client values with date filter
       const { data: valuesData } = await supabase
         .from('client_values')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', dateFilter);
 
-      // Fetch hidden objections
+      // Fetch hidden objections with date filter
       const { data: objectionsData } = await supabase
         .from('hidden_objections')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('created_at', dateFilter);
 
       // Process emotional states
       const emotionalMap = new Map<string, { count: number; totalConfidence: number }>();
@@ -257,34 +293,98 @@ export function NLPAnalyticsPanel() {
         }))
         .sort((a, b) => b.count - a.count);
 
-      // Process emotional trend (last 7 days)
+      // Process emotional trend based on period
+      const days = getPeriodDays(period);
       const now = new Date();
-      const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(now);
-        date.setDate(date.getDate() - (6 - i));
-        return date.toISOString().split('T')[0];
-      });
-
-      const emotionalTrend = last7Days.map((date) => {
-        const dayEmotions = emotionalData?.filter((e) => 
-          e.created_at.startsWith(date)
-        ) || [];
+      
+      let trendData: { date: string; positive: number; neutral: number; negative: number }[] = [];
+      
+      if (days <= 7) {
+        // Daily for 7 days
+        const dates = Array.from({ length: 7 }, (_, i) => {
+          const date = new Date(now);
+          date.setDate(date.getDate() - (6 - i));
+          return date.toISOString().split('T')[0];
+        });
         
-        const positive = dayEmotions.filter((e) => 
-          ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'].includes(e.emotional_state)
-        ).length;
-        const negative = dayEmotions.filter((e) => 
-          ['Frustração', 'Ansiedade'].includes(e.emotional_state)
-        ).length;
-        const neutral = dayEmotions.length - positive - negative;
+        trendData = dates.map((date) => {
+          const dayEmotions = emotionalData?.filter((e) => 
+            e.created_at.startsWith(date)
+          ) || [];
+          
+          const positive = dayEmotions.filter((e) => 
+            ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'].includes(e.emotional_state)
+          ).length;
+          const negative = dayEmotions.filter((e) => 
+            ['Frustração', 'Ansiedade'].includes(e.emotional_state)
+          ).length;
+          const neutral = dayEmotions.length - positive - negative;
 
-        return {
-          date: new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }),
-          positive,
-          neutral: neutral >= 0 ? neutral : 0,
-          negative,
-        };
-      });
+          return {
+            date: new Date(date).toLocaleDateString('pt-BR', { weekday: 'short' }),
+            positive,
+            neutral: neutral >= 0 ? neutral : 0,
+            negative,
+          };
+        });
+      } else if (days <= 30) {
+        // Weekly for 30 days
+        for (let week = 3; week >= 0; week--) {
+          const weekStart = new Date(now);
+          weekStart.setDate(weekStart.getDate() - (week * 7 + 6));
+          const weekEnd = new Date(now);
+          weekEnd.setDate(weekEnd.getDate() - (week * 7));
+          
+          const weekEmotions = emotionalData?.filter((e) => {
+            const date = new Date(e.created_at);
+            return date >= weekStart && date <= weekEnd;
+          }) || [];
+          
+          const positive = weekEmotions.filter((e) => 
+            ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'].includes(e.emotional_state)
+          ).length;
+          const negative = weekEmotions.filter((e) => 
+            ['Frustração', 'Ansiedade'].includes(e.emotional_state)
+          ).length;
+          const neutral = weekEmotions.length - positive - negative;
+
+          trendData.push({
+            date: `Sem ${4 - week}`,
+            positive,
+            neutral: neutral >= 0 ? neutral : 0,
+            negative,
+          });
+        }
+      } else {
+        // Monthly for 90+ days
+        const months = days <= 90 ? 3 : 12;
+        for (let month = months - 1; month >= 0; month--) {
+          const monthStart = new Date(now.getFullYear(), now.getMonth() - month, 1);
+          const monthEnd = new Date(now.getFullYear(), now.getMonth() - month + 1, 0);
+          
+          const monthEmotions = emotionalData?.filter((e) => {
+            const date = new Date(e.created_at);
+            return date >= monthStart && date <= monthEnd;
+          }) || [];
+          
+          const positive = monthEmotions.filter((e) => 
+            ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'].includes(e.emotional_state)
+          ).length;
+          const negative = monthEmotions.filter((e) => 
+            ['Frustração', 'Ansiedade'].includes(e.emotional_state)
+          ).length;
+          const neutral = monthEmotions.length - positive - negative;
+
+          trendData.push({
+            date: monthStart.toLocaleDateString('pt-BR', { month: 'short' }),
+            positive,
+            neutral: neutral >= 0 ? neutral : 0,
+            negative,
+          });
+        }
+      }
+
+      const emotionalTrend = trendData;
 
       const totalAnalyses = (emotionalData?.length || 0) + (vakData?.length || 0) + 
                            (valuesData?.length || 0) + (objectionsData?.length || 0);
@@ -348,6 +448,33 @@ export function NLPAnalyticsPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Period Filter */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      >
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {periodOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => fetchNLPStats()}>
+          <RefreshCw className="w-4 h-4" />
+          Atualizar
+        </Button>
+      </motion.div>
+
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <motion.div
