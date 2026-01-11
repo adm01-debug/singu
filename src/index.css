@@ -4,8 +4,39 @@
 
 /* RelateIQ Design System - Sistema de Inteligência Relacional */
 
+/* ============================================
+   TYPOGRAPHY SCALE - Pilar 2.1 (Ratio 1.25)
+   ============================================ */
 @layer base {
   :root {
+    /* Modular Type Scale (ratio 1.25) */
+    --text-xs: 0.75rem;      /* 12px - captions */
+    --text-sm: 0.875rem;     /* 14px - body small */
+    --text-base: 1rem;       /* 16px - body */
+    --text-lg: 1.125rem;     /* 18px - lead */
+    --text-xl: 1.25rem;      /* 20px - h4 */
+    --text-2xl: 1.5rem;      /* 24px - h3 */
+    --text-3xl: 1.875rem;    /* 30px - h2 */
+    --text-4xl: 2.25rem;     /* 36px - h1 */
+    --text-5xl: 3rem;        /* 48px - display */
+    --text-6xl: 3.75rem;     /* 60px - hero */
+    
+    /* Line heights otimizados */
+    --leading-none: 1;
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    
+    /* Letter spacing */
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+    --tracking-widest: 0.1em;
+
     /* Core Brand Colors - Deep Blue Theme */
     --background: 222 47% 98%;
     --foreground: 222 47% 11%;
@@ -19,6 +50,7 @@
     /* Primary - Deep Professional Blue */
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
+    --primary-glow: 250 83% 60%;
 
     /* Secondary - Slate */
     --secondary: 215 20% 95%;
@@ -68,8 +100,11 @@
     /* Custom Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(250 83% 60%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(160 84% 39%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(222 47% 98%) 100%);
     --gradient-sidebar: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(222 47% 8%) 100%);
+    --gradient-heading: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(221 83% 53%) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
@@ -77,6 +112,7 @@
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
     --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
     --shadow-glow: 0 0 20px hsl(221 83% 53% / 0.3);
+    --shadow-glow-lg: 0 0 40px hsl(221 83% 53% / 0.4);
 
     /* Role Colors */
     --role-owner: 280 67% 45%;
@@ -115,6 +151,7 @@
 
     --primary: 221 83% 60%;
     --primary-foreground: 222 47% 11%;
+    --primary-glow: 250 83% 70%;
 
     --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -140,6 +177,9 @@
     --sidebar-accent-foreground: 215 20% 95%;
     --sidebar-border: 222 47% 12%;
     --sidebar-ring: 221 83% 53%;
+    
+    /* Dark mode gradients */
+    --gradient-heading: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(221 83% 70%) 100%);
     
     /* Surface Levels - Dark Mode */
     --surface-0: 222 47% 6%;
@@ -219,6 +259,74 @@
 }
 
 @layer components {
+  /* ============================================
+     TYPOGRAPHY HIERARCHY - Pilar 2.3
+     ============================================ */
+  
+  /* Display - Hero sections */
+  .text-display {
+    @apply text-5xl md:text-6xl font-bold tracking-tight;
+    line-height: var(--leading-tight);
+  }
+  
+  /* Heading 1 - Page titles */
+  .text-h1 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+    line-height: var(--leading-tight);
+  }
+  
+  /* Heading 2 - Section titles */
+  .text-h2 {
+    @apply text-2xl md:text-3xl font-semibold tracking-tight;
+    line-height: var(--leading-snug);
+  }
+  
+  /* Heading 3 - Card titles */
+  .text-h3 {
+    @apply text-xl md:text-2xl font-semibold;
+    line-height: var(--leading-snug);
+  }
+  
+  /* Heading 4 - Subsections */
+  .text-h4 {
+    @apply text-lg md:text-xl font-medium;
+    line-height: var(--leading-normal);
+  }
+  
+  /* Lead - Intro paragraphs */
+  .text-lead {
+    @apply text-lg text-muted-foreground;
+    line-height: var(--leading-relaxed);
+  }
+  
+  /* Body - Default text */
+  .text-body {
+    @apply text-base;
+    line-height: var(--leading-normal);
+  }
+  
+  /* Small - Secondary text */
+  .text-small {
+    @apply text-sm text-muted-foreground;
+    line-height: var(--leading-normal);
+  }
+  
+  /* Caption - Labels, metadata */
+  .text-caption {
+    @apply text-xs text-muted-foreground uppercase tracking-wide font-medium;
+  }
+  
+  /* Eyebrow - Category labels */
+  .text-eyebrow {
+    @apply text-xs uppercase tracking-widest font-semibold text-primary;
+  }
+  
+  /* Gradient heading */
+  .text-gradient-heading {
+    @apply bg-clip-text text-transparent font-bold;
+    background-image: var(--gradient-heading);
+  }
+
   /* Glass morphism effect */
   .glass {
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
@@ -233,6 +341,50 @@
   /* Card hover effect */
   .card-hover {
     @apply transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5;
+  }
+
+  /* ============================================
+     GRADIENT CTA BUTTONS - Pilar 3.3
+     ============================================ */
+  .btn-gradient {
+    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
+    background: var(--gradient-primary);
+    transition: all 0.3s ease;
+  }
+  
+  .btn-gradient::before {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(250 83% 60%) 0%, hsl(221 83% 53%) 100%);
+  }
+  
+  .btn-gradient:hover::before {
+    @apply opacity-100;
+  }
+  
+  .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .btn-gradient-success {
+    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
+    background: var(--gradient-success);
+  }
+  
+  .btn-gradient-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px hsl(142 76% 36% / 0.3);
+  }
+  
+  .btn-gradient-premium {
+    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
+    background: var(--gradient-premium);
+  }
+  
+  .btn-gradient-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px hsl(38 92% 50% / 0.3);
   }
 
   /* Role badges */
@@ -263,6 +415,43 @@
 
   .status-busy {
     @apply bg-warning;
+  }
+
+  /* ============================================
+     SKELETON SHIMMER EFFECT - Pilar 4.2
+     ============================================ */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  .skeleton-shimmer {
+    @apply relative overflow-hidden bg-muted/70 rounded-md;
+  }
+  
+  .skeleton-shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.08),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+  
+  .dark .skeleton-shimmer::after {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--primary) / 0.15),
+      transparent
+    );
   }
 }
 
