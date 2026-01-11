@@ -9,7 +9,8 @@ import {
   Sun, 
   Monitor,
   Save,
-  Camera
+  Camera,
+  Sparkles,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -26,6 +27,7 @@ import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 
 interface ProfileData {
   first_name: string;
@@ -375,6 +377,11 @@ export default function Configuracoes() {
                       />
                     </div>
                   </div>
+                  
+                  <Separator className="my-6" />
+                  
+                  {/* Template Success Notifications */}
+                  <TemplateNotificationSettings />
                 </CardContent>
               </Card>
             </motion.div>
