@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import {
   Brain, Heart, Handshake, Map, AlertTriangle, FileText, Gamepad2,
   MessageSquareText, BookOpen, ChevronRight, Sparkles, Target, Copy,
-  Check, TrendingUp, TrendingDown, Minus, Zap, Shield, Eye, Clock
+  Check, TrendingUp, TrendingDown, Minus, Zap, Shield, Eye, Clock,
+  Save, Database, CheckCircle2, Loader2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,9 @@ import { useSalesScript } from '@/hooks/useSalesScript';
 import { useNegotiationSimulator } from '@/hooks/useNegotiationSimulator';
 import { usePersuasionScore } from '@/hooks/usePersuasionScore';
 import { useClientDictionary } from '@/hooks/useClientDictionary';
+import { useEmotionalStatesPersistence } from '@/hooks/useEmotionalStatesPersistence';
+import { useClientValuesPersistence } from '@/hooks/useClientValuesPersistence';
+import { useHiddenObjectionsPersistence } from '@/hooks/useHiddenObjectionsPersistence';
 import { EMOTIONAL_STATE_INFO, VALUE_CATEGORY_INFO, OBJECTION_PATTERNS, SALES_STAGE_INFO } from '@/data/nlpAdvancedData';
 import { toast } from 'sonner';
 
@@ -38,9 +42,12 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
   const [messageAnalysis, setMessageAnalysis] = useState<any>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>('script');
+  const [savingEmotions, setSavingEmotions] = useState(false);
+  const [savingValues, setSavingValues] = useState(false);
+  const [savingObjections, setSavingObjections] = useState(false);
 
-  // All hooks
-  const { analyzeEmotionalHistory, EMOTIONAL_STATE_INFO: emotionalInfo } = useEmotionalStates();
+  // Analysis hooks
+  const { analyzeEmotionalHistory, detectEmotionalState } = useEmotionalStates();
   const { rapportProfile } = useRapportGenerator(contact);
   const { valuesMap } = useClientValues(contact, interactions);
   const { objectionAnalysis } = useHiddenObjections(interactions);
@@ -49,7 +56,33 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
   const { analyzeMessage } = usePersuasionScore(contact);
   const { clientDictionary } = useClientDictionary(contact, interactions);
 
+  // Persistence hooks
+  const { 
+    persistAnalysis: persistEmotionalAnalysis, 
+    stateHistory: savedEmotionalStates,
+    positiveAnchors: savedPositiveAnchors,
+    negativeAnchors: savedNegativeAnchors,
+    loading: loadingEmotions 
+  } = useEmotionalStatesPersistence(contact.id);
+  
+  const { 
+    persistValuesMap, 
+    savedValues, 
+    savedCriteria,
+    loading: loadingValues 
+  } = useClientValuesPersistence(contact.id);
+  
+  const { 
+    persistObjections, 
+    savedObjections,
+    resolvedObjections,
+    resolveObjection,
+    getStats: getObjectionStats,
+    loading: loadingObjections 
+  } = useHiddenObjectionsPersistence(contact.id);
+
   const emotionalAnalysis = analyzeEmotionalHistory(interactions);
+  const objectionStats = getObjectionStats();
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -62,6 +95,48 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
     if (!messageToAnalyze.trim()) return;
     const analysis = analyzeMessage(messageToAnalyze);
     setMessageAnalysis(analysis);
+  };
+
+  // Save emotional analysis to database
+  const handleSaveEmotionalAnalysis = async () => {
+    setSavingEmotions(true);
+    try {
+      const states = emotionalAnalysis.stateHistory.map(s => ({
+        state: s.state,
+        confidence: 70,
+        trigger: s.trigger,
+        context: undefined
+      }));
+
+      const anchors = [
+        ...emotionalAnalysis.positiveAnchors,
+        ...emotionalAnalysis.negativeAnchors
+      ];
+
+      await persistEmotionalAnalysis(states, anchors);
+    } finally {
+      setSavingEmotions(false);
+    }
+  };
+
+  // Save values map to database
+  const handleSaveValuesMap = async () => {
+    setSavingValues(true);
+    try {
+      await persistValuesMap(valuesMap.coreValues, valuesMap.decisionCriteria);
+    } finally {
+      setSavingValues(false);
+    }
+  };
+
+  // Save objections to database
+  const handleSaveObjections = async () => {
+    setSavingObjections(true);
+    try {
+      await persistObjections(objectionAnalysis.detectedObjections);
+    } finally {
+      setSavingObjections(false);
+    }
   };
 
   const TrendIcon = emotionalAnalysis.emotionalTrend === 'improving' ? TrendingUp :
@@ -190,7 +265,26 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
 
           {/* EMOTIONS TAB */}
           <TabsContent value="emotions" className="mt-4">
-            <ScrollArea className="h-[400px] pr-4">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                {savedEmotionalStates.length > 0 && (
+                  <Badge variant="outline" className="gap-1">
+                    <Database className="w-3 h-3" />
+                    {savedEmotionalStates.length} estados salvos
+                  </Badge>
+                )}
+              </div>
+              <Button 
+                size="sm" 
+                onClick={handleSaveEmotionalAnalysis} 
+                disabled={savingEmotions || loadingEmotions}
+                className="gap-1"
+              >
+                {savingEmotions ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                Salvar Análise
+              </Button>
+            </div>
+            <ScrollArea className="h-[360px] pr-4">
               <div className="space-y-4">
                 <div className={cn('p-4 rounded-lg border', EMOTIONAL_STATE_INFO[emotionalAnalysis.currentState]?.bgColor)}>
                   <div className="flex items-center justify-between mb-2">
@@ -290,7 +384,26 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
 
           {/* VALUES TAB */}
           <TabsContent value="values" className="mt-4">
-            <ScrollArea className="h-[400px] pr-4">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                {savedValues.length > 0 && (
+                  <Badge variant="outline" className="gap-1">
+                    <Database className="w-3 h-3" />
+                    {savedValues.length} valores salvos
+                  </Badge>
+                )}
+              </div>
+              <Button 
+                size="sm" 
+                onClick={handleSaveValuesMap} 
+                disabled={savingValues || loadingValues}
+                className="gap-1"
+              >
+                {savingValues ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                Salvar Valores
+              </Button>
+            </div>
+            <ScrollArea className="h-[360px] pr-4">
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-sm mb-2">🎯 Hierarquia de Valores</h4>
@@ -325,7 +438,26 @@ export function SalesIntelligenceDashboard({ contact, interactions, className }:
 
           {/* OBJECTIONS TAB */}
           <TabsContent value="objections" className="mt-4">
-            <ScrollArea className="h-[400px] pr-4">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                {objectionStats.total > 0 && (
+                  <Badge variant="outline" className="gap-1">
+                    <Database className="w-3 h-3" />
+                    {objectionStats.pending} pendentes | {objectionStats.resolved} resolvidas
+                  </Badge>
+                )}
+              </div>
+              <Button 
+                size="sm" 
+                onClick={handleSaveObjections} 
+                disabled={savingObjections || loadingObjections || objectionAnalysis.detectedObjections.length === 0}
+                className="gap-1"
+              >
+                {savingObjections ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                Salvar Objeções
+              </Button>
+            </div>
+            <ScrollArea className="h-[360px] pr-4">
               <div className="space-y-4">
                 <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
                   <p className="font-medium text-sm">Nível de Resistência: {objectionAnalysis.resistanceLevel}%</p>
