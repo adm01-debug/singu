@@ -137,11 +137,22 @@ export interface LifeEvent {
   reminder: boolean;
 }
 
+// VAK Profile
+export interface VAKProfile {
+  visual: number;
+  auditory: number;
+  kinesthetic: number;
+  primary: 'V' | 'A' | 'K';
+}
+
 export interface ContactBehavior {
   // DISC Profile
   discProfile: DISCProfile;
   discConfidence: number; // 0-100
   discNotes?: string;
+  
+  // VAK Profile
+  vakProfile?: VAKProfile;
   
   // Motivations
   primaryMotivation?: string;

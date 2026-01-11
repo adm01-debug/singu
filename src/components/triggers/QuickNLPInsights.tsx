@@ -16,11 +16,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { Contact } from '@/types';
+import { Contact, ContactBehavior, VAKProfile } from '@/types';
 import { useEmotionalStates } from '@/hooks/useEmotionalStates';
 import { useRapportGenerator } from '@/hooks/useRapportGenerator';
 import { useHiddenObjections } from '@/hooks/useHiddenObjections';
 import { useClientValues } from '@/hooks/useClientValues';
+
+// Helper to safely extract behavior
+const getBehavior = (contact: Contact): ContactBehavior | null => {
+  if (contact.behavior && typeof contact.behavior === 'object') {
+    return contact.behavior as ContactBehavior;
+  }
+  return null;
+};
+
+const DEFAULT_VAK_PROFILE: VAKProfile = {
+  visual: 33,
+  auditory: 33,
+  kinesthetic: 34,
+  primary: 'V'
+};
 
 interface Interaction {
   id: string;
@@ -62,22 +77,17 @@ export function QuickNLPInsights({ contact, interactions, className }: QuickNLPI
     return detectEmotionalState(recentText);
   }, [interactions, detectEmotionalState]);
 
-  // Get VAK profile from behavior
-  const behavior = contact.behavior as any;
-  const vakProfile = behavior?.vakProfile || { 
-    visual: 33, 
-    auditory: 33, 
-    kinesthetic: 34,
-    primary: 'V'
-  };
+  // Get VAK profile from behavior using type-safe helper
+  const behavior = getBehavior(contact);
+  const vakProfile: VAKProfile = behavior?.vakProfile || DEFAULT_VAK_PROFILE;
   
-  const dominantVAK = typeof vakProfile === 'object' && vakProfile.primary 
-    ? vakProfile.primary
-    : vakProfile.visual >= vakProfile.auditory && vakProfile.visual >= vakProfile.kinesthetic 
+  const dominantVAK = vakProfile.primary || (
+    vakProfile.visual >= vakProfile.auditory && vakProfile.visual >= vakProfile.kinesthetic 
       ? 'V' 
       : vakProfile.auditory >= vakProfile.kinesthetic 
         ? 'A' 
-        : 'K';
+        : 'K'
+  );
 
   const emotionInfo = EMOTIONAL_STATE_INFO[currentEmotionalState.state as keyof typeof EMOTIONAL_STATE_INFO];
 

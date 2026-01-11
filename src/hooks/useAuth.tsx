@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, forwardRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -111,35 +111,43 @@ export function useAuth() {
   return context;
 }
 
-// Protected route wrapper
-export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  return <>{children}</>;
+// Protected route wrapper - using forwardRef to avoid ref warnings
+interface RequireAuthProps {
+  children: ReactNode;
 }
+
+export const RequireAuth = forwardRef<HTMLDivElement, RequireAuthProps>(
+  function RequireAuth({ children }, ref) {
+    const { user, loading } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      if (!loading && !user) {
+        navigate('/auth');
+      }
+    }, [user, loading, navigate]);
+
+    if (loading) {
+      return (
+        <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    return <>{children}</>;
+  }
+);
+
+RequireAuth.displayName = 'RequireAuth';

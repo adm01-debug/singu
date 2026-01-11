@@ -37,8 +37,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       {/* Main Content */}
       <main 
         id="main-content"
-        className="transition-all duration-200 pb-20 md:pb-0 focus:outline-none"
-        style={{ marginLeft: typeof window !== 'undefined' && window.innerWidth >= 768 ? (collapsed ? 72 : 280) : 0 }}
+        className={`transition-all duration-200 pb-20 md:pb-0 focus:outline-none md:ml-[280px] ${collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'}`}
         tabIndex={-1}
       >
         {children}

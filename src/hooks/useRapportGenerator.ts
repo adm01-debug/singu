@@ -3,12 +3,13 @@ import { RapportProfile, RapportScript } from '@/types/nlp-advanced';
 import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { RAPPORT_TEMPLATES, POWER_WORDS } from '@/data/nlpAdvancedData';
+import { getDominantVAK, getDISCProfile as getBehaviorDISC, getDISCConfidence, getVAKProfile, getContactBehavior, getMetaprogramProfile } from '@/lib/contact-utils';
 
 export function useRapportGenerator(contact: Contact) {
   const rapportProfile = useMemo((): RapportProfile => {
-    const behavior = contact.behavior as any;
-    const vakType = (behavior?.vakProfile?.primary as VAKType) || 'V';
-    const discProfile = (behavior?.discProfile as DISCProfile) || 'D';
+    const behavior = getContactBehavior(contact);
+    const vakType = getDominantVAK(contact) as VAKType;
+    const discProfile = (getBehaviorDISC(contact) as DISCProfile) || 'D';
 
     // Generate mirroring strategies based on VAK
     const mirroringStrategies: RapportScript[] = [
@@ -141,9 +142,9 @@ export function useRapportGenerator(contact: Contact) {
 
     // Calculate rapport score
     const rapportScore = Math.min(100, 
-      (behavior?.vakProfile?.confidence || 50) * 0.4 +
-      (behavior?.discConfidence || 50) * 0.4 +
-      (behavior?.metaprogramProfile?.overallConfidence || 50) * 0.2
+      50 * 0.4 +
+      (getDISCConfidence(contact) || 50) * 0.4 +
+      50 * 0.2
     );
 
     return {
