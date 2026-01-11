@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { ProfileBasedSuggestions } from './ProfileBasedSuggestions';
 import { CompatibilityScore } from './CompatibilityScore';
+import { TemplateHistoryByProfile } from './TemplateHistoryByProfile';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -235,11 +236,15 @@ export function UnifiedNLPDashboard({
           </motion.div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsList className="grid w-full grid-cols-6 mb-4">
               <TabsTrigger value="overview">Visão Geral</TabsTrigger>
               <TabsTrigger value="suggestions" className="gap-1">
                 <Sparkles className="w-3 h-3" />
                 Sugestões
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-1">
+                <BarChart3 className="w-3 h-3" />
+                Histórico
               </TabsTrigger>
               <TabsTrigger value="vak">VAK</TabsTrigger>
               <TabsTrigger value="disc">DISC</TabsTrigger>
@@ -480,6 +485,11 @@ export function UnifiedNLPDashboard({
                 vakProfile={vakProfile}
                 metaprogramProfile={metaProfile}
               />
+            </TabsContent>
+
+            {/* History Tab */}
+            <TabsContent value="history" className="space-y-4">
+              <TemplateHistoryByProfile />
             </TabsContent>
 
             {/* VAK Tab */}
