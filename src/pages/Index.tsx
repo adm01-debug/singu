@@ -13,7 +13,8 @@ import {
   BarChart3,
   AlertTriangle,
   Phone,
-  Target
+  Target,
+  Heart
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -41,6 +42,7 @@ import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContact
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { PortfolioHealthDashboard } from '@/components/dashboard/PortfolioHealthDashboard';
+import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -229,9 +231,9 @@ const Dashboard = () => {
           <ClosingScoreRanking maxItems={5} showStats={false} compact className="mt-6" />
         </motion.div>
 
-        {/* Smart Reminders + Compatibility Alerts + Top Contacts + Insights */}
+        {/* Smart Reminders + Health Alerts + Compatibility Alerts + Top Contacts + Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Smart Reminders - Compact version */}
+          {/* Smart Reminders + Health Alerts - Compact version */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -239,6 +241,7 @@ const Dashboard = () => {
             className="space-y-6"
           >
             <SmartRemindersPanel compact />
+            <HealthAlertsPanel />
             <ClosingScoreAlertsList maxItems={3} compact />
             <CompatibilityAlertsList maxItems={3} />
           </motion.div>
