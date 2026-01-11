@@ -37,6 +37,7 @@ import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
+import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -126,7 +127,13 @@ const Dashboard = () => {
         showBreadcrumbs={false}
       />
 
+      {/* Pre-Contact Briefing Modal - renders when meeting is imminent */}
+      <PreContactBriefing />
+
       <div className="p-6 space-y-6">
+        {/* Pre-Contact Briefings Compact */}
+        <PreContactBriefing compact className="mb-2" />
+
         {/* Your Day Section */}
         <YourDaySection />
 
