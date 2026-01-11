@@ -19,6 +19,8 @@ import {
   Search,
   X,
   History,
+  Star,
+  Heart,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,7 @@ import { useClientTriggers } from '@/hooks/useClientTriggers';
 import { PersuasionTemplate, MENTAL_TRIGGERS, PersuasionScenario } from '@/types/triggers';
 import { toast } from 'sonner';
 import { useTriggerHistory } from '@/hooks/useTriggerHistory';
+import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
 
 interface PersuasionTemplatesProps {
   contact: Contact;
@@ -56,10 +59,11 @@ const channelLabels = {
   any: 'Universal',
 };
 
-type ScenarioFilter = 'all' | 'price_objection' | 'indecisive' | 'reactivation' | 'initial_negotiation' | 'upsell_crosssell' | 'contract_renewal' | 'timing_objection' | 'general';
+type ScenarioFilter = 'all' | 'favorites' | 'price_objection' | 'indecisive' | 'reactivation' | 'initial_negotiation' | 'upsell_crosssell' | 'contract_renewal' | 'timing_objection' | 'general';
 
 const scenarioFilters: { id: ScenarioFilter; label: string; icon: typeof LayoutGrid; description: string }[] = [
   { id: 'all', label: 'Todos', icon: LayoutGrid, description: 'Todos os templates' },
+  { id: 'favorites', label: 'Favoritos', icon: Star, description: 'Seus templates favoritos' },
   { id: 'initial_negotiation', label: 'Inicial', icon: MessageSquare, description: 'Primeiras conversas' },
   { id: 'price_objection', label: 'Preço', icon: DollarSign, description: 'Cliente questionando valor' },
   { id: 'indecisive', label: 'Indeciso', icon: HelpCircle, description: 'Ajudar na decisão' },
@@ -75,9 +79,11 @@ interface TemplateFillerProps {
   contact: Contact;
   onClose: () => void;
   onUseTemplate: (template: PersuasionTemplate) => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
 }
 
-function TemplateFiller({ template, contact, onClose, onUseTemplate }: TemplateFillerProps) {
+function TemplateFiller({ template, contact, onClose, onUseTemplate, isFavorite, onToggleFavorite }: TemplateFillerProps) {
   const [variables, setVariables] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     template.variables.forEach(v => {
@@ -104,6 +110,11 @@ function TemplateFiller({ template, contact, onClose, onUseTemplate }: TemplateF
     toast.success('Mensagem copiada e uso registrado!');
     onUseTemplate(template);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleToggleFavorite = () => {
+    onToggleFavorite();
+    toast.success(isFavorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos!');
   };
   
   return (
@@ -146,6 +157,17 @@ function TemplateFiller({ template, contact, onClose, onUseTemplate }: TemplateF
       )}
       
       <div className="flex gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleToggleFavorite}
+          className={cn(
+            "shrink-0 transition-colors",
+            isFavorite && "text-yellow-500 border-yellow-500 hover:text-yellow-600 hover:border-yellow-600"
+          )}
+        >
+          <Star className={cn("w-4 h-4", isFavorite && "fill-current")} />
+        </Button>
         <Button 
           onClick={handleCopy} 
           disabled={!allFilled}
@@ -165,6 +187,7 @@ function TemplateFiller({ template, contact, onClose, onUseTemplate }: TemplateF
 export function PersuasionTemplates({ contact, className }: PersuasionTemplatesProps) {
   const { allTemplates, analysis } = useClientTriggers(contact);
   const { createUsage, stats } = useTriggerHistory(contact.id);
+  const { isFavorite, toggleFavorite, favorites } = useFavoriteTemplates();
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
   const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -192,7 +215,9 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
     
     // Filtro de cenário
     let scenarioMatch = true;
-    if (activeScenario !== 'all') {
+    if (activeScenario === 'favorites') {
+      scenarioMatch = isFavorite(t.id);
+    } else if (activeScenario !== 'all') {
       if (activeScenario === 'general') {
         scenarioMatch = !t.scenario;
       } else {
@@ -218,6 +243,12 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
     return discMatch && scenarioMatch && searchMatch;
   });
   
+  // Count favorites
+  const favoritesCount = allTemplates.filter(t => {
+    const discMatch = t.discProfile === null || t.discProfile === contact.behavior?.discProfile;
+    return discMatch && isFavorite(t.id);
+  }).length;
+  
   // Conta templates por cenário
   const scenarioCounts = allTemplates.reduce((acc, t) => {
     const discMatch = t.discProfile === null || t.discProfile === contact.behavior?.discProfile;
@@ -234,7 +265,10 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
       acc.general++;
     }
     return acc;
-  }, { all: 0, price_objection: 0, indecisive: 0, reactivation: 0, initial_negotiation: 0, upsell_crosssell: 0, contract_renewal: 0, timing_objection: 0, general: 0 } as Record<ScenarioFilter, number>);
+  }, { all: 0, favorites: 0, price_objection: 0, indecisive: 0, reactivation: 0, initial_negotiation: 0, upsell_crosssell: 0, contract_renewal: 0, timing_objection: 0, general: 0 } as Record<ScenarioFilter, number>);
+  
+  // Add favorites count
+  scenarioCounts.favorites = favoritesCount;
   
   // Agrupa por gatilho
   const templatesByTrigger = filteredTemplates.reduce((acc, template) => {
@@ -275,6 +309,7 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
             const Icon = scenario.icon;
             const count = scenarioCounts[scenario.id];
             const isActive = activeScenario === scenario.id;
+            const isFavoritesFilter = scenario.id === 'favorites';
             
             return (
               <Button
@@ -284,17 +319,19 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                 onClick={() => setActiveScenario(scenario.id)}
                 className={cn(
                   "gap-1.5 text-xs transition-all",
-                  isActive && "shadow-md"
+                  isActive && "shadow-md",
+                  isFavoritesFilter && !isActive && count > 0 && "border-yellow-300 text-yellow-600 hover:bg-yellow-50"
                 )}
                 title={scenario.description}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className={cn("w-3.5 h-3.5", isFavoritesFilter && count > 0 && !isActive && "fill-yellow-400")} />
                 {scenario.label}
                 <Badge 
                   variant={isActive ? "secondary" : "outline"} 
                   className={cn(
                     "ml-1 h-5 min-w-[20px] px-1.5",
-                    isActive ? "bg-background/20 text-primary-foreground" : "bg-muted"
+                    isActive ? "bg-background/20 text-primary-foreground" : "bg-muted",
+                    isFavoritesFilter && !isActive && count > 0 && "bg-yellow-100 text-yellow-700 border-yellow-300"
                   )}
                 >
                   {count}
@@ -391,6 +428,7 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                   <div className="p-3 space-y-2 bg-card">
                     {templates.map(template => {
                       const ChannelIcon = channelIcons[template.channel];
+                      const isTemplateFavorite = isFavorite(template.id);
                       
                       return (
                         <Dialog key={template.id}>
@@ -403,7 +441,12 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                                 <ChannelIcon className="w-4 h-4 text-muted-foreground" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">{template.title}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-sm font-medium truncate">{template.title}</p>
+                                  {isTemplateFavorite && (
+                                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 shrink-0" />
+                                  )}
+                                </div>
                                 <p className="text-xs text-muted-foreground">
                                   {channelLabels[template.channel]}
                                 </p>
@@ -417,6 +460,9 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                               <DialogTitle className="flex items-center gap-2">
                                 <span className="text-xl">{trigger.icon}</span>
                                 {template.title}
+                                {isTemplateFavorite && (
+                                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                                )}
                               </DialogTitle>
                             </DialogHeader>
                             <TemplateFiller 
@@ -424,6 +470,8 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                               contact={contact}
                               onClose={() => setSelectedTemplate(null)}
                               onUseTemplate={handleUseTemplate}
+                              isFavorite={isTemplateFavorite}
+                              onToggleFavorite={() => toggleFavorite(template.id)}
                             />
                           </DialogContent>
                         </Dialog>
