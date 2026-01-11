@@ -26,8 +26,10 @@ import {
   Check,
   TrendingUp,
   Zap,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
+import { ProfileBasedSuggestions } from './ProfileBasedSuggestions';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -232,11 +234,15 @@ export function UnifiedNLPDashboard({
           </motion.div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsList className="grid w-full grid-cols-5 mb-4">
               <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+              <TabsTrigger value="suggestions" className="gap-1">
+                <Sparkles className="w-3 h-3" />
+                Sugestões
+              </TabsTrigger>
               <TabsTrigger value="vak">VAK</TabsTrigger>
               <TabsTrigger value="disc">DISC</TabsTrigger>
-              <TabsTrigger value="metaprograms">Metaprogramas</TabsTrigger>
+              <TabsTrigger value="metaprograms">Meta</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -459,6 +465,15 @@ export function UnifiedNLPDashboard({
                   </Button>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Suggestions Tab */}
+            <TabsContent value="suggestions">
+              <ProfileBasedSuggestions
+                contact={contact}
+                vakProfile={vakProfile}
+                metaprogramProfile={metaProfile}
+              />
             </TabsContent>
 
             {/* VAK Tab */}
