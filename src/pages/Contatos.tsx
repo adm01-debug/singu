@@ -1,48 +1,26 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { 
   Users, 
-  Phone, 
-  Mail, 
-  MessageSquare,
-  Building2,
   Search,
   Grid3X3,
   List,
-  Linkedin,
-  MoreVertical,
-  UserCheck,
-  UserX,
   Crown,
   Briefcase,
   ShoppingCart,
   User,
   UserPlus,
-  Upload
+  Upload,
+  CheckSquare
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { RoleBadge } from '@/components/ui/role-badge';
-import { RelationshipScore } from '@/components/ui/relationship-score';
-import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
-import { DISCBadge } from '@/components/ui/disc-badge';
-import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
-import { PriorityIndicator, PriorityBar } from '@/components/ui/priority-indicator';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,13 +33,14 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { ContactForm } from '@/components/forms/ContactForm';
+import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
+import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
+import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
+import type { ContactRole } from '@/types';
 
 type ViewMode = 'grid' | 'list';
 
@@ -111,6 +90,7 @@ const sortOptions: SortOption[] = [
 ];
 
 const Contatos = () => {
+  const navigate = useNavigate();
   const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
   const { companies } = useCompanies();
   const { interactions } = useInteractions();
@@ -120,6 +100,10 @@ const Contatos = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Selection state for bulk actions
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   // Mini celebration hook
   const celebration = useMiniCelebration();
@@ -160,18 +144,26 @@ const Contatos = () => {
     });
   }, [contacts, searchTerm, activeFilters, sortBy, sortOrder]);
 
-  const getCompanyName = (companyId: string | null) => {
+  // Keyboard navigation
+  const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedContacts, {
+    onOpen: (contact) => navigate(`/contatos/${contact.id}`),
+    onSelect: () => {},
+  });
+
+  useKeyboardShortcutsEnhanced();
+
+  const getCompanyName = useCallback((companyId: string | null) => {
     if (!companyId) return null;
     const company = companies.find(c => c.id === companyId);
     return company?.name || null;
-  };
+  }, [companies]);
 
-  const getLastInteractionDate = (contactId: string): string | null => {
+  const getLastInteractionDate = useCallback((contactId: string): string | null => {
     const contactInteractions = interactions
       .filter(i => i.contact_id === contactId)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return contactInteractions[0]?.created_at || null;
-  };
+  }, [interactions]);
 
   const handleCreate = async (data: any, event?: React.MouseEvent) => {
     setIsSubmitting(true);
@@ -179,7 +171,6 @@ const Contatos = () => {
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
-      // Trigger celebration
       if (event) {
         celebration.trigger(event, { variant: 'success', message: 'Contato criado!' });
       } else {
@@ -195,7 +186,6 @@ const Contatos = () => {
     setIsSubmitting(false);
     if (result) {
       setEditingContact(null);
-      // Trigger celebration
       if (event) {
         celebration.trigger(event, { variant: 'star', message: 'Atualizado!' });
       } else {
@@ -208,6 +198,55 @@ const Contatos = () => {
     if (!deletingContact) return;
     await deleteContact(deletingContact.id);
     setDeletingContact(null);
+  };
+
+  // Selection handlers
+  const handleSelect = (id: string, selected: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredAndSortedContacts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredAndSortedContacts.map(c => c.id)));
+    }
+  };
+
+  const handleBulkDelete = async (ids: string[]) => {
+    for (const id of ids) {
+      await deleteContact(id);
+    }
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+  };
+
+  const handleBulkAddTag = async (ids: string[], tag: string) => {
+    for (const id of ids) {
+      const contact = contacts.find(c => c.id === id);
+      if (contact) {
+        const currentTags = contact.tags || [];
+        if (!currentTags.includes(tag)) {
+          await updateContact(id, { tags: [...currentTags, tag] });
+        }
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedIds(new Set());
+    }
   };
 
   return (
@@ -233,23 +272,34 @@ const Contatos = () => {
               className="pl-10"
             />
           </div>
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+          <div className="flex items-center gap-2">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('grid')}
-              className="h-8 w-8"
+              variant={selectionMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={toggleSelectionMode}
+              className="gap-2"
             >
-              <Grid3X3 className="w-4 h-4" />
+              <CheckSquare className="w-4 h-4" />
+              {selectionMode ? 'Cancelar' : 'Selecionar'}
             </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="icon"
-              onClick={() => setViewMode('list')}
-              className="h-8 w-8"
-            >
-              <List className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+                className="h-8 w-8"
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                className="h-8 w-8"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -275,229 +325,43 @@ const Contatos = () => {
             {/* Contacts Grid/List */}
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredAndSortedContacts.map((contact, index) => {
-                  const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
-                  const companyName = getCompanyName(contact.company_id);
-                  const lastInteraction = getLastInteractionDate(contact.id);
-                  
-                  return (
-                    <motion.div
-                      key={contact.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                    >
-                      <Card className="h-full card-hover group cursor-pointer overflow-hidden relative">
-                        {/* Priority Bar at the top */}
-                        <PriorityBar 
-                          relationshipScore={contact.relationship_score || 0} 
-                          lastInteractionDate={lastInteraction}
-                          className="absolute top-0 left-0 right-0 z-20"
-                        />
-                        
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="absolute top-3 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white dark:bg-background/80 dark:hover:bg-background"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setEditingContact(contact)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => setDeletingContact(contact)}
-                              className="text-destructive"
-                            >
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        
-                        <Link to={`/contatos/${contact.id}`}>
-                          <CardContent className="p-0">
-                            {/* Header with gradient */}
-                            <div className="h-16 bg-gradient-primary relative mt-1">
-                              <div className="absolute -bottom-8 left-5">
-                                <div className="relative">
-                                  <Avatar className="w-16 h-16 border-4 border-card shadow-medium">
-                                    <AvatarImage src={contact.avatar_url || undefined} />
-                                    <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
-                                      {contact.first_name[0]}{contact.last_name[0]}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  {/* Priority indicator on avatar */}
-                                  <div className="absolute -top-1 -right-1">
-                                    <PriorityIndicator 
-                                      relationshipScore={contact.relationship_score || 0}
-                                      lastInteractionDate={lastInteraction}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="absolute top-3 right-10">
-                                <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-                              </div>
-                            </div>
-
-                            <div className="pt-10 px-5 pb-5">
-                              <div className="mb-3">
-                                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                  {contact.first_name} {contact.last_name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
-                              </div>
-
-                              {companyName && (
-                                <div className="flex items-center gap-2 mb-3">
-                                  <Building2 className="w-4 h-4 text-muted-foreground" />
-                                  <span className="text-sm text-muted-foreground">{companyName}</span>
-                                </div>
-                              )}
-
-                              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                                {behavior?.discProfile && (
-                                  <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
-                                )}
-                                <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
-                              </div>
-
-                              <div className="mb-4">
-                                <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                              </div>
-
-                              {/* Contact Methods */}
-                              <div className="flex items-center gap-2 pt-4 border-t border-border">
-                                {contact.whatsapp && (
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-success">
-                                    <MessageSquare className="w-4 h-4" />
-                                  </Button>
-                                )}
-                                {contact.phone && (
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Phone className="w-4 h-4" />
-                                  </Button>
-                                )}
-                                {contact.email && (
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Mail className="w-4 h-4" />
-                                  </Button>
-                                )}
-                                {contact.linkedin && (
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-info">
-                                    <Linkedin className="w-4 h-4" />
-                                  </Button>
-                                )}
-                                <div className="ml-auto text-xs text-muted-foreground">
-                                  {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Link>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
+                {filteredAndSortedContacts.map((contact, index) => (
+                  <ContactCardWithContext
+                    key={contact.id}
+                    contact={contact}
+                    companyName={getCompanyName(contact.company_id)}
+                    lastInteraction={getLastInteractionDate(contact.id)}
+                    index={index}
+                    isSelected={selectedIds.has(contact.id)}
+                    isHighlighted={selectedIndex === index}
+                    selectionMode={selectionMode}
+                    onSelect={handleSelect}
+                    onEdit={setEditingContact}
+                    onDelete={setDeletingContact}
+                    onUpdate={updateContact}
+                    viewMode="grid"
+                  />
+                ))}
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredAndSortedContacts.map((contact, index) => {
-                  const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
-                  const companyName = getCompanyName(contact.company_id);
-                  const lastInteraction = getLastInteractionDate(contact.id);
-                  
-                  return (
-                    <motion.div
-                      key={contact.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.03 }}
-                    >
-                      <Card className="card-hover cursor-pointer group overflow-hidden relative">
-                        {/* Priority Bar on left side */}
-                        <div className="absolute left-0 top-0 bottom-0 w-1">
-                          <PriorityBar 
-                            relationshipScore={contact.relationship_score || 0} 
-                            lastInteractionDate={lastInteraction}
-                            className="h-full w-full rounded-none"
-                          />
-                        </div>
-                        <CardContent className="p-4 pl-5">
-                          <div className="flex items-center gap-4">
-                            <Link to={`/contatos/${contact.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                              <div className="relative">
-                                <Avatar className="w-12 h-12 border-2 border-primary/20">
-                                  <AvatarImage src={contact.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                                    {contact.first_name[0]}{contact.last_name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                {/* Priority indicator on avatar */}
-                                <div className="absolute -top-1 -right-1">
-                                  <PriorityIndicator 
-                                    relationshipScore={contact.relationship_score || 0}
-                                    lastInteractionDate={lastInteraction}
-                                  />
-                                </div>
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h3 className="font-semibold text-foreground truncate">
-                                    {contact.first_name} {contact.last_name}
-                                  </h3>
-                                  <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                                  {behavior?.discProfile && (
-                                    <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
-                                  )}
-                                  <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
-                                </div>
-                                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                  <span>{contact.role_title || 'Sem cargo'}</span>
-                                  {companyName && (
-                                    <>
-                                      <span>•</span>
-                                      <span>{companyName}</span>
-                                    </>
-                                  )}
-                                  <span>•</span>
-                                  <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                                </div>
-                              </div>
-
-                              <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-                            </Link>
-                            
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setEditingContact(contact)}>
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => setDeletingContact(contact)}
-                                  className="text-destructive"
-                                >
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
+                {filteredAndSortedContacts.map((contact, index) => (
+                  <ContactCardWithContext
+                    key={contact.id}
+                    contact={contact}
+                    companyName={getCompanyName(contact.company_id)}
+                    lastInteraction={getLastInteractionDate(contact.id)}
+                    index={index}
+                    isSelected={selectedIds.has(contact.id)}
+                    isHighlighted={selectedIndex === index}
+                    selectionMode={selectionMode}
+                    onSelect={handleSelect}
+                    onEdit={setEditingContact}
+                    onDelete={setDeletingContact}
+                    onUpdate={updateContact}
+                    viewMode="list"
+                  />
+                ))}
               </div>
             )}
 
@@ -540,6 +404,17 @@ const Contatos = () => {
           </>
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedIds={Array.from(selectedIds)}
+        totalCount={filteredAndSortedContacts.length}
+        entityType="contacts"
+        onSelectAll={handleSelectAll}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onDelete={handleBulkDelete}
+        onAddTag={handleBulkAddTag}
+      />
 
       {/* Create Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

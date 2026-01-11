@@ -1,13 +1,6 @@
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Building2, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Users,
-  MoreVertical,
   Search,
   TrendingUp,
   TrendingDown,
@@ -19,23 +12,16 @@ import {
   Cpu,
   HeartPulse,
   GraduationCap,
-  Plus
+  Plus,
+  CheckSquare
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,19 +34,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { CompanyForm } from '@/components/forms/CompanyForm';
+import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWithContext';
+import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-const industryIcons: Record<string, React.ElementType> = {
-  'Tecnologia': Cpu,
-  'Saúde': HeartPulse,
-  'Educação': GraduationCap,
-  'Varejo': ShoppingCart,
-  'Financeiro': Landmark,
-  'Indústria': Factory,
-  'Serviços': Briefcase,
-};
+import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -114,12 +91,17 @@ const sortOptions: SortOption[] = [
 ];
 
 const Empresas = () => {
+  const navigate = useNavigate();
   const { companies, loading, createCompany, updateCompany, deleteCompany } = useCompanies();
   const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Selection state for bulk actions
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
   // Advanced filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
@@ -168,6 +150,14 @@ const Empresas = () => {
     return result;
   }, [companies, searchTerm, activeFilters, sortBy, sortOrder]);
 
+  // Keyboard navigation
+  const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
+    onOpen: (company) => navigate(`/empresas/${company.id}`),
+    onSelect: () => {},
+  });
+
+  useKeyboardShortcutsEnhanced();
+
   const handleCreate = async (data: any) => {
     setIsSubmitting(true);
     const result = await createCompany(data);
@@ -193,8 +183,53 @@ const Empresas = () => {
     setDeletingCompany(null);
   };
 
-  const openEdit = (company: Company) => {
-    setEditingCompany(company);
+  // Selection handlers
+  const handleSelect = (id: string, selected: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredAndSortedCompanies.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredAndSortedCompanies.map(c => c.id)));
+    }
+  };
+
+  const handleBulkDelete = async (ids: string[]) => {
+    for (const id of ids) {
+      await deleteCompany(id);
+    }
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+  };
+
+  const handleBulkAddTag = async (ids: string[], tag: string) => {
+    for (const id of ids) {
+      const company = companies.find(c => c.id === id);
+      if (company) {
+        const currentTags = company.tags || [];
+        if (!currentTags.includes(tag)) {
+          await updateCompany(id, { tags: [...currentTags, tag] });
+        }
+      }
+    }
+    setSelectedIds(new Set());
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedIds(new Set());
+    }
   };
 
   return (
@@ -208,15 +243,26 @@ const Empresas = () => {
       />
 
       <div className="p-6 space-y-6">
-        {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar empresa, segmento ou cidade..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search and Selection Toggle */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar empresa, segmento ou cidade..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button
+            variant={selectionMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={toggleSelectionMode}
+            className="gap-2"
+          >
+            <CheckSquare className="w-4 h-4" />
+            {selectionMode ? 'Cancelar' : 'Selecionar'}
+          </Button>
         </div>
 
         {/* Advanced Filters */}
@@ -240,125 +286,20 @@ const Empresas = () => {
           <>
             {/* Companies Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAndSortedCompanies.map((company, index) => {
-                const IndustryIcon = industryIcons[company.industry || ''] || Building2;
-                
-                return (
-                  <motion.div
-                    key={company.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                  >
-                    <Link to={`/empresas/${company.id}`}>
-                      <Card className="h-full card-hover group cursor-pointer">
-                        <CardContent className="p-5">
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-glow">
-                                {company.name[0]}
-                              </div>
-                              <div>
-                                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                  {company.name}
-                                </h3>
-                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                  <IndustryIcon className="w-3.5 h-3.5" />
-                                  <span>{company.industry || 'Sem segmento'}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                                <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={(e) => { e.preventDefault(); openEdit(company); }}>
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={(e) => { e.preventDefault(); setDeletingCompany(company); }}
-                                  className="text-destructive"
-                                >
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-
-                          <div className="space-y-2 mb-4">
-                            {(company.city || company.state) && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <MapPin className="w-4 h-4 flex-shrink-0" />
-                                <span>{[company.city, company.state].filter(Boolean).join(', ')}</span>
-                              </div>
-                            )}
-                            {company.phone && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Phone className="w-4 h-4 flex-shrink-0" />
-                                <span>{company.phone}</span>
-                              </div>
-                            )}
-                            {company.email && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{company.email}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {company.financial_health && company.financial_health !== 'unknown' && (
-                            <div className="mb-4">
-                              <Badge 
-                                variant="outline" 
-                                className={
-                                  company.financial_health === 'excellent' || company.financial_health === 'good'
-                                    ? 'border-green-500/50 text-green-600 bg-green-500/10'
-                                    : company.financial_health === 'average'
-                                    ? 'border-yellow-500/50 text-yellow-600 bg-yellow-500/10'
-                                    : 'border-red-500/50 text-red-600 bg-red-500/10'
-                                }
-                              >
-                                {company.financial_health === 'excellent' ? 'Excelente' :
-                                 company.financial_health === 'good' ? 'Boa' :
-                                 company.financial_health === 'average' ? 'Regular' :
-                                 company.financial_health === 'poor' ? 'Ruim' : ''}
-                              </Badge>
-                            </div>
-                          )}
-
-                          {company.tags && company.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-4">
-                              {company.tags.slice(0, 3).map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {company.tags.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{company.tags.length - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between pt-4 border-t border-border">
-                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                              <Users className="w-4 h-4" />
-                              <span>--</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+              {filteredAndSortedCompanies.map((company, index) => (
+                <CompanyCardWithContext
+                  key={company.id}
+                  company={company}
+                  index={index}
+                  isSelected={selectedIds.has(company.id)}
+                  isHighlighted={selectedIndex === index}
+                  selectionMode={selectionMode}
+                  onSelect={handleSelect}
+                  onEdit={setEditingCompany}
+                  onDelete={setDeletingCompany}
+                  onUpdate={updateCompany}
+                />
+              ))}
             </div>
 
             {filteredAndSortedCompanies.length === 0 && !loading && (
@@ -394,6 +335,17 @@ const Empresas = () => {
           </>
         )}
       </div>
+
+      {/* Bulk Actions Bar */}
+      <BulkActionsBar
+        selectedIds={Array.from(selectedIds)}
+        totalCount={filteredAndSortedCompanies.length}
+        entityType="companies"
+        onSelectAll={handleSelectAll}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onDelete={handleBulkDelete}
+        onAddTag={handleBulkAddTag}
+      />
 
       {/* Create Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
