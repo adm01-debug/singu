@@ -54,6 +54,7 @@ import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
 import { SalesIntelligenceDashboard } from '@/components/triggers/SalesIntelligenceDashboard';
 import { QuickNLPInsights } from '@/components/triggers/QuickNLPInsights';
+import { ExecutiveBehaviorSummary } from '@/components/profile/ExecutiveBehaviorSummary';
 import { ClosingScorePanel } from '@/components/analytics/ClosingScorePanel';
 import { EmotionalIntelligencePanel } from '@/components/analytics/EmotionalIntelligencePanel';
 import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPanel';
@@ -333,6 +334,17 @@ const ContatoDetalhe = () => {
 
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
+              />
+
+              {/* Executive Behavior Summary - Consolidated Profile */}
+              <ExecutiveBehaviorSummary 
                 contact={contact}
                 interactions={contactInteractions.map(i => ({
                   id: i.id,
