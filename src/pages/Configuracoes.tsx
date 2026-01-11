@@ -12,6 +12,7 @@ import {
   Camera,
   Sparkles,
   Brain,
+  GraduationCap,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -30,6 +31,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
+import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
 
 interface ProfileData {
   first_name: string;
@@ -138,6 +140,10 @@ export default function Configuracoes() {
             <TabsTrigger value="nlp" className="gap-2">
               <Brain className="w-4 h-4" />
               Meu PNL
+            </TabsTrigger>
+            <TabsTrigger value="training" className="gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Treinamento
             </TabsTrigger>
             <TabsTrigger value="appearance" className="gap-2">
               <Palette className="w-4 h-4" />
@@ -251,6 +257,16 @@ export default function Configuracoes() {
               animate={{ opacity: 1, y: 0 }}
             >
               <SalespersonProfileSettings />
+            </motion.div>
+          </TabsContent>
+
+          {/* Training Tab */}
+          <TabsContent value="training">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CommunicationTrainingMode />
             </motion.div>
           </TabsContent>
 
