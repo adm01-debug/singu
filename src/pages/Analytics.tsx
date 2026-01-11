@@ -50,6 +50,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { TriggerAnalytics } from '@/components/triggers/TriggerAnalytics';
+import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
+import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
+import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -461,8 +464,12 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-4">
+          <TabsList className="grid w-full max-w-2xl grid-cols-5">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="intelligence" className="gap-1">
+              <Target className="w-3.5 h-3.5" />
+              Inteligência
+            </TabsTrigger>
             <TabsTrigger value="engagement">Engajamento</TabsTrigger>
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
             <TabsTrigger value="triggers" className="gap-1">
@@ -470,6 +477,24 @@ const Analytics = () => {
               Gatilhos
             </TabsTrigger>
           </TabsList>
+
+          {/* Intelligence Tab - New */}
+          <TabsContent value="intelligence" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Churn Prediction - Full */}
+              <ChurnPredictionPanel maxItems={10} />
+
+              {/* Best Time + Deal Velocity */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <BestTimeToContactPanel />
+                <DealVelocityPanel />
+              </div>
+            </motion.div>
+          </TabsContent>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
