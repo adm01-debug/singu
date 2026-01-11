@@ -43,6 +43,7 @@ import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { PortfolioHealthDashboard } from '@/components/dashboard/PortfolioHealthDashboard';
 import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
+import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -144,6 +145,12 @@ const Dashboard = () => {
 
         {/* Portfolio Health Dashboard */}
         <PortfolioHealthDashboard 
+          contacts={mockContacts}
+          interactions={mockInteractions}
+        />
+
+        {/* Important Dates Calendar */}
+        <ImportantDatesCalendar 
           contacts={mockContacts}
           interactions={mockInteractions}
         />
