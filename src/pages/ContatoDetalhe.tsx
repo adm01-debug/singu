@@ -54,6 +54,7 @@ import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
 import { SalesIntelligenceDashboard } from '@/components/triggers/SalesIntelligenceDashboard';
 import { QuickNLPInsights } from '@/components/triggers/QuickNLPInsights';
+import { ClosingScorePanel } from '@/components/analytics/ClosingScorePanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -354,6 +355,9 @@ const ContatoDetalhe = () => {
                   transcription: i.transcription
                 }))}
               />
+
+              {/* AI Closing Score */}
+              <ClosingScorePanel contactId={contact.id} />
 
               {/* Sales Intelligence Dashboard - Raio-X Completo */}
               <SalesIntelligenceDashboard 
