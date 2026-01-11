@@ -15,7 +15,8 @@ import {
   Clock,
   User,
   Building2,
-  ArrowRight
+  ArrowRight,
+  Briefcase,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -26,6 +27,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PortfolioCompatibilityReport } from '@/components/triggers/PortfolioCompatibilityReport';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -236,21 +239,33 @@ const Insights = () => {
       />
       
       <div className="p-6 space-y-6">
-        {/* Header Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-end"
-        >
-          <Button 
-            onClick={handleRefreshInsights} 
-            disabled={generating}
-            className="gap-2"
-          >
-            <RefreshCw className={cn("w-4 h-4", generating && "animate-spin")} />
-            {generating ? 'Gerando...' : 'Gerar Novos Insights'}
-          </Button>
-        </motion.div>
+        <Tabs defaultValue="insights" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <TabsList>
+              <TabsTrigger value="insights" className="gap-2">
+                <Sparkles className="w-4 h-4" />
+                Insights IA
+              </TabsTrigger>
+              <TabsTrigger value="compatibility" className="gap-2">
+                <Briefcase className="w-4 h-4" />
+                Compatibilidade
+              </TabsTrigger>
+            </TabsList>
+            <Button 
+              onClick={handleRefreshInsights} 
+              disabled={generating}
+              className="gap-2"
+            >
+              <RefreshCw className={cn("w-4 h-4", generating && "animate-spin")} />
+              {generating ? 'Gerando...' : 'Gerar Novos Insights'}
+            </Button>
+          </div>
+
+          <TabsContent value="compatibility" className="mt-0">
+            <PortfolioCompatibilityReport />
+          </TabsContent>
+
+          <TabsContent value="insights" className="mt-0 space-y-6">
 
         {/* Stats Cards */}
         <motion.div
@@ -499,6 +514,8 @@ const Insights = () => {
             )}
           </motion.div>
         )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );
