@@ -35,6 +35,7 @@ import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge, DISCChart } from '@/components/ui/disc-badge';
+import { VAKBadge } from '@/components/ui/vak-badge';
 import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/relationship-stage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -45,6 +46,7 @@ import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
 import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
 import { TriggerUsageHistory } from '@/components/triggers/TriggerUsageHistory';
+import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -324,6 +326,9 @@ const ContatoDetalhe = () => {
                 interactions={contactInteractions}
                 company={contactCompany}
               />
+
+              {/* VAK Profile (PNL) */}
+              <VAKProfileCard contact={contact} />
 
               {/* Mental Triggers Panel */}
               <ClientTriggerPanel contact={contact} />
