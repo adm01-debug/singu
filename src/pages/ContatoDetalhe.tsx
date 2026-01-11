@@ -61,6 +61,10 @@ import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPane
 import { BehaviorEvolutionChart } from '@/components/analytics/BehaviorEvolutionChart';
 import { UnifiedBehavioralProfilePanel } from '@/components/analytics/UnifiedBehavioralProfilePanel';
 import { ApproachRecommendationPanel } from '@/components/analytics/ApproachRecommendationPanel';
+import { ClientHealthPanel } from '@/components/analytics/ClientHealthPanel';
+import { PersonalizedOffersPanel } from '@/components/analytics/PersonalizedOffersPanel';
+import { ImportantDatesPanel } from '@/components/analytics/ImportantDatesPanel';
+import { SatisfactionScorePanel } from '@/components/analytics/SatisfactionScorePanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -376,6 +380,31 @@ const ContatoDetalhe = () => {
                   transcription: i.transcription,
                   createdAt: i.createdAt.toISOString()
                 }))}
+              />
+
+              {/* Client Health Panel */}
+              <ClientHealthPanel 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* Satisfaction Score Panel */}
+              <SatisfactionScorePanel 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* Personalized Offers Panel */}
+              <PersonalizedOffersPanel 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* Important Dates Panel */}
+              <ImportantDatesPanel 
+                contacts={mockContacts}
+                interactions={contactInteractions}
+                singleContact={contact}
               />
 
               {/* AI Next Action Suggestion */}
