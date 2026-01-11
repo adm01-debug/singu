@@ -40,6 +40,7 @@ import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
+import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -589,7 +590,11 @@ const EmpresaDetalhe = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
+                    className="space-y-6"
                   >
+                    {/* Account Churn Prediction Panel */}
+                    <AccountChurnPredictionPanel companyId={company.id} />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Relationship Health */}
                       <Card>

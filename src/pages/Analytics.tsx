@@ -55,6 +55,7 @@ import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContact
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
+import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -491,8 +492,11 @@ const Analytics = () => {
               {/* Closing Score Ranking - New */}
               <ClosingScoreRanking showStats maxItems={10} />
 
-              {/* Churn Prediction - Full */}
+              {/* Churn Prediction - By Contact */}
               <ChurnPredictionPanel maxItems={10} />
+
+              {/* Account-Level Churn Prediction - Based on Stakeholder Analysis */}
+              <AccountChurnPredictionPanel />
 
               {/* Best Time + Deal Velocity */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
