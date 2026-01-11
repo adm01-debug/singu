@@ -51,6 +51,7 @@ import { SleightOfMouthLibrary } from '@/components/triggers/SleightOfMouthLibra
 import { MetaprogramProfileCard } from '@/components/triggers/MetaprogramProfileCard';
 import { MetaprogramTemplateLibrary } from '@/components/triggers/MetaprogramTemplateLibrary';
 import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
+import { UnifiedNLPDashboard } from '@/components/triggers/UnifiedNLPDashboard';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -329,6 +330,16 @@ const ContatoDetalhe = () => {
                 contact={contact}
                 interactions={contactInteractions}
                 company={contactCompany}
+              />
+
+              {/* Unified NLP Dashboard */}
+              <UnifiedNLPDashboard 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription
+                }))}
               />
 
               {/* VAK Profile (PNL) */}
