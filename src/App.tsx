@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
+import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardShortcutsDialogEnhanced";
+import { InstallPrompt, OfflineIndicator, NetworkStatusBadge } from "@/components/pwa/PWAComponents";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
 import Empresas from "./pages/Empresas";
@@ -29,6 +31,10 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <OfflineIndicator />
+      <InstallPrompt />
+      <NetworkStatusBadge />
+      <KeyboardShortcutsDialogEnhanced />
       <BrowserRouter>
         <AuthProvider>
           <Routes>

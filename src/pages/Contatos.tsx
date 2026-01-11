@@ -57,6 +57,7 @@ import { ContactForm } from '@/components/forms/ContactForm';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
+import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
@@ -118,6 +119,9 @@ const Contatos = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Mini celebration hook
+  const celebration = useMiniCelebration();
   
   // Advanced filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
@@ -186,22 +190,34 @@ const Contatos = () => {
     return contactInteractions[0]?.created_at || null;
   };
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: any, event?: React.MouseEvent) => {
     setIsSubmitting(true);
     const result = await createContact(data);
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      // Trigger celebration
+      if (event) {
+        celebration.trigger(event, { variant: 'success', message: 'Contato criado!' });
+      } else {
+        celebration.trigger({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }, { variant: 'success', message: 'Contato criado!' });
+      }
     }
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: any, event?: React.MouseEvent) => {
     if (!editingContact) return;
     setIsSubmitting(true);
     const result = await updateContact(editingContact.id, data);
     setIsSubmitting(false);
     if (result) {
       setEditingContact(null);
+      // Trigger celebration
+      if (event) {
+        celebration.trigger(event, { variant: 'star', message: 'Atualizado!' });
+      } else {
+        celebration.trigger({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 }, { variant: 'star', message: 'Atualizado!' });
+      }
     }
   };
 
@@ -212,6 +228,7 @@ const Contatos = () => {
   };
 
   return (
+    <>
     <AppLayout>
       <Header 
         title="Contatos" 
@@ -585,6 +602,10 @@ const Contatos = () => {
         </AlertDialogContent>
       </AlertDialog>
     </AppLayout>
+    
+    {/* Mini Celebration */}
+    {celebration.MiniCelebrationComponent}
+    </>
   );
 };
 

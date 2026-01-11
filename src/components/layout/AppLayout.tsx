@@ -6,6 +6,8 @@ import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useSidebarState } from '@/hooks/useSidebarState';
+import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
+import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -15,9 +17,15 @@ interface AppLayoutProps {
 export function AppLayout({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { collapsed } = useSidebarState();
+  
+  // Enable keyboard shortcuts
+  useKeyboardShortcutsEnhanced();
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip to main content for accessibility */}
+      <SkipToContent />
+      
       {/* Mobile Header */}
       <MobileHeader onSearchClick={() => setIsOpen(true)} title={title} />
       
@@ -28,8 +36,10 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       
       {/* Main Content */}
       <main 
-        className="transition-all duration-200 pb-20 md:pb-0"
+        id="main-content"
+        className="transition-all duration-200 pb-20 md:pb-0 focus:outline-none"
         style={{ marginLeft: typeof window !== 'undefined' && window.innerWidth >= 768 ? (collapsed ? 72 : 280) : 0 }}
+        tabIndex={-1}
       >
         {children}
       </main>
