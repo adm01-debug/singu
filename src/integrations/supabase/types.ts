@@ -428,6 +428,69 @@ export type Database = {
           },
         ]
       }
+      metaprogram_analysis: {
+        Row: {
+          analyzed_text: string | null
+          away_from_score: number | null
+          away_from_words: string[] | null
+          contact_id: string
+          created_at: string
+          external_score: number | null
+          external_words: string[] | null
+          id: string
+          interaction_id: string | null
+          internal_score: number | null
+          internal_words: string[] | null
+          options_score: number | null
+          options_words: string[] | null
+          procedures_score: number | null
+          procedures_words: string[] | null
+          toward_score: number | null
+          toward_words: string[] | null
+          user_id: string
+        }
+        Insert: {
+          analyzed_text?: string | null
+          away_from_score?: number | null
+          away_from_words?: string[] | null
+          contact_id: string
+          created_at?: string
+          external_score?: number | null
+          external_words?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          internal_score?: number | null
+          internal_words?: string[] | null
+          options_score?: number | null
+          options_words?: string[] | null
+          procedures_score?: number | null
+          procedures_words?: string[] | null
+          toward_score?: number | null
+          toward_words?: string[] | null
+          user_id: string
+        }
+        Update: {
+          analyzed_text?: string | null
+          away_from_score?: number | null
+          away_from_words?: string[] | null
+          contact_id?: string
+          created_at?: string
+          external_score?: number | null
+          external_words?: string[] | null
+          id?: string
+          interaction_id?: string | null
+          internal_score?: number | null
+          internal_words?: string[] | null
+          options_score?: number | null
+          options_words?: string[] | null
+          procedures_score?: number | null
+          procedures_words?: string[] | null
+          toward_score?: number | null
+          toward_words?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
