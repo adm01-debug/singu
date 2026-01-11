@@ -42,6 +42,8 @@ import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
+import { CountUp, AnimatedBadge } from '@/components/micro-interactions/AnimatedCounter';
 import {
   ActivityChart,
   RelationshipEvolutionChart,

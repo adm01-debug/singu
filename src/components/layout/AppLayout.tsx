@@ -4,6 +4,8 @@ import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
+import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { OnboardingTourWrapper } from '@/components/onboarding/OnboardingTourWrapper';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
@@ -51,6 +53,12 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       <div className="hidden md:block">
         <QuickAddButton />
       </div>
+      
+      {/* Notification Center */}
+      <NotificationCenter />
+      
+      {/* Onboarding Tour */}
+      <OnboardingTourWrapper />
     </div>
   );
 }
