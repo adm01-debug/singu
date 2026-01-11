@@ -71,12 +71,13 @@ const trendIcons = {
 
 interface ClosingScorePanelProps {
   contactId: string;
+  contactName?: string;
   className?: string;
   compact?: boolean;
 }
 
-export function ClosingScorePanel({ contactId, className, compact = false }: ClosingScorePanelProps) {
-  const { score, loading, analyzing, recalculate } = useClosingScore(contactId);
+export function ClosingScorePanel({ contactId, contactName, className, compact = false }: ClosingScorePanelProps) {
+  const { score, loading, analyzing, recalculate } = useClosingScore(contactId, contactName);
   const [showFactors, setShowFactors] = useState(!compact);
   const [showRecommendations, setShowRecommendations] = useState(!compact);
 
