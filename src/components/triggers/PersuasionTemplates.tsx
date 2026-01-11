@@ -21,6 +21,7 @@ import {
   History,
   Star,
   Heart,
+  Brain,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -37,10 +39,12 @@ import { PersuasionTemplate, MENTAL_TRIGGERS, PersuasionScenario } from '@/types
 import { toast } from 'sonner';
 import { useTriggerHistory } from '@/hooks/useTriggerHistory';
 import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
+import { SmartTemplateSuggestions } from './SmartTemplateSuggestions';
 
 interface PersuasionTemplatesProps {
   contact: Contact;
   className?: string;
+  showSmartSuggestions?: boolean;
 }
 
 const channelIcons = {
@@ -184,13 +188,14 @@ function TemplateFiller({ template, contact, onClose, onUseTemplate, isFavorite,
   );
 }
 
-export function PersuasionTemplates({ contact, className }: PersuasionTemplatesProps) {
+export function PersuasionTemplates({ contact, className, showSmartSuggestions = true }: PersuasionTemplatesProps) {
   const { allTemplates, analysis } = useClientTriggers(contact);
   const { createUsage, stats } = useTriggerHistory(contact.id);
   const { isFavorite, toggleFavorite, favorites } = useFavoriteTemplates();
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
   const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'smart' | 'all'>('smart');
   
   const handleUseTemplate = async (template: PersuasionTemplate) => {
     await createUsage({
@@ -303,7 +308,26 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Filtros por cenário */}
+        {/* Tabs: Smart vs All */}
+        {showSmartSuggestions && (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'smart' | 'all')} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="smart" className="gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                Sugestões IA
+              </TabsTrigger>
+              <TabsTrigger value="all" className="gap-1.5">
+                <LayoutGrid className="w-3.5 h-3.5" />
+                Todos Templates
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="smart" className="mt-4">
+              <SmartTemplateSuggestions contact={contact} />
+            </TabsContent>
+            
+            <TabsContent value="all" className="mt-4 space-y-4">
+              {/* Filtros por cenário */}
         <div className="flex flex-wrap gap-2">
           {scenarioFilters.map(scenario => {
             const Icon = scenario.icon;
@@ -483,6 +507,89 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
             })}
           </div>
         </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        )}
+        
+        {/* Fallback when smart suggestions disabled */}
+        {!showSmartSuggestions && (
+          <>
+            {/* Filtros por cenário */}
+            <div className="flex flex-wrap gap-2">
+              {scenarioFilters.map(scenario => {
+                const Icon = scenario.icon;
+                const count = scenarioCounts[scenario.id];
+                const isActive = activeScenario === scenario.id;
+                const isFavoritesFilter = scenario.id === 'favorites';
+                
+                return (
+                  <Button
+                    key={scenario.id}
+                    variant={isActive ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveScenario(scenario.id)}
+                    className={cn(
+                      "gap-1.5 text-xs transition-all",
+                      isActive && "shadow-md",
+                      isFavoritesFilter && !isActive && count > 0 && "border-yellow-300 text-yellow-600 hover:bg-yellow-50"
+                    )}
+                    title={scenario.description}
+                  >
+                    <Icon className={cn("w-3.5 h-3.5", isFavoritesFilter && count > 0 && !isActive && "fill-yellow-400")} />
+                    {scenario.label}
+                    <Badge 
+                      variant={isActive ? "secondary" : "outline"} 
+                      className={cn(
+                        "ml-1 h-5 min-w-[20px] px-1.5",
+                        isActive ? "bg-background/20 text-primary-foreground" : "bg-muted",
+                        isFavoritesFilter && !isActive && count > 0 && "bg-yellow-100 text-yellow-700 border-yellow-300"
+                      )}
+                    >
+                      {count}
+                    </Badge>
+                  </Button>
+                );
+              })}
+            </div>
+            
+            {/* Campo de busca */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar templates por título, conteúdo ou gatilho..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            
+            <ScrollArea className="h-[300px] pr-4">
+              <div className="space-y-4">
+                {sortedTriggers.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Search className="w-8 h-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      {searchQuery 
+                        ? `Nenhum template encontrado para "${searchQuery}"` 
+                        : 'Nenhum template encontrado para este cenário'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </>
+        )}
       </CardContent>
     </Card>
   );
