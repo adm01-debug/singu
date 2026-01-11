@@ -320,7 +320,7 @@ export function ClientTriggerPanel({ contact, className, compact = false }: Clie
         )}
 
         {/* Tabs de Categorias */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="w-full flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="all" className="text-xs">
               Todos

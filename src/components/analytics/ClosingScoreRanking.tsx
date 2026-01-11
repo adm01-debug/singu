@@ -120,7 +120,7 @@ export function ClosingScoreRanking({
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3, 4, 5].map(i => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <Skeleton key={`ranking-skeleton-${i}`} className="h-20 w-full" />
           ))}
         </CardContent>
       </Card>

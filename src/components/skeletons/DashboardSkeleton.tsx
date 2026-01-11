@@ -8,7 +8,7 @@ const DashboardSkeleton = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <Card key={i} className="overflow-hidden">
+          <Card key={`stats-card-${i}`} className="overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-3">
@@ -39,7 +39,7 @@ const DashboardSkeleton = () => {
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(2)].map((_, i) => (
-          <Card key={i}>
+          <Card key={`chart-row1-${i}`}>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-5 w-40" />
@@ -49,7 +49,7 @@ const DashboardSkeleton = () => {
             <CardContent>
               <div className="h-64 flex items-end justify-around gap-2 pt-4">
                 {[...Array(7)].map((_, j) => (
-                  <div key={j} className="flex-1 flex flex-col items-center gap-2">
+                  <div key={`bar-${i}-${j}`} className="flex-1 flex flex-col items-center gap-2">
                     <Skeleton 
                       className="w-full rounded-t-md" 
                       style={{ height: `${40 + (j * 8)}%` }} 
@@ -79,14 +79,14 @@ const DashboardSkeleton = () => {
 
         {/* Bar chart skeletons */}
         {[...Array(2)].map((_, i) => (
-          <Card key={i}>
+          <Card key={`bar-chart-${i}`}>
             <CardHeader className="pb-2">
               <Skeleton className="h-5 w-32" />
             </CardHeader>
             <CardContent>
               <div className="space-y-4 pt-4">
                 {[...Array(5)].map((_, j) => (
-                  <div key={j} className="flex items-center gap-3">
+                  <div key={`bar-item-${i}-${j}`} className="flex items-center gap-3">
                     <Skeleton className="h-4 w-16" />
                     <Skeleton className="h-6 flex-1 rounded" />
                     <Skeleton className="h-4 w-8" />
@@ -108,7 +108,7 @@ const DashboardSkeleton = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+              <div key={`contact-${i}`} className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
                 <div className="flex items-center gap-4">
                   <Skeleton className="w-12 h-12 rounded-full" />
                   <div className="space-y-2">
@@ -140,7 +140,7 @@ const DashboardSkeleton = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="p-4 rounded-lg border border-border">
+              <div key={`insight-${i}`} className="p-4 rounded-lg border border-border">
                 <div className="flex items-start justify-between mb-2">
                   <Skeleton className="h-5 w-24 rounded-full" />
                   <Skeleton className="h-4 w-20" />
@@ -160,7 +160,7 @@ const DashboardSkeleton = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-3 rounded-lg">
+            <div key={`activity-${i}`} className="flex items-center gap-4 p-3 rounded-lg">
               <Skeleton className="w-2 h-2 rounded-full" />
               <div className="flex-1 flex items-center justify-between">
                 <Skeleton className="h-4 w-64" />

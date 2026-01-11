@@ -85,3 +85,44 @@ export function createTriggerCategoryHandler(
 ): (value: string) => void {
   return createTabHandler(setter, TRIGGER_CATEGORY_VALUES);
 }
+
+/**
+ * EI Tab type with history
+ */
+export type EITabWithHistory = 'overview' | 'pillars' | 'sales' | 'history';
+
+export const EI_TAB_WITH_HISTORY_VALUES: readonly EITabWithHistory[] = ['overview', 'pillars', 'sales', 'history'];
+
+export function createEITabWithHistoryHandler(
+  setter: (value: EITabWithHistory) => void
+): (value: string) => void {
+  return createTabHandler(setter, EI_TAB_WITH_HISTORY_VALUES);
+}
+
+/**
+ * Focus type for metaprogram templates (with working style)
+ */
+export type MetaprogramFocusType = 'motivation' | 'reference' | 'working';
+
+export const METAPROGRAM_FOCUS_VALUES: readonly MetaprogramFocusType[] = ['motivation', 'reference', 'working'];
+
+export function createMetaprogramFocusHandler(
+  setter: (value: MetaprogramFocusType) => void
+): (value: string) => void {
+  return createTabHandler(setter, METAPROGRAM_FOCUS_VALUES);
+}
+
+/**
+ * Trigger category tab type with tips
+ */
+export type TriggerCategoryWithTipsTab = TriggerCategoryTab | 'tips';
+
+export const TRIGGER_CATEGORY_WITH_TIPS_VALUES: readonly string[] = [
+  ...TRIGGER_CATEGORY_VALUES, 'tips'
+];
+
+export function createTriggerCategoryWithTipsHandler(
+  setter: (value: TriggerCategoryWithTipsTab) => void
+): (value: string) => void {
+  return createTabHandler(setter, TRIGGER_CATEGORY_WITH_TIPS_VALUES as readonly TriggerCategoryWithTipsTab[]);
+}

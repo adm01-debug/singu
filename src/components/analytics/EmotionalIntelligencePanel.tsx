@@ -26,6 +26,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { createEITabWithHistoryHandler, EITabWithHistory } from '@/lib/tab-utils';
 import { useEmotionalIntelligence } from '@/hooks/useEmotionalIntelligence';
 import { useEQPersistence } from '@/hooks/useEQPersistence';
 import { EQPillar, EQPillarScore } from '@/types/emotional-intelligence';
@@ -327,7 +328,7 @@ export function EmotionalIntelligencePanel({
       </CardHeader>
 
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={createEITabWithHistoryHandler(setActiveTab)}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="gap-1">
               <BarChart3 className="w-4 h-4" />

@@ -418,7 +418,7 @@ export function TriggerAnalytics({ className }: { className?: string }) {
           <Brain className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold">Analytics de Gatilhos por DISC</h2>
         </div>
-        <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as any)}>
+        <Select value={periodFilter} onValueChange={(v) => setPeriodFilter(v as typeof periodFilter)}>
           <SelectTrigger className="w-[160px]">
             <Filter className="w-4 h-4 mr-2" />
             <SelectValue />
@@ -515,7 +515,7 @@ export function TriggerAnalytics({ className }: { className?: string }) {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList>
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="disc">Por Perfil DISC</TabsTrigger>

@@ -53,6 +53,7 @@ import {
   getAdaptedMessage 
 } from '@/data/metaprogramTemplates';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createMetaprogramFocusHandler, MetaprogramFocusType } from '@/lib/tab-utils';
 
 interface MetaprogramTemplateLibraryProps {
   contactId: string;
@@ -348,7 +349,7 @@ export function MetaprogramTemplateLibrary({
                 {/* Focus Type Selection */}
                 <div>
                   <Label className="mb-2 block">Foco da Mensagem</Label>
-                  <Tabs value={focusType} onValueChange={(v) => setFocusType(v as any)}>
+                  <Tabs value={focusType} onValueChange={createMetaprogramFocusHandler(setFocusType)}>
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="motivation" className="flex items-center gap-1">
                         {profile.motivationDirection === 'toward' ? <Target className="h-3 w-3" /> : <Shield className="h-3 w-3" />}

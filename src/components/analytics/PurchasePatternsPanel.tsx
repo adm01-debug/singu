@@ -38,8 +38,8 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, compact ? 2 : 3].map(i => (
-            <Skeleton key={i} className="h-20 w-full" />
+          {[1, 2, compact ? 3 : 4].map(i => (
+            <Skeleton key={`skeleton-${i}`} className="h-20 w-full" />
           ))}
         </CardContent>
       </Card>
@@ -136,9 +136,9 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
                   <p>Nenhuma previsão para os próximos dias</p>
                 </div>
               ) : (
-                predictions.slice(0, compact ? 3 : 5).map((prediction, idx) => (
+                predictions.slice(0, compact ? 3 : 5).map((prediction) => (
                   <Link 
-                    key={idx} 
+                    key={`prediction-${prediction.contactId}-${prediction.predictedDate}`} 
                     to={`/contatos/${prediction.contactId}`}
                     className="block"
                   >
@@ -163,8 +163,8 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
                           {format(new Date(prediction.predictedDate), "d 'de' MMM", { locale: ptBR })}
                         </div>
                         <div className="flex gap-1">
-                          {prediction.suggestedProducts.slice(0, 2).map((product, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">
+                          {prediction.suggestedProducts.slice(0, 2).map((product) => (
+                            <Badge key={`product-${product}`} variant="outline" className="text-xs">
                               {product}
                             </Badge>
                           ))}
@@ -177,9 +177,9 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
             </TabsContent>
 
             <TabsContent value="patterns" className="mt-4 space-y-3">
-              {patterns.slice(0, compact ? 3 : 5).map((pattern, idx) => (
+              {patterns.slice(0, compact ? 3 : 5).map((pattern) => (
                 <Link 
-                  key={idx} 
+                  key={`pattern-${pattern.contactId}`} 
                   to={`/contatos/${pattern.contactId}`}
                   className="block"
                 >
@@ -235,8 +235,8 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
                     )}
 
                     <div className="mt-2 flex gap-1">
-                      {pattern.preferredProducts.slice(0, 3).map((product, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
+                      {pattern.preferredProducts.slice(0, 3).map((product) => (
+                        <Badge key={`pref-${product}`} variant="outline" className="text-xs">
                           {product}
                         </Badge>
                       ))}
@@ -247,8 +247,8 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
             </TabsContent>
 
             <TabsContent value="categories" className="mt-4 space-y-3">
-              {categoryPatterns.slice(0, compact ? 3 : 5).map((category, idx) => (
-                <div key={idx} className="p-3 border rounded-lg">
+              {categoryPatterns.slice(0, compact ? 3 : 5).map((category) => (
+                <div key={`category-${category.category}`} className="p-3 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-primary" />
@@ -277,9 +277,9 @@ export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanel
                   <div className="flex items-center gap-1">
                     <Users className="w-3 h-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">Top:</span>
-                    {category.topContacts.slice(0, 3).map((contact, i) => (
+                    {category.topContacts.slice(0, 3).map((contact) => (
                       <Link 
-                        key={i} 
+                        key={`top-${contact.contactId}`} 
                         to={`/contatos/${contact.contactId}`}
                         className="text-xs text-primary hover:underline"
                       >

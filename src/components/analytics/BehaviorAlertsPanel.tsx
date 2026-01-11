@@ -90,8 +90,8 @@ export function BehaviorAlertsPanel({ compact = false }: BehaviorAlertsPanelProp
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, compact ? 2 : 3].map(i => (
-            <Skeleton key={i} className="h-20 w-full" />
+          {[1, 2, compact ? 3 : 4].map(i => (
+            <Skeleton key={`behavior-skeleton-${i}`} className="h-20 w-full" />
           ))}
         </CardContent>
       </Card>
