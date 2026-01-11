@@ -210,6 +210,62 @@ export type Database = {
           },
         ]
       }
+      communication_preferences: {
+        Row: {
+          avoid_days: string[] | null
+          contact_frequency: string | null
+          contact_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          preferred_channel: string
+          preferred_days: string[] | null
+          preferred_time_end: string | null
+          preferred_time_start: string | null
+          response_rate_by_channel: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avoid_days?: string[] | null
+          contact_frequency?: string | null
+          contact_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          preferred_channel?: string
+          preferred_days?: string[] | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          response_rate_by_channel?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avoid_days?: string[] | null
+          contact_frequency?: string | null
+          contact_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          preferred_channel?: string
+          preferred_days?: string[] | null
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          response_rate_by_channel?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_preferences_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -361,6 +417,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      contact_time_analysis: {
+        Row: {
+          avg_response_time_minutes: number | null
+          contact_id: string
+          day_of_week: number
+          hour_of_day: number
+          id: string
+          last_updated: string
+          success_count: number | null
+          total_attempts: number | null
+          user_id: string
+        }
+        Insert: {
+          avg_response_time_minutes?: number | null
+          contact_id: string
+          day_of_week: number
+          hour_of_day: number
+          id?: string
+          last_updated?: string
+          success_count?: number | null
+          total_attempts?: number | null
+          user_id: string
+        }
+        Update: {
+          avg_response_time_minutes?: number | null
+          contact_id?: string
+          day_of_week?: number
+          hour_of_day?: number
+          id?: string
+          last_updated?: string
+          success_count?: number | null
+          total_attempts?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_time_analysis_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacts: {
         Row: {
@@ -1005,6 +1105,59 @@ export type Database = {
           },
         ]
       }
+      life_events: {
+        Row: {
+          contact_id: string
+          created_at: string
+          description: string | null
+          event_date: string
+          event_type: string
+          id: string
+          last_reminded_at: string | null
+          recurring: boolean | null
+          reminder_days_before: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_type: string
+          id?: string
+          last_reminded_at?: string | null
+          recurring?: boolean | null
+          reminder_days_before?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          last_reminded_at?: string | null
+          recurring?: boolean | null
+          reminder_days_before?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metaprogram_analysis: {
         Row: {
           analyzed_text: string | null
@@ -1068,6 +1221,59 @@ export type Database = {
         }
         Relationships: []
       }
+      offer_suggestions: {
+        Row: {
+          confidence_score: number | null
+          contact_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          offer_category: string | null
+          offer_name: string
+          presented_at: string | null
+          reason: string
+          result: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          contact_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          offer_category?: string | null
+          offer_name: string
+          presented_at?: string | null
+          reason: string
+          result?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          contact_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          offer_category?: string | null
+          offer_name?: string
+          presented_at?: string | null
+          reason?: string
+          result?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_suggestions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1109,6 +1315,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      purchase_history: {
+        Row: {
+          amount: number | null
+          contact_id: string
+          created_at: string
+          cycle_months: number | null
+          id: string
+          notes: string | null
+          product_category: string | null
+          product_name: string
+          purchase_date: string
+          renewal_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          contact_id: string
+          created_at?: string
+          cycle_months?: number | null
+          id?: string
+          notes?: string | null
+          product_category?: string | null
+          product_name: string
+          purchase_date?: string
+          renewal_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          contact_id?: string
+          created_at?: string
+          cycle_months?: number | null
+          id?: string
+          notes?: string | null
+          product_category?: string | null
+          product_name?: string
+          purchase_date?: string
+          renewal_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {
