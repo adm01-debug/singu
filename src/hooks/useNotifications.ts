@@ -268,6 +268,65 @@ export const useNotifications = () => {
     }
   }, [permissionState.permission, showNotification]);
 
+  // Check for critical stakeholder alerts
+  const checkStakeholderAlerts = useCallback(async () => {
+    if (permissionState.permission !== 'granted') return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch recent critical stakeholder alerts (last 24 hours)
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const { data: alerts, error } = await supabase
+        .from('stakeholder_alerts')
+        .select(`
+          id,
+          title,
+          description,
+          severity,
+          contact_id,
+          created_at
+        `)
+        .eq('user_id', user.id)
+        .eq('dismissed', false)
+        .in('severity', ['critical', 'high'])
+        .gte('created_at', yesterday.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+
+      // Check localStorage for already notified alerts
+      const notifiedAlerts = JSON.parse(localStorage.getItem('notified_stakeholder_alerts') || '[]');
+
+      for (const alert of alerts || []) {
+        if (!notifiedAlerts.includes(alert.id)) {
+          await showNotification(
+            alert.severity === 'critical' ? `🚨 ${alert.title}` : `⚠️ ${alert.title}`,
+            {
+              body: alert.description || 'Alerta de stakeholder detectado',
+              tag: `stakeholder-${alert.id}`,
+              data: {
+                type: 'stakeholder_alert',
+                alertId: alert.id,
+                contactId: alert.contact_id,
+              },
+            }
+          );
+          
+          // Mark as notified
+          notifiedAlerts.push(alert.id);
+          localStorage.setItem('notified_stakeholder_alerts', JSON.stringify(notifiedAlerts));
+        }
+      }
+    } catch (error) {
+      console.error('Error checking stakeholder alerts:', error);
+    }
+  }, [permissionState.permission, showNotification]);
+
   // Schedule periodic checks
   useEffect(() => {
     if (permissionState.permission !== 'granted') return;
@@ -275,15 +334,17 @@ export const useNotifications = () => {
     // Check immediately on load
     checkFollowUpAlerts();
     checkBirthdayAlerts();
+    checkStakeholderAlerts();
 
     // Set up interval for periodic checks (every hour)
     const intervalId = setInterval(() => {
       checkFollowUpAlerts();
       checkBirthdayAlerts();
+      checkStakeholderAlerts();
     }, 60 * 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [permissionState.permission, checkFollowUpAlerts, checkBirthdayAlerts]);
+  }, [permissionState.permission, checkFollowUpAlerts, checkBirthdayAlerts, checkStakeholderAlerts]);
 
   return {
     permissionState,
@@ -294,5 +355,6 @@ export const useNotifications = () => {
     showNotification,
     checkFollowUpAlerts,
     checkBirthdayAlerts,
+    checkStakeholderAlerts,
   };
 };
