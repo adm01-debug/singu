@@ -22,6 +22,7 @@ import {
   Star,
   Heart,
   Brain,
+  BarChart3,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ import { toast } from 'sonner';
 import { useTriggerHistory } from '@/hooks/useTriggerHistory';
 import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
 import { SmartTemplateSuggestions } from './SmartTemplateSuggestions';
+import { TemplatePerformanceComparison } from './TemplatePerformanceComparison';
 
 interface PersuasionTemplatesProps {
   contact: Contact;
@@ -195,7 +197,7 @@ export function PersuasionTemplates({ contact, className, showSmartSuggestions =
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
   const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'smart' | 'all'>('smart');
+  const [activeTab, setActiveTab] = useState<'smart' | 'all' | 'compare'>('smart');
   
   const handleUseTemplate = async (template: PersuasionTemplate) => {
     await createUsage({
@@ -310,20 +312,28 @@ export function PersuasionTemplates({ contact, className, showSmartSuggestions =
       <CardContent className="space-y-4">
         {/* Tabs: Smart vs All */}
         {showSmartSuggestions && (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'smart' | 'all')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'smart' | 'all' | 'compare')} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="smart" className="gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 Sugestões IA
               </TabsTrigger>
+              <TabsTrigger value="compare" className="gap-1.5">
+                <BarChart3 className="w-3.5 h-3.5" />
+                Comparativo
+              </TabsTrigger>
               <TabsTrigger value="all" className="gap-1.5">
                 <LayoutGrid className="w-3.5 h-3.5" />
-                Todos Templates
+                Todos
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="smart" className="mt-4">
               <SmartTemplateSuggestions contact={contact} />
+            </TabsContent>
+            
+            <TabsContent value="compare" className="mt-4">
+              <TemplatePerformanceComparison contact={contact} />
             </TabsContent>
             
             <TabsContent value="all" className="mt-4 space-y-4">
