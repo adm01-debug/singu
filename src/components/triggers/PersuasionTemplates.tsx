@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   Search,
   X,
+  History,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,8 +31,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
 import { useClientTriggers } from '@/hooks/useClientTriggers';
-import { PersuasionTemplate, MENTAL_TRIGGERS } from '@/types/triggers';
+import { PersuasionTemplate, MENTAL_TRIGGERS, PersuasionScenario } from '@/types/triggers';
 import { toast } from 'sonner';
+import { useTriggerHistory } from '@/hooks/useTriggerHistory';
 
 interface PersuasionTemplatesProps {
   contact: Contact;
@@ -72,9 +74,10 @@ interface TemplateFillerProps {
   template: PersuasionTemplate;
   contact: Contact;
   onClose: () => void;
+  onUseTemplate: (template: PersuasionTemplate) => void;
 }
 
-function TemplateFiller({ template, contact, onClose }: TemplateFillerProps) {
+function TemplateFiller({ template, contact, onClose, onUseTemplate }: TemplateFillerProps) {
   const [variables, setVariables] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
     template.variables.forEach(v => {
@@ -98,7 +101,8 @@ function TemplateFiller({ template, contact, onClose }: TemplateFillerProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(filledTemplate);
     setCopied(true);
-    toast.success('Mensagem copiada!');
+    toast.success('Mensagem copiada e uso registrado!');
+    onUseTemplate(template);
     setTimeout(() => setCopied(false), 2000);
   };
   
@@ -160,9 +164,22 @@ function TemplateFiller({ template, contact, onClose }: TemplateFillerProps) {
 
 export function PersuasionTemplates({ contact, className }: PersuasionTemplatesProps) {
   const { allTemplates, analysis } = useClientTriggers(contact);
+  const { createUsage, stats } = useTriggerHistory(contact.id);
   const [selectedTemplate, setSelectedTemplate] = useState<PersuasionTemplate | null>(null);
   const [activeScenario, setActiveScenario] = useState<ScenarioFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const handleUseTemplate = async (template: PersuasionTemplate) => {
+    await createUsage({
+      contact_id: contact.id,
+      trigger_type: template.trigger as any,
+      template_id: template.id,
+      template_title: template.title,
+      scenario: template.scenario as PersuasionScenario,
+      channel: template.channel,
+      result: 'pending',
+    });
+  };
   
   // Normaliza texto para busca (remove acentos e lowercase)
   const normalizeText = (text: string) => 
@@ -239,6 +256,12 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
         <CardTitle className="flex items-center gap-2">
           <FileText className="w-5 h-5 text-primary" />
           Templates de Persuasão
+          {stats && stats.totalUsages > 0 && (
+            <Badge variant="outline" className="gap-1 text-xs">
+              <History className="w-3 h-3" />
+              {stats.totalUsages} usos
+            </Badge>
+          )}
           <Badge variant="secondary" className="ml-auto">
             {filteredTemplates.length} de {scenarioCounts.all}
           </Badge>
@@ -400,6 +423,7 @@ export function PersuasionTemplates({ contact, className }: PersuasionTemplatesP
                               template={template} 
                               contact={contact}
                               onClose={() => setSelectedTemplate(null)}
+                              onUseTemplate={handleUseTemplate}
                             />
                           </DialogContent>
                         </Dialog>
