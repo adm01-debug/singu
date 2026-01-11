@@ -44,6 +44,7 @@ import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
 import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
 import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
+import { TriggerUsageHistory } from '@/components/triggers/TriggerUsageHistory';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -329,6 +330,12 @@ const ContatoDetalhe = () => {
 
               {/* Persuasion Templates */}
               <PersuasionTemplates contact={contact} />
+
+              {/* Trigger Usage History */}
+              <TriggerUsageHistory 
+                contactId={contact.id} 
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
 
               {/* Behavioral Profile Card */}
               <motion.div

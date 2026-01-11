@@ -12,6 +12,7 @@ import {
   Lightbulb,
   MessageSquare,
   Sparkles,
+  History,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
 import { useClientTriggers } from '@/hooks/useClientTriggers';
-import { TriggerSuggestion, TRIGGER_CATEGORIES, TriggerCategory } from '@/types/triggers';
+import { useTriggerHistory } from '@/hooks/useTriggerHistory';
+import { TriggerSuggestion, TRIGGER_CATEGORIES, TriggerCategory, TriggerType } from '@/types/triggers';
 import { toast } from 'sonner';
 
 interface ClientTriggerPanelProps {
@@ -37,14 +39,14 @@ const TriggerCard = ({
   expanded = false 
 }: { 
   suggestion: TriggerSuggestion; 
-  onCopy: (text: string) => void;
+  onCopy: (text: string, triggerType: TriggerType) => void;
   expanded?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(expanded);
   const [copied, setCopied] = useState(false);
   
   const handleCopy = () => {
-    onCopy(suggestion.template);
+    onCopy(suggestion.template, suggestion.trigger.id);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -158,11 +160,21 @@ const TriggerCard = ({
 
 export function ClientTriggerPanel({ contact, className, compact = false }: ClientTriggerPanelProps) {
   const { analysis } = useClientTriggers(contact);
+  const { createUsage, stats } = useTriggerHistory(contact.id);
   const [activeTab, setActiveTab] = useState<TriggerCategory | 'all' | 'tips'>('all');
   
-  const handleCopy = (text: string) => {
+  const handleCopy = async (text: string, triggerType?: TriggerType) => {
     navigator.clipboard.writeText(text);
-    toast.success('Template copiado!');
+    toast.success('Template copiado e uso registrado!');
+    
+    if (triggerType) {
+      await createUsage({
+        contact_id: contact.id,
+        trigger_type: triggerType,
+        context: 'Gatilho Mental copiado do painel',
+        result: 'pending',
+      });
+    }
   };
   
   if (!analysis) return null;
@@ -230,6 +242,12 @@ export function ClientTriggerPanel({ contact, className, compact = false }: Clie
           <CardTitle className="flex items-center gap-2">
             <Brain className="w-5 h-5 text-primary" />
             Gatilhos Mentais para Persuasão
+            {stats && stats.totalUsages > 0 && (
+              <Badge variant="outline" className="gap-1 text-xs">
+                <History className="w-3 h-3" />
+                {stats.totalUsages} usos
+              </Badge>
+            )}
           </CardTitle>
           <Badge variant="outline" className="gap-1">
             <Sparkles className="w-3 h-3" />
@@ -275,7 +293,7 @@ export function ClientTriggerPanel({ contact, className, compact = false }: Clie
                   const trigger = analysis.primaryTriggers.find(
                     t => t.trigger.id === analysis.currentOpportunity?.trigger
                   );
-                  if (trigger) handleCopy(trigger.template);
+                  if (trigger) handleCopy(trigger.template, trigger.trigger.id);
                 }}
               >
                 <Copy className="w-3 h-3" />

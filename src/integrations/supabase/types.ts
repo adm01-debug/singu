@@ -476,6 +476,57 @@ export type Database = {
         }
         Relationships: []
       }
+      trigger_usage_history: {
+        Row: {
+          channel: string | null
+          contact_id: string
+          context: string | null
+          created_at: string
+          effectiveness_rating: number | null
+          id: string
+          notes: string | null
+          result: string | null
+          scenario: string | null
+          template_id: string | null
+          template_title: string | null
+          trigger_type: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string | null
+          contact_id: string
+          context?: string | null
+          created_at?: string
+          effectiveness_rating?: number | null
+          id?: string
+          notes?: string | null
+          result?: string | null
+          scenario?: string | null
+          template_id?: string | null
+          template_title?: string | null
+          trigger_type: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string | null
+          contact_id?: string
+          context?: string | null
+          created_at?: string
+          effectiveness_rating?: number | null
+          id?: string
+          notes?: string | null
+          result?: string | null
+          scenario?: string | null
+          template_id?: string | null
+          template_title?: string | null
+          trigger_type?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
