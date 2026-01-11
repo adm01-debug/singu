@@ -53,7 +53,11 @@ const SEVERITY_BORDER: Record<AlertSeverity, string> = {
   low: 'border-l-4 border-l-success'
 };
 
-export function BehaviorAlertsPanel() {
+interface BehaviorAlertsPanelProps {
+  compact?: boolean;
+}
+
+export function BehaviorAlertsPanel({ compact = false }: BehaviorAlertsPanelProps) {
   const { 
     alerts, 
     stats, 
@@ -77,6 +81,8 @@ export function BehaviorAlertsPanel() {
     ? alerts 
     : alerts.filter(a => a.severity === filter);
 
+  const displayedAlerts = compact ? filteredAlerts.slice(0, 3) : filteredAlerts;
+
   if (loading) {
     return (
       <Card>
@@ -84,7 +90,7 @@ export function BehaviorAlertsPanel() {
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, 3].map(i => (
+          {[1, 2, compact ? 2 : 3].map(i => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </CardContent>
@@ -202,8 +208,8 @@ export function BehaviorAlertsPanel() {
                 </Button>
               </motion.div>
             ) : (
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {filteredAlerts.map((alert, idx) => {
+              <div className={`space-y-3 ${compact ? '' : 'max-h-[400px]'} overflow-y-auto`}>
+                {displayedAlerts.map((alert, idx) => {
                   const Icon = ALERT_ICONS[alert.type] || Bell;
                   const config = ALERT_TYPE_CONFIG[alert.type];
                   

@@ -14,7 +14,9 @@ import {
   AlertTriangle,
   Phone,
   Target,
-  Heart
+  Heart,
+  ShoppingBag,
+  Activity
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -44,6 +46,8 @@ import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { PortfolioHealthDashboard } from '@/components/dashboard/PortfolioHealthDashboard';
 import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
+import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
+import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -216,6 +220,22 @@ const Dashboard = () => {
             <h2 className="text-lg font-semibold text-foreground">Estatísticas de Relacionamento</h2>
           </div>
           <RelationshipStatsPanel />
+        </motion.div>
+
+        {/* Purchase Patterns + Behavior Alerts Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.52 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <ShoppingBag className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Padrões de Compra e Comportamento</h2>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PurchasePatternsPanel compact />
+            <BehaviorAlertsPanel compact />
+          </div>
         </motion.div>
 
         {/* AI Insights Section - Churn, Best Time, Deal Velocity */}

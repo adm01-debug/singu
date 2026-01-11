@@ -65,6 +65,8 @@ import { ClientHealthPanel } from '@/components/analytics/ClientHealthPanel';
 import { PersonalizedOffersPanel } from '@/components/analytics/PersonalizedOffersPanel';
 import { ImportantDatesPanel } from '@/components/analytics/ImportantDatesPanel';
 import { SatisfactionScorePanel } from '@/components/analytics/SatisfactionScorePanel';
+import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
+import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -399,6 +401,12 @@ const ContatoDetalhe = () => {
                 contact={contact}
                 interactions={contactInteractions}
               />
+
+              {/* Purchase Patterns Panel */}
+              <PurchasePatternsPanel />
+
+              {/* Behavior Alerts Panel */}
+              <BehaviorAlertsPanel />
 
               {/* Important Dates Panel */}
               <ImportantDatesPanel 

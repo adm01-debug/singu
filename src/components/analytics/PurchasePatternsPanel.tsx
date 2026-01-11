@@ -23,7 +23,11 @@ import { usePurchasePatterns } from '@/hooks/usePurchasePatterns';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export function PurchasePatternsPanel() {
+interface PurchasePatternsPanelProps {
+  compact?: boolean;
+}
+
+export function PurchasePatternsPanel({ compact = false }: PurchasePatternsPanelProps) {
   const { patterns, categoryPatterns, predictions, stats, loading, refresh } = usePurchasePatterns();
   const [activeTab, setActiveTab] = useState('predictions');
 
@@ -34,7 +38,7 @@ export function PurchasePatternsPanel() {
           <Skeleton className="h-6 w-48" />
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, 3].map(i => (
+          {[1, 2, compact ? 2 : 3].map(i => (
             <Skeleton key={i} className="h-20 w-full" />
           ))}
         </CardContent>
@@ -132,7 +136,7 @@ export function PurchasePatternsPanel() {
                   <p>Nenhuma previsão para os próximos dias</p>
                 </div>
               ) : (
-                predictions.slice(0, 5).map((prediction, idx) => (
+                predictions.slice(0, compact ? 3 : 5).map((prediction, idx) => (
                   <Link 
                     key={idx} 
                     to={`/contatos/${prediction.contactId}`}
@@ -173,7 +177,7 @@ export function PurchasePatternsPanel() {
             </TabsContent>
 
             <TabsContent value="patterns" className="mt-4 space-y-3">
-              {patterns.slice(0, 5).map((pattern, idx) => (
+              {patterns.slice(0, compact ? 3 : 5).map((pattern, idx) => (
                 <Link 
                   key={idx} 
                   to={`/contatos/${pattern.contactId}`}
@@ -243,7 +247,7 @@ export function PurchasePatternsPanel() {
             </TabsContent>
 
             <TabsContent value="categories" className="mt-4 space-y-3">
-              {categoryPatterns.slice(0, 5).map((category, idx) => (
+              {categoryPatterns.slice(0, compact ? 3 : 5).map((category, idx) => (
                 <div key={idx} className="p-3 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
