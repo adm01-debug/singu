@@ -46,6 +46,10 @@ import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
 import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
 import { TriggerUsageHistory } from '@/components/triggers/TriggerUsageHistory';
+import { VAKTemplateLibrary } from '@/components/triggers/VAKTemplateLibrary';
+import { SleightOfMouthLibrary } from '@/components/triggers/SleightOfMouthLibrary';
+import { MetaprogramProfileCard } from '@/components/triggers/MetaprogramProfileCard';
+import { MetaprogramTemplateLibrary } from '@/components/triggers/MetaprogramTemplateLibrary';
 import { VAKProfileCard } from '@/components/contacts/VAKProfileCard';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -329,6 +333,34 @@ const ContatoDetalhe = () => {
 
               {/* VAK Profile (PNL) */}
               <VAKProfileCard contact={contact} />
+
+              {/* VAK Template Library */}
+              <VAKTemplateLibrary contact={contact} />
+
+              {/* Metaprograms Profile */}
+              <MetaprogramProfileCard
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription
+                }))}
+              />
+
+              {/* Metaprogram Templates */}
+              <MetaprogramTemplateLibrary
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription
+                }))}
+              />
+
+              {/* Sleight of Mouth Library */}
+              <SleightOfMouthLibrary contact={contact} />
 
               {/* Mental Triggers Panel */}
               <ClientTriggerPanel contact={contact} />

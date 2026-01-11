@@ -182,9 +182,9 @@ export function MetaprogramTemplateLibrary({
     if (selectedTemplate) {
       await createUsage({
         contact_id: contactId,
-        trigger_type: 'reciprocity',
-        template_name: selectedTemplate.baseTitle,
-        message_sent: getPreviewMessage
+        trigger_type: 'personalization',
+        template_title: selectedTemplate.baseTitle,
+        context: getPreviewMessage
       });
     }
 
