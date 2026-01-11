@@ -9,6 +9,9 @@ import {
   MotivationDirection,
   ReferenceFrame,
   WorkingStyle,
+  ChunkSize,
+  ActionFilter,
+  ComparisonStyle,
   METAPROGRAM_KEYWORDS
 } from '@/types/metaprograms';
 
@@ -28,7 +31,13 @@ export function useMetaprogramAnalysis() {
         internal: 0,
         external: 0,
         options: 0,
-        procedures: 0
+        procedures: 0,
+        general: 0,
+        specific: 0,
+        proactive: 0,
+        reactive: 0,
+        sameness: 0,
+        difference: 0
       },
       detectedWords: {
         toward: [],
@@ -36,7 +45,13 @@ export function useMetaprogramAnalysis() {
         internal: [],
         external: [],
         options: [],
-        procedures: []
+        procedures: [],
+        general: [],
+        specific: [],
+        proactive: [],
+        reactive: [],
+        sameness: [],
+        difference: []
       }
     };
 
@@ -96,6 +111,66 @@ export function useMetaprogramAnalysis() {
         result.scores.procedures++;
         if (!result.detectedWords.procedures.includes(keyword)) {
           result.detectedWords.procedures.push(keyword);
+        }
+      }
+    });
+
+    // Check for general keywords
+    METAPROGRAM_KEYWORDS.general.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.general++;
+        if (!result.detectedWords.general.includes(keyword)) {
+          result.detectedWords.general.push(keyword);
+        }
+      }
+    });
+
+    // Check for specific keywords
+    METAPROGRAM_KEYWORDS.specific.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.specific++;
+        if (!result.detectedWords.specific.includes(keyword)) {
+          result.detectedWords.specific.push(keyword);
+        }
+      }
+    });
+
+    // Check for proactive keywords
+    METAPROGRAM_KEYWORDS.proactive.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.proactive++;
+        if (!result.detectedWords.proactive.includes(keyword)) {
+          result.detectedWords.proactive.push(keyword);
+        }
+      }
+    });
+
+    // Check for reactive keywords
+    METAPROGRAM_KEYWORDS.reactive.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.reactive++;
+        if (!result.detectedWords.reactive.includes(keyword)) {
+          result.detectedWords.reactive.push(keyword);
+        }
+      }
+    });
+
+    // Check for sameness keywords
+    METAPROGRAM_KEYWORDS.sameness.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.sameness++;
+        if (!result.detectedWords.sameness.includes(keyword)) {
+          result.detectedWords.sameness.push(keyword);
+        }
+      }
+    });
+
+    // Check for difference keywords
+    METAPROGRAM_KEYWORDS.difference.forEach(keyword => {
+      if (lowerText.includes(keyword.toLowerCase())) {
+        result.scores.difference++;
+        if (!result.detectedWords.difference.includes(keyword)) {
+          result.detectedWords.difference.push(keyword);
         }
       }
     });
@@ -163,15 +238,25 @@ export function useMetaprogramAnalysis() {
         return null;
       }
 
-      // Aggregate scores
-      const totals = data.reduce((acc, record) => ({
+      // Aggregate scores (note: new metaprograms not in DB yet, use 0)
+      const totals = data.reduce((acc, record: any) => ({
         toward: acc.toward + (record.toward_score || 0),
         awayFrom: acc.awayFrom + (record.away_from_score || 0),
         internal: acc.internal + (record.internal_score || 0),
         external: acc.external + (record.external_score || 0),
         options: acc.options + (record.options_score || 0),
-        procedures: acc.procedures + (record.procedures_score || 0)
-      }), { toward: 0, awayFrom: 0, internal: 0, external: 0, options: 0, procedures: 0 });
+        procedures: acc.procedures + (record.procedures_score || 0),
+        general: acc.general + (record.general_score || 0),
+        specific: acc.specific + (record.specific_score || 0),
+        proactive: acc.proactive + (record.proactive_score || 0),
+        reactive: acc.reactive + (record.reactive_score || 0),
+        sameness: acc.sameness + (record.sameness_score || 0),
+        difference: acc.difference + (record.difference_score || 0)
+      }), { 
+        toward: 0, awayFrom: 0, internal: 0, external: 0, 
+        options: 0, procedures: 0, general: 0, specific: 0,
+        proactive: 0, reactive: 0, sameness: 0, difference: 0 
+      });
 
       // Determine direction and confidence for each metaprogram
       const getDirectionAndConfidence = (score1: number, score2: number): { direction: 'first' | 'second' | 'balanced', confidence: number } => {
@@ -194,6 +279,9 @@ export function useMetaprogramAnalysis() {
       const motivation = getDirectionAndConfidence(totals.toward, totals.awayFrom);
       const reference = getDirectionAndConfidence(totals.internal, totals.external);
       const working = getDirectionAndConfidence(totals.options, totals.procedures);
+      const chunk = getDirectionAndConfidence(totals.general, totals.specific);
+      const action = getDirectionAndConfidence(totals.proactive, totals.reactive);
+      const comparison = getDirectionAndConfidence(totals.sameness, totals.difference);
 
       const motivationDirection: MotivationDirection = 
         motivation.direction === 'first' ? 'toward' :
@@ -207,8 +295,21 @@ export function useMetaprogramAnalysis() {
         working.direction === 'first' ? 'options' :
         working.direction === 'second' ? 'procedures' : 'balanced';
 
+      const chunkSize: ChunkSize =
+        chunk.direction === 'first' ? 'general' :
+        chunk.direction === 'second' ? 'specific' : 'balanced';
+
+      const actionFilter: ActionFilter =
+        action.direction === 'first' ? 'proactive' :
+        action.direction === 'second' ? 'reactive' : 'balanced';
+
+      const comparisonStyle: ComparisonStyle =
+        comparison.direction === 'first' ? 'sameness' :
+        comparison.direction === 'second' ? 'difference' : 'balanced';
+
       const overallConfidence = Math.round(
-        (motivation.confidence + reference.confidence + working.confidence) / 3
+        (motivation.confidence + reference.confidence + working.confidence + 
+         chunk.confidence + action.confidence + comparison.confidence) / 6
       );
 
       return {
@@ -218,6 +319,12 @@ export function useMetaprogramAnalysis() {
         referenceConfidence: reference.confidence,
         workingStyle,
         workingConfidence: working.confidence,
+        chunkSize,
+        chunkConfidence: chunk.confidence,
+        actionFilter,
+        actionConfidence: action.confidence,
+        comparisonStyle,
+        comparisonConfidence: comparison.confidence,
         overallConfidence,
         analyzedInteractions: data.length
       };

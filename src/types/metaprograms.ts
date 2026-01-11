@@ -1,9 +1,12 @@
 // Metaprograms Types for NLP-based client profiling
 
-// The three core metaprograms
+// The six core metaprograms
 export type MotivationDirection = 'toward' | 'away_from' | 'balanced';
 export type ReferenceFrame = 'internal' | 'external' | 'balanced';
 export type WorkingStyle = 'options' | 'procedures' | 'balanced';
+export type ChunkSize = 'general' | 'specific' | 'balanced';
+export type ActionFilter = 'proactive' | 'reactive' | 'balanced';
+export type ComparisonStyle = 'sameness' | 'difference' | 'balanced';
 
 export interface MetaprogramScores {
   // Motivation Direction
@@ -17,6 +20,18 @@ export interface MetaprogramScores {
   // Working Style
   options: number;
   procedures: number;
+  
+  // Chunk Size (General/Specific)
+  general: number;
+  specific: number;
+  
+  // Action Filter (Proactive/Reactive)
+  proactive: number;
+  reactive: number;
+  
+  // Comparison Style (Sameness/Difference)
+  sameness: number;
+  difference: number;
 }
 
 export interface MetaprogramProfile {
@@ -28,6 +43,15 @@ export interface MetaprogramProfile {
   
   workingStyle: WorkingStyle;
   workingConfidence: number;
+  
+  chunkSize: ChunkSize;
+  chunkConfidence: number;
+  
+  actionFilter: ActionFilter;
+  actionConfidence: number;
+  
+  comparisonStyle: ComparisonStyle;
+  comparisonConfidence: number;
   
   overallConfidence: number;
   analyzedInteractions: number;
@@ -42,6 +66,12 @@ export interface MetaprogramAnalysisResult {
     external: string[];
     options: string[];
     procedures: string[];
+    general: string[];
+    specific: string[];
+    proactive: string[];
+    reactive: string[];
+    sameness: string[];
+    difference: string[];
   };
 }
 
@@ -155,6 +185,114 @@ export const METAPROGRAM_LABELS = {
         'Combine flexibilidade com clareza'
       ]
     }
+  },
+  chunkSize: {
+    general: {
+      name: 'Geral',
+      icon: '🌐',
+      color: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+      description: 'Prefere visão geral, conceitos amplos e o "big picture".',
+      communicationTips: [
+        'Comece com o panorama geral antes dos detalhes',
+        'Use: "Em resumo...", "O conceito principal é..."',
+        'Evite excesso de detalhes no início',
+        'Mostre como tudo se conecta'
+      ]
+    },
+    specific: {
+      name: 'Específico',
+      icon: '🔍',
+      color: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+      description: 'Prefere detalhes, especificidades e informações granulares.',
+      communicationTips: [
+        'Forneça dados e números específicos',
+        'Use: "Especificamente...", "Por exemplo..."',
+        'Detalhe cada passo e componente',
+        'Responda perguntas com precisão'
+      ]
+    },
+    balanced: {
+      name: 'Equilibrado',
+      icon: '⚖️',
+      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      description: 'Alterna entre visão geral e detalhes conforme necessário.',
+      communicationTips: [
+        'Comece geral e aprofunde quando pedido',
+        'Pergunte: "Quer que eu detalhe?"'
+      ]
+    }
+  },
+  actionFilter: {
+    proactive: {
+      name: 'Proativo',
+      icon: '🚀',
+      color: 'bg-rose-100 text-rose-700 border-rose-200',
+      description: 'Age primeiro, analisa depois. Inicia ações sem esperar.',
+      communicationTips: [
+        'Use: "Vamos fazer!", "Comece agora!"',
+        'Dê autonomia para ele agir',
+        'Minimize explicações longas',
+        'Foque na ação imediata'
+      ]
+    },
+    reactive: {
+      name: 'Reativo',
+      icon: '⏳',
+      color: 'bg-teal-100 text-teal-700 border-teal-200',
+      description: 'Analisa primeiro, age depois. Espera o momento certo.',
+      communicationTips: [
+        'Use: "Pense sobre isso...", "Quando estiver pronto..."',
+        'Dê tempo para análise',
+        'Apresente todas as informações antes',
+        'Não pressione por decisões imediatas'
+      ]
+    },
+    balanced: {
+      name: 'Equilibrado',
+      icon: '⚖️',
+      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      description: 'Alterna entre ação e análise conforme a situação.',
+      communicationTips: [
+        'Ofereça opção de agir ou analisar mais',
+        'Adapte o ritmo ao contexto'
+      ]
+    }
+  },
+  comparisonStyle: {
+    sameness: {
+      name: 'Igualador',
+      icon: '🔗',
+      color: 'bg-lime-100 text-lime-700 border-lime-200',
+      description: 'Foca em semelhanças, padrões e no que permanece igual.',
+      communicationTips: [
+        'Use: "Igual ao que você já conhece...", "Similar a..."',
+        'Mostre consistência e estabilidade',
+        'Destaque o que é familiar',
+        'Evite mudanças bruscas na abordagem'
+      ]
+    },
+    difference: {
+      name: 'Diferenciador',
+      icon: '✨',
+      color: 'bg-pink-100 text-pink-700 border-pink-200',
+      description: 'Foca em diferenças, novidades e no que é único.',
+      communicationTips: [
+        'Use: "Diferente de...", "Novo!", "Único!"',
+        'Destaque inovação e mudanças',
+        'Mostre o que é revolucionário',
+        'Apresente contrastes e melhorias'
+      ]
+    },
+    balanced: {
+      name: 'Equilibrado',
+      icon: '⚖️',
+      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      description: 'Valoriza tanto continuidade quanto inovação.',
+      communicationTips: [
+        'Combine familiaridade com novidade',
+        'Mostre evolução gradual'
+      ]
+    }
   }
 };
 
@@ -207,5 +345,49 @@ export const METAPROGRAM_KEYWORDS = {
     'procedimento', 'protocolo', 'regra', 'método', 'como funciona',
     'qual o caminho', 'me explica como', 'preciso de um guia',
     'passo por passo', 'na ordem certa', 'seguindo o processo'
+  ],
+  general: [
+    'em geral', 'no geral', 'basicamente', 'resumindo', 'conceito',
+    'visão geral', 'panorama', 'big picture', 'ideia principal',
+    'essencialmente', 'fundamentalmente', 'grosso modo', 'de forma ampla',
+    'o todo', 'como um todo', 'a grande ideia', 'o principal é',
+    'não preciso de detalhes', 'só o essencial', 'me dá o resumo'
+  ],
+  specific: [
+    'especificamente', 'detalhadamente', 'exatamente', 'precisamente',
+    'qual exatamente', 'me explica em detalhes', 'passo a passo',
+    'cada detalhe', 'minuciosamente', 'com precisão', 'números exatos',
+    'quanto especificamente', 'como exatamente', 'onde especificamente',
+    'quero entender cada parte', 'me dá os detalhes', 'seja específico',
+    'por exemplo', 'como funciona cada', 'explica melhor isso'
+  ],
+  proactive: [
+    'vamos fazer', 'vou começar', 'já comecei', 'vou em frente',
+    'tomar iniciativa', 'agir agora', 'não espero', 'faço acontecer',
+    'mãos à obra', 'bora', 'partiu', 'já era para ter feito',
+    'não perco tempo', 'ação imediata', 'começo já', 'vou lá',
+    'iniciativa', 'liderar', 'fazer primeiro', 'não fico parado'
+  ],
+  reactive: [
+    'preciso pensar', 'vou analisar', 'deixa eu ver', 'preciso entender',
+    'vou estudar', 'me dá um tempo', 'quando estiver pronto',
+    'deixa eu processar', 'vou refletir', 'preciso de mais informações',
+    'vou considerar', 'depois eu vejo', 'não tenho pressa',
+    'vamos com calma', 'espera um pouco', 'quando for o momento',
+    'primeiro preciso', 'antes de agir', 'vou avaliar com cuidado'
+  ],
+  sameness: [
+    'igual', 'mesmo', 'similar', 'parecido', 'como antes',
+    'continuar', 'manter', 'consistente', 'estável', 'familiar',
+    'conhecido', 'tradicional', 'assim como', 'da mesma forma',
+    'não muda', 'sempre foi assim', 'funciona igual', 'sem mudanças',
+    'mantém o padrão', 'como sempre', 'do mesmo jeito', 'idêntico'
+  ],
+  difference: [
+    'diferente', 'novo', 'inovador', 'mudança', 'revolucionário',
+    'único', 'exclusivo', 'inédito', 'original', 'melhorado',
+    'atualizado', 'moderno', 'nova versão', 'completamente diferente',
+    'não é igual', 'ao contrário', 'diferencia', 'se destaca',
+    'o que há de novo', 'novidade', 'inovação', 'nunca visto antes'
   ]
 };

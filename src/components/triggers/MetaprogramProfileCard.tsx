@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Brain, 
   RefreshCw, 
@@ -15,7 +16,13 @@ import {
   GitBranch, 
   List,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  Search,
+  Rocket,
+  Clock,
+  Link,
+  Sparkles
 } from 'lucide-react';
 import { useMetaprogramAnalysis } from '@/hooks/useMetaprogramAnalysis';
 import { 
@@ -23,7 +30,10 @@ import {
   METAPROGRAM_LABELS,
   MotivationDirection,
   ReferenceFrame,
-  WorkingStyle
+  WorkingStyle,
+  ChunkSize,
+  ActionFilter,
+  ComparisonStyle
 } from '@/types/metaprograms';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,6 +42,9 @@ interface MetaprogramProfileCardProps {
   contactName: string;
   interactions: Array<{ id: string; content: string; transcription?: string }>;
 }
+
+type MetaprogramType = 'motivation' | 'reference' | 'working' | 'chunk' | 'action' | 'comparison';
+type MetaprogramValue = MotivationDirection | ReferenceFrame | WorkingStyle | ChunkSize | ActionFilter | ComparisonStyle;
 
 export function MetaprogramProfileCard({ 
   contactId, 
@@ -70,100 +83,97 @@ export function MetaprogramProfileCard({
     setProfile(null);
   };
 
-  const renderMetaprogramBadge = (
-    type: 'motivation' | 'reference' | 'working',
-    value: MotivationDirection | ReferenceFrame | WorkingStyle,
-    confidence: number
-  ) => {
-    let labels: any;
-    let icon: React.ReactNode;
-    
+  const getMetaprogramIcon = (type: MetaprogramType, value: MetaprogramValue): React.ReactNode => {
     switch (type) {
       case 'motivation':
-        labels = METAPROGRAM_LABELS.motivationDirection[value as MotivationDirection];
-        icon = value === 'toward' ? <Target className="h-4 w-4" /> : <Shield className="h-4 w-4" />;
-        break;
+        return value === 'toward' ? <Target className="h-4 w-4" /> : <Shield className="h-4 w-4" />;
       case 'reference':
-        labels = METAPROGRAM_LABELS.referenceFrame[value as ReferenceFrame];
-        icon = value === 'internal' ? <Compass className="h-4 w-4" /> : <Users className="h-4 w-4" />;
-        break;
+        return value === 'internal' ? <Compass className="h-4 w-4" /> : <Users className="h-4 w-4" />;
       case 'working':
-        labels = METAPROGRAM_LABELS.workingStyle[value as WorkingStyle];
-        icon = value === 'options' ? <GitBranch className="h-4 w-4" /> : <List className="h-4 w-4" />;
-        break;
+        return value === 'options' ? <GitBranch className="h-4 w-4" /> : <List className="h-4 w-4" />;
+      case 'chunk':
+        return value === 'general' ? <Globe className="h-4 w-4" /> : <Search className="h-4 w-4" />;
+      case 'action':
+        return value === 'proactive' ? <Rocket className="h-4 w-4" /> : <Clock className="h-4 w-4" />;
+      case 'comparison':
+        return value === 'sameness' ? <Link className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />;
+      default:
+        return <Brain className="h-4 w-4" />;
     }
+  };
+
+  const getLabels = (type: MetaprogramType, value: MetaprogramValue) => {
+    switch (type) {
+      case 'motivation':
+        return METAPROGRAM_LABELS.motivationDirection[value as MotivationDirection];
+      case 'reference':
+        return METAPROGRAM_LABELS.referenceFrame[value as ReferenceFrame];
+      case 'working':
+        return METAPROGRAM_LABELS.workingStyle[value as WorkingStyle];
+      case 'chunk':
+        return METAPROGRAM_LABELS.chunkSize[value as ChunkSize];
+      case 'action':
+        return METAPROGRAM_LABELS.actionFilter[value as ActionFilter];
+      case 'comparison':
+        return METAPROGRAM_LABELS.comparisonStyle[value as ComparisonStyle];
+    }
+  };
+
+  const renderMetaprogramBadge = (
+    type: MetaprogramType,
+    value: MetaprogramValue,
+    confidence: number
+  ) => {
+    const labels = getLabels(type, value);
+    const icon = getMetaprogramIcon(type, value);
 
     return (
-      <div className={`p-4 rounded-lg border ${labels.color}`}>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xl">{labels.icon}</span>
-          <span className="font-semibold">{labels.name}</span>
-          <Badge variant="outline" className="ml-auto">
-            {confidence}% confiança
+      <div className={`p-3 rounded-lg border ${labels.color}`}>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-lg">{labels.icon}</span>
+          <span className="font-semibold text-sm">{labels.name}</span>
+          <Badge variant="outline" className="ml-auto text-xs">
+            {confidence}%
           </Badge>
         </div>
-        <p className="text-sm opacity-80 mb-3">{labels.description}</p>
-        <Progress value={confidence} className="h-2" />
+        <p className="text-xs opacity-80 mb-2">{labels.description}</p>
+        <Progress value={confidence} className="h-1.5" />
       </div>
     );
   };
 
-  const renderCommunicationTips = (
-    motivation: MotivationDirection,
-    reference: ReferenceFrame,
-    working: WorkingStyle
-  ) => {
-    const motivationTips = METAPROGRAM_LABELS.motivationDirection[motivation].communicationTips;
-    const referenceTips = METAPROGRAM_LABELS.referenceFrame[reference].communicationTips;
-    const workingTips = METAPROGRAM_LABELS.workingStyle[working].communicationTips;
+  const renderCommunicationTips = (profile: MetaprogramProfile) => {
+    const allTips = [
+      { type: 'motivation' as MetaprogramType, value: profile.motivationDirection, label: METAPROGRAM_LABELS.motivationDirection[profile.motivationDirection] },
+      { type: 'reference' as MetaprogramType, value: profile.referenceFrame, label: METAPROGRAM_LABELS.referenceFrame[profile.referenceFrame] },
+      { type: 'working' as MetaprogramType, value: profile.workingStyle, label: METAPROGRAM_LABELS.workingStyle[profile.workingStyle] },
+      { type: 'chunk' as MetaprogramType, value: profile.chunkSize, label: METAPROGRAM_LABELS.chunkSize[profile.chunkSize] },
+      { type: 'action' as MetaprogramType, value: profile.actionFilter, label: METAPROGRAM_LABELS.actionFilter[profile.actionFilter] },
+      { type: 'comparison' as MetaprogramType, value: profile.comparisonStyle, label: METAPROGRAM_LABELS.comparisonStyle[profile.comparisonStyle] },
+    ];
 
     return (
-      <div className="space-y-4">
-        <div>
-          <h4 className="font-medium flex items-center gap-2 mb-2">
-            {motivation === 'toward' ? <Target className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-            Motivação: {METAPROGRAM_LABELS.motivationDirection[motivation].name}
-          </h4>
-          <ul className="space-y-1">
-            {motivationTips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <ChevronRight className="h-4 w-4 mt-0.5 text-primary" />
-                {tip}
-              </li>
-            ))}
-          </ul>
+      <ScrollArea className="h-[400px]">
+        <div className="space-y-4 pr-4">
+          {allTips.map(({ type, value, label }) => (
+            <div key={type}>
+              <h4 className="font-medium flex items-center gap-2 mb-2 text-sm">
+                {getMetaprogramIcon(type, value)}
+                <span className="text-lg">{label.icon}</span>
+                {label.name}
+              </h4>
+              <ul className="space-y-1">
+                {label.communicationTips.map((tip: string, i: number) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <ChevronRight className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-
-        <div>
-          <h4 className="font-medium flex items-center gap-2 mb-2">
-            {reference === 'internal' ? <Compass className="h-4 w-4" /> : <Users className="h-4 w-4" />}
-            Referência: {METAPROGRAM_LABELS.referenceFrame[reference].name}
-          </h4>
-          <ul className="space-y-1">
-            {referenceTips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <ChevronRight className="h-4 w-4 mt-0.5 text-primary" />
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="font-medium flex items-center gap-2 mb-2">
-            {working === 'options' ? <GitBranch className="h-4 w-4" /> : <List className="h-4 w-4" />}
-            Estilo: {METAPROGRAM_LABELS.workingStyle[working].name}
-          </h4>
-          <ul className="space-y-1">
-            {workingTips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <ChevronRight className="h-4 w-4 mt-0.5 text-primary" />
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      </ScrollArea>
     );
   };
 
@@ -185,7 +195,7 @@ export function MetaprogramProfileCard({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
-            Metaprogramas
+            Metaprogramas (6 Padrões)
           </CardTitle>
           <div className="flex gap-2">
             {profile && (
@@ -255,20 +265,19 @@ export function MetaprogramProfileCard({
                     Baseado em {profile.analyzedInteractions} interações analisadas
                   </p>
 
-                  {/* Metaprogram cards */}
-                  <div className="space-y-3">
+                  {/* Metaprogram cards - Grid layout for 6 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {renderMetaprogramBadge('motivation', profile.motivationDirection, profile.motivationConfidence)}
                     {renderMetaprogramBadge('reference', profile.referenceFrame, profile.referenceConfidence)}
                     {renderMetaprogramBadge('working', profile.workingStyle, profile.workingConfidence)}
+                    {renderMetaprogramBadge('chunk', profile.chunkSize, profile.chunkConfidence)}
+                    {renderMetaprogramBadge('action', profile.actionFilter, profile.actionConfidence)}
+                    {renderMetaprogramBadge('comparison', profile.comparisonStyle, profile.comparisonConfidence)}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="tips">
-                  {renderCommunicationTips(
-                    profile.motivationDirection,
-                    profile.referenceFrame,
-                    profile.workingStyle
-                  )}
+                  {renderCommunicationTips(profile)}
                 </TabsContent>
               </Tabs>
             </motion.div>
