@@ -19,6 +19,7 @@ import {
   X,
   Network,
   GitBranch,
+  FlaskConical,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +34,7 @@ import { useStakeholderAlerts } from '@/hooks/useStakeholderAlerts';
 import { StakeholderAlertsList } from './StakeholderAlertsList';
 import { StakeholderInfluenceNetwork } from './StakeholderInfluenceNetwork';
 import { CoalitionDetectionPanel } from './CoalitionDetectionPanel';
+import { StakeholderSimulator } from './StakeholderSimulator';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Contact = Tables<'contacts'>;
@@ -506,7 +508,7 @@ export function StakeholderMap({ contacts, interactions, companyId }: Stakeholde
         </AnimatePresence>
 
         <Tabs defaultValue="matrix">
-          <TabsList className="grid w-full grid-cols-6 mb-4">
+          <TabsList className="grid w-full grid-cols-7 mb-4">
             <TabsTrigger value="matrix">Matriz</TabsTrigger>
             <TabsTrigger value="network" className="flex items-center gap-1">
               <Network className="w-3.5 h-3.5" />
@@ -515,6 +517,10 @@ export function StakeholderMap({ contacts, interactions, companyId }: Stakeholde
             <TabsTrigger value="coalitions" className="flex items-center gap-1">
               <GitBranch className="w-3.5 h-3.5" />
               Coalizões
+            </TabsTrigger>
+            <TabsTrigger value="simulator" className="flex items-center gap-1">
+              <FlaskConical className="w-3.5 h-3.5" />
+              Simulador
             </TabsTrigger>
             <TabsTrigger value="list">Lista</TabsTrigger>
             <TabsTrigger value="alerts" className="relative">
@@ -544,6 +550,10 @@ export function StakeholderMap({ contacts, interactions, companyId }: Stakeholde
 
           <TabsContent value="coalitions">
             <CoalitionDetectionPanel stakeholders={stakeholders} />
+          </TabsContent>
+
+          <TabsContent value="simulator">
+            <StakeholderSimulator stakeholders={stakeholders} />
           </TabsContent>
 
           <TabsContent value="list">
