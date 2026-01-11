@@ -112,6 +112,19 @@ export default {
           buyer: "hsl(var(--role-buyer))",
           contact: "hsl(var(--role-contact))",
         },
+        surface: {
+          0: "hsl(var(--surface-0))",
+          1: "hsl(var(--surface-1))",
+          2: "hsl(var(--surface-2))",
+          3: "hsl(var(--surface-3))",
+          4: "hsl(var(--surface-4))",
+        },
+        entity: {
+          contact: "hsl(var(--entity-contact))",
+          company: "hsl(var(--entity-company))",
+          interaction: "hsl(var(--entity-interaction))",
+          insight: "hsl(var(--entity-insight))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
