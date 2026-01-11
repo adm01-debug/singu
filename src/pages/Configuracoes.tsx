@@ -32,6 +32,7 @@ import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
 import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
+import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityAlertSettings';
 
 interface ProfileData {
   first_name: string;
@@ -414,6 +415,11 @@ export default function Configuracoes() {
                   
                   {/* Template Success Notifications */}
                   <TemplateNotificationSettings />
+                  
+                  <Separator className="my-6" />
+                  
+                  {/* Compatibility Alert Settings */}
+                  <CompatibilityAlertSettings />
                 </CardContent>
               </Card>
             </motion.div>

@@ -166,6 +166,89 @@ export type Database = {
         }
         Relationships: []
       }
+      compatibility_alerts: {
+        Row: {
+          alert_type: string
+          compatibility_score: number
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          dismissed: boolean | null
+          expires_at: string | null
+          id: string
+          threshold: number
+          title: string
+          user_id: string
+        }
+        Insert: {
+          alert_type?: string
+          compatibility_score: number
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          dismissed?: boolean | null
+          expires_at?: string | null
+          id?: string
+          threshold: number
+          title: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          compatibility_score?: number
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          dismissed?: boolean | null
+          expires_at?: string | null
+          id?: string
+          threshold?: number
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compatibility_alerts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compatibility_settings: {
+        Row: {
+          alert_only_important: boolean | null
+          alert_threshold: number
+          created_at: string
+          email_notifications: boolean | null
+          id: string
+          important_min_relationship_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_only_important?: boolean | null
+          alert_threshold?: number
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          important_min_relationship_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_only_important?: boolean | null
+          alert_threshold?: number
+          created_at?: string
+          email_notifications?: boolean | null
+          id?: string
+          important_min_relationship_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           avatar_url: string | null
