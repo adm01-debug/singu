@@ -17,6 +17,7 @@ import {
   UserCheck,
   UserX,
   X,
+  Network,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useStakeholderAnalysis, StakeholderData } from '@/hooks/useStakeholderAnalysis';
 import { useStakeholderAlerts } from '@/hooks/useStakeholderAlerts';
 import { StakeholderAlertsList } from './StakeholderAlertsList';
+import { StakeholderInfluenceNetwork } from './StakeholderInfluenceNetwork';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Contact = Tables<'contacts'>;
@@ -502,9 +504,13 @@ export function StakeholderMap({ contacts, interactions, companyId }: Stakeholde
         </AnimatePresence>
 
         <Tabs defaultValue="matrix">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
-            <TabsTrigger value="matrix">Matriz Poder-Interesse</TabsTrigger>
-            <TabsTrigger value="list">Lista Priorizada</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 mb-4">
+            <TabsTrigger value="matrix">Matriz</TabsTrigger>
+            <TabsTrigger value="network" className="flex items-center gap-1">
+              <Network className="w-3.5 h-3.5" />
+              Rede
+            </TabsTrigger>
+            <TabsTrigger value="list">Lista</TabsTrigger>
             <TabsTrigger value="alerts" className="relative">
               Alertas
               {alerts.length > 0 && (
@@ -520,6 +526,13 @@ export function StakeholderMap({ contacts, interactions, companyId }: Stakeholde
             <PowerInterestGrid 
               stakeholders={stakeholders} 
               onSelect={setSelectedStakeholder}
+            />
+          </TabsContent>
+
+          <TabsContent value="network">
+            <StakeholderInfluenceNetwork 
+              stakeholders={stakeholders}
+              height={450}
             />
           </TabsContent>
 
