@@ -53,6 +53,7 @@ import { TriggerAnalytics } from '@/components/triggers/TriggerAnalytics';
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
+import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -464,18 +465,19 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-5">
+          <TabsList className="grid w-full max-w-3xl grid-cols-6">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="intelligence" className="gap-1">
               <Target className="w-3.5 h-3.5" />
               Inteligência
             </TabsTrigger>
+            <TabsTrigger value="nlp" className="gap-1">
+              <Brain className="w-3.5 h-3.5" />
+              PNL
+            </TabsTrigger>
             <TabsTrigger value="engagement">Engajamento</TabsTrigger>
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
-            <TabsTrigger value="triggers" className="gap-1">
-              <Brain className="w-3.5 h-3.5" />
-              Gatilhos
-            </TabsTrigger>
+            <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
           {/* Intelligence Tab - New */}
@@ -493,6 +495,16 @@ const Analytics = () => {
                 <BestTimeToContactPanel />
                 <DealVelocityPanel />
               </div>
+            </motion.div>
+          </TabsContent>
+
+          {/* NLP Analytics Tab */}
+          <TabsContent value="nlp" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <NLPAnalyticsPanel />
             </motion.div>
           </TabsContent>
 
