@@ -59,6 +59,7 @@ import { ClosingScorePanel } from '@/components/analytics/ClosingScorePanel';
 import { EmotionalIntelligencePanel } from '@/components/analytics/EmotionalIntelligencePanel';
 import { CognitiveBiasesPanel } from '@/components/analytics/CognitiveBiasesPanel';
 import { BehaviorEvolutionChart } from '@/components/analytics/BehaviorEvolutionChart';
+import { UnifiedBehavioralProfilePanel } from '@/components/analytics/UnifiedBehavioralProfilePanel';
 import { mockContacts, mockInteractions, mockInsights, mockAlerts, mockCompanies } from '@/data/mockData';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -334,6 +335,17 @@ const ContatoDetalhe = () => {
 
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
+                contact={contact}
+                interactions={contactInteractions.map(i => ({
+                  id: i.id,
+                  content: i.content,
+                  transcription: i.transcription,
+                  createdAt: i.createdAt.toISOString()
+                }))}
+              />
+
+              {/* Unified Behavioral Profile Panel - All 10 Frameworks */}
+              <UnifiedBehavioralProfilePanel 
                 contact={contact}
                 interactions={contactInteractions.map(i => ({
                   id: i.id,
