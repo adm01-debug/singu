@@ -105,7 +105,7 @@ export function MobileBottomNav() {
       </AnimatePresence>
 
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden" role="navigation" aria-label="Menu principal">
         <div className="bg-card/95 backdrop-blur-xl border-t border-border">
           <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
             {mainNavItems.map((item) => {
@@ -116,25 +116,41 @@ export function MobileBottomNav() {
                   key={item.path}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleNavigate(item.path)}
+                  aria-current={active ? 'page' : undefined}
+                  aria-label={item.label}
                   className={cn(
-                    "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
+                    "relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px] min-h-[44px]",
                     active 
                       ? "text-primary" 
                       : "text-muted-foreground"
                   )}
                 >
-                  <div className="relative">
-                    <Icon className={cn("w-5 h-5 transition-transform", active && "scale-110")} />
+                  {/* Active background indicator */}
+                  {active && (
+                    <motion.div
+                      layoutId="mobileNavActiveBackground"
+                      className="absolute inset-0 bg-primary/10 rounded-xl"
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  
+                  <div className="relative z-10">
+                    <Icon className={cn("w-5 h-5 transition-transform", active && "scale-110")} aria-hidden="true" />
+                    {/* Top indicator dot */}
                     {active && (
                       <motion.div
-                        layoutId="activeIndicator"
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                        layoutId="mobileNavActiveIndicator"
+                        className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                       />
                     )}
                   </div>
                   <span className={cn(
-                    "text-[10px] font-medium transition-all",
-                    active ? "opacity-100" : "opacity-70"
+                    "relative z-10 text-[10px] font-medium transition-all",
+                    active ? "opacity-100 font-semibold" : "opacity-70"
                   )}>
                     {item.label}
                   </span>
