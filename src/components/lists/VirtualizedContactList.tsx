@@ -140,7 +140,7 @@ export function VirtualizedContactList({
         <List
           listRef={listRef}
           rowComponent={RowComponent}
-          rowProps={rowPropsData}
+          rowProps={rowPropsData as never}
           rowCount={contacts.length}
           rowHeight={88}
           style={{ height: containerHeight, width: '100%' }}
@@ -151,7 +151,7 @@ export function VirtualizedContactList({
         <Grid
           gridRef={gridRef}
           cellComponent={CellComponent}
-          cellProps={cellPropsData}
+          cellProps={cellPropsData as never}
           columnCount={columnCount}
           columnWidth={containerRef.current ? containerRef.current.offsetWidth / columnCount : 350}
           rowCount={rowCount}
