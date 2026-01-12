@@ -12,11 +12,14 @@ import {
   User,
   UserPlus,
   Upload,
-  CheckSquare
+  CheckSquare,
+  Download
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
+import { DataExporter } from '@/components/data-export/DataExporter';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -273,6 +276,7 @@ const Contatos = () => {
             />
           </div>
           <div className="flex items-center gap-2">
+            <DataExporter />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
@@ -459,6 +463,9 @@ const Contatos = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Floating Quick Actions */}
+      <FloatingQuickActions />
     </AppLayout>
     
     {/* Mini Celebration */}

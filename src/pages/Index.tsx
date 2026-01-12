@@ -14,6 +14,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Header } from '@/components/layout/Header';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -469,6 +470,9 @@ const Dashboard = () => {
           </Card>
         </motion.div>
       </div>
+      
+      {/* Floating Quick Actions */}
+      <FloatingQuickActions />
     </AppLayout>
   );
 };

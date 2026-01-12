@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -17,6 +17,7 @@ import { PriorityIndicator, PriorityBar } from '@/components/ui/priority-indicat
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
+import { usePrefetch, usePrefetchOnHover } from '@/hooks/usePrefetch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +61,15 @@ export function ContactCardWithContext({
 }: ContactCardWithContextProps) {
   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
+  
+  // Prefetch on hover
+  const { prefetchContact, prefetchInteractions } = usePrefetch();
+  const prefetchFn = useCallback(() => {
+    prefetchContact(contact.id);
+    prefetchInteractions(contact.id);
+  }, [contact.id, prefetchContact, prefetchInteractions]);
+  
+  const hoverProps = usePrefetchOnHover(prefetchFn, 150);
 
   const handleInlineSave = async (field: string, value: string): Promise<boolean> => {
     try {
@@ -85,6 +95,7 @@ export function ContactCardWithContext({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
+        {...hoverProps}
       >
         <QuickActionsMenu
           entityType="contact"
@@ -231,6 +242,7 @@ export function ContactCardWithContext({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
+      {...hoverProps}
     >
       <QuickActionsMenu
         entityType="contact"

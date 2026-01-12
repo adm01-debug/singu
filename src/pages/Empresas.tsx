@@ -13,11 +13,14 @@ import {
   HeartPulse,
   GraduationCap,
   Plus,
-  CheckSquare
+  CheckSquare,
+  Download
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
+import { DataExporter } from '@/components/data-export/DataExporter';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -254,15 +257,18 @@ const Empresas = () => {
               className="pl-10"
             />
           </div>
-          <Button
-            variant={selectionMode ? 'default' : 'outline'}
-            size="sm"
-            onClick={toggleSelectionMode}
-            className="gap-2"
-          >
-            <CheckSquare className="w-4 h-4" />
-            {selectionMode ? 'Cancelar' : 'Selecionar'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <DataExporter />
+            <Button
+              variant={selectionMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={toggleSelectionMode}
+              className="gap-2"
+            >
+              <CheckSquare className="w-4 h-4" />
+              {selectionMode ? 'Cancelar' : 'Selecionar'}
+            </Button>
+          </div>
         </div>
 
         {/* Advanced Filters */}
@@ -388,6 +394,9 @@ const Empresas = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Floating Quick Actions */}
+      <FloatingQuickActions />
     </AppLayout>
   );
 };

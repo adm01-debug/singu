@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
+import { usePrefetch, usePrefetchOnHover } from '@/hooks/usePrefetch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -71,6 +72,14 @@ export function CompanyCardWithContext({
 }: CompanyCardWithContextProps) {
   const IndustryIcon = industryIcons[company.industry || ''] || Building2;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
+  
+  // Prefetch on hover
+  const { prefetchCompany } = usePrefetch();
+  const prefetchFn = useCallback(() => {
+    prefetchCompany(company.id);
+  }, [company.id, prefetchCompany]);
+  
+  const hoverProps = usePrefetchOnHover(prefetchFn, 150);
 
   const handleInlineSave = async (field: string, value: string): Promise<boolean> => {
     try {
@@ -92,6 +101,7 @@ export function CompanyCardWithContext({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
+      {...hoverProps}
     >
       <QuickActionsMenu
         entityType="company"
