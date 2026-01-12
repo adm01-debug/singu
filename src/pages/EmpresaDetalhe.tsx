@@ -28,10 +28,11 @@ import {
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
@@ -41,8 +42,11 @@ import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
@@ -429,12 +433,13 @@ const EmpresaDetalhe = () => {
                                 <Card className="card-hover cursor-pointer">
                                   <CardContent className="p-4">
                                     <div className="flex items-center gap-4">
-                                      <Avatar className="w-12 h-12">
-                                        <AvatarImage src={contact.avatar_url || undefined} />
-                                        <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                                          {contact.first_name[0]}{contact.last_name[0]}
-                                        </AvatarFallback>
-                                      </Avatar>
+                                      <OptimizedAvatar 
+                                        src={contact.avatar_url || undefined}
+                                        alt={`${contact.first_name} ${contact.last_name}`}
+                                        fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                        size="md"
+                                        className="w-12 h-12"
+                                      />
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                           <h3 className="font-semibold text-foreground">
@@ -670,11 +675,13 @@ const EmpresaDetalhe = () => {
                                 return (
                                   <Link key={contact.id} to={`/contatos/${contact.id}`}>
                                     <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                                      <Avatar className="w-8 h-8">
-                                        <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                          {contact.first_name[0]}{contact.last_name[0]}
-                                        </AvatarFallback>
-                                      </Avatar>
+                                      <OptimizedAvatar 
+                                        src={contact.avatar_url || undefined}
+                                        alt={`${contact.first_name} ${contact.last_name}`}
+                                        fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                        size="sm"
+                                        className="w-8 h-8"
+                                      />
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium truncate">
                                           {contact.first_name} {contact.last_name}

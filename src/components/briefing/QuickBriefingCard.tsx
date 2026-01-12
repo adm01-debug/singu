@@ -28,7 +28,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useContactPreferences } from '@/hooks/useContactPreferences';
@@ -145,12 +145,13 @@ export function QuickBriefingCard({
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 border-2 border-primary/20">
-              <AvatarImage src={contact.avatar_url || ''} />
-              <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                {contact.first_name?.[0]}{contact.last_name?.[0]}
-              </AvatarFallback>
-            </Avatar>
+            <OptimizedAvatar 
+              src={contact.avatar_url || ''}
+              alt={`${contact.first_name} ${contact.last_name}`}
+              fallback={`${contact.first_name?.[0]}${contact.last_name?.[0]}`}
+              size="md"
+              className="h-12 w-12 border-2 border-primary/20"
+            />
             <div>
               <h3 className="font-semibold text-foreground">
                 {contact.first_name} {contact.last_name}

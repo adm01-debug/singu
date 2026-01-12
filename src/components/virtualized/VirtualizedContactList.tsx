@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { List, RowComponentProps } from 'react-window';
 import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { RelationshipScore } from '@/components/ui/relationship-score';
@@ -57,12 +57,13 @@ const ContactRow = memo(({
         onClick={() => onContactClick(contact.id)}
       >
         <div className="flex items-center gap-4 p-4 h-full">
-          <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-            <AvatarImage src={contact.avatar_url || undefined} alt={`${contact.first_name} ${contact.last_name}`} />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <OptimizedAvatar 
+            src={contact.avatar_url || undefined}
+            alt={`${contact.first_name} ${contact.last_name}`}
+            fallback={initials}
+            size="md"
+            className="h-12 w-12 border-2 border-background shadow-sm"
+          />
 
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate">
