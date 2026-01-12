@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import type { Contact, Company, Interaction } from '@/types';
 
 interface ActionSuggestion {
   action_type: 'call' | 'email' | 'whatsapp' | 'meeting' | 'social' | 'gift' | 'follow_up';
@@ -35,9 +36,9 @@ interface ActionSuggestion {
 }
 
 interface NextActionSuggestionProps {
-  contact: any;
-  interactions: any[];
-  company?: any;
+  contact: Contact;
+  interactions: Interaction[];
+  company?: Company;
 }
 
 const actionIcons = {
@@ -90,11 +91,12 @@ export const NextActionSuggestion = ({ contact, interactions, company }: NextAct
       } else {
         toast.error('Não foi possível gerar sugestão');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error generating suggestion:', error);
-      if (error.message?.includes('429')) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('429')) {
         toast.error('Limite de requisições excedido. Tente novamente em alguns minutos.');
-      } else if (error.message?.includes('402')) {
+      } else if (errorMessage.includes('402')) {
         toast.error('Créditos insuficientes. Adicione créditos em Configurações.');
       } else {
         toast.error('Erro ao gerar sugestão de ação');
