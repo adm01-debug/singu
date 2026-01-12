@@ -9,26 +9,21 @@ import {
   Globe,
   MapPin,
   Users,
-  Calendar,
-  Clock,
   Edit,
   Plus,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   MessageSquare,
   DollarSign,
   Target,
   Shield,
-  AlertTriangle,
   ExternalLink,
   BarChart3,
   Briefcase,
-  Network
+  Network,
+  Clock,
+  TrendingUp
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
-import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,11 +37,8 @@ import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';

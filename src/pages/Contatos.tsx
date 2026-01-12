@@ -1,8 +1,7 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
 import { 
-  Users, 
   Search,
   Grid3X3,
   List,
@@ -12,8 +11,7 @@ import {
   User,
   UserPlus,
   Upload,
-  CheckSquare,
-  Download
+  CheckSquare
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
@@ -43,12 +41,6 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
-import { CommandSequenceProvider } from '@/components/keyboard/CommandSequenceHandler';
-import { ConfettiBurst, AchievementPopup } from '@/components/micro-interactions/Delighters';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { PulseLoader, InlineLoader } from '@/components/feedback/LoadingStates';
 import type { ContactRole } from '@/types';
 
 type ViewMode = 'grid' | 'list';
