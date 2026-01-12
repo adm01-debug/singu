@@ -1,8 +1,9 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { FixedSizeList } from 'react-window';
+import { List, RowComponentProps } from 'react-window';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { CSSProperties, ReactElement } from 'react';
 
 interface VirtualizedListProps<T> {
   items: T[];
@@ -20,6 +21,11 @@ interface VirtualizedListProps<T> {
   overscan?: number;
 }
 
+interface RowData<T> {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+}
+
 export function VirtualizedList<T>({
   items,
   height = 600,
@@ -35,68 +41,53 @@ export function VirtualizedList<T>({
   className,
   overscan = 5,
 }: VirtualizedListProps<T>) {
-  const listRef = useRef<FixedSizeList>(null);
   const hasCalledEndReached = useRef(false);
-
-  const handleItemsRendered = useCallback(
-    ({ visibleStopIndex }: { visibleStopIndex: number }) => {
-      if (
-        onEndReached &&
-        !loading &&
-        !hasCalledEndReached.current &&
-        visibleStopIndex >= items.length - endReachedThreshold
-      ) {
-        hasCalledEndReached.current = true;
-        onEndReached();
-      }
-    },
-    [items.length, endReachedThreshold, loading, onEndReached]
-  );
 
   useEffect(() => {
     hasCalledEndReached.current = false;
   }, [items.length]);
 
-  const Row = useCallback(
-    ({ index, style }: { index: number; style: React.CSSProperties }) => {
-      const item = items[index];
-      if (!item) return null;
-
-      return (
-        <div style={style}>
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: Math.min(index * 0.02, 0.2), duration: 0.2 }}
-          >
-            {renderItem(item, index)}
-          </motion.div>
-        </div>
-      );
-    },
-    [items, renderItem]
-  );
-
   if (!loading && items.length === 0 && emptyComponent) {
     return <>{emptyComponent}</>;
   }
+
+  // Row component following react-window v2 API
+  const Row = (props: RowComponentProps<RowData<T>>): ReactElement => {
+    const { index, style, items: rowItems, renderItem: rowRenderItem } = props;
+    const item = rowItems[index];
+    
+    if (!item) {
+      return <div style={style} />;
+    }
+
+    return (
+      <div style={style}>
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: Math.min(index * 0.02, 0.2), duration: 0.2 }}
+        >
+          {rowRenderItem(item, index)}
+        </motion.div>
+      </div>
+    );
+  };
 
   return (
     <div className={cn('relative', className)}>
       {headerComponent}
       
-      <FixedSizeList
-        ref={listRef}
-        height={height}
-        itemCount={items.length}
-        itemSize={itemHeight}
-        width="100%"
+      <List<RowData<T>>
+        style={{ height, width: '100%' }}
+        rowCount={items.length}
+        rowHeight={itemHeight}
+        rowComponent={Row}
+        rowProps={{
+          items,
+          renderItem,
+        }}
         overscanCount={overscan}
-        onItemsRendered={handleItemsRendered}
-        itemKey={(index) => keyExtractor(items[index])}
-      >
-        {Row}
-      </FixedSizeList>
+      />
 
       <AnimatePresence>
         {loading && (
