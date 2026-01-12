@@ -360,7 +360,7 @@ export function StakeholderInfluenceNetwork({
             ctx.fillStyle = color;
             ctx.fill();
           }}
-          linkColor={linkColor as any}
+          linkColor={linkColor as () => string}
           linkWidth={(link) => (link as NetworkLink).value}
           linkDirectionalParticles={2}
           linkDirectionalParticleWidth={2}

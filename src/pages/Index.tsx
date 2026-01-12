@@ -56,7 +56,8 @@ import { useContacts } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
-import type { ContactRole, SentimentType, Contact, Interaction, InteractionType, RelationshipStage } from '@/types';
+import type { ContactRole, SentimentType, Contact, Interaction, InteractionType, RelationshipStage, LifeEvent } from '@/types';
+import { getBehavior } from '@/types/behavior';
 
 const periodOptions: { value: PeriodFilter; label: string }[] = [
   { value: '7d', label: 'Última Semana' },
@@ -150,7 +151,7 @@ const Dashboard = () => {
       interests: c.interests || [],
       familyInfo: c.family_info || undefined,
       personalNotes: c.personal_notes || undefined,
-      behavior: (c.behavior as any) || {
+      behavior: getBehavior(c.behavior) || {
         discProfile: null,
         discConfidence: 0,
         preferredChannel: 'whatsapp',
@@ -164,7 +165,7 @@ const Dashboard = () => {
         currentChallenges: [],
         competitorsUsed: [],
       },
-      lifeEvents: (c.life_events as any) || [],
+      lifeEvents: (Array.isArray(c.life_events) ? c.life_events as unknown as LifeEvent[] : []),
       relationshipStage: (c.relationship_stage as RelationshipStage) || 'unknown',
       roleTitle: c.role_title || '',
       birthday: c.birthday ? new Date(c.birthday) : undefined,

@@ -76,7 +76,7 @@ import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
-import { useContacts } from '@/hooks/useContacts';
+import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -84,7 +84,8 @@ import {
   DECISION_SPEED_LABELS, 
   CAREER_STAGE_LABELS,
   DECISION_CRITERIA_LABELS,
-  ContactBehavior
+  ContactBehavior,
+  CompanyHealth
 } from '@/types';
 
 const interactionIcons = {
@@ -656,7 +657,7 @@ const ContatoDetalhe = () => {
                   notes: rawCompany.notes,
                   tags: rawCompany.tags || [],
                   contactCount: 0,
-                  financialHealth: (rawCompany.financial_health as any) || 'unknown',
+                  financialHealth: (rawCompany.financial_health as CompanyHealth) || 'unknown',
                   employeeCount: rawCompany.employee_count,
                   annualRevenue: rawCompany.annual_revenue,
                   competitors: rawCompany.competitors || [],
@@ -1149,7 +1150,7 @@ const ContatoDetalhe = () => {
               tags: contact.tags || null,
               twitter: contact.twitter || null,
               whatsapp: contact.whatsapp || null,
-            } as any]}
+            } satisfies ContactFromHook]}
             defaultContactId={contact.id}
             defaultCompanyId={contact.companyId}
             onSubmit={async () => {

@@ -573,5 +573,5 @@ export function getAllTemplatesForVAK(vakType: VAKType): {
       variables: t.variables,
       channel: t.channel,
     };
-  }).filter(Boolean) as any[];
+  }).filter((t): t is NonNullable<typeof t> => t !== null);
 }

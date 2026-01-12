@@ -17,6 +17,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
+// Network Information API type (experimental)
+interface NetworkInformation extends EventTarget {
+  effectiveType: 'slow-2g' | '2g' | '3g' | '4g';
+  addEventListener(type: 'change', listener: () => void): void;
+  removeEventListener(type: 'change', listener: () => void): void;
+}
+
+declare global {
+  interface Navigator {
+    connection?: NetworkInformation;
+  }
+}
+
 // ============================================
 // PWA EXPERIENCE COMPONENTS - Pilar 8.3
 // ============================================
@@ -462,7 +475,7 @@ export function NetworkStatusBadge() {
       }
 
       // Check connection quality
-      const connection = (navigator as any).connection;
+      const connection = navigator.connection;
       if (connection) {
         setEffectiveType(connection.effectiveType);
         if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
@@ -480,7 +493,7 @@ export function NetworkStatusBadge() {
     window.addEventListener('online', updateStatus);
     window.addEventListener('offline', updateStatus);
 
-    const connection = (navigator as any).connection;
+    const connection = navigator.connection;
     if (connection) {
       connection.addEventListener('change', updateStatus);
     }

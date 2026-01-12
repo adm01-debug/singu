@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Contact, Interaction } from '@/types';
+import { Contact, Interaction, DecisionCriteria } from '@/types';
 
 export interface PersonalizedOffer {
   id: string;
@@ -85,7 +85,7 @@ export function usePersonalizedOffers(contact: Contact | null, interactions: Int
       }
 
       // Decision criteria match
-      const criteriaMatches = offer.criteria.filter(c => decisionCriteria.includes(c as any));
+      const criteriaMatches = offer.criteria.filter(c => decisionCriteria.includes(c as DecisionCriteria));
       if (criteriaMatches.length > 0) {
         matchScore += criteriaMatches.length * 15;
         matchReasons.push(`Atende critérios: ${criteriaMatches.join(', ')}`);
@@ -168,7 +168,7 @@ export function usePersonalizedOffers(contact: Contact | null, interactions: Int
         description: `Oferta de ${offer.category} focada em ${offer.baseValue}`,
         matchScore,
         matchReasons,
-        category: offer.category as any,
+        category: offer.category as PersonalizedOffer['category'],
         priority,
         bestApproach,
         suggestedPitch,

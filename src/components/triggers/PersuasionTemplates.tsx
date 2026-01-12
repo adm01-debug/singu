@@ -36,7 +36,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
 import { useClientTriggers } from '@/hooks/useClientTriggers';
-import { PersuasionTemplate, MENTAL_TRIGGERS, PersuasionScenario } from '@/types/triggers';
+import { PersuasionTemplate, MENTAL_TRIGGERS, PersuasionScenario, TriggerType } from '@/types/triggers';
 import { toast } from 'sonner';
 import { useTriggerHistory } from '@/hooks/useTriggerHistory';
 import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
@@ -202,7 +202,7 @@ export function PersuasionTemplates({ contact, className, showSmartSuggestions =
   const handleUseTemplate = async (template: PersuasionTemplate) => {
     await createUsage({
       contact_id: contact.id,
-      trigger_type: template.trigger as any,
+      trigger_type: template.trigger as TriggerType,
       template_id: template.id,
       template_title: template.title,
       scenario: template.scenario as PersuasionScenario,
