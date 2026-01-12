@@ -46,7 +46,7 @@ interface ProfileData {
   avatar_url: string | null;
 }
 
-export default function Configuracoes() {
+const Configuracoes = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
@@ -523,4 +523,6 @@ export default function Configuracoes() {
       </div>
     </AppLayout>
   );
-}
+};
+
+export default Configuracoes;

@@ -62,7 +62,7 @@ const interactionTypeLabels: Record<string, string> = {
   other: 'Outro',
 };
 
-export default function Calendario() {
+const Calendario = () => {
   const { user } = useAuth();
   const { celebrate } = useCelebration();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -570,4 +570,6 @@ export default function Calendario() {
       </Dialog>
     </AppLayout>
   );
-}
+};
+
+export default Calendario;
