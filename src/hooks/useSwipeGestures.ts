@@ -138,7 +138,7 @@ export function useSwipeGestures(
     touchStartRef.current = null;
     currentPosRef.current = null;
     setState({ swiping: false, direction: null, distance: 0, velocity: 0 });
-  }, [threshold, maxTime, haptic, trigger, handlers]);
+  }, [threshold, maxTime, haptic, hapticFeedback, handlers]);
 
   const touchHandlers = {
     onTouchStart: handleTouchStart,
@@ -194,7 +194,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>, options: { thre
     if (dampedDistance >= threshold && pullDistance < threshold) {
       hapticFeedback.medium();
     }
-  }, [refreshing, threshold, pullDistance, trigger]);
+  }, [refreshing, threshold, pullDistance, hapticFeedback]);
 
   const handleTouchEnd = useCallback(async () => {
     if (pullDistance >= threshold && !refreshing) {
@@ -212,7 +212,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>, options: { thre
     }
     
     startYRef.current = null;
-  }, [pullDistance, threshold, refreshing, onRefresh, trigger]);
+  }, [pullDistance, threshold, refreshing, onRefresh, hapticFeedback]);
 
   return {
     refreshing,
