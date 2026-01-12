@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import {
   Tooltip,
   TooltipContent,
@@ -463,19 +463,17 @@ export function StakeholderInfluenceNetwork({
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Avatar className="w-10 h-10 border-2" style={{ borderColor: selectedNode.color }}>
-                  {selectedNode.avatar ? <img src={selectedNode.avatar} alt="" /> : null}
-                  <AvatarFallback
-                    className="text-white font-semibold text-sm"
-                    style={{ backgroundColor: selectedNode.color }}
-                  >
-                    {selectedNode.name
-                      .split(' ')
-                      .map((n) => n[0])
-                      .join('')
-                      .slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
+                <OptimizedAvatar 
+                  src={selectedNode.avatar}
+                  alt={selectedNode.name}
+                  fallback={selectedNode.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)}
+                  size="sm"
+                  className="w-10 h-10 border-2"
+                />
                 <div>
                   <h4 className="font-semibold text-sm">{selectedNode.name}</h4>
                   {selectedNode.role && (

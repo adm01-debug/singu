@@ -33,7 +33,7 @@ import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { CommandSequenceProvider } from '@/components/keyboard/CommandSequenceHandler';
 import { ConfettiBurst, AchievementPopup } from '@/components/micro-interactions/Delighters';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LazyDashboardSection } from '@/components/dashboard/LazyDashboardSection';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
@@ -390,12 +390,13 @@ const Dashboard = () => {
                       className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-4">
-                        <Avatar className="w-12 h-12 border-2 border-primary/20">
-                          <AvatarImage src={contact.avatar || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                            {contact.firstName?.[0] || 'C'}{contact.lastName?.[0] || 'N'}
-                          </AvatarFallback>
-                        </Avatar>
+                        <OptimizedAvatar 
+                          src={contact.avatar || undefined}
+                          alt={`${contact.firstName} ${contact.lastName}`}
+                          fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                          size="md"
+                          className="w-12 h-12 border-2 border-primary/20"
+                        />
                         <div>
                           <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
                             {contact.firstName} {contact.lastName}

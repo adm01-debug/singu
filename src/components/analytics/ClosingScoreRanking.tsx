@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -273,12 +273,13 @@ export function ClosingScoreRanking({
                       </div>
 
                       {/* Avatar */}
-                      <Avatar className="h-12 w-12 border-2 border-background">
-                        <AvatarImage src={item.contact.avatar_url || undefined} />
-                        <AvatarFallback className={config.bgColor}>
-                          {item.contact.first_name[0]}{item.contact.last_name[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <OptimizedAvatar 
+                        src={item.contact.avatar_url || undefined}
+                        alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                        fallback={`${item.contact.first_name[0]}${item.contact.last_name[0]}`}
+                        size="md"
+                        className="h-12 w-12 border-2 border-background"
+                      />
 
                       {/* Contact Info */}
                       <div className="flex-1 min-w-0">

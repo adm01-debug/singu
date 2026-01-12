@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
@@ -161,12 +161,13 @@ export function ContactCardWithContext({
                 <div className="h-16 bg-gradient-primary relative mt-1">
                   <div className="absolute -bottom-8 left-5">
                     <div className="relative">
-                      <Avatar className="w-16 h-16 border-4 border-card shadow-medium">
-                        <AvatarImage src={contact.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">
-                          {contact.first_name[0]}{contact.last_name[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <OptimizedAvatar 
+                        src={contact.avatar_url || undefined}
+                        alt={`${contact.first_name} ${contact.last_name}`}
+                        fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                        size="lg"
+                        className="w-16 h-16 border-4 border-card shadow-medium"
+                      />
                       <div className="absolute -top-1 -right-1">
                         <PriorityIndicator 
                           relationshipScore={contact.relationship_score || 0}
@@ -281,12 +282,13 @@ export function ContactCardWithContext({
 
               <Link to={`/contatos/${contact.id}`} className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="relative">
-                  <Avatar className="w-12 h-12 border-2 border-primary/20">
-                    <AvatarImage src={contact.avatar_url || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {contact.first_name[0]}{contact.last_name[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <OptimizedAvatar 
+                    src={contact.avatar_url || undefined}
+                    alt={`${contact.first_name} ${contact.last_name}`}
+                    fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                    size="md"
+                    className="w-12 h-12 border-2 border-primary/20"
+                  />
                   <div className="absolute -top-1 -right-1">
                     <PriorityIndicator 
                       relationshipScore={contact.relationship_score || 0}

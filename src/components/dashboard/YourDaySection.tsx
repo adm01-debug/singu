@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useYourDay } from '@/hooks/useYourDay';
@@ -163,12 +163,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         to={`/contatos/${item.interaction.contact_id}`}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 transition-colors group"
                       >
-                        <Avatar className="h-9 w-9 border border-destructive/20">
-                          <AvatarImage src={item.contact?.avatar_url || ''} />
-                          <AvatarFallback className="bg-destructive/10 text-destructive text-xs">
-                            {item.contact?.first_name?.[0]}{item.contact?.last_name?.[0]}
-                          </AvatarFallback>
-                        </Avatar>
+                        <OptimizedAvatar 
+                          src={item.contact?.avatar_url || ''}
+                          alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                          fallback={`${item.contact?.first_name?.[0]}${item.contact?.last_name?.[0]}`}
+                          size="sm"
+                          className="h-9 w-9 border border-destructive/20"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate group-hover:text-destructive transition-colors">
                             {item.contact?.first_name} {item.contact?.last_name}
@@ -220,12 +221,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         to={`/contatos/${item.interaction.contact_id}`}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors group"
                       >
-                        <Avatar className="h-9 w-9 border border-primary/20">
-                          <AvatarImage src={item.contact?.avatar_url || ''} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {item.contact?.first_name?.[0]}{item.contact?.last_name?.[0]}
-                          </AvatarFallback>
-                        </Avatar>
+                        <OptimizedAvatar 
+                          src={item.contact?.avatar_url || ''}
+                          alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                          fallback={`${item.contact?.first_name?.[0]}${item.contact?.last_name?.[0]}`}
+                          size="sm"
+                          className="h-9 w-9 border border-primary/20"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
                             {item.contact?.first_name} {item.contact?.last_name}
@@ -271,12 +273,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       to={`/contatos/${item.contact.id}`}
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
                     >
-                      <Avatar className="h-9 w-9 border border-warning/20">
-                        <AvatarImage src={item.contact.avatar_url || ''} />
-                        <AvatarFallback className="bg-warning/10 text-warning text-xs">
-                          {item.contact.first_name?.[0]}{item.contact.last_name?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <OptimizedAvatar 
+                        src={item.contact.avatar_url || ''}
+                        alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                        fallback={`${item.contact.first_name?.[0]}${item.contact.last_name?.[0]}`}
+                        size="sm"
+                        className="h-9 w-9 border border-warning/20"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
                           {item.contact.first_name} {item.contact.last_name}
@@ -326,12 +329,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       to={`/contatos/${item.contact.id}`}
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors group"
                     >
-                      <Avatar className="h-9 w-9 border border-accent/20">
-                        <AvatarImage src={item.contact.avatar_url || ''} />
-                        <AvatarFallback className="bg-accent/10 text-accent text-xs">
-                          {item.contact.first_name?.[0]}{item.contact.last_name?.[0]}
-                        </AvatarFallback>
-                      </Avatar>
+                      <OptimizedAvatar 
+                        src={item.contact.avatar_url || ''}
+                        alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                        fallback={`${item.contact.first_name?.[0]}${item.contact.last_name?.[0]}`}
+                        size="sm"
+                        className="h-9 w-9 border border-accent/20"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
                           {item.contact.first_name} {item.contact.last_name}

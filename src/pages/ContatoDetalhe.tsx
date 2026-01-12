@@ -30,10 +30,11 @@ import {
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
@@ -42,6 +43,8 @@ import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/rela
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
@@ -78,6 +81,7 @@ import { ContactPreferencesPanel } from '@/components/preferences/ContactPrefere
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts } from '@/hooks/useContacts';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -344,12 +348,13 @@ const ContatoDetalhe = () => {
               <Card className="overflow-visible">
                 <CardContent className="pt-0">
                   <div className="flex flex-col items-center -mt-16">
-                    <Avatar className="w-32 h-32 border-4 border-card shadow-strong">
-                      <AvatarImage src={contact.avatar} />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
-                        {contact.firstName[0]}{contact.lastName[0]}
-                      </AvatarFallback>
-                    </Avatar>
+                    <OptimizedAvatar 
+                      src={contact.avatar} 
+                      alt={`${contact.firstName} ${contact.lastName}`}
+                      fallback={`${contact.firstName[0]}${contact.lastName[0]}`}
+                      size="xl"
+                      className="border-4 border-card shadow-strong w-32 h-32"
+                    />
                     
                     <div className="text-center mt-4">
                       <h1 className="text-2xl font-bold text-foreground">
