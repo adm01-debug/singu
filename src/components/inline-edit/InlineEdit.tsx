@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent, RefObject, RefCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Check, X, Pencil, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Type-safe ref helper for input/textarea
+type InputRefType = RefObject<HTMLInputElement> | RefCallback<HTMLInputElement>;
+type TextareaRefType = RefObject<HTMLTextAreaElement> | RefCallback<HTMLTextAreaElement>;
 
 interface InlineEditProps {
   value: string;
@@ -126,26 +130,47 @@ export function InlineEdit({
             className="flex items-start gap-2"
           >
             <div className="flex-1 relative">
-              <InputComponent
-                ref={inputRef as any}
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={() => {
-                  // Delay to allow button clicks
-                  setTimeout(() => {
-                    if (!isSaving) handleCancel();
-                  }, 150);
-                }}
-                placeholder={placeholder}
-                maxLength={maxLength}
-                disabled={isSaving}
-                className={cn(
-                  'pr-16',
-                  error && 'border-destructive focus-visible:ring-destructive',
-                  inputClassName
-                )}
-              />
+              {multiline ? (
+                <Textarea
+                  ref={inputRef as RefObject<HTMLTextAreaElement>}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      if (!isSaving) handleCancel();
+                    }, 150);
+                  }}
+                  placeholder={placeholder}
+                  maxLength={maxLength}
+                  disabled={isSaving}
+                  className={cn(
+                    'pr-16',
+                    error && 'border-destructive focus-visible:ring-destructive',
+                    inputClassName
+                  )}
+                />
+              ) : (
+                <Input
+                  ref={inputRef as RefObject<HTMLInputElement>}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      if (!isSaving) handleCancel();
+                    }, 150);
+                  }}
+                  placeholder={placeholder}
+                  maxLength={maxLength}
+                  disabled={isSaving}
+                  className={cn(
+                    'pr-16',
+                    error && 'border-destructive focus-visible:ring-destructive',
+                    inputClassName
+                  )}
+                />
+              )}
               {maxLength && (
                 <span className="absolute right-2 bottom-1 text-xs text-muted-foreground">
                   {editValue.length}/{maxLength}
