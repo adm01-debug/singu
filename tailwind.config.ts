@@ -290,12 +290,42 @@ export default {
         'bounce-in': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
         'swift': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'elastic': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
       },
       // Transition durations
       transitionDuration: {
+        '50': '50ms',
+        '100': '100ms',
         '250': '250ms',
         '350': '350ms',
         '400': '400ms',
+        '500': '500ms',
+        '700': '700ms',
+      },
+      // Z-Index Scale - Pilar 1.3
+      zIndex: {
+        'dropdown': '100',
+        'sticky': '200',
+        'fixed': '300',
+        'overlay': '400',
+        'modal-backdrop': '500',
+        'modal': '600',
+        'popover': '700',
+        'tooltip': '800',
+        'toast': '900',
+        'max': '9999',
+      },
+      // Touch target sizes for mobile accessibility
+      minHeight: {
+        'touch': '44px',
+        'touch-comfortable': '48px',
+        'touch-spacious': '56px',
+      },
+      minWidth: {
+        'touch': '44px',
+        'touch-comfortable': '48px',
+        'touch-spacious': '56px',
       },
     },
   },
