@@ -34,11 +34,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
-import { VAKType, VAK_LABELS } from '@/types/vak';
+import { VAKType, VAK_LABELS, VAKProfile } from '@/types/vak';
 import { useVAKTemplates, AdaptedTemplate } from '@/hooks/useVAKTemplates';
 import { useVAKAnalysis } from '@/hooks/useVAKAnalysis';
 import { useTriggerHistory } from '@/hooks/useTriggerHistory';
-import { PersuasionScenario, MENTAL_TRIGGERS } from '@/types/triggers';
+import { PersuasionScenario, MENTAL_TRIGGERS, TriggerType } from '@/types/triggers';
 import { toast } from 'sonner';
 
 interface VAKTemplateLibraryProps {
@@ -249,7 +249,7 @@ export function VAKTemplateLibrary({ contact, className }: VAKTemplateLibraryPro
   const [activeScenario, setActiveScenario] = useState<PersuasionScenario | 'all'>('all');
   const [activeVAKFilter, setActiveVAKFilter] = useState<VAKType | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [vakProfile, setVakProfile] = useState<any>(null);
+  const [vakProfile, setVakProfile] = useState<VAKProfile | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Load VAK profile
@@ -261,8 +261,8 @@ export function VAKTemplateLibrary({ contact, className }: VAKTemplateLibraryPro
     loadProfile();
   }, [contact.id, getContactVAKProfile]);
 
-  const behavior = contact.behavior as any;
-  const primaryVAK = vakProfile?.primary || behavior?.vakProfile?.primary || 'V';
+  const behavior = contact.behavior as { vakProfile?: { primary?: VAKType } } | null;
+  const primaryVAK: VAKType = vakProfile?.primary || behavior?.vakProfile?.primary || 'V';
 
   const handleAnalyzeVAK = async () => {
     setIsAnalyzing(true);
@@ -281,11 +281,11 @@ export function VAKTemplateLibrary({ contact, className }: VAKTemplateLibraryPro
   const handleUseTemplate = async (template: AdaptedTemplate) => {
     await createUsage({
       contact_id: contact.id,
-      trigger_type: template.trigger as any,
+      trigger_type: template.trigger as TriggerType,
       template_id: template.id,
       template_title: template.title,
-      scenario: template.scenario,
-      channel: template.channel as any,
+      scenario: template.scenario as PersuasionScenario,
+      channel: template.channel,
       result: 'pending',
       context: `VAK: ${template.vakType}`,
     });

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import type { Tables, TablesUpdate } from '@/integrations/supabase/types';
+import type { Tables, TablesUpdate, Json } from '@/integrations/supabase/types';
 
 export type Contact = Tables<'contacts'>;
 export type Company = Tables<'companies'>;
@@ -285,7 +285,7 @@ export function useContactDetail(contactId: string | undefined) {
   };
 
   const updateBehavior = async (behavior: Record<string, unknown>) => {
-    return updateContact({ behavior: behavior as any });
+    return updateContact({ behavior: behavior as Json });
   };
 
   const addInteraction = async (interaction: Omit<Tables<'interactions'>, 'id' | 'created_at' | 'user_id'>) => {
