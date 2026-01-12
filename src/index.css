@@ -929,3 +929,229 @@
 .glow-on-hover:hover {
   box-shadow: var(--shadow-glow);
 }
+
+/* ============================================
+   ADVANCED ANIMATION LIBRARY - Sprint 4
+   ============================================ */
+
+/* Stagger animation for children */
+.stagger-children > * {
+  --stagger-delay: calc(var(--stagger-index, 0) * 0.05s);
+  animation-delay: var(--stagger-delay);
+}
+
+/* Morphing background */
+@keyframes morphing-bg {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-morphing-bg {
+  background-size: 200% 200%;
+  animation: morphing-bg 3s ease infinite;
+}
+
+/* Success ripple */
+@keyframes success-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-success-ripple {
+  animation: success-ripple 0.6s ease-out forwards;
+}
+
+/* Attention pulse */
+@keyframes attention-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
+  }
+}
+
+.animate-attention {
+  animation: attention-pulse 2s infinite;
+}
+
+/* Slide in from different directions */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s var(--ease-smooth) forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s var(--ease-smooth) forwards;
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.3s var(--ease-smooth) forwards;
+}
+
+.animate-slide-in-down {
+  animation: slide-in-down 0.3s var(--ease-smooth) forwards;
+}
+
+/* Scale bounce */
+@keyframes scale-bounce {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-scale-bounce {
+  animation: scale-bounce 0.4s var(--ease-elastic) forwards;
+}
+
+/* Heartbeat */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  56% {
+    transform: scale(1);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.3s ease-in-out infinite;
+}
+
+/* Typing indicator */
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.animate-typing-1 {
+  animation: typing-dot 1.4s infinite 0s;
+}
+
+.animate-typing-2 {
+  animation: typing-dot 1.4s infinite 0.2s;
+}
+
+.animate-typing-3 {
+  animation: typing-dot 1.4s infinite 0.4s;
+}
+
+/* Confetti explosion (simplified) */
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti 1s ease-out forwards;
+}
+
+/* Reduced motion preference - disable all custom animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-morphing-bg,
+  .animate-success-ripple,
+  .animate-attention,
+  .animate-slide-in-left,
+  .animate-slide-in-right,
+  .animate-slide-in-up,
+  .animate-slide-in-down,
+  .animate-scale-bounce,
+  .animate-heartbeat,
+  .animate-typing-1,
+  .animate-typing-2,
+  .animate-typing-3,
+  .animate-confetti,
+  .animate-float,
+  .animate-glow,
+  .animate-bounce-gentle,
+  .animate-gradient,
+  .animate-pop,
+  .animate-shake {
+    animation: none !important;
+  }
+}
