@@ -160,7 +160,7 @@ const Empresas = () => {
 
   useKeyboardShortcutsEnhanced();
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: Parameters<typeof createCompany>[0]) => {
     setIsSubmitting(true);
     const result = await createCompany(data);
     setIsSubmitting(false);
@@ -169,7 +169,7 @@ const Empresas = () => {
     }
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: Parameters<typeof updateCompany>[1]) => {
     if (!editingCompany) return;
     setIsSubmitting(true);
     const result = await updateCompany(editingCompany.id, data);

@@ -166,7 +166,7 @@ const Contatos = () => {
     return contactInteractions[0]?.created_at || null;
   }, [interactions]);
 
-  const handleCreate = async (data: any, event?: React.MouseEvent) => {
+  const handleCreate = async (data: Parameters<typeof createContact>[0], event?: React.MouseEvent) => {
     setIsSubmitting(true);
     const result = await createContact(data);
     setIsSubmitting(false);
@@ -180,7 +180,7 @@ const Contatos = () => {
     }
   };
 
-  const handleUpdate = async (data: any, event?: React.MouseEvent) => {
+  const handleUpdate = async (data: Parameters<typeof updateContact>[1], event?: React.MouseEvent) => {
     if (!editingContact) return;
     setIsSubmitting(true);
     const result = await updateContact(editingContact.id, data);
