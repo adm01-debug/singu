@@ -143,7 +143,7 @@ export function useEQPersistence(contactId: string) {
 
     // Calculate pillar trends
     const pillars: EQPillar[] = ['self_awareness', 'self_regulation', 'motivation', 'empathy', 'social_skills'];
-    const pillarTrends: Record<EQPillar, 'improving' | 'stable' | 'declining'> = {} as any;
+    const pillarTrends = {} as Record<EQPillar, 'improving' | 'stable' | 'declining'>;
 
     pillars.forEach(pillar => {
       const pillarScores = history.map(h => h.pillarScores[pillar] || 0);

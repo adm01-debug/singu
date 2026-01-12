@@ -239,7 +239,21 @@ export function useMetaprogramAnalysis() {
       }
 
       // Aggregate scores (note: new metaprograms not in DB yet, use 0)
-      const totals = data.reduce((acc, record: any) => ({
+      interface MetaprogramRecord {
+        toward_score?: number;
+        away_from_score?: number;
+        internal_score?: number;
+        external_score?: number;
+        options_score?: number;
+        procedures_score?: number;
+        general_score?: number;
+        specific_score?: number;
+        proactive_score?: number;
+        reactive_score?: number;
+        sameness_score?: number;
+        difference_score?: number;
+      }
+      const totals = data.reduce((acc, record: MetaprogramRecord) => ({
         toward: acc.toward + (record.toward_score || 0),
         awayFrom: acc.awayFrom + (record.away_from_score || 0),
         internal: acc.internal + (record.internal_score || 0),

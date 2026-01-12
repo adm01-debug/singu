@@ -176,6 +176,7 @@ const transformContact = (contact: any, companyName?: string) => {
       bestTimeToApproach: behavior.bestTimeToApproach,
       seasonalNotes: behavior.seasonalNotes,
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lifeEvents: (contact.life_events || []).map((e: any) => ({
       id: e.id || crypto.randomUUID(),
       type: e.type || 'other',
@@ -190,6 +191,7 @@ const transformContact = (contact: any, companyName?: string) => {
 };
 
 // Helper function to transform database interaction to component-compatible format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const transformInteraction = (interaction: any) => ({
   id: interaction.id,
   contactId: interaction.contact_id,

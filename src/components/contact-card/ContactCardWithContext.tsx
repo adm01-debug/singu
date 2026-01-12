@@ -41,7 +41,7 @@ interface ContactCardWithContextProps {
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (contact: Contact) => void;
   onDelete: (contact: Contact) => void;
-  onUpdate: (id: string, data: Partial<Contact>) => Promise<any>;
+  onUpdate: (id: string, data: Partial<Contact>) => Promise<Contact | null>;
   viewMode: 'grid' | 'list';
 }
 
