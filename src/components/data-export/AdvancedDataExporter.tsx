@@ -33,7 +33,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { format as formatDate } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -337,7 +337,7 @@ export function AdvancedDataExporter({ entityType, className }: AdvancedDataExpo
                             <Button variant="outline" className="flex-1 justify-start">
                               <Calendar className="w-4 h-4 mr-2" />
                               {dateRange.from 
-                                ? format(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })
+                                ? formatDate(dateRange.from, 'dd/MM/yyyy', { locale: ptBR })
                                 : 'Data inicial'}
                             </Button>
                           </PopoverTrigger>
@@ -355,7 +355,7 @@ export function AdvancedDataExporter({ entityType, className }: AdvancedDataExpo
                             <Button variant="outline" className="flex-1 justify-start">
                               <Calendar className="w-4 h-4 mr-2" />
                               {dateRange.to 
-                                ? format(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })
+                                ? formatDate(dateRange.to, 'dd/MM/yyyy', { locale: ptBR })
                                 : 'Data final'}
                             </Button>
                           </PopoverTrigger>
