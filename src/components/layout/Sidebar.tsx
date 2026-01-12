@@ -28,6 +28,7 @@ import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { useNotificationCounts } from '@/hooks/useNotificationCounts';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { RecentFavoritesMenu } from '@/components/navigation/RecentFavoritesMenu';
 import {
   DropdownMenu,
@@ -442,10 +443,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-sidebar-accent transition-colors',
-                collapsed && 'justify-center px-0'
-              )}>
+              <Button 
+                variant="ghost"
+                className={cn(
+                  'w-full flex items-center gap-3 px-3 py-2.5 h-auto hover:bg-sidebar-accent',
+                  collapsed && 'justify-center px-0'
+                )}
+              >
                 <OptimizedAvatar 
                   src={user?.user_metadata?.avatar_url}
                   alt="User avatar"
@@ -466,7 +470,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </button>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "top"} className="w-56">
               <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
