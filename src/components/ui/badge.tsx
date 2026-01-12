@@ -94,6 +94,10 @@ function Badge({
   );
 
   if (animated) {
+    // Extract only valid HTML div attributes for motion.div
+    const { onClick, onMouseEnter, onMouseLeave, role, tabIndex, 'aria-label': ariaLabel, ...restProps } = props;
+    const motionProps = { onClick, onMouseEnter, onMouseLeave, role, tabIndex, 'aria-label': ariaLabel };
+    
     return (
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -101,7 +105,7 @@ function Badge({
         exit={{ scale: 0.8, opacity: 0 }}
         whileHover={{ scale: 1.05 }}
         className={cn(badgeVariants({ variant, size }), className)}
-        {...(props as any)}
+        {...motionProps}
       >
         {content}
       </motion.div>
