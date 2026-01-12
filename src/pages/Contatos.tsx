@@ -11,7 +11,8 @@ import {
   User,
   UserPlus,
   Upload,
-  CheckSquare
+  CheckSquare,
+  Keyboard
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
@@ -36,6 +37,10 @@ import { AdvancedFilters, type FilterConfig, type SortOption } from '@/component
 import { ContactForm } from '@/components/forms/ContactForm';
 import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
+import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
+import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
+import { useAriaLiveRegion } from '@/components/feedback/AriaLiveRegion';
+import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
@@ -101,6 +106,10 @@ const Contatos = () => {
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  
+  // Accessibility announcements
+  const { announce } = useAriaLiveRegion();
   
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
@@ -114,18 +123,24 @@ const Contatos = () => {
   const [sortBy, setSortBy] = useState('updated_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredAndSortedContacts = useMemo(() => {
-    let result = contacts.filter(contact => {
-      // Text search
-      const fullName = `${contact.first_name} ${contact.last_name}`.toLowerCase();
-      const matchesSearch = 
-        fullName.includes(searchTerm.toLowerCase()) ||
-        (contact.role_title && contact.role_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (contact.email && contact.email.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      if (!matchesSearch) return false;
+  // Fuzzy search for better matching
+  const { results: fuzzyResults, setQuery: setFuzzyQuery } = useFuzzySearch(contacts, {
+    keys: ['first_name', 'last_name', 'email', 'role_title'],
+    threshold: 0.4,
+  });
+  
+  // Sync search term to fuzzy search
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setFuzzyQuery(value);
+  }, [setFuzzyQuery]);
 
-      // Advanced filters
+  const filteredAndSortedContacts = useMemo(() => {
+    // Use fuzzy search results when searching, otherwise use all contacts
+    let result = searchTerm ? fuzzyResults : contacts;
+    
+    // Apply advanced filters
+    result = result.filter(contact => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
         
@@ -134,7 +149,6 @@ const Contatos = () => {
           return false;
         }
       }
-
       return true;
     });
 
@@ -143,7 +157,7 @@ const Contatos = () => {
       dateFields: ['created_at', 'updated_at', 'birthday'],
       numericFields: ['relationship_score']
     });
-  }, [contacts, searchTerm, activeFilters, sortBy, sortOrder]);
+  }, [contacts, fuzzyResults, searchTerm, activeFilters, sortBy, sortOrder]);
 
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedContacts, {
@@ -265,41 +279,68 @@ const Contatos = () => {
         {/* Search and View Toggle */}
         <div className="flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Buscar por nome, cargo ou email..."
+              placeholder="Buscar por nome, cargo ou email (aceita erros de digitação)..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
+              aria-label="Buscar contatos"
+              aria-describedby="search-hint"
             />
+            <span id="search-hint" className="sr-only">
+              A busca é inteligente e aceita erros de digitação
+            </span>
           </div>
           <div className="flex items-center gap-2">
+            <ContextualHelpTooltip
+              title="Busca Inteligente"
+              description="A busca usa Fuzzy Search para encontrar resultados mesmo com erros de digitação."
+              tips={[
+                '"joao" encontra "João Silva"',
+                'Busca por nome, email e cargo',
+                'Resultados ordenados por relevância',
+              ]}
+            />
             <AdvancedDataExporter entityType="contacts" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowShortcuts(true)}
+              className="text-muted-foreground"
+              aria-label="Ver atalhos de teclado"
+            >
+              <Keyboard className="w-4 h-4" />
+            </Button>
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
               onClick={toggleSelectionMode}
               className="gap-2"
             >
-              <CheckSquare className="w-4 h-4" />
+              <CheckSquare className="w-4 h-4" aria-hidden="true" />
               {selectionMode ? 'Cancelar' : 'Selecionar'}
             </Button>
-            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => setViewMode('grid')}
                 className="h-8 w-8"
+                aria-label="Visualização em grade"
+                aria-pressed={viewMode === 'grid'}
               >
-                <Grid3X3 className="w-4 h-4" />
+                <Grid3X3 className="w-4 h-4" aria-hidden="true" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="icon"
                 onClick={() => setViewMode('list')}
                 className="h-8 w-8"
+                aria-label="Visualização em lista"
+                aria-pressed={viewMode === 'list'}
               >
-                <List className="w-4 h-4" />
+                <List className="w-4 h-4" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -464,6 +505,12 @@ const Contatos = () => {
       
       {/* Floating Quick Actions */}
       <FloatingQuickActions />
+      
+      {/* Keyboard Shortcuts Dialog */}
+      <KeyboardShortcutsCheatsheet 
+        open={showShortcuts} 
+        onOpenChange={setShowShortcuts} 
+      />
     </AppLayout>
     
     {/* Mini Celebration */}
