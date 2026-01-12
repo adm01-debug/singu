@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import {
@@ -13,7 +14,7 @@ import { cn } from '@/lib/utils';
 interface BreadcrumbConfig {
   label: string;
   href?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 interface DynamicBreadcrumbsProps {
