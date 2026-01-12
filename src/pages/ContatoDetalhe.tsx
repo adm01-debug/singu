@@ -116,6 +116,7 @@ const lifeEventIcons: Record<string, string> = {
 };
 
 // Helper function to transform database contact to component-compatible format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const transformContact = (contact: any, companyName?: string) => {
   const behavior = contact.behavior || {};
   return {

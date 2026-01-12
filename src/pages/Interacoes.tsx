@@ -194,7 +194,7 @@ const Interacoes = () => {
     return contacts.find(c => c.id === contactId);
   };
 
-  const handleCreate = async (data: any, event?: React.MouseEvent) => {
+  const handleCreate = async (data: Parameters<typeof createInteraction>[0], event?: React.MouseEvent) => {
     setIsSubmitting(true);
     const result = await createInteraction(data);
     setIsSubmitting(false);
@@ -209,7 +209,7 @@ const Interacoes = () => {
     }
   };
 
-  const handleUpdate = async (data: any, event?: React.MouseEvent) => {
+  const handleUpdate = async (data: Parameters<typeof updateInteraction>[1], event?: React.MouseEvent) => {
     if (!editingInteraction) return;
     setIsSubmitting(true);
     const result = await updateInteraction(editingInteraction.id, data);
