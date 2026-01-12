@@ -4,6 +4,7 @@ import { VAKType, VAKProfile } from '@/types/vak';
 import { VAK_ADAPTED_TEMPLATES, VAKAdaptedTemplate, VAKTemplateVariation } from '@/data/vakTemplates';
 import { PersuasionScenario, MENTAL_TRIGGERS } from '@/types/triggers';
 import { useVAKAnalysis } from './useVAKAnalysis';
+import { getBehavior, getVAKPrimary, getVAKSecondary, getVAKConfidence } from '@/types/behavior';
 
 export interface AdaptedTemplate {
   id: string;
@@ -44,10 +45,10 @@ export function useVAKTemplates(contact: Contact): VAKTemplatesResult {
 
   // Generate adapted templates based on contact's VAK profile or default to all
   const adaptedTemplates = useMemo(() => {
-    const behavior = contact.behavior as any;
-    const primaryVAK = behavior?.vakProfile?.primary as VAKType || 'V';
-    const secondaryVAK = behavior?.vakProfile?.secondary as VAKType || null;
-    const confidence = behavior?.vakProfile?.confidence || 50;
+    const behaviorData = getBehavior(contact.behavior);
+    const primaryVAK = getVAKPrimary(contact.behavior) ?? 'V';
+    const secondaryVAK = getVAKSecondary(contact.behavior);
+    const confidence = getVAKConfidence(contact.behavior);
 
     const templates: AdaptedTemplate[] = [];
 

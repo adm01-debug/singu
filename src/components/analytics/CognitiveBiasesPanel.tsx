@@ -54,6 +54,8 @@ export function CognitiveBiasesPanel({
   className
 }: CognitiveBiasesPanelProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'biases' | 'strategies' | 'history'>('overview');
+  
+  type TabValue = 'overview' | 'biases' | 'strategies' | 'history';
   const [expandedBias, setExpandedBias] = useState<CognitiveBiasType | null>(null);
   const [autoSaved, setAutoSaved] = useState(false);
   const lastInteractionCountRef = useRef(interactions.length);
@@ -300,7 +302,7 @@ export function CognitiveBiasesPanel({
       </CardHeader>
 
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="gap-1">
               <BarChart3 className="w-4 h-4" />

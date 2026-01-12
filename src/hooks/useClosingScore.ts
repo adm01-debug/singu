@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { differenceInDays, parseISO } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { getDISCProfile } from '@/types/behavior';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -311,9 +312,8 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
       factors.push(communicationFactor);
 
       // 8. DISC PROFILE (Weight: 5%)
-      const behavior = contact.behavior as any;
-      const discProfile = behavior?.disc || null;
-      const discFactor = DISC_CLOSING_FACTORS[discProfile] || { speed: 0.5, style: 'Perfil não identificado' };
+      const discProfile = getDISCProfile(contact.behavior);
+      const discFactor = DISC_CLOSING_FACTORS[discProfile ?? ''] || { speed: 0.5, style: 'Perfil não identificado' };
       const discScore = discProfile ? 60 + (discFactor.speed * 40) : 50;
 
       const discScoreFactor: ScoreFactor = {
