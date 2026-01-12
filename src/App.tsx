@@ -9,6 +9,8 @@ import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardS
 import { InstallPrompt, OfflineIndicator, NetworkStatusBadge } from "@/components/pwa/PWAComponents";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageTransition } from "@/components/page-transition/PageTransition";
+import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
+import { WhatsNewModal } from "@/components/features/WhatsNewModal";
 import { useEasterEggs } from "@/hooks/useEasterEggs";
 import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";
@@ -40,6 +42,11 @@ const queryClient = new QueryClient({
 const EasterEggsProvider = () => {
   useEasterEggs();
   return null;
+};
+
+// What's New modal component - shows automatically when there are new features
+const WhatsNewWrapper = () => {
+  return <WhatsNewModal />;
 };
 
 // Animated routes wrapper
@@ -130,20 +137,23 @@ const App = () => (
   <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
     <QueryClientProvider client={queryClient}>
       <CelebrationProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <OfflineIndicator />
-          <InstallPrompt />
-          <NetworkStatusBadge />
-          <BrowserRouter>
-            <EasterEggsProvider />
-            <KeyboardShortcutsDialogEnhanced />
-            <AuthProvider>
-              <AnimatedRoutes />
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AriaLiveProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <OfflineIndicator />
+            <InstallPrompt />
+            <NetworkStatusBadge />
+            <BrowserRouter>
+              <EasterEggsProvider />
+              <KeyboardShortcutsDialogEnhanced />
+              <WhatsNewWrapper />
+              <AuthProvider>
+                <AnimatedRoutes />
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AriaLiveProvider>
       </CelebrationProvider>
     </QueryClientProvider>
   </ErrorBoundary>

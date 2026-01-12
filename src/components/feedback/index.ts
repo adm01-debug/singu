@@ -37,3 +37,9 @@ export { PullToRefresh } from './PullToRefresh';
 export { ContextualHelp, FeatureHighlight, InlineHelp } from './ContextualHelp';
 export { DraftRecoveryBanner } from './DraftRecoveryBanner';
 export { ProgressToast } from './ProgressToast';
+
+// Accessibility feedback components
+export { AriaLiveProvider, useAriaLiveRegion, liveAnnouncements } from './AriaLiveRegion';
+
+// Notification grouping
+export { NotificationGroup, GroupedNotifications } from './NotificationGroup';
