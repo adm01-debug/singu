@@ -150,7 +150,9 @@ const App = () => (
               <KeyboardShortcutsDialogEnhanced />
               <WhatsNewWrapper />
               <AuthProvider>
-                <AnimatedRoutes />
+                <SessionExpiryHandler>
+                  <AnimatedRoutes />
+                </SessionExpiryHandler>
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>

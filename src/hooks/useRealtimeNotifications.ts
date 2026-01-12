@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface RealtimeNotification {
   id: string;
@@ -13,20 +14,58 @@ interface RealtimeNotification {
   createdAt: string;
 }
 
+interface AlertPayload {
+  id: string;
+  title: string;
+  description: string | null;
+  contact_id: string | null;
+  created_at: string;
+  action_url: string | null;
+}
+
+interface InsightPayload {
+  id: string;
+  title: string;
+  description: string | null;
+  contact_id: string;
+  created_at: string;
+}
+
+interface HealthAlertPayload {
+  id: string;
+  title: string;
+  description: string | null;
+  contact_id: string;
+  created_at: string;
+  alert_type: string;
+}
+
+interface StakeholderAlertPayload {
+  id: string;
+  title: string;
+  description: string | null;
+  contact_id: string;
+  created_at: string;
+  severity: string;
+  recommended_action: string | null;
+}
+
 export function useRealtimeNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<RealtimeNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Handle new alert
-  const handleNewAlert = useCallback((payload: any) => {
-    const alert = payload.new;
+  const handleNewAlert = useCallback((payload: RealtimePostgresChangesPayload<AlertPayload>) => {
+    const alert = payload.new as AlertPayload;
+    if (!alert || !alert.id) return;
+    
     const notification: RealtimeNotification = {
       id: alert.id,
       type: 'alert',
       title: alert.title,
-      description: alert.description,
-      entityId: alert.contact_id,
+      description: alert.description || undefined,
+      entityId: alert.contact_id || undefined,
       entityType: 'contact',
       createdAt: alert.created_at,
     };
@@ -35,7 +74,7 @@ export function useRealtimeNotifications() {
     setUnreadCount(prev => prev + 1);
 
     toast(alert.title, {
-      description: alert.description,
+      description: alert.description || undefined,
       action: {
         label: 'Ver',
         onClick: () => {
@@ -48,13 +87,15 @@ export function useRealtimeNotifications() {
   }, []);
 
   // Handle new insight
-  const handleNewInsight = useCallback((payload: any) => {
-    const insight = payload.new;
+  const handleNewInsight = useCallback((payload: RealtimePostgresChangesPayload<InsightPayload>) => {
+    const insight = payload.new as InsightPayload;
+    if (!insight || !insight.id) return;
+    
     const notification: RealtimeNotification = {
       id: insight.id,
       type: 'insight',
       title: insight.title,
-      description: insight.description,
+      description: insight.description || undefined,
       entityId: insight.contact_id,
       entityType: 'contact',
       createdAt: insight.created_at,
@@ -64,18 +105,20 @@ export function useRealtimeNotifications() {
     setUnreadCount(prev => prev + 1);
 
     toast.info(`💡 ${insight.title}`, {
-      description: insight.description,
+      description: insight.description || undefined,
     });
   }, []);
 
   // Handle new health alert
-  const handleNewHealthAlert = useCallback((payload: any) => {
-    const alert = payload.new;
+  const handleNewHealthAlert = useCallback((payload: RealtimePostgresChangesPayload<HealthAlertPayload>) => {
+    const alert = payload.new as HealthAlertPayload;
+    if (!alert || !alert.id) return;
+    
     const notification: RealtimeNotification = {
       id: alert.id,
       type: 'health_alert',
       title: alert.title,
-      description: alert.description,
+      description: alert.description || undefined,
       entityId: alert.contact_id,
       entityType: 'contact',
       createdAt: alert.created_at,
@@ -86,18 +129,20 @@ export function useRealtimeNotifications() {
 
     const icon = alert.alert_type === 'critical' ? '🚨' : '⚠️';
     toast.warning(`${icon} ${alert.title}`, {
-      description: alert.description,
+      description: alert.description || undefined,
     });
   }, []);
 
   // Handle new stakeholder alert
-  const handleNewStakeholderAlert = useCallback((payload: any) => {
-    const alert = payload.new;
+  const handleNewStakeholderAlert = useCallback((payload: RealtimePostgresChangesPayload<StakeholderAlertPayload>) => {
+    const alert = payload.new as StakeholderAlertPayload;
+    if (!alert || !alert.id) return;
+    
     const notification: RealtimeNotification = {
       id: alert.id,
       type: 'alert',
       title: alert.title,
-      description: alert.description,
+      description: alert.description || undefined,
       entityId: alert.contact_id,
       entityType: 'contact',
       createdAt: alert.created_at,
@@ -108,7 +153,7 @@ export function useRealtimeNotifications() {
 
     const icon = alert.severity === 'critical' ? '🚨' : alert.severity === 'high' ? '⚠️' : 'ℹ️';
     toast(`${icon} ${alert.title}`, {
-      description: alert.recommended_action || alert.description,
+      description: alert.recommended_action || alert.description || undefined,
     });
   }, []);
 

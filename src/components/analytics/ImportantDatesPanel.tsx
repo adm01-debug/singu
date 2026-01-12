@@ -15,7 +15,7 @@ interface ImportantDatesPanelProps {
   singleContact?: Contact;
 }
 
-const typeIcons: Record<string, any> = {
+const typeIcons: Record<string, React.ElementType> = {
   birthday: Gift,
   anniversary: Users,
   contract_renewal: FileText,

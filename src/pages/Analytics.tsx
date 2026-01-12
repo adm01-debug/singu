@@ -279,7 +279,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-// Custom Tooltip
+// Custom Tooltip - Using render function pattern to avoid forwardRef issues with Recharts
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
