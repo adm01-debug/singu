@@ -56,6 +56,9 @@ import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { cn } from '@/lib/utils';
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
@@ -400,6 +403,8 @@ const Analytics = () => {
       />
       
       <div className="p-6 space-y-6">
+        <SmartBreadcrumbs />
+        
         {/* Header Actions */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

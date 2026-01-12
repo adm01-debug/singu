@@ -24,8 +24,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Separator } from '@/components/ui/separator';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -192,12 +194,13 @@ export default function Configuracoes() {
                   {/* Avatar Section */}
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      <Avatar className="w-24 h-24 border-4 border-primary/20">
-                        <AvatarImage src={profile.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-primary text-white text-2xl font-bold">
-                          {userInitials}
-                        </AvatarFallback>
-                      </Avatar>
+                      <OptimizedAvatar
+                        src={profile.avatar_url}
+                        alt={`${profile.first_name} ${profile.last_name}`}
+                        fallback={userInitials}
+                        size="xl"
+                        className="border-4 border-primary/20"
+                      />
                       <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg">
                         <Camera className="w-4 h-4" />
                       </button>
