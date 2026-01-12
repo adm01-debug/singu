@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageTransition } from "@/components/page-transition/PageTransition";
 import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { WhatsNewModal } from "@/components/features/WhatsNewModal";
+import { SessionExpiryHandler } from "@/components/session/SessionExpiryHandler";
 import { useEasterEggs } from "@/hooks/useEasterEggs";
 import { AnimatePresence } from "framer-motion";
 import Index from "./pages/Index";

@@ -17,13 +17,18 @@ import {
   Search,
   Keyboard,
   BarChart3,
-  Share2
+  Share2,
+  Heart,
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
+import { useNotificationCounts } from '@/hooks/useNotificationCounts';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
+import { Badge } from '@/components/ui/badge';
+import { RecentFavoritesMenu } from '@/components/navigation/RecentFavoritesMenu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,19 +51,29 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-const menuItems = [
+interface MenuItemConfig {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+  shortcut: string;
+  tourId: string;
+  badgeKey?: keyof ReturnType<typeof useNotificationCounts>['counts'];
+  hasMegaMenu?: boolean;
+}
+
+const menuItems: MenuItemConfig[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
-  { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies' },
-  { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts' },
-  { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4', tourId: 'interactions' },
+  { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
+  { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
+  { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
   { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
   { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
-  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights' },
+  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
 ];
 
-const bottomMenuItems = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9', tourId: 'notifications' },
+const bottomMenuItems: MenuItemConfig[] = [
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9', tourId: 'notifications', badgeKey: 'total' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0', tourId: 'settings' },
 ];
 
@@ -126,6 +141,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { counts } = useNotificationCounts();
 
   // Enable keyboard navigation
   useKeyboardNavigation({
@@ -245,41 +261,86 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
+            
             return (
               <Tooltip key={item.path}>
                 <TooltipTrigger asChild>
-                  <Link
-                    to={item.path}
-                    data-tour={item.tourId}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative',
-                      isActive
-                        ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-glow'
-                        : 'hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
-                      collapsed && 'justify-center px-0'
-                    )}
-                  >
-                    <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'animate-pulse-soft')} />
-                    <AnimatePresence>
-                      {!collapsed && (
-                        <motion.div
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          className="flex items-center justify-between flex-1 overflow-hidden"
-                        >
-                          <span className="font-medium whitespace-nowrap">{item.label}</span>
-                          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            {item.shortcut}
-                          </kbd>
-                        </motion.div>
+                  <div className="relative group">
+                    <Link
+                      to={item.path}
+                      data-tour={item.tourId}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative',
+                        isActive
+                          ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-glow'
+                          : 'hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
+                        collapsed && 'justify-center px-0'
                       )}
-                    </AnimatePresence>
-                  </Link>
+                    >
+                      <div className="relative">
+                        <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'animate-pulse-soft')} />
+                        {/* Badge indicator for collapsed state */}
+                        {collapsed && badgeCount > 0 && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                          >
+                            <span className="text-[9px] font-bold text-destructive-foreground">
+                              {badgeCount > 9 ? '9+' : badgeCount}
+                            </span>
+                          </motion.div>
+                        )}
+                      </div>
+                      <AnimatePresence>
+                        {!collapsed && (
+                          <motion.div
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            className="flex items-center justify-between flex-1 overflow-hidden"
+                          >
+                            <span className="font-medium whitespace-nowrap">{item.label}</span>
+                            <div className="flex items-center gap-1.5">
+                              {badgeCount > 0 && (
+                                <Badge 
+                                  variant="destructive" 
+                                  className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold"
+                                >
+                                  {badgeCount > 99 ? '99+' : badgeCount}
+                                </Badge>
+                              )}
+                              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                {item.shortcut}
+                              </kbd>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Link>
+                    
+                    {/* Mega Menu for Contacts and Companies */}
+                    {item.hasMegaMenu && !collapsed && (
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <RecentFavoritesMenu 
+                          type={item.path === '/contatos' ? 'contact' : 'company'}
+                          trigger={
+                            <button className="p-1 rounded hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground">
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
                 </TooltipTrigger>
                 {collapsed && (
                   <TooltipContent side="right" sideOffset={10}>
                     <p>{item.label}</p>
+                    {badgeCount > 0 && (
+                      <p className="text-xs text-destructive">{badgeCount} pendente(s)</p>
+                    )}
                     <p className="text-xs text-muted-foreground">Alt+{item.shortcut}</p>
                   </TooltipContent>
                 )}
@@ -292,6 +353,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         <div className="py-4 px-3 border-t border-sidebar-border space-y-1">
           {bottomMenuItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
+            
             return (
               <Tooltip key={item.path}>
                 <TooltipTrigger asChild>
@@ -306,7 +369,20 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                       collapsed && 'justify-center px-0'
                     )}
                   >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
+                    <div className="relative">
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {collapsed && badgeCount > 0 && (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                        >
+                          <span className="text-[9px] font-bold text-destructive-foreground">
+                            {badgeCount > 9 ? '9+' : badgeCount}
+                          </span>
+                        </motion.div>
+                      )}
+                    </div>
                     <AnimatePresence>
                       {!collapsed && (
                         <motion.div
@@ -316,9 +392,19 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className="flex items-center justify-between flex-1 overflow-hidden"
                         >
                           <span className="font-medium whitespace-nowrap">{item.label}</span>
-                          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                            {item.shortcut}
-                          </kbd>
+                          <div className="flex items-center gap-1.5">
+                            {badgeCount > 0 && (
+                              <Badge 
+                                variant="destructive" 
+                                className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold animate-pulse"
+                              >
+                                {badgeCount > 99 ? '99+' : badgeCount}
+                              </Badge>
+                            )}
+                            <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                              {item.shortcut}
+                            </kbd>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -327,6 +413,9 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                 {collapsed && (
                   <TooltipContent side="right" sideOffset={10}>
                     <p>{item.label}</p>
+                    {badgeCount > 0 && (
+                      <p className="text-xs text-destructive">{badgeCount} pendente(s)</p>
+                    )}
                     <p className="text-xs text-muted-foreground">Alt+{item.shortcut}</p>
                   </TooltipContent>
                 )}
