@@ -4,6 +4,27 @@ import { useCompanies } from './useCompanies';
 import { useInteractions } from './useInteractions';
 import { differenceInDays, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 
+interface TopContact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  avatar: string | null;
+  companyName: string;
+  role: string;
+  relationshipScore: number;
+  sentiment: string;
+  interactionCount: number;
+  lastInteraction: Date | null;
+}
+
+interface RecentActivity {
+  id: string;
+  entityName: string;
+  description: string;
+  createdAt: Date;
+  type: string;
+}
+
 export interface DashboardStats {
   totalCompanies: number;
   totalContacts: number;
@@ -13,8 +34,8 @@ export interface DashboardStats {
   contactChange: string;
   interactionChange: string;
   scoreChange: string;
-  topContacts: any[];
-  recentActivities: any[];
+  topContacts: TopContact[];
+  recentActivities: RecentActivity[];
   loading: boolean;
 }
 

@@ -30,7 +30,7 @@ interface DrillDownDataItem {
   value: number;
   color?: string;
   children?: DrillDownDataItem[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 interface DrillDownChartProps {
@@ -59,8 +59,13 @@ const defaultColors = [
   'hsl(215, 16%, 47%)',
 ];
 
+interface DrillDownTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: DrillDownDataItem }>;
+}
+
 // Custom tooltip
-const CustomTooltip = ({ active, payload }: any) => {
+const DrillDownTooltip = ({ active, payload }: DrillDownTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -213,7 +218,7 @@ export function DrillDownChart({
                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<DrillDownTooltip />} />
                   {showLegend && <Legend />}
                   <Bar 
                     dataKey="value" 
@@ -258,7 +263,7 @@ export function DrillDownChart({
                       />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<DrillDownTooltip />} />
                   {showLegend && <Legend />}
                 </PieChart>
               )}

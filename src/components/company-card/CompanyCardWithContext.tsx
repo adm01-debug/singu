@@ -56,7 +56,7 @@ interface CompanyCardWithContextProps {
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (company: Company) => void;
   onDelete: (company: Company) => void;
-  onUpdate: (id: string, data: Partial<Company>) => Promise<any>;
+  onUpdate: (id: string, data: Partial<Company>) => Promise<Company | null>;
 }
 
 export function CompanyCardWithContext({
