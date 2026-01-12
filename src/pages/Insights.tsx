@@ -30,6 +30,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PortfolioCompatibilityReport } from '@/components/triggers/PortfolioCompatibilityReport';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -240,6 +243,8 @@ const Insights = () => {
       />
       
       <div className="p-6 space-y-6">
+        <SmartBreadcrumbs />
+        
         <Tabs defaultValue="insights" className="space-y-6">
           <div className="flex items-center justify-between">
             <TabsList>

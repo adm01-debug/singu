@@ -25,7 +25,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import {
@@ -46,6 +46,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { InteractionForm } from '@/components/forms/InteractionForm';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
@@ -252,23 +255,25 @@ const Interacoes = () => {
       />
 
       <div className="p-6 space-y-6">
-        {/* Stats */}
+        <SmartBreadcrumbs />
+        
+        {/* Stats with MorphingNumber */}
         <div className="grid grid-cols-3 gap-4 max-w-lg">
           <Card className="border-border/50">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              <MorphingNumber value={stats.total} className="text-2xl font-bold text-foreground" />
               <p className="text-xs text-muted-foreground">Total</p>
             </CardContent>
           </Card>
           <Card className="border-border/50">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-warning">{stats.followUp}</p>
+              <MorphingNumber value={stats.followUp} className="text-2xl font-bold text-warning" />
               <p className="text-xs text-muted-foreground">Follow-ups</p>
             </CardContent>
           </Card>
           <Card className="border-border/50">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-primary">{stats.thisWeek}</p>
+              <MorphingNumber value={stats.thisWeek} className="text-2xl font-bold text-primary" />
               <p className="text-xs text-muted-foreground">Esta semana</p>
             </CardContent>
           </Card>
@@ -402,12 +407,12 @@ const Interacoes = () => {
 
                           {contact && (
                             <div className="flex items-center gap-3 pt-3 border-t border-border">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage src={contact.avatar_url || undefined} />
-                                <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                                  {contact.first_name[0]}{contact.last_name[0]}
-                                </AvatarFallback>
-                              </Avatar>
+                              <OptimizedAvatar
+                                src={contact.avatar_url}
+                                alt={`${contact.first_name} ${contact.last_name}`}
+                                fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                size="sm"
+                              />
                               <div>
                                 <p className="text-sm font-medium text-foreground">
                                   {contact.first_name} {contact.last_name}

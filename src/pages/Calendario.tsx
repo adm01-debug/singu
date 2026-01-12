@@ -26,6 +26,9 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -216,8 +219,9 @@ export default function Calendario() {
       />
       
       <div className="p-6 space-y-6">
+        <SmartBreadcrumbs />
 
-        {/* Stats */}
+        {/* Stats with MorphingNumber */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -230,7 +234,7 @@ export default function Calendario() {
                 <CalendarIcon className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.total}</p>
+                <MorphingNumber value={stats.total} className="text-2xl font-bold" />
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
             </CardContent>
@@ -242,7 +246,7 @@ export default function Calendario() {
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-destructive">{stats.overdue}</p>
+                <MorphingNumber value={stats.overdue} className="text-2xl font-bold text-destructive" />
                 <p className="text-sm text-muted-foreground">Atrasados</p>
               </div>
             </CardContent>
@@ -254,7 +258,7 @@ export default function Calendario() {
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-orange-500">{stats.today}</p>
+                <MorphingNumber value={stats.today} className="text-2xl font-bold text-orange-500" />
                 <p className="text-sm text-muted-foreground">Hoje</p>
               </div>
             </CardContent>
@@ -266,7 +270,7 @@ export default function Calendario() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-500">{stats.upcoming}</p>
+                <MorphingNumber value={stats.upcoming} className="text-2xl font-bold text-green-500" />
                 <p className="text-sm text-muted-foreground">Próximos</p>
               </div>
             </CardContent>

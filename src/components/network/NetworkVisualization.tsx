@@ -13,12 +13,13 @@ import {
   ExternalLink,
   Star,
   MessageSquare,
-  Filter
+  Filter,
+  Sparkles
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
@@ -35,6 +36,8 @@ import {
 import { useNetworkGraph, GraphNode, GraphLink } from '@/hooks/useNetworkGraph';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 
 interface NetworkVisualizationProps {
   className?: string;
@@ -43,6 +46,7 @@ interface NetworkVisualizationProps {
 
 export const NetworkVisualization = ({ className, height = 600 }: NetworkVisualizationProps) => {
   const navigate = useNavigate();
+  const haptic = useHapticFeedback();
   const graphRef = useRef<ForceGraphMethods>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height });
@@ -296,24 +300,52 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats with MorphingNumber */}
         <div className="grid grid-cols-4 gap-3 mt-4">
-          <div className="p-3 rounded-lg bg-blue-500/10 text-center">
-            <p className="text-2xl font-bold text-blue-600">{stats.totalNodes}</p>
+          <motion.div 
+            className="p-3 rounded-lg bg-blue-500/10 text-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <MorphingNumber 
+              value={stats.totalNodes} 
+              className="text-2xl font-bold text-blue-600" 
+            />
             <p className="text-xs text-muted-foreground">Nós</p>
-          </div>
-          <div className="p-3 rounded-lg bg-purple-500/10 text-center">
-            <p className="text-2xl font-bold text-purple-600">{stats.totalLinks}</p>
+          </motion.div>
+          <motion.div 
+            className="p-3 rounded-lg bg-purple-500/10 text-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <MorphingNumber 
+              value={stats.totalLinks} 
+              className="text-2xl font-bold text-purple-600" 
+            />
             <p className="text-xs text-muted-foreground">Conexões</p>
-          </div>
-          <div className="p-3 rounded-lg bg-emerald-500/10 text-center">
-            <p className="text-2xl font-bold text-emerald-600">{stats.avgConnections}</p>
+          </motion.div>
+          <motion.div 
+            className="p-3 rounded-lg bg-emerald-500/10 text-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <MorphingNumber 
+              value={stats.avgConnections} 
+              className="text-2xl font-bold text-emerald-600" 
+            />
             <p className="text-xs text-muted-foreground">Média Conexões</p>
-          </div>
-          <div className="p-3 rounded-lg bg-amber-500/10 text-center">
-            <p className="text-2xl font-bold text-amber-600">{stats.clusters}</p>
+          </motion.div>
+          <motion.div 
+            className="p-3 rounded-lg bg-amber-500/10 text-center"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <MorphingNumber 
+              value={stats.clusters} 
+              className="text-2xl font-bold text-amber-600" 
+            />
             <p className="text-xs text-muted-foreground">Clusters</p>
-          </div>
+          </motion.div>
         </div>
       </CardHeader>
 
@@ -426,17 +458,15 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    {selectedNode.avatar ? (
-                      <AvatarImage src={selectedNode.avatar} />
-                    ) : null}
-                    <AvatarFallback className={cn(
-                      'text-white font-semibold',
-                      selectedNode.type === 'company' ? 'bg-purple-500' : 'bg-blue-500'
-                    )}>
-                      {selectedNode.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <OptimizedAvatar
+                    src={selectedNode.avatar}
+                    alt={selectedNode.name}
+                    fallback={selectedNode.name.substring(0, 2).toUpperCase()}
+                    size="md"
+                    className={cn(
+                      selectedNode.type === 'company' ? 'ring-2 ring-purple-500/50' : 'ring-2 ring-blue-500/50'
+                    )}
+                  />
                   <div>
                     <h4 className="font-semibold text-foreground">{selectedNode.name}</h4>
                     <Badge variant="outline" className="text-xs">
