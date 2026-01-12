@@ -19,7 +19,7 @@ import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeleto
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
-import { DataExporter } from '@/components/data-export/DataExporter';
+import { AdvancedDataExporter } from '@/components/data-export/AdvancedDataExporter';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,12 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { CommandSequenceProvider } from '@/components/keyboard/CommandSequenceHandler';
+import { ConfettiBurst, AchievementPopup } from '@/components/micro-interactions/Delighters';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { PulseLoader, InlineLoader } from '@/components/feedback/LoadingStates';
 import type { ContactRole } from '@/types';
 
 type ViewMode = 'grid' | 'list';
@@ -276,7 +282,7 @@ const Contatos = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <DataExporter />
+            <AdvancedDataExporter entityType="contacts" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
