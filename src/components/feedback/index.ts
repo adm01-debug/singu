@@ -29,6 +29,9 @@ export {
   Illustrations 
 } from './EmptyStateIllustrations';
 
+// Error states with retry
+export { ErrorState, InlineError, LoadingWithError } from './ErrorState';
+
 // Other feedback components
 export { ErrorBoundary } from './ErrorBoundary';
 export { OfflineBanner } from './OfflineBanner';

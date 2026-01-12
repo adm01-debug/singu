@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { PhoneInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -264,8 +266,16 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormItem>
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
-                  <Input placeholder="(11) 99999-9999" {...field} />
+                  <PhoneInput
+                    value={field.value || ''}
+                    onChange={(rawValue) => field.onChange(rawValue)}
+                    countryCode="BR"
+                    aria-describedby="phone-hint"
+                  />
                 </FormControl>
+                <FormDescription id="phone-hint" className="text-xs">
+                  Digite apenas os números
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -278,8 +288,16 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormItem>
                 <FormLabel>WhatsApp</FormLabel>
                 <FormControl>
-                  <Input placeholder="(11) 99999-9999" {...field} />
+                  <PhoneInput
+                    value={field.value || ''}
+                    onChange={(rawValue) => field.onChange(rawValue)}
+                    countryCode="BR"
+                    aria-describedby="whatsapp-hint"
+                  />
                 </FormControl>
+                <FormDescription id="whatsapp-hint" className="text-xs">
+                  Número com DDD para WhatsApp
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
