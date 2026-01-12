@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronDown, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -291,27 +292,7 @@ export function SkipToContent() {
   );
 }
 
-// ============================================
-// REDUCED MOTION HOOK - Pilar 7.4
-// ============================================
-
-export function useReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
-
-    const handler = (event: MediaQueryListEvent) => {
-      setPrefersReducedMotion(event.matches);
-    };
-
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
-
-  return prefersReducedMotion;
-}
+// useReducedMotion is now imported from @/hooks/useReducedMotion
 
 // Motion wrapper that respects reduced motion
 interface MotionWrapperProps {
