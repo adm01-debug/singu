@@ -52,12 +52,6 @@ export function useFormValidation<T extends z.ZodType>({
       return { valid: false, error: 'Erro de validação' };
     }
   }, [schema]);
-      if (err instanceof z.ZodError) {
-        return { valid: false, error: err.errors[0]?.message || 'Valor inválido' };
-      }
-      return { valid: false, error: 'Erro de validação' };
-    }
-  }, [schema]);
 
   // Validate all fields
   const validateAll = useCallback((): boolean => {
