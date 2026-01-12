@@ -4,6 +4,7 @@ import { ChevronRight, ChevronDown, Home } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,12 +63,14 @@ export function SmartBreadcrumbs({ items, className, maxItems = 4 }: SmartBreadc
               <li key="ellipsis" className="flex items-center gap-1">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button 
-                      className="px-2 py-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      className="px-2 py-1 text-muted-foreground hover:text-foreground"
                       aria-label="Ver itens ocultos"
                     >
                       ...
-                    </button>
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
                     {items.slice(1, -2).map((hiddenItem) => (
@@ -91,18 +94,20 @@ export function SmartBreadcrumbs({ items, className, maxItems = 4 }: SmartBreadc
               {hasSiblings ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button 
+                    <Button 
+                      variant="ghost"
+                      size="sm"
                       className={cn(
-                        "flex items-center gap-1.5 px-2 py-1 rounded transition-colors",
+                        "flex items-center gap-1.5 px-2 py-1",
                         isLast 
                           ? "text-foreground font-medium cursor-default" 
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       {breadcrumbItem.icon}
                       <span>{item.label}</span>
                       <ChevronDown className="w-3 h-3 opacity-50" />
-                    </button>
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start">
                     {breadcrumbItem.siblings?.map((sibling) => (
