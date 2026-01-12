@@ -7,7 +7,6 @@ import {
   TrendingUp,
   ArrowRight,
   Clock,
-  Sparkles,
   Calendar,
   BarChart3,
   Target,
@@ -28,12 +27,6 @@ import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
-import { CommandSequenceProvider } from '@/components/keyboard/CommandSequenceHandler';
-import { ConfettiBurst, AchievementPopup } from '@/components/micro-interactions/Delighters';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { LazyDashboardSection } from '@/components/dashboard/LazyDashboardSection';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
 import { RelationshipStatsPanel } from '@/components/dashboard/RelationshipStatsPanel';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
@@ -49,8 +42,6 @@ import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
-import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
-import { CountUp, AnimatedBadge } from '@/components/micro-interactions/AnimatedCounter';
 import {
   ActivityChart,
   RelationshipEvolutionChart,

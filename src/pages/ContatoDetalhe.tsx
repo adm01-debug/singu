@@ -25,12 +25,10 @@ import {
   Package,
   Settings2,
   CalendarHeart,
-  CalendarClock,
-  Loader2
+  CalendarClock
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
-import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,8 +41,6 @@ import { RelationshipStageBadge, RelationshipFunnel } from '@/components/ui/rela
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { BehaviorProfileForm } from '@/components/contacts/BehaviorProfileForm';
 import { NextActionSuggestion } from '@/components/contacts/NextActionSuggestion';
 import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
@@ -81,7 +77,6 @@ import { ContactPreferencesPanel } from '@/components/preferences/ContactPrefere
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts } from '@/hooks/useContacts';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
