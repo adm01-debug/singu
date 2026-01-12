@@ -20,7 +20,7 @@ import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
-import { DataExporter } from '@/components/data-export/DataExporter';
+import { AdvancedDataExporter } from '@/components/data-export/AdvancedDataExporter';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +41,13 @@ import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWit
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
+import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
+import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
+import { CommandSequenceProvider } from '@/components/keyboard/CommandSequenceHandler';
+import { ConfettiBurst, AchievementPopup } from '@/components/micro-interactions/Delighters';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
+import { PulseLoader } from '@/components/feedback/LoadingStates';
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -258,7 +265,7 @@ const Empresas = () => {
             />
           </div>
           <div className="flex items-center gap-2">
-            <DataExporter />
+            <AdvancedDataExporter entityType="companies" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
