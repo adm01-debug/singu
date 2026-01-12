@@ -1,4 +1,4 @@
-import React from 'react';
+import { Fragment } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Gauge, 
@@ -213,7 +213,7 @@ export function DealVelocityPanel({ compact = false }: DealVelocityPanelProps) {
               {metrics.stageVelocities
                 .filter(s => s.stage !== 'churned')
                 .map((stage, index, arr) => (
-                <React.Fragment key={stage.stage}>
+                <Fragment key={stage.stage}>
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -242,7 +242,7 @@ export function DealVelocityPanel({ compact = false }: DealVelocityPanelProps) {
                   {index < arr.length - 1 && (
                     <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mx-1" />
                   )}
-                </React.Fragment>
+                </Fragment>
               ))}
             </div>
           </div>
