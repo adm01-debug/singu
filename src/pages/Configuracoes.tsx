@@ -39,6 +39,7 @@ import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTr
 import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityAlertSettings';
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
+import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 
 interface ProfileData {
   first_name: string;
@@ -301,6 +302,7 @@ const Configuracoes = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
             >
               <Card className="border-border/50 shadow-lg">
                 <CardHeader>
@@ -354,6 +356,9 @@ const Configuracoes = () => {
                   </div>
                 </CardContent>
               </Card>
+              
+              {/* Theme Customizer */}
+              <ThemeCustomizer />
             </motion.div>
           </TabsContent>
 
