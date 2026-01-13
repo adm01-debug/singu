@@ -25,6 +25,7 @@ import {
   Crown,
   Search,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ import { DISCProfile, DISC_LABELS } from '@/types';
 import { VAKType, VAK_LABELS } from '@/types/vak';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { toast } from 'sonner';
 
 interface PortfolioCompatibilityReportProps {
@@ -355,10 +357,22 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
   const [salespersonProfile, setSalespersonProfile] = useState<SalespersonProfile | null>(null);
   const [contacts, setContacts] = useState<ContactWithCompatibility[]>([]);
   const [expandedContact, setExpandedContact] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'compatibility' | 'name' | 'relationship'>('compatibility');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  // Fuzzy search with Fuse.js
+  const {
+    query: searchTerm,
+    setQuery: setSearchTerm,
+    results: fuzzyResults,
+    isSearching,
+    clearSearch,
+  } = useFuzzySearch(contacts, {
+    keys: ['firstName', 'lastName', 'company'],
+    threshold: 0.3,
+    minChars: 1,
+  });
 
   useEffect(() => {
     if (user) {
@@ -538,18 +552,8 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
 
   // Filter and sort contacts
   const filteredContacts = useMemo(() => {
-    let result = [...contacts];
-
-    // Filter by search
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.firstName.toLowerCase().includes(term) ||
-          c.lastName.toLowerCase().includes(term) ||
-          c.company?.toLowerCase().includes(term)
-      );
-    }
+    // Start with fuzzy search results
+    let result = [...fuzzyResults];
 
     // Filter by level
     if (filterLevel !== 'all') {
@@ -570,7 +574,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
     });
 
     return result;
-  }, [contacts, searchTerm, filterLevel, sortBy, sortOrder]);
+  }, [fuzzyResults, filterLevel, sortBy, sortOrder]);
 
   // Calculate stats
   const stats = useMemo<PortfolioStats>(() => {
@@ -722,11 +726,21 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar cliente..."
+              placeholder="Buscar cliente... (tolerante a erros)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className={`pl-9 ${isSearching ? 'pr-9' : ''}`}
             />
+            {isSearching && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={clearSearch}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <Select value={filterLevel} onValueChange={setFilterLevel}>
             <SelectTrigger className="w-[150px]">

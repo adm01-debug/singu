@@ -15,7 +15,8 @@ import {
   FileText,
   Clock,
   AlertCircle,
-  Plus
+  Plus,
+  X
 } from 'lucide-react';
 import { InteractionsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
@@ -52,6 +53,7 @@ import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
+import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { SentimentType } from '@/types';
@@ -140,7 +142,6 @@ const sortOptions: SortOption[] = [
 const Interacoes = () => {
   const { interactions, loading, createInteraction, updateInteraction, deleteInteraction } = useInteractions();
   const { contacts } = useContacts();
-  const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInteraction, setEditingInteraction] = useState<Interaction | null>(null);
   const [deletingInteraction, setDeletingInteraction] = useState<Interaction | null>(null);
@@ -154,15 +155,21 @@ const Interacoes = () => {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const filteredAndSortedInteractions = useMemo(() => {
-    let result = interactions.filter(interaction => {
-      // Text search
-      const matchesSearch = 
-        interaction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (interaction.content && interaction.content.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      if (!matchesSearch) return false;
+  // Fuzzy search with Fuse.js
+  const {
+    query: searchTerm,
+    setQuery: setSearchTerm,
+    results: fuzzyResults,
+    isSearching,
+    clearSearch,
+  } = useFuzzySearch(interactions, {
+    keys: ['title', 'content', 'tags'],
+    threshold: 0.3,
+    minChars: 1,
+  });
 
+  const filteredAndSortedInteractions = useMemo(() => {
+    let result = fuzzyResults.filter(interaction => {
       // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
@@ -188,7 +195,7 @@ const Interacoes = () => {
       dateFields: ['created_at', 'follow_up_date'],
       numericFields: ['duration', 'response_time']
     });
-  }, [interactions, searchTerm, activeFilters, sortBy, sortOrder]);
+  }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
 
   const getContactInfo = (contactId: string) => {
     return contacts.find(c => c.id === contactId);
@@ -283,11 +290,21 @@ const Interacoes = () => {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar interações..."
+            placeholder="Buscar interações... (tolerante a erros)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className={`pl-10 ${isSearching ? 'pr-10' : ''}`}
           />
+          {isSearching && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+              onClick={clearSearch}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
 
         {/* Advanced Filters */}
@@ -430,11 +447,11 @@ const Interacoes = () => {
             </div>
 
             {filteredAndSortedInteractions.length === 0 && !loading && (
-              searchTerm || Object.keys(activeFilters).length > 0 ? (
+              isSearching || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
                   searchTerm={searchTerm || 'filtros ativos'}
                   onClearSearch={() => {
-                    setSearchTerm('');
+                    clearSearch();
                     setActiveFilters({});
                   }}
                   entityName="interações"
