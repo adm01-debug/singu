@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
@@ -17,6 +17,7 @@ import {
   Building2,
   ArrowRight,
   Briefcase,
+  X,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
@@ -35,6 +36,7 @@ import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Tables } from '@/integrations/supabase/types';
@@ -95,13 +97,25 @@ const priorityColors: Record<string, string> = {
 
 const Insights = () => {
   const { user, session } = useAuth();
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+
+  // Fuzzy search with Fuse.js
+  const {
+    query: searchTerm,
+    setQuery: setSearchTerm,
+    results: fuzzyResults,
+    isSearching,
+    clearSearch,
+  } = useFuzzySearch(insights, {
+    keys: ['title', 'description', 'action_suggestion', 'category'],
+    threshold: 0.3,
+    minChars: 1,
+  });
 
   useEffect(() => {
     if (user) {
@@ -219,13 +233,12 @@ const Insights = () => {
     );
   };
 
-  const filteredInsights = insights.filter(insight => {
-    const matchesSearch = 
-      insight.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      insight.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || insight.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredInsights = useMemo(() => {
+    return fuzzyResults.filter(insight => {
+      const matchesCategory = !selectedCategory || insight.category === selectedCategory;
+      return matchesCategory;
+    });
+  }, [fuzzyResults, selectedCategory]);
 
   const categories = Object.keys(categoryLabels);
 
@@ -352,11 +365,21 @@ const Insights = () => {
           <div className="relative flex-1 max-w-md w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar insights..."
+              placeholder="Buscar insights... (tolerante a erros)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className={`pl-10 ${isSearching ? 'pr-10' : ''}`}
             />
+            {isSearching && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={clearSearch}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
           <ScrollArea className="w-full sm:w-auto">
             <div className="flex items-center gap-2 pb-2">
