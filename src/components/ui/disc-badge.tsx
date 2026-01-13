@@ -21,8 +21,19 @@ export function DISCBadge({ profile, confidence, size = 'md', showLabel = true, 
       </span>
     );
   }
-
   const config = DISC_LABELS[profile];
+  
+  // Safety check: if profile is not a valid DISC type, show fallback
+  if (!config) {
+    return (
+      <span className={cn(
+        'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
+        className
+      )}>
+        {profile || 'Não definido'}
+      </span>
+    );
+  }
   
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
