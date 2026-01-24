@@ -1552,6 +1552,296 @@ export type Database = {
           },
         ]
       }
+      social_behavior_analysis: {
+        Row: {
+          active_days: string[] | null
+          active_hours: Json | null
+          analysis_date: string
+          communication_style: Json | null
+          confidence: number | null
+          contact_id: string
+          created_at: string
+          executive_summary: string | null
+          hashtags: string[] | null
+          id: string
+          influence_level: string | null
+          influence_score: number | null
+          interests: string[] | null
+          keywords: string[] | null
+          overall_sentiment: string | null
+          personality_traits: Json | null
+          sales_insights: Json | null
+          sentiment_score: number | null
+          topics: string[] | null
+          user_id: string
+          valuable_connections: Json | null
+        }
+        Insert: {
+          active_days?: string[] | null
+          active_hours?: Json | null
+          analysis_date?: string
+          communication_style?: Json | null
+          confidence?: number | null
+          contact_id: string
+          created_at?: string
+          executive_summary?: string | null
+          hashtags?: string[] | null
+          id?: string
+          influence_level?: string | null
+          influence_score?: number | null
+          interests?: string[] | null
+          keywords?: string[] | null
+          overall_sentiment?: string | null
+          personality_traits?: Json | null
+          sales_insights?: Json | null
+          sentiment_score?: number | null
+          topics?: string[] | null
+          user_id: string
+          valuable_connections?: Json | null
+        }
+        Update: {
+          active_days?: string[] | null
+          active_hours?: Json | null
+          analysis_date?: string
+          communication_style?: Json | null
+          confidence?: number | null
+          contact_id?: string
+          created_at?: string
+          executive_summary?: string | null
+          hashtags?: string[] | null
+          id?: string
+          influence_level?: string | null
+          influence_score?: number | null
+          interests?: string[] | null
+          keywords?: string[] | null
+          overall_sentiment?: string | null
+          personality_traits?: Json | null
+          sales_insights?: Json | null
+          sentiment_score?: number | null
+          topics?: string[] | null
+          user_id?: string
+          valuable_connections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_behavior_analysis_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_life_events: {
+        Row: {
+          confidence: number | null
+          contact_id: string
+          created_at: string
+          dismissed: boolean | null
+          event_date: string | null
+          event_description: string | null
+          event_title: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          new_value: string | null
+          notified: boolean | null
+          platform: string
+          previous_value: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          contact_id: string
+          created_at?: string
+          dismissed?: boolean | null
+          event_date?: string | null
+          event_description?: string | null
+          event_title: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          notified?: boolean | null
+          platform: string
+          previous_value?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          contact_id?: string
+          created_at?: string
+          dismissed?: boolean | null
+          event_date?: string | null
+          event_description?: string | null
+          event_title?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          notified?: boolean | null
+          platform?: string
+          previous_value?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_life_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_profiles: {
+        Row: {
+          certifications: string[] | null
+          connections_count: number | null
+          contact_id: string
+          cover_image_url: string | null
+          created_at: string
+          current_company: string | null
+          current_position: string | null
+          education: Json | null
+          engagement_metrics: Json | null
+          experience: Json | null
+          followers_count: number | null
+          following_count: number | null
+          headline: string | null
+          id: string
+          last_scraped_at: string
+          location: string | null
+          platform: string
+          profile_data: Json | null
+          profile_image_url: string | null
+          profile_url: string | null
+          recent_posts: Json | null
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certifications?: string[] | null
+          connections_count?: number | null
+          contact_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          current_company?: string | null
+          current_position?: string | null
+          education?: Json | null
+          engagement_metrics?: Json | null
+          experience?: Json | null
+          followers_count?: number | null
+          following_count?: number | null
+          headline?: string | null
+          id?: string
+          last_scraped_at?: string
+          location?: string | null
+          platform: string
+          profile_data?: Json | null
+          profile_image_url?: string | null
+          profile_url?: string | null
+          recent_posts?: Json | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certifications?: string[] | null
+          connections_count?: number | null
+          contact_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          current_company?: string | null
+          current_position?: string | null
+          education?: Json | null
+          engagement_metrics?: Json | null
+          experience?: Json | null
+          followers_count?: number | null
+          following_count?: number | null
+          headline?: string | null
+          id?: string
+          last_scraped_at?: string
+          location?: string | null
+          platform?: string
+          profile_data?: Json | null
+          profile_image_url?: string | null
+          profile_url?: string | null
+          recent_posts?: Json | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_profiles_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_scraping_schedule: {
+        Row: {
+          consecutive_failures: number | null
+          contact_id: string
+          created_at: string
+          enabled: boolean | null
+          frequency_days: number | null
+          id: string
+          last_error: string | null
+          last_run_at: string | null
+          next_run_at: string | null
+          platform: string
+          priority: string | null
+          profile_url: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consecutive_failures?: number | null
+          contact_id: string
+          created_at?: string
+          enabled?: boolean | null
+          frequency_days?: number | null
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          platform: string
+          priority?: string | null
+          profile_url: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consecutive_failures?: number | null
+          contact_id?: string
+          created_at?: string
+          enabled?: boolean | null
+          frequency_days?: number | null
+          id?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          next_run_at?: string | null
+          platform?: string
+          priority?: string | null
+          profile_url?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_scraping_schedule_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stakeholder_alerts: {
         Row: {
           alert_type: string
