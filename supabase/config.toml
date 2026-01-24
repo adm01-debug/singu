@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.social-events-detector]
 verify_jwt = false
+
+[functions.rfm-analyzer]
+verify_jwt = false
