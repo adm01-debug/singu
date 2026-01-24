@@ -74,6 +74,7 @@ import { PurchaseHistoryForm } from '@/components/forms/PurchaseHistoryForm';
 import { CommunicationPreferencesForm } from '@/components/forms/CommunicationPreferencesForm';
 import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
+import { SocialProfilesPanel } from '@/components/social/SocialProfilesPanel';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
@@ -563,6 +564,14 @@ const ContatoDetalhe = () => {
               <ContactPreferencesPanel
                 contactId={contact.id}
                 contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Social Media Monitoring Panel */}
+              <SocialProfilesPanel
+                contactId={contact.id}
+                linkedinUrl={contact.linkedin}
+                twitterUrl={contact.twitter}
+                instagramUrl={contact.instagram}
               />
 
               {/* Quick NLP Insights - Resumo no Topo */}
