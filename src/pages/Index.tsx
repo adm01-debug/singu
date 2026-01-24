@@ -42,6 +42,7 @@ import { HealthAlertsPanel } from '@/components/dashboard/HealthAlertsPanel';
 import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCalendar';
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
+import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -327,6 +328,11 @@ const Dashboard = () => {
             <ChurnPredictionPanel compact />
             <BestTimeToContactPanel compact />
             <DealVelocityPanel compact />
+          </div>
+          
+          {/* RFM Analysis - Compact */}
+          <div className="mt-6">
+            <RFMAnalysisPanel compact />
           </div>
           
           {/* Closing Score Ranking - Compact */}
