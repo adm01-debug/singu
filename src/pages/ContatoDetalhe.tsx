@@ -612,6 +612,12 @@ const ContatoDetalhe = () => {
                 }))}
               />
 
+              {/* DISC Enterprise Profile - Advanced Behavioral Analysis */}
+              <DISCProfileExpanded 
+                contact={contact}
+                onUpdate={refetch}
+              />
+
               {/* Approach Recommendation Panel - AI Strategy */}
               <ApproachRecommendationPanel 
                 contact={contact}
