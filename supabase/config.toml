@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.rfm-analyzer]
 verify_jwt = false
+
+[functions.disc-analyzer]
+verify_jwt = false
