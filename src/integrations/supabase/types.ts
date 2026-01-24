@@ -1505,6 +1505,298 @@ export type Database = {
         }
         Relationships: []
       }
+      rfm_analysis: {
+        Row: {
+          analyzed_at: string
+          average_order_value: number | null
+          churn_probability: number | null
+          communication_priority: string | null
+          contact_id: string
+          created_at: string
+          days_since_last_interaction: number | null
+          days_since_last_purchase: number | null
+          frequency_score: number
+          frequency_trend: string | null
+          id: string
+          monetary_score: number
+          monetary_trend: string | null
+          overall_trend: string | null
+          predicted_lifetime_value: number | null
+          predicted_next_purchase_date: string | null
+          recency_score: number
+          recency_trend: string | null
+          recommended_actions: Json | null
+          recommended_offers: Json | null
+          rfm_score: number | null
+          segment: string
+          segment_color: string | null
+          segment_description: string | null
+          total_interactions: number | null
+          total_monetary_value: number | null
+          total_purchases: number | null
+          total_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analyzed_at?: string
+          average_order_value?: number | null
+          churn_probability?: number | null
+          communication_priority?: string | null
+          contact_id: string
+          created_at?: string
+          days_since_last_interaction?: number | null
+          days_since_last_purchase?: number | null
+          frequency_score: number
+          frequency_trend?: string | null
+          id?: string
+          monetary_score: number
+          monetary_trend?: string | null
+          overall_trend?: string | null
+          predicted_lifetime_value?: number | null
+          predicted_next_purchase_date?: string | null
+          recency_score: number
+          recency_trend?: string | null
+          recommended_actions?: Json | null
+          recommended_offers?: Json | null
+          rfm_score?: number | null
+          segment: string
+          segment_color?: string | null
+          segment_description?: string | null
+          total_interactions?: number | null
+          total_monetary_value?: number | null
+          total_purchases?: number | null
+          total_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analyzed_at?: string
+          average_order_value?: number | null
+          churn_probability?: number | null
+          communication_priority?: string | null
+          contact_id?: string
+          created_at?: string
+          days_since_last_interaction?: number | null
+          days_since_last_purchase?: number | null
+          frequency_score?: number
+          frequency_trend?: string | null
+          id?: string
+          monetary_score?: number
+          monetary_trend?: string | null
+          overall_trend?: string | null
+          predicted_lifetime_value?: number | null
+          predicted_next_purchase_date?: string | null
+          recency_score?: number
+          recency_trend?: string | null
+          recommended_actions?: Json | null
+          recommended_offers?: Json | null
+          rfm_score?: number | null
+          segment?: string
+          segment_color?: string | null
+          segment_description?: string | null
+          total_interactions?: number | null
+          total_monetary_value?: number | null
+          total_purchases?: number | null
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfm_analysis_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfm_history: {
+        Row: {
+          contact_id: string
+          created_at: string
+          frequency_score: number
+          id: string
+          monetary_score: number
+          recency_score: number
+          recorded_at: string
+          segment: string
+          total_monetary_value: number | null
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          frequency_score: number
+          id?: string
+          monetary_score: number
+          recency_score: number
+          recorded_at?: string
+          segment: string
+          total_monetary_value?: number | null
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          frequency_score?: number
+          id?: string
+          monetary_score?: number
+          recency_score?: number
+          recorded_at?: string
+          segment?: string
+          total_monetary_value?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfm_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfm_metrics: {
+        Row: {
+          about_to_sleep_count: number | null
+          at_risk_count: number | null
+          average_monetary_value: number | null
+          average_rfm_score: number | null
+          cant_lose_count: number | null
+          champions_count: number | null
+          created_at: string
+          hibernating_count: number | null
+          id: string
+          lost_count: number | null
+          loyal_count: number | null
+          needing_attention_count: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          potential_loyalist_count: number | null
+          promising_count: number | null
+          recent_customers_count: number | null
+          segment_transitions: Json | null
+          total_contacts_analyzed: number | null
+          total_revenue: number | null
+          user_id: string
+        }
+        Insert: {
+          about_to_sleep_count?: number | null
+          at_risk_count?: number | null
+          average_monetary_value?: number | null
+          average_rfm_score?: number | null
+          cant_lose_count?: number | null
+          champions_count?: number | null
+          created_at?: string
+          hibernating_count?: number | null
+          id?: string
+          lost_count?: number | null
+          loyal_count?: number | null
+          needing_attention_count?: number | null
+          period_end: string
+          period_start: string
+          period_type: string
+          potential_loyalist_count?: number | null
+          promising_count?: number | null
+          recent_customers_count?: number | null
+          segment_transitions?: Json | null
+          total_contacts_analyzed?: number | null
+          total_revenue?: number | null
+          user_id: string
+        }
+        Update: {
+          about_to_sleep_count?: number | null
+          at_risk_count?: number | null
+          average_monetary_value?: number | null
+          average_rfm_score?: number | null
+          cant_lose_count?: number | null
+          champions_count?: number | null
+          created_at?: string
+          hibernating_count?: number | null
+          id?: string
+          lost_count?: number | null
+          loyal_count?: number | null
+          needing_attention_count?: number | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          potential_loyalist_count?: number | null
+          promising_count?: number | null
+          recent_customers_count?: number | null
+          segment_transitions?: Json | null
+          total_contacts_analyzed?: number | null
+          total_revenue?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rfm_segment_config: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          email_template: string | null
+          frequency_max: number
+          frequency_min: number
+          icon: string | null
+          id: string
+          monetary_max: number
+          monetary_min: number
+          priority: number | null
+          recency_max: number
+          recency_min: number
+          recommended_actions: Json | null
+          segment_key: string
+          segment_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          email_template?: string | null
+          frequency_max?: number
+          frequency_min?: number
+          icon?: string | null
+          id?: string
+          monetary_max?: number
+          monetary_min?: number
+          priority?: number | null
+          recency_max?: number
+          recency_min?: number
+          recommended_actions?: Json | null
+          segment_key: string
+          segment_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          email_template?: string | null
+          frequency_max?: number
+          frequency_min?: number
+          icon?: string | null
+          id?: string
+          monetary_max?: number
+          monetary_min?: number
+          priority?: number | null
+          recency_max?: number
+          recency_min?: number
+          recommended_actions?: Json | null
+          segment_key?: string
+          segment_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       score_history: {
         Row: {
           calculated_at: string
