@@ -35,3 +35,12 @@ verify_jwt = false
 
 [functions.client-notifications]
 verify_jwt = false
+
+[functions.social-profile-scraper]
+verify_jwt = false
+
+[functions.social-behavior-analyzer]
+verify_jwt = false
+
+[functions.social-events-detector]
+verify_jwt = false
