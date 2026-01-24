@@ -716,6 +716,306 @@ export type Database = {
           },
         ]
       }
+      disc_analysis_history: {
+        Row: {
+          analysis_notes: string | null
+          analysis_source: string
+          analyzed_at: string
+          analyzed_text: string | null
+          behavior_indicators: Json | null
+          blend_profile: string | null
+          confidence: number
+          conscientiousness_score: number
+          contact_id: string
+          created_at: string
+          detected_keywords: Json | null
+          detected_phrases: Json | null
+          dominance_score: number
+          id: string
+          influence_score: number
+          interaction_id: string | null
+          primary_profile: string
+          profile_summary: string | null
+          secondary_profile: string | null
+          steadiness_score: number
+          stress_primary: string | null
+          stress_secondary: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_notes?: string | null
+          analysis_source?: string
+          analyzed_at?: string
+          analyzed_text?: string | null
+          behavior_indicators?: Json | null
+          blend_profile?: string | null
+          confidence?: number
+          conscientiousness_score?: number
+          contact_id: string
+          created_at?: string
+          detected_keywords?: Json | null
+          detected_phrases?: Json | null
+          dominance_score?: number
+          id?: string
+          influence_score?: number
+          interaction_id?: string | null
+          primary_profile: string
+          profile_summary?: string | null
+          secondary_profile?: string | null
+          steadiness_score?: number
+          stress_primary?: string | null
+          stress_secondary?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_notes?: string | null
+          analysis_source?: string
+          analyzed_at?: string
+          analyzed_text?: string | null
+          behavior_indicators?: Json | null
+          blend_profile?: string | null
+          confidence?: number
+          conscientiousness_score?: number
+          contact_id?: string
+          created_at?: string
+          detected_keywords?: Json | null
+          detected_phrases?: Json | null
+          dominance_score?: number
+          id?: string
+          influence_score?: number
+          interaction_id?: string | null
+          primary_profile?: string
+          profile_summary?: string | null
+          secondary_profile?: string | null
+          steadiness_score?: number
+          stress_primary?: string | null
+          stress_secondary?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disc_analysis_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disc_analysis_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disc_communication_logs: {
+        Row: {
+          adaptation_tips_shown: Json | null
+          approach_adapted: boolean
+          communication_outcome: string | null
+          contact_disc_profile: string
+          contact_id: string
+          created_at: string
+          effectiveness_rating: number | null
+          id: string
+          interaction_id: string | null
+          outcome_notes: string | null
+          tips_followed: Json | null
+          user_id: string
+        }
+        Insert: {
+          adaptation_tips_shown?: Json | null
+          approach_adapted?: boolean
+          communication_outcome?: string | null
+          contact_disc_profile: string
+          contact_id: string
+          created_at?: string
+          effectiveness_rating?: number | null
+          id?: string
+          interaction_id?: string | null
+          outcome_notes?: string | null
+          tips_followed?: Json | null
+          user_id: string
+        }
+        Update: {
+          adaptation_tips_shown?: Json | null
+          approach_adapted?: boolean
+          communication_outcome?: string | null
+          contact_disc_profile?: string
+          contact_id?: string
+          created_at?: string
+          effectiveness_rating?: number | null
+          id?: string
+          interaction_id?: string | null
+          outcome_notes?: string | null
+          tips_followed?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disc_communication_logs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disc_communication_logs_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disc_conversion_metrics: {
+        Row: {
+          average_compatibility_score: number | null
+          average_deal_size: number | null
+          average_relationship_score: number | null
+          average_sales_cycle_days: number | null
+          blend_profile: string | null
+          conversion_rate: number | null
+          converted_count: number
+          created_at: string
+          disc_profile: string
+          id: string
+          lost_count: number
+          period_end: string
+          period_start: string
+          total_contacts: number
+          total_opportunities: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_compatibility_score?: number | null
+          average_deal_size?: number | null
+          average_relationship_score?: number | null
+          average_sales_cycle_days?: number | null
+          blend_profile?: string | null
+          conversion_rate?: number | null
+          converted_count?: number
+          created_at?: string
+          disc_profile: string
+          id?: string
+          lost_count?: number
+          period_end: string
+          period_start: string
+          total_contacts?: number
+          total_opportunities?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_compatibility_score?: number | null
+          average_deal_size?: number | null
+          average_relationship_score?: number | null
+          average_sales_cycle_days?: number | null
+          blend_profile?: string | null
+          conversion_rate?: number | null
+          converted_count?: number
+          created_at?: string
+          disc_profile?: string
+          id?: string
+          lost_count?: number
+          period_end?: string
+          period_start?: string
+          total_contacts?: number
+          total_opportunities?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      disc_profile_config: {
+        Row: {
+          avoid_words: Json
+          closing_techniques: Json
+          color_scheme: Json
+          communication_style: Json
+          compatibility_matrix: Json
+          core_drive: string
+          core_fear: string
+          created_at: string
+          decision_making_style: string
+          detailed_description: string
+          detection_keywords: Json
+          follow_up_approach: Json
+          icon: string | null
+          id: string
+          ideal_environment: string
+          name: string
+          objection_handling: Json
+          opening_strategies: Json
+          power_words: Json
+          preferred_pace: string
+          presentation_tips: Json
+          profile_type: string
+          short_description: string
+          typical_phrases: Json
+          under_pressure: string
+          updated_at: string
+        }
+        Insert: {
+          avoid_words?: Json
+          closing_techniques?: Json
+          color_scheme?: Json
+          communication_style?: Json
+          compatibility_matrix?: Json
+          core_drive: string
+          core_fear: string
+          created_at?: string
+          decision_making_style: string
+          detailed_description: string
+          detection_keywords?: Json
+          follow_up_approach?: Json
+          icon?: string | null
+          id?: string
+          ideal_environment: string
+          name: string
+          objection_handling?: Json
+          opening_strategies?: Json
+          power_words?: Json
+          preferred_pace: string
+          presentation_tips?: Json
+          profile_type: string
+          short_description: string
+          typical_phrases?: Json
+          under_pressure: string
+          updated_at?: string
+        }
+        Update: {
+          avoid_words?: Json
+          closing_techniques?: Json
+          color_scheme?: Json
+          communication_style?: Json
+          compatibility_matrix?: Json
+          core_drive?: string
+          core_fear?: string
+          created_at?: string
+          decision_making_style?: string
+          detailed_description?: string
+          detection_keywords?: Json
+          follow_up_approach?: Json
+          icon?: string | null
+          id?: string
+          ideal_environment?: string
+          name?: string
+          objection_handling?: Json
+          opening_strategies?: Json
+          power_words?: Json
+          preferred_pace?: string
+          presentation_tips?: Json
+          profile_type?: string
+          short_description?: string
+          typical_phrases?: Json
+          under_pressure?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       emotional_anchors: {
         Row: {
           anchor_type: string
