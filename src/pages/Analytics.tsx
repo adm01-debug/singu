@@ -56,6 +56,7 @@ import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
 import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
@@ -489,8 +490,12 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-3xl grid-cols-6">
+          <TabsList className="grid w-full max-w-4xl grid-cols-7">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="rfm" className="gap-1">
+              <BarChart3 className="w-3.5 h-3.5" />
+              RFM
+            </TabsTrigger>
             <TabsTrigger value="intelligence" className="gap-1">
               <Target className="w-3.5 h-3.5" />
               Inteligência
@@ -503,6 +508,16 @@ const Analytics = () => {
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
+
+          {/* RFM Analysis Tab - Complete Dashboard */}
+          <TabsContent value="rfm" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <RFMAnalysisPanel />
+            </motion.div>
+          </TabsContent>
 
           {/* Intelligence Tab - New */}
           <TabsContent value="intelligence" className="space-y-6">

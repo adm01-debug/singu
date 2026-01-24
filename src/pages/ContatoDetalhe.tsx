@@ -75,6 +75,7 @@ import { CommunicationPreferencesForm } from '@/components/forms/CommunicationPr
 import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
 import { SocialProfilesPanel } from '@/components/social/SocialProfilesPanel';
+import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
@@ -573,6 +574,9 @@ const ContatoDetalhe = () => {
                 twitterUrl={contact.twitter}
                 instagramUrl={contact.instagram}
               />
+
+              {/* RFM Analysis - Individual Contact */}
+              <RFMAnalysisPanel contactId={contact.id} />
 
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
