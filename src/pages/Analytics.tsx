@@ -57,6 +57,7 @@ import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
+import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
@@ -490,8 +491,12 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-4xl grid-cols-7">
+          <TabsList className="grid w-full max-w-5xl grid-cols-8">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="disc" className="gap-1">
+              <Brain className="w-3.5 h-3.5" />
+              DISC
+            </TabsTrigger>
             <TabsTrigger value="rfm" className="gap-1">
               <BarChart3 className="w-3.5 h-3.5" />
               RFM
@@ -508,6 +513,16 @@ const Analytics = () => {
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
+
+          {/* DISC Analytics Tab */}
+          <TabsContent value="disc" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <DISCAnalyticsPanel />
+            </motion.div>
+          </TabsContent>
 
           {/* RFM Analysis Tab - Complete Dashboard */}
           <TabsContent value="rfm" className="space-y-6">

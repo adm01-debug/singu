@@ -76,6 +76,7 @@ import { LifeEventForm } from '@/components/forms/LifeEventForm';
 import { ContactPreferencesPanel } from '@/components/preferences/ContactPreferencesPanel';
 import { SocialProfilesPanel } from '@/components/social/SocialProfilesPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
+import DISCProfileExpanded from '@/components/profile/DISCProfileExpanded';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
