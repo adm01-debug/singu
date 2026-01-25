@@ -43,7 +43,7 @@ import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCal
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
-import { DISCCompatibilityAlerts, DISCConversionMetrics } from '@/components/disc';
+import { DISCCompatibilityAlerts } from '@/components/disc';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
