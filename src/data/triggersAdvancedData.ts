@@ -1,0 +1,680 @@
+// ==============================================
+// ADVANCED TRIGGERS DATA - Enterprise Mental Trigger System
+// Complete definitions for advanced persuasion techniques
+// ==============================================
+
+import { 
+  AdvancedMentalTrigger, 
+  AdvancedTriggerType,
+  TriggerChain,
+  TriggerCombo,
+  TriggerConflict,
+  TriggerSynergy,
+  NeurochemicalTiming,
+  TriggerFallback,
+  IntensityLevel
+} from '@/types/triggers-advanced';
+
+// ============================================
+// ADVANCED MENTAL TRIGGERS DEFINITIONS
+// ============================================
+export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMentalTrigger> = {
+  // ========== NLP-BASED TRIGGERS ==========
+  future_pacing: {
+    id: 'future_pacing',
+    name: 'Future Pacing',
+    category: 'nlp_advanced',
+    description: 'Projeta o cliente no futuro já usando a solução com sucesso',
+    effectiveness: 9,
+    icon: '🔮',
+    color: 'text-violet-600 bg-violet-100',
+    examples: [
+      'Imagine daqui 6 meses, sua equipe usando isso diariamente...',
+      'Pense em você apresentando esses resultados pro board...',
+      'Visualize seu time comemorando essa conquista...',
+    ],
+    bestFor: ['I', 'S'],
+    avoidFor: ['C'],
+    timing: 'closing',
+    nlpTechnique: 'Future Pacing (Milton Erickson)',
+    neuralTarget: 'limbic',
+    primaryChemical: 'dopamine',
+    intensityLevels: [
+      { level: 1, template: 'Pense no próximo mês...', words: ['próximo', 'em breve', 'logo'] },
+      { level: 2, template: 'Imagine daqui 3 meses...', words: ['imagine', 'visualize', 'pense'] },
+      { level: 3, template: 'Veja você mesmo daqui 6 meses...', words: ['veja', 'sinta', 'experiência'] },
+      { level: 4, template: 'Feche os olhos e sinta esse momento...', words: ['sinta', 'celebre', 'conquista'] },
+      { level: 5, template: 'É inevitável - você vai olhar para trás e...', words: ['inevitável', 'certeza', 'destino'] },
+    ],
+    fallbacks: ['storytelling', 'anticipation'],
+    synergizes: ['anticipation', 'social_proof', 'exclusivity'],
+    conflicts: ['urgency', 'scarcity'],
+    resistanceIndicators: ['parece manipulador', 'não sei se consigo imaginar', 'muito incerto'],
+    saturationThreshold: 3,
+  },
+
+  pattern_interrupt: {
+    id: 'pattern_interrupt',
+    name: 'Pattern Interrupt',
+    category: 'nlp_advanced',
+    description: 'Quebra o padrão mental para captar atenção instantânea',
+    effectiveness: 8,
+    icon: '⚡',
+    color: 'text-amber-600 bg-amber-100',
+    examples: [
+      'Espera - antes de você dizer não, deixa eu te fazer uma pergunta...',
+      'Posso ser brutalmente honesto com você por 30 segundos?',
+      'E se eu te dissesse que tudo que você sabe sobre isso está errado?',
+    ],
+    bestFor: ['D', 'I'],
+    avoidFor: ['S'],
+    timing: 'early',
+    nlpTechnique: 'Pattern Interrupt (NLP)',
+    neuralTarget: 'reptilian',
+    primaryChemical: 'adrenaline',
+    intensityLevels: [
+      { level: 1, template: 'Interessante você mencionar isso...', words: ['interessante', 'curioso'] },
+      { level: 2, template: 'Espera - posso te perguntar algo?', words: ['espera', 'antes'] },
+      { level: 3, template: 'Para tudo. Preciso te dizer uma coisa.', words: ['para', 'preciso'] },
+      { level: 4, template: 'Posso ser brutalmente honesto?', words: ['brutal', 'honesto', 'direto'] },
+      { level: 5, template: 'Esquece tudo. Começamos do zero.', words: ['esquece', 'zero', 'tudo'] },
+    ],
+    fallbacks: ['authority', 'specificity'],
+    synergizes: ['authority', 'scarcity', 'fomo'],
+    conflicts: ['empathy', 'gift', 'small_yes'],
+    resistanceIndicators: ['não precisa ser agressivo', 'calma', 'está me assustando'],
+    saturationThreshold: 2,
+  },
+
+  nested_loops: {
+    id: 'nested_loops',
+    name: 'Nested Loops',
+    category: 'nlp_advanced',
+    description: 'Histórias dentro de histórias que mantêm atenção e criam tensão',
+    effectiveness: 8,
+    icon: '🔄',
+    color: 'text-indigo-600 bg-indigo-100',
+    examples: [
+      'Isso me lembra de um cliente que... mas antes deixa eu te contar sobre...',
+      'Sabe o que o João me disse? Mas pra entender, preciso contar sobre...',
+      'Vou te contar 3 histórias - e no final você vai entender tudo...',
+    ],
+    bestFor: ['I', 'S'],
+    avoidFor: ['D', 'C'],
+    timing: 'middle',
+    nlpTechnique: 'Nested Loops (Milton Erickson)',
+    neuralTarget: 'limbic',
+    primaryChemical: 'dopamine',
+    intensityLevels: [
+      { level: 1, template: 'Isso me lembra de...', words: ['lembra', 'história', 'caso'] },
+      { level: 2, template: 'Antes de continuar, preciso te contar...', words: ['antes', 'preciso', 'contexto'] },
+      { level: 3, template: 'São 3 histórias conectadas...', words: ['conectadas', 'segredo', 'revelação'] },
+      { level: 4, template: 'O final vai te surpreender...', words: ['surpreender', 'twist', 'inacreditável'] },
+      { level: 5, template: 'Cada peça do quebra-cabeça vai se encaixar...', words: ['quebra-cabeça', 'revelação', 'epifania'] },
+    ],
+    fallbacks: ['storytelling', 'social_proof'],
+    synergizes: ['storytelling', 'anticipation', 'testimonial'],
+    conflicts: ['urgency', 'specificity'],
+    resistanceIndicators: ['vai direto ao ponto', 'não tenho tempo', 'resumindo'],
+    saturationThreshold: 2,
+  },
+
+  paradox_double_bind: {
+    id: 'paradox_double_bind',
+    name: 'Paradox / Double Bind',
+    category: 'nlp_advanced',
+    description: 'Oferece escolhas que levam ao mesmo resultado',
+    effectiveness: 9,
+    icon: '🎭',
+    color: 'text-rose-600 bg-rose-100',
+    examples: [
+      'Você prefere começar segunda ou terça?',
+      'Quer receber o contrato por email ou WhatsApp?',
+      'Podemos fazer em 3 ou 6 parcelas - qual funciona melhor?',
+    ],
+    bestFor: ['I', 'S'],
+    avoidFor: ['D'],
+    timing: 'closing',
+    nlpTechnique: 'Double Bind (Milton Erickson)',
+    neuralTarget: 'neocortex',
+    primaryChemical: 'serotonin',
+    intensityLevels: [
+      { level: 1, template: 'Qual opção funciona melhor pra você?', words: ['opção', 'melhor', 'prefere'] },
+      { level: 2, template: 'A ou B - qual se encaixa mais?', words: ['A ou B', 'encaixa', 'escolha'] },
+      { level: 3, template: 'Podemos fazer X ou Y - você decide', words: ['você decide', 'escolha sua'] },
+      { level: 4, template: 'O único que você precisa decidir é COMO, não SE', words: ['como', 'quando', 'não se'] },
+      { level: 5, template: 'Já está decidido - só precisamos acertar os detalhes', words: ['decidido', 'detalhes', 'finalizar'] },
+    ],
+    fallbacks: ['small_yes', 'commitment'],
+    synergizes: ['scarcity', 'urgency', 'exclusivity'],
+    conflicts: ['empathy', 'gift'],
+    resistanceIndicators: ['está me pressionando', 'preciso pensar mais', 'essas não são as únicas opções'],
+    saturationThreshold: 3,
+  },
+
+  // ========== HIGH-CONVERSION TRIGGERS ==========
+  loss_aversion: {
+    id: 'loss_aversion',
+    name: 'Loss Aversion Amplificado',
+    category: 'high_conversion',
+    description: 'Versão intensificada do FOMO com quantificação de perda',
+    effectiveness: 10,
+    icon: '📉',
+    color: 'text-red-600 bg-red-100',
+    examples: [
+      'Cada dia sem isso custa R$ 847 - já são R$ 25.000 perdidos',
+      'Seus concorrentes já capturaram 34% do mercado que era seu',
+      'A janela fecha em 48h - depois, o preço sobe 40%',
+    ],
+    bestFor: ['D'],
+    avoidFor: ['S'],
+    timing: 'closing',
+    nlpTechnique: 'Loss Aversion (Kahneman & Tversky)',
+    neuralTarget: 'reptilian',
+    primaryChemical: 'cortisol',
+    intensityLevels: [
+      { level: 1, template: 'Há um custo em esperar...', words: ['custo', 'esperar', 'tempo'] },
+      { level: 2, template: 'Cada dia custa aproximadamente...', words: ['cada dia', 'aproximadamente'] },
+      { level: 3, template: 'Você já perdeu R$X desde nossa última conversa', words: ['já perdeu', 'desde'] },
+      { level: 4, template: 'O prejuízo acumulado chega a...', words: ['prejuízo', 'acumulado', 'irreversível'] },
+      { level: 5, template: 'A perda é permanente. Não há como recuperar.', words: ['permanente', 'irreversível', 'nunca mais'] },
+    ],
+    fallbacks: ['fomo', 'comparison', 'urgency'],
+    synergizes: ['urgency', 'scarcity', 'specificity'],
+    conflicts: ['empathy', 'gift', 'guarantee'],
+    resistanceIndicators: ['está me ameaçando', 'isso é manipulação', 'não me pressione'],
+    saturationThreshold: 2,
+  },
+
+  identity_shift: {
+    id: 'identity_shift',
+    name: 'Identity Shift',
+    category: 'high_conversion',
+    description: 'Conecta a compra à identidade do cliente',
+    effectiveness: 9,
+    icon: '🦋',
+    color: 'text-purple-600 bg-purple-100',
+    examples: [
+      'Você é o tipo de líder que aceita o segundo lugar?',
+      'Empresas como a sua não esperam - elas lideram',
+      'Você construiu tudo isso pra parar agora?',
+    ],
+    bestFor: ['D', 'I'],
+    avoidFor: ['S', 'C'],
+    timing: 'closing',
+    nlpTechnique: 'Identity-Level Change (Dilts)',
+    neuralTarget: 'limbic',
+    primaryChemical: 'serotonin',
+    intensityLevels: [
+      { level: 1, template: 'Pessoas como você geralmente...', words: ['como você', 'geralmente'] },
+      { level: 2, template: 'Você é do tipo que...', words: ['do tipo', 'sempre foi'] },
+      { level: 3, template: 'Sua reputação de [X] está em jogo', words: ['reputação', 'legado', 'marca'] },
+      { level: 4, template: 'Líderes como você não [comportamento negativo]', words: ['líderes', 'visionários', 'pioneiros'] },
+      { level: 5, template: 'Isso define quem você é como [role]', words: ['define', 'essência', 'núcleo'] },
+    ],
+    fallbacks: ['social_proof', 'authority', 'consistency'],
+    synergizes: ['exclusivity', 'belonging', 'public_commitment'],
+    conflicts: ['empathy', 'small_yes', 'gift'],
+    resistanceIndicators: ['não me conhece', 'não sou assim', 'isso não me define'],
+    saturationThreshold: 2,
+  },
+
+  tribal_belonging: {
+    id: 'tribal_belonging',
+    name: 'Tribal Belonging',
+    category: 'high_conversion',
+    description: 'Cria senso de "nós vs eles" e pertencimento exclusivo',
+    effectiveness: 8,
+    icon: '🏛️',
+    color: 'text-amber-600 bg-amber-100',
+    examples: [
+      'Nossos clientes não são qualquer um - são os top 5%',
+      'Você vai fazer parte do grupo que mudou o jogo',
+      'Tem quem fala e tem quem faz - você é dos que fazem',
+    ],
+    bestFor: ['I', 'D'],
+    avoidFor: ['S'],
+    timing: 'closing',
+    nlpTechnique: 'Tribal Psychology (Seth Godin)',
+    neuralTarget: 'limbic',
+    primaryChemical: 'oxytocin',
+    intensityLevels: [
+      { level: 1, template: 'Nossos clientes têm algo em comum...', words: ['em comum', 'grupo', 'comunidade'] },
+      { level: 2, template: 'Você vai fazer parte de um grupo seleto', words: ['seleto', 'exclusivo', 'especial'] },
+      { level: 3, template: 'Só aceita quem realmente entende...', words: ['só aceita', 'entende', 'merece'] },
+      { level: 4, template: 'Há dois tipos de empresa - as que X e as que Y', words: ['dois tipos', 'vs', 'ou'] },
+      { level: 5, template: 'Nós vs Eles. Você sabe de que lado quer estar.', words: ['nós vs eles', 'lado', 'guerra'] },
+    ],
+    fallbacks: ['belonging', 'exclusivity', 'social_proof'],
+    synergizes: ['exclusivity', 'identity_shift', 'public_commitment'],
+    conflicts: ['empathy', 'consensus'],
+    resistanceIndicators: ['não gosto de clubes', 'isso parece arrogante', 'elitismo'],
+    saturationThreshold: 3,
+  },
+
+  cognitive_ease: {
+    id: 'cognitive_ease',
+    name: 'Cognitive Ease',
+    category: 'high_conversion',
+    description: 'Reduz esforço mental para facilitar a decisão',
+    effectiveness: 9,
+    icon: '🧘',
+    color: 'text-emerald-600 bg-emerald-100',
+    examples: [
+      'É simples: 1 clique e pronto',
+      'Zero complicação - a gente cuida de tudo',
+      'Só precisa dizer sim - o resto é com a gente',
+    ],
+    bestFor: ['S', 'I'],
+    avoidFor: ['C'],
+    timing: 'closing',
+    nlpTechnique: 'Cognitive Fluency (Kahneman)',
+    neuralTarget: 'reptilian',
+    primaryChemical: 'serotonin',
+    intensityLevels: [
+      { level: 1, template: 'É bem simples na verdade...', words: ['simples', 'fácil', 'rápido'] },
+      { level: 2, template: 'Só precisa fazer X', words: ['só precisa', 'apenas', 'único'] },
+      { level: 3, template: 'Zero complicação - nós cuidamos de tudo', words: ['zero', 'nada', 'tudo cuidado'] },
+      { level: 4, template: 'Literalmente um clique', words: ['literalmente', 'instantâneo', 'automático'] },
+      { level: 5, template: 'Não precisa fazer nada - só dizer sim', words: ['nada', 'só sim', 'sem esforço'] },
+    ],
+    fallbacks: ['guarantee', 'small_yes', 'gift'],
+    synergizes: ['guarantee', 'gift', 'small_yes'],
+    conflicts: ['specificity', 'comparison'],
+    resistanceIndicators: ['parece bom demais', 'qual é o truque', 'nada é tão fácil'],
+    saturationThreshold: 5,
+  },
+};
+
+// ============================================
+// TRIGGER CHAINS (COMBOS VALIDADOS)
+// ============================================
+export const VALIDATED_TRIGGER_CHAINS: TriggerChain[] = [
+  {
+    id: 'chain-discovery-close-d',
+    name: 'Dominance Quick Close',
+    description: 'Cadeia rápida para perfil D: Autoridade → Especificidade → Loss Aversion',
+    triggers: ['authority', 'specificity', 'loss_aversion'],
+    intensity: 'aggressive',
+    timing: [
+      { trigger: 'authority', delayMinutes: 0, channel: 'same' },
+      { trigger: 'specificity', delayMinutes: 2, channel: 'same' },
+      { trigger: 'loss_aversion', delayMinutes: 5, channel: 'same' },
+    ],
+    bestFor: ['D'],
+    scenario: 'negotiation',
+    successRate: 78,
+    neuralPath: {
+      brainSequence: ['neocortex', 'neocortex', 'reptilian'],
+      chemicalFlow: ['serotonin', 'serotonin', 'cortisol'],
+    },
+  },
+  {
+    id: 'chain-relationship-i',
+    name: 'Influence Warmth Path',
+    description: 'Cadeia relacional para perfil I: Storytelling → Social Proof → Future Pacing',
+    triggers: ['storytelling', 'social_proof', 'future_pacing'],
+    intensity: 'gentle',
+    timing: [
+      { trigger: 'storytelling', delayMinutes: 0, channel: 'same' },
+      { trigger: 'social_proof', delayMinutes: 5, channel: 'same' },
+      { trigger: 'future_pacing', delayMinutes: 10, channel: 'same' },
+    ],
+    bestFor: ['I'],
+    scenario: 'initial_negotiation',
+    successRate: 72,
+    neuralPath: {
+      brainSequence: ['limbic', 'limbic', 'limbic'],
+      chemicalFlow: ['oxytocin', 'oxytocin', 'dopamine'],
+    },
+  },
+  {
+    id: 'chain-safety-s',
+    name: 'Stability Safety Net',
+    description: 'Cadeia segura para perfil S: Empatia → Garantia → Cognitive Ease → Small Yes',
+    triggers: ['empathy', 'guarantee', 'cognitive_ease', 'small_yes'],
+    intensity: 'gentle',
+    timing: [
+      { trigger: 'empathy', delayMinutes: 0, channel: 'same' },
+      { trigger: 'guarantee', delayMinutes: 5, channel: 'same' },
+      { trigger: 'cognitive_ease', delayMinutes: 10, channel: 'same' },
+      { trigger: 'small_yes', delayMinutes: 15, channel: 'same' },
+    ],
+    bestFor: ['S'],
+    scenario: 'indecisive_client',
+    successRate: 68,
+    neuralPath: {
+      brainSequence: ['limbic', 'reptilian', 'reptilian', 'neocortex'],
+      chemicalFlow: ['oxytocin', 'serotonin', 'serotonin', 'dopamine'],
+    },
+  },
+  {
+    id: 'chain-logic-c',
+    name: 'Analytical Proof Path',
+    description: 'Cadeia lógica para perfil C: Especificidade → Comparação → Reason Why → Garantia',
+    triggers: ['specificity', 'comparison', 'reason_why', 'guarantee'],
+    intensity: 'moderate',
+    timing: [
+      { trigger: 'specificity', delayMinutes: 0, channel: 'same' },
+      { trigger: 'comparison', delayMinutes: 5, channel: 'same' },
+      { trigger: 'reason_why', delayMinutes: 10, channel: 'same' },
+      { trigger: 'guarantee', delayMinutes: 15, channel: 'same' },
+    ],
+    bestFor: ['C'],
+    scenario: 'price_objection',
+    successRate: 74,
+    neuralPath: {
+      brainSequence: ['neocortex', 'neocortex', 'neocortex', 'reptilian'],
+      chemicalFlow: ['serotonin', 'serotonin', 'serotonin', 'serotonin'],
+    },
+  },
+  {
+    id: 'chain-reactivation',
+    name: 'Lost Client Recovery',
+    description: 'Cadeia para reativação: Gift → Empathy → Social Proof → Exclusivity',
+    triggers: ['gift', 'empathy', 'social_proof', 'exclusivity'],
+    intensity: 'gentle',
+    timing: [
+      { trigger: 'gift', delayMinutes: 0, channel: 'same' },
+      { trigger: 'empathy', delayMinutes: 1440, channel: 'different' }, // Next day
+      { trigger: 'social_proof', delayMinutes: 4320, channel: 'different' }, // 3 days
+      { trigger: 'exclusivity', delayMinutes: 10080, channel: 'different' }, // 1 week
+    ],
+    bestFor: ['I', 'S'],
+    scenario: 'lost_client_reactivation',
+    successRate: 45,
+    neuralPath: {
+      brainSequence: ['limbic', 'limbic', 'limbic', 'limbic'],
+      chemicalFlow: ['oxytocin', 'oxytocin', 'dopamine', 'dopamine'],
+    },
+  },
+  {
+    id: 'chain-closing-universal',
+    name: 'Universal Closing Sequence',
+    description: 'Sequência universal de fechamento: Commitment → Scarcity → Double Bind',
+    triggers: ['commitment', 'scarcity', 'paradox_double_bind'],
+    intensity: 'moderate',
+    timing: [
+      { trigger: 'commitment', delayMinutes: 0, channel: 'same' },
+      { trigger: 'scarcity', delayMinutes: 3, channel: 'same' },
+      { trigger: 'paradox_double_bind', delayMinutes: 5, channel: 'same' },
+    ],
+    bestFor: ['D', 'I', 'S', 'C'],
+    scenario: 'negotiation',
+    successRate: 65,
+    neuralPath: {
+      brainSequence: ['neocortex', 'reptilian', 'neocortex'],
+      chemicalFlow: ['serotonin', 'cortisol', 'serotonin'],
+    },
+  },
+];
+
+// ============================================
+// TRIGGER CONFLICTS
+// ============================================
+export const TRIGGER_CONFLICTS: TriggerConflict[] = [
+  {
+    trigger1: 'empathy',
+    trigger2: 'urgency',
+    conflictLevel: 'severe',
+    reason: 'Empatia requer paciência; urgência cria pressão. Dissonância cognitiva.',
+    resolution: 'Use empathy primeiro, espere 24h, depois urgency suave.',
+  },
+  {
+    trigger1: 'gift',
+    trigger2: 'scarcity',
+    conflictLevel: 'moderate',
+    reason: 'Dar algo grátis e depois pressionar parece manipulador.',
+    resolution: 'Separe por pelo menos 2 dias.',
+  },
+  {
+    trigger1: 'guarantee',
+    trigger2: 'loss_aversion',
+    conflictLevel: 'moderate',
+    reason: 'Garantia reduz medo; loss aversion amplifica medo.',
+    resolution: 'Use loss aversion primeiro, depois guarantee como solução.',
+  },
+  {
+    trigger1: 'cognitive_ease',
+    trigger2: 'specificity',
+    conflictLevel: 'minor',
+    reason: 'Simplicidade vs detalhes podem confundir.',
+    resolution: 'Simplifique a mensagem principal, detalhe em anexo.',
+  },
+  {
+    trigger1: 'pattern_interrupt',
+    trigger2: 'empathy',
+    conflictLevel: 'severe',
+    reason: 'Interrupção agressiva destrói rapport.',
+    resolution: 'Escolha um ou outro, nunca juntos.',
+  },
+  {
+    trigger1: 'identity_shift',
+    trigger2: 'small_yes',
+    conflictLevel: 'moderate',
+    reason: 'Identity é forte; small_yes é sutil. Confunde a abordagem.',
+    resolution: 'Use small_yes para esquentar, identity_shift para fechar.',
+  },
+];
+
+// ============================================
+// TRIGGER SYNERGIES
+// ============================================
+export const TRIGGER_SYNERGIES: TriggerSynergy[] = [
+  {
+    trigger1: 'scarcity',
+    trigger2: 'social_proof',
+    synergyLevel: 9,
+    explanation: '"Restam só 3 vagas" + "500 empresas já usam" = urgência validada',
+    combinedEffect: 'Cria FOMO legitimado por validação social',
+  },
+  {
+    trigger1: 'authority',
+    trigger2: 'specificity',
+    synergyLevel: 10,
+    explanation: 'Especialista + números precisos = máxima credibilidade',
+    combinedEffect: 'Autoridade inquestionável',
+  },
+  {
+    trigger1: 'future_pacing',
+    trigger2: 'anticipation',
+    synergyLevel: 9,
+    explanation: 'Projeção futura + expectativa = dopamina alta',
+    combinedEffect: 'Cliente "sente" os resultados antes',
+  },
+  {
+    trigger1: 'gift',
+    trigger2: 'personalization',
+    synergyLevel: 10,
+    explanation: 'Presente personalizado = reciprocidade máxima',
+    combinedEffect: 'Obrigação moral de retribuir',
+  },
+  {
+    trigger1: 'loss_aversion',
+    trigger2: 'specificity',
+    synergyLevel: 9,
+    explanation: 'Perda quantificada em R$ = impacto emocional + racional',
+    combinedEffect: 'Medo calculado e justificado',
+  },
+  {
+    trigger1: 'identity_shift',
+    trigger2: 'tribal_belonging',
+    synergyLevel: 10,
+    explanation: '"Você é um líder" + "Líderes como nós..." = identidade tribal',
+    combinedEffect: 'Comprometimento profundo de identidade',
+  },
+  {
+    trigger1: 'cognitive_ease',
+    trigger2: 'guarantee',
+    synergyLevel: 9,
+    explanation: 'Fácil + sem risco = decisão óbvia',
+    combinedEffect: 'Remove todas as barreiras de decisão',
+  },
+];
+
+// ============================================
+// NEUROCHEMICAL TIMING
+// ============================================
+export const NEUROCHEMICAL_TIMING: NeurochemicalTiming[] = [
+  {
+    chemical: 'cortisol',
+    optimalHours: [8, 9, 10, 11], // Morning high cortisol
+    peakDays: ['monday', 'tuesday'],
+    avoidHours: [12, 13, 14, 15, 20, 21, 22],
+    reasoning: 'Cortisol pico manhã = mais receptivo a urgência. Evite tarde (fadiga) e noite (relaxamento).',
+    relatedTriggers: ['urgency', 'scarcity', 'fomo', 'loss_aversion'],
+  },
+  {
+    chemical: 'dopamine',
+    optimalHours: [14, 15, 16, 17], // Afternoon anticipation
+    peakDays: ['wednesday', 'thursday'],
+    avoidHours: [7, 8, 22, 23],
+    reasoning: 'Dopamina sobe à tarde quando pensamos em recompensas. Ideal para antecipação.',
+    relatedTriggers: ['anticipation', 'future_pacing', 'exclusivity', 'gift'],
+  },
+  {
+    chemical: 'oxytocin',
+    optimalHours: [10, 11, 15, 16],
+    peakDays: ['tuesday', 'wednesday', 'thursday'],
+    avoidHours: [8, 9, 18, 19], // Transition hours = stress
+    reasoning: 'Oxitocina estável em momentos calmos. Ideal para rapport e conexão.',
+    relatedTriggers: ['empathy', 'storytelling', 'belonging', 'tribal_belonging'],
+  },
+  {
+    chemical: 'serotonin',
+    optimalHours: [10, 11, 12, 14, 15],
+    peakDays: ['wednesday', 'thursday', 'friday'],
+    avoidHours: [7, 8, 21, 22, 23],
+    reasoning: 'Serotonina alta = confiança e bem-estar. Ótimo para decisões ponderadas.',
+    relatedTriggers: ['authority', 'guarantee', 'commitment', 'identity_shift'],
+  },
+  {
+    chemical: 'adrenaline',
+    optimalHours: [9, 10, 14, 15],
+    peakDays: ['monday', 'tuesday'],
+    avoidHours: [12, 13, 19, 20, 21],
+    reasoning: 'Adrenalina para ação rápida. Use no início da semana quando energia é alta.',
+    relatedTriggers: ['pattern_interrupt', 'urgency', 'scarcity'],
+  },
+  {
+    chemical: 'endorphin',
+    optimalHours: [11, 12, 16, 17],
+    peakDays: ['thursday', 'friday'],
+    avoidHours: [8, 9, 21, 22],
+    reasoning: 'Endorfina = prazer e alívio. Bom para fechamentos e celebrações.',
+    relatedTriggers: ['gift', 'belonging', 'anticipation', 'cognitive_ease'],
+  },
+];
+
+// ============================================
+// FALLBACK TREES
+// ============================================
+export const TRIGGER_FALLBACKS: TriggerFallback[] = [
+  {
+    primaryTrigger: 'urgency',
+    failureIndicators: ['não me pressione', 'preciso de tempo', 'vou pensar'],
+    fallbackSequence: [
+      { trigger: 'reason_why', condition: 'Cliente quer justificativa', timing: 'immediate' },
+      { trigger: 'guarantee', condition: 'Cliente tem medo', timing: 'immediate' },
+      { trigger: 'gift', condition: 'Cliente esfriou', timing: 'next_contact' },
+    ],
+  },
+  {
+    primaryTrigger: 'scarcity',
+    failureIndicators: ['não acredito', 'parece falso', 'marketing'],
+    fallbackSequence: [
+      { trigger: 'social_proof', condition: 'Cliente cético', timing: 'immediate' },
+      { trigger: 'specificity', condition: 'Quer provas', timing: 'immediate' },
+      { trigger: 'authority', condition: 'Precisa de credibilidade', timing: 'next_contact' },
+    ],
+  },
+  {
+    primaryTrigger: 'loss_aversion',
+    failureIndicators: ['está me ameaçando', 'manipulação', 'não me assusto'],
+    fallbackSequence: [
+      { trigger: 'empathy', condition: 'Cliente irritado', timing: 'immediate' },
+      { trigger: 'gift', condition: 'Precisa reconstruir rapport', timing: 'wait_24h' },
+      { trigger: 'cognitive_ease', condition: 'Simplificar abordagem', timing: 'next_contact' },
+    ],
+  },
+  {
+    primaryTrigger: 'identity_shift',
+    failureIndicators: ['não me conhece', 'presunçoso', 'quem você pensa que é'],
+    fallbackSequence: [
+      { trigger: 'empathy', condition: 'Cliente ofendido', timing: 'immediate' },
+      { trigger: 'small_yes', condition: 'Reconstruir gradualmente', timing: 'immediate' },
+      { trigger: 'social_proof', condition: 'Provar com outros', timing: 'next_contact' },
+    ],
+  },
+  {
+    primaryTrigger: 'pattern_interrupt',
+    failureIndicators: ['calma', 'está me assustando', 'agressivo'],
+    fallbackSequence: [
+      { trigger: 'empathy', condition: 'Cliente assustado', timing: 'immediate' },
+      { trigger: 'gift', condition: 'Reconstruir confiança', timing: 'wait_24h' },
+      { trigger: 'storytelling', condition: 'Abordagem suave', timing: 'next_contact' },
+    ],
+  },
+];
+
+// ============================================
+// INTENSITY LEVELS
+// ============================================
+export const INTENSITY_LEVELS: IntensityLevel[] = [
+  {
+    level: 1,
+    name: 'Sutil',
+    description: 'Abordagem leve, sugestiva, não diretiva',
+    languageModifiers: ['talvez', 'poderia', 'uma opção seria', 'você já pensou'],
+    urgencyWords: ['quando puder', 'sem pressa', 'no seu tempo'],
+    emotionalIntensity: 'subtle',
+  },
+  {
+    level: 2,
+    name: 'Moderado',
+    description: 'Abordagem equilibrada, direta mas respeitosa',
+    languageModifiers: ['recomendo', 'seria bom', 'faz sentido', 'vale a pena'],
+    urgencyWords: ['em breve', 'nos próximos dias', 'quando possível'],
+    emotionalIntensity: 'moderate',
+  },
+  {
+    level: 3,
+    name: 'Assertivo',
+    description: 'Abordagem confiante, persuasiva',
+    languageModifiers: ['você precisa', 'é importante', 'não pode perder', 'deveria'],
+    urgencyWords: ['esta semana', 'até sexta', 'em poucos dias'],
+    emotionalIntensity: 'strong',
+  },
+  {
+    level: 4,
+    name: 'Intenso',
+    description: 'Abordagem urgente, emocional',
+    languageModifiers: ['é crítico', 'não pode esperar', 'urgente', 'fundamental'],
+    urgencyWords: ['hoje', 'agora', 'imediatamente', 'antes que'],
+    emotionalIntensity: 'intense',
+  },
+  {
+    level: 5,
+    name: 'Máximo',
+    description: 'Abordagem de última instância, alto risco',
+    languageModifiers: ['última chance', 'definitivo', 'irreversível', 'ponto sem volta'],
+    urgencyWords: ['agora ou nunca', 'última oportunidade', 'fechando'],
+    emotionalIntensity: 'maximum',
+  },
+];
+
+// ============================================
+// EXPORT ALL TRIGGERS (COMBINED)
+// ============================================
+export const ALL_TRIGGER_IDS: string[] = [
+  // Original 22 triggers
+  'scarcity', 'urgency', 'fomo', 'exclusivity',
+  'social_proof', 'authority', 'consensus', 'testimonial',
+  'storytelling', 'belonging', 'anticipation', 'empathy',
+  'specificity', 'reason_why', 'comparison', 'guarantee',
+  'gift', 'concession', 'personalization',
+  'commitment', 'consistency', 'small_yes', 'public_commitment',
+  // New 8 advanced triggers
+  'future_pacing', 'pattern_interrupt', 'nested_loops', 'paradox_double_bind',
+  'loss_aversion', 'identity_shift', 'tribal_belonging', 'cognitive_ease',
+];
