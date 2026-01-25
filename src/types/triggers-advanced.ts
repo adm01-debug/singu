@@ -19,7 +19,20 @@ export type AdvancedTriggerType =
   | 'loss_aversion'        // Aversão à perda amplificada
   | 'identity_shift'       // Mudança de identidade
   | 'tribal_belonging'     // Pertencimento tribal
-  | 'cognitive_ease';      // Facilidade cognitiva
+  | 'cognitive_ease'       // Facilidade cognitiva
+  // Extended Triggers (Phase 1)
+  | 'priming'              // Preparação mental prévia
+  | 'anchoring'            // Ancoragem de referência
+  | 'decoy_effect'         // Efeito isca/chamariz
+  | 'framing'              // Enquadramento de informação
+  | 'curiosity_gap'        // Lacuna de curiosidade
+  | 'peak_end_rule'        // Regra pico-fim
+  | 'endowment_effect'     // Efeito posse
+  | 'sunk_cost'            // Custo afundado
+  | 'bandwagon'            // Efeito manada
+  | 'halo_effect'          // Efeito halo
+  | 'contrast_principle'   // Princípio do contraste
+  | 'unity';               // Unidade/identidade compartilhada
 
 export type AllTriggerTypes = TriggerType | AdvancedTriggerType;
 

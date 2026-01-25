@@ -5,35 +5,37 @@
 
 import { 
   AdvancedMentalTrigger, 
+  AdvancedTriggerType,
   TriggerConflict,
   TriggerSynergy,
   TriggerFallback
 } from '@/types/triggers-advanced';
 
 // ============================================
-// NEW TRIGGER TYPE DEFINITIONS
+// EXTENDED TRIGGER TYPE (for internal use)
 // ============================================
 export type ExtendedTriggerType = 
-  | 'priming'              // Ativação subconsciente
-  | 'anchoring'            // Âncora de referência
-  | 'decoy_effect'         // Efeito isca
-  | 'framing'              // Enquadramento
-  | 'curiosity_gap'        // Lacuna de curiosidade
-  | 'peak_end_rule'        // Regra do pico-fim
-  | 'endowment_effect'     // Efeito posse
-  | 'sunk_cost'            // Custo afundado
-  | 'bandwagon'            // Efeito manada
-  | 'halo_effect'          // Efeito halo
-  | 'contrast_principle'   // Princípio do contraste
-  | 'unity';               // Unidade (7º princípio Cialdini)
+  | 'priming'              
+  | 'anchoring'            
+  | 'decoy_effect'         
+  | 'framing'              
+  | 'curiosity_gap'        
+  | 'peak_end_rule'        
+  | 'endowment_effect'     
+  | 'sunk_cost'            
+  | 'bandwagon'            
+  | 'halo_effect'          
+  | 'contrast_principle'   
+  | 'unity';               
 
 // ============================================
-// 12 NEW EXTENDED TRIGGERS
+// 12 NEW EXTENDED TRIGGERS (Reference data)
+// Main definitions are now in triggersAdvancedData.ts
 // ============================================
 export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMentalTrigger> = {
   // ========== BEHAVIORAL ECONOMICS ==========
   priming: {
-    id: 'priming' as any,
+    id: 'priming',
     name: 'Priming',
     category: 'nlp_advanced',
     description: 'Ativa conceitos no subconsciente que influenciam decisões posteriores',
@@ -66,7 +68,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   anchoring: {
-    id: 'anchoring' as any,
+    id: 'anchoring',
     name: 'Anchoring',
     category: 'high_conversion',
     description: 'Estabelece ponto de referência alto para fazer seu preço parecer vantajoso',
@@ -99,7 +101,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   decoy_effect: {
-    id: 'decoy_effect' as any,
+    id: 'decoy_effect',
     name: 'Decoy Effect',
     category: 'high_conversion',
     description: 'Adiciona uma terceira opção "isca" que torna sua opção preferida mais atraente',
@@ -132,7 +134,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   framing: {
-    id: 'framing' as any,
+    id: 'framing',
     name: 'Framing',
     category: 'nlp_advanced',
     description: 'Apresenta a mesma informação de forma diferente para influenciar a decisão',
@@ -165,9 +167,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   curiosity_gap: {
-    id: 'curiosity_gap' as any,
+    id: 'curiosity_gap',
     name: 'Curiosity Gap',
-    category: 'emotional',
+    category: 'nlp_advanced',
     description: 'Cria lacuna de conhecimento que gera desejo irresistível de saber mais',
     effectiveness: 8,
     icon: '🔮',
@@ -198,9 +200,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   peak_end_rule: {
-    id: 'peak_end_rule' as any,
+    id: 'peak_end_rule',
     name: 'Peak-End Rule',
-    category: 'emotional',
+    category: 'nlp_advanced',
     description: 'Pessoas julgam experiências pelo pico emocional e pelo fim, não pela média',
     effectiveness: 7,
     icon: '🎢',
@@ -231,7 +233,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   endowment_effect: {
-    id: 'endowment_effect' as any,
+    id: 'endowment_effect',
     name: 'Endowment Effect',
     category: 'high_conversion',
     description: 'Pessoas valorizam mais o que já possuem. Faça o cliente "experimentar" a posse',
@@ -264,9 +266,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   sunk_cost: {
-    id: 'sunk_cost' as any,
+    id: 'sunk_cost',
     name: 'Sunk Cost',
-    category: 'commitment',
+    category: 'high_conversion',
     description: 'Relembra investimentos já feitos para justificar continuar investindo',
     effectiveness: 7,
     icon: '💸',
@@ -297,9 +299,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   bandwagon: {
-    id: 'bandwagon' as any,
+    id: 'bandwagon',
     name: 'Bandwagon Effect',
-    category: 'social',
+    category: 'high_conversion',
     description: 'Tendência de seguir o que a maioria está fazendo',
     effectiveness: 8,
     icon: '🚂',
@@ -330,9 +332,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   halo_effect: {
-    id: 'halo_effect' as any,
+    id: 'halo_effect',
     name: 'Halo Effect',
-    category: 'social',
+    category: 'high_conversion',
     description: 'Transfere percepção positiva de um atributo para outros',
     effectiveness: 7,
     icon: '😇',
@@ -363,9 +365,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   contrast_principle: {
-    id: 'contrast_principle' as any,
+    id: 'contrast_principle',
     name: 'Contrast Principle',
-    category: 'logic',
+    category: 'high_conversion',
     description: 'Apresenta algo extremo primeiro para fazer sua oferta parecer razoável',
     effectiveness: 8,
     icon: '⚖️',
@@ -396,9 +398,9 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
   },
 
   unity: {
-    id: 'unity' as any,
+    id: 'unity',
     name: 'Unity',
-    category: 'emotional',
+    category: 'nlp_advanced',
     description: 'Cria senso de identidade compartilhada - "somos iguais", "fazemos parte do mesmo grupo"',
     effectiveness: 8,
     icon: '🤝',
@@ -489,7 +491,7 @@ export const EXTENDED_TRIGGER_SYNERGIES: TriggerSynergy[] = [
 // ============================================
 export const EXTENDED_TRIGGER_FALLBACKS: TriggerFallback[] = [
   {
-    primaryTrigger: 'anchoring' as any,
+    primaryTrigger: 'anchoring',
     failureIndicators: ['manipulação', 'comparação forçada', 'não são iguais'],
     fallbackSequence: [
       { trigger: 'specificity', condition: 'Cliente quer fatos', timing: 'immediate' },
@@ -498,7 +500,7 @@ export const EXTENDED_TRIGGER_FALLBACKS: TriggerFallback[] = [
     ],
   },
   {
-    primaryTrigger: 'curiosity_gap' as any,
+    primaryTrigger: 'curiosity_gap',
     failureIndicators: ['enrolação', 'fala logo', 'clickbait'],
     fallbackSequence: [
       { trigger: 'specificity', condition: 'Quer direto ao ponto', timing: 'immediate' },
@@ -507,7 +509,7 @@ export const EXTENDED_TRIGGER_FALLBACKS: TriggerFallback[] = [
     ],
   },
   {
-    primaryTrigger: 'unity' as any,
+    primaryTrigger: 'unity',
     failureIndicators: ['forçando intimidade', 'não somos iguais', 'cada um é cada um'],
     fallbackSequence: [
       { trigger: 'empathy', condition: 'Reconectar com cuidado', timing: 'immediate' },
@@ -516,7 +518,7 @@ export const EXTENDED_TRIGGER_FALLBACKS: TriggerFallback[] = [
     ],
   },
   {
-    primaryTrigger: 'sunk_cost' as any,
+    primaryTrigger: 'sunk_cost',
     failureIndicators: ['passado é passado', 'não me obriga', 'irrelevante'],
     fallbackSequence: [
       { trigger: 'future_pacing', condition: 'Focar no futuro', timing: 'immediate' },
