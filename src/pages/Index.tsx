@@ -43,6 +43,7 @@ import { ImportantDatesCalendar } from '@/components/dashboard/ImportantDatesCal
 import { PurchasePatternsPanel } from '@/components/analytics/PurchasePatternsPanel';
 import { BehaviorAlertsPanel } from '@/components/analytics/BehaviorAlertsPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
+import { DISCCompatibilityAlerts, DISCConversionMetrics } from '@/components/disc';
 import {
   ActivityChart,
   RelationshipEvolutionChart,
@@ -350,6 +351,7 @@ const Dashboard = () => {
           >
             <SmartRemindersPanel compact />
             <HealthAlertsPanel />
+            <DISCCompatibilityAlerts compact maxItems={3} />
             <ClosingScoreAlertsList maxItems={3} compact />
             <CompatibilityAlertsList maxItems={3} />
           </motion.div>

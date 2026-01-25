@@ -28,7 +28,7 @@ interface NLPBriefing {
   company: Company | null;
   interaction: Interaction;
   vakProfile: VAKProfile;
-  discProfile: { type: string; description: string };
+  discProfile: DISCProfileData;
   emotionalProfile: EmotionalProfile;
   topValues: string[];
   wordsToUse: string[];
@@ -121,13 +121,35 @@ function analyzeEmotionalState(texts: string[]): EmotionalProfile {
   };
 }
 
+interface DISCProfileData {
+  type: string;
+  description: string;
+  salesStrategies: {
+    opening: string[];
+    presentation: string[];
+    objectionHandling: string[];
+    closing: string[];
+  };
+  avoidBehaviors: string[];
+}
+
 // Get DISC profile from contact behavior - using type-safe utility
-function getDISCProfileFromContact(contact: Contact): { type: string; description: string } {
+function getDISCProfileFromContact(contact: Contact): DISCProfileData {
   const behavior = getContactBehavior(contact);
   const disc = behavior?.disc || behavior?.discProfile;
   
   if (!disc) {
-    return { type: 'N/A', description: 'Perfil não identificado ainda' };
+    return { 
+      type: 'N/A', 
+      description: 'Perfil não identificado ainda',
+      salesStrategies: {
+        opening: ['Observe padrões de comunicação para identificar perfil'],
+        presentation: ['Seja adaptável às reações do cliente'],
+        objectionHandling: ['Escute atentamente antes de responder'],
+        closing: ['Pergunte diretamente sobre próximos passos']
+      },
+      avoidBehaviors: ['Assumir preferências sem dados']
+    };
   }
   
   const discDescriptions: Record<string, string> = {
@@ -137,9 +159,45 @@ function getDISCProfileFromContact(contact: Contact): { type: string; descriptio
     C: 'Consciente - Analítico, preciso, orientado a qualidade'
   };
 
+  const discSalesStrategies: Record<string, DISCProfileData['salesStrategies']> = {
+    D: {
+      opening: ['Vá direto ao ponto - evite conversa fiada', 'Apresente resultados logo no início'],
+      presentation: ['Foque em ROI e resultados', 'Seja conciso - máximo 3 pontos principais'],
+      objectionHandling: ['Não discuta - apresente alternativas', 'Mostre dados de performance'],
+      closing: ['Dê opções: "A ou B?"', 'Destaque vantagem competitiva imediata']
+    },
+    I: {
+      opening: ['Comece com entusiasmo genuíno', 'Pergunte sobre projetos recentes'],
+      presentation: ['Conte histórias de sucesso', 'Envolva-o na visão do projeto'],
+      objectionHandling: ['Reconheça sentimentos', 'Transforme em oportunidade criativa'],
+      closing: ['Celebre a parceria', 'Mencione impacto social/visibilidade']
+    },
+    S: {
+      opening: ['Seja caloroso mas não apressado', 'Pergunte sobre a equipe/família'],
+      presentation: ['Mostre estabilidade e suporte', 'Dê tempo para processar'],
+      objectionHandling: ['Valide preocupações sinceramente', 'Ofereça garantias e suporte'],
+      closing: ['Não pressione - ofereça mais tempo', 'Destaque relacionamento de longo prazo']
+    },
+    C: {
+      opening: ['Seja pontual e prepare dados', 'Pergunte sobre análises anteriores'],
+      presentation: ['Apresente detalhes e documentação', 'Antecipe perguntas técnicas'],
+      objectionHandling: ['Forneça evidências escritas', 'Aceite revisar depois se precisar'],
+      closing: ['Dê tempo para análise', 'Ofereça comparativo técnico detalhado']
+    }
+  };
+
+  const discAvoidBehaviors: Record<string, string[]> = {
+    D: ['Ser vago ou indeciso', 'Perder tempo com detalhes irrelevantes', 'Mostrar insegurança'],
+    I: ['Ser muito técnico ou frio', 'Ignorar aspecto emocional', 'Interromper suas histórias'],
+    S: ['Pressionar por decisão rápida', 'Mudanças bruscas de assunto', 'Ignorar preocupações'],
+    C: ['Afirmações sem dados', 'Pressa nas explicações', 'Falta de precisão nos números']
+  };
+
   return {
     type: disc,
-    description: discDescriptions[disc] || 'Perfil misto'
+    description: discDescriptions[disc] || 'Perfil misto',
+    salesStrategies: discSalesStrategies[disc] || discSalesStrategies['I'],
+    avoidBehaviors: discAvoidBehaviors[disc] || []
   };
 }
 

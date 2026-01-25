@@ -47,7 +47,17 @@ interface AlertSettings {
   importantMinScore: number;
 }
 
-const DISCCompatibilityAlerts: React.FC = () => {
+interface DISCCompatibilityAlertsProps {
+  compact?: boolean;
+  maxItems?: number;
+  className?: string;
+}
+
+const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({ 
+  compact = false, 
+  maxItems = 10,
+  className 
+}) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [alerts, setAlerts] = useState<CompatibilityAlert[]>([]);
@@ -113,13 +123,13 @@ const DISCCompatibilityAlerts: React.FC = () => {
       // Sort by compatibility score (lowest first)
       newAlerts.sort((a, b) => a.compatibilityScore - b.compatibilityScore);
 
-      setAlerts(newAlerts.slice(0, 10));
+      setAlerts(newAlerts.slice(0, maxItems));
     } catch (error) {
       console.error('Error fetching compatibility alerts:', error);
     } finally {
       setLoading(false);
     }
-  }, [user, sellerProfile, settings.threshold, settings.onlyImportantContacts, settings.importantMinScore]);
+  }, [user, sellerProfile, settings.threshold, settings.onlyImportantContacts, settings.importantMinScore, maxItems]);
 
   useEffect(() => {
     if (settings.enabled) {
@@ -166,7 +176,7 @@ const DISCCompatibilityAlerts: React.FC = () => {
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className={`border-border/50 ${className || ''}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -299,7 +309,7 @@ const DISCCompatibilityAlerts: React.FC = () => {
             </p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px] pr-2">
+          <ScrollArea className={compact ? "max-h-[200px] pr-2" : "h-[400px] pr-2"}>
             <div className="space-y-3">
               {alerts.map((alert, idx) => {
                 const profileInfo = DISC_PROFILES[alert.contactProfile];

@@ -77,9 +77,16 @@ import { ContactPreferencesPanel } from '@/components/preferences/ContactPrefere
 import { SocialProfilesPanel } from '@/components/social/SocialProfilesPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCProfileExpanded from '@/components/profile/DISCProfileExpanded';
+import { 
+  DISCEvolutionTimeline, 
+  DISCSalesScriptGenerator, 
+  DISCTemplateLibrary,
+  DISCCompatibilityAlerts
+} from '@/components/disc';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
+import { useDISCAutoAnalysis } from '@/hooks/useDISCAutoAnalysis';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -617,6 +624,18 @@ const ContatoDetalhe = () => {
                 contact={contact}
                 onUpdate={refetch}
               />
+
+              {/* DISC Evolution Timeline */}
+              <DISCEvolutionTimeline contactId={contact.id} />
+
+              {/* DISC Sales Script Generator */}
+              <DISCSalesScriptGenerator contact={contact} />
+
+              {/* DISC Template Library */}
+              <DISCTemplateLibrary filterProfile={contact.behavior?.discProfile || undefined} />
+
+              {/* DISC Compatibility Alerts for this Contact */}
+              <DISCCompatibilityAlerts maxItems={3} />
 
               {/* Approach Recommendation Panel - AI Strategy */}
               <ApproachRecommendationPanel 
