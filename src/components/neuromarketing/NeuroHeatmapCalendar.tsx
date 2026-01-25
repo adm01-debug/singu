@@ -36,8 +36,8 @@ interface TimeSlotData {
 }
 
 interface NeuroHeatmapCalendarProps {
-  contactId: string;
-  contactName: string;
+  contactId?: string;
+  contactName?: string;
   dominantBrain?: BrainSystem;
   timeData?: TimeSlotData[];
   className?: string;

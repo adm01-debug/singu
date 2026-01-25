@@ -70,7 +70,11 @@ import {
 import {
   NeuroEnrichedTriggers,
   NeuroRadarChart,
-  NeuroTimeline
+  NeuroTimeline,
+  NeuroABTracker,
+  NeuroHeatmapCalendar,
+  NeuroTrainingMode,
+  NeurochemicalInfluenceMap
 } from '@/components/neuromarketing';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
@@ -532,7 +536,7 @@ const Analytics = () => {
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
-          {/* Neuromarketing Tab - NEW */}
+          {/* Neuromarketing Tab - FULL ADVANCED SUITE */}
           <TabsContent value="neuro" className="space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -555,6 +559,22 @@ const Analytics = () => {
                   maxEntries={8}
                 />
               </div>
+
+              {/* Neuro Training Mode - Interactive Learning */}
+              <NeuroTrainingMode />
+
+              {/* Neuro Heatmap Calendar - Portfolio-Wide Contact Optimization */}
+              <NeuroHeatmapCalendar
+                contactName="Portfólio Geral"
+              />
+
+              {/* Neurochemical Influence Map - Educational Visual */}
+              <NeurochemicalInfluenceMap />
+
+              {/* Neuro A/B Tracker - Portfolio Aggregate (no contact filter) */}
+              <NeuroABTracker
+                contactName="Portfólio Completo"
+              />
               
               {/* Neuro-Enriched Triggers */}
               <NeuroEnrichedTriggers showAll />
