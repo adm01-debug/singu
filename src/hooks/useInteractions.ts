@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type Interaction = Tables<'interactions'>;
@@ -11,6 +12,7 @@ export type InteractionUpdate = TablesUpdate<'interactions'>;
 export function useInteractions(contactId?: string, companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { triggerAnalysis } = useNLPAutoAnalysis();
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
@@ -74,7 +76,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
   const createInteraction = async (
     interaction: Omit<InteractionInsert, 'user_id'>,
-    options?: { triggerDISCAnalysis?: boolean }
+    options?: { triggerDISCAnalysis?: boolean; triggerNLPAnalysis?: boolean }
   ) => {
     if (!user) return null;
 
@@ -113,6 +115,22 @@ export function useInteractions(contactId?: string, companyId?: string) {
               });
             }
           }).catch(console.error);
+        }
+      }
+
+      // Trigger NLP auto-analysis if enabled and has content
+      if (options?.triggerNLPAnalysis !== false && data.contact_id) {
+        const fullText = [data.content, data.transcription].filter(Boolean).join('\n\n');
+        if (fullText.length >= 100) {
+          // Call NLP analyzer in background (non-blocking)
+          triggerAnalysis(
+            data.contact_id,
+            data.id,
+            data.content,
+            data.transcription,
+            data.type,
+            true // showToast
+          ).catch(console.error);
         }
       }
 

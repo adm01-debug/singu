@@ -62,6 +62,10 @@ import {
   DISCTrainingMode, 
   DISCConversionMetrics
 } from '@/components/disc';
+import {
+  NLPTrainingMode,
+  NLPConversionMetrics
+} from '@/components/nlp';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
@@ -570,13 +574,21 @@ const Analytics = () => {
             </motion.div>
           </TabsContent>
 
-          {/* NLP Analytics Tab */}
+          {/* NLP Analytics Tab - Enterprise Module */}
           <TabsContent value="nlp" className="space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
             >
+              {/* Existing NLP Analytics */}
               <NLPAnalyticsPanel />
+              
+              {/* NLP Training Mode - Gamified Learning */}
+              <NLPTrainingMode />
+              
+              {/* NLP Conversion Metrics - Performance Dashboard */}
+              <NLPConversionMetrics />
             </motion.div>
           </TabsContent>
 
