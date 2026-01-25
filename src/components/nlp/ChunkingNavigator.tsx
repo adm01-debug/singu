@@ -77,11 +77,12 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
   topic = '',
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [currentLevel, setCurrentLevel] = useState<'abstract' | 'mid' | 'specific'>('mid');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const discProfile = (getDISCProfile(contact) as DISCProfile) || 'D';
-  const behavior = getContactBehavior(contact);
+  const discProfile = (getDISCProfile(activeContact) as DISCProfile) || 'D';
+  const behavior = getContactBehavior(activeContact);
   const metaChunk = behavior?.metaprogramProfile?.chunkSize || 'balanced';
 
   // Recommend direction based on metaprogram
@@ -149,7 +150,7 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Navegue entre níveis de abstração na conversa com {contact.firstName}
+          Navegue entre níveis de abstração na conversa com {activeContact.firstName}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -228,7 +229,7 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
             <Lightbulb className="h-4 w-4 text-sky-400 mt-0.5 shrink-0" />
             <div>
               <div className="text-sm font-medium text-sky-400 mb-1">
-                Recomendação para {contact.firstName}
+                Recomendação para {activeContact.firstName}
               </div>
               <p className="text-xs text-muted-foreground mb-2">
                 {recommendedDirection.reason}

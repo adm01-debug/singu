@@ -237,11 +237,12 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
   contact,
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [copiedScript, setCopiedScript] = useState<string | null>(null);
 
-  const vakType = getDominantVAK(contact) as VAKType || 'V';
-  const discProfile = (getDISCProfile(contact) as DISCProfile) || 'D';
+  const vakType = getDominantVAK(activeContact) as VAKType || 'V';
+  const discProfile = (getDISCProfile(activeContact) as DISCProfile) || 'D';
 
   const copyScript = (script: string) => {
     navigator.clipboard.writeText(script);
@@ -277,7 +278,7 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Scripts para eliciar estados emocionais específicos em {contact.firstName}
+          Scripts para eliciar estados emocionais específicos em {activeContact.firstName}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -389,7 +390,7 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
         {/* Quick Guide */}
         <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
           <strong className="text-rose-400">💡 Dica de Eliciação:</strong>{' '}
-          Para {contact.firstName} ({vakType}/{discProfile}), comece com{' '}
+          Para {activeContact.firstName} ({vakType}/{discProfile}), comece com{' '}
           <span className="text-rose-300">
             {vakType === 'V' ? 'imagens e visualizações' : 
              vakType === 'A' ? 'sons e descrições verbais' :

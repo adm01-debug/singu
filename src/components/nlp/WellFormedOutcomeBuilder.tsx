@@ -81,6 +81,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
   contact,
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [criteria, setCriteria] = useState<OutcomeCriterion[]>(
     OUTCOME_CRITERIA.map(c => ({ ...c, answer: '', isComplete: false }))
   );
@@ -126,7 +127,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
     const sensory = criteria.find(c => c.id === 'sensory')?.answer || '';
     const firstStep = criteria.find(c => c.id === 'first-step')?.answer || '';
 
-    return `${contact.firstName} quer ${positive}. Saberá que conseguiu quando ${sensory}. O primeiro passo é ${firstStep}.`;
+    return `${activeContact.firstName} quer ${positive}. Saberá que conseguiu quando ${sensory}. O primeiro passo é ${firstStep}.`;
   };
 
   return (
@@ -142,7 +143,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          Construa objetivos bem formados com {contact.firstName} usando os 7 critérios PNL
+          Construa objetivos bem formados com {activeContact.firstName} usando os 7 critérios PNL
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -229,7 +230,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
                 </div>
 
                 <Textarea
-                  placeholder={`Resposta de ${contact.firstName}...`}
+                  placeholder={`Resposta de ${activeContact.firstName}...`}
                   value={currentCriterion.answer}
                   onChange={(e) => updateAnswer(e.target.value)}
                   className="min-h-[80px] text-sm"
@@ -267,7 +268,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
               <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-lg p-4 border border-emerald-500/30">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
                   <Sparkles className="h-4 w-4 text-emerald-400" />
-                  Objetivo Bem Formado de {contact.firstName}
+                  Objetivo Bem Formado de {activeContact.firstName}
                 </h4>
 
                 {completedCount < 3 ? (
