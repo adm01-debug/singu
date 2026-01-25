@@ -131,7 +131,7 @@ export function useExtendedCarnegieAnalysis(contact: Contact | null) {
       topStrengths,
       priorityImprovements
     };
-  }, [contact?.first_name, discProfile]);
+  }, [contact?.firstName, discProfile]);
 
   // Get DISC-adapted resources
   const getResources = useMemo(() => ({
