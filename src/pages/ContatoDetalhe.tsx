@@ -83,6 +83,13 @@ import {
   DISCTemplateLibrary,
   DISCCompatibilityAlerts
 } from '@/components/disc';
+import {
+  NLPEvolutionTimeline,
+  NLPTrainingMode,
+  UnifiedScriptGenerator,
+  CommunicationCoherencePanel,
+  NLPConversionMetrics
+} from '@/components/nlp';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
@@ -763,6 +770,15 @@ const ContatoDetalhe = () => {
 
               {/* VAK Profile (PNL) */}
               <VAKProfileCard contact={contact} />
+
+              {/* NLP Evolution Timeline - Tracks VAK/Emotional shifts over time */}
+              <NLPEvolutionTimeline contactId={contact.id} />
+
+              {/* Unified Script Generator - DISC + VAK + Metaprograms */}
+              <UnifiedScriptGenerator contact={contact} />
+
+              {/* Communication Coherence Panel - Message Alignment Checker */}
+              <CommunicationCoherencePanel contact={contact} />
 
               {/* VAK Template Library */}
               <VAKTemplateLibrary contact={contact} />
