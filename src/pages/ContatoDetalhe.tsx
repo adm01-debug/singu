@@ -88,7 +88,20 @@ import {
   NLPTrainingMode,
   UnifiedScriptGenerator,
   CommunicationCoherencePanel,
-  NLPConversionMetrics
+  NLPConversionMetrics,
+  // Advanced NLP Components
+  RapportRealtimeCoach,
+  IncongruenceDetector,
+  MiltonianCalibration,
+  PerceptualPositions,
+  TOTEModelMapper,
+  HierarchyOfCriteria,
+  WellFormedOutcomeBuilder,
+  ChunkingNavigator,
+  AnchorTrackingSystem,
+  StateElicitationToolkit,
+  SubmodalityModifier,
+  SwishPatternGenerator
 } from '@/components/nlp';
 import {
   NeuroDecisionPath,
@@ -915,6 +928,52 @@ const ContatoDetalhe = () => {
 
               {/* Communication Coherence Panel - Message Alignment Checker */}
               <CommunicationCoherencePanel contact={contact} />
+
+              {/* ===================== ADVANCED NLP SUITE ===================== */}
+              
+              {/* 1. RAPPORT AVANÇADO */}
+              
+              {/* Real-Time Rapport Coach - Mirror/Match techniques */}
+              <RapportRealtimeCoach contact={contact} />
+              
+              {/* Incongruence Detector - Verbal vs Nonverbal signals */}
+              <IncongruenceDetector contact={contact} />
+              
+              {/* Miltonian Calibration - Hypnotic language patterns */}
+              <MiltonianCalibration contact={contact} />
+              
+              {/* Perceptual Positions - 1st/2nd/3rd person perspective tool */}
+              <PerceptualPositions contact={contact} />
+              
+              {/* 2. ESTRATÉGIAS DECISÓRIAS */}
+              
+              {/* TOTE Model Mapper - Test-Operate-Test-Exit decision flow */}
+              <TOTEModelMapper contact={contact} />
+              
+              {/* Hierarchy of Criteria - Priority-based decision mapping */}
+              <HierarchyOfCriteria contact={contact} />
+              
+              {/* Well-Formed Outcome Builder - SMART goal setter */}
+              <WellFormedOutcomeBuilder contact={contact} />
+              
+              {/* Chunking Navigator - Up/Down/Lateral abstraction levels */}
+              <ChunkingNavigator contact={contact} />
+              
+              {/* 3. ÂNCORAS & ESTADOS */}
+              
+              {/* Anchor Tracking System - Emotional anchors registry */}
+              <AnchorTrackingSystem contact={contact} />
+              
+              {/* State Elicitation Toolkit - Desired state induction */}
+              <StateElicitationToolkit contact={contact} />
+              
+              {/* Submodality Modifier - VAK fine-tuning for state change */}
+              <SubmodalityModifier contact={contact} />
+              
+              {/* Swish Pattern Generator - Rapid behavior change scripts */}
+              <SwishPatternGenerator contact={contact} />
+              
+              {/* ===================== END ADVANCED NLP SUITE ===================== */}
 
               {/* VAK Template Library */}
               <VAKTemplateLibrary contact={contact} />

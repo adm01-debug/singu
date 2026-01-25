@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
 import { VAKType } from '@/types/vak';
 import { getDominantVAK } from '@/lib/contact-utils';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface Submodality {
   id: string;
@@ -32,7 +33,7 @@ interface Submodality {
 }
 
 interface SubmodalityModifierProps {
-  contact: Contact;
+  contact?: Contact;
   className?: string;
 }
 

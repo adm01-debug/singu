@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface OutcomeCriterion {
   id: string;
@@ -27,7 +28,7 @@ interface OutcomeCriterion {
 }
 
 interface WellFormedOutcomeBuilderProps {
-  contact: Contact;
+  contact?: Contact;
   className?: string;
 }
 

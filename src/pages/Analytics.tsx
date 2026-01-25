@@ -65,7 +65,20 @@ import {
 } from '@/components/disc';
 import {
   NLPTrainingMode,
-  NLPConversionMetrics
+  NLPConversionMetrics,
+  // Advanced NLP Components
+  RapportRealtimeCoach,
+  IncongruenceDetector,
+  MiltonianCalibration,
+  PerceptualPositions,
+  TOTEModelMapper,
+  HierarchyOfCriteria,
+  WellFormedOutcomeBuilder,
+  ChunkingNavigator,
+  AnchorTrackingSystem,
+  StateElicitationToolkit,
+  SubmodalityModifier,
+  SwishPatternGenerator
 } from '@/components/nlp';
 import {
   NeuroEnrichedTriggers,
@@ -648,6 +661,43 @@ const Analytics = () => {
               
               {/* NLP Conversion Metrics - Performance Dashboard */}
               <NLPConversionMetrics />
+              
+              {/* ===================== ADVANCED NLP PORTFOLIO SUITE ===================== */}
+              
+              {/* RAPPORT TECHNIQUES - Portfolio Training */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RapportRealtimeCoach />
+                <MiltonianCalibration />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <IncongruenceDetector />
+                <PerceptualPositions />
+              </div>
+              
+              {/* DECISION STRATEGIES - Portfolio Training */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TOTEModelMapper />
+                <HierarchyOfCriteria />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <WellFormedOutcomeBuilder />
+                <ChunkingNavigator />
+              </div>
+              
+              {/* ANCHORS & STATES - Portfolio Training */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <AnchorTrackingSystem />
+                <StateElicitationToolkit />
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SubmodalityModifier />
+                <SwishPatternGenerator />
+              </div>
+              
+              {/* ===================== END ADVANCED NLP PORTFOLIO SUITE ===================== */}
             </motion.div>
           </TabsContent>
 

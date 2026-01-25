@@ -20,6 +20,7 @@ import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { getDominantVAK, getDISCProfile } from '@/lib/contact-utils';
 import { toast } from '@/hooks/use-toast';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface EmotionalState {
   id: string;
@@ -35,7 +36,7 @@ interface EmotionalState {
 }
 
 interface StateElicitationToolkitProps {
-  contact: Contact;
+  contact?: Contact;
   className?: string;
 }
 

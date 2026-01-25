@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface PositionAnalysis {
   position: 'first' | 'second' | 'third';
@@ -28,7 +29,7 @@ interface PositionAnalysis {
 }
 
 interface PerceptualPositionsProps {
-  contact: Contact;
+  contact?: Contact;
   situation?: string;
   className?: string;
 }

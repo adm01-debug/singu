@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface Criterion {
   id: string;
@@ -27,7 +28,7 @@ interface Criterion {
 }
 
 interface HierarchyOfCriteriaProps {
-  contact: Contact;
+  contact?: Contact;
   initialCriteria?: Criterion[];
   onCriteriaChange?: (criteria: Criterion[]) => void;
   className?: string;
@@ -46,12 +47,15 @@ const COMMON_CRITERIA = [
   { name: 'Relacionamento', howToAddress: 'Demonstre interesse genuíno, follow-up' }
 ];
 
+// Demo contact for training mode
 const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
-  contact,
+  contact: providedContact,
   initialCriteria = [],
   onCriteriaChange,
   className
 }) => {
+  const contact = providedContact || DEMO_CONTACT;
+  
   const [criteria, setCriteria] = useState<Criterion[]>(initialCriteria);
   const [newCriterion, setNewCriterion] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
