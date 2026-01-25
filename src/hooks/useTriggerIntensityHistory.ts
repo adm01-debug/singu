@@ -148,11 +148,11 @@ export function useTriggerIntensityHistory(contactId?: string) {
       const rate = stats.total > 0 ? stats.success / stats.total : 0;
       if (rate > bestRate) {
         bestRate = rate;
-        bestIntensity = level;
+        bestIntensity = level as 1 | 2 | 3 | 4 | 5;
       }
       if (rate < worstRate) {
         worstRate = rate;
-        worstIntensity = level;
+        worstIntensity = level as 1 | 2 | 3 | 4 | 5;
       }
     });
 
@@ -168,9 +168,9 @@ export function useTriggerIntensityHistory(contactId?: string) {
     
     let recommendedNext = lastUsed;
     if (lastResult === 'success' && lastUsed < 4) {
-      recommendedNext = Math.min(resistanceThreshold - 1, lastUsed + 1);
+      recommendedNext = Math.min(resistanceThreshold - 1, lastUsed + 1) as 1 | 2 | 3 | 4 | 5;
     } else if (lastResult === 'failure' || lastResult === 'resistance') {
-      recommendedNext = Math.max(1, lastUsed - 1);
+      recommendedNext = Math.max(1, lastUsed - 1) as 1 | 2 | 3 | 4 | 5;
     }
 
     return {
