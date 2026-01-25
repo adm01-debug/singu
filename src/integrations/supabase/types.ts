@@ -2500,6 +2500,244 @@ export type Database = {
           },
         ]
       }
+      trigger_ab_tests: {
+        Row: {
+          completed_at: string | null
+          confidence: number | null
+          contact_id: string | null
+          created_at: string
+          disc_profile: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          started_at: string
+          updated_at: string
+          user_id: string
+          variant_a_avg_rating: number | null
+          variant_a_conversions: number | null
+          variant_a_template: string | null
+          variant_a_trigger: string
+          variant_a_uses: number | null
+          variant_b_avg_rating: number | null
+          variant_b_conversions: number | null
+          variant_b_template: string | null
+          variant_b_trigger: string
+          variant_b_uses: number | null
+          winner: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          confidence?: number | null
+          contact_id?: string | null
+          created_at?: string
+          disc_profile?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+          variant_a_avg_rating?: number | null
+          variant_a_conversions?: number | null
+          variant_a_template?: string | null
+          variant_a_trigger: string
+          variant_a_uses?: number | null
+          variant_b_avg_rating?: number | null
+          variant_b_conversions?: number | null
+          variant_b_template?: string | null
+          variant_b_trigger: string
+          variant_b_uses?: number | null
+          winner?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          confidence?: number | null
+          contact_id?: string | null
+          created_at?: string
+          disc_profile?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+          variant_a_avg_rating?: number | null
+          variant_a_conversions?: number | null
+          variant_a_template?: string | null
+          variant_a_trigger?: string
+          variant_a_uses?: number | null
+          variant_b_avg_rating?: number | null
+          variant_b_conversions?: number | null
+          variant_b_template?: string | null
+          variant_b_trigger?: string
+          variant_b_uses?: number | null
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trigger_ab_tests_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trigger_bundles: {
+        Row: {
+          created_at: string
+          disc_profiles: string[] | null
+          id: string
+          is_system_bundle: boolean | null
+          metaprograms: string[] | null
+          name: string
+          neural_path: Json | null
+          scenario: string
+          sequence_timing: Json | null
+          success_rate: number | null
+          total_uses: number | null
+          triggers: string[]
+          updated_at: string
+          user_id: string
+          vak_profiles: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          disc_profiles?: string[] | null
+          id?: string
+          is_system_bundle?: boolean | null
+          metaprograms?: string[] | null
+          name: string
+          neural_path?: Json | null
+          scenario: string
+          sequence_timing?: Json | null
+          success_rate?: number | null
+          total_uses?: number | null
+          triggers: string[]
+          updated_at?: string
+          user_id: string
+          vak_profiles?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          disc_profiles?: string[] | null
+          id?: string
+          is_system_bundle?: boolean | null
+          metaprograms?: string[] | null
+          name?: string
+          neural_path?: Json | null
+          scenario?: string
+          sequence_timing?: Json | null
+          success_rate?: number | null
+          total_uses?: number | null
+          triggers?: string[]
+          updated_at?: string
+          user_id?: string
+          vak_profiles?: string[] | null
+        }
+        Relationships: []
+      }
+      trigger_channel_effectiveness: {
+        Row: {
+          channel: string
+          contact_id: string | null
+          created_at: string
+          effectiveness_score: number | null
+          id: string
+          last_used_at: string | null
+          successes: number | null
+          trigger_type: string
+          updated_at: string
+          user_id: string
+          uses: number | null
+        }
+        Insert: {
+          channel: string
+          contact_id?: string | null
+          created_at?: string
+          effectiveness_score?: number | null
+          id?: string
+          last_used_at?: string | null
+          successes?: number | null
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+          uses?: number | null
+        }
+        Update: {
+          channel?: string
+          contact_id?: string | null
+          created_at?: string
+          effectiveness_score?: number | null
+          id?: string
+          last_used_at?: string | null
+          successes?: number | null
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+          uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trigger_channel_effectiveness_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trigger_intensity_history: {
+        Row: {
+          contact_id: string
+          created_at: string
+          id: string
+          intensity_level: number
+          interaction_id: string | null
+          notes: string | null
+          result: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          id?: string
+          intensity_level: number
+          interaction_id?: string | null
+          notes?: string | null
+          result?: string | null
+          trigger_type: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          id?: string
+          intensity_level?: number
+          interaction_id?: string | null
+          notes?: string | null
+          result?: string | null
+          trigger_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trigger_intensity_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trigger_intensity_history_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trigger_usage_history: {
         Row: {
           channel: string | null
