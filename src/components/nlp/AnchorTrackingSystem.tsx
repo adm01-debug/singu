@@ -59,6 +59,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
   onAnchorsChange,
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [anchors, setAnchors] = useState<AnchorRecord[]>(initialAnchors);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAnchor, setNewAnchor] = useState({
@@ -165,7 +166,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Rastreie âncoras emocionais de {contact.firstName} - o que ativa estados positivos e negativos
+          Rastreie âncoras emocionais de {activeContact.firstName} - o que ativa estados positivos e negativos
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -395,7 +396,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
           <div className="bg-teal-500/10 rounded-lg p-3 border border-teal-500/30">
             <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
               <Heart className="h-4 w-4 text-teal-400" />
-              Estratégia de Âncoras para {contact.firstName}
+              Estratégia de Âncoras para {activeContact.firstName}
             </h4>
             <div className="text-xs space-y-1 text-muted-foreground">
               {positiveAnchors.length > 0 && (

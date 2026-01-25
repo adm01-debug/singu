@@ -84,6 +84,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
   situation = '',
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [currentPosition, setCurrentPosition] = useState<'first' | 'second' | 'third'>('first');
   const [analyses, setAnalyses] = useState<Record<string, PositionAnalysis>>({});
   const [currentNotes, setCurrentNotes] = useState('');
@@ -161,7 +162,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
       keyTension: analyses.first && analyses.second ? 
         'Equilibrar suas metas com as necessidades do cliente' : '',
       strategicAction: 'Use a perspectiva de observador para mediar',
-      communicationShift: `Adapte sua comunicação para ${contact.firstName} baseado na 2ª posição`
+      communicationShift: `Adapte sua comunicação para ${activeContact.firstName} baseado na 2ª posição`
     };
 
     return integration;
@@ -183,7 +184,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          Analise a comunicação sob 3 perspectivas: EU, {contact.firstName.toUpperCase()}, OBSERVADOR
+          Analise a comunicação sob 3 perspectivas: EU, {activeContact.firstName.toUpperCase()}, OBSERVADOR
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -207,7 +208,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                   {info.icon}
                 </div>
                 <div className="text-xs font-medium">
-                  {pos === 'first' ? 'EU' : pos === 'second' ? contact.firstName : 'Observador'}
+                  {pos === 'first' ? 'EU' : pos === 'second' ? activeContact.firstName : 'Observador'}
                 </div>
                 {hasAnalysis && (
                   <CheckCircle2 className="h-3 w-3 text-green-500 mx-auto mt-1" />
@@ -230,7 +231,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
               <h4 className="font-medium text-sm">{positionInfo.title}</h4>
               <p className="text-xs text-muted-foreground">
                 {currentPosition === 'second' 
-                  ? `Perspectiva de ${contact.firstName}` 
+                  ? `Perspectiva de ${activeContact.firstName}` 
                   : positionInfo.subtitle}
               </p>
             </div>
@@ -242,7 +243,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
             {positionInfo.questions.map((q, idx) => (
               <div key={idx} className="text-xs flex items-start gap-1">
                 <span className={positionInfo.color}>•</span>
-                <span>{q.replace('CLIENTE', contact.firstName)}</span>
+                <span>{q.replace('CLIENTE', activeContact.firstName)}</span>
               </div>
             ))}
           </div>

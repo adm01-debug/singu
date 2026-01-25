@@ -177,12 +177,13 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
   context = '',
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedPattern, setSelectedPattern] = useState<MiltonPattern | null>(null);
 
-  const vakType = getDominantVAK(contact) as VAKType || 'V';
-  const discProfile = (getDISCProfile(contact) as DISCProfile) || 'D';
+  const vakType = getDominantVAK(activeContact) as VAKType || 'V';
+  const discProfile = (getDISCProfile(activeContact) as DISCProfile) || 'D';
 
   // Adapt patterns to contact profile
   const adaptedPatterns = useMemo(() => {
@@ -216,14 +217,14 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
       }
 
       // Personalize with name
-      adapted = adapted.replace('[Nome]', contact.firstName);
+      adapted = adapted.replace('[Nome]', activeContact.firstName);
 
       return {
         ...pattern,
-        adaptedExample: `${contact.firstName}, ${adapted}`
+        adaptedExample: `${activeContact.firstName}, ${adapted}`
       };
     });
-  }, [contact, vakType, discProfile]);
+  }, [activeContact, vakType, discProfile]);
 
   const filteredPatterns = selectedCategory === 'all' 
     ? adaptedPatterns 
@@ -361,7 +362,7 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
 
                 <div className="bg-green-500/10 rounded p-2">
                   <div className="text-xs text-green-400 mb-1">
-                    Adaptado para {contact.firstName} ({vakType}/{discProfile}):
+                    Adaptado para {activeContact.firstName} ({vakType}/{discProfile}):
                   </div>
                   <p className="text-sm italic">"{pattern.adaptedExample}"</p>
                 </div>
@@ -378,7 +379,7 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
         <div className="bg-muted/20 rounded-lg p-3 text-xs">
           <div className="font-medium mb-2">💡 Dica de Calibração</div>
           <p className="text-muted-foreground">
-            Para {contact.firstName} ({vakType}/{discProfile}): Use {vakType === 'V' ? 'predicados visuais e ritmo rápido' : 
+            Para {activeContact.firstName} ({vakType}/{discProfile}): Use {vakType === 'V' ? 'predicados visuais e ritmo rápido' : 
             vakType === 'A' ? 'variação tonal e pausas dramáticas' :
             vakType === 'K' ? 'palavras de sensação e ritmo lento' :
             'dados específicos e lógica clara'}.

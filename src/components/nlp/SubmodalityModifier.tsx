@@ -62,11 +62,12 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
   contact,
   className
 }) => {
+  const activeContact = contact || DEMO_CONTACT;
   const [submodalities, setSubmodalities] = useState<Submodality[]>(SUBMODALITIES);
   const [selectedCategory, setSelectedCategory] = useState<'visual' | 'auditory' | 'kinesthetic'>('visual');
   const [activeModification, setActiveModification] = useState<string | null>(null);
 
-  const vakType = getDominantVAK(contact) as VAKType || 'V';
+  const vakType = getDominantVAK(activeContact) as VAKType || 'V';
 
   const updateSubmodality = (id: string, value: number) => {
     setSubmodalities(prev => prev.map(s => 
@@ -114,7 +115,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">
-          Modifique submodalidades VAK para mudar a intensidade emocional de {contact.firstName}
+          Modifique submodalidades VAK para mudar a intensidade emocional de {activeContact.firstName}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -146,7 +147,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
         <div className="bg-fuchsia-500/10 rounded-lg p-2 text-xs flex items-center gap-2">
           <Lightbulb className="h-3 w-3 text-fuchsia-400 shrink-0" />
           <span className="text-muted-foreground">
-            {contact.firstName} é {vakType === 'V' ? 'Visual' : vakType === 'A' ? 'Auditivo' : vakType === 'K' ? 'Cinestésico' : 'Digital'} - 
+            {activeContact.firstName} é {vakType === 'V' ? 'Visual' : vakType === 'A' ? 'Auditivo' : vakType === 'K' ? 'Cinestésico' : 'Digital'} - 
             submodalidades {getRecommendedCategory() === 'visual' ? 'visuais' : getRecommendedCategory() === 'auditory' ? 'auditivas' : 'cinestésicas'} terão mais impacto.
           </span>
         </div>
