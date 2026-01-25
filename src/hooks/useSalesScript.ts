@@ -13,7 +13,7 @@ export function useSalesScript(contact: Contact) {
     const metaprogram = getMetaprogramProfile(contact);
     const motivationDirection = metaprogram?.motivationDirection || 'toward';
     const referenceFrame = metaprogram?.referenceFrame || 'external';
-    const workingStyle = metaprogram?.sortingStyle || 'options';
+    const workingStyle = metaprogram?.workingStyle || 'options';
 
     const firstName = contact.firstName;
 

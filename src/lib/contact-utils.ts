@@ -19,13 +19,14 @@ export const DEFAULT_VAK_PROFILE: VAKProfile = {
   primary: 'V'
 };
 
-// Metaprogram Profile Interface
+// Metaprogram Profile Interface - matches types/metaprograms.ts
 export interface MetaprogramProfile {
-  motivationDirection?: 'toward' | 'away';
-  referenceFrame?: 'internal' | 'external';
-  sortingStyle?: 'options' | 'procedures';
-  chunkSize?: 'big_picture' | 'details';
-  timeOrientation?: 'past' | 'present' | 'future';
+  motivationDirection?: 'toward' | 'away_from' | 'balanced';
+  referenceFrame?: 'internal' | 'external' | 'balanced';
+  workingStyle?: 'options' | 'procedures' | 'balanced';
+  chunkSize?: 'general' | 'specific' | 'balanced';
+  actionFilter?: 'proactive' | 'reactive' | 'balanced';
+  comparisonStyle?: 'sameness' | 'difference' | 'balanced';
 }
 
 // Extended behavior that includes optional NLP/metaprogram data
