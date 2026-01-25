@@ -21,6 +21,7 @@ import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { getDominantVAK, getDISCProfile } from '@/lib/contact-utils';
 import { toast } from '@/hooks/use-toast';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface MiltonPattern {
   id: string;
@@ -34,7 +35,7 @@ interface MiltonPattern {
 }
 
 interface MiltonianCalibrationProps {
-  contact: Contact;
+  contact?: Contact;
   context?: string;
   className?: string;
 }

@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { getDominantVAK, getDISCProfile } from '@/lib/contact-utils';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface RapportSuggestion {
   category: 'mirroring' | 'pacing' | 'leading' | 'language';
@@ -34,7 +35,7 @@ interface RapportSuggestion {
 }
 
 interface RapportRealtimeCoachProps {
-  contact: Contact;
+  contact?: Contact;
   currentMessage?: string;
   onSuggestionApply?: (suggestion: string) => void;
   className?: string;
@@ -55,13 +56,15 @@ const DISC_PACE = {
 };
 
 const RapportRealtimeCoach: React.FC<RapportRealtimeCoachProps> = ({
-  contact,
+  contact: providedContact,
   currentMessage = '',
   onSuggestionApply,
   className
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const contact = providedContact || DEMO_CONTACT;
 
   const vakType = getDominantVAK(contact) as VAKType || 'V';
   const discProfile = (getDISCProfile(contact) as DISCProfile) || 'D';

@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { getDISCProfile } from '@/lib/contact-utils';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface TOTEPhase {
   id: 'test1' | 'operate' | 'test2' | 'exit';
@@ -32,16 +33,17 @@ interface TOTEPhase {
 }
 
 interface TOTEModelMapperProps {
-  contact: Contact;
+  contact?: Contact;
   decisionContext?: string;
   className?: string;
 }
 
 const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
-  contact,
+  contact: providedContact,
   decisionContext = '',
   className
 }) => {
+  const contact = providedContact || DEMO_CONTACT;
   const [currentPhase, setCurrentPhase] = useState<'test1' | 'operate' | 'test2' | 'exit'>('test1');
   const [observedBehaviors, setObservedBehaviors] = useState<Record<string, string[]>>({
     test1: [],

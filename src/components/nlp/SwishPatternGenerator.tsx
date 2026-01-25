@@ -21,6 +21,7 @@ import { Contact } from '@/types';
 import { VAKType } from '@/types/vak';
 import { getDominantVAK } from '@/lib/contact-utils';
 import { toast } from '@/hooks/use-toast';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface SwishPattern {
   id: string;
@@ -32,7 +33,7 @@ interface SwishPattern {
 }
 
 interface SwishPatternGeneratorProps {
-  contact: Contact;
+  contact?: Contact;
   className?: string;
 }
 

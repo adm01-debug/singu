@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { getDISCProfile, getContactBehavior } from '@/lib/contact-utils';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface Incongruence {
   id: string;
@@ -32,7 +33,7 @@ interface Incongruence {
 }
 
 interface IncongruenceDetectorProps {
-  contact: Contact;
+  contact?: Contact;
   interactions?: Array<{
     content: string;
     sentiment?: string;
@@ -65,12 +66,14 @@ const INCONGRUENCE_PATTERNS = {
 };
 
 const IncongruenceDetector: React.FC<IncongruenceDetectorProps> = ({
-  contact,
+  contact: providedContact,
   interactions = [],
   className
 }) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+
+  const contact = providedContact || DEMO_CONTACT;
 
   const discProfile = (getDISCProfile(contact) as DISCProfile) || 'D';
   const behavior = getContactBehavior(contact);

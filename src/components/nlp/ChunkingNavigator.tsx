@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { getDISCProfile, getContactBehavior } from '@/lib/contact-utils';
 import { toast } from '@/hooks/use-toast';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface ChunkLevel {
   level: 'abstract' | 'mid' | 'specific';
@@ -27,7 +28,7 @@ interface ChunkLevel {
 }
 
 interface ChunkingNavigatorProps {
-  contact: Contact;
+  contact?: Contact;
   topic?: string;
   className?: string;
 }

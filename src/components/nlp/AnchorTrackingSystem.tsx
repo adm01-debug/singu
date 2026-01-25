@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
+import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface AnchorRecord {
   id: string;
@@ -31,7 +32,7 @@ interface AnchorRecord {
 }
 
 interface AnchorTrackingSystemProps {
-  contact: Contact;
+  contact?: Contact;
   anchors?: AnchorRecord[];
   onAnchorsChange?: (anchors: AnchorRecord[]) => void;
   className?: string;
