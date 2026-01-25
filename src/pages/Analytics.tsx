@@ -58,6 +58,7 @@ import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking'
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
+import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
 import { 
   DISCTrainingMode, 
   DISCConversionMetrics
@@ -66,6 +67,9 @@ import {
   NLPTrainingMode,
   NLPConversionMetrics
 } from '@/components/nlp';
+import {
+  NeuroEnrichedTriggers
+} from '@/components/neuromarketing';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
@@ -499,11 +503,15 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-5xl grid-cols-8">
+          <TabsList className="grid w-full max-w-6xl grid-cols-9">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="disc" className="gap-1">
               <Brain className="w-3.5 h-3.5" />
               DISC
+            </TabsTrigger>
+            <TabsTrigger value="neuro" className="gap-1">
+              <Zap className="w-3.5 h-3.5" />
+              Neuro
             </TabsTrigger>
             <TabsTrigger value="rfm" className="gap-1">
               <BarChart3 className="w-3.5 h-3.5" />
@@ -521,6 +529,21 @@ const Analytics = () => {
             <TabsTrigger value="sentiment">Sentimento</TabsTrigger>
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
+
+          {/* Neuromarketing Tab - NEW */}
+          <TabsContent value="neuro" className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Main Neuro Portfolio Dashboard */}
+              <NeuroPortfolioDashboard />
+              
+              {/* Neuro-Enriched Triggers */}
+              <NeuroEnrichedTriggers showAll />
+            </motion.div>
+          </TabsContent>
 
           {/* DISC Analytics Tab */}
           <TabsContent value="disc" className="space-y-6">
