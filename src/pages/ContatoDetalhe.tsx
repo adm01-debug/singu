@@ -94,7 +94,12 @@ import {
   NeuroDecisionPath,
   PainClaimGainBuilder,
   NeuroEnrichedTriggers,
-  NeuroCompatibilityAnalysis
+  NeuroCompatibilityAnalysis,
+  NeuroScore,
+  NeuroAlerts,
+  NeuroRadarChart,
+  NeuroTimeline,
+  NeuroScriptGenerator
 } from '@/components/neuromarketing';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
@@ -633,6 +638,74 @@ const ContatoDetalhe = () => {
               />
 
               {/* === NEUROMARKETING SECTION === */}
+              
+              {/* Neuro Score + Alerts Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Neuro Score - Unified Score */}
+                <NeuroScore
+                  contactId={contact.id}
+                  contactName={`${contact.firstName} ${contact.lastName}`}
+                  discProfile={contact.behavior?.discProfile}
+                  interactions={contactInteractions.map(i => ({
+                    content: i.content,
+                    transcription: i.transcription,
+                    createdAt: i.createdAt.toISOString()
+                  }))}
+                />
+
+                {/* Neuro Alerts - Real-time Neural Insights */}
+                <NeuroAlerts
+                  contactId={contact.id}
+                  contactName={`${contact.firstName} ${contact.lastName}`}
+                  discProfile={contact.behavior?.discProfile}
+                  interactions={contactInteractions.map(i => ({
+                    content: i.content,
+                    transcription: i.transcription,
+                    createdAt: i.createdAt.toISOString()
+                  }))}
+                  maxAlerts={5}
+                />
+              </div>
+
+              {/* Neuro Radar + Timeline Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Neuro Radar Chart - 3-Brain Visualization */}
+                <NeuroRadarChart
+                  contactId={contact.id}
+                  contactName={`${contact.firstName} ${contact.lastName}`}
+                  discProfile={contact.behavior?.discProfile}
+                  interactions={contactInteractions.map(i => ({
+                    content: i.content,
+                    transcription: i.transcription
+                  }))}
+                />
+
+                {/* Neuro Timeline - Evolution History */}
+                <NeuroTimeline
+                  contactId={contact.id}
+                  contactName={`${contact.firstName} ${contact.lastName}`}
+                  discProfile={contact.behavior?.discProfile}
+                  interactions={contactInteractions.map(i => ({
+                    id: i.id,
+                    content: i.content,
+                    transcription: i.transcription,
+                    createdAt: i.createdAt.toISOString()
+                  }))}
+                  maxEntries={5}
+                />
+              </div>
+
+              {/* Neuro Script Generator - Brain-Optimized Communication */}
+              <NeuroScriptGenerator
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+                discProfile={contact.behavior?.discProfile}
+                interactions={contactInteractions.map(i => ({
+                  content: i.content,
+                  transcription: i.transcription
+                }))}
+              />
+
               {/* Neuro Decision Path - Brain System Analysis */}
               <NeuroDecisionPath
                 contactId={contact.id}

@@ -40,12 +40,12 @@ interface NeuroAlert {
   dismissed: boolean;
 }
 
-interface NeuroAlertsProps {
+export interface NeuroAlertsProps {
   contactId: string;
   contactName: string;
   discProfile?: string | null;
-  currentInteractions?: { content: string; transcription?: string; created_at?: string }[];
-  previousInteractions?: { content: string; transcription?: string; created_at?: string }[];
+  interactions?: { content: string; transcription?: string; createdAt?: string; created_at?: string }[];
+  maxAlerts?: number;
   className?: string;
 }
 
@@ -53,8 +53,8 @@ const NeuroAlerts = ({
   contactId, 
   contactName, 
   discProfile,
-  currentInteractions = [],
-  previousInteractions = [],
+  interactions = [],
+  maxAlerts = 5,
   className
 }: NeuroAlertsProps) => {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
@@ -64,16 +64,20 @@ const NeuroAlerts = ({
     NEUROCHEMICAL_INFO
   } = useNeuromarketing();
 
-  // Generate alerts based on comparing current vs previous profile
+  // Generate alerts based on analyzing current interactions
   const alerts = useMemo(() => {
     const alertsList: NeuroAlert[] = [];
     
     // Analyze current state
-    const currentText = currentInteractions
+    const currentText = interactions
       .map(i => `${i.content || ''} ${i.transcription || ''}`)
       .join('\n\n');
     
-    // Analyze previous state
+    // Split interactions into current (last 50%) and previous (first 50%) for comparison
+    const midPoint = Math.floor(interactions.length / 2);
+    const previousInteractions = interactions.slice(0, midPoint);
+    const currentInteractions = interactions.slice(midPoint);
+    
     const previousText = previousInteractions
       .map(i => `${i.content || ''} ${i.transcription || ''}`)
       .join('\n\n');
@@ -194,8 +198,8 @@ const NeuroAlerts = ({
       });
     }
     
-    return alertsList.filter(a => !dismissedIds.has(a.id));
-  }, [currentInteractions, previousInteractions, contactName, analyzeText, dismissedIds, BRAIN_SYSTEM_INFO]);
+    return alertsList.filter(a => !dismissedIds.has(a.id)).slice(0, maxAlerts);
+  }, [interactions, contactName, analyzeText, dismissedIds, maxAlerts, BRAIN_SYSTEM_INFO]);
 
   const dismissAlert = (id: string) => {
     setDismissedIds(prev => new Set([...prev, id]));
