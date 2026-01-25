@@ -72,7 +72,10 @@ export function useInteractions(contactId?: string, companyId?: string) {
     fetchInteractions();
   }, [fetchInteractions]);
 
-  const createInteraction = async (interaction: Omit<InteractionInsert, 'user_id'>) => {
+  const createInteraction = async (
+    interaction: Omit<InteractionInsert, 'user_id'>,
+    options?: { triggerDISCAnalysis?: boolean }
+  ) => {
     if (!user) return null;
 
     try {
@@ -89,6 +92,30 @@ export function useInteractions(contactId?: string, companyId?: string) {
         title: 'Interação registrada',
         description: 'A interação foi salva com sucesso.',
       });
+
+      // Trigger DISC auto-analysis if enabled and has content
+      if (options?.triggerDISCAnalysis !== false && data.contact_id) {
+        const fullText = [data.content, data.transcription].filter(Boolean).join('\n\n');
+        if (fullText.length >= 100) {
+          // Call DISC analyzer in background (non-blocking)
+          supabase.functions.invoke('disc-analyzer', {
+            body: {
+              texts: [fullText],
+              contactId: data.contact_id,
+              interactionId: data.id,
+              userId: user.id
+            }
+          }).then(({ data: discResult }) => {
+            if (discResult?.success) {
+              toast({
+                title: `🎯 Perfil DISC Atualizado`,
+                description: `Perfil: ${discResult.analysis?.blendProfile || discResult.analysis?.primaryProfile}`,
+              });
+            }
+          }).catch(console.error);
+        }
+      }
+
       return data;
     } catch (error) {
       console.error('Error creating interaction:', error);

@@ -58,6 +58,11 @@ import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking'
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
+import { 
+  DISCTrainingMode, 
+  DISCConversionMetrics,
+  DISCEvolutionTimeline 
+} from '@/components/disc';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
@@ -519,8 +524,16 @@ const Analytics = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
             >
+              {/* Main DISC Analytics */}
               <DISCAnalyticsPanel />
+              
+              {/* DISC Training Mode */}
+              <DISCTrainingMode />
+              
+              {/* DISC Conversion Metrics */}
+              <DISCConversionMetrics />
             </motion.div>
           </TabsContent>
 

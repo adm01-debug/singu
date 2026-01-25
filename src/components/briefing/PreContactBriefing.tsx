@@ -414,6 +414,77 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
                 </AnimatePresence>
               </div>
 
+              {/* DISC Sales Strategies Section */}
+              {briefing.discProfile.type !== 'N/A' && (
+                <div>
+                  <button
+                    onClick={() => toggleSection('disc')}
+                    className="flex items-center justify-between w-full text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-primary" />
+                      <span className="font-semibold text-sm">Estratégias DISC ({briefing.discProfile.type})</span>
+                    </div>
+                    {expandedSections.has('disc') ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </button>
+                  <AnimatePresence>
+                    {expandedSections.has('disc') && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-2 space-y-3">
+                          {/* Opening Strategies */}
+                          <div className="p-2 rounded-lg bg-primary/5 border border-primary/20">
+                            <p className="text-xs font-medium text-primary mb-1">🎯 Abertura</p>
+                            <ul className="text-xs space-y-0.5 text-muted-foreground">
+                              {briefing.discProfile.salesStrategies.opening.slice(0, 2).map((tip, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <CheckCircle className="w-3 h-3 text-primary shrink-0 mt-0.5" />
+                                  {tip}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Closing Strategies */}
+                          <div className="p-2 rounded-lg bg-success/5 border border-success/20">
+                            <p className="text-xs font-medium text-success mb-1">🏆 Fechamento</p>
+                            <ul className="text-xs space-y-0.5 text-muted-foreground">
+                              {briefing.discProfile.salesStrategies.closing.slice(0, 2).map((tip, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <CheckCircle className="w-3 h-3 text-success shrink-0 mt-0.5" />
+                                  {tip}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Avoid Behaviors */}
+                          <div className="p-2 rounded-lg bg-destructive/5 border border-destructive/20">
+                            <p className="text-xs font-medium text-destructive mb-1">⚠️ Evite</p>
+                            <ul className="text-xs space-y-0.5 text-muted-foreground">
+                              {briefing.discProfile.avoidBehaviors.slice(0, 2).map((avoid, i) => (
+                                <li key={i} className="flex items-start gap-1">
+                                  <X className="w-3 h-3 text-destructive shrink-0 mt-0.5" />
+                                  {avoid}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+
               {/* Objections Warning */}
               {briefing.recentObjections.length > 0 && (
                 <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
