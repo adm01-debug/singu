@@ -60,8 +60,7 @@ import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
 import { 
   DISCTrainingMode, 
-  DISCConversionMetrics,
-  DISCEvolutionTimeline 
+  DISCConversionMetrics
 } from '@/components/disc';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
