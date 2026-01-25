@@ -46,9 +46,10 @@ const COMMON_OBJECTIONS = [
 ];
 
 const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
-  contact,
+  contact: contactProp,
   className
 }) => {
+  const contact = contactProp || DEMO_CONTACT;
   const [patterns, setPatterns] = useState<SwishPattern[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [newPattern, setNewPattern] = useState({
