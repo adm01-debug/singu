@@ -34,6 +34,7 @@ import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAler
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
+import { CarnegieDashboard } from '@/components/carnegie';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
@@ -269,6 +270,10 @@ const Insights = () => {
                 <Briefcase className="w-4 h-4" />
                 Compatibilidade
               </TabsTrigger>
+              <TabsTrigger value="carnegie" className="gap-2">
+                <Heart className="w-4 h-4" />
+                Carnegie
+              </TabsTrigger>
             </TabsList>
             <Button 
               onClick={handleRefreshInsights} 
@@ -289,6 +294,10 @@ const Insights = () => {
                 <CompatibilityAlertsList maxItems={10} />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="carnegie" className="mt-0">
+            <CarnegieDashboard />
           </TabsContent>
 
           <TabsContent value="insights" className="mt-0 space-y-6">
