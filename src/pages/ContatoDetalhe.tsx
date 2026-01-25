@@ -90,6 +90,12 @@ import {
   CommunicationCoherencePanel,
   NLPConversionMetrics
 } from '@/components/nlp';
+import {
+  NeuroDecisionPath,
+  PainClaimGainBuilder,
+  NeuroEnrichedTriggers,
+  NeuroCompatibilityAnalysis
+} from '@/components/neuromarketing';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
@@ -625,6 +631,36 @@ const ContatoDetalhe = () => {
                   createdAt: i.createdAt.toISOString()
                 }))}
               />
+
+              {/* === NEUROMARKETING SECTION === */}
+              {/* Neuro Decision Path - Brain System Analysis */}
+              <NeuroDecisionPath
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+                discProfile={contact.behavior?.discProfile}
+                interactions={contactInteractions.map(i => ({
+                  content: i.content,
+                  transcription: i.transcription
+                }))}
+              />
+
+              {/* Pain-Claim-Gain Builder - SalesBrain Framework */}
+              <PainClaimGainBuilder
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Neuro-Enriched Triggers */}
+              <NeuroEnrichedTriggers discProfile={contact.behavior?.discProfile} />
+
+              {/* Neuro Compatibility Analysis */}
+              <NeuroCompatibilityAnalysis
+                salespersonDISC="I"
+                contactDISC={contact.behavior?.discProfile as 'D' | 'I' | 'S' | 'C' | null}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* === END NEUROMARKETING SECTION === */}
 
               {/* DISC Enterprise Profile - Advanced Behavioral Analysis */}
               <DISCProfileExpanded 
