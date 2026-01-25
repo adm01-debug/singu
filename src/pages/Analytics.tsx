@@ -50,6 +50,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { TriggerAnalytics } from '@/components/triggers/TriggerAnalytics';
+import { AdvancedTriggersPanel } from '@/components/triggers/AdvancedTriggersPanel';
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
@@ -1132,7 +1133,10 @@ const Analytics = () => {
 
           {/* Triggers Tab */}
           <TabsContent value="triggers" className="space-y-6">
-            <TriggerAnalytics />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TriggerAnalytics />
+              <AdvancedTriggersPanel />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -47,6 +47,7 @@ import { InteractionTimeline } from '@/components/contacts/InteractionTimeline';
 import { InteractionForm } from '@/components/forms/InteractionForm';
 import { AIWritingAssistant } from '@/components/contacts/AIWritingAssistant';
 import { ClientTriggerPanel } from '@/components/triggers/ClientTriggerPanel';
+import { AdvancedTriggersPanel } from '@/components/triggers/AdvancedTriggersPanel';
 import { PersuasionTemplates } from '@/components/triggers/PersuasionTemplates';
 import { TriggerUsageHistory } from '@/components/triggers/TriggerUsageHistory';
 import { VAKTemplateLibrary } from '@/components/triggers/VAKTemplateLibrary';
@@ -1005,6 +1006,9 @@ const ContatoDetalhe = () => {
 
               {/* Mental Triggers Panel */}
               <ClientTriggerPanel contact={contact} />
+
+              {/* Advanced Triggers Panel - Enterprise Features */}
+              <AdvancedTriggersPanel contact={contact} />
 
               {/* Persuasion Templates */}
               <PersuasionTemplates contact={contact} />
