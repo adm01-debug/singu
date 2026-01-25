@@ -34,6 +34,7 @@ export type AdvancedTriggerType =
   | 'contrast_principle'   // Princípio do contraste
   | 'unity';               // Unidade/identidade compartilhada
 
+// Union of all trigger types (base + advanced + extended)
 export type AllTriggerTypes = TriggerType | AdvancedTriggerType;
 
 // ============================================
