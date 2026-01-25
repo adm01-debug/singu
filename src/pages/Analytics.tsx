@@ -68,7 +68,9 @@ import {
   NLPConversionMetrics
 } from '@/components/nlp';
 import {
-  NeuroEnrichedTriggers
+  NeuroEnrichedTriggers,
+  NeuroRadarChart,
+  NeuroTimeline
 } from '@/components/neuromarketing';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
@@ -539,6 +541,20 @@ const Analytics = () => {
             >
               {/* Main Neuro Portfolio Dashboard */}
               <NeuroPortfolioDashboard />
+              
+              {/* Neuro Radar + Timeline Row - Portfolio Aggregated View */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <NeuroRadarChart 
+                  discProfile={null}
+                  interactions={[]}
+                  title="Balanço Neural Médio do Portfólio"
+                />
+                <NeuroTimeline
+                  contactName="Portfólio Geral"
+                  interactions={[]}
+                  maxEntries={8}
+                />
+              </div>
               
               {/* Neuro-Enriched Triggers */}
               <NeuroEnrichedTriggers showAll />

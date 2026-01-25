@@ -14,23 +14,25 @@ import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Pola
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-interface NeuroRadarChartProps {
-  contactId: string;
-  contactName: string;
+export interface NeuroRadarChartProps {
+  contactId?: string;
+  contactName?: string;
   discProfile?: string | null;
   interactions?: { content: string; transcription?: string }[];
   showLegend?: boolean;
   compact?: boolean;
+  title?: string;
   className?: string;
 }
 
 const NeuroRadarChart = ({ 
   contactId, 
-  contactName, 
+  contactName = 'Portfólio', 
   discProfile,
   interactions = [],
   showLegend = true,
   compact = false,
+  title,
   className
 }: NeuroRadarChartProps) => {
   const { 
@@ -133,7 +135,7 @@ const NeuroRadarChart = ({
             >
               <Brain className="h-5 w-5 text-primary" />
             </motion.div>
-            Radar dos 3 Cérebros
+            {title || 'Radar dos 3 Cérebros'}
           </CardTitle>
           <Badge className={cn(BRAIN_SYSTEM_INFO[dominantBrain].bgColor)}>
             {BRAIN_SYSTEM_INFO[dominantBrain].icon} Dominante

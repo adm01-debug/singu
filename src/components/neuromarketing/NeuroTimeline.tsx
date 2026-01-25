@@ -26,16 +26,19 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 interface Interaction {
-  id: string;
+  id?: string;
   content: string;
   transcription?: string;
-  created_at: string;
+  created_at?: string;
+  createdAt?: string;
 }
 
-interface NeuroTimelineProps {
-  contactId: string;
-  contactName: string;
+export interface NeuroTimelineProps {
+  contactId?: string;
+  contactName?: string;
+  discProfile?: string | null;
   interactions?: Interaction[];
+  maxEntries?: number;
   className?: string;
 }
 
@@ -51,11 +54,13 @@ interface TimelinePoint {
 
 const NeuroTimeline = ({ 
   contactId, 
-  contactName, 
+  contactName = 'Portfólio', 
+  discProfile,
   interactions = [],
+  maxEntries = 5,
   className
 }: NeuroTimelineProps) => {
-  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 5 });
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: maxEntries });
   const { analyzeText, BRAIN_SYSTEM_INFO } = useNeuromarketing();
 
   // Group interactions by month and analyze each period
@@ -63,13 +68,17 @@ const NeuroTimeline = ({
     if (interactions.length === 0) return [];
 
     // Sort by date
-    const sorted = [...interactions].sort((a, b) => 
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-    );
+    const sorted = [...interactions].sort((a, b) => {
+      const dateA = a.created_at || a.createdAt || '';
+      const dateB = b.created_at || b.createdAt || '';
+      return new Date(dateA).getTime() - new Date(dateB).getTime();
+    });
 
     // Group by month
     const grouped = sorted.reduce((acc, interaction) => {
-      const month = format(parseISO(interaction.created_at), 'yyyy-MM');
+      const dateStr = interaction.created_at || interaction.createdAt;
+      if (!dateStr) return acc;
+      const month = format(parseISO(dateStr), 'yyyy-MM');
       if (!acc[month]) {
         acc[month] = [];
       }
@@ -196,7 +205,7 @@ const NeuroTimeline = ({
       
       <CardContent className="space-y-4">
         {/* Navigation */}
-        {timelineData.length > 5 && (
+        {timelineData.length > maxEntries && (
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"

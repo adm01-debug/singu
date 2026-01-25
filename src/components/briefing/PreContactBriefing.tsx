@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { usePreContactBriefing } from '@/hooks/usePreContactBriefing';
+import { NeuroBriefingCard } from '@/components/neuromarketing';
 import { cn } from '@/lib/utils';
 
 const interactionTypeIcons: Record<string, React.ElementType> = {
@@ -265,6 +266,13 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
                   <p className="font-medium">{briefing.lastInteractionSummary}</p>
                 </div>
               )}
+
+              {/* Neuro Briefing Card - Quick Neural Summary */}
+              <NeuroBriefingCard
+                contactName={`${briefing.contact.first_name} ${briefing.contact.last_name}`}
+                discProfile={briefing.discProfile?.type !== 'N/A' ? briefing.discProfile?.type : null}
+                interactions={[]}
+              />
 
               <Separator />
 
