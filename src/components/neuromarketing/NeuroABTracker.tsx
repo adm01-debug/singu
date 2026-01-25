@@ -35,8 +35,8 @@ interface ApproachResult {
 }
 
 interface NeuroABTrackerProps {
-  contactId: string;
-  contactName: string;
+  contactId?: string;
+  contactName?: string;
   results?: ApproachResult[];
   onRecordResult?: (result: Omit<ApproachResult, 'id' | 'usedAt'>) => void;
   className?: string;

@@ -99,7 +99,13 @@ import {
   NeuroAlerts,
   NeuroRadarChart,
   NeuroTimeline,
-  NeuroScriptGenerator
+  NeuroScriptGenerator,
+  NeuroABTracker,
+  NeuroHeatmapCalendar,
+  NeuroObjectionHandler,
+  NeuroTrainingMode,
+  NeuroTooltipSystem,
+  NeurochemicalInfluenceMap
 } from '@/components/neuromarketing';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
@@ -732,6 +738,27 @@ const ContatoDetalhe = () => {
                 contactDISC={contact.behavior?.discProfile as 'D' | 'I' | 'S' | 'C' | null}
                 contactName={`${contact.firstName} ${contact.lastName}`}
               />
+
+              {/* Neuro A/B Tracker - Approach Success Tracking */}
+              <NeuroABTracker
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Neuro Heatmap Calendar - Best Contact Times */}
+              <NeuroHeatmapCalendar
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Neuro Objection Handler - Brain-Specific Responses */}
+              <NeuroObjectionHandler
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+
+              {/* Neurochemical Influence Map - Interactive Chemical Triggers */}
+              <NeurochemicalInfluenceMap />
 
               {/* === END NEUROMARKETING SECTION === */}
 
