@@ -29,6 +29,7 @@ import Network from "./pages/Network";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import RelatorioContato from "./pages/RelatorioContato";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +125,11 @@ const AnimatedRoutes = () => {
         <Route path="/network" element={
           <RequireAuth>
             <PageTransition><Network /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/relatorio/:id" element={
+          <RequireAuth>
+            <PageTransition><RelatorioContato /></PageTransition>
           </RequireAuth>
         } />
             
