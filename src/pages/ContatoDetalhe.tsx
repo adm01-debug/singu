@@ -78,12 +78,13 @@ import { ContactPreferencesPanel } from '@/components/preferences/ContactPrefere
 import { SocialProfilesPanel } from '@/components/social/SocialProfilesPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCProfileExpanded from '@/components/profile/DISCProfileExpanded';
-import { 
+import {
   DISCEvolutionTimeline, 
   DISCSalesScriptGenerator, 
   DISCTemplateLibrary,
   DISCCompatibilityAlerts
 } from '@/components/disc';
+import { CarnegieQuickAccess } from '@/components/carnegie';
 import {
   NLPEvolutionTimeline,
   NLPTrainingMode,
@@ -624,6 +625,8 @@ const ContatoDetalhe = () => {
               {/* RFM Analysis - Individual Contact */}
               <RFMAnalysisPanel contactId={contact.id} />
 
+              {/* === CARNEGIE PRINCIPLES QUICK ACCESS === */}
+              <CarnegieQuickAccess contact={contact} />
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
                 contact={contact}
