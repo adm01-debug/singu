@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.bitrix24-webhook]
 verify_jwt = false
+
+[functions.evolution-api]
+verify_jwt = false
