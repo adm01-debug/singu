@@ -6,43 +6,71 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface EnrichLayerResponse {
-  success: boolean;
-  data?: {
-    first_name?: string;
-    last_name?: string;
-    headline?: string;
-    summary?: string;
+// EnrichLayer returns the profile data directly (not wrapped in data object)
+interface EnrichLayerProfile {
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  headline?: string;
+  summary?: string;
+  occupation?: string;
+  location_str?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  country_full_name?: string;
+  industry?: string;
+  connections?: number;
+  profile_pic_url?: string;
+  background_cover_image_url?: string;
+  public_identifier?: string;
+  experiences?: Array<{
+    title?: string;
+    company?: string;
+    company_linkedin_profile_url?: string;
     location?: string;
-    industry?: string;
-    connections?: number;
-    profile_pic_url?: string;
-    background_cover_url?: string;
-    public_identifier?: string;
-    experiences?: Array<{
-      title?: string;
-      company?: string;
-      company_linkedin_profile_url?: string;
-      location?: string;
-      starts_at?: { year?: number; month?: number; day?: number };
-      ends_at?: { year?: number; month?: number; day?: number };
-      description?: string;
-    }>;
-    education?: Array<{
-      school?: string;
-      degree_name?: string;
-      field_of_study?: string;
-      starts_at?: { year?: number; month?: number; day?: number };
-      ends_at?: { year?: number; month?: number; day?: number };
-    }>;
-    skills?: string[];
-    certifications?: Array<{
-      name?: string;
-      authority?: string;
-    }>;
-    languages?: string[];
-  };
-  error?: string;
+    starts_at?: { year?: number; month?: number; day?: number };
+    ends_at?: { year?: number; month?: number; day?: number };
+    description?: string;
+    logo_url?: string;
+  }>;
+  education?: Array<{
+    school?: string;
+    degree_name?: string;
+    field_of_study?: string;
+    starts_at?: { year?: number; month?: number; day?: number };
+    ends_at?: { year?: number; month?: number; day?: number };
+    description?: string;
+    logo_url?: string;
+    school_linkedin_profile_url?: string;
+  }>;
+  certifications?: Array<{
+    name?: string;
+    authority?: string;
+    starts_at?: { year?: number; month?: number; day?: number };
+    ends_at?: { year?: number; month?: number; day?: number };
+  }>;
+  languages?: string[];
+  activities?: Array<{
+    title?: string;
+    link?: string;
+    activity_status?: string;
+  }>;
+  groups?: Array<{
+    name?: string;
+    url?: string;
+  }>;
+  recommendations?: string[];
+  accomplishment_projects?: Array<{
+    title?: string;
+    description?: string;
+    url?: string;
+  }>;
+  volunteer_work?: Array<{
+    title?: string;
+    company?: string;
+    description?: string;
+  }>;
 }
 
 serve(async (req) => {
@@ -71,31 +99,51 @@ serve(async (req) => {
 
     console.log('Enriching LinkedIn profile:', linkedinUrl);
 
-    // Call EnrichLayer API - using the correct /profile endpoint
-    const enrichResponse = await fetch(
-      `https://enrichlayer.com/api/v2/profile?url=${encodeURIComponent(linkedinUrl)}`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-        },
-      }
-    );
+    // Call EnrichLayer API - using /profile endpoint with url parameter
+    const apiUrl = `https://enrichlayer.com/api/v2/profile?url=${encodeURIComponent(linkedinUrl)}`;
+    console.log('Calling EnrichLayer API:', apiUrl);
+    
+    const enrichResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+      },
+    });
+
+    const responseText = await enrichResponse.text();
+    console.log('EnrichLayer response status:', enrichResponse.status);
+    console.log('EnrichLayer response preview:', responseText.substring(0, 1000));
 
     if (!enrichResponse.ok) {
-      const errorText = await enrichResponse.text();
-      console.error('EnrichLayer API error:', enrichResponse.status, errorText);
+      console.error('EnrichLayer API error:', enrichResponse.status, responseText);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: `EnrichLayer API error: ${enrichResponse.status}` 
+          error: `EnrichLayer API error: ${enrichResponse.status}`,
+          details: responseText.substring(0, 500)
         }),
         { status: enrichResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const enrichData: EnrichLayerResponse = await enrichResponse.json();
-    console.log('EnrichLayer response received');
+    let profile: EnrichLayerProfile;
+    try {
+      profile = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse EnrichLayer response:', parseError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Failed to parse API response',
+          rawResponse: responseText.substring(0, 500)
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('EnrichLayer profile received:', profile.full_name || profile.first_name);
+    console.log('Experience count:', profile.experiences?.length || 0);
+    console.log('Education count:', profile.education?.length || 0);
 
     // If contactId provided, save to social_profiles table
     if (contactId) {
@@ -109,21 +157,21 @@ serve(async (req) => {
 
         const { data: { user } } = await supabaseClient.auth.getUser();
         
-        if (user && enrichData.data) {
+        if (user && profile) {
           const profileData = {
             contact_id: contactId,
             user_id: user.id,
             platform: 'linkedin',
             profile_url: linkedinUrl,
-            profile_data: enrichData.data,
-            headline: enrichData.data.headline,
-            current_company: enrichData.data.experiences?.[0]?.company,
-            current_position: enrichData.data.experiences?.[0]?.title,
-            location: enrichData.data.location,
-            skills: enrichData.data.skills || [],
-            certifications: enrichData.data.certifications?.map(c => c.name) || [],
-            education: enrichData.data.education || [],
-            experience: enrichData.data.experiences || [],
+            profile_data: profile,
+            headline: profile.headline,
+            current_company: profile.experiences?.[0]?.company,
+            current_position: profile.experiences?.[0]?.title,
+            location: profile.location_str || `${profile.city || ''} ${profile.state || ''} ${profile.country || ''}`.trim(),
+            skills: [], // Skills need separate API call with skills=include
+            certifications: profile.certifications?.map(c => c.name).filter(Boolean) || [],
+            education: profile.education || [],
+            experience: profile.experiences || [],
             last_scraped_at: new Date().toISOString(),
           };
 
@@ -143,17 +191,28 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        data: enrichData.data,
+        data: profile,
         profile: {
-          name: `${enrichData.data?.first_name || ''} ${enrichData.data?.last_name || ''}`.trim(),
-          headline: enrichData.data?.headline,
-          location: enrichData.data?.location,
-          industry: enrichData.data?.industry,
-          currentPosition: enrichData.data?.experiences?.[0]?.title,
-          currentCompany: enrichData.data?.experiences?.[0]?.company,
-          skills: enrichData.data?.skills || [],
-          experienceCount: enrichData.data?.experiences?.length || 0,
-          educationCount: enrichData.data?.education?.length || 0,
+          name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+          firstName: profile.first_name,
+          lastName: profile.last_name,
+          headline: profile.headline,
+          summary: profile.summary,
+          occupation: profile.occupation,
+          location: profile.location_str || `${profile.city || ''} ${profile.state || ''}`.trim(),
+          country: profile.country_full_name || profile.country,
+          industry: profile.industry,
+          profilePicUrl: profile.profile_pic_url,
+          connections: profile.connections,
+          currentPosition: profile.experiences?.[0]?.title,
+          currentCompany: profile.experiences?.[0]?.company,
+          experiences: profile.experiences || [],
+          education: profile.education || [],
+          certifications: profile.certifications || [],
+          languages: profile.languages || [],
+          recommendations: profile.recommendations || [],
+          experienceCount: profile.experiences?.length || 0,
+          educationCount: profile.education?.length || 0,
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
