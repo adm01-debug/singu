@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.firecrawl-scrape]
 verify_jwt = false
+
+[functions.enrichlayer-linkedin]
+verify_jwt = false
