@@ -1,10 +1,43 @@
 // Core Types for RelateIQ System - Extended Behavioral Model
 
+import { TemperamentProfile } from './temperament';
+
 export type ContactRole = 'owner' | 'manager' | 'buyer' | 'contact' | 'decision_maker' | 'influencer';
 
 export type InteractionType = 'whatsapp' | 'call' | 'email' | 'meeting' | 'note' | 'social';
 
 export type SentimentType = 'positive' | 'neutral' | 'negative';
+
+// Personality Framework Types
+export interface BigFiveProfile {
+  openness: number;
+  conscientiousness: number;
+  extraversion: number;
+  agreeableness: number;
+  neuroticism: number;
+  confidence: number;
+  analyzedAt: string;
+}
+
+export interface MBTIProfile {
+  type: string;
+  confidence: number;
+  dimensions: {
+    E_I: { E: number; I: number };
+    S_N: { S: number; N: number };
+    T_F: { T: number; F: number };
+    J_P: { J: number; P: number };
+  };
+  analyzedAt: string;
+}
+
+export interface EnneagramProfile {
+  type: number;
+  wing: number | null;
+  confidence: number;
+  scores: Record<number, number>;
+  analyzedAt: string;
+}
 
 // DISC Profile Types
 export type DISCProfile = 'D' | 'I' | 'S' | 'C' | null;
@@ -188,6 +221,12 @@ export interface ContactBehavior {
   competitorsUsed: string[];
   bestTimeToApproach?: string;
   seasonalNotes?: string;
+  
+  // Personality Frameworks (optional enrichment)
+  temperamentProfile?: TemperamentProfile;
+  bigFiveProfile?: BigFiveProfile;
+  mbtiProfile?: MBTIProfile;
+  enneagramProfile?: EnneagramProfile;
 }
 
 export interface Contact {
