@@ -85,7 +85,7 @@ import {
   DISCCompatibilityAlerts
 } from '@/components/disc';
 import { CarnegieQuickAccess } from '@/components/carnegie';
-import { BigFiveProfileCard, MBTIProfileCard, EnneagramProfileCard } from '@/components/personality';
+import { BigFiveProfileCard, MBTIProfileCard, EnneagramProfileCard, TemperamentProfileCard } from '@/components/personality';
 import {
   NLPEvolutionTimeline,
   NLPTrainingMode,
@@ -950,6 +950,12 @@ const ContatoDetalhe = () => {
 
               {/* Enneagram - 9 Personality Types */}
               <EnneagramProfileCard 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* 4 Temperaments - Sanguine, Choleric, Melancholic, Phlegmatic */}
+              <TemperamentProfileCard 
                 contact={contact}
                 interactions={contactInteractions}
               />
