@@ -85,6 +85,7 @@ import {
   DISCCompatibilityAlerts
 } from '@/components/disc';
 import { CarnegieQuickAccess } from '@/components/carnegie';
+import { BigFiveProfileCard, MBTIProfileCard, EnneagramProfileCard } from '@/components/personality';
 import {
   NLPEvolutionTimeline,
   NLPTrainingMode,
@@ -933,8 +934,28 @@ const ContatoDetalhe = () => {
                 }))}
               />
 
+              {/* === PERSONALITY FRAMEWORKS === */}
+              
+              {/* Big Five (OCEAN) - 5 Major Personality Traits */}
+              <BigFiveProfileCard 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* MBTI - 16 Personality Types */}
+              <MBTIProfileCard 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
+              {/* Enneagram - 9 Personality Types */}
+              <EnneagramProfileCard 
+                contact={contact}
+                interactions={contactInteractions}
+              />
+
               {/* Behavior Evolution Chart */}
-              <BehaviorEvolutionChart 
+              <BehaviorEvolutionChart
                 contactId={contact.id}
                 contactName={`${contact.firstName} ${contact.lastName}`}
               />
