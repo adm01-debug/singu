@@ -327,13 +327,24 @@ const ContatoDetalhe = () => {
   const [showAddInteraction, setShowAddInteraction] = useState(false);
   const [isSubmittingInteraction, setIsSubmittingInteraction] = useState(false);
 
+  // Transform data to component-compatible format (or null if not ready)
+  const contact = rawContact ? transformContact(rawContact, rawCompany?.name) : null;
+  const contactInteractions = rawInteractions?.map(transformInteraction) || [];
+  const contactInsights = insights || [];
+  const contactAlerts = alerts || [];
+
+  // Generational Analysis - MUST be called before any conditional returns
+  const { analysis: generationalAnalysis, hasData: hasGenerationalData } = useGenerationalAnalysis({
+    contact: contact as any
+  });
+
   // Show loading state
   if (loading) {
     return <ContactDetailSkeleton />;
   }
 
   // Show error state
-  if (error || !rawContact) {
+  if (error || !contact) {
     return (
       <AppLayout>
         <div className="p-6 text-center">
@@ -346,17 +357,6 @@ const ContatoDetalhe = () => {
       </AppLayout>
     );
   }
-
-  // Transform data to component-compatible format
-  const contact = transformContact(rawContact, rawCompany?.name);
-  const contactInteractions = rawInteractions.map(transformInteraction);
-  const contactInsights = insights;
-  const contactAlerts = alerts;
-
-  // Generational Analysis
-  const { analysis: generationalAnalysis, hasData: hasGenerationalData } = useGenerationalAnalysis({
-    contact: contact as any
-  });
 
   const handleSaveBehavior = async (behavior: ContactBehavior) => {
     await updateBehavior(behavior as unknown as Record<string, unknown>);
