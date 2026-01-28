@@ -122,8 +122,15 @@ import {
   NeuroTooltipSystem,
   NeurochemicalInfluenceMap
 } from '@/components/neuromarketing';
+import { 
+  GenerationBadge, 
+  GenerationalQuickPanel,
+  GenerationProfileCard,
+  GenerationalIntegrationPanel 
+} from '@/components/generation';
 import { CadenceSettingsDialog } from '@/components/cadence/CadenceSettingsDialog';
 import { useContactDetail } from '@/hooks/useContactDetail';
+import { useGenerationalAnalysis } from '@/hooks/useGenerationalAnalysis';
 import { useContacts, Contact as ContactFromHook } from '@/hooks/useContacts';
 import { useDISCAutoAnalysis } from '@/hooks/useDISCAutoAnalysis';
 import { format } from 'date-fns';
@@ -345,6 +352,11 @@ const ContatoDetalhe = () => {
   const contactInsights = insights;
   const contactAlerts = alerts;
 
+  // Generational Analysis
+  const { analysis: generationalAnalysis, hasData: hasGenerationalData } = useGenerationalAnalysis({
+    contact: contact as any
+  });
+
   const handleSaveBehavior = async (behavior: ContactBehavior) => {
     await updateBehavior(behavior as unknown as Record<string, unknown>);
     setIsEditingBehavior(false);
@@ -414,6 +426,14 @@ const ContatoDetalhe = () => {
                         <RoleBadge role={contact.role} />
                         {contact.behavior?.discProfile && (
                           <DISCBadge profile={contact.behavior.discProfile} size="sm" showLabel={false} />
+                        )}
+                        {hasGenerationalData && generationalAnalysis && (
+                          <GenerationBadge 
+                            generation={generationalAnalysis.generation.type} 
+                            showAge 
+                            age={generationalAnalysis.age}
+                            size="sm"
+                          />
                         )}
                         <SentimentIndicator sentiment={contact.sentiment} size="sm" />
                       </div>
@@ -627,6 +647,15 @@ const ContatoDetalhe = () => {
 
               {/* === CARNEGIE PRINCIPLES QUICK ACCESS === */}
               <CarnegieQuickAccess contact={contact} />
+
+              {/* === GENERATIONAL INTELLIGENCE SECTION === */}
+              {hasGenerationalData && generationalAnalysis && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <GenerationalQuickPanel analysis={generationalAnalysis} />
+                  <GenerationalIntegrationPanel analysis={generationalAnalysis} />
+                </div>
+              )}
+
               {/* Quick NLP Insights - Resumo no Topo */}
               <QuickNLPInsights 
                 contact={contact}
