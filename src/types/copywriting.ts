@@ -256,3 +256,192 @@ export interface CopywritingGenerationOptions {
   mainBenefit?: string;
   mainPain?: string;
 }
+
+// ============================================
+// 9. PAS - PROBLEM, AGITATE, SOLUTION
+// ============================================
+export interface PASSection {
+  stage: 'problem' | 'agitate' | 'solution';
+  title: string;
+  content: string;
+  techniques: string[];
+  emotionalIntensity: 1 | 2 | 3 | 4 | 5;
+  tips: string[];
+}
+
+export interface PASTemplate {
+  id: string;
+  name: string;
+  channel: string;
+  targetProfile?: { disc?: string; vak?: string };
+  sections: PASSection[];
+  estimatedConversion: number;
+}
+
+export interface PASScript {
+  id: string;
+  problem: string;
+  agitate: string;
+  solution: string;
+  generatedAt: string;
+}
+
+// ============================================
+// 10. 4Ps - PROMISE, PICTURE, PROOF, PUSH
+// ============================================
+export interface FourPsSection {
+  stage: 'promise' | 'picture' | 'proof' | 'push';
+  title: string;
+  content: string;
+  techniques: string[];
+  powerWords: string[];
+}
+
+export interface FourPsTemplate {
+  id: string;
+  name: string;
+  channel: string;
+  sections: FourPsSection[];
+  bestFor: string[];
+}
+
+// ============================================
+// 11. STORYTELLING STRUCTURES
+// ============================================
+export type StoryArc = 
+  | 'hero_journey'        // Jornada do Herói
+  | 'before_after'        // Antes e Depois
+  | 'problem_solution'    // Problema → Solução
+  | 'rags_to_riches'      // Da Lama ao Luxo
+  | 'overcoming_monster'  // Superando Obstáculos
+  | 'quest'               // A Busca
+  | 'transformation';     // Transformação
+
+export interface StoryElement {
+  id: string;
+  name: string;
+  description: string;
+  example: string;
+  position: number;
+}
+
+export interface StorytellingTemplate {
+  id: string;
+  arc: StoryArc;
+  name: string;
+  description: string;
+  elements: StoryElement[];
+  emotionalPeaks: string[];
+  bestFor: string[];
+  example: string;
+}
+
+// ============================================
+// 12. COPY ANALYZER
+// ============================================
+export interface ReadabilityMetrics {
+  fleschScore: number;           // 0-100 (adaptado PT-BR)
+  avgSentenceLength: number;
+  avgWordLength: number;
+  complexWordPercentage: number;
+  level: 'muito_facil' | 'facil' | 'medio' | 'dificil' | 'muito_dificil';
+  recommendation: string;
+}
+
+export interface TriggerDensity {
+  totalTriggers: number;
+  triggersPerSentence: number;
+  dominantTriggers: string[];
+  missingTriggers: string[];
+  saturationLevel: 'low' | 'optimal' | 'high';
+  recommendation: string;
+}
+
+export interface CopyAnalysis {
+  id: string;
+  originalText: string;
+  readability: ReadabilityMetrics;
+  triggerDensity: TriggerDensity;
+  persuasionScore: number;        // 0-100
+  emotionalScore: number;         // 0-100
+  clarityScore: number;           // 0-100
+  ctaStrength: number;            // 0-100
+  issues: {
+    issue: string;
+    severity: 'low' | 'medium' | 'high';
+    suggestion: string;
+    location?: string;
+  }[];
+  strengths: string[];
+  optimizedVersion?: string;
+  generatedAt: string;
+}
+
+// ============================================
+// 13. EMOJI INTELLIGENCE
+// ============================================
+export interface EmojiContext {
+  category: 'urgency' | 'celebration' | 'trust' | 'growth' | 'money' | 'action' | 'warning' | 'love' | 'question';
+  emojis: string[];
+  usage: string;
+  discCompatibility: { D: number; I: number; S: number; C: number };
+  channelCompatibility: { whatsapp: number; email: number; call: number };
+}
+
+export interface EmojiSuggestion {
+  position: 'start' | 'middle' | 'end' | 'inline';
+  emoji: string;
+  context: string;
+  impact: 'low' | 'medium' | 'high';
+}
+
+// ============================================
+// 14. MULTI-CHANNEL PREVIEW
+// ============================================
+export interface ChannelPreview {
+  channel: 'whatsapp' | 'email' | 'instagram' | 'linkedin' | 'sms';
+  formattedText: string;
+  characterCount: number;
+  characterLimit?: number;
+  isWithinLimit: boolean;
+  suggestions: string[];
+  preview: {
+    style: 'bubble' | 'card' | 'plain';
+    backgroundColor?: string;
+    textColor?: string;
+  };
+}
+
+// ============================================
+// 15. COPY HISTORY
+// ============================================
+export interface SavedCopy {
+  id: string;
+  contactId?: string;
+  title: string;
+  content: string;
+  framework: 'fab' | 'aida' | 'pas' | '4ps' | 'storytelling' | 'custom';
+  channel: string;
+  tags: string[];
+  performance?: {
+    sent: number;
+    opened: number;
+    clicked: number;
+    converted: number;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ============================================
+// 16. ENHANCED COPYWRITING PROFILE
+// ============================================
+export interface EnhancedCopywritingProfile extends CopywritingProfile {
+  pasScript?: PASScript;
+  fourPsScript?: FourPsSection[];
+  storyTemplate?: StorytellingTemplate;
+  copyAnalysis?: CopyAnalysis;
+  emojiSuggestions?: EmojiSuggestion[];
+  channelPreviews?: ChannelPreview[];
+  savedCopies?: SavedCopy[];
+}
