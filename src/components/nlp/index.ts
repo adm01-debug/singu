@@ -25,3 +25,6 @@ export { default as AnchorTrackingSystem } from './AnchorTrackingSystem';
 export { default as StateElicitationToolkit } from './StateElicitationToolkit';
 export { default as SubmodalityModifier } from './SubmodalityModifier';
 export { default as SwishPatternGenerator } from './SwishPatternGenerator';
+
+// Copywriting Sales Tools
+export { default as CopywritingSalesTools } from './CopywritingSalesTools';
