@@ -524,6 +524,60 @@ export type Database = {
           },
         ]
       }
+      contact_relatives: {
+        Row: {
+          age: number | null
+          birthday: string | null
+          company: string | null
+          contact_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_decision_influencer: boolean | null
+          name: string
+          notes: string | null
+          occupation: string | null
+          phone: string | null
+          relationship_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          birthday?: string | null
+          company?: string | null
+          contact_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_decision_influencer?: boolean | null
+          name: string
+          notes?: string | null
+          occupation?: string | null
+          phone?: string | null
+          relationship_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          birthday?: string | null
+          company?: string | null
+          contact_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_decision_influencer?: boolean | null
+          name?: string
+          notes?: string | null
+          occupation?: string | null
+          phone?: string | null
+          relationship_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       contact_time_analysis: {
         Row: {
           avg_response_time_minutes: number | null
