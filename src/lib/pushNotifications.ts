@@ -43,12 +43,12 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
 
   try {
     // Check if already subscribed
-    let subscription = await registration.pushManager.getSubscription();
+    let subscription = await (registration as any).pushManager.getSubscription();
     
     if (!subscription) {
       // Subscribe to push notifications
       const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      subscription = await registration.pushManager.subscribe({
+      subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey.buffer as ArrayBuffer
       });
@@ -69,7 +69,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
+    const subscription = await (registration as any).pushManager.getSubscription();
     
     if (subscription) {
       // Remove from database first
@@ -135,7 +135,7 @@ export async function getSubscriptionStatus(): Promise<{
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
+    const subscription = await (registration as any).pushManager.getSubscription();
     return { isSubscribed: !!subscription, subscription };
   } catch (error) {
     console.error('Failed to get subscription status:', error);
