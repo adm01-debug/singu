@@ -185,7 +185,7 @@ const EmpresaDetalhe = () => {
   
   // Calculate days since last interaction
   const lastInteractionDate = interactions.length > 0 
-    ? new Date(interactions[0].created_at) 
+    ? new Date(interactions.at(0)?.created_at || Date.now()) 
     : null;
   const daysSinceLastInteraction = lastInteractionDate 
     ? Math.floor((Date.now() - lastInteractionDate.getTime()) / (1000 * 60 * 60 * 24))
