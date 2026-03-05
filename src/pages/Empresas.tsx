@@ -262,9 +262,9 @@ const Empresas = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar empresa, segmento ou cidade... (tolerante a erros)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar empresa, segmento ou cidade..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className={`pl-10 ${isSearching ? 'pr-10' : ''}`}
             />
             {isSearching && (
