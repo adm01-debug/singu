@@ -36,10 +36,23 @@ export function useCompanies() {
         };
       }
 
-      const { data, count, error } = await queryExternalData<Company>(options);
+      const { data, count, error } = await queryExternalData<any>(options);
 
       if (error) throw error;
-      setCompanies(data || []);
+      
+      // Map external DB fields to expected Company shape
+      const mapped = (data || []).map((ext: any) => ({
+        ...ext,
+        name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
+        industry: ext.ramo_atividade || null,
+        city: ext.city || null,
+        state: ext.state || null,
+        phone: ext.phone || null,
+        email: ext.email || null,
+        tags: ext.tags_array || [],
+      })) as Company[];
+      
+      setCompanies(mapped);
       setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching companies from external DB:', error);
