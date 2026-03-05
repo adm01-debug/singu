@@ -86,7 +86,8 @@ function analyzeVAK(texts: string[]): VAKProfile {
     dominant: ''
   };
 
-  const dominant = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const dominant = sorted.length > 0 ? sorted[0][0] : 'visual';
   normalized.dominant = dominant.charAt(0).toUpperCase() + dominant.slice(1);
 
   return normalized;

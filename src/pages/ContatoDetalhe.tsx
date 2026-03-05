@@ -412,7 +412,7 @@ const ContatoDetalhe = () => {
                     <OptimizedAvatar 
                       src={contact.avatar} 
                       alt={`${contact.firstName} ${contact.lastName}`}
-                      fallback={`${contact.firstName[0]}${contact.lastName[0]}`}
+                      fallback={`${(contact.firstName || '?')[0]}${(contact.lastName || '?')[0]}`}
                       size="xl"
                       className="border-4 border-card shadow-strong w-32 h-32"
                     />
