@@ -121,7 +121,7 @@ const Configuracoes = () => {
   };
 
   const userInitials = profile.first_name && profile.last_name
-    ? `${profile.first_name[0]}${profile.last_name[0]}`
+    ? `${(profile.first_name || '')[0] || 'U'}${(profile.last_name || '')[0] || ''}`
     : user?.email?.[0]?.toUpperCase() || 'U';
 
   const themeOptions = [
