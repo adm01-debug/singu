@@ -65,3 +65,6 @@ verify_jwt = false
 
 [functions.enrichlayer-linkedin]
 verify_jwt = false
+
+[functions.external-data]
+verify_jwt = false

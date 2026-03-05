@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type Company = Tables<'companies'>;
@@ -19,15 +20,16 @@ export function useCompanies() {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .order('updated_at', { ascending: false });
+      // Buscar do banco externo (somente leitura)
+      const { data, error } = await queryExternalData<Company>({
+        table: 'companies',
+        order: { column: 'updated_at', ascending: false },
+      });
 
       if (error) throw error;
       setCompanies(data || []);
     } catch (error) {
-      console.error('Error fetching companies:', error);
+      console.error('Error fetching companies from external DB:', error);
       toast({
         title: 'Erro ao carregar empresas',
         description: 'Tente novamente mais tarde.',

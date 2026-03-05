@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 export type Contact = Tables<'contacts'>;
@@ -41,17 +42,17 @@ export function useContacts(companyId?: string) {
     
     setLoading(true);
     try {
-      let query = supabase
-        .from('contacts')
-        .select('*', { count: 'exact' })
-        .order('updated_at', { ascending: false })
-        .range(pageNum * pageSize, (pageNum + 1) * pageSize - 1);
+      // Buscar do banco externo (somente leitura)
+      const filters = companyId 
+        ? [{ type: 'eq' as const, column: 'company_id', value: companyId }] 
+        : undefined;
 
-      if (companyId) {
-        query = query.eq('company_id', companyId);
-      }
-
-      const { data, error, count } = await query;
+      const { data, count, error } = await queryExternalData<Contact>({
+        table: 'contacts',
+        order: { column: 'updated_at', ascending: false },
+        range: { from: pageNum * pageSize, to: (pageNum + 1) * pageSize - 1 },
+        filters,
+      });
 
       if (error) throw error;
       
@@ -66,7 +67,7 @@ export function useContacts(companyId?: string) {
       
       return { data, count, hasMore: (data?.length || 0) === pageSize };
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      console.error('Error fetching contacts from external DB:', error);
       toast({
         title: 'Erro ao carregar contatos',
         description: 'Tente novamente mais tarde.',
