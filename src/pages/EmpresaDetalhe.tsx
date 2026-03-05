@@ -70,6 +70,8 @@ const interactionColors: Record<string, string> = {
 };
 
 const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
+
+const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
