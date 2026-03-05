@@ -146,7 +146,7 @@ function StakeholderCard({ stakeholder, onClick }: { stakeholder: StakeholderDat
             <Avatar className="w-10 h-10 border-2 border-background">
               <AvatarImage src={contact.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
-                {(contact.first_name || '?')[0]}{(contact.last_name || '?')[0]}
+                {safeInitial(contact.first_name)}{safeInitial(contact.last_name)}
               </AvatarFallback>
             </Avatar>
             
