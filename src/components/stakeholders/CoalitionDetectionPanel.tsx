@@ -450,7 +450,7 @@ function CoalitionDetail({ coalition, onClose }: { coalition: Coalition; onClose
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={member.contact.avatar_url || undefined} />
                       <AvatarFallback className="text-xs bg-muted">
-                        {member.contact.first_name[0]}{member.contact.last_name[0]}
+                        {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

@@ -285,7 +285,7 @@ export function ContactCardWithContext({
                   <OptimizedAvatar 
                     src={contact.avatar_url || undefined}
                     alt={`${contact.first_name} ${contact.last_name}`}
-                    fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                    fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                     size="md"
                     className="w-12 h-12 border-2 border-primary/20"
                   />
