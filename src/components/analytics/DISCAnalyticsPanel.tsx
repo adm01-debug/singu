@@ -465,7 +465,7 @@ const DISCAnalyticsPanel = () => {
                         <OptimizedAvatar
                           src={topContact.avatar}
                           alt={`${topContact.firstName} ${topContact.lastName}`}
-                          fallback={`${topContact.firstName[0]}${topContact.lastName[0]}`}
+                          fallback={`${(topContact.firstName || '?')[0]}${(topContact.lastName || '?')[0]}`}
                           size="sm"
                         />
                         <div className="flex-1 min-w-0">
