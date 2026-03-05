@@ -330,7 +330,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-info/20">
-                  {s.contact.first_name[0]}{s.contact.last_name[0]}
+                  {safeInitial(s.contact.first_name)}{safeInitial(s.contact.last_name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
