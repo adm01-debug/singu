@@ -56,17 +56,16 @@ export function useContactDetail(contactId: string | undefined) {
 
       const contactData = contactsResult[0];
 
-      // Fetch company if contact has one
+      // Fetch company from external database if contact has one
       let companyData: Company | null = null;
       if (contactData?.company_id) {
-        const { data: company, error: companyError } = await supabase
-          .from('companies')
-          .select('*')
-          .eq('id', contactData.company_id)
-          .single();
+        const { data: companyResult } = await queryExternalData<Company>({
+          table: 'companies',
+          filters: [{ type: 'eq', column: 'id', value: contactData.company_id }],
+        });
 
-        if (!companyError) {
-          companyData = company;
+        if (companyResult && companyResult.length > 0) {
+          companyData = companyResult[0];
         }
       }
 
