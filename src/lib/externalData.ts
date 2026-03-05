@@ -8,6 +8,10 @@ interface ExternalQueryOptions {
     column: string;
     value: any;
   }>;
+  search?: {
+    term: string;
+    columns: string[];
+  };
   order?: {
     column: string;
     ascending?: boolean;
