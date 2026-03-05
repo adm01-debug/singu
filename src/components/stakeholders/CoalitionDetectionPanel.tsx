@@ -411,7 +411,7 @@ function CoalitionDetail({ coalition, onClose }: { coalition: Coalition; onClose
                 <Avatar className="w-12 h-12 border-2 border-warning/30">
                   <AvatarImage src={coalition.leader.contact.avatar_url || undefined} />
                   <AvatarFallback className="bg-warning/10 text-warning font-bold">
-                    {coalition.leader.contact.first_name[0]}{coalition.leader.contact.last_name[0]}
+                    {(coalition.leader.contact.first_name || '?')[0]}{(coalition.leader.contact.last_name || '?')[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
