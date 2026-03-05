@@ -41,7 +41,7 @@ import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWit
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-import { useFuzzySearch } from '@/hooks/useFuzzySearch';
+// Server-side search is now used instead of client-side fuzzy search
 
 const filterConfigs: FilterConfig[] = [
   {
