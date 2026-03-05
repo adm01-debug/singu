@@ -281,7 +281,7 @@ function InfluenceClusterCard({ cluster }: { cluster: InfluenceCluster }) {
                   <TooltipTrigger asChild>
                     <Avatar className="w-5 h-5">
                       <AvatarFallback className="text-[8px] bg-muted">
-                        {member.contact.first_name[0]}{member.contact.last_name[0]}
+                        {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                       </AvatarFallback>
                     </Avatar>
                   </TooltipTrigger>
