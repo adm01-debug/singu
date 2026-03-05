@@ -24,7 +24,6 @@ export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "relateiq-theme",
-  ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
