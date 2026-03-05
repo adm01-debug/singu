@@ -96,9 +96,15 @@ const EmpresaDetalhe = () => {
       const raw = companyResult?.[0] || null;
       const companyData = raw ? {
         ...raw,
-        name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || 'Sem nome',
-        industry: raw.ramo_atividade || null,
-        tags: raw.tags_array || [],
+        name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || raw.name || 'Sem nome',
+        industry: raw.ramo_atividade || raw.industry || null,
+        city: raw.city || null,
+        state: raw.state || null,
+        phone: raw.phone || null,
+        email: raw.email || null,
+        tags: raw.tags_array || raw.tags || [],
+        challenges: raw.challenges || [],
+        competitors: raw.competitors || [],
       } as Company : null;
       setCompany(companyData);
 
@@ -111,7 +117,16 @@ const EmpresaDetalhe = () => {
         });
 
         if (contactsError) throw contactsError;
-        setContacts(contactsResult || []);
+        // Normalize external contact data
+        const normalizedContacts = (contactsResult || []).map((c: any) => ({
+          ...c,
+          first_name: c.first_name || c.nome || 'Sem',
+          last_name: c.last_name || c.sobrenome || 'nome',
+          tags: c.tags || [],
+          hobbies: c.hobbies || [],
+          interests: c.interests || [],
+        })) as Contact[];
+        setContacts(normalizedContacts);
 
         // Fetch interactions from local DB (these are user-created)
         const { data: interactionsData, error: interactionsError } = await supabase
