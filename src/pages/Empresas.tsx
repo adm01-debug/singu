@@ -96,7 +96,8 @@ const sortOptions: SortOption[] = [
 
 const Empresas = () => {
   const navigate = useNavigate();
-  const { companies, loading, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const [localSearch, setLocalSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -111,18 +112,22 @@ const Empresas = () => {
   const [sortBy, setSortBy] = useState('updated_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Fuzzy search with Fuse.js
-  const {
-    query: searchTerm,
-    setQuery: setSearchTerm,
-    results: fuzzyResults,
-    isSearching,
-    clearSearch,
-  } = useFuzzySearch(companies, {
-    keys: ['name', 'industry', 'city', 'state', 'email', 'website', 'notes'],
-    threshold: 0.3,
-    minChars: 1,
-  });
+  // Debounced server-side search
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const isSearching = localSearch.length > 0;
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      triggerSearch(localSearch);
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [localSearch]);
+
+  const clearSearch = useCallback(() => {
+    setLocalSearch('');
+    triggerSearch('');
+  }, [triggerSearch]);
 
   const filteredAndSortedCompanies = useMemo(() => {
     // Start with fuzzy search results
