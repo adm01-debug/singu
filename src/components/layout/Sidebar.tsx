@@ -19,7 +19,8 @@ import {
   BarChart3,
   Share2,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Phone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
