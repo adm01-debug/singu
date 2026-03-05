@@ -212,7 +212,7 @@ function CoalitionCard({ coalition, onSelect }: { coalition: Coalition; onSelect
               <Avatar key={member.contact.id} className="w-7 h-7 border-2 border-background" style={{ marginLeft: idx > 0 ? '-8px' : 0 }}>
                 <AvatarImage src={member.contact.avatar_url || undefined} />
                 <AvatarFallback className="text-[10px] bg-muted">
-                  {member.contact.first_name[0]}{member.contact.last_name[0]}
+                  {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                 </AvatarFallback>
               </Avatar>
             ))}
