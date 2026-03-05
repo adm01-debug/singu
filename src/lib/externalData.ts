@@ -20,8 +20,8 @@ interface ExternalQueryOptions {
 
 export async function queryExternalData<T = any>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
   try {
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-    const url = `https://${projectId}.supabase.co/functions/v1/external-data`;
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const url = `${supabaseUrl}/functions/v1/external-data`;
     
     // Get session for auth header
     const { data: sessionData } = await supabase.auth.getSession();
