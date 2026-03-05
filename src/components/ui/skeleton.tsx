@@ -1,3 +1,4 @@
+import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -7,7 +8,7 @@ interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   rounded?: "none" | "sm" | "md" | "lg" | "full";
 }
 
-function Skeleton({ 
+const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(function Skeleton({ 
   className, 
   variant = "shimmer",
   rounded = "md",
