@@ -14,20 +14,33 @@ export function useCompanies() {
   const { toast } = useToast();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [totalCount, setTotalCount] = useState(0);
 
-  const fetchCompanies = useCallback(async () => {
+  const fetchCompanies = useCallback(async (search?: string) => {
     if (!user) return;
     
     setLoading(true);
     try {
-      // Buscar do banco externo (somente leitura)
-      const { data, error } = await queryExternalData<Company>({
+      const options: Parameters<typeof queryExternalData>[0] = {
         table: 'companies',
         order: { column: 'updated_at', ascending: false },
-      });
+        range: { from: 0, to: 99 },
+      };
+
+      // Server-side search across multiple columns
+      if (search && search.trim().length >= 2) {
+        options.search = {
+          term: search.trim(),
+          columns: ['nome_crm', 'nome_fantasia', 'razao_social', 'ramo_atividade', 'email', 'city', 'cidade', 'state', 'uf'],
+        };
+      }
+
+      const { data, count, error } = await queryExternalData<Company>(options);
 
       if (error) throw error;
       setCompanies(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error('Error fetching companies from external DB:', error);
       toast({
