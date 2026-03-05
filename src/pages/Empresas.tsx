@@ -332,7 +332,7 @@ const Empresas = () => {
             {filteredAndSortedCompanies.length === 0 && !loading && (
               isSearching || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
-                  searchTerm={searchTerm || 'filtros ativos'}
+                  searchTerm={localSearch || 'filtros ativos'}
                   onClearSearch={() => {
                     clearSearch();
                     setActiveFilters({});
