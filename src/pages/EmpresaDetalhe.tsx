@@ -69,7 +69,7 @@ const interactionColors: Record<string, string> = {
   social: 'bg-pink-100 text-pink-600',
 };
 
-const EmpresaDetalhe = () => {
+const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
   const { id } = useParams();
   const { user } = useAuth();
   const [company, setCompany] = useState<Company | null>(null);
