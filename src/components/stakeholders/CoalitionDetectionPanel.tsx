@@ -250,7 +250,7 @@ function InfluenceClusterCard({ cluster }: { cluster: InfluenceCluster }) {
             <Avatar className="w-10 h-10 border-2 border-info/30">
               <AvatarImage src={cluster.center.contact.avatar_url || undefined} />
               <AvatarFallback className="bg-info/20 text-info">
-                {cluster.center.contact.first_name[0]}{cluster.center.contact.last_name[0]}
+                {(cluster.center.contact.first_name || '?')[0]}{(cluster.center.contact.last_name || '?')[0]}
               </AvatarFallback>
             </Avatar>
             
