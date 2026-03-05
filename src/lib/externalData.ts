@@ -20,20 +20,35 @@ interface ExternalQueryOptions {
 
 export async function queryExternalData<T = any>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
   try {
-    const { data, error } = await supabase.functions.invoke('external-data', {
-      body: options,
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const url = `https://${projectId}.supabase.co/functions/v1/external-data`;
+    
+    // Get session for auth header
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify(options),
     });
 
-    if (error) {
-      console.error('External data function error:', error);
-      return { data: null, count: null, error };
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Edge function error [${response.status}]: ${errorText}`);
     }
 
-    if (data?.error) {
-      return { data: null, count: null, error: new Error(data.error) };
+    const result = await response.json();
+
+    if (result?.error) {
+      return { data: null, count: null, error: new Error(result.error) };
     }
 
-    return { data: data?.data || [], count: data?.count || 0, error: null };
+    return { data: result?.data || [], count: result?.count || 0, error: null };
   } catch (err) {
     console.error('Error querying external data:', err);
     return { data: null, count: null, error: err as Error };
