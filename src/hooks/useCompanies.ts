@@ -143,6 +143,12 @@ export function useCompanies() {
   return {
     companies,
     loading,
+    totalCount,
+    searchTerm,
+    setSearchTerm: (term: string) => {
+      setSearchTerm(term);
+      fetchCompanies(term);
+    },
     fetchCompanies,
     createCompany,
     updateCompany,
