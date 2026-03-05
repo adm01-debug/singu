@@ -371,7 +371,7 @@ function StakeholderDetail({ stakeholder, onClose }: { stakeholder: StakeholderD
           <Avatar className="w-16 h-16 border-2 border-primary/20">
             <AvatarImage src={contact.avatar_url || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-              {contact.first_name[0]}{contact.last_name[0]}
+              {safeInitial(contact.first_name)}{safeInitial(contact.last_name)}
             </AvatarFallback>
           </Avatar>
           <div>
