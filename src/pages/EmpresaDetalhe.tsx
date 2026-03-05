@@ -69,6 +69,8 @@ const interactionColors: Record<string, string> = {
   social: 'bg-pink-100 text-pink-600',
 };
 
+const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
+
 const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -93,7 +95,7 @@ const EmpresaDetalhe = () => {
       });
 
       if (companyError) throw companyError;
-      const raw = companyResult?.[0] || null;
+      const raw = Array.isArray(companyResult) && companyResult.length > 0 ? companyResult[0] : null;
       const companyData = raw ? {
         ...raw,
         name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || raw.name || 'Sem nome',
@@ -185,7 +187,7 @@ const EmpresaDetalhe = () => {
   
   // Calculate days since last interaction
   const lastInteractionDate = interactions.length > 0 
-    ? new Date(interactions[0].created_at) 
+    ? new Date(interactions.at(0)?.created_at || Date.now()) 
     : null;
   const daysSinceLastInteraction = lastInteractionDate 
     ? Math.floor((Date.now() - lastInteractionDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -239,7 +241,7 @@ const EmpresaDetalhe = () => {
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
                       ) : (
-                        (company.name || 'E').charAt(0)
+                        safeInitial(company.name, 'E')
                       )}
                     </div>
                     
@@ -450,7 +452,7 @@ const EmpresaDetalhe = () => {
                                       <OptimizedAvatar 
                                         src={contact.avatar_url || undefined}
                                         alt={`${contact.first_name} ${contact.last_name}`}
-                                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
+                                        fallback={`${safeInitial(contact.first_name)}${safeInitial(contact.last_name)}`}
                                         size="md"
                                         className="w-12 h-12"
                                       />
@@ -692,7 +694,7 @@ const EmpresaDetalhe = () => {
                                       <OptimizedAvatar 
                                         src={contact.avatar_url || undefined}
                                         alt={`${contact.first_name} ${contact.last_name}`}
-                                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
+                                        fallback={`${safeInitial(contact.first_name)}${safeInitial(contact.last_name)}`}
                                         size="sm"
                                         className="w-8 h-8"
                                       />
