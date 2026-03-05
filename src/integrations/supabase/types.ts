@@ -2987,6 +2987,191 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_instances: {
+        Row: {
+          auto_read_messages: boolean | null
+          auto_reply_enabled: boolean | null
+          auto_reply_message: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          instance_name: string
+          last_connected_at: string | null
+          phone_number: string | null
+          profile_pic_url: string | null
+          settings: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string
+          webhook_url: string | null
+        }
+        Insert: {
+          auto_read_messages?: boolean | null
+          auto_reply_enabled?: boolean | null
+          auto_reply_message?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instance_name: string
+          last_connected_at?: string | null
+          phone_number?: string | null
+          profile_pic_url?: string | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+          webhook_url?: string | null
+        }
+        Update: {
+          auto_read_messages?: boolean | null
+          auto_reply_enabled?: boolean | null
+          auto_reply_message?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          instance_name?: string
+          last_connected_at?: string | null
+          phone_number?: string | null
+          profile_pic_url?: string | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_kpis: {
+        Row: {
+          avg_response_time_seconds: number | null
+          created_at: string
+          delivery_rate: number | null
+          id: string
+          instance_name: string
+          messages_delivered: number | null
+          messages_read: number | null
+          messages_received: number | null
+          messages_sent: number | null
+          period_end: string
+          period_start: string
+          read_rate: number | null
+          unique_contacts: number | null
+          user_id: string
+        }
+        Insert: {
+          avg_response_time_seconds?: number | null
+          created_at?: string
+          delivery_rate?: number | null
+          id?: string
+          instance_name: string
+          messages_delivered?: number | null
+          messages_read?: number | null
+          messages_received?: number | null
+          messages_sent?: number | null
+          period_end: string
+          period_start: string
+          read_rate?: number | null
+          unique_contacts?: number | null
+          user_id: string
+        }
+        Update: {
+          avg_response_time_seconds?: number | null
+          created_at?: string
+          delivery_rate?: number | null
+          id?: string
+          instance_name?: string
+          messages_delivered?: number | null
+          messages_read?: number | null
+          messages_received?: number | null
+          messages_sent?: number | null
+          period_end?: string
+          period_start?: string
+          read_rate?: number | null
+          unique_contacts?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          contact_id: string | null
+          content: string | null
+          created_at: string
+          delivered_at: string | null
+          from_me: boolean
+          id: string
+          instance_name: string
+          media_mimetype: string | null
+          media_url: string | null
+          message_id: string | null
+          message_type: string
+          metadata: Json | null
+          played_at: string | null
+          quoted_message_id: string | null
+          read_at: string | null
+          remote_jid: string
+          sender_name: string | null
+          status: string | null
+          timestamp: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          from_me?: boolean
+          id?: string
+          instance_name: string
+          media_mimetype?: string | null
+          media_url?: string | null
+          message_id?: string | null
+          message_type?: string
+          metadata?: Json | null
+          played_at?: string | null
+          quoted_message_id?: string | null
+          read_at?: string | null
+          remote_jid: string
+          sender_name?: string | null
+          status?: string | null
+          timestamp?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          from_me?: boolean
+          id?: string
+          instance_name?: string
+          media_mimetype?: string | null
+          media_url?: string | null
+          message_id?: string | null
+          message_type?: string
+          metadata?: Json | null
+          played_at?: string | null
+          quoted_message_id?: string | null
+          read_at?: string | null
+          remote_jid?: string
+          sender_name?: string | null
+          status?: string | null
+          timestamp?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

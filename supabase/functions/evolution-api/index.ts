@@ -2,16 +2,17 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 interface EvolutionRequest {
-  action: 'list-instances' | 'instance-info' | 'fetch-messages' | 'send-message' | 'check-number';
+  action: string;
   instanceName?: string;
   remoteJid?: string;
   message?: string;
   phoneNumber?: string;
   limit?: number;
+  body?: Record<string, any>;
 }
 
 Deno.serve(async (req) => {
@@ -33,13 +34,16 @@ Deno.serve(async (req) => {
       'apikey': evolutionKey,
     };
 
-    const { action, instanceName, remoteJid, message, phoneNumber, limit = 20 }: EvolutionRequest = await req.json();
+    const { action, instanceName, remoteJid, message, phoneNumber, limit = 20, body: extraBody }: EvolutionRequest = await req.json();
 
     let endpoint = '';
     let method = 'GET';
     let body: string | undefined;
 
     switch (action) {
+      // ========================
+      // INSTANCE MANAGEMENT
+      // ========================
       case 'list-instances':
         endpoint = '/instance/fetchInstances';
         break;
@@ -49,16 +53,56 @@ Deno.serve(async (req) => {
         endpoint = `/instance/connectionState/${instanceName}`;
         break;
 
-      case 'fetch-messages':
+      case 'instance-detail':
         if (!instanceName) throw new Error('instanceName required');
-        endpoint = `/chat/findMessages/${instanceName}`;
+        endpoint = `/instance/fetchInstances?instanceName=${instanceName}`;
+        break;
+
+      case 'create-instance':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = '/instance/create';
         method = 'POST';
         body = JSON.stringify({
-          where: remoteJid ? { key: { remoteJid } } : {},
-          limit,
+          instanceName,
+          qrcode: true,
+          integration: 'WHATSAPP-BAILEYS',
+          ...extraBody,
         });
         break;
 
+      case 'connect-instance':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/instance/connect/${instanceName}`;
+        break;
+
+      case 'restart-instance':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/instance/restart/${instanceName}`;
+        method = 'PUT';
+        break;
+
+      case 'logout-instance':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/instance/logout/${instanceName}`;
+        method = 'DELETE';
+        break;
+
+      case 'delete-instance':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/instance/delete/${instanceName}`;
+        method = 'DELETE';
+        break;
+
+      case 'set-presence':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/instance/setPresence/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody || { presence: 'available' });
+        break;
+
+      // ========================
+      // MESSAGING
+      // ========================
       case 'send-message':
         if (!instanceName || !remoteJid || !message) {
           throw new Error('instanceName, remoteJid and message required');
@@ -68,6 +112,124 @@ Deno.serve(async (req) => {
         body = JSON.stringify({
           number: remoteJid.replace('@s.whatsapp.net', ''),
           text: message,
+          ...(extraBody || {}),
+        });
+        break;
+
+      case 'send-media':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendMedia/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-audio':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendWhatsAppAudio/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-location':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendLocation/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-contact':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendContact/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-reaction':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendReaction/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-poll':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendPoll/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-list':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendList/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-buttons':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendButtons/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'send-sticker':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/sendSticker/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'mark-read':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/markMessageAsRead/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'mark-unread':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/markMessageAsUnread/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'archive-chat':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/archiveChat/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'delete-message':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/delete/${instanceName}`;
+        method = 'DELETE';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'edit-message':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/message/update/${instanceName}`;
+        method = 'PUT';
+        body = JSON.stringify(extraBody);
+        break;
+
+      // ========================
+      // CHAT MANAGEMENT
+      // ========================
+      case 'fetch-chats':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/chat/findChats/${instanceName}`;
+        break;
+
+      case 'fetch-messages':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/chat/findMessages/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify({
+          where: remoteJid ? { key: { remoteJid } } : {},
+          limit,
+          ...(extraBody || {}),
         });
         break;
 
@@ -78,8 +240,120 @@ Deno.serve(async (req) => {
         endpoint = `/chat/whatsappNumbers/${instanceName}`;
         method = 'POST';
         body = JSON.stringify({
-          numbers: [phoneNumber],
+          numbers: Array.isArray(phoneNumber) ? phoneNumber : [phoneNumber],
         });
+        break;
+
+      case 'find-contacts':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/chat/findContacts/${instanceName}`;
+        break;
+
+      case 'download-media':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/chat/getBase64FromMediaMessage/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      // ========================
+      // GROUP MANAGEMENT
+      // ========================
+      case 'list-groups':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/group/fetchAllGroups/${instanceName}`;
+        break;
+
+      case 'group-info':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/group/findGroupInfos/${instanceName}?groupJid=${extraBody?.groupJid || ''}`;
+        break;
+
+      case 'group-participants':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/group/participants/${instanceName}?groupJid=${extraBody?.groupJid || ''}`;
+        break;
+
+      case 'create-group':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/group/create/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'update-group-participants':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/group/updateParticipant/${instanceName}`;
+        method = 'PUT';
+        body = JSON.stringify(extraBody);
+        break;
+
+      // ========================
+      // PROFILE
+      // ========================
+      case 'fetch-profile':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/profile/fetchProfile/${instanceName}`;
+        break;
+
+      case 'fetch-profile-picture':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/profile/fetchProfilePicture/${instanceName}`;
+        if (extraBody?.number) {
+          endpoint += `?number=${extraBody.number}`;
+        }
+        break;
+
+      case 'fetch-business-profile':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/profile/fetchBusinessProfile/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      // ========================
+      // LABELS
+      // ========================
+      case 'list-labels':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/label/findLabels/${instanceName}`;
+        break;
+
+      case 'handle-label':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/label/handleLabel/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      // ========================
+      // WEBHOOK CONFIG
+      // ========================
+      case 'set-webhook':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/webhook/set/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'find-webhook':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/webhook/find/${instanceName}`;
+        break;
+
+      // ========================
+      // SETTINGS
+      // ========================
+      case 'set-settings':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/settings/set/${instanceName}`;
+        method = 'POST';
+        body = JSON.stringify(extraBody);
+        break;
+
+      case 'find-settings':
+        if (!instanceName) throw new Error('instanceName required');
+        endpoint = `/settings/find/${instanceName}`;
         break;
 
       default:
@@ -98,7 +372,7 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       console.error('Evolution API error:', data);
-      throw new Error(data.message || 'Evolution API error');
+      throw new Error(data.message || data.error || 'Evolution API error');
     }
 
     return new Response(JSON.stringify({ success: true, data }), {
