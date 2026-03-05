@@ -95,7 +95,7 @@ const EmpresaDetalhe = () => {
       });
 
       if (companyError) throw companyError;
-      const raw = Array.isArray(companyResult) && companyResult.length > 0 ? companyResult[0] : null;
+      const raw = Array.isArray(companyResult) ? (companyResult.at(0) ?? null) : null;
       const companyData = raw ? {
         ...raw,
         name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || raw.name || 'Sem nome',
