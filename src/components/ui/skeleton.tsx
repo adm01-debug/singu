@@ -51,7 +51,9 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(function Skelet
       {...props}
     />
   );
-}
+});
+
+Skeleton.displayName = "Skeleton";
 
 // Text skeleton with realistic line widths
 function SkeletonText({ 
