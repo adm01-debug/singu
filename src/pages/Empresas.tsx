@@ -130,8 +130,8 @@ const Empresas = () => {
   }, [triggerSearch]);
 
   const filteredAndSortedCompanies = useMemo(() => {
-    // Start with fuzzy search results
-    let result = fuzzyResults.filter(company => {
+    // Start with server-side search results
+    let result = companies.filter(company => {
       // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
@@ -162,7 +162,7 @@ const Empresas = () => {
     });
 
     return result;
-  }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
+  }, [companies, activeFilters, sortBy, sortOrder]);
 
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
