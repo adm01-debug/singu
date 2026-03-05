@@ -209,7 +209,7 @@ const EmpresaDetalhe = () => {
           </div>
         </div>
 
-        <div className="px-6 -mt-20 pb-6">
+        <div className="px-6 -mt-16 pb-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Company Profile Card */}
             <motion.div
@@ -219,8 +219,8 @@ const EmpresaDetalhe = () => {
             >
               <Card className="overflow-visible">
                 <CardContent className="pt-0">
-                  <div className="flex flex-col items-center -mt-12">
-                    <div className="w-32 h-32 rounded-2xl bg-gradient-primary flex items-center justify-center text-white font-bold text-4xl shadow-strong border-4 border-card">
+                  <div className="flex flex-col items-center -mt-8">
+                    <div className="w-24 h-24 rounded-2xl bg-gradient-primary flex items-center justify-center text-white font-bold text-3xl shadow-strong border-4 border-card">
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
                       ) : (
