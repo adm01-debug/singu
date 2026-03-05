@@ -212,7 +212,7 @@ function CoalitionCard({ coalition, onSelect }: { coalition: Coalition; onSelect
               <Avatar key={member.contact.id} className="w-7 h-7 border-2 border-background" style={{ marginLeft: idx > 0 ? '-8px' : 0 }}>
                 <AvatarImage src={member.contact.avatar_url || undefined} />
                 <AvatarFallback className="text-[10px] bg-muted">
-                  {member.contact.first_name[0]}{member.contact.last_name[0]}
+                  {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                 </AvatarFallback>
               </Avatar>
             ))}
@@ -250,7 +250,7 @@ function InfluenceClusterCard({ cluster }: { cluster: InfluenceCluster }) {
             <Avatar className="w-10 h-10 border-2 border-info/30">
               <AvatarImage src={cluster.center.contact.avatar_url || undefined} />
               <AvatarFallback className="bg-info/20 text-info">
-                {cluster.center.contact.first_name[0]}{cluster.center.contact.last_name[0]}
+                {(cluster.center.contact.first_name || '?')[0]}{(cluster.center.contact.last_name || '?')[0]}
               </AvatarFallback>
             </Avatar>
             
@@ -281,7 +281,7 @@ function InfluenceClusterCard({ cluster }: { cluster: InfluenceCluster }) {
                   <TooltipTrigger asChild>
                     <Avatar className="w-5 h-5">
                       <AvatarFallback className="text-[8px] bg-muted">
-                        {member.contact.first_name[0]}{member.contact.last_name[0]}
+                        {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                       </AvatarFallback>
                     </Avatar>
                   </TooltipTrigger>
@@ -411,7 +411,7 @@ function CoalitionDetail({ coalition, onClose }: { coalition: Coalition; onClose
                 <Avatar className="w-12 h-12 border-2 border-warning/30">
                   <AvatarImage src={coalition.leader.contact.avatar_url || undefined} />
                   <AvatarFallback className="bg-warning/10 text-warning font-bold">
-                    {coalition.leader.contact.first_name[0]}{coalition.leader.contact.last_name[0]}
+                    {(coalition.leader.contact.first_name || '?')[0]}{(coalition.leader.contact.last_name || '?')[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
@@ -450,7 +450,7 @@ function CoalitionDetail({ coalition, onClose }: { coalition: Coalition; onClose
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={member.contact.avatar_url || undefined} />
                       <AvatarFallback className="text-xs bg-muted">
-                        {member.contact.first_name[0]}{member.contact.last_name[0]}
+                        {(member.contact.first_name || '?')[0]}{(member.contact.last_name || '?')[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

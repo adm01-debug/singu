@@ -101,7 +101,7 @@ function StakeholderSelector({
         <Avatar className="w-8 h-8">
           <AvatarImage src={stakeholder.contact.avatar_url || undefined} />
           <AvatarFallback className="text-xs bg-muted">
-            {stakeholder.contact.first_name[0]}{stakeholder.contact.last_name[0]}
+            {(stakeholder.contact.first_name || '?')[0]}{(stakeholder.contact.last_name || '?')[0]}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">

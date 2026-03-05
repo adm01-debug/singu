@@ -142,7 +142,7 @@ export function CompanyCardWithContext({
                     />
                   ) : null}
                   <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-glow ${company.logo_url ? 'hidden' : ''}`}>
-                    {company.name[0]}
+                    {(company.name || 'E')[0]}
                   </div>
                   <div>
                     {isInlineEditing ? (

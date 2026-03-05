@@ -160,7 +160,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
   };
 
   const userInitials = user?.user_metadata?.first_name && user?.user_metadata?.last_name
-    ? `${user.user_metadata.first_name[0]}${user.user_metadata.last_name[0]}`
+    ? `${(user.user_metadata.first_name as string)[0]}${(user.user_metadata.last_name as string)[0]}`
     : user?.email?.[0]?.toUpperCase() || 'U';
 
   const userName = user?.user_metadata?.first_name && user?.user_metadata?.last_name

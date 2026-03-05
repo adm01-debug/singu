@@ -144,7 +144,7 @@ function StakeholderCard({ stakeholder, onClick }: { stakeholder: StakeholderDat
             <Avatar className="w-10 h-10 border-2 border-background">
               <AvatarImage src={contact.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
-                {contact.first_name[0]}{contact.last_name[0]}
+                {(contact.first_name || '?')[0]}{(contact.last_name || '?')[0]}
               </AvatarFallback>
             </Avatar>
             
@@ -234,7 +234,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-warning/20">
-                  {s.contact.first_name[0]}{s.contact.last_name[0]}
+                  {(s.contact.first_name || '?')[0]}{(s.contact.last_name || '?')[0]}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
