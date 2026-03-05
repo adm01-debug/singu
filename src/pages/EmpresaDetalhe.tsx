@@ -241,7 +241,7 @@ const EmpresaDetalhe = () => {
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
                       ) : (
-                        (company.name || 'E').charAt(0)
+                        safeInitial(company.name, 'E')
                       )}
                     </div>
                     
