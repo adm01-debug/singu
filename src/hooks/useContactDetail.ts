@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesUpdate, Json } from '@/integrations/supabase/types';
 
 export type Contact = Tables<'contacts'>;
@@ -41,63 +42,30 @@ export function useContactDetail(contactId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch contact with specific fields for performance
-      const { data: contactData, error: contactError } = await supabase
-        .from('contacts')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          email,
-          phone,
-          whatsapp,
-          linkedin,
-          instagram,
-          twitter,
-          avatar_url,
-          birthday,
-          role,
-          role_title,
-          relationship_score,
-          relationship_stage,
-          sentiment,
-          behavior,
-          notes,
-          personal_notes,
-          family_info,
-          hobbies,
-          interests,
-          tags,
-          life_events,
-          company_id,
-          user_id,
-          created_at,
-          updated_at
-        `)
-        .eq('id', contactId)
-        .single();
+      // Fetch contact from external database
+      const { data: contactsResult, error: contactError } = await queryExternalData<Contact>({
+        table: 'contacts',
+        filters: [{ type: 'eq', column: 'id', value: contactId }],
+      });
 
-      if (contactError) {
-        if (contactError.code === 'PGRST116') {
-          setError('Contato não encontrado');
-        } else {
-          throw contactError;
-        }
+      if (contactError || !contactsResult || contactsResult.length === 0) {
+        setError('Contato não encontrado');
         setLoading(false);
         return;
       }
 
-      // Fetch company if contact has one
+      const contactData = contactsResult[0];
+
+      // Fetch company from external database if contact has one
       let companyData: Company | null = null;
       if (contactData?.company_id) {
-        const { data: company, error: companyError } = await supabase
-          .from('companies')
-          .select('*')
-          .eq('id', contactData.company_id)
-          .single();
+        const { data: companyResult } = await queryExternalData<Company>({
+          table: 'companies',
+          filters: [{ type: 'eq', column: 'id', value: contactData.company_id }],
+        });
 
-        if (!companyError) {
-          companyData = company;
+        if (companyResult && companyResult.length > 0) {
+          companyData = companyResult[0];
         }
       }
 
