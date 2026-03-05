@@ -42,51 +42,19 @@ export function useContactDetail(contactId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch contact with specific fields for performance
-      const { data: contactData, error: contactError } = await supabase
-        .from('contacts')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          email,
-          phone,
-          whatsapp,
-          linkedin,
-          instagram,
-          twitter,
-          avatar_url,
-          birthday,
-          role,
-          role_title,
-          relationship_score,
-          relationship_stage,
-          sentiment,
-          behavior,
-          notes,
-          personal_notes,
-          family_info,
-          hobbies,
-          interests,
-          tags,
-          life_events,
-          company_id,
-          user_id,
-          created_at,
-          updated_at
-        `)
-        .eq('id', contactId)
-        .single();
+      // Fetch contact from external database
+      const { data: contactsResult, error: contactError } = await queryExternalData<Contact>({
+        table: 'contacts',
+        filters: [{ type: 'eq', column: 'id', value: contactId }],
+      });
 
-      if (contactError) {
-        if (contactError.code === 'PGRST116') {
-          setError('Contato não encontrado');
-        } else {
-          throw contactError;
-        }
+      if (contactError || !contactsResult || contactsResult.length === 0) {
+        setError('Contato não encontrado');
         setLoading(false);
         return;
       }
+
+      const contactData = contactsResult[0];
 
       // Fetch company if contact has one
       let companyData: Company | null = null;
