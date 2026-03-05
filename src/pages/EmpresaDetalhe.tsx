@@ -224,7 +224,7 @@ const EmpresaDetalhe = () => {
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
                       ) : (
-                        company.name.charAt(0)
+                        (company.name || 'E').charAt(0)
                       )}
                     </div>
                     
@@ -435,7 +435,7 @@ const EmpresaDetalhe = () => {
                                       <OptimizedAvatar 
                                         src={contact.avatar_url || undefined}
                                         alt={`${contact.first_name} ${contact.last_name}`}
-                                        fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                                         size="md"
                                         className="w-12 h-12"
                                       />
@@ -677,7 +677,7 @@ const EmpresaDetalhe = () => {
                                       <OptimizedAvatar 
                                         src={contact.avatar_url || undefined}
                                         alt={`${contact.first_name} ${contact.last_name}`}
-                                        fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                                         size="sm"
                                         className="w-8 h-8"
                                       />
