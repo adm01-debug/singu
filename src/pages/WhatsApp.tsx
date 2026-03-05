@@ -83,11 +83,13 @@ function InstancesPanel() {
     if (!instances || !Array.isArray(instances)) return;
     const states: Record<string, string> = {};
     for (const inst of instances) {
+      const name = inst.instance?.instanceName || inst.instanceName;
+      if (!name) continue;
       try {
-        const info = await getInstanceInfo(inst.instance?.instanceName || inst.instanceName);
-        states[inst.instance?.instanceName || inst.instanceName] = info?.state || 'unknown';
+        const info = await getInstanceInfo(name);
+        states[name] = info?.state || 'unknown';
       } catch {
-        states[inst.instance?.instanceName || inst.instanceName] = 'error';
+        states[name] = 'error';
       }
     }
     setInstanceStates(states);
