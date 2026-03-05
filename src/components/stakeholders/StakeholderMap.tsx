@@ -103,6 +103,8 @@ function getSupportType(support: number): keyof typeof SUPPORT_CONFIG {
   return 'blocker';
 }
 
+const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
+
 function MetricBar({ value, max = 10, label, color }: { value: number; max?: number; label: string; color: string }) {
   const percentage = (value / max) * 100;
   return (
@@ -144,7 +146,7 @@ function StakeholderCard({ stakeholder, onClick }: { stakeholder: StakeholderDat
             <Avatar className="w-10 h-10 border-2 border-background">
               <AvatarImage src={contact.avatar_url || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
-                {(contact.first_name || '?')[0]}{(contact.last_name || '?')[0]}
+                {safeInitial(contact.first_name)}{safeInitial(contact.last_name)}
               </AvatarFallback>
             </Avatar>
             
@@ -234,7 +236,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-warning/20">
-                  {(s.contact.first_name || '?')[0]}{(s.contact.last_name || '?')[0]}
+                  {safeInitial(s.contact.first_name)}{safeInitial(s.contact.last_name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
@@ -265,7 +267,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-primary/20">
-                  {s.contact.first_name[0]}{s.contact.last_name[0]}
+                  {safeInitial(s.contact.first_name)}{safeInitial(s.contact.last_name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
@@ -297,7 +299,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-muted">
-                  {s.contact.first_name[0]}{s.contact.last_name[0]}
+                  {safeInitial(s.contact.first_name)}{safeInitial(s.contact.last_name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
@@ -328,7 +330,7 @@ function PowerInterestGrid({ stakeholders, onSelect }: { stakeholders: Stakehold
             >
               <Avatar className="w-6 h-6">
                 <AvatarFallback className="text-[10px] bg-info/20">
-                  {s.contact.first_name[0]}{s.contact.last_name[0]}
+                  {safeInitial(s.contact.first_name)}{safeInitial(s.contact.last_name)}
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs truncate">{s.contact.first_name}</span>
@@ -369,7 +371,7 @@ function StakeholderDetail({ stakeholder, onClose }: { stakeholder: StakeholderD
           <Avatar className="w-16 h-16 border-2 border-primary/20">
             <AvatarImage src={contact.avatar_url || undefined} />
             <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">
-              {contact.first_name[0]}{contact.last_name[0]}
+              {safeInitial(contact.first_name)}{safeInitial(contact.last_name)}
             </AvatarFallback>
           </Avatar>
           <div>
