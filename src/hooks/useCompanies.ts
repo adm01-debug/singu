@@ -32,7 +32,7 @@ export function useCompanies() {
       if (search && search.trim().length >= 2) {
         options.search = {
           term: search.trim(),
-          columns: ['name', 'industry', 'email', 'city', 'state'],
+          columns: ['nome_crm', 'nome_fantasia', 'razao_social', 'ramo_atividade'],
         };
       }
 
