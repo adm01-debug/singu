@@ -87,13 +87,19 @@ const EmpresaDetalhe = () => {
     setLoading(true);
     try {
       // Fetch company from external DB
-      const { data: companyResult, error: companyError } = await queryExternalData<Company>({
+      const { data: companyResult, error: companyError } = await queryExternalData<any>({
         table: 'companies',
         filters: [{ type: 'eq', column: 'id', value: id }],
       });
 
       if (companyError) throw companyError;
-      const companyData = companyResult?.[0] || null;
+      const raw = companyResult?.[0] || null;
+      const companyData = raw ? {
+        ...raw,
+        name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || 'Sem nome',
+        industry: raw.ramo_atividade || null,
+        tags: raw.tags_array || [],
+      } as Company : null;
       setCompany(companyData);
 
       if (companyData) {
