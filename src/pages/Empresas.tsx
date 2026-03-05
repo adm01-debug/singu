@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search,
@@ -41,7 +41,7 @@ import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWit
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-import { useFuzzySearch } from '@/hooks/useFuzzySearch';
+// Server-side search is now used instead of client-side fuzzy search
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -96,7 +96,8 @@ const sortOptions: SortOption[] = [
 
 const Empresas = () => {
   const navigate = useNavigate();
-  const { companies, loading, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const [localSearch, setLocalSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -111,22 +112,26 @@ const Empresas = () => {
   const [sortBy, setSortBy] = useState('updated_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Fuzzy search with Fuse.js
-  const {
-    query: searchTerm,
-    setQuery: setSearchTerm,
-    results: fuzzyResults,
-    isSearching,
-    clearSearch,
-  } = useFuzzySearch(companies, {
-    keys: ['name', 'industry', 'city', 'state', 'email', 'website', 'notes'],
-    threshold: 0.3,
-    minChars: 1,
-  });
+  // Debounced server-side search
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const isSearching = localSearch.length > 0;
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      triggerSearch(localSearch);
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [localSearch]);
+
+  const clearSearch = useCallback(() => {
+    setLocalSearch('');
+    triggerSearch('');
+  }, [triggerSearch]);
 
   const filteredAndSortedCompanies = useMemo(() => {
-    // Start with fuzzy search results
-    let result = fuzzyResults.filter(company => {
+    // Start with server-side search results
+    let result = companies.filter(company => {
       // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
@@ -157,7 +162,7 @@ const Empresas = () => {
     });
 
     return result;
-  }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
+  }, [companies, activeFilters, sortBy, sortOrder]);
 
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
@@ -257,9 +262,9 @@ const Empresas = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar empresa, segmento ou cidade... (tolerante a erros)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar empresa, segmento ou cidade..."
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               className={`pl-10 ${isSearching ? 'pr-10' : ''}`}
             />
             {isSearching && (
@@ -327,7 +332,7 @@ const Empresas = () => {
             {filteredAndSortedCompanies.length === 0 && !loading && (
               isSearching || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
-                  searchTerm={searchTerm || 'filtros ativos'}
+                  searchTerm={localSearch || 'filtros ativos'}
                   onClearSearch={() => {
                     clearSearch();
                     setActiveFilters({});
