@@ -103,6 +103,8 @@ function getSupportType(support: number): keyof typeof SUPPORT_CONFIG {
   return 'blocker';
 }
 
+const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
+
 function MetricBar({ value, max = 10, label, color }: { value: number; max?: number; label: string; color: string }) {
   const percentage = (value / max) * 100;
   return (
