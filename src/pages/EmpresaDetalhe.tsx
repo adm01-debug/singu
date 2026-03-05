@@ -188,7 +188,7 @@ const EmpresaDetalhe = () => {
         </div>
         
         {/* Header with gradient background */}
-        <div className="h-48 bg-gradient-primary relative">
+        <div className="h-56 bg-gradient-primary relative">
           <div className="absolute top-4 left-4">
             <Link to="/empresas">
               <Button variant="ghost" className="text-white hover:bg-white/10">
@@ -209,7 +209,7 @@ const EmpresaDetalhe = () => {
           </div>
         </div>
 
-        <div className="px-6 -mt-24 pb-6">
+        <div className="px-6 -mt-20 pb-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Company Profile Card */}
             <motion.div
@@ -219,7 +219,7 @@ const EmpresaDetalhe = () => {
             >
               <Card className="overflow-visible">
                 <CardContent className="pt-0">
-                  <div className="flex flex-col items-center -mt-16">
+                  <div className="flex flex-col items-center -mt-12">
                     <div className="w-32 h-32 rounded-2xl bg-gradient-primary flex items-center justify-center text-white font-bold text-4xl shadow-strong border-4 border-card">
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
