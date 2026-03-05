@@ -72,12 +72,7 @@ serve(async (req) => {
       throw new Error(`External query failed: ${error.message}`);
     }
 
-    // Map data to RelateIQ format
-    const mappedData = (data || []).map((item: any) => {
-      if (table === 'companies') return mapCompany(item);
-      if (table === 'contacts') return mapContact(item);
-      return item;
-    });
+    const mappedData = data || [];
 
     return new Response(JSON.stringify({ data: mappedData, count }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
