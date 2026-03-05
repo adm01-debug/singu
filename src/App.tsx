@@ -133,6 +133,11 @@ const AnimatedRoutes = () => {
             <PageTransition><RelatorioContato /></PageTransition>
           </RequireAuth>
         } />
+        <Route path="/whatsapp" element={
+          <RequireAuth>
+            <PageTransition><WhatsApp /></PageTransition>
+          </RequireAuth>
+        } />
             
         {/* Catch-all */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
