@@ -427,7 +427,7 @@ const Interacoes = () => {
                               <OptimizedAvatar
                                 src={contact.avatar_url}
                                 alt={`${contact.first_name} ${contact.last_name}`}
-                                fallback={`${contact.first_name[0]}${contact.last_name[0]}`}
+                                fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                                 size="sm"
                               />
                               <div>

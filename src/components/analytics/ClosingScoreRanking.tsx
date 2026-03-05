@@ -276,7 +276,7 @@ export function ClosingScoreRanking({
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name[0]}${item.contact.last_name[0]}`}
+                        fallback={`${(item.contact.first_name || '?')[0]}${(item.contact.last_name || '?')[0]}`}
                         size="md"
                         className="h-12 w-12 border-2 border-background"
                       />
