@@ -86,32 +86,32 @@ const EmpresaDetalhe = () => {
   const fetchCompanyData = async () => {
     setLoading(true);
     try {
-      // Fetch company
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      // Fetch company from external DB
+      const { data: companyResult, error: companyError } = await queryExternalData<Company>({
+        table: 'companies',
+        filters: [{ type: 'eq', column: 'id', value: id }],
+      });
 
       if (companyError) throw companyError;
+      const companyData = companyResult?.[0] || null;
       setCompany(companyData);
 
       if (companyData) {
-        // Fetch contacts for this company
-        const { data: contactsData, error: contactsError } = await supabase
-          .from('contacts')
-          .select('*')
-          .eq('company_id', id)
-          .order('relationship_score', { ascending: false });
+        // Fetch contacts for this company from external DB
+        const { data: contactsResult, error: contactsError } = await queryExternalData<Contact>({
+          table: 'contacts',
+          filters: [{ type: 'eq', column: 'company_id', value: id }],
+          order: { column: 'relationship_score', ascending: false },
+        });
 
         if (contactsError) throw contactsError;
-        setContacts(contactsData || []);
+        setContacts(contactsResult || []);
 
-        // Fetch interactions for this company
+        // Fetch interactions from local DB (these are user-created)
         const { data: interactionsData, error: interactionsError } = await supabase
           .from('interactions')
           .select('*')
-          .eq('company_id', id)
+          .eq('company_id', id!)
           .order('created_at', { ascending: false })
           .limit(20);
 
