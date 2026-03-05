@@ -694,7 +694,7 @@ const EmpresaDetalhe = () => {
                                       <OptimizedAvatar 
                                         src={contact.avatar_url || undefined}
                                         alt={`${contact.first_name} ${contact.last_name}`}
-                                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
+                                        fallback={`${safeInitial(contact.first_name)}${safeInitial(contact.last_name)}`}
                                         size="sm"
                                         className="w-8 h-8"
                                       />
