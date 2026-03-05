@@ -130,7 +130,18 @@ export function CompanyCardWithContext({
                 )}
                 
                 <Link to={`/empresas/${company.id}`} className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-glow">
+                  {company.logo_url ? (
+                    <img 
+                      src={company.logo_url} 
+                      alt={company.name} 
+                      className="w-12 h-12 rounded-xl object-cover shadow-glow"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-white font-bold text-lg shadow-glow ${company.logo_url ? 'hidden' : ''}`}>
                     {company.name[0]}
                   </div>
                   <div>
