@@ -6,6 +6,66 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Mapear campos de companies do banco externo para o formato RelateIQ
+function mapCompany(ext: any): any {
+  return {
+    id: ext.id,
+    name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
+    industry: ext.ramo_atividade || null,
+    email: ext.email || null,
+    phone: ext.phone || ext.telefone || null,
+    website: ext.website || null,
+    address: ext.address || ext.endereco || null,
+    city: ext.city || ext.cidade || null,
+    state: ext.state || ext.uf || null,
+    annual_revenue: ext.annual_revenue || null,
+    employee_count: ext.employee_count || null,
+    financial_health: ext.financial_health || null,
+    logo_url: ext.logo_url || null,
+    notes: ext.notes || null,
+    tags: ext.tags_array || ext.tags || [],
+    challenges: ext.challenges || [],
+    competitors: ext.competitors || [],
+    user_id: ext.user_id || '',
+    created_at: ext.created_at,
+    updated_at: ext.updated_at,
+  };
+}
+
+// Mapear campos de contacts do banco externo para o formato RelateIQ
+function mapContact(ext: any): any {
+  return {
+    id: ext.id,
+    first_name: ext.first_name || '',
+    last_name: ext.last_name || '',
+    email: ext.email || null,
+    phone: ext.phone || ext.telefone || null,
+    whatsapp: ext.whatsapp || ext.celular || null,
+    role: ext.role || null,
+    role_title: ext.role_title || ext.cargo || null,
+    company_id: ext.company_id || null,
+    birthday: ext.birthday || ext.data_nascimento || null,
+    relationship_score: ext.relationship_score || 0,
+    relationship_stage: ext.relationship_stage || 'unknown',
+    sentiment: ext.sentiment || 'neutral',
+    tags: ext.tags_array || ext.tags || [],
+    hobbies: ext.hobbies || [],
+    interests: ext.interests_array || ext.interests || [],
+    avatar_url: ext.avatar_url || null,
+    linkedin: ext.linkedin || null,
+    instagram: ext.instagram || null,
+    twitter: ext.twitter || null,
+    notes: ext.notes || null,
+    personal_notes: ext.personal_notes || null,
+    family_info: ext.family_info || null,
+    behavior: ext.behavior || null,
+    life_events: ext.life_events || [],
+    user_id: ext.user_id || '',
+    created_at: ext.created_at,
+    updated_at: ext.updated_at,
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,7 +119,14 @@ serve(async (req) => {
       throw new Error(`External query failed: ${error.message}`);
     }
 
-    return new Response(JSON.stringify({ data, count }), {
+    // Map data to RelateIQ format
+    const mappedData = (data || []).map((item: any) => {
+      if (table === 'companies') return mapCompany(item);
+      if (table === 'contacts') return mapContact(item);
+      return item;
+    });
+
+    return new Response(JSON.stringify({ data: mappedData, count }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
