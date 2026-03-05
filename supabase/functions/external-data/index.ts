@@ -81,13 +81,23 @@ serve(async (req) => {
 
     const externalClient = createClient(EXTERNAL_URL, EXTERNAL_KEY);
 
-    const { table, filters, select, order, range } = await req.json();
+    const { table, filters, select, order, range, search } = await req.json();
 
     if (!table || !['companies', 'contacts'].includes(table)) {
       throw new Error('Invalid table. Only "companies" and "contacts" are allowed.');
     }
 
     let query = externalClient.from(table).select(select || '*', { count: 'exact' });
+
+    // Apply search (OR across multiple columns)
+    if (search && search.term) {
+      const term = `%${search.term}%`;
+      const columns = search.columns || [];
+      if (columns.length > 0) {
+        const orConditions = columns.map((col: string) => `${col}.ilike.${term}`).join(',');
+        query = query.or(orConditions);
+      }
+    }
 
     // Apply filters
     if (filters) {
