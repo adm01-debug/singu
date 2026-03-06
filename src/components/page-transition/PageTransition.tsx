@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, forwardRef } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -35,10 +35,10 @@ const transitionVariants: Record<string, Variants> = {
   },
 };
 
-export function PageTransition({ 
+export const PageTransition = forwardRef<HTMLDivElement, PageTransitionProps>(function PageTransition({ 
   children, 
   mode = 'slideUp' 
-}: PageTransitionProps) {
+}, _ref) {
   const location = useLocation();
 
   return (
@@ -58,7 +58,7 @@ export function PageTransition({
       </motion.div>
     </AnimatePresence>
   );
-}
+});
 
 // Number morphing animation for stats
 interface MorphingNumberProps {
