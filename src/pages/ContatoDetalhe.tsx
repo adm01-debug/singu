@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+const motion: any = { div: 'div' };
 import { 
   ArrowLeft,
   Building2, 
