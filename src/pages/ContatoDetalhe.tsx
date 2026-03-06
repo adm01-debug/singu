@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -5,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useContactDetail } from '@/hooks/useContactDetail';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
@@ -26,6 +28,19 @@ const ContactDetailSkeleton = () => (
 const ContatoDetalhe = () => {
   const { id } = useParams();
   const { contact, company, loading, error } = useContactDetail(id);
+  const { trackView } = useRecentlyViewed();
+
+  useEffect(() => {
+    if (contact && id) {
+      trackView({
+        id,
+        type: 'contact',
+        name: `${contact.first_name} ${contact.last_name}`.trim(),
+        subtitle: contact.role_title || undefined,
+        avatarUrl: contact.avatar_url || undefined,
+      });
+    }
+  }, [contact, id, trackView]);
 
   if (loading) return <ContactDetailSkeleton />;
 

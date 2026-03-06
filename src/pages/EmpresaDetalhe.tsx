@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { queryExternalData } from '@/lib/externalData';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -73,6 +74,7 @@ const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback
 const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { trackView } = useRecentlyViewed();
   const [company, setCompany] = useState<Company | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
@@ -108,6 +110,16 @@ const EmpresaDetalhe = () => {
         competitors: raw.competitors || [],
       } as Company : null;
       setCompany(companyData);
+
+      if (companyData && id) {
+        trackView({
+          id,
+          type: 'company',
+          name: companyData.name,
+          subtitle: companyData.industry || undefined,
+          avatarUrl: companyData.logo_url || undefined,
+        });
+      }
 
       if (companyData) {
         // Fetch contacts for this company from external DB
