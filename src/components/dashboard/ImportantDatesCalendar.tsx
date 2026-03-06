@@ -382,7 +382,8 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
       </CardContent>
     </Card>
   );
-}
+});
+ImportantDatesCalendar.displayName = 'ImportantDatesCalendar';
 
 interface EventCardProps {
   event: ImportantDate;
