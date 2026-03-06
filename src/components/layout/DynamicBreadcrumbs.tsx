@@ -83,18 +83,20 @@ export function DynamicBreadcrumbs({ items, currentPage, className }: DynamicBre
 
         {/* Intermediate breadcrumbs */}
         {breadcrumbItems.map((item, index) => (
-          <li key={index} className="inline-flex items-center gap-1.5">
-            <Link 
-              to={item.href || '#'}
-              className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-            <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
+          <>
+            <li key={`link-${index}`} className="inline-flex items-center gap-1.5">
+              <Link 
+                to={item.href || '#'}
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            </li>
+            <li key={`sep-${index}`} role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </li>
-          </li>
+          </>
         ))}
 
         {/* Current page */}
