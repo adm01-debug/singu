@@ -368,10 +368,15 @@ const ContatoDetalhe = () => {
       <div className="min-h-screen">
         {/* Breadcrumbs */}
         <div className="px-6 pt-4">
-          <DynamicBreadcrumbs 
-            items={[{ label: 'Contatos', href: '/contatos' }]} 
-            currentPage={`${contact.firstName} ${contact.lastName}`} 
-          />
+          <nav aria-label="breadcrumb">
+            <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <li>
+                <Link to="/contatos" className="transition-colors hover:text-foreground">Contatos</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-medium text-foreground">{contact.firstName} {contact.lastName}</li>
+            </ol>
+          </nav>
         </div>
         
         {/* Header with gradient background */}

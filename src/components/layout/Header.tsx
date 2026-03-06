@@ -33,7 +33,21 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   return (
     <header ref={ref} className="bg-card border-b border-border px-6 py-4">
       {showBreadcrumbs && (
-        <DynamicBreadcrumbs items={breadcrumbs} currentPage={title} />
+        <nav aria-label="breadcrumb" className="mb-4">
+          <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground sm:gap-2.5">
+            {breadcrumbs?.map((item, index) => (
+              <li key={`${item.label}-${index}`}>
+                {item.href ? (
+                  <Link to={item.href} className="transition-colors hover:text-foreground">{item.label}</Link>
+                ) : (
+                  <span>{item.label}</span>
+                )}
+                <span className="mx-1" aria-hidden="true">/</span>
+              </li>
+            ))}
+            <li className="font-medium text-foreground">{title}</li>
+          </ol>
+        </nav>
       )}
       
       <div className="flex items-center justify-between">
