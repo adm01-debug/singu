@@ -1,7 +1,8 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ContextMenu,
+  ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
