@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
 import { 
@@ -12,7 +14,9 @@ import {
   UserPlus,
   Upload,
   CheckSquare,
-  Keyboard
+  Keyboard,
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
@@ -264,6 +268,27 @@ const Contatos = () => {
     }
   };
 
+  const [isEnriching, setIsEnriching] = useState(false);
+
+  const handleEnrichContacts = async () => {
+    setIsEnriching(true);
+    toast.info('Enriquecendo contatos com banco externo...');
+    try {
+      const { data, error } = await supabase.functions.invoke('enrich-contacts');
+      if (error) throw error;
+      const result = data;
+      toast.success(`Enriquecimento concluído: ${result.enriched} contatos atualizados de ${result.total} analisados`);
+      if (result.enriched > 0) {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      console.error('Enrichment error:', err);
+      toast.error('Erro ao enriquecer contatos: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setIsEnriching(false);
+    }
+  };
+
   return (
     <>
     <AppLayout>
@@ -302,6 +327,17 @@ const Contatos = () => {
                 'Resultados ordenados por relevância',
               ]}
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEnrichContacts}
+              disabled={isEnriching}
+              className="gap-2"
+              title="Enriquecer contatos com dados do banco externo"
+            >
+              {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              {isEnriching ? 'Enriquecendo...' : 'Enriquecer'}
+            </Button>
             <AdvancedDataExporter entityType="contacts" />
             <Button
               variant="ghost"
