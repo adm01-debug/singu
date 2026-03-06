@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,11 +41,11 @@ interface ImportantDatesCalendarProps {
   compact?: boolean;
 }
 
-export function ImportantDatesCalendar({ 
+export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesCalendarProps>(({ 
   contacts, 
   interactions,
   compact = false 
-}: ImportantDatesCalendarProps) {
+}, _ref) => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -382,7 +382,8 @@ export function ImportantDatesCalendar({
       </CardContent>
     </Card>
   );
-}
+});
+ImportantDatesCalendar.displayName = 'ImportantDatesCalendar';
 
 interface EventCardProps {
   event: ImportantDate;
