@@ -55,16 +55,25 @@ export function useContactDetail(contactId: string | undefined) {
         return;
       }
 
-      // Fetch company from external database if contact has one
+      // Fetch company - try local first, then external
       let companyData: Company | null = null;
       if (contactData?.company_id) {
-        const { data: companyResult } = await queryExternalData<Company>({
-          table: 'companies',
-          filters: [{ type: 'eq', column: 'id', value: contactData.company_id }],
-        });
+        const { data: localCompany } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('id', contactData.company_id)
+          .single();
 
-        if (companyResult && companyResult.length > 0) {
-          companyData = companyResult[0];
+        if (localCompany) {
+          companyData = localCompany;
+        } else {
+          const { data: companyResult } = await queryExternalData<Company>({
+            table: 'companies',
+            filters: [{ type: 'eq', column: 'id', value: contactData.company_id }],
+          });
+          if (companyResult && companyResult.length > 0) {
+            companyData = companyResult[0];
+          }
         }
       }
 
