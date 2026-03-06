@@ -511,22 +511,20 @@ export const NetworkStatusBadge = React.forwardRef<HTMLDivElement>(function Netw
   if (status === 'online') return null;
 
   return (
-    <Badge
-      ref={ref}
-      variant={status === 'offline' ? 'destructive' : 'secondary'}
-      className="fixed bottom-4 left-4 z-40"
-    >
-      {status === 'offline' ? (
-        <>
-          <WifiOff className="h-3 w-3 mr-1" />
-          Offline
-        </>
-      ) : (
-        <>
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          Conexão lenta ({effectiveType})
-        </>
-      )}
-    </Badge>
+    <div ref={ref} className="fixed bottom-4 left-4 z-40">
+      <Badge variant={status === 'offline' ? 'destructive' : 'secondary'}>
+        {status === 'offline' ? (
+          <>
+            <WifiOff className="h-3 w-3 mr-1" />
+            Offline
+          </>
+        ) : (
+          <>
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            Conexão lenta ({effectiveType})
+          </>
+        )}
+      </Badge>
+    </div>
   );
 });
