@@ -9,11 +9,19 @@ import "./index.css";
 initGlobalErrorHandlers();
 initializeCustomTheme();
 
-// Evita cache de bundles antigos no preview/dev (Service Worker legado)
-if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+// Limpa service workers e caches legados para evitar bundle antigo quebrado no preview
+if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-      registration.unregister();
+    registrations.forEach((registration) => registration.unregister());
+  });
+}
+
+if ('caches' in window) {
+  caches.keys().then((keys) => {
+    keys.forEach((key) => {
+      if (key.includes('workbox') || key.includes('supabase') || key.includes('vite')) {
+        void caches.delete(key);
+      }
     });
   });
 }
