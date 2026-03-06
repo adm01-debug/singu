@@ -222,7 +222,7 @@ export const KeyboardShortcutsCheatsheet = forwardRef<HTMLDivElement, KeyboardSh
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 /**
  * Floating button to open keyboard shortcuts
