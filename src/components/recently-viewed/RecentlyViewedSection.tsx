@@ -37,6 +37,7 @@ export function RecentlyViewedSection({ type }: RecentlyViewedSectionProps) {
             >
               <OptimizedAvatar
                 alt={item.name}
+                fallback={item.name.charAt(0).toUpperCase()}
                 src={item.avatarUrl}
                 size="sm"
               />
