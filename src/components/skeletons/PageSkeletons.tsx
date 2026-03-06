@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Skeleton, SkeletonText, SkeletonAvatar, SkeletonCard } from '@/components/ui/skeleton';
@@ -157,39 +158,41 @@ export const ContactCardSkeleton = () => (
 );
 
 // Company Card Skeleton
-export const CompanyCardSkeleton = () => (
-  <Card className="h-full">
-    <CardContent className="p-5 space-y-4">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <Skeleton className="w-12 h-12 rounded-xl" variant="shimmer" />
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-28" variant="shimmer" />
-            <Skeleton className="h-4 w-20" variant="shimmer" />
+export const CompanyCardSkeleton = React.forwardRef<HTMLDivElement>(function CompanyCardSkeleton(_, ref) {
+  return (
+    <Card className="h-full" ref={ref}>
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-12 h-12 rounded-xl" variant="shimmer" />
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-28" variant="shimmer" />
+              <Skeleton className="h-4 w-20" variant="shimmer" />
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-4 rounded" variant="shimmer" />
-          <Skeleton className="h-4 w-32" variant="shimmer" />
+        
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded" variant="shimmer" />
+            <Skeleton className="h-4 w-32" variant="shimmer" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4 rounded" variant="shimmer" />
+            <Skeleton className="h-4 w-28" variant="shimmer" />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-4 rounded" variant="shimmer" />
-          <Skeleton className="h-4 w-28" variant="shimmer" />
+        
+        <Skeleton className="h-6 w-20 rounded-full" variant="shimmer" />
+        
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <Skeleton className="h-4 w-12" variant="shimmer" />
+          <Skeleton className="h-4 w-24" variant="shimmer" />
         </div>
-      </div>
-      
-      <Skeleton className="h-6 w-20 rounded-full" variant="shimmer" />
-      
-      <div className="flex items-center justify-between pt-4 border-t border-border">
-        <Skeleton className="h-4 w-12" variant="shimmer" />
-        <Skeleton className="h-4 w-24" variant="shimmer" />
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+});
 
 // Contacts Grid Skeleton
 export const ContactsGridSkeleton = () => (
