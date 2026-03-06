@@ -80,7 +80,7 @@ const AnimatedRoutes = () => {
         } />
         <Route path="/empresas/:id" element={
           <RequireAuth>
-            <PageTransition><EmpresaDetalhe /></PageTransition>
+            <EmpresaDetalhe />
           </RequireAuth>
         } />
         <Route path="/contatos" element={
@@ -90,7 +90,7 @@ const AnimatedRoutes = () => {
         } />
         <Route path="/contatos/:id" element={
           <RequireAuth>
-            <PageTransition><ContatoDetalhe /></PageTransition>
+            <ContatoDetalhe />
           </RequireAuth>
         } />
         <Route path="/interacoes" element={
