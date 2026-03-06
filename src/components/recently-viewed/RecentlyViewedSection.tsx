@@ -36,7 +36,7 @@ export function RecentlyViewedSection({ type }: RecentlyViewedSectionProps) {
               className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-border/50 bg-card hover:bg-accent/50 transition-colors min-w-[180px] max-w-[240px] text-left group"
             >
               <OptimizedAvatar
-                name={item.name}
+                alt={item.name}
                 src={item.avatarUrl}
                 size="sm"
               />
