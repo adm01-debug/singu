@@ -14,7 +14,9 @@ import {
   UserPlus,
   Upload,
   CheckSquare,
-  Keyboard
+  Keyboard,
+  RefreshCw,
+  Database
 } from 'lucide-react';
 import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
