@@ -42,19 +42,18 @@ export function useContactDetail(contactId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch contact from external database
-      const { data: contactsResult, error: contactError } = await queryExternalData<Contact>({
-        table: 'contacts',
-        filters: [{ type: 'eq', column: 'id', value: contactId }],
-      });
+      // Fetch contact from local database
+      const { data: contactData, error: contactError } = await supabase
+        .from('contacts')
+        .select('*')
+        .eq('id', contactId)
+        .single();
 
-      if (contactError || !contactsResult || contactsResult.length === 0) {
+      if (contactError || !contactData) {
         setError('Contato não encontrado');
         setLoading(false);
         return;
       }
-
-      const contactData = contactsResult[0];
 
       // Fetch company from external database if contact has one
       let companyData: Company | null = null;
