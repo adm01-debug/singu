@@ -34,21 +34,8 @@ const transitionVariants: Record<string, Variants> = {
   },
 };
 
-export function PageTransition({ children, mode = 'slideUp' }: PageTransitionProps) {
-  return (
-    <motion.div
-      variants={transitionVariants[mode]}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      transition={{
-        duration: 0.25,
-        ease: [0.25, 0.1, 0.25, 1.0],
-      }}
-    >
-      {children}
-    </motion.div>
-  );
+export function PageTransition({ children }: PageTransitionProps) {
+  return <div>{children}</div>;
 }
 
 
