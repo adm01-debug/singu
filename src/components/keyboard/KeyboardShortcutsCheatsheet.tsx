@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, Search, X, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -61,10 +61,10 @@ interface KeyboardShortcutsCheatsheetProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function KeyboardShortcutsCheatsheet({ 
+export const KeyboardShortcutsCheatsheet = forwardRef<HTMLDivElement, KeyboardShortcutsCheatsheetProps>(function KeyboardShortcutsCheatsheet({ 
   open: controlledOpen, 
   onOpenChange 
-}: KeyboardShortcutsCheatsheetProps) {
+}, _ref) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -222,7 +222,7 @@ export function KeyboardShortcutsCheatsheet({
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 /**
  * Floating button to open keyboard shortcuts
