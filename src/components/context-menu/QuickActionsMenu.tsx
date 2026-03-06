@@ -1,7 +1,8 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ContextMenu,
+  ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
@@ -140,7 +141,7 @@ export function QuickActionsMenu({
 
   return (
     <ContextMenu>
-      {children}
+      <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-56">
         {/* Primary Actions */}
         <ContextMenuItem onClick={handleViewDetails}>
