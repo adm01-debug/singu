@@ -209,7 +209,7 @@ const EmpresaDetalhe = () => {
         </div>
         
         {/* Header with gradient background */}
-        <div className="h-56 bg-gradient-primary relative">
+        <div className="h-56 bg-gradient-primary relative overflow-hidden rounded-t-lg mx-4 mt-2">
           <div className="absolute top-4 left-4">
             <Link to="/empresas">
               <Button variant="ghost" className="text-white hover:bg-white/10">
