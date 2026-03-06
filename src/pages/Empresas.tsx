@@ -307,6 +307,9 @@ const Empresas = () => {
           }}
         />
 
+        {/* Recently Viewed */}
+        <RecentlyViewedSection type="company" />
+
         {/* Loading State */}
         {loading ? (
           <CompaniesGridSkeleton />

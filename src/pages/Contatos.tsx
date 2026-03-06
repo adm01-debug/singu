@@ -397,6 +397,9 @@ const Contatos = () => {
           }}
         />
 
+        {/* Recently Viewed */}
+        <RecentlyViewedSection type="contact" />
+
         {/* Loading State */}
         {loading ? (
           viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
