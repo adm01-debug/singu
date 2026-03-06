@@ -41,11 +41,11 @@ interface ImportantDatesCalendarProps {
   compact?: boolean;
 }
 
-export function ImportantDatesCalendar({ 
+export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesCalendarProps>(({ 
   contacts, 
   interactions,
   compact = false 
-}: ImportantDatesCalendarProps) {
+}, _ref) => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
