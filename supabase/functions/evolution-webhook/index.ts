@@ -67,6 +67,142 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
+// Helper: Find contact by phone number - searches local DB first, then external DB
+async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
+  contactId: string | null;
+  userId: string | null;
+  companyId: string | null;
+  source: 'local' | 'external' | 'created' | null;
+}> {
+  // Clean phone number - remove country code prefix variations and non-digits
+  const cleanPhone = phoneNumber.replace(/\D/g, '');
+  
+  // Try multiple phone formats for matching
+  const phoneVariants = [cleanPhone];
+  // If starts with 55 (Brazil), also try without country code
+  if (cleanPhone.startsWith('55') && cleanPhone.length >= 12) {
+    phoneVariants.push(cleanPhone.substring(2));
+  }
+  // If doesn't start with 55, also try with it
+  if (!cleanPhone.startsWith('55') && cleanPhone.length >= 10) {
+    phoneVariants.push('55' + cleanPhone);
+  }
+
+  console.log(`Searching contact for phone variants: ${phoneVariants.join(', ')}`);
+
+  // 1. Search in LOCAL contacts table
+  for (const variant of phoneVariants) {
+    const { data: localContacts } = await supabase
+      .from('contacts')
+      .select('id, user_id, company_id')
+      .or(`whatsapp.eq.${variant},phone.eq.${variant}`)
+      .limit(1);
+
+    if (localContacts && localContacts.length > 0) {
+      console.log(`Found contact in LOCAL DB: ${localContacts[0].id} (phone: ${variant})`);
+      return {
+        contactId: localContacts[0].id,
+        userId: localContacts[0].user_id,
+        companyId: localContacts[0].company_id,
+        source: 'local',
+      };
+    }
+  }
+
+  // 2. Search in EXTERNAL contacts database
+  const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL');
+  const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY');
+
+  if (externalUrl && externalKey) {
+    const externalSupabase = createClient(externalUrl, externalKey);
+
+    for (const variant of phoneVariants) {
+      // Search by phone fields in external DB - try multiple column names
+      const { data: extContacts, error: extError } = await externalSupabase
+        .from('contacts')
+        .select('id, company_id, first_name, last_name, cargo, whatsapp, phone')
+        .or(`whatsapp.eq.${variant},phone.eq.${variant}`)
+        .limit(1);
+
+      if (extError) {
+        console.error('Error searching external contacts:', extError.message);
+        continue;
+      }
+
+      if (extContacts && extContacts.length > 0) {
+        const extContact = extContacts[0];
+        console.log(`Found contact in EXTERNAL DB: ${extContact.id} (${extContact.first_name} ${extContact.last_name})`);
+
+        // Get the default user (first user in profiles) to assign interaction
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1);
+
+        const defaultUserId = profiles?.[0]?.id || null;
+
+        if (!defaultUserId) {
+          console.error('No user found in profiles to assign interaction');
+          return { contactId: extContact.id, userId: null, companyId: extContact.company_id, source: 'external' };
+        }
+
+        return {
+          contactId: extContact.id,
+          userId: defaultUserId,
+          companyId: extContact.company_id,
+          source: 'external',
+        };
+      }
+    }
+  } else {
+    console.log('External DB credentials not configured, skipping external search');
+  }
+
+  // 3. Not found anywhere - create a local contact
+  console.log(`Contact not found for phone ${cleanPhone}, creating new local contact`);
+
+  // Get default user
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id')
+    .limit(1);
+
+  const defaultUserId = profiles?.[0]?.id || null;
+
+  if (!defaultUserId) {
+    console.error('No user found to create contact');
+    return { contactId: null, userId: null, companyId: null, source: null };
+  }
+
+  const { data: newContact, error: createError } = await supabase
+    .from('contacts')
+    .insert({
+      user_id: defaultUserId,
+      first_name: 'WhatsApp',
+      last_name: cleanPhone,
+      whatsapp: cleanPhone,
+      phone: cleanPhone,
+      notes: `Contato criado automaticamente via WhatsApp (Evolution API)`,
+      relationship_stage: 'unknown',
+      sentiment: 'neutral',
+    })
+    .select('id, user_id, company_id')
+    .single();
+
+  if (createError) {
+    console.error('Error creating contact:', createError.message);
+    return { contactId: null, userId: defaultUserId, companyId: null, source: null };
+  }
+
+  console.log(`Created new local contact: ${newContact.id}`);
+  return {
+    contactId: newContact.id,
+    userId: defaultUserId,
+    companyId: null,
+    source: 'created',
+  };
+}
+
 // ========================
 // MESSAGES.UPSERT - New message received/sent
 // ========================
@@ -128,22 +264,10 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
   else if (data.status === 'PENDING') status = 'pending';
   else if (data.status === 'SERVER_ACK') status = 'sent';
 
-  // Save to whatsapp_messages table (using service role, no user_id filter needed)
-  const { data: contacts } = await supabase
-    .from('contacts')
-    .select('id, user_id, company_id')
-    .or(`whatsapp.eq.${phoneNumber},phone.eq.${phoneNumber}`)
-    .limit(1);
+  // Find contact using enhanced search (local -> external -> create)
+  const { contactId, userId, companyId, source } = await findContactByPhone(supabase, phoneNumber || '');
 
-  let contactId: string | null = null;
-  let userId: string | null = null;
-  let companyId: string | null = null;
-
-  if (contacts && contacts.length > 0) {
-    contactId = contacts[0].id;
-    userId = contacts[0].user_id;
-    companyId = contacts[0].company_id;
-  }
+  console.log(`Contact resolution: contactId=${contactId}, userId=${userId}, source=${source}`);
 
   // Save WhatsApp message
   if (userId) {
@@ -165,6 +289,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
         messageType: data.messageType,
         participant: data.participant,
         instanceId: data.instanceId,
+        contactSource: source,
       },
     };
 
@@ -174,19 +299,36 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
       .select();
 
     if (msgError) {
-      // If upsert fails (no unique constraint on message_id), just insert
-      await supabase.from('whatsapp_messages').insert(messageData);
+      console.error('Error upserting whatsapp_message:', msgError.message);
+      // If upsert fails, just insert
+      const { error: insertError } = await supabase.from('whatsapp_messages').insert(messageData);
+      if (insertError) {
+        console.error('Error inserting whatsapp_message:', insertError.message);
+      }
     }
   }
 
-  // Create interaction for text messages from contacts
+  // Create interaction for text messages
   if (messageContent && contactId && userId && messageType === 'text') {
+    // Update contact name if we created it and now have pushName
+    if (source === 'created' && senderName && senderName !== 'Desconhecido') {
+      await supabase
+        .from('contacts')
+        .update({ first_name: senderName, last_name: '' })
+        .eq('id', contactId);
+      console.log(`Updated created contact name to: ${senderName}`);
+    }
+
+    const interactionTitle = isFromMe 
+      ? 'Mensagem Enviada (WhatsApp)' 
+      : `Mensagem de ${senderName} (WhatsApp)`;
+
     const interactionData = {
       contact_id: contactId,
       company_id: companyId,
       user_id: userId,
       type: 'whatsapp',
-      title: isFromMe ? 'Mensagem Enviada (WhatsApp)' : `Mensagem de ${senderName} (WhatsApp)`,
+      title: interactionTitle,
       content: messageContent,
       sentiment: 'neutral',
       initiated_by: isFromMe ? 'us' : 'them',
@@ -204,9 +346,9 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
       .single();
 
     if (interactionError) {
-      console.error('Error creating interaction:', interactionError);
+      console.error('Error creating interaction:', interactionError.message);
     } else {
-      console.log('Interaction created:', interaction.id);
+      console.log(`Interaction created: ${interaction.id} (contact source: ${source})`);
 
       // Trigger DISC analysis for long messages
       if (messageContent.length >= 100 && contactId) {
@@ -217,7 +359,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
             interactionId: interaction.id,
             userId,
           },
-        }).catch(console.error);
+        }).catch((err: any) => console.error('DISC analyzer error:', err));
       }
     }
   }
@@ -225,6 +367,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
   return jsonResponse({
     status: 'success',
     contactId,
+    contactSource: source,
     messageType,
     analyzed: (messageContent?.length || 0) >= 100,
   });
@@ -350,19 +493,15 @@ async function handleCall(supabase: any, payload: any, instance: string) {
 
   console.log(`Call from ${phoneNumber}, isVideo: ${data?.isVideo}`);
 
-  // Find contact and create interaction for calls
+  // Find contact using enhanced search
   if (phoneNumber) {
-    const { data: contacts } = await supabase
-      .from('contacts')
-      .select('id, user_id, company_id')
-      .or(`whatsapp.eq.${phoneNumber},phone.eq.${phoneNumber}`)
-      .limit(1);
+    const { contactId, userId, companyId } = await findContactByPhone(supabase, phoneNumber);
 
-    if (contacts && contacts.length > 0) {
+    if (contactId && userId) {
       await supabase.from('interactions').insert({
-        contact_id: contacts[0].id,
-        company_id: contacts[0].company_id,
-        user_id: contacts[0].user_id,
+        contact_id: contactId,
+        company_id: companyId,
+        user_id: userId,
         type: 'call',
         title: `Chamada ${data?.isVideo ? 'de Vídeo' : 'de Voz'} (WhatsApp)`,
         content: `Chamada ${data?.isVideo ? 'de vídeo' : 'de voz'} recebida via WhatsApp. Status: ${data?.status || 'recebida'}`,
