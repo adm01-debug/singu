@@ -194,9 +194,9 @@ const EmpresaDetalhe = () => {
 
   return (
     <AppLayout>
-      <div className="min-h-screen">
+      <div className="min-h-screen pt-2 md:pt-4">
         {/* Breadcrumbs */}
-        <div className="px-6 pt-4">
+        <div className="px-4 md:px-6 pt-3 md:pt-4">
           <nav aria-label="breadcrumb">
             <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <li>
@@ -209,7 +209,7 @@ const EmpresaDetalhe = () => {
         </div>
         
         {/* Header with gradient background */}
-        <div className="h-56 bg-gradient-primary relative overflow-hidden rounded-t-lg mx-4 mt-2">
+        <div className="h-56 bg-gradient-primary relative z-0 overflow-hidden rounded-2xl mx-4 md:mx-6 mt-2">
           <div className="absolute top-4 left-4">
             <Link to="/empresas">
               <Button variant="ghost" className="text-white hover:bg-white/10">
@@ -230,7 +230,7 @@ const EmpresaDetalhe = () => {
           </div>
         </div>
 
-        <div className="px-6 -mt-16 pb-6">
+        <div className="relative z-10 px-4 md:px-6 -mt-12 md:-mt-16 pb-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Company Profile Card */}
             <motion.div
