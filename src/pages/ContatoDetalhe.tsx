@@ -28,7 +28,6 @@ import {
   CalendarClock
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -368,10 +367,15 @@ const ContatoDetalhe = () => {
       <div className="min-h-screen">
         {/* Breadcrumbs */}
         <div className="px-6 pt-4">
-          <DynamicBreadcrumbs 
-            items={[{ label: 'Contatos', href: '/contatos' }]} 
-            currentPage={`${contact.firstName} ${contact.lastName}`} 
-          />
+          <nav aria-label="breadcrumb">
+            <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <li>
+                <Link to="/contatos" className="transition-colors hover:text-foreground">Contatos</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-medium text-foreground">{contact.firstName} {contact.lastName}</li>
+            </ol>
+          </nav>
         </div>
         
         {/* Header with gradient background */}
