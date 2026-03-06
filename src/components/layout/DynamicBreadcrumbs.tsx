@@ -1,14 +1,6 @@
-import { forwardRef, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
 import { cn } from '@/lib/utils';
 
 interface BreadcrumbConfig {
@@ -35,91 +27,90 @@ const routeLabels: Record<string, string> = {
   'notificacoes': 'Notificações',
 };
 
-export const DynamicBreadcrumbs = forwardRef<HTMLElement, DynamicBreadcrumbsProps>(
-  function DynamicBreadcrumbs({ items, currentPage, className }, ref) {
-    const location = useLocation();
+export function DynamicBreadcrumbs({ items, currentPage, className }: DynamicBreadcrumbsProps) {
+  const location = useLocation();
+  
+  // Generate breadcrumbs from current path if items not provided
+  const generateBreadcrumbs = (): BreadcrumbConfig[] => {
+    if (items) return items;
     
-    // Generate breadcrumbs from current path if items not provided
-    const generateBreadcrumbs = (): BreadcrumbConfig[] => {
-      if (items) return items;
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs: BreadcrumbConfig[] = [];
+    
+    // Skip if we're on the home page
+    if (pathSegments.length === 0) return [];
+    
+    let currentPath = '';
+    pathSegments.forEach((segment, index) => {
+      currentPath += `/${segment}`;
       
-      const pathSegments = location.pathname.split('/').filter(Boolean);
-      const breadcrumbs: BreadcrumbConfig[] = [];
+      // Check if it's a detail page (UUID or numeric ID)
+      const isDetailPage = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment) || 
+                          /^\d+$/.test(segment);
       
-      // Skip if we're on the home page
-      if (pathSegments.length === 0) return [];
-      
-      let currentPath = '';
-      pathSegments.forEach((segment, index) => {
-        currentPath += `/${segment}`;
-        
-        // Check if it's a detail page (UUID or numeric ID)
-        const isDetailPage = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment) || 
-                            /^\d+$/.test(segment);
-        
-        if (!isDetailPage && index < pathSegments.length - 1) {
-          breadcrumbs.push({
-            label: routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
-            href: currentPath,
-          });
-        }
-      });
-      
-      return breadcrumbs;
-    };
+      if (!isDetailPage && index < pathSegments.length - 1) {
+        breadcrumbs.push({
+          label: routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
+          href: currentPath,
+        });
+      }
+    });
+    
+    return breadcrumbs;
+  };
 
-    const breadcrumbItems = generateBreadcrumbs();
+  const breadcrumbItems = generateBreadcrumbs();
 
-    return (
-      <Breadcrumb ref={ref} className={cn("mb-4", className)}>
-        <BreadcrumbList>
-          {/* Home link */}
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
+  return (
+    <nav aria-label="breadcrumb" className={cn("mb-4", className)}>
+      <ol className="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
+        {/* Home link */}
+        <li className="inline-flex items-center gap-1.5">
+          <Link 
+            to="/" 
+            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span className="sr-only sm:not-sr-only">Início</span>
+          </Link>
+        </li>
+        
+        {(breadcrumbItems.length > 0 || currentPage) && (
+          <li role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </li>
+        )}
+
+        {/* Intermediate breadcrumbs */}
+        {breadcrumbItems.map((item, index) => (
+          <>
+            <li key={`link-${index}`} className="inline-flex items-center gap-1.5">
               <Link 
-                to="/" 
+                to={item.href || '#'}
                 className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Home className="w-4 h-4" />
-                <span className="sr-only sm:not-sr-only">Início</span>
+                {item.icon}
+                {item.label}
               </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          
-          {(breadcrumbItems.length > 0 || currentPage) && (
-            <BreadcrumbSeparator>
+            </li>
+            <li key={`sep-${index}`} role="presentation" aria-hidden="true" className="[&>svg]:size-3.5">
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
-            </BreadcrumbSeparator>
-          )}
+            </li>
+          </>
+        ))}
 
-          {/* Intermediate breadcrumbs */}
-          {breadcrumbItems.map((item, index) => (
-            <BreadcrumbItem key={index}>
-              <BreadcrumbLink asChild>
-                <Link 
-                  to={item.href || '#'}
-                  className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {item.icon}
-                  {item.label}
-                </Link>
-              </BreadcrumbLink>
-              <BreadcrumbSeparator>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </BreadcrumbSeparator>
-            </BreadcrumbItem>
-          ))}
-
-          {/* Current page */}
-          <BreadcrumbItem>
-            <BreadcrumbPage className="font-medium text-foreground">
-              {currentPage}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    );
-  }
-);
-
-DynamicBreadcrumbs.displayName = 'DynamicBreadcrumbs';
+        {/* Current page */}
+        <li className="inline-flex items-center gap-1.5">
+          <span
+            role="link"
+            aria-disabled="true"
+            aria-current="page"
+            className="font-medium text-foreground"
+          >
+            {currentPage}
+          </span>
+        </li>
+      </ol>
+    </nav>
+  );
+}
