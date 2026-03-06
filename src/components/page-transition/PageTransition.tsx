@@ -58,7 +58,7 @@ export const PageTransition = forwardRef<HTMLDivElement, PageTransitionProps>(fu
       </motion.div>
     </AnimatePresence>
   );
-}
+});
 
 // Number morphing animation for stats
 interface MorphingNumberProps {
