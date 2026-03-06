@@ -24,7 +24,6 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { DynamicBreadcrumbs } from '@/components/layout/DynamicBreadcrumbs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
