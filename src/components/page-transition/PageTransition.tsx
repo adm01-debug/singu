@@ -35,10 +35,10 @@ const transitionVariants: Record<string, Variants> = {
   },
 };
 
-export function PageTransition({ 
+export const PageTransition = forwardRef<HTMLDivElement, PageTransitionProps>(function PageTransition({ 
   children, 
   mode = 'slideUp' 
-}: PageTransitionProps) {
+}, _ref) {
   const location = useLocation();
 
   return (
