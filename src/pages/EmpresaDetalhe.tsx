@@ -74,6 +74,7 @@ const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback
 const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { trackView } = useRecentlyViewed();
   const [company, setCompany] = useState<Company | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
