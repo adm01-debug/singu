@@ -143,6 +143,8 @@ import {
   CompanyHealth
 } from '@/types';
 
+const motion: any = { div: 'div' };
+
 const interactionIcons = {
   whatsapp: MessageSquare,
   call: Phone,
