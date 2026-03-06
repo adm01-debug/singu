@@ -40,7 +40,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-export function InstallPrompt() {
+export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPrompt(_, ref) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -76,14 +76,14 @@ export function InstallPrompt() {
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
-    
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       setIsInstalled(true);
     }
-    
+
     setDeferredPrompt(null);
     setShowPrompt(false);
   };
@@ -101,6 +101,7 @@ export function InstallPrompt() {
   return (
     <AnimatePresence>
       <motion.div
+        ref={ref}
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
@@ -149,7 +150,7 @@ export function InstallPrompt() {
       </motion.div>
     </AnimatePresence>
   );
-}
+});
 
 // Offline Indicator
 export function OfflineIndicator() {
@@ -463,7 +464,7 @@ export function useShareTarget() {
 }
 
 // Network Status Badge
-export function NetworkStatusBadge() {
+export const NetworkStatusBadge = React.forwardRef<HTMLDivElement>(function NetworkStatusBadge(_, ref) {
   const [status, setStatus] = useState<'online' | 'offline' | 'slow'>('online');
   const [effectiveType, setEffectiveType] = useState<string>('');
 
@@ -510,21 +511,20 @@ export function NetworkStatusBadge() {
   if (status === 'online') return null;
 
   return (
-    <Badge 
-      variant={status === 'offline' ? 'destructive' : 'secondary'}
-      className="fixed bottom-4 left-4 z-40"
-    >
-      {status === 'offline' ? (
-        <>
-          <WifiOff className="h-3 w-3 mr-1" />
-          Offline
-        </>
-      ) : (
-        <>
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          Conexão lenta ({effectiveType})
-        </>
-      )}
-    </Badge>
+    <div ref={ref} className="fixed bottom-4 left-4 z-40">
+      <Badge variant={status === 'offline' ? 'destructive' : 'secondary'}>
+        {status === 'offline' ? (
+          <>
+            <WifiOff className="h-3 w-3 mr-1" />
+            Offline
+          </>
+        ) : (
+          <>
+            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            Conexão lenta ({effectiveType})
+          </>
+        )}
+      </Badge>
+    </div>
   );
-}
+});
