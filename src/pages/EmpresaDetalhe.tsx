@@ -197,10 +197,15 @@ const EmpresaDetalhe = () => {
       <div className="min-h-screen">
         {/* Breadcrumbs */}
         <div className="px-6 pt-4">
-          <DynamicBreadcrumbs 
-            items={[{ label: 'Empresas', href: '/empresas' }]} 
-            currentPage={company.name} 
-          />
+          <nav aria-label="breadcrumb">
+            <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <li>
+                <Link to="/empresas" className="transition-colors hover:text-foreground">Empresas</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-medium text-foreground">{company.name}</li>
+            </ol>
+          </nav>
         </div>
         
         {/* Header with gradient background */}
