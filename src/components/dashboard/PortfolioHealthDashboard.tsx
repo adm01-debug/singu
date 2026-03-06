@@ -41,13 +41,14 @@ const statusLabels = {
   critical: 'Crítico'
 };
 
-const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
-  if (trend === 'up') return <TrendingUp className="h-3 w-3 text-success" />;
-  if (trend === 'down') return <TrendingDown className="h-3 w-3 text-destructive" />;
-  return <Minus className="h-3 w-3 text-muted-foreground" />;
-};
+const TrendIcon = forwardRef<HTMLSpanElement, { trend: 'up' | 'down' | 'stable' }>(({ trend }, ref) => {
+  if (trend === 'up') return <span ref={ref}><TrendingUp className="h-3 w-3 text-success" /></span>;
+  if (trend === 'down') return <span ref={ref}><TrendingDown className="h-3 w-3 text-destructive" /></span>;
+  return <span ref={ref}><Minus className="h-3 w-3 text-muted-foreground" /></span>;
+});
+TrendIcon.displayName = 'TrendIcon';
 
-function ClientRow({ client }: { client: ClientHealthSummary }) {
+const ClientRow = forwardRef<HTMLAnchorElement, { client: ClientHealthSummary }>(({ client }, _ref) => {
   return (
     <Link to={`/contatos/${client.contactId}`}>
       <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
@@ -76,7 +77,8 @@ function ClientRow({ client }: { client: ClientHealthSummary }) {
       </div>
     </Link>
   );
-}
+});
+ClientRow.displayName = 'ClientRow';
 
 export function PortfolioHealthDashboard({ contacts, interactions, compact = false }: PortfolioHealthDashboardProps) {
   const metrics = usePortfolioHealth(contacts, interactions);
