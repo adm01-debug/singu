@@ -10,21 +10,35 @@ initGlobalErrorHandlers();
 initializeCustomTheme();
 
 // Limpa service workers e caches legados para evitar bundle antigo quebrado no preview
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => registration.unregister());
-  });
-}
+void (async () => {
+  try {
+    let cleaned = false;
 
-if ('caches' in window) {
-  caches.keys().then((keys) => {
-    keys.forEach((key) => {
-      if (key.includes('workbox') || key.includes('supabase') || key.includes('vite')) {
-        void caches.delete(key);
-      }
-    });
-  });
-}
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+      cleaned = cleaned || registrations.length > 0;
+    }
+
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      const keysToDelete = keys.filter((key) =>
+        key.includes('workbox') || key.includes('supabase') || key.includes('vite') || key.includes('precache')
+      );
+
+      await Promise.all(keysToDelete.map((key) => caches.delete(key)));
+      cleaned = cleaned || keysToDelete.length > 0;
+    }
+
+    const reloadKey = 'relateiq-cache-cleanup-reloaded';
+    if (cleaned && !sessionStorage.getItem(reloadKey)) {
+      sessionStorage.setItem(reloadKey, '1');
+      window.location.reload();
+    }
+  } catch {
+    // noop: falha de limpeza não deve impedir bootstrap do app
+  }
+})();
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="dark" storageKey="relateiq-theme">
