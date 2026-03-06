@@ -9,6 +9,15 @@ import "./index.css";
 initGlobalErrorHandlers();
 initializeCustomTheme();
 
+// Evita cache de bundles antigos no preview/dev (Service Worker legado)
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => {
+      registration.unregister();
+    });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="dark" storageKey="relateiq-theme">
     <App />
