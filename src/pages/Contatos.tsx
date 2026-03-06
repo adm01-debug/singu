@@ -268,6 +268,27 @@ const Contatos = () => {
     }
   };
 
+  const [isEnriching, setIsEnriching] = useState(false);
+
+  const handleEnrichContacts = async () => {
+    setIsEnriching(true);
+    toast.info('Enriquecendo contatos com banco externo...');
+    try {
+      const { data, error } = await supabase.functions.invoke('enrich-contacts');
+      if (error) throw error;
+      const result = data;
+      toast.success(`Enriquecimento concluído: ${result.enriched} contatos atualizados de ${result.total} analisados`);
+      if (result.enriched > 0) {
+        window.location.reload();
+      }
+    } catch (err: any) {
+      console.error('Enrichment error:', err);
+      toast.error('Erro ao enriquecer contatos: ' + (err.message || 'Erro desconhecido'));
+    } finally {
+      setIsEnriching(false);
+    }
+  };
+
   return (
     <>
     <AppLayout>
