@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Search, Bell, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ interface HeaderProps {
   showBreadcrumbs?: boolean;
 }
 
-export function Header({ 
+export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({ 
   title, 
   subtitle, 
   showAddButton, 
@@ -29,9 +30,9 @@ export function Header({
   onAddClick,
   breadcrumbs,
   showBreadcrumbs = true,
-}: HeaderProps) {
+}, ref) {
   return (
-    <header className="bg-card border-b border-border px-6 py-4">
+    <header ref={ref} className="bg-card border-b border-border px-6 py-4">
       {showBreadcrumbs && (
         <DynamicBreadcrumbs items={breadcrumbs} currentPage={title} />
       )}
@@ -64,4 +65,6 @@ export function Header({
       </div>
     </header>
   );
-}
+});
+
+Header.displayName = 'Header';
