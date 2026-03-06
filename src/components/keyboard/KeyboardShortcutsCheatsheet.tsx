@@ -61,10 +61,10 @@ interface KeyboardShortcutsCheatsheetProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function KeyboardShortcutsCheatsheet({ 
+export const KeyboardShortcutsCheatsheet = forwardRef<HTMLDivElement, KeyboardShortcutsCheatsheetProps>(function KeyboardShortcutsCheatsheet({ 
   open: controlledOpen, 
   onOpenChange 
-}: KeyboardShortcutsCheatsheetProps) {
+}, _ref) {
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
