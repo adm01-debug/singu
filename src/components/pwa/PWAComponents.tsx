@@ -464,7 +464,7 @@ export function useShareTarget() {
 }
 
 // Network Status Badge
-export function NetworkStatusBadge() {
+export const NetworkStatusBadge = React.forwardRef<HTMLDivElement>(function NetworkStatusBadge(_, ref) {
   const [status, setStatus] = useState<'online' | 'offline' | 'slow'>('online');
   const [effectiveType, setEffectiveType] = useState<string>('');
 
@@ -511,7 +511,8 @@ export function NetworkStatusBadge() {
   if (status === 'online') return null;
 
   return (
-    <Badge 
+    <Badge
+      ref={ref}
       variant={status === 'offline' ? 'destructive' : 'secondary'}
       className="fixed bottom-4 left-4 z-40"
     >
@@ -528,4 +529,4 @@ export function NetworkStatusBadge() {
       )}
     </Badge>
   );
-}
+});
