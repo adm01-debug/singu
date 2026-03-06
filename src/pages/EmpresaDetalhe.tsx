@@ -111,6 +111,16 @@ const EmpresaDetalhe = () => {
       } as Company : null;
       setCompany(companyData);
 
+      if (companyData && id) {
+        trackView({
+          id,
+          type: 'company',
+          name: companyData.name,
+          subtitle: companyData.industry || undefined,
+          avatarUrl: companyData.logo_url || undefined,
+        });
+      }
+
       if (companyData) {
         // Fetch contacts for this company from external DB
         const { data: contactsResult, error: contactsError } = await queryExternalData<Contact>({
