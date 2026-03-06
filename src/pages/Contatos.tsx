@@ -327,6 +327,17 @@ const Contatos = () => {
                 'Resultados ordenados por relevância',
               ]}
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEnrichContacts}
+              disabled={isEnriching}
+              className="gap-2"
+              title="Enriquecer contatos com dados do banco externo"
+            >
+              {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+              {isEnriching ? 'Enriquecendo...' : 'Enriquecer'}
+            </Button>
             <AdvancedDataExporter entityType="contacts" />
             <Button
               variant="ghost"
