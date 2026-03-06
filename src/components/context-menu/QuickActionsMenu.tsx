@@ -141,7 +141,7 @@ export function QuickActionsMenu({
 
   return (
     <ContextMenu>
-      {children}
+      <ContextMenuTrigger>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-56">
         {/* Primary Actions */}
         <ContextMenuItem onClick={handleViewDetails}>
