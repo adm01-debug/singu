@@ -442,22 +442,28 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Contatos ({contacts.length})
+                    <span className="hidden sm:inline">Contatos ({contacts.length})</span>
+                    <span className="sm:hidden">{contacts.length}</span>
                   </TabsTrigger>
                   <TabsTrigger value="stakeholders" className="flex items-center gap-2">
                     <Network className="w-4 h-4" />
-                    Stakeholders
+                    <span className="hidden sm:inline">Stakeholders</span>
                   </TabsTrigger>
                   <TabsTrigger value="interactions" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
-                    Histórico ({totalInteractions})
+                    <span className="hidden sm:inline">Histórico ({totalInteractions})</span>
+                    <span className="sm:hidden">{totalInteractions}</span>
                   </TabsTrigger>
                   <TabsTrigger value="insights" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
-                    Insights
+                    <span className="hidden sm:inline">Insights</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="lux" className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="hidden sm:inline">Lux</span>
                   </TabsTrigger>
                 </TabsList>
 
