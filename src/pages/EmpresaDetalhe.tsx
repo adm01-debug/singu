@@ -236,6 +236,19 @@ const EmpresaDetalhe = () => {
             </Link>
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
+            <LuxButton
+              onClick={() => triggerLux({
+                name: company.name,
+                cnpj: (company as any).cnpj,
+                website: company.website,
+                industry: company.industry,
+                city: company.city,
+                state: company.state,
+              })}
+              loading={luxTriggering}
+              processing={luxRecord?.status === 'processing'}
+              variant="header"
+            />
             <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
               <Plus className="w-4 h-4 mr-2" />
               Novo Contato
