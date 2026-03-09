@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -22,7 +23,8 @@ import {
   Briefcase,
   Network,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Sparkles
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,6 +40,8 @@ import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { LuxButton } from '@/components/lux/LuxButton';
+import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
