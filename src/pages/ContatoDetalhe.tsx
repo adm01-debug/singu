@@ -5,8 +5,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { LuxButton } from '@/components/lux/LuxButton';
+import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
