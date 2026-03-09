@@ -128,8 +128,11 @@ const ContatoDetalhe = () => {
               <CardContent className="pt-6">
                 <LuxIntelligencePanel
                   record={latestRecord}
+                  records={luxRecords}
                   entityType="contact"
                   loading={luxLoading}
+                  onTrigger={handleTriggerLux}
+                  triggering={triggering}
                 />
               </CardContent>
             </Card>

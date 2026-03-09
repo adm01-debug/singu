@@ -100,5 +100,6 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
     triggering,
     triggerLux,
     refresh: fetchRecords,
+    isProcessing: latestRecord?.status === 'processing',
   };
 }
