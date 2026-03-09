@@ -1,474 +1,754 @@
-import { formatDistanceToNow } from 'date-fns';
+import { useState } from 'react';
+import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Globe, Users, Building2, Brain, Target, 
   Briefcase, GraduationCap, MapPin, Clock, AlertCircle,
-  CheckCircle2, Loader2, FileText, TrendingUp
+  CheckCircle2, Loader2, FileText, TrendingUp, Linkedin,
+  Instagram, Twitter, ExternalLink, Copy, Check, 
+  BarChart3, Heart, Plane, Award, Calendar, Share2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { LuxButton } from './LuxButton';
+import { LuxHistoryTimeline } from './LuxHistoryTimeline';
 import type { LuxIntelligenceRecord } from '@/hooks/useLuxIntelligence';
+import { toast } from 'sonner';
 
 interface LuxIntelligencePanelProps {
   record: LuxIntelligenceRecord | null;
+  records?: LuxIntelligenceRecord[];
   entityType: 'contact' | 'company';
   loading?: boolean;
+  onTrigger?: () => void;
+  triggering?: boolean;
 }
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const config: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle2 }> = {
-    pending: { label: 'Pendente', variant: 'outline', icon: Clock },
-    processing: { label: 'Analisando...', variant: 'secondary', icon: Loader2 },
-    completed: { label: 'Concluído', variant: 'default', icon: CheckCircle2 },
-    error: { label: 'Erro', variant: 'destructive', icon: AlertCircle },
+  const config: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle2; color: string }> = {
+    pending: { label: 'Pendente', variant: 'outline', icon: Clock, color: 'text-muted-foreground' },
+    processing: { label: 'Analisando...', variant: 'secondary', icon: Loader2, color: 'text-amber-600' },
+    completed: { label: 'Concluído', variant: 'default', icon: CheckCircle2, color: 'text-emerald-600' },
+    error: { label: 'Erro', variant: 'destructive', icon: AlertCircle, color: 'text-destructive' },
   };
   const c = config[status] || config.pending;
   const Icon = c.icon;
   return (
-    <Badge variant={c.variant} className="gap-1">
+    <Badge variant={c.variant} className={`gap-1.5 ${c.color}`}>
       <Icon className={`w-3 h-3 ${status === 'processing' ? 'animate-spin' : ''}`} />
       {c.label}
     </Badge>
   );
 };
 
+const DataCard = ({ 
+  title, 
+  icon: Icon, 
+  iconColor, 
+  children,
+  className = ''
+}: { 
+  title: string; 
+  icon: typeof Brain;
+  iconColor: string;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+  >
+    <Card className={className}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <div className={`p-1.5 rounded-lg ${iconColor}`}>
+            <Icon className="w-4 h-4" />
+          </div>
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  </motion.div>
+);
+
+const SocialProfileCard = ({ profile }: { profile: any }) => {
+  const platformIcons: Record<string, typeof Linkedin> = {
+    linkedin: Linkedin,
+    instagram: Instagram,
+    twitter: Twitter,
+    default: Globe,
+  };
+  
+  const Icon = platformIcons[profile.platform?.toLowerCase()] || platformIcons.default;
+  
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-muted/50 to-muted/30 hover:from-muted hover:to-muted/50 transition-all">
+      <div className="p-2 rounded-lg bg-background shadow-sm">
+        <Icon className="w-4 h-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{profile.platform}</p>
+        {profile.username && (
+          <p className="text-xs text-muted-foreground">@{profile.username}</p>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        {profile.followers && (
+          <Badge variant="secondary" className="text-xs">
+            {typeof profile.followers === 'number' 
+              ? profile.followers.toLocaleString('pt-BR')
+              : profile.followers} seguidores
+          </Badge>
+        )}
+        {profile.url && (
+          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+            <a href={profile.url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, x: -10 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ delay: index * 0.05 }}
+    className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-indigo-50/50 to-violet-50/50 dark:from-indigo-950/20 dark:to-violet-950/20 border border-indigo-100/50 dark:border-indigo-800/30"
+  >
+    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+      {(stakeholder.first_name || stakeholder.name || '?').charAt(0)}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium truncate">
+        {stakeholder.name || `${stakeholder.first_name || ''} ${stakeholder.last_name || ''}`.trim() || 'Nome não disponível'}
+      </p>
+      <p className="text-xs text-muted-foreground truncate">
+        {stakeholder.role_title || stakeholder.position || 'Cargo não identificado'}
+      </p>
+    </div>
+    <div className="flex items-center gap-1">
+      {stakeholder.email && (
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <a href={`mailto:${stakeholder.email}`}>
+            <Share2 className="w-3.5 h-3.5" />
+          </a>
+        </Button>
+      )}
+      {stakeholder.linkedin && (
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <a href={stakeholder.linkedin} target="_blank" rel="noopener noreferrer">
+            <Linkedin className="w-3.5 h-3.5" />
+          </a>
+        </Button>
+      )}
+    </div>
+  </motion.div>
+);
+
 function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const fiscal = record.fiscal_data || {};
   const audience = record.audience_analysis || {};
   const social = record.social_analysis || {};
   const stakeholders = record.stakeholders || [];
+  const socialProfiles = record.social_profiles || [];
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast.success('Copiado para área de transferência');
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   return (
-    <div className="space-y-6">
-      {/* AI Summary */}
-      {record.ai_summary && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Brain className="w-4 h-4 text-violet-500" />
-              Resumo Executivo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+    <Tabs defaultValue="summary" className="space-y-4">
+      <TabsList className="grid w-full grid-cols-5 h-auto p-1">
+        <TabsTrigger value="summary" className="text-xs py-2">
+          <Brain className="w-3.5 h-3.5 mr-1.5" />
+          Resumo
+        </TabsTrigger>
+        <TabsTrigger value="fiscal" className="text-xs py-2">
+          <Building2 className="w-3.5 h-3.5 mr-1.5" />
+          Fiscal
+        </TabsTrigger>
+        <TabsTrigger value="audience" className="text-xs py-2">
+          <Target className="w-3.5 h-3.5 mr-1.5" />
+          Público
+        </TabsTrigger>
+        <TabsTrigger value="social" className="text-xs py-2">
+          <Globe className="w-3.5 h-3.5 mr-1.5" />
+          Social
+        </TabsTrigger>
+        <TabsTrigger value="stakeholders" className="text-xs py-2">
+          <Users className="w-3.5 h-3.5 mr-1.5" />
+          Pessoas
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="summary" className="space-y-4">
+        {record.ai_summary && (
+          <DataCard title="Resumo Executivo" icon={Brain} iconColor="bg-violet-100 dark:bg-violet-900/30 text-violet-600">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Fiscal Data */}
-      {Object.keys(fiscal).length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-500" />
-              Dados da Receita Federal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              {fiscal.cnpj && <div><span className="text-muted-foreground">CNPJ:</span> <span className="font-medium">{fiscal.cnpj}</span></div>}
-              {fiscal.razao_social && <div><span className="text-muted-foreground">Razão Social:</span> <span className="font-medium">{fiscal.razao_social}</span></div>}
-              {fiscal.inscricao_estadual && <div><span className="text-muted-foreground">Insc. Estadual:</span> <span className="font-medium">{fiscal.inscricao_estadual}</span></div>}
-              {fiscal.fundacao && <div><span className="text-muted-foreground">Fundação:</span> <span className="font-medium">{fiscal.fundacao}</span></div>}
-              {fiscal.capital_social && <div><span className="text-muted-foreground">Capital Social:</span> <span className="font-medium">{fiscal.capital_social}</span></div>}
-              {fiscal.porte && <div><span className="text-muted-foreground">Porte:</span> <span className="font-medium">{fiscal.porte}</span></div>}
-              {fiscal.natureza_juridica && <div><span className="text-muted-foreground">Natureza Jurídica:</span> <span className="font-medium">{fiscal.natureza_juridica}</span></div>}
-              {fiscal.situacao_cadastral && <div><span className="text-muted-foreground">Situação:</span> <span className="font-medium">{fiscal.situacao_cadastral}</span></div>}
-            </div>
-            {fiscal.filiais && fiscal.filiais.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm font-medium mb-2">Filiais ({fiscal.filiais.length})</p>
-                <div className="space-y-1">
-                  {fiscal.filiais.map((f: any, i: number) => (
-                    <div key={i} className="text-xs text-muted-foreground flex items-center gap-1">
-                      <MapPin className="w-3 h-3" /> {f.endereco || f.nome || `Filial ${i + 1}`}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Audience Analysis */}
-      {Object.keys(audience).length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Target className="w-4 h-4 text-orange-500" />
-              Público-Alvo & Comunicação
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {audience.target_audience && <div><span className="text-muted-foreground">Público-alvo:</span> <p className="mt-1">{audience.target_audience}</p></div>}
-            {audience.communication_style && <div><span className="text-muted-foreground">Estilo de comunicação:</span> <p className="mt-1">{audience.communication_style}</p></div>}
-            {audience.brand_voice && <div><span className="text-muted-foreground">Tom de voz:</span> <p className="mt-1">{audience.brand_voice}</p></div>}
-            {audience.content_themes && (
-              <div>
-                <span className="text-muted-foreground">Temas de conteúdo:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {audience.content_themes.map((t: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">{t}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Social Profiles */}
-      {record.social_profiles && record.social_profiles.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Globe className="w-4 h-4 text-green-500" />
-              Redes Sociais
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {record.social_profiles.map((profile: any, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="text-sm font-medium">{profile.platform}</p>
-                    {profile.url && <a href={profile.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{profile.url}</a>}
-                  </div>
-                  {profile.followers && <Badge variant="secondary">{profile.followers} seguidores</Badge>}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stakeholders */}
-      {stakeholders.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Users className="w-4 h-4 text-indigo-500" />
-              Stakeholders Identificados ({stakeholders.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {stakeholders.map((s: any, i: number) => (
-                <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">
-                    {(s.first_name || s.name || '?').charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{s.name || `${s.first_name} ${s.last_name}`}</p>
-                    <p className="text-xs text-muted-foreground truncate">{s.role_title || s.position}</p>
-                  </div>
-                  {s.linkedin && (
-                    <a href={s.linkedin} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">LinkedIn</a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Full AI Report */}
-      {record.ai_report && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <FileText className="w-4 h-4 text-violet-500" />
-              Relatório Completo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          </DataCard>
+        )}
+        
+        {record.ai_report && (
+          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
             <ScrollArea className="max-h-96">
               <div className="prose prose-sm dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                 {record.ai_report}
               </div>
             </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </DataCard>
+        )}
+
+        {!record.ai_summary && !record.ai_report && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Brain className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Resumo ainda não disponível</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="fiscal" className="space-y-4">
+        {Object.keys(fiscal).length > 0 ? (
+          <DataCard title="Dados da Receita Federal" icon={Building2} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+            <div className="space-y-3">
+              {[
+                { key: 'cnpj', label: 'CNPJ' },
+                { key: 'razao_social', label: 'Razão Social' },
+                { key: 'inscricao_estadual', label: 'Inscrição Estadual' },
+                { key: 'fundacao', label: 'Data de Fundação' },
+                { key: 'capital_social', label: 'Capital Social' },
+                { key: 'porte', label: 'Porte' },
+                { key: 'natureza_juridica', label: 'Natureza Jurídica' },
+                { key: 'situacao_cadastral', label: 'Situação Cadastral' },
+                { key: 'cnae_principal', label: 'CNAE Principal' },
+              ].map(({ key, label }) => fiscal[key] && (
+                <div key={key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{fiscal[key]}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => copyToClipboard(fiscal[key], key)}
+                    >
+                      {copiedField === key ? (
+                        <Check className="w-3 h-3 text-emerald-500" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              
+              {fiscal.filiais && fiscal.filiais.length > 0 && (
+                <div className="pt-3">
+                  <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    Filiais ({fiscal.filiais.length})
+                  </p>
+                  <div className="space-y-2">
+                    {fiscal.filiais.map((f: any, i: number) => (
+                      <div key={i} className="text-xs text-muted-foreground p-2 rounded-lg bg-muted/50 flex items-center gap-2">
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{f.endereco || f.nome || `Filial ${i + 1}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DataCard>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Building2 className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Dados fiscais não disponíveis</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="audience" className="space-y-4">
+        {Object.keys(audience).length > 0 ? (
+          <DataCard title="Público-Alvo & Comunicação" icon={Target} iconColor="bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+            <div className="space-y-4">
+              {audience.target_audience && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Público-alvo</p>
+                  <p className="text-sm">{audience.target_audience}</p>
+                </div>
+              )}
+              {audience.communication_style && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Estilo de Comunicação</p>
+                  <p className="text-sm">{audience.communication_style}</p>
+                </div>
+              )}
+              {audience.brand_voice && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Tom de Voz</p>
+                  <p className="text-sm">{audience.brand_voice}</p>
+                </div>
+              )}
+              {audience.content_themes && audience.content_themes.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Temas de Conteúdo</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {audience.content_themes.map((t: string, i: number) => (
+                      <Badge key={i} variant="outline" className="text-xs bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                        {t}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DataCard>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Target className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Análise de público não disponível</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="social" className="space-y-4">
+        {socialProfiles.length > 0 ? (
+          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
+            <div className="space-y-2">
+              {socialProfiles.map((profile: any, i: number) => (
+                <SocialProfileCard key={i} profile={profile} />
+              ))}
+            </div>
+          </DataCard>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Globe className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Perfis sociais não encontrados</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="stakeholders" className="space-y-4">
+        {stakeholders.length > 0 ? (
+          <DataCard title={`Stakeholders Identificados (${stakeholders.length})`} icon={Users} iconColor="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+            <div className="space-y-2">
+              {stakeholders.map((s: any, i: number) => (
+                <StakeholderCard key={i} stakeholder={s} index={i} />
+              ))}
+            </div>
+          </DataCard>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Nenhum stakeholder identificado</p>
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
 
 function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
   const profile = record.personal_profile || {};
   const social = record.social_analysis || {};
+  const socialProfiles = record.social_profiles || [];
 
   return (
-    <div className="space-y-6">
-      {/* AI Summary */}
-      {record.ai_summary && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Brain className="w-4 h-4 text-violet-500" />
-              Resumo do Perfil
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+    <Tabs defaultValue="summary" className="space-y-4">
+      <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+        <TabsTrigger value="summary" className="text-xs py-2">
+          <Brain className="w-3.5 h-3.5 mr-1.5" />
+          Resumo
+        </TabsTrigger>
+        <TabsTrigger value="professional" className="text-xs py-2">
+          <Briefcase className="w-3.5 h-3.5 mr-1.5" />
+          Profissional
+        </TabsTrigger>
+        <TabsTrigger value="personal" className="text-xs py-2">
+          <Heart className="w-3.5 h-3.5 mr-1.5" />
+          Pessoal
+        </TabsTrigger>
+        <TabsTrigger value="social" className="text-xs py-2">
+          <Globe className="w-3.5 h-3.5 mr-1.5" />
+          Social
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="summary" className="space-y-4">
+        {record.ai_summary && (
+          <DataCard title="Resumo do Perfil" icon={Brain} iconColor="bg-violet-100 dark:bg-violet-900/30 text-violet-600">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Personal Profile */}
-      {Object.keys(profile).length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-blue-500" />
-              Perfil Profissional
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {profile.current_position && <div><span className="text-muted-foreground">Cargo atual:</span> <span className="font-medium ml-1">{profile.current_position}</span></div>}
-            {profile.company && <div><span className="text-muted-foreground">Empresa:</span> <span className="font-medium ml-1">{profile.company}</span></div>}
-            {profile.tenure && <div><span className="text-muted-foreground">Tempo na empresa:</span> <span className="font-medium ml-1">{profile.tenure}</span></div>}
-            {profile.specialties && (
-              <div>
-                <span className="text-muted-foreground">Especialidades:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile.specialties.map((s: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">{s}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {profile.education && profile.education.length > 0 && (
-              <div>
-                <span className="text-muted-foreground flex items-center gap-1"><GraduationCap className="w-3 h-3" /> Formação:</span>
-                {profile.education.map((e: any, i: number) => (
-                  <p key={i} className="text-xs mt-1">{typeof e === 'string' ? e : `${e.degree} - ${e.institution}`}</p>
-                ))}
-              </div>
-            )}
-            {profile.previous_companies && profile.previous_companies.length > 0 && (
-              <div>
-                <span className="text-muted-foreground">Empresas anteriores:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile.previous_companies.map((c: string, i: number) => (
-                    <Badge key={i} variant="secondary" className="text-xs">{c}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Hobbies & Interests */}
-      {(profile.hobbies?.length > 0 || profile.interests?.length > 0 || profile.travels?.length > 0) && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green-500" />
-              Interesses & Hobbies
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {profile.hobbies?.length > 0 && (
-              <div>
-                <span className="text-muted-foreground">Hobbies:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile.hobbies.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">{h}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {profile.interests?.length > 0 && (
-              <div>
-                <span className="text-muted-foreground">Interesses:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile.interests.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">{h}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {profile.travels?.length > 0 && (
-              <div>
-                <span className="text-muted-foreground">Viagens recentes:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {profile.travels.map((t: string, i: number) => (
-                    <Badge key={i} variant="secondary" className="text-xs">📍 {t}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Social Profiles */}
-      {record.social_profiles && record.social_profiles.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Globe className="w-4 h-4 text-green-500" />
-              Redes Sociais
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {record.social_profiles.map((p: any, i: number) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="text-sm font-medium">{p.platform}</p>
-                    {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{p.url}</a>}
-                  </div>
-                  {p.followers && <Badge variant="secondary">{p.followers} seguidores</Badge>}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Social Analysis */}
-      {Object.keys(social).length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Brain className="w-4 h-4 text-fuchsia-500" />
-              Análise de Redes Sociais
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            {social.personality_type && <div><span className="text-muted-foreground">Tipo de personalidade:</span> <span className="font-medium ml-1">{social.personality_type}</span></div>}
-            {social.communication_style && <div><span className="text-muted-foreground">Estilo de comunicação:</span> <span className="font-medium ml-1">{social.communication_style}</span></div>}
-            {social.content_themes && (
-              <div>
-                <span className="text-muted-foreground">Temas recorrentes:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {social.content_themes.map((t: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs">{t}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Full AI Report */}
-      {record.ai_report && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <FileText className="w-4 h-4 text-violet-500" />
-              Relatório Completo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+          </DataCard>
+        )}
+        
+        {record.ai_report && (
+          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
             <ScrollArea className="max-h-96">
               <div className="prose prose-sm dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                 {record.ai_report}
               </div>
             </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          </DataCard>
+        )}
+
+        {!record.ai_summary && !record.ai_report && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Brain className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Resumo ainda não disponível</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="professional" className="space-y-4">
+        {Object.keys(profile).length > 0 ? (
+          <>
+            <DataCard title="Perfil Profissional" icon={Briefcase} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+              <div className="space-y-3">
+                {profile.current_position && (
+                  <div className="flex items-center justify-between py-2 border-b border-border/50">
+                    <span className="text-sm text-muted-foreground">Cargo Atual</span>
+                    <span className="text-sm font-medium">{profile.current_position}</span>
+                  </div>
+                )}
+                {profile.company && (
+                  <div className="flex items-center justify-between py-2 border-b border-border/50">
+                    <span className="text-sm text-muted-foreground">Empresa</span>
+                    <span className="text-sm font-medium">{profile.company}</span>
+                  </div>
+                )}
+                {profile.tenure && (
+                  <div className="flex items-center justify-between py-2 border-b border-border/50">
+                    <span className="text-sm text-muted-foreground">Tempo na Empresa</span>
+                    <Badge variant="outline">{profile.tenure}</Badge>
+                  </div>
+                )}
+                {profile.specialties && profile.specialties.length > 0 && (
+                  <div className="pt-2">
+                    <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5" /> Especialidades
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {profile.specialties.map((s: string, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DataCard>
+
+            {profile.education && profile.education.length > 0 && (
+              <DataCard title="Formação" icon={GraduationCap} iconColor="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">
+                <div className="space-y-3">
+                  {profile.education.map((e: any, i: number) => (
+                    <div key={i} className="p-3 rounded-lg bg-muted/50">
+                      <p className="text-sm font-medium">
+                        {typeof e === 'string' ? e : e.degree}
+                      </p>
+                      {typeof e !== 'string' && e.institution && (
+                        <p className="text-xs text-muted-foreground mt-1">{e.institution}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </DataCard>
+            )}
+
+            {profile.previous_companies && profile.previous_companies.length > 0 && (
+              <DataCard title="Empresas Anteriores" icon={Building2} iconColor="bg-slate-100 dark:bg-slate-900/30 text-slate-600">
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.previous_companies.map((c: string, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs">{c}</Badge>
+                  ))}
+                </div>
+              </DataCard>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Briefcase className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Dados profissionais não disponíveis</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="personal" className="space-y-4">
+        {(profile.hobbies?.length > 0 || profile.interests?.length > 0 || profile.travels?.length > 0) ? (
+          <>
+            {profile.hobbies && profile.hobbies.length > 0 && (
+              <DataCard title="Hobbies" icon={Heart} iconColor="bg-pink-100 dark:bg-pink-900/30 text-pink-600">
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.hobbies.map((h: string, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800">
+                      {h}
+                    </Badge>
+                  ))}
+                </div>
+              </DataCard>
+            )}
+
+            {profile.interests && profile.interests.length > 0 && (
+              <DataCard title="Interesses" icon={TrendingUp} iconColor="bg-amber-100 dark:bg-amber-900/30 text-amber-600">
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.interests.map((h: string, i: number) => (
+                    <Badge key={i} variant="outline" className="text-xs bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                      {h}
+                    </Badge>
+                  ))}
+                </div>
+              </DataCard>
+            )}
+
+            {profile.travels && profile.travels.length > 0 && (
+              <DataCard title="Viagens Recentes" icon={Plane} iconColor="bg-sky-100 dark:bg-sky-900/30 text-sky-600">
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.travels.map((t: string, i: number) => (
+                    <Badge key={i} variant="secondary" className="text-xs">
+                      📍 {t}
+                    </Badge>
+                  ))}
+                </div>
+              </DataCard>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            <Heart className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Dados pessoais não disponíveis</p>
+          </div>
+        )}
+      </TabsContent>
+
+      <TabsContent value="social" className="space-y-4">
+        {socialProfiles.length > 0 && (
+          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
+            <div className="space-y-2">
+              {socialProfiles.map((p: any, i: number) => (
+                <SocialProfileCard key={i} profile={p} />
+              ))}
+            </div>
+          </DataCard>
+        )}
+
+        {Object.keys(social).length > 0 && (
+          <DataCard title="Análise de Comportamento Social" icon={BarChart3} iconColor="bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-600">
+            <div className="space-y-3">
+              {social.personality_type && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Tipo de Personalidade</p>
+                  <Badge variant="secondary">{social.personality_type}</Badge>
+                </div>
+              )}
+              {social.communication_style && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Estilo de Comunicação</p>
+                  <p className="text-sm">{social.communication_style}</p>
+                </div>
+              )}
+              {social.content_themes && social.content_themes.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Temas Recorrentes</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {social.content_themes.map((t: string, i: number) => (
+                      <Badge key={i} variant="outline" className="text-xs">{t}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DataCard>
+        )}
+
+        {socialProfiles.length === 0 && Object.keys(social).length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <Globe className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+            <p className="text-sm">Dados sociais não disponíveis</p>
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
 
-export function LuxIntelligencePanel({ record, entityType, loading }: LuxIntelligencePanelProps) {
+export function LuxIntelligencePanel({ 
+  record, 
+  records = [], 
+  entityType, 
+  loading,
+  onTrigger,
+  triggering 
+}: LuxIntelligencePanelProps) {
+  const [selectedRecord, setSelectedRecord] = useState<LuxIntelligenceRecord | null>(record);
+  const displayRecord = selectedRecord || record;
+  const allRecords = records.length > 0 ? records : (record ? [record] : []);
+
+  // Update selected when record changes
+  if (record && !selectedRecord) {
+    setSelectedRecord(record);
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
-        <span className="ml-2 text-sm text-muted-foreground">Carregando dados...</span>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        >
+          <Sparkles className="w-8 h-8 text-violet-500" />
+        </motion.div>
+        <span className="ml-3 text-sm text-muted-foreground">Carregando dados Lux...</span>
       </div>
     );
   }
 
-  if (!record) {
+  if (!displayRecord) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Sparkles className="w-12 h-12 text-violet-500/30 mb-4" />
-        <h3 className="text-lg font-medium text-foreground mb-2">Nenhuma análise Lux ainda</h3>
-        <p className="text-sm text-muted-foreground max-w-md">
-          Clique no botão <strong>Lux</strong> para iniciar uma varredura inteligente completa 
-          {entityType === 'company' 
-            ? ' desta empresa (redes sociais, dados fiscais, stakeholders e mais).'
-            : ' deste contato (redes sociais, perfil profissional, interesses e mais).'}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-12 text-center"
+      >
+        <motion.div
+          animate={{ 
+            scale: [1, 1.1, 1],
+            rotate: [0, 5, -5, 0],
+          }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          <Sparkles className="w-16 h-16 text-violet-500/40 mb-4" />
+        </motion.div>
+        <h3 className="text-lg font-medium text-foreground mb-2">
+          Nenhuma análise Lux ainda
+        </h3>
+        <p className="text-sm text-muted-foreground max-w-md mb-6">
+          Ative o Lux Intelligence para coletar dados públicos da internet, analisar redes sociais e gerar insights valiosos sobre {entityType === 'company' ? 'esta empresa' : 'este contato'}.
         </p>
-      </div>
+        {onTrigger && (
+          <LuxButton 
+            onClick={onTrigger} 
+            loading={triggering} 
+            processing={false}
+          />
+        )}
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Status Header */}
+    <div className="space-y-6">
+      {/* Header with Status */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-violet-500" />
-          <h3 className="font-semibold text-foreground">Lux Intelligence</h3>
-        </div>
         <div className="flex items-center gap-3">
-          <StatusBadge status={record.status} />
-          {record.completed_at && (
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(record.completed_at), { addSuffix: true, locale: ptBR })}
-            </span>
-          )}
+          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Lux Intelligence</h3>
+            <p className="text-xs text-muted-foreground">
+              {displayRecord.completed_at 
+                ? `Última análise: ${formatDistanceToNow(new Date(displayRecord.completed_at), { locale: ptBR, addSuffix: true })}`
+                : displayRecord.started_at
+                  ? `Iniciado ${formatDistanceToNow(new Date(displayRecord.started_at), { locale: ptBR, addSuffix: true })}`
+                  : 'Aguardando processamento'
+              }
+            </p>
+          </div>
         </div>
+        <StatusBadge status={displayRecord.status} />
       </div>
 
-      {record.status === 'processing' && (
-        <Card className="border-violet-500/20 bg-violet-500/5">
-          <CardContent className="py-4 flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-violet-500" />
-            <div>
-              <p className="text-sm font-medium">Varredura em andamento...</p>
-              <p className="text-xs text-muted-foreground">O n8n está coletando e analisando dados. Isso pode levar alguns minutos.</p>
+      {/* Processing Animation */}
+      <AnimatePresence>
+        {displayRecord.status === 'processing' && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            <Card className="border-violet-200 dark:border-violet-800 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30">
+              <CardContent className="py-6">
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Sparkles className="w-8 h-8 text-violet-500" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Varredura em andamento...</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Coletando dados de redes sociais, sites públicos e APIs oficiais
+                    </p>
+                    <div className="mt-3">
+                      <motion.div
+                        className="h-1.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 rounded-full"
+                        animate={{ 
+                          backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        style={{ backgroundSize: '200% 100%' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error State */}
+      {displayRecord.status === 'error' && displayRecord.error_message && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="py-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-destructive">Erro na varredura</p>
+                <p className="text-xs text-destructive/80 mt-1">{displayRecord.error_message}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {record.status === 'error' && (
-        <Card className="border-destructive/20 bg-destructive/5">
-          <CardContent className="py-4 flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-destructive" />
-            <div>
-              <p className="text-sm font-medium">Erro na varredura</p>
-              <p className="text-xs text-muted-foreground">{record.error_message || 'Erro desconhecido'}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Main Content Grid */}
+      {displayRecord.status === 'completed' && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* History Timeline */}
+          <div className="lg:col-span-1">
+            <LuxHistoryTimeline
+              records={allRecords}
+              selectedId={displayRecord.id}
+              onSelect={(r) => setSelectedRecord(r)}
+            />
+          </div>
 
-      {record.status === 'completed' && (
-        entityType === 'company' 
-          ? <CompanyIntelligence record={record} />
-          : <ContactIntelligence record={record} />
-      )}
-
-      {/* Fields Updated */}
-      {record.fields_updated && record.fields_updated.length > 0 && (
-        <Card className="border-green-500/20 bg-green-500/5">
-          <CardContent className="py-3">
-            <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1">
-              ✅ Campos atualizados automaticamente:
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {record.fields_updated.map((field: any, i: number) => (
-                <Badge key={i} variant="outline" className="text-xs border-green-500/30">
-                  {typeof field === 'string' ? field : field.field}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+          {/* Intelligence Data */}
+          <div className="lg:col-span-3">
+            {entityType === 'company' ? (
+              <CompanyIntelligence record={displayRecord} />
+            ) : (
+              <ContactIntelligence record={displayRecord} />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
