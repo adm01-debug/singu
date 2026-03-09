@@ -33,7 +33,7 @@ const ContatoDetalhe = () => {
   const { id } = useParams();
   const { contact, company, loading, error } = useContactDetail(id);
   const { trackView } = useRecentlyViewed();
-  const { latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
+  const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
 
   useEffect(() => {
     if (contact && id) {
@@ -128,8 +128,11 @@ const ContatoDetalhe = () => {
               <CardContent className="pt-6">
                 <LuxIntelligencePanel
                   record={latestRecord}
+                  records={luxRecords}
                   entityType="contact"
                   loading={luxLoading}
+                  onTrigger={handleTriggerLux}
+                  triggering={triggering}
                 />
               </CardContent>
             </Card>

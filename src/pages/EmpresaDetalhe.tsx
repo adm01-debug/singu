@@ -79,7 +79,7 @@ const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { trackView } = useRecentlyViewed();
-  const { latestRecord: luxRecord, loading: luxLoading, triggering: luxTriggering, triggerLux } = useLuxIntelligence('company', id);
+  const { records: luxRecords, latestRecord: luxRecord, loading: luxLoading, triggering: luxTriggering, triggerLux } = useLuxIntelligence('company', id);
   const [company, setCompany] = useState<Company | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
@@ -778,8 +778,18 @@ const EmpresaDetalhe = () => {
                       <CardContent className="pt-6">
                         <LuxIntelligencePanel
                           record={luxRecord}
+                          records={luxRecords}
                           entityType="company"
                           loading={luxLoading}
+                          onTrigger={() => triggerLux({
+                            name: company.name,
+                            cnpj: (company as any).cnpj,
+                            website: company.website,
+                            industry: company.industry,
+                            city: company.city,
+                            state: company.state,
+                          })}
+                          triggering={luxTriggering}
                         />
                       </CardContent>
                     </Card>
