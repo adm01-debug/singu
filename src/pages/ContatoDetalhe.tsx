@@ -5,8 +5,12 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { LuxButton } from '@/components/lux/LuxButton';
+import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
@@ -29,6 +33,7 @@ const ContatoDetalhe = () => {
   const { id } = useParams();
   const { contact, company, loading, error } = useContactDetail(id);
   const { trackView } = useRecentlyViewed();
+  const { latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
 
   useEffect(() => {
     if (contact && id) {
@@ -41,6 +46,20 @@ const ContatoDetalhe = () => {
       });
     }
   }, [contact, id, trackView]);
+
+  const handleTriggerLux = () => {
+    if (!contact) return;
+    triggerLux({
+      first_name: contact.first_name,
+      last_name: contact.last_name,
+      email: contact.email,
+      phone: contact.phone,
+      linkedin: contact.linkedin,
+      instagram: contact.instagram,
+      twitter: contact.twitter,
+      company_name: company?.name,
+    });
+  };
 
   if (loading) return <ContactDetailSkeleton />;
 
@@ -59,11 +78,12 @@ const ContatoDetalhe = () => {
   }
 
   const fullName = `${contact.first_name} ${contact.last_name}`.trim();
+  const isProcessing = latestRecord?.status === 'processing';
 
   return (
     <AppLayout>
       <div className="min-h-screen p-6">
-        <nav aria-label="breadcrumb" className="mb-4">
+        <nav aria-label="breadcrumb" className="mb-4 flex items-center justify-between">
           <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <li>
               <Link to="/contatos" className="transition-colors hover:text-foreground">
@@ -73,21 +93,48 @@ const ContatoDetalhe = () => {
             <li aria-hidden="true">/</li>
             <li className="font-medium text-foreground">{fullName}</li>
           </ol>
+          <LuxButton
+            onClick={handleTriggerLux}
+            loading={triggering}
+            processing={isProcessing}
+            variant="header"
+          />
         </nav>
 
-        <Card>
-          <CardContent className="pt-6">
-            <h1 className="text-2xl font-semibold text-foreground">{fullName}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
+        <Tabs defaultValue="info" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="lux">Lux Intelligence</TabsTrigger>
+          </TabsList>
 
-            <div className="mt-6 space-y-2 text-sm text-foreground">
-              <p><strong>Email:</strong> {contact.email || '—'}</p>
-              <p><strong>Telefone:</strong> {contact.phone || '—'}</p>
-              <p><strong>WhatsApp:</strong> {contact.whatsapp || '—'}</p>
-              <p><strong>Empresa:</strong> {company?.name || '—'}</p>
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="info">
+            <Card>
+              <CardContent className="pt-6">
+                <h1 className="text-2xl font-semibold text-foreground">{fullName}</h1>
+                <p className="mt-2 text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
+
+                <div className="mt-6 space-y-2 text-sm text-foreground">
+                  <p><strong>Email:</strong> {contact.email || '—'}</p>
+                  <p><strong>Telefone:</strong> {contact.phone || '—'}</p>
+                  <p><strong>WhatsApp:</strong> {contact.whatsapp || '—'}</p>
+                  <p><strong>Empresa:</strong> {company?.name || '—'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="lux">
+            <Card>
+              <CardContent className="pt-6">
+                <LuxIntelligencePanel
+                  record={latestRecord}
+                  entityType="contact"
+                  loading={luxLoading}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

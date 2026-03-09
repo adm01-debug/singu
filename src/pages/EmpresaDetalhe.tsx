@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft,
@@ -22,7 +23,8 @@ import {
   Briefcase,
   Network,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Sparkles
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,6 +40,8 @@ import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore, CompanyHealthBadge } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { LuxButton } from '@/components/lux/LuxButton';
+import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -75,6 +79,7 @@ const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { trackView } = useRecentlyViewed();
+  const { latestRecord: luxRecord, loading: luxLoading, triggering: luxTriggering, triggerLux } = useLuxIntelligence('company', id);
   const [company, setCompany] = useState<Company | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
@@ -231,6 +236,19 @@ const EmpresaDetalhe = () => {
             </Link>
           </div>
           <div className="absolute top-4 right-4 flex items-center gap-2">
+            <LuxButton
+              onClick={() => triggerLux({
+                name: company.name,
+                cnpj: (company as any).cnpj,
+                website: company.website,
+                industry: company.industry,
+                city: company.city,
+                state: company.state,
+              })}
+              loading={luxTriggering}
+              processing={luxRecord?.status === 'processing'}
+              variant="header"
+            />
             <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
               <Plus className="w-4 h-4 mr-2" />
               Novo Contato
@@ -424,22 +442,28 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Contatos ({contacts.length})
+                    <span className="hidden sm:inline">Contatos ({contacts.length})</span>
+                    <span className="sm:hidden">{contacts.length}</span>
                   </TabsTrigger>
                   <TabsTrigger value="stakeholders" className="flex items-center gap-2">
                     <Network className="w-4 h-4" />
-                    Stakeholders
+                    <span className="hidden sm:inline">Stakeholders</span>
                   </TabsTrigger>
                   <TabsTrigger value="interactions" className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" />
-                    Histórico ({totalInteractions})
+                    <span className="hidden sm:inline">Histórico ({totalInteractions})</span>
+                    <span className="sm:hidden">{totalInteractions}</span>
                   </TabsTrigger>
                   <TabsTrigger value="insights" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
-                    Insights
+                    <span className="hidden sm:inline">Insights</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="lux" className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="hidden sm:inline">Lux</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -740,6 +764,25 @@ const EmpresaDetalhe = () => {
                         </CardContent>
                       </Card>
                     </div>
+                  </motion.div>
+                </TabsContent>
+
+                {/* Lux Intelligence Tab */}
+                <TabsContent value="lux" className="mt-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card>
+                      <CardContent className="pt-6">
+                        <LuxIntelligencePanel
+                          record={luxRecord}
+                          entityType="company"
+                          loading={luxLoading}
+                        />
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 </TabsContent>
               </Tabs>

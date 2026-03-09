@@ -1618,6 +1618,78 @@ export type Database = {
           },
         ]
       }
+      lux_intelligence: {
+        Row: {
+          ai_report: string | null
+          ai_summary: string | null
+          audience_analysis: Json | null
+          completed_at: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          error_message: string | null
+          fields_updated: Json | null
+          fiscal_data: Json | null
+          id: string
+          n8n_execution_id: string | null
+          personal_profile: Json | null
+          request_type: string
+          social_analysis: Json | null
+          social_profiles: Json | null
+          stakeholders: Json | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_report?: string | null
+          ai_summary?: string | null
+          audience_analysis?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          error_message?: string | null
+          fields_updated?: Json | null
+          fiscal_data?: Json | null
+          id?: string
+          n8n_execution_id?: string | null
+          personal_profile?: Json | null
+          request_type?: string
+          social_analysis?: Json | null
+          social_profiles?: Json | null
+          stakeholders?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_report?: string | null
+          ai_summary?: string | null
+          audience_analysis?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          error_message?: string | null
+          fields_updated?: Json | null
+          fiscal_data?: Json | null
+          id?: string
+          n8n_execution_id?: string | null
+          personal_profile?: Json | null
+          request_type?: string
+          social_analysis?: Json | null
+          social_profiles?: Json | null
+          stakeholders?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       metaprogram_analysis: {
         Row: {
           analyzed_text: string | null

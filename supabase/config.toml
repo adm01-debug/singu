@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.external-data]
 verify_jwt = false
+
+[functions.lux-trigger]
+verify_jwt = false
+
+[functions.lux-webhook]
+verify_jwt = false

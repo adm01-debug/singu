@@ -1,0 +1,1 @@
+DROP POLICY "Service role can update lux intelligence" ON public.lux_intelligence;
