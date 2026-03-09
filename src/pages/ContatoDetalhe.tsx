@@ -33,7 +33,7 @@ const ContatoDetalhe = () => {
   const { id } = useParams();
   const { contact, company, loading, error } = useContactDetail(id);
   const { trackView } = useRecentlyViewed();
-  const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux, isProcessing } = useLuxIntelligence('contact', id);
+  const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
 
   useEffect(() => {
     if (contact && id) {
