@@ -778,8 +778,18 @@ const EmpresaDetalhe = () => {
                       <CardContent className="pt-6">
                         <LuxIntelligencePanel
                           record={luxRecord}
+                          records={luxRecords}
                           entityType="company"
                           loading={luxLoading}
+                          onTrigger={() => triggerLux({
+                            name: company.name,
+                            cnpj: (company as any).cnpj,
+                            website: company.website,
+                            industry: company.industry,
+                            city: company.city,
+                            state: company.state,
+                          })}
+                          triggering={luxTriggering}
                         />
                       </CardContent>
                     </Card>
