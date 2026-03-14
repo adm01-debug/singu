@@ -306,7 +306,7 @@ export function IOSInstallInstructions() {
               <Share2 className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-sm">Instalar RelateIQ</h3>
+              <h3 className="font-semibold text-sm">Instalar SINGU</h3>
               <p className="text-xs text-muted-foreground mt-1">
                 Toque em <Share2 className="h-3 w-3 inline" /> e depois em "Adicionar à Tela de Início"
               </p>
