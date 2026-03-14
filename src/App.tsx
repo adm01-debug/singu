@@ -151,7 +151,7 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => (
-  <ErrorBoundary showDetails={process.env.NODE_ENV === 'development'}>
+  <ErrorBoundary showDetails={import.meta.env.DEV}>
     <QueryClientProvider client={queryClient}>
       <CelebrationProvider>
         <AriaLiveProvider>
