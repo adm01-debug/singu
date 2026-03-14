@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -94,6 +95,13 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
     },
   });
 
+  // Auto-save draft (only for new contacts, not edits)
+  const draftKey = contact ? `contact-edit-${contact.id}` : 'contact-new';
+  const { clearDraft } = useFormDraft(form, { 
+    key: draftKey, 
+    enabled: !contact, // Only auto-save drafts for new contacts
+  });
+
   const handleSubmit = async (data: ContactFormData) => {
     const cleanedData = {
       ...data,
@@ -108,6 +116,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       notes: data.notes || null,
     };
     await onSubmit(cleanedData as ContactFormData);
+    clearDraft(); // Clear draft on successful submit
   };
 
   return (
