@@ -862,12 +862,13 @@ const EmpresaDetalhe = () => {
     <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <ContactForm
+          companies={company ? [company] : []}
           defaultCompanyId={id}
           onSubmit={async (data) => {
             if (!user) return;
             const { error } = await supabase
               .from('contacts')
-              .insert({ ...data, user_id: user.id, company_id: id });
+              .insert({ ...data, user_id: user.id, company_id: id } as any);
             if (!error) {
               setIsAddContactOpen(false);
               fetchCompanyData();
