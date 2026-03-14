@@ -554,12 +554,12 @@ const Dashboard = () => {
                 <Typography variant="h4" gradient>Padrões de Compra e Comportamento</Typography>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart">
                   <PurchasePatternsPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="card">
                   <BehaviorAlertsPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
             </DashboardErrorBoundary>
 
@@ -570,21 +570,21 @@ const Dashboard = () => {
                 <Typography variant="h4" gradient>Inteligência de Negócios</Typography>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart">
                   <ChurnPredictionPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="chart">
                   <BestTimeToContactPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="chart">
                   <DealVelocityPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
               
               <div className="mt-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart" fallbackHeight="h-64">
                   <RFMAnalysisPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
             </DashboardErrorBoundary>
           </TabsContent>
