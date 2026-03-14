@@ -141,13 +141,13 @@ export function StatCard({
         <div className="space-y-3">
           <p className={cn(
             'text-sm font-medium',
-            variant === 'gradient' ? 'text-white/80' : 'text-muted-foreground'
+            variant === 'gradient' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
             'text-3xl font-bold tabular-nums',
-            variant === 'gradient' ? 'text-white' : 'text-foreground'
+            variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {isNumeric && animate ? (
               <AnimatedNumber value={numericValue} />
