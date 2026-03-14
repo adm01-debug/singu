@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
 import { differenceInDays } from 'date-fns';
+import type { TablesInsert } from '@/integrations/supabase/types';
 import {
   RFMAnalysis,
   RFMHistory,
@@ -198,7 +199,7 @@ export function useRFMAnalysis(contactId?: string) {
       const monetaryPercentiles = getPercentiles(monetaryValues);
       
       // Calculate RFM for each contact
-      const rfmResults: any[] = [];
+      const rfmResults: TablesInsert<'rfm_analysis'>[] = [];
       
       for (const [contactId, metrics] of contactMetrics) {
         const contact = contacts.find(c => c.id === contactId);
@@ -259,8 +260,8 @@ export function useRFMAnalysis(contactId?: string) {
           predicted_next_purchase_date: predictedNextPurchaseDate?.toISOString().split('T')[0],
           predicted_lifetime_value: predictedLifetimeValue,
           churn_probability: churnProbability,
-          recommended_actions: recommendedActions,
-          recommended_offers: recommendedOffers,
+          recommended_actions: JSON.parse(JSON.stringify(recommendedActions)),
+          recommended_offers: JSON.parse(JSON.stringify(recommendedOffers)),
           communication_priority: communicationPriority,
           analyzed_at: new Date().toISOString()
         });
@@ -434,7 +435,7 @@ export function useRFMAnalysis(contactId?: string) {
 }
 
 // Helper functions
-function generateRecommendedActions(segment: RFMSegment, contact: any): RFMAction[] {
+function generateRecommendedActions(segment: RFMSegment, _contact: { id: string }): RFMAction[] {
   const actions: RFMAction[] = [];
   
   const segmentActions: Record<RFMSegment, RFMAction[]> = {
