@@ -48,105 +48,105 @@ const EasterEggsProvider = () => {
   return null;
 };
 
-// What's New modal component - shows automatically when there are new features
+// What's New modal component - only for authenticated users outside auth route
 const WhatsNewWrapper = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user || location.pathname === '/auth') return null;
   return <WhatsNewModal />;
 };
 
-// Animated routes wrapper
+// Routes wrapper
 const AnimatedRoutes = () => {
-  const location = useLocation();
-  
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public routes */}
-        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
-        <Route path="/onboarding" element={
-          <RequireAuth>
-            <PageTransition><Onboarding /></PageTransition>
-          </RequireAuth>
-        } />
-        
-        {/* Protected routes */}
-        <Route path="/" element={
-          <RequireAuth>
-            <PageTransition><Index /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/empresas" element={
-          <RequireAuth>
-            <PageTransition><Empresas /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/empresas/:id" element={
-          <RequireAuth>
-            <EmpresaDetalhe />
-          </RequireAuth>
-        } />
-        <Route path="/contatos" element={
-          <RequireAuth>
-            <PageTransition><Contatos /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/contatos/:id" element={
-          <RequireAuth>
-            <ContatoDetalhe />
-          </RequireAuth>
-        } />
-        <Route path="/interacoes" element={
-          <RequireAuth>
-            <PageTransition><Interacoes /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/insights" element={
-          <RequireAuth>
-            <PageTransition><Insights /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/analytics" element={
-          <RequireAuth>
-            <PageTransition><Analytics /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/configuracoes" element={
-          <RequireAuth>
-            <PageTransition><Configuracoes /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/calendario" element={
-          <RequireAuth>
-            <PageTransition><Calendario /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/notificacoes" element={
-          <RequireAuth>
-            <PageTransition><Notificacoes /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/network" element={
-          <RequireAuth>
-            <PageTransition><Network /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/relatorio/:id" element={
-          <RequireAuth>
-            <PageTransition><RelatorioContato /></PageTransition>
-          </RequireAuth>
-        } />
-        <Route path="/whatsapp" element={
-          <RequireAuth>
-            <Navigate to="/interacoes?canal=whatsapp" replace />
-          </RequireAuth>
-        } />
-        <Route path="/design-system" element={
-          <PageTransition><DesignSystem /></PageTransition>
-        } />
-            
-        {/* Catch-all */}
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-      </Routes>
-    </AnimatePresence>
+    <Routes>
+      {/* Public routes */}
+      <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/onboarding" element={
+        <RequireAuth>
+          <PageTransition><Onboarding /></PageTransition>
+        </RequireAuth>
+      } />
+      
+      {/* Protected routes */}
+      <Route path="/" element={
+        <RequireAuth>
+          <PageTransition><Index /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/empresas" element={
+        <RequireAuth>
+          <PageTransition><Empresas /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/empresas/:id" element={
+        <RequireAuth>
+          <EmpresaDetalhe />
+        </RequireAuth>
+      } />
+      <Route path="/contatos" element={
+        <RequireAuth>
+          <PageTransition><Contatos /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/contatos/:id" element={
+        <RequireAuth>
+          <ContatoDetalhe />
+        </RequireAuth>
+      } />
+      <Route path="/interacoes" element={
+        <RequireAuth>
+          <PageTransition><Interacoes /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/insights" element={
+        <RequireAuth>
+          <PageTransition><Insights /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/analytics" element={
+        <RequireAuth>
+          <PageTransition><Analytics /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/configuracoes" element={
+        <RequireAuth>
+          <PageTransition><Configuracoes /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/calendario" element={
+        <RequireAuth>
+          <PageTransition><Calendario /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/notificacoes" element={
+        <RequireAuth>
+          <PageTransition><Notificacoes /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/network" element={
+        <RequireAuth>
+          <PageTransition><Network /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/relatorio/:id" element={
+        <RequireAuth>
+          <PageTransition><RelatorioContato /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/whatsapp" element={
+        <RequireAuth>
+          <Navigate to="/interacoes?canal=whatsapp" replace />
+        </RequireAuth>
+      } />
+      <Route path="/design-system" element={
+        <PageTransition><DesignSystem /></PageTransition>
+      } />
+          
+      {/* Catch-all */}
+      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+    </Routes>
   );
 };
 
