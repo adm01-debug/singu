@@ -272,12 +272,14 @@ export const RequireAuth = forwardRef<HTMLDivElement, RequireAuthProps>(
   function RequireAuth({ children }, ref) {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
       if (!loading && !user) {
-        navigate('/auth');
+        const returnTo = `${location.pathname}${location.search}${location.hash}`;
+        navigate('/auth', { replace: true, state: { from: returnTo } });
       }
-    }, [user, loading, navigate]);
+    }, [user, loading, navigate, location.pathname, location.search, location.hash]);
 
     if (loading) {
       return (
