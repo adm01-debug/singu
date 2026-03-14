@@ -100,8 +100,11 @@ const Dashboard = () => {
   
   // Check for compatibility alerts
   useCompatibilityAlerts();
+  const prefersReducedMotion = useReducedMotion();
 
   const { loading, topContacts, recentActivities } = dashboardStats;
+  const recentActivityAnimations = useStaggerAnimation(recentActivities.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
+  const topContactAnimations = useStaggerAnimation(topContacts.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
 
   // Build stats from real data
   const stats = [
