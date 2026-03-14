@@ -239,6 +239,8 @@ export default {
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-success': 'var(--gradient-success)',
+        'gradient-warning': 'var(--gradient-warning)',
+        'gradient-premium': 'var(--gradient-premium)',
         'gradient-card': 'var(--gradient-card)',
         'gradient-sidebar': 'var(--gradient-sidebar)',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
