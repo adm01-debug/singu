@@ -77,7 +77,10 @@ export function MobileBottomNav() {
               dragConstraints={{ top: 0 }}
               dragElastic={0.2}
               onDragEnd={(_, info) => {
-                if (info.offset.y > 100) setShowMore(false);
+                if (info.offset.y > 100) {
+                  haptic.light();
+                  setShowMore(false);
+                }
               }}
             >
               <div className="flex items-center justify-between mb-4">
