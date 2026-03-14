@@ -226,8 +226,15 @@ const Dashboard = () => {
     );
   }
 
+  // Check if user has data for onboarding
+  const hasProfile = !!dashboardStats.totalContacts || !!dashboardStats.totalCompanies;
+  const hasContacts = dashboardStats.totalContacts > 0;
+  const hasCompanies = dashboardStats.totalCompanies > 0;
+  const hasInteractions = dashboardStats.weeklyInteractions > 0;
+
   return (
     <AppLayout>
+      <ScrollProgressBar />
       <Header 
         title="Dashboard" 
         subtitle="Visão geral do seu relacionamento com clientes"
@@ -235,6 +242,21 @@ const Dashboard = () => {
       />
 
       <div className="p-6 space-y-6">
+        {/* Welcome Hero Card (#13) */}
+        <WelcomeHeroCard
+          totalContacts={dashboardStats.totalContacts}
+          weeklyInteractions={dashboardStats.weeklyInteractions}
+          averageScore={dashboardStats.averageScore}
+        />
+
+        {/* Onboarding Checklist (#26) */}
+        <OnboardingChecklist
+          hasProfile={hasProfile}
+          hasContacts={hasContacts}
+          hasCompanies={hasCompanies}
+          hasInteractions={hasInteractions}
+        />
+
         {/* Pre-Contact Briefing - single instance */}
         <DashboardErrorBoundary sectionName="Briefing">
           <PreContactBriefing compact className="mb-2" />
