@@ -399,7 +399,7 @@ const Dashboard = () => {
                         </Button>
                       </Link>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="space-y-3 stagger-children">
                       {topContacts.length === 0 ? (
                         <EmptyState
                           illustration="contacts"
@@ -410,50 +410,61 @@ const Dashboard = () => {
                           ]}
                         />
                       ) : (
-                        topContacts.map((contact, index) => (
-                          <Surface
-                            key={contact.id}
-                            level={1}
-                            hoverable
-                            rounded="lg"
-                            className="flex items-center justify-between p-4 group"
-                          >
-                            <div className="flex items-center gap-4">
-                              <OptimizedAvatar 
-                                src={contact.avatar || undefined}
-                                alt={`${contact.firstName} ${contact.lastName}`}
-                                fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
-                                size="md"
-                                className="w-12 h-12 border-2 border-primary/20"
-                              />
-                              <div>
-                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                  {contact.firstName} {contact.lastName}
-                                </p>
-                                <Typography variant="small" as="p">
-                                  {contact.companyName}
-                                </Typography>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <RoleBadge role={contact.role as ContactRole} />
-                                  <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                        topContacts.map((contact, index) => {
+                          const animation = topContactAnimations[index];
+
+                          return (
+                            <motion.div
+                              key={contact.id}
+                              initial={animation?.initial}
+                              animate={animation?.animate}
+                              transition={animation?.transition}
+                              style={animation?.style}
+                            >
+                              <Surface
+                                level={1}
+                                hoverable
+                                rounded="lg"
+                                className="flex items-center justify-between p-4 group"
+                              >
+                                <div className="flex items-center gap-4">
+                                  <OptimizedAvatar
+                                    src={contact.avatar || undefined}
+                                    alt={`${contact.firstName} ${contact.lastName}`}
+                                    fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                                    size="md"
+                                    className="w-12 h-12 border-2 border-primary/20"
+                                  />
+                                  <div>
+                                    <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                      {contact.firstName} {contact.lastName}
+                                    </p>
+                                    <Typography variant="small" as="p">
+                                      {contact.companyName}
+                                    </Typography>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <RoleBadge role={contact.role as ContactRole} />
+                                      <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right hidden sm:block">
-                                <Typography variant="small" as="p">
-                                  {contact.interactionCount} interações
-                                </Typography>
-                                {contact.lastInteraction && (
-                                  <p className="text-xs text-muted-foreground">
-                                    Último: {formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })}
-                                  </p>
-                                )}
-                              </div>
-                              <RelationshipScore score={contact.relationshipScore} size="sm" />
-                            </div>
-                          </Surface>
-                        ))
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right hidden sm:block">
+                                    <Typography variant="small" as="p">
+                                      {contact.interactionCount} interações
+                                    </Typography>
+                                    {contact.lastInteraction && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Último: {formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <RelationshipScore score={contact.relationshipScore} size="sm" />
+                                </div>
+                              </Surface>
+                            </motion.div>
+                          );
+                        })
                       )}
                     </CardContent>
                   </Card>
