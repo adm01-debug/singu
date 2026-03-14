@@ -14,7 +14,6 @@ import {
   LayoutGrid,
   Brain,
   Heart,
-  Activity,
 } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
