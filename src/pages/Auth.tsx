@@ -123,9 +123,10 @@ const Auth = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
         
-        {/* Decorative elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+        {/* Enhanced decorative elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" />
         
         <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
           <motion.div
