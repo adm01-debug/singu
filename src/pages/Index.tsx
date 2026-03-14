@@ -339,7 +339,7 @@ const Dashboard = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      <div className="space-y-3 stagger-children">
                         {recentActivities.length === 0 ? (
                           <EmptyState
                             illustration="interactions"
@@ -347,26 +347,31 @@ const Dashboard = () => {
                             description="Suas atividades recentes aparecerão aqui."
                           />
                         ) : (
-                          recentActivities.map((activity, index) => (
-                            <motion.div
-                              key={activity.id}
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.2, delay: index * 0.03 }}
-                              className="flex items-center gap-4 p-3 rounded-lg hover:bg-surface-2 transition-colors"
-                            >
-                              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm truncate">
-                                  <span className="font-medium text-foreground">{activity.entityName}</span>
-                                  <span className="text-muted-foreground"> — {activity.description}</span>
-                                </p>
-                              </div>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
-                              </span>
-                            </motion.div>
-                          ))
+                          recentActivities.map((activity, index) => {
+                            const animation = recentActivityAnimations[index];
+
+                            return (
+                              <motion.div
+                                key={activity.id}
+                                initial={animation?.initial}
+                                animate={animation?.animate}
+                                transition={animation?.transition}
+                                style={animation?.style}
+                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-surface-2 transition-colors"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm truncate">
+                                    <span className="font-medium text-foreground">{activity.entityName}</span>
+                                    <span className="text-muted-foreground"> — {activity.description}</span>
+                                  </p>
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
+                                </span>
+                              </motion.div>
+                            );
+                          })
                         )}
                       </div>
                     </CardContent>
