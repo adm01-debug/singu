@@ -21,8 +21,8 @@ export default defineConfig(({ mode }) => ({
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
         manifest: {
-          name: "RelateIQ - CRM Inteligente",
-          short_name: "RelateIQ",
+          name: "SINGU - CRM Inteligente",
+          short_name: "SINGU",
           description: "Sistema de Inteligência Relacional para gestão de contatos e relacionamentos",
           theme_color: "#2563eb",
           background_color: "#f8fafc",
