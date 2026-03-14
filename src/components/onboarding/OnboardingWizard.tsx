@@ -195,7 +195,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">RelateIQ</h1>
+            <h1 className="text-lg font-bold text-white">SINGU</h1>
             <p className="text-xs text-sidebar-foreground/70">Setup Wizard</p>
           </div>
         </div>
