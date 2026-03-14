@@ -43,6 +43,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(function Skelet
 
   return (
     <div
+      ref={ref}
       className={cn(
         variantClasses[variant],
         roundedClasses[rounded],
