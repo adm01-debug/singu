@@ -95,11 +95,12 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(function Badge({
 
   if (animated) {
     // Extract only valid HTML div attributes for motion.div
-    const { onClick, onMouseEnter, onMouseLeave, role, tabIndex, 'aria-label': ariaLabel, ...restProps } = props;
+    const { onClick, onMouseEnter, onMouseLeave, role, tabIndex, 'aria-label': ariaLabel } = props;
     const motionProps = { onClick, onMouseEnter, onMouseLeave, role, tabIndex, 'aria-label': ariaLabel };
-    
+
     return (
       <motion.div
+        ref={ref}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
@@ -113,11 +114,13 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(function Badge({
   }
 
   return (
-    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+    <div ref={ref} className={cn(badgeVariants({ variant, size }), className)} {...props}>
       {content}
     </div>
   );
-}
+});
+
+Badge.displayName = "Badge";
 
 // Badge Group with truncation
 interface BadgeGroupProps {
