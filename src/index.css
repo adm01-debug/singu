@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* RelateIQ Design System - Sistema de Inteligência Relacional */
+/* SINGU Design System - CRM Inteligente */
 
 /* ============================================
    TYPOGRAPHY SCALE - Pilar 2.1 (Ratio 1.25)
@@ -56,9 +56,9 @@
     --secondary: 215 20% 95%;
     --secondary-foreground: 222 47% 11%;
 
-    /* Muted - Soft Gray (WCAG AA Compliant - Pilar 4.1) */
+    /* Muted - Soft Gray (WCAG AA Compliant) */
     --muted: 215 20% 95%;
-    --muted-foreground: 215 16% 40%; /* Ratio ~5.2:1 for AA compliance */
+    --muted-foreground: 215 16% 40%;
 
     /* Accent - Emerald for success/positive */
     --accent: 160 84% 39%;
@@ -84,6 +84,11 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 221 83% 53%;
+    
+    /* Contextual Focus Rings */
+    --ring-destructive: 0 84% 60%;
+    --ring-success: 142 76% 36%;
+    --ring-warning: 38 92% 50%;
 
     --radius: 0.75rem;
 
@@ -97,22 +102,22 @@
     --sidebar-border: 222 47% 18%;
     --sidebar-ring: 221 83% 53%;
 
-    /* Custom Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(250 83% 60%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(160 84% 39%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(25 95% 53%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(222 47% 98%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(222 47% 8%) 100%);
-    --gradient-heading: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(221 83% 53%) 100%);
+    /* Custom Gradients - use CSS vars for dark mode adaptability */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--accent)) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(var(--warning)) 0%, hsl(25 95% 53%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(var(--warning)) 0%, hsl(25 95% 53%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(var(--sidebar-background)) 0%, hsl(222 47% 8%) 100%);
+    --gradient-heading: linear-gradient(135deg, hsl(var(--foreground)) 0%, hsl(var(--primary)) 100%);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.1), 0 2px 4px -2px hsl(222 47% 11% / 0.1);
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
     --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
-    --shadow-glow: 0 0 20px hsl(221 83% 53% / 0.3);
-    --shadow-glow-lg: 0 0 40px hsl(221 83% 53% / 0.4);
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+    --shadow-glow-lg: 0 0 40px hsl(var(--primary) / 0.4);
 
     /* Role Colors */
     --role-owner: 280 67% 45%;
@@ -120,7 +125,7 @@
     --role-buyer: 142 76% 36%;
     --role-contact: 215 16% 47%;
     
-    /* Surface Levels - Pilar 3.2 */
+    /* Surface Levels */
     --surface-0: 0 0% 100%;
     --surface-1: 222 47% 99%;
     --surface-2: 222 47% 97%;
@@ -143,28 +148,28 @@
        ============================================ */
     --space-0: 0;
     --space-px: 1px;
-    --space-0-5: 0.125rem;  /* 2px */
-    --space-1: 0.25rem;     /* 4px */
-    --space-1-5: 0.375rem;  /* 6px */
-    --space-2: 0.5rem;      /* 8px */
-    --space-2-5: 0.625rem;  /* 10px */
-    --space-3: 0.75rem;     /* 12px */
-    --space-3-5: 0.875rem;  /* 14px */
-    --space-4: 1rem;        /* 16px */
-    --space-5: 1.25rem;     /* 20px */
-    --space-6: 1.5rem;      /* 24px */
-    --space-7: 1.75rem;     /* 28px */
-    --space-8: 2rem;        /* 32px */
-    --space-9: 2.25rem;     /* 36px */
-    --space-10: 2.5rem;     /* 40px */
-    --space-11: 2.75rem;    /* 44px */
-    --space-12: 3rem;       /* 48px */
-    --space-14: 3.5rem;     /* 56px */
-    --space-16: 4rem;       /* 64px */
-    --space-20: 5rem;       /* 80px */
-    --space-24: 6rem;       /* 96px */
-    --space-section: 4rem;  /* Section spacing */
-    --space-page: 6rem;     /* Page margin */
+    --space-0-5: 0.125rem;
+    --space-1: 0.25rem;
+    --space-1-5: 0.375rem;
+    --space-2: 0.5rem;
+    --space-2-5: 0.625rem;
+    --space-3: 0.75rem;
+    --space-3-5: 0.875rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-7: 1.75rem;
+    --space-8: 2rem;
+    --space-9: 2.25rem;
+    --space-10: 2.5rem;
+    --space-11: 2.75rem;
+    --space-12: 3rem;
+    --space-14: 3.5rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    --space-24: 6rem;
+    --space-section: 4rem;
+    --space-page: 6rem;
     
     /* ============================================
        MOTION TOKENS - Pilar 1.2
@@ -206,13 +211,13 @@
        BORDER RADIUS TOKENS - Pilar 1.4
        ============================================ */
     --radius-none: 0;
-    --radius-sm: 0.25rem;    /* 4px - small elements */
-    --radius-md: 0.375rem;   /* 6px - inputs, buttons */
-    --radius-lg: 0.5rem;     /* 8px - cards */
-    --radius-xl: 0.75rem;    /* 12px - modals */
-    --radius-2xl: 1rem;      /* 16px - large cards */
-    --radius-3xl: 1.5rem;    /* 24px - hero sections */
-    --radius-full: 9999px;   /* Circular elements */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+    --radius-full: 9999px;
     --radius-button: 0.5rem;
     --radius-card: 0.75rem;
     --radius-modal: 1rem;
@@ -221,7 +226,7 @@
     --radius-badge: 0.25rem;
     
     /* ============================================
-       TOUCH TARGET SIZES - Pilar 5.6 (Mobile A11y)
+       TOUCH TARGET SIZES - Pilar 5.6
        ============================================ */
     --touch-target-min: 44px;
     --touch-target-comfortable: 48px;
@@ -257,6 +262,11 @@
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 213 27% 84%;
+    
+    /* Contextual Focus Rings - Dark */
+    --ring-destructive: 0 63% 50%;
+    --ring-success: 142 76% 46%;
+    --ring-warning: 38 92% 60%;
 
     --sidebar-background: 222 47% 5%;
     --sidebar-foreground: 215 20% 85%;
@@ -267,8 +277,11 @@
     --sidebar-border: 222 47% 12%;
     --sidebar-ring: 221 83% 53%;
     
-    /* Dark mode gradients */
-    --gradient-heading: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(221 83% 70%) 100%);
+    /* Dark mode shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
     
     /* Surface Levels - Dark Mode */
     --surface-0: 222 47% 6%;
@@ -288,7 +301,6 @@
    SMOOTH THEME TRANSITIONS - Pilar 8.1
    ============================================ */
 :root {
-  /* Theme transition for smooth dark/light mode switch */
   --theme-transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -335,6 +347,22 @@
     @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary/20 transition-shadow duration-150;
   }
 
+  /* Contextual focus rings */
+  .focus-destructive:focus-visible {
+    outline-color: hsl(var(--ring-destructive));
+    --tw-ring-color: hsl(var(--ring-destructive) / 0.2);
+  }
+
+  .focus-success:focus-visible {
+    outline-color: hsl(var(--ring-success));
+    --tw-ring-color: hsl(var(--ring-success) / 0.2);
+  }
+
+  .focus-warning:focus-visible {
+    outline-color: hsl(var(--ring-warning));
+    --tw-ring-color: hsl(var(--ring-warning) / 0.2);
+  }
+
   /* High contrast focus for dark backgrounds */
   .dark button:focus-visible,
   .dark a:focus-visible,
@@ -367,65 +395,54 @@
      TYPOGRAPHY HIERARCHY - Pilar 2.3
      ============================================ */
   
-  /* Display - Hero sections */
   .text-display {
     @apply text-5xl md:text-6xl font-bold tracking-tight;
     line-height: var(--leading-tight);
   }
   
-  /* Heading 1 - Page titles */
   .text-h1 {
     @apply text-3xl md:text-4xl font-bold tracking-tight;
     line-height: var(--leading-tight);
   }
   
-  /* Heading 2 - Section titles */
   .text-h2 {
     @apply text-2xl md:text-3xl font-semibold tracking-tight;
     line-height: var(--leading-snug);
   }
   
-  /* Heading 3 - Card titles */
   .text-h3 {
     @apply text-xl md:text-2xl font-semibold;
     line-height: var(--leading-snug);
   }
   
-  /* Heading 4 - Subsections */
   .text-h4 {
     @apply text-lg md:text-xl font-medium;
     line-height: var(--leading-normal);
   }
   
-  /* Lead - Intro paragraphs */
   .text-lead {
     @apply text-lg text-muted-foreground;
     line-height: var(--leading-relaxed);
   }
   
-  /* Body - Default text */
   .text-body {
     @apply text-base;
     line-height: var(--leading-normal);
   }
   
-  /* Small - Secondary text */
   .text-small {
     @apply text-sm text-muted-foreground;
     line-height: var(--leading-normal);
   }
   
-  /* Caption - Labels, metadata */
   .text-caption {
     @apply text-xs text-muted-foreground uppercase tracking-wide font-medium;
   }
   
-  /* Eyebrow - Category labels */
   .text-eyebrow {
     @apply text-xs uppercase tracking-widest font-semibold text-primary;
   }
   
-  /* Gradient heading */
   .text-gradient-heading {
     @apply bg-clip-text text-transparent font-bold;
     background-image: var(--gradient-heading);
@@ -459,7 +476,7 @@
   .btn-gradient::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(250 83% 60%) 0%, hsl(221 83% 53%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary-glow)) 0%, hsl(var(--primary)) 100%);
   }
   
   .btn-gradient:hover::before {
@@ -478,7 +495,7 @@
   
   .btn-gradient-success:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 20px hsl(142 76% 36% / 0.3);
+    box-shadow: 0 0 20px hsl(var(--success) / 0.3);
   }
   
   .btn-gradient-premium {
@@ -488,7 +505,7 @@
   
   .btn-gradient-premium:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 20px hsl(38 92% 50% / 0.3);
+    box-shadow: 0 0 20px hsl(var(--warning) / 0.3);
   }
 
   /* Role badges */
@@ -560,7 +577,7 @@
 }
 
 @layer utilities {
-  /* Animation utilities */
+  /* Core animation utilities */
   .animate-in-up {
     animation: slideInUp 0.4s ease-out forwards;
   }
@@ -607,121 +624,86 @@
   }
 
   @keyframes slideInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   @keyframes pulseSoft {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.7;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
   }
   
   @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
   }
   
   @keyframes glow {
-    0%, 100% {
-      box-shadow: var(--shadow-glow);
-    }
-    50% {
-      box-shadow: var(--shadow-glow-lg);
-    }
+    0%, 100% { box-shadow: var(--shadow-glow); }
+    50% { box-shadow: var(--shadow-glow-lg); }
   }
   
   @keyframes bounceSubtle {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
   }
   
   @keyframes gradientShift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
   
   @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
   }
   
   @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
   }
   
   @keyframes pop {
-    0% {
-      opacity: 0;
-      transform: scale(0.8);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
   }
   
   @keyframes shake {
-    0%, 100% {
-      transform: translateX(0);
-    }
-    10%, 30%, 50%, 70%, 90% {
-      transform: translateX(-4px);
-    }
-    20%, 40%, 60%, 80% {
-      transform: translateX(4px);
-    }
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+
+  /* Container query utilities */
+  .container-query {
+    container-type: inline-size;
+  }
+
+  .container-query-size {
+    container-type: size;
+  }
+
+  @container (min-width: 320px) {
+    .cq-sm\:flex-row { flex-direction: row; }
+    .cq-sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @container (min-width: 480px) {
+    .cq-md\:flex-row { flex-direction: row; }
+    .cq-md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cq-md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @container (min-width: 640px) {
+    .cq-lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cq-lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 }
 
@@ -742,21 +724,10 @@
 /* ============================================
    SAFE AREA INSETS - Mobile Support
    ============================================ */
-.safe-area-inset-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-inset-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-inset-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.safe-area-inset-right {
-  padding-right: env(safe-area-inset-right);
-}
+.safe-area-inset-top { padding-top: env(safe-area-inset-top); }
+.safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-area-inset-left { padding-left: env(safe-area-inset-left); }
+.safe-area-inset-right { padding-right: env(safe-area-inset-right); }
 
 /* ============================================
    SCROLLBAR HIDDEN UTILITY
@@ -773,46 +744,22 @@
 /* ============================================
    SURFACE UTILITIES - Pilar 3.2
    ============================================ */
-.surface-0 {
-  background-color: hsl(var(--surface-0));
-}
-
-.surface-1 {
-  background-color: hsl(var(--surface-1));
-}
-
-.surface-2 {
-  background-color: hsl(var(--surface-2));
-}
-
-.surface-3 {
-  background-color: hsl(var(--surface-3));
-}
-
-.surface-4 {
-  background-color: hsl(var(--surface-4));
-}
+.surface-0 { background-color: hsl(var(--surface-0)); }
+.surface-1 { background-color: hsl(var(--surface-1)); }
+.surface-2 { background-color: hsl(var(--surface-2)); }
+.surface-3 { background-color: hsl(var(--surface-3)); }
+.surface-4 { background-color: hsl(var(--surface-4)); }
 
 /* ============================================
    ROW STATE UTILITIES
    ============================================ */
-.row-hover:hover {
-  background-color: hsl(var(--row-hover));
-}
-
-.row-selected {
-  background-color: hsl(var(--row-selected));
-}
-
-.row-active {
-  background-color: hsl(var(--row-active));
-}
+.row-hover:hover { background-color: hsl(var(--row-hover)); }
+.row-selected { background-color: hsl(var(--row-selected)); }
+.row-active { background-color: hsl(var(--row-active)); }
 
 /* ============================================
    ACCESSIBILITY UTILITIES - Pilar 4
    ============================================ */
-
-/* Screen reader only - improved version */
 .sr-only-focusable:not(:focus):not(:focus-within) {
   position: absolute;
   width: 1px;
@@ -825,7 +772,6 @@
   border: 0;
 }
 
-/* Live region for screen reader announcements */
 .live-region {
   position: absolute;
   width: 1px;
@@ -838,13 +784,11 @@
   border: 0;
 }
 
-/* High contrast focus indicator */
 .focus-high-contrast:focus-visible {
   outline: 3px solid hsl(var(--primary));
   outline-offset: 3px;
 }
 
-/* Touch target minimum size */
 .touch-target {
   min-height: var(--touch-target-min);
   min-width: var(--touch-target-min);
@@ -858,50 +802,20 @@
 /* ============================================
    MOTION UTILITIES - Pilar 1.2
    ============================================ */
+.duration-instant { transition-duration: var(--duration-instant); }
+.duration-fast { transition-duration: var(--duration-fast); }
+.duration-normal { transition-duration: var(--duration-normal); }
+.duration-moderate { transition-duration: var(--duration-moderate); }
+.duration-slow { transition-duration: var(--duration-slow); }
 
-/* Duration utilities */
-.duration-instant {
-  transition-duration: var(--duration-instant);
-}
-
-.duration-fast {
-  transition-duration: var(--duration-fast);
-}
-
-.duration-normal {
-  transition-duration: var(--duration-normal);
-}
-
-.duration-moderate {
-  transition-duration: var(--duration-moderate);
-}
-
-.duration-slow {
-  transition-duration: var(--duration-slow);
-}
-
-/* Easing utilities */
-.ease-smooth {
-  transition-timing-function: var(--ease-smooth);
-}
-
-.ease-bounce {
-  transition-timing-function: var(--ease-bounce);
-}
-
-.ease-elastic {
-  transition-timing-function: var(--ease-elastic);
-}
-
-.ease-spring {
-  transition-timing-function: var(--ease-spring);
-}
+.ease-smooth { transition-timing-function: var(--ease-smooth); }
+.ease-bounce { transition-timing-function: var(--ease-bounce); }
+.ease-elastic { transition-timing-function: var(--ease-elastic); }
+.ease-spring { transition-timing-function: var(--ease-spring); }
 
 /* ============================================
    INTERACTIVE STATES - Pilar 3
    ============================================ */
-
-/* Pressable effect for buttons */
 .pressable {
   transition: transform var(--duration-fast) var(--ease-smooth);
 }
@@ -910,7 +824,6 @@
   transform: scale(0.97);
 }
 
-/* Lift on hover effect */
 .lift-on-hover {
   transition: transform var(--duration-normal) var(--ease-smooth), 
               box-shadow var(--duration-normal) var(--ease-smooth);
@@ -921,7 +834,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* Glow on hover */
 .glow-on-hover {
   transition: box-shadow var(--duration-normal) var(--ease-smooth);
 }
@@ -931,7 +843,7 @@
 }
 
 /* ============================================
-   ADVANCED ANIMATION LIBRARY - Sprint 4
+   ADVANCED ANIMATION LIBRARY
    ============================================ */
 
 /* Stagger animation for children */
@@ -942,12 +854,8 @@
 
 /* Morphing background */
 @keyframes morphing-bg {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .animate-morphing-bg {
@@ -957,14 +865,8 @@
 
 /* Success ripple */
 @keyframes success-ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
+  0% { transform: scale(0); opacity: 0.8; }
+  100% { transform: scale(4); opacity: 0; }
 }
 
 .animate-success-ripple {
@@ -973,95 +875,46 @@
 
 /* Attention pulse */
 @keyframes attention-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
-  }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50% { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
 }
 
 .animate-attention {
   animation: attention-pulse 2s infinite;
 }
 
-/* Slide in from different directions */
+/* Slide animations */
 @keyframes slide-in-left {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes slide-in-right {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes slide-in-up {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes slide-in-down {
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-.animate-slide-in-left {
-  animation: slide-in-left 0.3s var(--ease-smooth) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.3s var(--ease-smooth) forwards;
-}
-
-.animate-slide-in-up {
-  animation: slide-in-up 0.3s var(--ease-smooth) forwards;
-}
-
-.animate-slide-in-down {
-  animation: slide-in-down 0.3s var(--ease-smooth) forwards;
-}
+.animate-slide-in-left { animation: slide-in-left 0.3s var(--ease-smooth) forwards; }
+.animate-slide-in-right { animation: slide-in-right 0.3s var(--ease-smooth) forwards; }
+.animate-slide-in-up { animation: slide-in-up 0.3s var(--ease-smooth) forwards; }
+.animate-slide-in-down { animation: slide-in-down 0.3s var(--ease-smooth) forwards; }
 
 /* Scale bounce */
 @keyframes scale-bounce {
-  0% {
-    transform: scale(0.3);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 1;
-  }
-  70% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); }
 }
 
 .animate-scale-bounce {
@@ -1070,21 +923,11 @@
 
 /* Heartbeat */
 @keyframes heartbeat {
-  0%, 100% {
-    transform: scale(1);
-  }
-  14% {
-    transform: scale(1.1);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.1);
-  }
-  56% {
-    transform: scale(1);
-  }
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  56% { transform: scale(1); }
 }
 
 .animate-heartbeat {
@@ -1093,45 +936,25 @@
 
 /* Typing indicator */
 @keyframes typing-dot {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.4;
-  }
-  30% {
-    transform: translateY(-8px);
-    opacity: 1;
-  }
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
 }
 
-.animate-typing-1 {
-  animation: typing-dot 1.4s infinite 0s;
-}
+.animate-typing-1 { animation: typing-dot 1.4s infinite 0s; }
+.animate-typing-2 { animation: typing-dot 1.4s infinite 0.2s; }
+.animate-typing-3 { animation: typing-dot 1.4s infinite 0.4s; }
 
-.animate-typing-2 {
-  animation: typing-dot 1.4s infinite 0.2s;
-}
-
-.animate-typing-3 {
-  animation: typing-dot 1.4s infinite 0.4s;
-}
-
-/* Confetti explosion (simplified) */
+/* Confetti */
 @keyframes confetti {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-100px) rotate(720deg);
-    opacity: 0;
-  }
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
 }
 
 .animate-confetti {
   animation: confetti 1s ease-out forwards;
 }
 
-/* Reduced motion preference - disable all custom animations */
+/* Reduced motion - disable custom animations */
 @media (prefers-reduced-motion: reduce) {
   .animate-morphing-bg,
   .animate-success-ripple,

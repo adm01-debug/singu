@@ -31,6 +31,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
 import WhatsApp from "./pages/WhatsApp";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -136,6 +137,11 @@ const AnimatedRoutes = () => {
         <Route path="/whatsapp" element={
           <RequireAuth>
             <PageTransition><WhatsApp /></PageTransition>
+          </RequireAuth>
+        } />
+        <Route path="/design-system" element={
+          <RequireAuth>
+            <PageTransition><DesignSystem /></PageTransition>
           </RequireAuth>
         } />
             
