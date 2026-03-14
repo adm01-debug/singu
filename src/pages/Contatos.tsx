@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
+import { List as VirtualList } from 'react-window';
 import { 
   Search,
   Grid3X3,
@@ -216,8 +217,18 @@ const Contatos = () => {
 
   const handleDelete = async () => {
     if (!deletingContact) return;
-    await deleteContact(deletingContact.id);
+    const contactToDelete = deletingContact;
     setDeletingContact(null);
+    
+    // Optimistic: remove from UI immediately
+    toast.promise(
+      deleteContact(contactToDelete.id),
+      {
+        loading: 'Excluindo contato...',
+        success: `${contactToDelete.first_name} excluído com sucesso`,
+        error: 'Falha ao excluir contato. Recarregue para restaurar.',
+      }
+    );
   };
 
   // Selection handlers
@@ -427,25 +438,67 @@ const Contatos = () => {
                 ))}
               </div>
             ) : (
-              <div className="space-y-2">
-                {filteredAndSortedContacts.map((contact, index) => (
-                  <ContactCardWithContext
-                    key={contact.id}
-                    contact={contact}
-                    companyName={getCompanyName(contact.company_id)}
-                    lastInteraction={getLastInteractionDate(contact.id)}
-                    index={index}
-                    isSelected={selectedIds.has(contact.id)}
-                    isHighlighted={selectedIndex === index}
-                    selectionMode={selectionMode}
-                    onSelect={handleSelect}
-                    onEdit={setEditingContact}
-                    onDelete={setDeletingContact}
-                    onUpdate={updateContact}
-                    viewMode="list"
-                  />
-                ))}
-              </div>
+              filteredAndSortedContacts.length > 50 ? (
+                <VirtualList
+                  rowCount={filteredAndSortedContacts.length}
+                  rowHeight={88}
+                  rowProps={{
+                    contacts: filteredAndSortedContacts,
+                    getCompanyName,
+                    getLastInteractionDate,
+                    selectedIds,
+                    selectedIndex,
+                    selectionMode,
+                    handleSelect,
+                    setEditingContact,
+                    setDeletingContact,
+                    updateContact,
+                  }}
+                  style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
+                  rowComponent={({ index, style, ...props }: any) => {
+                    const contact = props.contacts[index];
+                    if (!contact) return null;
+                    return (
+                      <div style={style} className="pb-2">
+                        <ContactCardWithContext
+                          contact={contact}
+                          companyName={props.getCompanyName(contact.company_id)}
+                          lastInteraction={props.getLastInteractionDate(contact.id)}
+                          index={index}
+                          isSelected={props.selectedIds.has(contact.id)}
+                          isHighlighted={props.selectedIndex === index}
+                          selectionMode={props.selectionMode}
+                          onSelect={props.handleSelect}
+                          onEdit={props.setEditingContact}
+                          onDelete={props.setDeletingContact}
+                          onUpdate={props.updateContact}
+                          viewMode="list"
+                        />
+                      </div>
+                    );
+                  }}
+                />
+              ) : (
+                <div className="space-y-2">
+                  {filteredAndSortedContacts.map((contact, index) => (
+                    <ContactCardWithContext
+                      key={contact.id}
+                      contact={contact}
+                      companyName={getCompanyName(contact.company_id)}
+                      lastInteraction={getLastInteractionDate(contact.id)}
+                      index={index}
+                      isSelected={selectedIds.has(contact.id)}
+                      isHighlighted={selectedIndex === index}
+                      selectionMode={selectionMode}
+                      onSelect={handleSelect}
+                      onEdit={setEditingContact}
+                      onDelete={setDeletingContact}
+                      onUpdate={updateContact}
+                      viewMode="list"
+                    />
+                  ))}
+                </div>
+              )
             )}
 
             {filteredAndSortedContacts.length === 0 && !loading && (
