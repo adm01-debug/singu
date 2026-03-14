@@ -242,6 +242,10 @@ export function useNLPAutoAnalysis() {
           .limit(20)
       ]);
 
+      if (vakData.error || metaData.error || emotionalData.error) {
+        throw vakData.error || metaData.error || emotionalData.error;
+      }
+
       return {
         vak: vakData.data || [],
         metaprograms: metaData.data || [],

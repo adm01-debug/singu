@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PartyPopper, Trophy, Target, Heart, Sparkles, CheckCircle2, Star } from 'lucide-react';
 
 type CelebrationType = 
@@ -292,14 +292,12 @@ export const CelebrationProvider = ({ children }: CelebrationProviderProps) => {
   return (
     <CelebrationContext.Provider value={{ celebrate }}>
       {children}
-      <AnimatePresence>
-        {activeCelebration && (
-          <CelebrationOverlay
-            config={activeCelebration}
-            onComplete={handleComplete}
-          />
-        )}
-      </AnimatePresence>
+      {activeCelebration && (
+        <CelebrationOverlay
+          config={activeCelebration}
+          onComplete={handleComplete}
+        />
+      )}
     </CelebrationContext.Provider>
   );
 };

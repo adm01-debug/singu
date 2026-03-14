@@ -33,11 +33,10 @@ const Auth = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      // Check if user needs onboarding
-      navigate('/onboarding');
-    }
-  }, [user, navigate]);
+    if (!user) return;
+    const redirectTo = (location.state as { from?: string } | null)?.from || '/';
+    navigate(redirectTo, { replace: true });
+  }, [user, navigate, location.state]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
