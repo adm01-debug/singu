@@ -136,7 +136,7 @@ const AnimatedRoutes = () => {
         } />
         <Route path="/whatsapp" element={
           <RequireAuth>
-            <PageTransition><WhatsApp /></PageTransition>
+            <Navigate to="/interacoes?canal=whatsapp" replace />
           </RequireAuth>
         } />
         <Route path="/design-system" element={
