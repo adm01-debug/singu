@@ -38,6 +38,7 @@ export { OfflineBanner } from './OfflineBanner';
 export { SwipeableListItem } from './SwipeableListItem';
 export { PullToRefresh } from './PullToRefresh';
 export { ContextualHelp, FeatureHighlight, InlineHelp } from './ContextualHelp';
+export { FeatureSpotlight } from './FeatureSpotlight';
 export { DraftRecoveryBanner } from './DraftRecoveryBanner';
 export { ProgressToast } from './ProgressToast';
 
