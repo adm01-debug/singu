@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -29,6 +29,9 @@ import {
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { CompanyForm } from '@/components/forms/CompanyForm';
+import { ContactForm } from '@/components/forms/ContactForm';
 import { Badge } from '@/components/ui/badge';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -84,14 +87,10 @@ const EmpresaDetalhe = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
 
-  useEffect(() => {
-    if (id && user) {
-      fetchCompanyData();
-    }
-  }, [id, user]);
-
-  const fetchCompanyData = async () => {
+  const fetchCompanyData = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch company from external DB
@@ -162,7 +161,13 @@ const EmpresaDetalhe = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, user, trackView]);
+
+  useEffect(() => {
+    if (id && user) {
+      fetchCompanyData();
+    }
+  }, [id, user, fetchCompanyData]);
 
   if (loading) {
     return (
@@ -210,6 +215,7 @@ const EmpresaDetalhe = () => {
     : undefined;
 
   return (
+    <>
     <AppLayout>
       <div className="min-h-screen pt-2 md:pt-4">
         {/* Breadcrumbs */}
@@ -249,11 +255,17 @@ const EmpresaDetalhe = () => {
               processing={luxRecord?.status === 'processing'}
               variant="header"
             />
-            <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
+            <Button
+              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              onClick={() => setIsAddContactOpen(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Novo Contato
             </Button>
-            <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
+            <Button
+              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              onClick={() => setIsEditOpen(true)}
+            >
               <Edit className="w-4 h-4 mr-2" />
               Editar
             </Button>
@@ -824,6 +836,50 @@ const EmpresaDetalhe = () => {
         </div>
       </div>
     </AppLayout>
+
+    {/* Edit Company Dialog */}
+    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CompanyForm
+          company={company}
+          onSubmit={async (data) => {
+            const { error } = await supabase
+              .from('companies')
+              .update(data)
+              .eq('id', id!);
+            if (!error) {
+              setIsEditOpen(false);
+              fetchCompanyData();
+            }
+          }}
+          onCancel={() => setIsEditOpen(false)}
+          isSubmitting={false}
+        />
+      </DialogContent>
+    </Dialog>
+
+    {/* Add Contact Dialog */}
+    <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <ContactForm
+          companies={company ? [company] : []}
+          defaultCompanyId={id}
+          onSubmit={async (data) => {
+            if (!user) return;
+            const { error } = await supabase
+              .from('contacts')
+              .insert({ ...data, user_id: user.id, company_id: id } as any);
+            if (!error) {
+              setIsAddContactOpen(false);
+              fetchCompanyData();
+            }
+          }}
+          onCancel={() => setIsAddContactOpen(false)}
+          isSubmitting={false}
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
