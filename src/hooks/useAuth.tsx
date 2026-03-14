@@ -188,20 +188,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     metadata?: { first_name?: string; last_name?: string }
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: metadata
-        }
+          data: metadata,
+        },
       });
 
       if (error) {
@@ -211,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
-      return { error: null };
+      return { error: null, needsEmailVerification: !data.session };
     } catch (err) {
       return { error: err as Error };
     }
