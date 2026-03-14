@@ -8,7 +8,11 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata?: { first_name?: string; last_name?: string }
+  ) => Promise<{ error: Error | null; needsEmailVerification?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -23,7 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHandling401Ref = useRef(false);
 
   // Função para agendar refresh automático
   const scheduleTokenRefresh = useCallback((currentSession: Session | null) => {
@@ -142,30 +147,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Interceptar erros 401 globalmente
   useEffect(() => {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (...args) => {
       const response = await originalFetch(...args);
-      
-      if (response.status === 401) {
-        const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
-        
-        // Verificar se é uma requisição ao Supabase
-        if (url.includes('supabase')) {
-          console.warn('⚠️ 401 Unauthorized - attempting session refresh');
-          
-          try {
-            const { data, error } = await supabase.auth.refreshSession();
-            if (error || !data.session) {
-              // Sessão realmente expirou
-              toast.error('Sua sessão expirou. Por favor, faça login novamente.');
-              await supabase.auth.signOut();
-            }
-          } catch (err) {
-            console.error('Failed to handle 401:', err);
-          }
-        }
+
+      if (response.status !== 401) return response;
+
+      const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
+      const isBackendRequest =
+        url.includes('/auth/v1') || url.includes('/rest/v1') || url.includes('/functions/v1') || url.includes('supabase');
+      const isRefreshRequest = url.includes('/auth/v1/token');
+
+      if (!isBackendRequest || isRefreshRequest || isHandling401Ref.current) {
+        return response;
       }
-      
+
+      console.warn('⚠️ 401 Unauthorized - attempting session refresh');
+      isHandling401Ref.current = true;
+
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error || !data.session) {
+          toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+        }
+      } catch (err) {
+        console.error('Failed to handle 401:', err);
+      } finally {
+        isHandling401Ref.current = false;
+      }
+
       return response;
     };
 
@@ -175,20 +188,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     metadata?: { first_name?: string; last_name?: string }
   ) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
+
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: metadata
-        }
+          data: metadata,
+        },
       });
 
       if (error) {
@@ -198,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error };
       }
 
-      return { error: null };
+      return { error: null, needsEmailVerification: !data.session };
     } catch (err) {
       return { error: err as Error };
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
@@ -79,7 +79,7 @@ const Auth = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -96,12 +96,16 @@ const Auth = () => {
           navigate('/onboarding');
         }
       } else {
-        const { error } = await signUp(email, password, {
+        const { error, needsEmailVerification } = await signUp(email, password, {
           first_name: firstName,
           last_name: lastName
         });
         if (error) {
           toast.error(error.message);
+        } else if (needsEmailVerification) {
+          toast.success('Conta criada! Verifique seu email para ativar o acesso.');
+          setMode('login');
+          setPassword('');
         } else {
           toast.success('Conta criada com sucesso! Vamos configurar sua conta!');
           navigate('/onboarding');
@@ -214,7 +218,7 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <AnimatePresence mode="wait">
                   {mode === 'signup' && (
                     <motion.div
