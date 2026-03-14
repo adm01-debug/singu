@@ -212,6 +212,7 @@ const EmpresaDetalhe = () => {
     : undefined;
 
   return (
+    <>
     <AppLayout>
       <div className="min-h-screen pt-2 md:pt-4">
         {/* Breadcrumbs */}
