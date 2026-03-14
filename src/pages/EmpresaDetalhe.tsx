@@ -832,6 +832,49 @@ const EmpresaDetalhe = () => {
         </div>
       </div>
     </AppLayout>
+
+    {/* Edit Company Dialog */}
+    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CompanyForm
+          company={company}
+          onSubmit={async (data) => {
+            const { error } = await supabase
+              .from('companies')
+              .update(data)
+              .eq('id', id!);
+            if (!error) {
+              setIsEditOpen(false);
+              fetchCompanyData();
+            }
+          }}
+          onCancel={() => setIsEditOpen(false)}
+          isSubmitting={false}
+        />
+      </DialogContent>
+    </Dialog>
+
+    {/* Add Contact Dialog */}
+    <Dialog open={isAddContactOpen} onOpenChange={setIsAddContactOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <ContactForm
+          defaultCompanyId={id}
+          onSubmit={async (data) => {
+            if (!user) return;
+            const { error } = await supabase
+              .from('contacts')
+              .insert({ ...data, user_id: user.id, company_id: id });
+            if (!error) {
+              setIsAddContactOpen(false);
+              fetchCompanyData();
+            }
+          }}
+          onCancel={() => setIsAddContactOpen(false)}
+          isSubmitting={false}
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 
