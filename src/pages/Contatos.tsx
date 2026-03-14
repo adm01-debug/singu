@@ -53,6 +53,9 @@ import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import type { ContactRole } from '@/types';
+import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
+import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
+import type { SearchPreset } from '@/hooks/useSearchPresets';
 
 type ViewMode = 'grid' | 'list';
 
