@@ -87,7 +87,10 @@ export function MobileBottomNav() {
                 <h3 className="text-sm font-semibold text-foreground">Mais opções</h3>
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
                 <button 
-                  onClick={() => setShowMore(false)}
+                  onClick={() => {
+                    haptic.light();
+                    setShowMore(false);
+                  }}
                   className="p-1.5 rounded-full hover:bg-muted transition-colors"
                   aria-label="Fechar menu"
                 >
