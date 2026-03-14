@@ -10,19 +10,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-destructive",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // New gradient variants - Pilar 3.3
-        gradient: "bg-gradient-to-r from-primary to-[hsl(250_83%_60%)] text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
-        "gradient-success": "bg-gradient-to-r from-[hsl(142_76%_36%)] to-[hsl(160_84%_39%)] text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
-        "gradient-warning": "bg-gradient-to-r from-[hsl(38_92%_50%)] to-[hsl(25_95%_53%)] text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
-        premium: "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5",
-        success: "bg-[hsl(142_76%_36%)] text-white hover:bg-[hsl(142_76%_32%)] hover:shadow-md",
-        warning: "bg-[hsl(38_92%_50%)] text-white hover:bg-[hsl(38_92%_45%)] hover:shadow-md",
-        info: "bg-[hsl(199_89%_48%)] text-white hover:bg-[hsl(199_89%_43%)] hover:shadow-md",
+        // Gradient variants using design tokens
+        gradient: "bg-gradient-primary text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
+        "gradient-success": "bg-gradient-success text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-success",
+        "gradient-warning": "bg-warning text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-warning",
+        premium: "bg-gradient-primary text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5",
+        success: "bg-success text-success-foreground hover:bg-success/90 hover:shadow-md focus-success",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90 hover:shadow-md focus-warning",
+        info: "bg-info text-info-foreground hover:bg-info/90 hover:shadow-md",
         // Glass variant
         glass: "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20",
       },
@@ -31,7 +31,6 @@ const buttonVariants = cva(
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
         icon: "h-10 w-10",
-        // New sizes - Pilar 9.1
         xs: "h-7 px-2 text-xs rounded",
         xl: "h-12 px-10 text-lg rounded-lg",
         "icon-sm": "h-8 w-8",
