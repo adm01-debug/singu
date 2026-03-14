@@ -529,19 +529,19 @@ const Dashboard = () => {
                 <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
                 <Typography variant="h4" gradient>Estatísticas de Relacionamento</Typography>
               </div>
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="chart" fallbackHeight="h-64">
                 <RelationshipStatsPanel />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Closing Score */}
             <DashboardErrorBoundary sectionName="Score de Fechamento">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="list">
                 <ClosingScoreRanking maxItems={5} showStats={false} compact />
-              </Suspense>
-              <Suspense fallback={<LazyFallback />}>
+              </LazySection>
+              <LazySection fallbackVariant="list" className="mt-6">
                 <ClosingScoreAlertsList maxItems={3} compact />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
           </TabsContent>
 
