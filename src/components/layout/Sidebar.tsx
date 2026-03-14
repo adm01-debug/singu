@@ -66,12 +66,11 @@ const menuItems: MenuItemConfig[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
   { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
   { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
-  { icon: MessageSquare, label: 'Interações', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
+  { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
   { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
   { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
   { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
-  { icon: Phone, label: 'WhatsApp', path: '/whatsapp', shortcut: 'w', tourId: 'whatsapp' },
 ];
 
 const bottomMenuItems: MenuItemConfig[] = [
