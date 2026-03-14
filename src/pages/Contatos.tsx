@@ -375,6 +375,26 @@ const Contatos = () => {
               {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
               {isEnriching ? 'Enriquecendo...' : 'Enriquecer'}
             </Button>
+            <FeatureSpotlight
+              featureId="search-presets"
+              title="Novo: Presets de Busca"
+              description="Salve combinações de filtros para reutilizar rapidamente. Ideal para buscas que você faz com frequência!"
+              position="bottom"
+            >
+              <SearchPresetsMenu
+                context="contacts"
+                currentFilters={activeFilters}
+                currentSortBy={sortBy}
+                currentSortOrder={sortOrder}
+                currentSearchTerm={searchTerm}
+                onApplyPreset={(preset: SearchPreset) => {
+                  setActiveFilters(preset.filters);
+                  setSortBy(preset.sortBy);
+                  setSortOrder(preset.sortOrder);
+                  if (preset.searchTerm) handleSearchChange(preset.searchTerm);
+                }}
+              />
+            </FeatureSpotlight>
             <AdvancedDataExporter entityType="contacts" />
             <Button
               variant="ghost"
