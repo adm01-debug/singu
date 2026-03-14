@@ -1,5 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,6 +29,7 @@ const Auth = () => {
   
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -92,8 +93,9 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
+          const redirectTo = (location.state as { from?: string } | null)?.from || '/onboarding';
           toast.success('Bem-vindo de volta!');
-          navigate('/onboarding');
+          navigate(redirectTo, { replace: true });
         }
       } else {
         const { error, needsEmailVerification } = await signUp(email, password, {
@@ -108,9 +110,12 @@ const Auth = () => {
           setPassword('');
         } else {
           toast.success('Conta criada com sucesso! Vamos configurar sua conta!');
-          navigate('/onboarding');
+          navigate('/onboarding', { replace: true });
         }
       }
+    } catch (error) {
+      console.error('Auth submit error:', error);
+      toast.error('Não foi possível concluir a autenticação. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
