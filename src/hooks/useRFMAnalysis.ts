@@ -198,7 +198,7 @@ export function useRFMAnalysis(contactId?: string) {
       const monetaryPercentiles = getPercentiles(monetaryValues);
       
       // Calculate RFM for each contact
-      const rfmResults: any[] = [];
+      const rfmResults: RFMAnalysis[] = [];
       
       for (const [contactId, metrics] of contactMetrics) {
         const contact = contacts.find(c => c.id === contactId);
