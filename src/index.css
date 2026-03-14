@@ -514,21 +514,29 @@
     box-shadow: 0 0 20px hsl(var(--warning) / 0.3);
   }
 
-  /* Role badges */
+  /* Role badges - using semantic tokens */
   .role-owner {
-    @apply bg-purple-100 text-purple-700 border-purple-200;
+    background-color: hsl(var(--role-owner) / 0.12);
+    color: hsl(var(--role-owner));
+    border-color: hsl(var(--role-owner) / 0.25);
   }
   
   .role-manager {
-    @apply bg-blue-100 text-blue-700 border-blue-200;
+    background-color: hsl(var(--role-manager) / 0.12);
+    color: hsl(var(--role-manager));
+    border-color: hsl(var(--role-manager) / 0.25);
   }
   
   .role-buyer {
-    @apply bg-green-100 text-green-700 border-green-200;
+    background-color: hsl(var(--role-buyer) / 0.12);
+    color: hsl(var(--role-buyer));
+    border-color: hsl(var(--role-buyer) / 0.25);
   }
   
   .role-contact {
-    @apply bg-gray-100 text-gray-700 border-gray-200;
+    background-color: hsl(var(--role-contact) / 0.12);
+    color: hsl(var(--role-contact));
+    border-color: hsl(var(--role-contact) / 0.25);
   }
 
   /* Status indicators */
