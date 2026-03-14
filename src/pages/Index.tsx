@@ -1,9 +1,9 @@
 import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Building2, 
-  Users, 
-  MessageSquare, 
+import {
+  Building2,
+  Users,
+  MessageSquare,
   TrendingUp,
   ArrowRight,
   Clock,
@@ -14,7 +14,7 @@ import {
   LayoutGrid,
   Brain,
   Heart,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
@@ -41,6 +41,8 @@ import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBou
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
 import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   ActivityChart,
