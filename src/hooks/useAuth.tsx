@@ -147,30 +147,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Interceptar erros 401 globalmente
   useEffect(() => {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (...args) => {
       const response = await originalFetch(...args);
-      
-      if (response.status === 401) {
-        const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
-        
-        // Verificar se é uma requisição ao Supabase
-        if (url.includes('supabase')) {
-          console.warn('⚠️ 401 Unauthorized - attempting session refresh');
-          
-          try {
-            const { data, error } = await supabase.auth.refreshSession();
-            if (error || !data.session) {
-              // Sessão realmente expirou
-              toast.error('Sua sessão expirou. Por favor, faça login novamente.');
-              await supabase.auth.signOut();
-            }
-          } catch (err) {
-            console.error('Failed to handle 401:', err);
-          }
-        }
+
+      if (response.status !== 401) return response;
+
+      const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
+      const isBackendRequest =
+        url.includes('/auth/v1') || url.includes('/rest/v1') || url.includes('/functions/v1') || url.includes('supabase');
+      const isRefreshRequest = url.includes('/auth/v1/token');
+
+      if (!isBackendRequest || isRefreshRequest || isHandling401Ref.current) {
+        return response;
       }
-      
+
+      console.warn('⚠️ 401 Unauthorized - attempting session refresh');
+      isHandling401Ref.current = true;
+
+      try {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error || !data.session) {
+          toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+          await supabase.auth.signOut();
+          setUser(null);
+          setSession(null);
+        }
+      } catch (err) {
+        console.error('Failed to handle 401:', err);
+      } finally {
+        isHandling401Ref.current = false;
+      }
+
       return response;
     };
 
