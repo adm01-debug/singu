@@ -186,12 +186,15 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Load recent items on open
+  // Sync search query with URL params (#10)
   useEffect(() => {
     if (open) {
+      const params = new URLSearchParams(location.search);
+      const urlQuery = params.get('q');
+      if (urlQuery) setQuery(urlQuery);
       setRecentItems(getRecentItems());
     }
-  }, [open]);
+  }, [open, location.search]);
 
   // Handle quick action shortcuts
   useEffect(() => {
