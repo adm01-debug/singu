@@ -38,6 +38,7 @@ export function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
+  const haptic = useHapticFeedback();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -45,6 +46,7 @@ export function MobileBottomNav() {
   };
 
   const handleNavigate = (path: string) => {
+    haptic.selection();
     navigate(path);
     setShowMore(false);
   };
