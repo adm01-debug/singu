@@ -16,6 +16,10 @@ import {
   Heart,
   Activity
 } from 'lucide-react';
+import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
+import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
+import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
+import { LazySection } from '@/components/dashboard/LazySection';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Header } from '@/components/layout/Header';
@@ -222,8 +226,15 @@ const Dashboard = () => {
     );
   }
 
+  // Check if user has data for onboarding
+  const hasProfile = !!dashboardStats.totalContacts || !!dashboardStats.totalCompanies;
+  const hasContacts = dashboardStats.totalContacts > 0;
+  const hasCompanies = dashboardStats.totalCompanies > 0;
+  const hasInteractions = dashboardStats.weeklyInteractions > 0;
+
   return (
     <AppLayout>
+      <ScrollProgressBar />
       <Header 
         title="Dashboard" 
         subtitle="Visão geral do seu relacionamento com clientes"
@@ -231,6 +242,21 @@ const Dashboard = () => {
       />
 
       <div className="p-6 space-y-6">
+        {/* Welcome Hero Card (#13) */}
+        <WelcomeHeroCard
+          totalContacts={dashboardStats.totalContacts}
+          weeklyInteractions={dashboardStats.weeklyInteractions}
+          averageScore={dashboardStats.averageScore}
+        />
+
+        {/* Onboarding Checklist (#26) */}
+        <OnboardingChecklist
+          hasProfile={hasProfile}
+          hasContacts={hasContacts}
+          hasCompanies={hasCompanies}
+          hasInteractions={hasInteractions}
+        />
+
         {/* Pre-Contact Briefing - single instance */}
         <DashboardErrorBoundary sectionName="Briefing">
           <PreContactBriefing compact className="mb-2" />
@@ -273,22 +299,22 @@ const Dashboard = () => {
           <TabsContent value="overview" className="space-y-6 mt-0">
             {/* Portfolio Health */}
             <DashboardErrorBoundary sectionName="Saúde do Portfólio">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="card" fallbackHeight="h-48">
                 <PortfolioHealthDashboard 
                   contacts={mappedContacts}
                   interactions={mappedInteractions}
                 />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Important Dates */}
             <DashboardErrorBoundary sectionName="Datas Importantes">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="list" fallbackHeight="h-48">
                 <ImportantDatesCalendar 
                   contacts={mappedContacts}
                   interactions={mappedInteractions}
                 />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Recent Activity + Top Contacts */}
@@ -429,22 +455,22 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <DashboardErrorBoundary sectionName="Alertas e Lembretes">
                 <div className="space-y-6">
-                  <Suspense fallback={<LazyFallback />}>
+                  <LazySection fallbackVariant="list">
                     <SmartRemindersPanel compact />
-                  </Suspense>
-                  <Suspense fallback={<LazyFallback />}>
+                  </LazySection>
+                  <LazySection fallbackVariant="card">
                     <HealthAlertsPanel />
-                  </Suspense>
+                  </LazySection>
                 </div>
               </DashboardErrorBoundary>
               <DashboardErrorBoundary sectionName="Compatibilidade">
                 <div className="space-y-6">
-                  <Suspense fallback={<LazyFallback />}>
+                  <LazySection fallbackVariant="list">
                     <DISCCompatibilityAlerts compact maxItems={3} />
-                  </Suspense>
-                  <Suspense fallback={<LazyFallback />}>
+                  </LazySection>
+                  <LazySection fallbackVariant="list">
                     <CompatibilityAlertsList maxItems={3} />
-                  </Suspense>
+                  </LazySection>
                 </div>
               </DashboardErrorBoundary>
             </div>
@@ -503,19 +529,19 @@ const Dashboard = () => {
                 <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
                 <Typography variant="h4" gradient>Estatísticas de Relacionamento</Typography>
               </div>
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="chart" fallbackHeight="h-64">
                 <RelationshipStatsPanel />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Closing Score */}
             <DashboardErrorBoundary sectionName="Score de Fechamento">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="list">
                 <ClosingScoreRanking maxItems={5} showStats={false} compact />
-              </Suspense>
-              <Suspense fallback={<LazyFallback />}>
+              </LazySection>
+              <LazySection fallbackVariant="list" className="mt-6">
                 <ClosingScoreAlertsList maxItems={3} compact />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
           </TabsContent>
 
@@ -528,12 +554,12 @@ const Dashboard = () => {
                 <Typography variant="h4" gradient>Padrões de Compra e Comportamento</Typography>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart">
                   <PurchasePatternsPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="card">
                   <BehaviorAlertsPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
             </DashboardErrorBoundary>
 
@@ -544,21 +570,21 @@ const Dashboard = () => {
                 <Typography variant="h4" gradient>Inteligência de Negócios</Typography>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart">
                   <ChurnPredictionPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="chart">
                   <BestTimeToContactPanel compact />
-                </Suspense>
-                <Suspense fallback={<LazyFallback />}>
+                </LazySection>
+                <LazySection fallbackVariant="chart">
                   <DealVelocityPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
               
               <div className="mt-6">
-                <Suspense fallback={<LazyFallback />}>
+                <LazySection fallbackVariant="chart" fallbackHeight="h-64">
                   <RFMAnalysisPanel compact />
-                </Suspense>
+                </LazySection>
               </div>
             </DashboardErrorBoundary>
           </TabsContent>

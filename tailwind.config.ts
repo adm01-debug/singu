@@ -219,6 +219,10 @@ export default {
           "0%": { width: "0%" },
           "100%": { width: "100%" },
         },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -235,6 +239,7 @@ export default {
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "skeleton": "skeleton 1.5s ease-in-out infinite",
         "progress": "progress 1s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',

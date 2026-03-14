@@ -123,9 +123,10 @@ const Auth = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
         
-        {/* Decorative elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+        {/* Enhanced decorative elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" />
         
         <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
           <motion.div
@@ -134,12 +135,16 @@ const Auth = () => {
             transition={{ duration: 0.6 }}
             className="flex items-center gap-4 mb-8"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl">
-              <Zap className="w-8 h-8" />
-            </div>
+            <motion.div 
+              className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl"
+              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Zap className="w-8 h-8" aria-hidden="true" />
+            </motion.div>
             <div>
-              <h1 className="text-3xl font-bold">SINGU</h1>
-              <p className="text-white/70">Inteligência Relacional</p>
+              <h1 className="text-4xl font-bold tracking-tight">SINGU</h1>
+              <p className="text-white/70 text-sm">Inteligência Relacional</p>
             </div>
           </motion.div>
 
