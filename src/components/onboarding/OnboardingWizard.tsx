@@ -34,7 +34,7 @@ export interface OnboardingData {
 }
 
 const STEPS = [
-  { id: 'welcome', title: 'Bem-vindo', icon: Sparkles, description: 'Conheça o RelateIQ' },
+  { id: 'welcome', title: 'Bem-vindo', icon: Sparkles, description: 'Conheça o SINGU' },
   { id: 'profile', title: 'Seu Perfil', icon: User, description: 'Configure seu perfil' },
   { id: 'import', title: 'Importar', icon: Upload, description: 'Traga seus dados' },
   { id: 'preferences', title: 'Preferências', icon: Settings, description: 'Personalize sua experiência' },
