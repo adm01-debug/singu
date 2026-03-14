@@ -161,7 +161,7 @@ const App = () => (
             <OfflineIndicator />
             <InstallPrompt />
             <NetworkStatusBadge />
-            <BrowserRouter>
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <EasterEggsProvider />
               <KeyboardShortcutsDialogEnhanced />
               <AuthProvider>
