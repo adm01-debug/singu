@@ -16,6 +16,10 @@ import {
   Heart,
   Activity
 } from 'lucide-react';
+import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
+import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
+import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
+import { LazySection } from '@/components/dashboard/LazySection';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Header } from '@/components/layout/Header';
