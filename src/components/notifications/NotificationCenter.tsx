@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, X, Check, AlertTriangle, Lightbulb, Heart, Clock } from 'lucide-react';
+import { Bell, X, AlertTriangle, Lightbulb, Heart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -8,49 +8,78 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { AnimatedBadge } from '@/components/micro-interactions';
+import { GroupedNotifications, type NotificationItem } from '@/components/feedback/NotificationGroup';
+import { useMotionSafe } from '@/hooks/useReducedMotion';
 
-const typeConfig = {
+const groupConfig = {
   alert: {
+    label: 'Alertas',
     icon: AlertTriangle,
-    color: 'text-warning',
-    bg: 'bg-warning/10',
+    iconColor: 'text-warning',
+    iconBg: 'bg-warning/10',
   },
   insight: {
+    label: 'Insights',
     icon: Lightbulb,
-    color: 'text-primary',
-    bg: 'bg-primary/10',
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10',
   },
   health_alert: {
+    label: 'Saúde do Relacionamento',
     icon: Heart,
-    color: 'text-destructive',
-    bg: 'bg-destructive/10',
+    iconColor: 'text-destructive',
+    iconBg: 'bg-destructive/10',
   },
   interaction: {
+    label: 'Interações',
     icon: Clock,
-    color: 'text-success',
-    bg: 'bg-success/10',
+    iconColor: 'text-success',
+    iconBg: 'bg-success/10',
   },
   contact: {
+    label: 'Contatos',
     icon: Bell,
-    color: 'text-muted-foreground',
-    bg: 'bg-muted',
+    iconColor: 'text-muted-foreground',
+    iconBg: 'bg-muted',
   },
 };
 
 export function NotificationCenter() {
   const navigate = useNavigate();
   const { notifications, unreadCount, clearUnread, dismissNotification } = useRealtimeNotifications();
+  const { transition } = useMotionSafe();
 
-  const handleNotificationClick = (notification: typeof notifications[0]) => {
+  // Map realtime notifications to NotificationItem format
+  const groupedItems: NotificationItem[] = notifications.map(n => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    description: n.description,
+    createdAt: n.createdAt,
+    read: false,
+    entityId: n.entityId,
+    entityType: n.entityType,
+  }));
+
+  const handleNotificationClick = (notification: NotificationItem) => {
     if (notification.entityId && notification.entityType === 'contact') {
       navigate(`/contatos/${notification.entityId}`);
     }
-    dismissNotification(notification);
+    const original = notifications.find(n => n.id === notification.id);
+    if (original) dismissNotification(original);
+  };
+
+  const handleDismiss = (id: string) => {
+    const original = notifications.find(n => n.id === id);
+    if (original) dismissNotification(original);
+  };
+
+  const handleDismissAllByType = (type: string) => {
+    notifications
+      .filter(n => n.type === type)
+      .forEach(n => dismissNotification(n));
   };
 
   return (
@@ -60,6 +89,7 @@ export function NotificationCenter() {
           variant="ghost" 
           size="icon" 
           className="relative"
+          aria-label={unreadCount > 0 ? `Notificações: ${unreadCount} não lidas` : 'Notificações'}
         >
           <Bell className="h-5 w-5" />
           <AnimatedBadge 
@@ -69,7 +99,12 @@ export function NotificationCenter() {
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent 
+        className="w-96 p-0" 
+        align="end"
+        role="region"
+        aria-label="Centro de notificações"
+      >
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-foreground">Notificações</h3>
@@ -86,73 +121,16 @@ export function NotificationCenter() {
           </div>
         </div>
         
-        <ScrollArea className="max-h-[400px]">
-          <AnimatePresence mode="popLayout">
-            {notifications.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="p-8 text-center text-muted-foreground"
-              >
-                <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Nenhuma notificação</p>
-              </motion.div>
-            ) : (
-              <div className="divide-y divide-border">
-                {notifications.slice(0, 10).map((notification) => {
-                  const config = typeConfig[notification.type] || typeConfig.contact;
-                  const Icon = config.icon;
-                  
-                  return (
-                    <motion.div
-                      key={notification.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      className="p-3 hover:bg-muted/50 cursor-pointer group"
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <div className="flex gap-3">
-                        <div className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-                          config.bg
-                        )}>
-                          <Icon className={cn('h-4 w-4', config.color)} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {notification.title}
-                          </p>
-                          {notification.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                              {notification.description}
-                            </p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {formatDistanceToNow(new Date(notification.createdAt), {
-                              addSuffix: true,
-                              locale: ptBR,
-                            })}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100 h-6 w-6 flex-shrink-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            dismissNotification(notification);
-                          }}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </AnimatePresence>
+        <ScrollArea className="max-h-[450px]">
+          <div className="p-3">
+            <GroupedNotifications
+              notifications={groupedItems}
+              onDismiss={handleDismiss}
+              onDismissAll={handleDismissAllByType}
+              onClick={handleNotificationClick}
+              groupConfig={groupConfig}
+            />
+          </div>
         </ScrollArea>
       </PopoverContent>
     </Popover>
