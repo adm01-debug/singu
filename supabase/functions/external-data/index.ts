@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// The external DB already uses the same column names as the RelateIQ schema,
+// The external DB already uses the same column names as the SINGU schema,
 // so no mapping is needed. Data passes through as-is.
 
 serve(async (req) => {

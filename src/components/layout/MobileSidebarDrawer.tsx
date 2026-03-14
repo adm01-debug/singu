@@ -101,7 +101,7 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
                 <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-lg text-sidebar-foreground">RelateIQ</span>
+                <span className="font-bold text-lg text-sidebar-foreground">SINGU</span>
               </div>
               <button
                 onClick={onClose}

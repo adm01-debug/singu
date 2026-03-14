@@ -276,7 +276,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
               <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-foreground">RelateIQ</span>
+              <span className="font-semibold text-foreground">SINGU</span>
             </div>
             <span className="text-sm text-muted-foreground">
               Passo {currentStep + 1} de {STEPS.length}

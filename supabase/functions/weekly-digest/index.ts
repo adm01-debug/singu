@@ -291,7 +291,7 @@ function generateEmailHtml(digest: WeeklyDigestData): string {
       <div class="container">
         <div class="header">
           <h1>Olá, ${digest.firstName}! 👋</h1>
-          <p>Aqui está seu resumo semanal do RelateIQ</p>
+          <p>Aqui está seu resumo semanal do SINGU</p>
         </div>
         <div class="content">
           <h2>📊 Esta Semana</h2>

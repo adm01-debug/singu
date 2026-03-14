@@ -24,7 +24,7 @@ interface TourStep {
 const DEFAULT_TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
-    title: 'Bem-vindo ao RelateIQ! 🎉',
+    title: 'Bem-vindo ao SINGU! 🎉',
     description: 'Vamos fazer um tour rápido para você conhecer as principais funcionalidades da plataforma.',
     position: 'center',
     icon: Sparkles,

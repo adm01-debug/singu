@@ -20,7 +20,7 @@ const CompletionStep = ({ data, onComplete, onBack, isLoading }: CompletionStepP
     celebrate({
       type: 'goal-achieved',
       title: 'Configuração Completa! 🎯',
-      subtitle: `Bem-vindo ao RelateIQ, ${data.profile.firstName}!`,
+      subtitle: `Bem-vindo ao SINGU, ${data.profile.firstName}!`,
       duration: 4000,
     });
   }, []);
