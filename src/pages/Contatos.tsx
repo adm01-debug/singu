@@ -103,11 +103,14 @@ const sortOptions: SortOption[] = [
 
 const Contatos = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
   const { companies } = useCompanies();
   const { interactions } = useInteractions();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  
+  // Initialize state from URL params
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
@@ -124,10 +127,29 @@ const Contatos = () => {
   // Mini celebration hook
   const celebration = useMiniCelebration();
   
-  // Advanced filters state
-  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
-  const [sortBy, setSortBy] = useState('updated_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Advanced filters state - restore from URL
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(() => {
+    try {
+      const f = searchParams.get('filters');
+      return f ? JSON.parse(decodeURIComponent(f)) : {};
+    } catch { return {}; }
+  });
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'updated_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => (searchParams.get('order') as 'asc' | 'desc') || 'desc');
+
+  // Sync state to URL params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('q', searchTerm);
+    if (viewMode !== 'grid') params.set('view', viewMode);
+    if (Object.keys(activeFilters).length > 0) {
+      params.set('filters', encodeURIComponent(JSON.stringify(activeFilters)));
+    }
+    if (sortBy !== 'updated_at') params.set('sort', sortBy);
+    if (sortOrder !== 'desc') params.set('order', sortOrder);
+    
+    setSearchParams(params, { replace: true });
+  }, [searchTerm, viewMode, activeFilters, sortBy, sortOrder, setSearchParams]);
 
   // Fuzzy search for better matching
   const { results: fuzzyResults, setQuery: setFuzzyQuery } = useFuzzySearch(contacts, {
