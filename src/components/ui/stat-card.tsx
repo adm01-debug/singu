@@ -181,14 +181,14 @@ export function StatCard({
         <motion.div 
           className={cn(
             'p-3 rounded-xl',
-            variant === 'gradient' ? 'bg-white/20' : iconColor
+            variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
           )}
           whileHover={{ rotate: [0, -10, 10, 0] }}
           transition={{ duration: 0.5 }}
         >
           <Icon className={cn(
             'w-6 h-6',
-            variant === 'gradient' && 'text-white'
+            variant === 'gradient' && 'text-primary-foreground'
           )} aria-hidden="true" />
         </motion.div>
       </div>
