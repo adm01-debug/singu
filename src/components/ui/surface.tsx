@@ -23,13 +23,21 @@ const roundedMap = {
   '2xl': 'rounded-2xl',
 } as const;
 
+const levelMap = {
+  0: 'bg-surface-0',
+  1: 'bg-surface-1',
+  2: 'bg-surface-2',
+  3: 'bg-surface-3',
+  4: 'bg-surface-4',
+} as const;
+
 export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
   ({ level = 1, rounded = 'lg', bordered = false, hoverable = false, as: Component = 'div', className, children, ...props }, ref) => {
     return (
       <Component
         ref={ref}
         className={cn(
-          `bg-surface-${level}`,
+          levelMap[level],
           roundedMap[rounded],
           bordered && 'border border-border',
           hoverable && 'card-hover cursor-pointer',

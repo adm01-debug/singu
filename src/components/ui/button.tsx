@@ -15,11 +15,11 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Gradient variants using design tokens
-        gradient: "bg-gradient-primary text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
-        "gradient-success": "bg-gradient-success text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-success",
-        "gradient-warning": "bg-warning text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-warning",
-        premium: "bg-gradient-primary text-white hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5",
+        // Gradient variants using semantic design tokens
+        gradient: "bg-gradient-primary text-primary-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
+        "gradient-success": "bg-gradient-success text-success-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-success",
+        "gradient-warning": "bg-gradient-warning text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-warning",
+        premium: "bg-gradient-premium text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5",
         success: "bg-success text-success-foreground hover:bg-success/90 hover:shadow-md focus-success",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90 hover:shadow-md focus-warning",
         info: "bg-info text-info-foreground hover:bg-info/90 hover:shadow-md",
