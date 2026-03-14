@@ -262,30 +262,35 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     const searchTerm = `%${searchQuery.toLowerCase()}%`;
 
     try {
-      // Search contacts
-      const { data: contacts } = await supabase
-        .from('contacts')
-        .select('id, first_name, last_name, email, phone, role_title, company_id')
-        .eq('user_id', user.id)
-        .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},role_title.ilike.${searchTerm}`)
-        .limit(5);
+      const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
+        supabase
+          .from('contacts')
+          .select('id, first_name, last_name, email, phone, role_title, company_id')
+          .eq('user_id', user.id)
+          .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},role_title.ilike.${searchTerm}`)
+          .limit(5),
+        supabase
+          .from('companies')
+          .select('id, name, industry, city, state')
+          .eq('user_id', user.id)
+          .or(`name.ilike.${searchTerm},industry.ilike.${searchTerm},city.ilike.${searchTerm}`)
+          .limit(5),
+        supabase
+          .from('interactions')
+          .select('id, title, type, created_at, contact_id')
+          .eq('user_id', user.id)
+          .or(`title.ilike.${searchTerm},content.ilike.${searchTerm}`)
+          .order('created_at', { ascending: false })
+          .limit(5),
+      ]);
 
-      // Search companies
-      const { data: companies } = await supabase
-        .from('companies')
-        .select('id, name, industry, city, state')
-        .eq('user_id', user.id)
-        .or(`name.ilike.${searchTerm},industry.ilike.${searchTerm},city.ilike.${searchTerm}`)
-        .limit(5);
+      if (contactsResponse.error || companiesResponse.error || interactionsResponse.error) {
+        throw contactsResponse.error || companiesResponse.error || interactionsResponse.error;
+      }
 
-      // Search interactions
-      const { data: interactions } = await supabase
-        .from('interactions')
-        .select('id, title, type, created_at, contact_id')
-        .eq('user_id', user.id)
-        .or(`title.ilike.${searchTerm},content.ilike.${searchTerm}`)
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const contacts = contactsResponse.data;
+      const companies = companiesResponse.data;
+      const interactions = interactionsResponse.data;
 
       setResults({
         contacts: contacts?.map(c => ({
@@ -312,6 +317,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       });
     } catch (error) {
       console.error('Search error:', error);
+      toast.error('Não foi possível completar a busca agora.');
+      setResults({ contacts: [], companies: [], interactions: [] });
     } finally {
       setIsLoading(false);
     }

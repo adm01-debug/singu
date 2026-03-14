@@ -292,14 +292,12 @@ export const CelebrationProvider = ({ children }: CelebrationProviderProps) => {
   return (
     <CelebrationContext.Provider value={{ celebrate }}>
       {children}
-      <AnimatePresence>
-        {activeCelebration && (
-          <CelebrationOverlay
-            config={activeCelebration}
-            onComplete={handleComplete}
-          />
-        )}
-      </AnimatePresence>
+      {activeCelebration && (
+        <CelebrationOverlay
+          config={activeCelebration}
+          onComplete={handleComplete}
+        />
+      )}
     </CelebrationContext.Provider>
   );
 };
