@@ -13,7 +13,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, SkeletonProps>(function Skelet
   variant = "shimmer",
   rounded = "md",
   ...props 
-}: SkeletonProps) {
+}, ref) {
   const roundedClasses = {
     none: "rounded-none",
     sm: "rounded-sm",
