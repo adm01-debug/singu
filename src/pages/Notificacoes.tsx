@@ -82,7 +82,7 @@ const Notificacoes = () => {
       setIsInstalled(true);
       toast({
         title: 'App instalado!',
-        description: 'O RelateIQ foi adicionado à sua tela inicial.',
+        description: 'O SINGU foi adicionado à sua tela inicial.',
       });
     }
     setDeferredPrompt(null);
