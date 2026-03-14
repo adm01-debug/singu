@@ -93,8 +93,9 @@ const Auth = () => {
         if (error) {
           toast.error(error.message);
         } else {
+          const redirectTo = (location.state as { from?: string } | null)?.from || '/onboarding';
           toast.success('Bem-vindo de volta!');
-          navigate('/onboarding');
+          navigate(redirectTo, { replace: true });
         }
       } else {
         const { error, needsEmailVerification } = await signUp(email, password, {
@@ -109,9 +110,12 @@ const Auth = () => {
           setPassword('');
         } else {
           toast.success('Conta criada com sucesso! Vamos configurar sua conta!');
-          navigate('/onboarding');
+          navigate('/onboarding', { replace: true });
         }
       }
+    } catch (error) {
+      console.error('Auth submit error:', error);
+      toast.error('Não foi possível concluir a autenticação. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
