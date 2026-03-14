@@ -299,22 +299,22 @@ const Dashboard = () => {
           <TabsContent value="overview" className="space-y-6 mt-0">
             {/* Portfolio Health */}
             <DashboardErrorBoundary sectionName="Saúde do Portfólio">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="card" fallbackHeight="h-48">
                 <PortfolioHealthDashboard 
                   contacts={mappedContacts}
                   interactions={mappedInteractions}
                 />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Important Dates */}
             <DashboardErrorBoundary sectionName="Datas Importantes">
-              <Suspense fallback={<LazyFallback />}>
+              <LazySection fallbackVariant="list" fallbackHeight="h-48">
                 <ImportantDatesCalendar 
                   contacts={mappedContacts}
                   interactions={mappedInteractions}
                 />
-              </Suspense>
+              </LazySection>
             </DashboardErrorBoundary>
 
             {/* Recent Activity + Top Contacts */}
