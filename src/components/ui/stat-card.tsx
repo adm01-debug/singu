@@ -1,5 +1,5 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -9,7 +9,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // ============================================
 
 const statCardVariants = cva(
-  'relative overflow-hidden rounded-xl border transition-all duration-300',
+  'relative overflow-hidden rounded-xl border transition-all duration-300 container-query',
   {
     variants: {
       variant: {
@@ -50,6 +50,27 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   onClick?: () => void;
 }
 
+// Animated number component using framer-motion spring
+function AnimatedNumber({ value, className }: { value: number; className?: string }) {
+  const motionValue = useMotionValue(0);
+  const spring = useSpring(motionValue, { stiffness: 100, damping: 30, mass: 1 });
+  const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
+  const ref = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    motionValue.set(value);
+  }, [value, motionValue]);
+
+  useEffect(() => {
+    const unsubscribe = display.on('change', (v) => {
+      if (ref.current) ref.current.textContent = v;
+    });
+    return unsubscribe;
+  }, [display]);
+
+  return <span ref={ref} className={className}>0</span>;
+}
+
 export function StatCard({
   title,
   value,
@@ -68,30 +89,8 @@ export function StatCard({
   sparkline,
   onClick,
 }: StatCardProps) {
-  const [displayValue, setDisplayValue] = useState(animate ? 0 : Number(value) || 0);
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
-
-  // Animate number counting up
-  useEffect(() => {
-    if (!animate || isNaN(numericValue)) return;
-    
-    const duration = 1000;
-    const steps = 20;
-    const increment = numericValue / steps;
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= numericValue) {
-        setDisplayValue(numericValue);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, [numericValue, animate]);
+  const isNumeric = typeof value === 'number' && !isNaN(numericValue);
 
   const getChangeIcon = () => {
     if (changeType === 'positive') return TrendingUp;
@@ -105,13 +104,12 @@ export function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: delay * 0.1 }}
+      transition={{ duration: 0.3, delay: delay * 0.05 }}
       whileHover={variant === 'interactive' ? { scale: 1.02 } : undefined}
       whileTap={variant === 'interactive' ? { scale: 0.98 } : undefined}
       onClick={onClick}
       className={cn(
         statCardVariants({ variant, size }),
-        variant === 'gradient' && `from-${gradientFrom} to-${gradientTo}`,
         className
       )}
       style={variant === 'gradient' ? {
@@ -149,7 +147,11 @@ export function StatCard({
             'text-3xl font-bold tabular-nums',
             variant === 'gradient' ? 'text-white' : 'text-foreground'
           )}>
-            {typeof value === 'number' ? displayValue.toLocaleString() : value}
+            {isNumeric && animate ? (
+              <AnimatedNumber value={numericValue} />
+            ) : (
+              value
+            )}
           </p>
           
           {/* Change indicator */}
@@ -158,7 +160,7 @@ export function StatCard({
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: delay * 0.1 + 0.3, type: 'spring' }}
+                transition={{ delay: delay * 0.05 + 0.2, type: 'spring' }}
                 className={cn(
                   'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
                   changeType === 'positive' && 'bg-success/10 text-success',
@@ -166,7 +168,7 @@ export function StatCard({
                   changeType === 'neutral' && 'bg-muted text-muted-foreground'
                 )}
               >
-                <ChangeIcon className="w-3 h-3" />
+                <ChangeIcon className="w-3 h-3" aria-hidden="true" />
                 {change}
               </motion.div>
             </div>
@@ -185,14 +187,14 @@ export function StatCard({
           <Icon className={cn(
             'w-6 h-6',
             variant === 'gradient' && 'text-white'
-          )} />
+          )} aria-hidden="true" />
         </motion.div>
       </div>
 
       {/* Decorative gradient overlay */}
       {variant !== 'gradient' && (
         <div className="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none">
-          <Icon className="w-full h-full" />
+          <Icon className="w-full h-full" aria-hidden="true" />
         </div>
       )}
     </motion.div>
@@ -213,7 +215,7 @@ export function MiniStat({ label, value, icon: Icon, trend, className }: MiniSta
     <div className={cn('flex items-center gap-2', className)}>
       {Icon && (
         <div className="p-1.5 bg-muted rounded-md">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+          <Icon className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         </div>
       )}
       <div className="flex items-baseline gap-1.5">
@@ -268,7 +270,7 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       className={cn(
         'relative overflow-hidden rounded-2xl p-8 text-center',
         gradient 
-          ? 'bg-gradient-to-br from-primary to-primary/80 text-white' 
+          ? 'bg-gradient-primary text-white' 
           : 'bg-card border',
         className
       )}
@@ -278,7 +280,7 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
           'inline-flex p-4 rounded-2xl mb-4',
           gradient ? 'bg-white/20' : 'bg-primary/10'
         )}>
-          <Icon className={cn('w-8 h-8', gradient ? 'text-white' : 'text-primary')} />
+          <Icon className={cn('w-8 h-8', gradient ? 'text-white' : 'text-primary')} aria-hidden="true" />
         </div>
       )}
       <p className={cn(

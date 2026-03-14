@@ -296,6 +296,12 @@
     --surface-3: 222 47% 12%;
     --surface-4: 222 47% 14%;
     
+    /* Role Colors - Dark Mode */
+    --role-owner: 280 67% 65%;
+    --role-manager: 221 83% 70%;
+    --role-buyer: 142 76% 50%;
+    --role-contact: 215 20% 65%;
+    
     /* Row States - Dark Mode */
     --row-hover: 221 83% 60% / 0.06;
     --row-selected: 221 83% 60% / 0.10;
