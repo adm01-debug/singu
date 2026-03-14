@@ -442,6 +442,7 @@ const Contatos = () => {
                 <VirtualList
                   rowCount={filteredAndSortedContacts.length}
                   rowHeight={88}
+                  rowProps={{}}
                   style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
                   rowComponent={({ index, style }: { index: number; style: React.CSSProperties }) => {
                     const contact = filteredAndSortedContacts[index];
