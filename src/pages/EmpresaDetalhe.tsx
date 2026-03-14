@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
