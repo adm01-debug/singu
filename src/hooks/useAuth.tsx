@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, forwardRef, useCallback, useRef } from 'react';
 import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface AuthContextType {

@@ -94,7 +94,7 @@ export function useNLPAutoAnalysis() {
       const emotionalResult = detectEmotionalState(text);
       
       // Save emotional state to history
-      await supabase.from('emotional_states_history').insert({
+      const { error: emotionalInsertError } = await supabase.from('emotional_states_history').insert({
         user_id: user.id,
         contact_id: contactId,
         interaction_id: interactionId,
@@ -103,6 +103,8 @@ export function useNLPAutoAnalysis() {
         trigger: emotionalResult.matchedWords[0] || null,
         context: text.substring(0, 200)
       });
+
+      if (emotionalInsertError) throw emotionalInsertError;
 
       // 4. Calculate overall confidence
       const overallConfidence = Math.round(
