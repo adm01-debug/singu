@@ -260,8 +260,8 @@ export function useRFMAnalysis(contactId?: string) {
           predicted_next_purchase_date: predictedNextPurchaseDate?.toISOString().split('T')[0],
           predicted_lifetime_value: predictedLifetimeValue,
           churn_probability: churnProbability,
-          recommended_actions: recommendedActions as unknown as Record<string, unknown>[],
-          recommended_offers: recommendedOffers as unknown as Record<string, unknown>[],
+          recommended_actions: JSON.parse(JSON.stringify(recommendedActions)),
+          recommended_offers: JSON.parse(JSON.stringify(recommendedOffers)),
           communication_priority: communicationPriority,
           analyzed_at: new Date().toISOString()
         });
