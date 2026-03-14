@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
-import { FixedSizeList as VirtualList } from 'react-window';
+import { List as VirtualList } from 'react-window';
 import { 
   Search,
   Grid3X3,
