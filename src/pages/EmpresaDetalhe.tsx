@@ -251,11 +251,17 @@ const EmpresaDetalhe = () => {
               processing={luxRecord?.status === 'processing'}
               variant="header"
             />
-            <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
+            <Button
+              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              onClick={() => setIsAddContactOpen(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Novo Contato
             </Button>
-            <Button className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0">
+            <Button
+              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              onClick={() => setIsEditOpen(true)}
+            >
               <Edit className="w-4 h-4 mr-2" />
               Editar
             </Button>
