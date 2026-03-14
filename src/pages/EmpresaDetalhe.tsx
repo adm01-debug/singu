@@ -84,14 +84,10 @@ const EmpresaDetalhe = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
 
-  useEffect(() => {
-    if (id && user) {
-      fetchCompanyData();
-    }
-  }, [id, user]);
-
-  const fetchCompanyData = async () => {
+  const fetchCompanyData = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch company from external DB
