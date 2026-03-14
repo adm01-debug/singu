@@ -96,12 +96,16 @@ const Auth = () => {
           navigate('/onboarding');
         }
       } else {
-        const { error } = await signUp(email, password, {
+        const { error, needsEmailVerification } = await signUp(email, password, {
           first_name: firstName,
           last_name: lastName
         });
         if (error) {
           toast.error(error.message);
+        } else if (needsEmailVerification) {
+          toast.success('Conta criada! Verifique seu email para ativar o acesso.');
+          setMode('login');
+          setPassword('');
         } else {
           toast.success('Conta criada com sucesso! Vamos configurar sua conta!');
           navigate('/onboarding');
