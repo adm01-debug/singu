@@ -97,6 +97,12 @@ export function StatCard({
   };
 
   const ChangeIcon = getChangeIcon();
+  const gradientBackgroundMap = {
+    primary: 'var(--gradient-primary)',
+    success: 'var(--gradient-success)',
+    warning: 'var(--gradient-warning)',
+    premium: 'var(--gradient-premium)',
+  } as const;
 
   return (
     <motion.div
@@ -110,9 +116,7 @@ export function StatCard({
         statCardVariants({ variant, size }),
         className
       )}
-      style={variant === 'gradient' ? {
-        background: `linear-gradient(135deg, ${gradientFrom || 'hsl(var(--primary))'}, ${gradientTo || 'hsl(var(--primary) / 0.8)'})`
-      } : undefined}
+      style={variant === 'gradient' ? { backgroundImage: gradientBackgroundMap[gradientTone] } : undefined}
     >
       {/* Sparkline Background */}
       {sparkline && sparkline.length > 0 && (
