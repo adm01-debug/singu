@@ -382,9 +382,9 @@ const Dashboard = () => {
               {/* Top Contacts */}
               <DashboardErrorBoundary sectionName="Melhores Relacionamentos">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.05 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
                   className="lg:col-span-2"
                 >
                   <Card className="h-full">
