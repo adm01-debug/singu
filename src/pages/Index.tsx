@@ -455,22 +455,22 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <DashboardErrorBoundary sectionName="Alertas e Lembretes">
                 <div className="space-y-6">
-                  <Suspense fallback={<LazyFallback />}>
+                  <LazySection fallbackVariant="list">
                     <SmartRemindersPanel compact />
-                  </Suspense>
-                  <Suspense fallback={<LazyFallback />}>
+                  </LazySection>
+                  <LazySection fallbackVariant="card">
                     <HealthAlertsPanel />
-                  </Suspense>
+                  </LazySection>
                 </div>
               </DashboardErrorBoundary>
               <DashboardErrorBoundary sectionName="Compatibilidade">
                 <div className="space-y-6">
-                  <Suspense fallback={<LazyFallback />}>
+                  <LazySection fallbackVariant="list">
                     <DISCCompatibilityAlerts compact maxItems={3} />
-                  </Suspense>
-                  <Suspense fallback={<LazyFallback />}>
+                  </LazySection>
+                  <LazySection fallbackVariant="list">
                     <CompatibilityAlertsList maxItems={3} />
-                  </Suspense>
+                  </LazySection>
                 </div>
               </DashboardErrorBoundary>
             </div>
