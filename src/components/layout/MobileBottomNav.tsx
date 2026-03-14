@@ -181,7 +181,10 @@ export function MobileBottomNav() {
             {/* More Button */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowMore(!showMore)}
+              onClick={() => {
+                haptic.selection();
+                setShowMore(!showMore);
+              }}
               className={cn(
                 "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
                 showMore ? "text-primary" : "text-muted-foreground"
