@@ -230,7 +230,7 @@ const Notificacoes = () => {
                   <div>
                     <h3 className="font-semibold text-foreground">App Instalado</h3>
                     <p className="text-sm text-muted-foreground">
-                      O RelateIQ está instalado no seu dispositivo
+                      O SINGU está instalado no seu dispositivo
                     </p>
                   </div>
                 </div>
