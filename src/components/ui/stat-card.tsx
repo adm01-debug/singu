@@ -41,8 +41,7 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   changeValue?: number;
   icon: LucideIcon;
   iconColor?: string;
-  gradientFrom?: string;
-  gradientTo?: string;
+  gradientTone?: 'primary' | 'success' | 'warning' | 'premium';
   className?: string;
   delay?: number;
   animate?: boolean;
