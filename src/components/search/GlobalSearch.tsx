@@ -194,7 +194,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     const urlQuery = params.get('q') ?? '';
     if (urlQuery !== query) setQuery(urlQuery);
     setRecentItems(getRecentItems());
-  }, [open, location.search]);
+  }, [open, location.search, query]);
 
   // Persist query in URL for share/back-forward behavior
   useEffect(() => {
