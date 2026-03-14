@@ -16,6 +16,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 const mainNavItems = [
   { icon: Home, label: 'Início', path: '/' },
@@ -37,6 +38,7 @@ export function MobileBottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
+  const haptic = useHapticFeedback();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -44,6 +46,7 @@ export function MobileBottomNav() {
   };
 
   const handleNavigate = (path: string) => {
+    haptic.selection();
     navigate(path);
     setShowMore(false);
   };
@@ -59,7 +62,10 @@ export function MobileBottomNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-              onClick={() => setShowMore(false)}
+              onClick={() => {
+                haptic.light();
+                setShowMore(false);
+              }}
             />
             <motion.div
               initial={{ y: '100%', opacity: 0 }}
@@ -71,14 +77,20 @@ export function MobileBottomNav() {
               dragConstraints={{ top: 0 }}
               dragElastic={0.2}
               onDragEnd={(_, info) => {
-                if (info.offset.y > 100) setShowMore(false);
+                if (info.offset.y > 100) {
+                  haptic.light();
+                  setShowMore(false);
+                }
               }}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">Mais opções</h3>
                 <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
                 <button 
-                  onClick={() => setShowMore(false)}
+                  onClick={() => {
+                    haptic.light();
+                    setShowMore(false);
+                  }}
                   className="p-1.5 rounded-full hover:bg-muted transition-colors"
                   aria-label="Fechar menu"
                 >
@@ -169,7 +181,10 @@ export function MobileBottomNav() {
             {/* More Button */}
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowMore(!showMore)}
+              onClick={() => {
+                haptic.selection();
+                setShowMore(!showMore);
+              }}
               className={cn(
                 "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
                 showMore ? "text-primary" : "text-muted-foreground"

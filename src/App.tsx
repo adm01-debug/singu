@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, RequireAuth } from "@/hooks/useAuth";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
 import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardShortcutsDialogEnhanced";
@@ -30,7 +30,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
-import WhatsApp from "./pages/WhatsApp";
+
 import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient({
@@ -136,7 +136,7 @@ const AnimatedRoutes = () => {
         } />
         <Route path="/whatsapp" element={
           <RequireAuth>
-            <PageTransition><WhatsApp /></PageTransition>
+            <Navigate to="/interacoes?canal=whatsapp" replace />
           </RequireAuth>
         } />
         <Route path="/design-system" element={

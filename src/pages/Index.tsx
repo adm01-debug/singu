@@ -1,9 +1,9 @@
 import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Building2, 
-  Users, 
-  MessageSquare, 
+import {
+  Building2,
+  Users,
+  MessageSquare,
   TrendingUp,
   ArrowRight,
   Clock,
@@ -14,7 +14,6 @@ import {
   LayoutGrid,
   Brain,
   Heart,
-  Activity
 } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
@@ -41,6 +40,8 @@ import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBou
 import { YourDaySection } from '@/components/dashboard/YourDaySection';
 import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   ActivityChart,
@@ -98,8 +99,11 @@ const Dashboard = () => {
   
   // Check for compatibility alerts
   useCompatibilityAlerts();
+  const prefersReducedMotion = useReducedMotion();
 
   const { loading, topContacts, recentActivities } = dashboardStats;
+  const recentActivityAnimations = useStaggerAnimation(recentActivities.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
+  const topContactAnimations = useStaggerAnimation(topContacts.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
 
   // Build stats from real data
   const stats = [
@@ -270,7 +274,7 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
-            <StatCard key={stat.title} {...stat} delay={index} />
+            <StatCard key={stat.title} {...stat} delay={prefersReducedMotion ? 0 : index} />
           ))}
         </div>
 
@@ -322,9 +326,9 @@ const Dashboard = () => {
               {/* Recent Activity */}
               <DashboardErrorBoundary sectionName="Atividade Recente">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
                 >
                   <Card className="h-full">
                     <CardHeader>
@@ -334,7 +338,7 @@ const Dashboard = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      <div className="space-y-3 stagger-children">
                         {recentActivities.length === 0 ? (
                           <EmptyState
                             illustration="interactions"
@@ -342,26 +346,31 @@ const Dashboard = () => {
                             description="Suas atividades recentes aparecerão aqui."
                           />
                         ) : (
-                          recentActivities.map((activity, index) => (
-                            <motion.div
-                              key={activity.id}
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.2, delay: index * 0.03 }}
-                              className="flex items-center gap-4 p-3 rounded-lg hover:bg-surface-2 transition-colors"
-                            >
-                              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm truncate">
-                                  <span className="font-medium text-foreground">{activity.entityName}</span>
-                                  <span className="text-muted-foreground"> — {activity.description}</span>
-                                </p>
-                              </div>
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
-                              </span>
-                            </motion.div>
-                          ))
+                          recentActivities.map((activity, index) => {
+                            const animation = recentActivityAnimations[index];
+
+                            return (
+                              <motion.div
+                                key={activity.id}
+                                initial={animation?.initial}
+                                animate={animation?.animate}
+                                transition={animation?.transition}
+                                style={animation?.style}
+                                className="flex items-center gap-4 p-3 rounded-lg hover:bg-surface-2 transition-colors"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm truncate">
+                                    <span className="font-medium text-foreground">{activity.entityName}</span>
+                                    <span className="text-muted-foreground"> — {activity.description}</span>
+                                  </p>
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
+                                </span>
+                              </motion.div>
+                            );
+                          })
                         )}
                       </div>
                     </CardContent>
@@ -372,9 +381,9 @@ const Dashboard = () => {
               {/* Top Contacts */}
               <DashboardErrorBoundary sectionName="Melhores Relacionamentos">
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.05 }}
+                  transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
                   className="lg:col-span-2"
                 >
                   <Card className="h-full">
@@ -389,7 +398,7 @@ const Dashboard = () => {
                         </Button>
                       </Link>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent className="space-y-3 stagger-children">
                       {topContacts.length === 0 ? (
                         <EmptyState
                           illustration="contacts"
@@ -400,50 +409,61 @@ const Dashboard = () => {
                           ]}
                         />
                       ) : (
-                        topContacts.map((contact, index) => (
-                          <Surface
-                            key={contact.id}
-                            level={1}
-                            hoverable
-                            rounded="lg"
-                            className="flex items-center justify-between p-4 group"
-                          >
-                            <div className="flex items-center gap-4">
-                              <OptimizedAvatar 
-                                src={contact.avatar || undefined}
-                                alt={`${contact.firstName} ${contact.lastName}`}
-                                fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
-                                size="md"
-                                className="w-12 h-12 border-2 border-primary/20"
-                              />
-                              <div>
-                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                                  {contact.firstName} {contact.lastName}
-                                </p>
-                                <Typography variant="small" as="p">
-                                  {contact.companyName}
-                                </Typography>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <RoleBadge role={contact.role as ContactRole} />
-                                  <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                        topContacts.map((contact, index) => {
+                          const animation = topContactAnimations[index];
+
+                          return (
+                            <motion.div
+                              key={contact.id}
+                              initial={animation?.initial}
+                              animate={animation?.animate}
+                              transition={animation?.transition}
+                              style={animation?.style}
+                            >
+                              <Surface
+                                level={1}
+                                hoverable
+                                rounded="lg"
+                                className="flex items-center justify-between p-4 group"
+                              >
+                                <div className="flex items-center gap-4">
+                                  <OptimizedAvatar
+                                    src={contact.avatar || undefined}
+                                    alt={`${contact.firstName} ${contact.lastName}`}
+                                    fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                                    size="md"
+                                    className="w-12 h-12 border-2 border-primary/20"
+                                  />
+                                  <div>
+                                    <p className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                                      {contact.firstName} {contact.lastName}
+                                    </p>
+                                    <Typography variant="small" as="p">
+                                      {contact.companyName}
+                                    </Typography>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <RoleBadge role={contact.role as ContactRole} />
+                                      <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right hidden sm:block">
-                                <Typography variant="small" as="p">
-                                  {contact.interactionCount} interações
-                                </Typography>
-                                {contact.lastInteraction && (
-                                  <p className="text-xs text-muted-foreground">
-                                    Último: {formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })}
-                                  </p>
-                                )}
-                              </div>
-                              <RelationshipScore score={contact.relationshipScore} size="sm" />
-                            </div>
-                          </Surface>
-                        ))
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right hidden sm:block">
+                                    <Typography variant="small" as="p">
+                                      {contact.interactionCount} interações
+                                    </Typography>
+                                    {contact.lastInteraction && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Último: {formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <RelationshipScore score={contact.relationshipScore} size="sm" />
+                                </div>
+                              </Surface>
+                            </motion.div>
+                          );
+                        })
                       )}
                     </CardContent>
                   </Card>

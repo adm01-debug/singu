@@ -41,8 +41,7 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   changeValue?: number;
   icon: LucideIcon;
   iconColor?: string;
-  gradientFrom?: string;
-  gradientTo?: string;
+  gradientTone?: 'primary' | 'success' | 'warning' | 'premium';
   className?: string;
   delay?: number;
   animate?: boolean;
@@ -79,8 +78,7 @@ export function StatCard({
   changeValue,
   icon: Icon,
   iconColor = 'bg-primary/10 text-primary',
-  gradientFrom,
-  gradientTo,
+  gradientTone = 'primary',
   className,
   delay = 0,
   variant,
@@ -99,6 +97,12 @@ export function StatCard({
   };
 
   const ChangeIcon = getChangeIcon();
+  const gradientBackgroundMap = {
+    primary: 'var(--gradient-primary)',
+    success: 'var(--gradient-success)',
+    warning: 'var(--gradient-warning)',
+    premium: 'var(--gradient-premium)',
+  } as const;
 
   return (
     <motion.div
@@ -112,9 +116,7 @@ export function StatCard({
         statCardVariants({ variant, size }),
         className
       )}
-      style={variant === 'gradient' ? {
-        background: `linear-gradient(135deg, ${gradientFrom || 'hsl(var(--primary))'}, ${gradientTo || 'hsl(var(--primary) / 0.8)'})`
-      } : undefined}
+      style={variant === 'gradient' ? { backgroundImage: gradientBackgroundMap[gradientTone] } : undefined}
     >
       {/* Sparkline Background */}
       {sparkline && sparkline.length > 0 && (
@@ -139,13 +141,13 @@ export function StatCard({
         <div className="space-y-3">
           <p className={cn(
             'text-sm font-medium',
-            variant === 'gradient' ? 'text-white/80' : 'text-muted-foreground'
+            variant === 'gradient' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
             'text-3xl font-bold tabular-nums',
-            variant === 'gradient' ? 'text-white' : 'text-foreground'
+            variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {isNumeric && animate ? (
               <AnimatedNumber value={numericValue} />
@@ -179,14 +181,14 @@ export function StatCard({
         <motion.div 
           className={cn(
             'p-3 rounded-xl',
-            variant === 'gradient' ? 'bg-white/20' : iconColor
+            variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
           )}
           whileHover={{ rotate: [0, -10, 10, 0] }}
           transition={{ duration: 0.5 }}
         >
           <Icon className={cn(
             'w-6 h-6',
-            variant === 'gradient' && 'text-white'
+            variant === 'gradient' && 'text-primary-foreground'
           )} aria-hidden="true" />
         </motion.div>
       </div>

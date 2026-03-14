@@ -188,13 +188,37 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   // Sync search query with URL params (#10)
   useEffect(() => {
-    if (open) {
-      const params = new URLSearchParams(location.search);
-      const urlQuery = params.get('q');
-      if (urlQuery) setQuery(urlQuery);
-      setRecentItems(getRecentItems());
+    if (!open) return;
+
+    const params = new URLSearchParams(location.search);
+    const urlQuery = params.get('q') ?? '';
+    if (urlQuery !== query) setQuery(urlQuery);
+    setRecentItems(getRecentItems());
+  }, [open, location.search, query]);
+
+  // Persist query in URL for share/back-forward behavior
+  useEffect(() => {
+    if (!open) return;
+
+    const params = new URLSearchParams(location.search);
+    const normalizedQuery = query.trim();
+
+    if (normalizedQuery) params.set('q', normalizedQuery);
+    else params.delete('q');
+
+    const nextSearch = params.toString();
+    const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+
+    if (nextSearch !== currentSearch) {
+      navigate(
+        {
+          pathname: location.pathname,
+          search: nextSearch ? `?${nextSearch}` : '',
+        },
+        { replace: true }
+      );
     }
-  }, [open, location.search]);
+  }, [query, open, location.pathname, location.search, navigate]);
 
   // Handle quick action shortcuts
   useEffect(() => {
