@@ -442,25 +442,36 @@ const Contatos = () => {
                 <VirtualList
                   rowCount={filteredAndSortedContacts.length}
                   rowHeight={88}
-                  rowProps={{}}
+                  rowProps={{
+                    contacts: filteredAndSortedContacts,
+                    getCompanyName,
+                    getLastInteractionDate,
+                    selectedIds,
+                    selectedIndex,
+                    selectionMode,
+                    handleSelect,
+                    setEditingContact,
+                    setDeletingContact,
+                    updateContact,
+                  }}
                   style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
-                  rowComponent={({ index, style }: { index: number; style: React.CSSProperties }) => {
-                    const contact = filteredAndSortedContacts[index];
+                  rowComponent={({ index, style, ...props }: any) => {
+                    const contact = props.contacts[index];
                     if (!contact) return null;
                     return (
                       <div style={style} className="pb-2">
                         <ContactCardWithContext
                           contact={contact}
-                          companyName={getCompanyName(contact.company_id)}
-                          lastInteraction={getLastInteractionDate(contact.id)}
+                          companyName={props.getCompanyName(contact.company_id)}
+                          lastInteraction={props.getLastInteractionDate(contact.id)}
                           index={index}
-                          isSelected={selectedIds.has(contact.id)}
-                          isHighlighted={selectedIndex === index}
-                          selectionMode={selectionMode}
-                          onSelect={handleSelect}
-                          onEdit={setEditingContact}
-                          onDelete={setDeletingContact}
-                          onUpdate={updateContact}
+                          isSelected={props.selectedIds.has(contact.id)}
+                          isHighlighted={props.selectedIndex === index}
+                          selectionMode={props.selectionMode}
+                          onSelect={props.handleSelect}
+                          onEdit={props.setEditingContact}
+                          onDelete={props.setDeletingContact}
+                          onUpdate={props.updateContact}
                           viewMode="list"
                         />
                       </div>
