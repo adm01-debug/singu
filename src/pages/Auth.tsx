@@ -135,12 +135,16 @@ const Auth = () => {
             transition={{ duration: 0.6 }}
             className="flex items-center gap-4 mb-8"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl">
-              <Zap className="w-8 h-8" />
-            </div>
+            <motion.div 
+              className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl"
+              whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Zap className="w-8 h-8" aria-hidden="true" />
+            </motion.div>
             <div>
-              <h1 className="text-3xl font-bold">SINGU</h1>
-              <p className="text-white/70">Inteligência Relacional</p>
+              <h1 className="text-4xl font-bold tracking-tight">SINGU</h1>
+              <p className="text-white/70 text-sm">Inteligência Relacional</p>
             </div>
           </motion.div>
 
