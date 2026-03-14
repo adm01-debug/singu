@@ -16,6 +16,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 const mainNavItems = [
   { icon: Home, label: 'Início', path: '/' },
