@@ -218,7 +218,7 @@ const Auth = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <AnimatePresence mode="wait">
                   {mode === 'signup' && (
                     <motion.div
