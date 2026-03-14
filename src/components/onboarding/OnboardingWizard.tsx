@@ -132,7 +132,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
       if (profileError) throw profileError;
 
-      toast.success('🎉 Onboarding concluído! Bem-vindo ao RelateIQ!');
+      toast.success('🎉 Onboarding concluído! Bem-vindo ao SINGU!');
       onComplete();
     } catch (error) {
       console.error('Error completing onboarding:', error);
