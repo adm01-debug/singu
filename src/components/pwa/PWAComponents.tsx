@@ -114,7 +114,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                 <Smartphone className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm">Instalar RelateIQ</h3>
+                <h3 className="font-semibold text-sm">Instalar SINGU</h3>
                 <p className="text-xs opacity-90 mt-1">
                   Acesse mais rápido direto da sua tela inicial
                 </p>
