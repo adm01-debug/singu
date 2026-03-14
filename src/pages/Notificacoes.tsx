@@ -201,7 +201,7 @@ const Notificacoes = () => {
                     <div>
                       <h3 className="font-semibold text-foreground">Instalar App</h3>
                       <p className="text-sm text-muted-foreground">
-                        Adicione o RelateIQ à sua tela inicial para acesso rápido e notificações
+                        Adicione o SINGU à sua tela inicial para acesso rápido e notificações
                       </p>
                     </div>
                   </div>
