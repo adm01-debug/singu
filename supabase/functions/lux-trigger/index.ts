@@ -81,7 +81,6 @@ serve(async (req) => {
             entityData,
             userId: user.id,
             callbackUrl,
-            serviceRoleKey: supabaseServiceKey,
           }),
         });
         console.log('n8n webhook triggered successfully');

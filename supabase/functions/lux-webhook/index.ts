@@ -15,7 +15,6 @@ serve(async (req) => {
     const payload = await req.json();
     const {
       luxRecordId,
-      serviceRoleKey,
       status,
       socialProfiles,
       socialAnalysis,
@@ -39,7 +38,7 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const key = serviceRoleKey || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, key);
 
     // Update the lux_intelligence record
