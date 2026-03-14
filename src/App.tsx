@@ -140,9 +140,7 @@ const AnimatedRoutes = () => {
           </RequireAuth>
         } />
         <Route path="/design-system" element={
-          <RequireAuth>
-            <PageTransition><DesignSystem /></PageTransition>
-          </RequireAuth>
+          <PageTransition><DesignSystem /></PageTransition>
         } />
             
         {/* Catch-all */}

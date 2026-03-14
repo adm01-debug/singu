@@ -67,14 +67,22 @@ export function MobileBottomNav() {
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="fixed bottom-20 left-4 right-4 bg-card border border-border rounded-2xl p-4 z-50 md:hidden shadow-2xl"
+              drag="y"
+              dragConstraints={{ top: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100) setShowMore(false);
+              }}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-foreground">Mais opções</h3>
+                <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
                 <button 
                   onClick={() => setShowMore(false)}
                   className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                  aria-label="Fechar menu"
                 >
-                  <X className="w-4 h-4 text-muted-foreground" />
+                  <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
                 </button>
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -87,13 +95,13 @@ export function MobileBottomNav() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleNavigate(item.path)}
                       className={cn(
-                        "flex flex-col items-center gap-2 p-3 rounded-xl transition-all",
+                        "flex flex-col items-center gap-2 p-3 rounded-xl transition-all min-h-[var(--touch-target-min)]",
                         active 
                           ? "bg-primary/10 text-primary" 
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="w-5 h-5" />
+                      <Icon className="w-5 h-5" aria-hidden="true" />
                       <span className="text-xs font-medium">{item.label}</span>
                     </motion.button>
                   );
