@@ -158,7 +158,13 @@ const EmpresaDetalhe = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, user, trackView]);
+
+  useEffect(() => {
+    if (id && user) {
+      fetchCompanyData();
+    }
+  }, [id, user, fetchCompanyData]);
 
   if (loading) {
     return (
