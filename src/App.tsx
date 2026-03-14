@@ -164,9 +164,9 @@ const App = () => (
             <BrowserRouter>
               <EasterEggsProvider />
               <KeyboardShortcutsDialogEnhanced />
-              <WhatsNewWrapper />
               <AuthProvider>
                 <SessionExpiryHandler>
+                  <WhatsNewWrapper />
                   <AnimatedRoutes />
                 </SessionExpiryHandler>
               </AuthProvider>
