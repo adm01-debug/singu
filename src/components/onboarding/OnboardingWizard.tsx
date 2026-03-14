@@ -34,7 +34,7 @@ export interface OnboardingData {
 }
 
 const STEPS = [
-  { id: 'welcome', title: 'Bem-vindo', icon: Sparkles, description: 'Conheça o RelateIQ' },
+  { id: 'welcome', title: 'Bem-vindo', icon: Sparkles, description: 'Conheça o SINGU' },
   { id: 'profile', title: 'Seu Perfil', icon: User, description: 'Configure seu perfil' },
   { id: 'import', title: 'Importar', icon: Upload, description: 'Traga seus dados' },
   { id: 'preferences', title: 'Preferências', icon: Settings, description: 'Personalize sua experiência' },
@@ -132,7 +132,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
       if (profileError) throw profileError;
 
-      toast.success('🎉 Onboarding concluído! Bem-vindo ao RelateIQ!');
+      toast.success('🎉 Onboarding concluído! Bem-vindo ao SINGU!');
       onComplete();
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -195,7 +195,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">RelateIQ</h1>
+            <h1 className="text-lg font-bold text-white">SINGU</h1>
             <p className="text-xs text-sidebar-foreground/70">Setup Wizard</p>
           </div>
         </div>
@@ -276,7 +276,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
               <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-semibold text-foreground">RelateIQ</span>
+              <span className="font-semibold text-foreground">SINGU</span>
             </div>
             <span className="text-sm text-muted-foreground">
               Passo {currentStep + 1} de {STEPS.length}

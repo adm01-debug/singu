@@ -42,7 +42,7 @@ const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
         transition={{ delay: 0.2 }}
       >
         <h1 className="text-4xl font-bold text-foreground mb-4">
-          Bem-vindo ao <span className="gradient-text">RelateIQ</span>
+          Bem-vindo ao <span className="gradient-text">SINGU</span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-lg mx-auto mb-12">
           Vamos configurar sua conta em poucos minutos para você começar a 

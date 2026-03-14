@@ -78,7 +78,7 @@ export function useEasterEggs() {
   // Love hearts animation
   const loveAction = useCallback(() => {
     toast('❤️ Love Mode Ativado!', {
-      description: 'Obrigado por usar o RelateIQ!',
+      description: 'Obrigado por usar o SINGU!',
       icon: '💕',
     });
     

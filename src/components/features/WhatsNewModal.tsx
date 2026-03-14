@@ -149,7 +149,7 @@ export function WhatsNewModal({
               </Badge>
             </div>
             <DialogTitle className="text-xl font-bold text-white">
-              Novidades do RelateIQ
+              Novidades do SINGU
             </DialogTitle>
             <p className="text-white/80 text-sm mt-1">
               Confira as últimas melhorias e funcionalidades

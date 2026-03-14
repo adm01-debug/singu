@@ -1,4 +1,4 @@
-// Core Types for RelateIQ System - Extended Behavioral Model
+// Core Types for SINGU System - Extended Behavioral Model
 
 import { TemperamentProfile } from './temperament';
 

@@ -194,7 +194,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col overflow-hidden"
                 >
-                  <span className="font-bold text-lg text-sidebar-primary-foreground whitespace-nowrap">RelateIQ</span>
+                  <span className="font-bold text-lg text-sidebar-primary-foreground whitespace-nowrap">SINGU</span>
                   <span className="text-xs text-sidebar-foreground/60 whitespace-nowrap">Inteligência Relacional</span>
                 </motion.div>
               )}

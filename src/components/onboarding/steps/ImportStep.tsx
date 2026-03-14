@@ -197,7 +197,7 @@ const ImportStep = ({ onImport, onNext, onBack }: ImportStepProps) => {
               {importedCount} contatos importados!
             </h3>
             <p className="text-muted-foreground mb-4">
-              Seus contatos foram adicionados com sucesso ao RelateIQ
+              Seus contatos foram adicionados com sucesso ao SINGU
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-success">
               <Users className="w-4 h-4" />

@@ -138,7 +138,7 @@ const Auth = () => {
               <Zap className="w-8 h-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">RelateIQ</h1>
+              <h1 className="text-3xl font-bold">SINGU</h1>
               <p className="text-white/70">Inteligência Relacional</p>
             </div>
           </motion.div>
@@ -192,7 +192,7 @@ const Auth = () => {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">RelateIQ</h1>
+              <h1 className="text-xl font-bold text-foreground">SINGU</h1>
               <p className="text-xs text-muted-foreground">Inteligência Relacional</p>
             </div>
           </div>

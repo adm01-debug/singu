@@ -114,7 +114,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                 <Smartphone className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm">Instalar RelateIQ</h3>
+                <h3 className="font-semibold text-sm">Instalar SINGU</h3>
                 <p className="text-xs opacity-90 mt-1">
                   Acesse mais rápido direto da sua tela inicial
                 </p>
@@ -306,7 +306,7 @@ export function IOSInstallInstructions() {
               <Share2 className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-sm">Instalar RelateIQ</h3>
+              <h3 className="font-semibold text-sm">Instalar SINGU</h3>
               <p className="text-xs text-muted-foreground mt-1">
                 Toque em <Share2 className="h-3 w-3 inline" /> e depois em "Adicionar à Tela de Início"
               </p>
@@ -417,7 +417,7 @@ export function AppSplashScreen({ progress = 0 }: { progress?: number }) {
         <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
           <span className="text-3xl font-bold text-primary">R</span>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">RelateIQ</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">SINGU</h1>
         <p className="text-white/80 text-sm mb-8">Inteligência Relacional</p>
         
         <div className="w-48">
