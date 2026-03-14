@@ -275,7 +275,7 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
-            <StatCard key={stat.title} {...stat} delay={index} />
+            <StatCard key={stat.title} {...stat} delay={prefersReducedMotion ? 0 : index} />
           ))}
         </div>
 
