@@ -239,6 +239,7 @@ export default {
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
         "skeleton": "skeleton 1.5s ease-in-out infinite",
         "progress": "progress 1s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
       },
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
