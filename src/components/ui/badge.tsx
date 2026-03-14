@@ -47,7 +47,7 @@ export interface BadgeProps
   onClose?: () => void;
 }
 
-function Badge({
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(function Badge({
   className,
   variant,
   size,
@@ -60,7 +60,7 @@ function Badge({
   onClose,
   children,
   ...props
-}: BadgeProps) {
+}, ref) {
   const content = (
     <>
       {dot && (
