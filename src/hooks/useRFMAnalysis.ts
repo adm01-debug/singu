@@ -435,7 +435,7 @@ export function useRFMAnalysis(contactId?: string) {
 }
 
 // Helper functions
-function generateRecommendedActions(segment: RFMSegment, contact: any): RFMAction[] {
+function generateRecommendedActions(segment: RFMSegment, _contact: { id: string }): RFMAction[] {
   const actions: RFMAction[] = [];
   
   const segmentActions: Record<RFMSegment, RFMAction[]> = {
