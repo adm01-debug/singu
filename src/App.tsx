@@ -30,7 +30,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
-import WhatsApp from "./pages/WhatsApp";
+
 import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient({
