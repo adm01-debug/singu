@@ -135,8 +135,7 @@ export function SessionExpiryHandler({
     <>
       {children}
 
-      <AnimatePresence>
-        {showWarning && (
+      {showWarning && (
           <Dialog open={showWarning} onOpenChange={setShowWarning}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
@@ -219,7 +218,6 @@ export function SessionExpiryHandler({
             </DialogContent>
           </Dialog>
         )}
-      </AnimatePresence>
     </>
   );
 }
