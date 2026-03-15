@@ -339,18 +339,50 @@ export const ALL_EAGER_WANT_KEYWORDS: Record<DesireCategory, string[]> = {
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
+// Minimum word length to avoid false positives on common short words
+const MIN_KEYWORD_LENGTH_FOR_STANDALONE = 4;
+
+// Common words that should only match in meaningful context
+const CONTEXTUAL_KEYWORDS: Record<string, RegExp> = {
+  'bom': /(?:muito |realmente |é )bom|bom (?:resultado|trabalho|desempenho|produto|serviço|negócio)/i,
+  'bem': /(?:muito |realmente |está )bem|bem-(?:estar|sucedido)/i,
+  'paz': /(?:em |ter |quero |preciso de )paz/i,
+};
+
 export function detectEagerWants(text: string): DesireCategory[] {
   const detected: DesireCategory[] = [];
   const textLower = text.toLowerCase();
   
   for (const [category, keywords] of Object.entries(ALL_EAGER_WANT_KEYWORDS)) {
+    let found = false;
     for (const keyword of keywords) {
-      if (textLower.includes(keyword)) {
-        if (!detected.includes(category as DesireCategory)) {
-          detected.push(category as DesireCategory);
+      // For short common words, require contextual match
+      if (keyword.length < MIN_KEYWORD_LENGTH_FOR_STANDALONE && CONTEXTUAL_KEYWORDS[keyword]) {
+        if (CONTEXTUAL_KEYWORDS[keyword].test(text)) {
+          found = true;
+          break;
         }
+        continue;
+      }
+      
+      // Stemming support: match keyword root as word boundary
+      // Use ~60% of keyword length (min 5, max 8) to catch Portuguese morphological variants
+      if (keyword.length >= 5) {
+        const stemLen = Math.min(8, Math.max(5, Math.floor(keyword.length * 0.6)));
+        const stem = keyword.slice(0, stemLen);
+        const stemRegex = new RegExp(`\\b${stem}`, 'i');
+        if (stemRegex.test(textLower)) {
+          found = true;
+          break;
+        }
+      } else if (textLower.includes(keyword)) {
+        found = true;
         break;
       }
+    }
+    
+    if (found && !detected.includes(category as DesireCategory)) {
+      detected.push(category as DesireCategory);
     }
   }
   

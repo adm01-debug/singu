@@ -275,8 +275,11 @@ export function detectCriticalLanguage(text: string): CriticalPhrase[] {
   
   for (const [type, config] of Object.entries(CRITICAL_PATTERNS)) {
     for (const pattern of config.patterns) {
-      const match = text.match(pattern);
-      if (match) {
+      // Use matchAll with global flag to detect ALL occurrences, not just the first
+      const globalPattern = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g');
+      const matches = Array.from(text.matchAll(globalPattern));
+      
+      for (const match of matches) {
         const alternatives = POSITIVE_ALTERNATIVES[type] || [];
         const alternative = alternatives[0]?.positive || 'Reformule de forma positiva';
         

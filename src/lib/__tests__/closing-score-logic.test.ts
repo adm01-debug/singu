@@ -19,12 +19,18 @@ const DISC_CLOSING_FACTORS: Record<string, { speed: number; style: string }> = {
   'C': { speed: 0.4, style: 'Analítico' }
 };
 
-// Pure functions extracted from hook logic
+// Pure functions extracted from hook logic (updated: proportional scoring)
 function calculateEngagementScore(recentInteractionCount: number, daysSinceLastContact: number): number {
-  if (recentInteractionCount >= 5 && daysSinceLastContact <= 7) return 90;
-  if (recentInteractionCount >= 3 && daysSinceLastContact <= 14) return 70;
-  if (recentInteractionCount >= 1 && daysSinceLastContact <= 30) return 50;
-  return 20;
+  // Recency component (0-50)
+  const recencyScore = daysSinceLastContact <= 3 ? 50
+    : daysSinceLastContact <= 7 ? 45
+    : daysSinceLastContact <= 14 ? 35
+    : daysSinceLastContact <= 21 ? 25
+    : daysSinceLastContact <= 30 ? 15
+    : 5;
+  // Frequency component (0-50)
+  const frequencyScore = Math.min(50, recentInteractionCount * 10);
+  return recencyScore + frequencyScore;
 }
 
 function getSentimentScore(sentiment: string | null): number {
@@ -134,33 +140,39 @@ describe('Closing Score: DISC Factors', () => {
 // ============================================
 // ENGAGEMENT SCORE
 // ============================================
-describe('Closing Score: Engagement', () => {
-  it('5+ interactions + ≤7 days = 90', () => {
-    expect(calculateEngagementScore(5, 7)).toBe(90);
-    expect(calculateEngagementScore(10, 3)).toBe(90);
+describe('Closing Score: Engagement (Proportional)', () => {
+  it('5 interactions + 3 days = 100 (50 recency + 50 frequency)', () => {
+    expect(calculateEngagementScore(5, 3)).toBe(100);
   });
 
-  it('3-4 interactions + ≤14 days = 70', () => {
-    expect(calculateEngagementScore(3, 14)).toBe(70);
-    expect(calculateEngagementScore(4, 10)).toBe(70);
+  it('5 interactions + 7 days = 95 (45 recency + 50 frequency)', () => {
+    expect(calculateEngagementScore(5, 7)).toBe(95);
   });
 
-  it('1-2 interactions + ≤30 days = 50', () => {
-    expect(calculateEngagementScore(1, 30)).toBe(50);
-    expect(calculateEngagementScore(2, 20)).toBe(50);
+  it('3 interactions + 14 days = 65 (35 recency + 30 frequency)', () => {
+    expect(calculateEngagementScore(3, 14)).toBe(65);
   });
 
-  it('no recent interactions = 20', () => {
-    expect(calculateEngagementScore(0, 999)).toBe(20);
-    expect(calculateEngagementScore(0, 31)).toBe(20);
+  it('1 interaction + 30 days = 25 (15 recency + 10 frequency)', () => {
+    expect(calculateEngagementScore(1, 30)).toBe(25);
   });
 
-  it('edge: 5 interactions but 14 days → still 90 (condition is ≤7)', () => {
-    expect(calculateEngagementScore(5, 14)).toBe(70); // Falls to second tier
+  it('0 interactions + 999 days = 5 (5 recency + 0 frequency)', () => {
+    expect(calculateEngagementScore(0, 999)).toBe(5);
   });
 
-  it('edge: 3 interactions but 30 days → falls to 50', () => {
-    expect(calculateEngagementScore(3, 30)).toBe(50); // daysSince > 14
+  it('scales proportionally: more interactions = higher score', () => {
+    const score1 = calculateEngagementScore(1, 7);
+    const score3 = calculateEngagementScore(3, 7);
+    const score5 = calculateEngagementScore(5, 7);
+    expect(score1).toBeLessThan(score3);
+    expect(score3).toBeLessThan(score5);
+  });
+
+  it('recency matters: same interactions, closer contact = higher', () => {
+    const recent = calculateEngagementScore(3, 3);
+    const older = calculateEngagementScore(3, 21);
+    expect(recent).toBeGreaterThan(older);
   });
 });
 

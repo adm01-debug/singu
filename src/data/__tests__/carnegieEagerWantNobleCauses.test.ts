@@ -86,16 +86,15 @@ describe('Eager Wants: Data Integrity', () => {
 // EAGER WANTS - FUNCTIONS
 // ============================================
 describe('Eager Wants: Functions', () => {
-  it('detectEagerWants finds recognition keywords (exact match only)', () => {
-    // GAP: "reconhecido" doesn't match keyword "reconhecimento" — exact substring only
+  it('detectEagerWants finds recognition keywords', () => {
     const result = detectEagerWants('Quero reconhecimento pelo meu trabalho');
     expect(result).toContain('recognition');
   });
 
-  it('GAP: detectEagerWants misses word variants like "reconhecido"', () => {
+  it('FIX: detectEagerWants now matches word variants like "reconhecido" via stemming', () => {
     const result = detectEagerWants('Quero ser reconhecido');
-    // This fails because keywords use "reconhecimento" not "reconhecido"
-    expect(result).not.toContain('recognition');
+    // FIX: stemming now matches "reconhec" root from "reconhecimento"
+    expect(result).toContain('recognition');
   });
 
   it('detectEagerWants finds security keywords', () => {
@@ -108,10 +107,15 @@ describe('Eager Wants: Functions', () => {
     expect(result.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('GAP: detectEagerWants false positive — "bom" matches pleasure category', () => {
-    // GAP: "bom" is a pleasure keyword but appears in everyday phrases
+  it('FIX: detectEagerWants no longer false-positives on "bom" in neutral context', () => {
+    // FIX: "bom" now requires meaningful context (e.g. "muito bom", "bom resultado")
     const result = detectEagerWants('O tempo está bom hoje');
-    expect(result).toContain('pleasure'); // False positive!
+    expect(result).not.toContain('pleasure'); // No longer a false positive!
+  });
+
+  it('detectEagerWants still detects "bom" in meaningful context', () => {
+    const result = detectEagerWants('Isso é um bom resultado para todos');
+    expect(result).toContain('pleasure');
   });
 
   it('detectEagerWants handles empty string', () => {

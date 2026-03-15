@@ -174,12 +174,12 @@ Isso é exatamente o que eu estava pensando! Você é muito perspicaz. Vou segui
 // ============================================
 export const OWNERSHIP_LANGUAGE = {
   toAvoid: [
-    'Eu sugiro que...',
-    'Minha recomendação é...',
-    'Você deveria...',
-    'O correto seria...',
-    'Na minha opinião...',
-    'A melhor opção é...'
+    'Eu sugiro que',
+    'Minha recomendação é',
+    'Você deveria',
+    'O correto seria',
+    'Na minha opinião',
+    'A melhor opção é'
   ],
   
   toUse: [
@@ -297,17 +297,21 @@ export function analyzeOwnershipLanguage(text: string): {
   suggestions: string[];
 } {
   const problematicPhrases: string[] = [];
+  const textLower = text.toLowerCase();
   
   for (const phrase of OWNERSHIP_LANGUAGE.toAvoid) {
-    if (text.toLowerCase().includes(phrase.toLowerCase())) {
+    // Strip ellipsis and trailing whitespace for matching
+    const cleanPhrase = phrase.replace(/\.{2,}/g, '').trim().toLowerCase();
+    if (cleanPhrase && textLower.includes(cleanPhrase)) {
       problematicPhrases.push(phrase);
     }
   }
   
   const ownershipGiven = problematicPhrases.length === 0 && 
-    OWNERSHIP_LANGUAGE.toUse.some(phrase => 
-      text.toLowerCase().includes(phrase.toLowerCase().replace('...', ''))
-    );
+    OWNERSHIP_LANGUAGE.toUse.some(phrase => {
+      const cleanPhrase = phrase.replace(/\.{2,}/g, '').replace(/\?$/, '').trim().toLowerCase();
+      return cleanPhrase && textLower.includes(cleanPhrase);
+    });
   
   return {
     ownershipGiven,

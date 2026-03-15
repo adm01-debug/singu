@@ -276,21 +276,43 @@ export function generateEncouragementScript(
 
 export function calculateEncouragementScore(text: string): number {
   let score = 50; // Start neutral
+  const textLower = text.toLowerCase();
   
-  // Check for minimization (positive)
+  // Check for minimization (positive) - use fuzzy matching with key words
   for (const phrases of Object.values(MINIMIZATION_PHRASES)) {
     for (const phrase of phrases) {
-      if (text.toLowerCase().includes(phrase.toLowerCase())) {
+      const phraseLower = phrase.toLowerCase();
+      // Direct match
+      if (textLower.includes(phraseLower)) {
         score += 15;
+        continue;
+      }
+      // Fuzzy match: extract key words (3+ chars) and check if most are present
+      const keyWords = phraseLower.split(/\s+/).filter(w => w.length >= 3 && !['que', 'com', 'para', 'uma', 'dos', 'das', 'não', 'tão'].includes(w));
+      if (keyWords.length >= 2) {
+        const matchCount = keyWords.filter(w => textLower.includes(w)).length;
+        if (matchCount >= Math.ceil(keyWords.length * 0.6)) {
+          score += 10; // Partial match gets slightly less
+        }
       }
     }
   }
   
-  // Check for confidence boosters (positive)
+  // Check for confidence boosters (positive) - improved matching
   for (const phrases of Object.values(CONFIDENCE_BOOSTERS)) {
     for (const phrase of phrases) {
-      if (text.toLowerCase().includes(phrase.toLowerCase().split('[')[0])) {
+      const cleanPhrase = phrase.toLowerCase().split('[')[0].trim();
+      if (textLower.includes(cleanPhrase)) {
         score += 10;
+        continue;
+      }
+      // Fuzzy match for boosters too
+      const keyWords = cleanPhrase.split(/\s+/).filter(w => w.length >= 3 && !['que', 'com', 'para', 'uma'].includes(w));
+      if (keyWords.length >= 2) {
+        const matchCount = keyWords.filter(w => textLower.includes(w)).length;
+        if (matchCount >= Math.ceil(keyWords.length * 0.6)) {
+          score += 7;
+        }
       }
     }
   }

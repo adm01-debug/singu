@@ -150,16 +150,21 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
         ? differenceInDays(new Date(), parseISO(interactions[0].created_at))
         : 999;
 
+      // Proportional engagement scoring instead of hard tiers
       let engagementScore = 0;
-      if (recentInteractions.length >= 5 && daysSinceLastContact <= 7) {
-        engagementScore = 90;
-      } else if (recentInteractions.length >= 3 && daysSinceLastContact <= 14) {
-        engagementScore = 70;
-      } else if (recentInteractions.length >= 1 && daysSinceLastContact <= 30) {
-        engagementScore = 50;
-      } else {
-        engagementScore = 20;
-      }
+      
+      // Recency component (0-50): decays smoothly from last contact
+      const recencyScore = daysSinceLastContact <= 3 ? 50
+        : daysSinceLastContact <= 7 ? 45
+        : daysSinceLastContact <= 14 ? 35
+        : daysSinceLastContact <= 21 ? 25
+        : daysSinceLastContact <= 30 ? 15
+        : 5;
+      
+      // Frequency component (0-50): scales with interaction count
+      const frequencyScore = Math.min(50, recentInteractions.length * 10);
+      
+      engagementScore = recencyScore + frequencyScore;
 
       const engagementFactor: ScoreFactor = {
         name: 'Engajamento',
