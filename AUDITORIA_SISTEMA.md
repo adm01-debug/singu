@@ -262,12 +262,43 @@ Todas as 40+ tabelas possuem políticas RLS com `auth.uid() = user_id` para SELE
 
 ---
 
-## 🎯 CONCLUSÃO
+## 🧪 VALIDAÇÃO REAL DE TESTES EXECUTADOS (2026-03-15)
 
-> **27/27 módulos documentados = 100% implementados**
-> **26/26 Edge Functions = 100% deployadas**
-> **40+ tabelas com RLS = 100% protegidas**
-> **20+ funcionalidades extras** não documentadas mas presentes no código
-> **0 erros no console**
+### Evidências executadas nesta auditoria
+- **Testes de frontend (`code--run_tests`)**: ❌ Não há arquivos `*.test`/`*.spec` no projeto (Vitest retornou *No test files found*).
+- **Testes de backend (`supabase--test_edge_functions`)**: ❌ Não há módulos de teste para funções (*No test modules found*).
+- **Console do preview (`code--read_console_logs`)**: ✅ sem erros no snapshot.
+- **Rede do preview (`code--read_network_requests`)**: ✅ sem erros no snapshot.
+- **Smoke test `external-data`**: ✅ `POST /external-data` retornou **200** com dados (`count: 7544`).
+- **Smoke test `lux-trigger` sem sessão autenticada**: ✅ retornou **401 Unauthorized** (comportamento esperado para rota protegida).
+- **Smoke test `disc-analyzer` com payload inválido**: ✅ retornou **400 Textos são obrigatórios** (validação esperada).
+- **Logs de Edge Functions (`external-data`, `lux-trigger`, `disc-analyzer`)**: ✅ sem ocorrências de `error`.
+- **Analytics de execução de funções (últimas 200 chamadas)**: ✅ predominância de `status_code: 200` para chamadas observadas.
 
-O sistema está **completo, funcional e seguro**.
+---
+
+## ⚠️ DISCREPÂNCIAS E RISCOS ENCONTRADOS
+
+1. **Implementação vs Testes**
+   - **Implementação**: ✅ Alta cobertura de funcionalidades (27/27 mapeadas no código).
+   - **Testes automatizados**: ❌ inexistentes no frontend e nas Edge Functions.
+
+2. **Risco de PGRST116 em consultas `.single()`**
+   - Foram encontrados múltiplos usos de `.single()` no frontend.
+   - Quando a linha pode não existir, o recomendado é **`.maybeSingle()`** para evitar erro de "nenhum resultado".
+
+3. **Alertas de segurança de plataforma (warnings)**
+   - `Leaked Password Protection Disabled`.
+   - `Extension in Public`.
+
+4. **Finding antigo sobre `trigger_bundles`**
+   - A policy atual de INSERT já contém proteção: `COALESCE(is_system_bundle, false) = false`.
+   - O alerta de escalada aparenta estar **defasado** em relação ao estado atual do banco.
+
+---
+
+## 🎯 CONCLUSÃO FINAL
+
+> **Funcionalidades do documento:** ✅ **Implementadas**
+> **Funcionalidades do documento:** ⚠️ **Não estão plenamente testadas por suíte automatizada**
+> **Status real:** sistema funcional com smoke tests positivos, porém com **lacuna de cobertura de testes automatizados**.
