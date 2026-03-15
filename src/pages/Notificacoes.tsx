@@ -132,17 +132,21 @@ const Notificacoes = () => {
     setNotificationSettings(newSettings);
     localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
 
-    // Update in database if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ 
-          preferences: { 
-            notifications: newSettings 
-          } 
-        })
-        .eq('id', user.id);
+    try {
+      // Update in database if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ 
+            preferences: { 
+              notifications: newSettings 
+            } 
+          })
+          .eq('id', user.id);
+      }
+    } catch (error) {
+      console.error('Error saving notification settings:', error);
     }
   };
 

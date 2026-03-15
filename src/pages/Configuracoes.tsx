@@ -74,18 +74,22 @@ const Configuracoes = () => {
   const fetchProfile = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('first_name, last_name, avatar_url')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, avatar_url')
+        .eq('id', user.id)
+        .single();
 
-    if (data && !error) {
-      setProfile({
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        avatar_url: data.avatar_url,
-      });
+      if (data && !error) {
+        setProfile({
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
+          avatar_url: data.avatar_url,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 

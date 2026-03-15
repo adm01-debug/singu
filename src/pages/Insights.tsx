@@ -221,17 +221,22 @@ const Insights = () => {
   };
 
   const handleRefreshInsights = async () => {
-    const [contactsRes, interactionsRes, companiesRes] = await Promise.all([
-      supabase.from('contacts').select('*').limit(50),
-      supabase.from('interactions').select('*').order('created_at', { ascending: false }).limit(100),
-      supabase.from('companies').select('*').limit(20),
-    ]);
+    try {
+      const [contactsRes, interactionsRes, companiesRes] = await Promise.all([
+        supabase.from('contacts').select('*').limit(50),
+        supabase.from('interactions').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('companies').select('*').limit(20),
+      ]);
 
-    await generateInsights(
-      contactsRes.data || [], 
-      interactionsRes.data || [], 
-      companiesRes.data || []
-    );
+      await generateInsights(
+        contactsRes.data || [], 
+        interactionsRes.data || [], 
+        companiesRes.data || []
+      );
+    } catch (error) {
+      console.error('Error refreshing insights:', error);
+      toast.error('Erro ao atualizar insights. Tente novamente.');
+    }
   };
 
   const filteredInsights = useMemo(() => {
