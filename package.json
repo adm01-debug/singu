@@ -41,6 +41,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.90.1",
     "@tanstack/react-query": "^5.83.0",
+    "@testing-library/jest-dom": "^6.6.0",
     "@types/canvas-confetti": "^1.9.0",
     "@types/react-window": "^2.0.0",
     "canvas-confetti": "^1.9.4",
@@ -52,6 +53,7 @@
     "framer-motion": "^12.24.12",
     "fuse.js": "^7.1.0",
     "input-otp": "^1.4.2",
+    "jsdom": "^20.0.3",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
@@ -68,6 +70,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "vite-plugin-pwa": "0.19.8",
+    "vitest": "^3.2.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
