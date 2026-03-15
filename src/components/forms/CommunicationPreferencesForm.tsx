@@ -85,7 +85,7 @@ export function CommunicationPreferencesForm({ contactId, onSuccess, trigger }: 
         .select('*')
         .eq('contact_id', contactId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setExistingId(data.id);

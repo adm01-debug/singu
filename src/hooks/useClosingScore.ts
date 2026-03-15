@@ -95,7 +95,7 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
         emotionalResult,
         vakResult
       ] = await Promise.all([
-        supabase.from('contacts').select('*').eq('id', contactId).single(),
+        supabase.from('contacts').select('*').eq('id', contactId).maybeSingle(),
         supabase.from('interactions').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }),
         supabase.from('client_values').select('*').eq('contact_id', contactId),
         supabase.from('hidden_objections').select('*').eq('contact_id', contactId),
