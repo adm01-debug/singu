@@ -116,11 +116,11 @@ describe('Criticism Detector: calculateCriticismScore', () => {
     expect(calculateCriticismScore('Excelente trabalho!')).toBe(100);
   });
 
-  it('returns lower score for critical text', () => {
-    // GAP: detectCriticalLanguage only matches first occurrence per pattern, so "Você errou e é incompetente" = 25 penalty = 75
+  it('returns lower score for critical text with multiple matches', () => {
+    // FIX: detectCriticalLanguage now matches ALL occurrences via matchAll
     const score = calculateCriticismScore('Você errou e é incompetente');
     expect(score).toBeLessThan(100);
-    expect(score).toBe(75); // Only 1 high-severity match (first pattern hit)
+    expect(score).toBeLessThanOrEqual(50); // Now catches both: "você errou" + "incompetente"
   });
 
   it('never returns below 0', () => {
