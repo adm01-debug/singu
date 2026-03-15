@@ -23,30 +23,36 @@ const RelatorioContato = () => {
     const fetchData = async () => {
       if (!id) return;
 
-      const { data: contact } = await supabase
-        .from("contacts")
-        .select("*")
-        .eq("id", id)
-        .single();
+      try {
+        const [contactRes, interactionsRes, discRes] = await Promise.all([
+          supabase
+            .from("contacts")
+            .select("*")
+            .eq("id", id)
+            .maybeSingle(),
+          supabase
+            .from("interactions")
+            .select("*")
+            .eq("contact_id", id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("disc_analysis_history")
+            .select("*")
+            .eq("contact_id", id)
+            .order("analyzed_at", { ascending: false }),
+        ]);
 
-      const { data: interactions } = await supabase
-        .from("interactions")
-        .select("*")
-        .eq("contact_id", id)
-        .order("created_at", { ascending: false });
-
-      const { data: discHistory } = await supabase
-        .from("disc_analysis_history")
-        .select("*")
-        .eq("contact_id", id)
-        .order("analyzed_at", { ascending: false });
-
-      setData({
-        contact,
-        interactions: interactions || [],
-        discHistory: discHistory || [],
-      });
-      setLoading(false);
+        setData({
+          contact: contactRes.data,
+          interactions: interactionsRes.data || [],
+          discHistory: discRes.data || [],
+        });
+      } catch (error) {
+        console.error('Error fetching report data:', error);
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();

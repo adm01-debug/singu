@@ -843,13 +843,16 @@ const EmpresaDetalhe = () => {
         <CompanyForm
           company={company}
           onSubmit={async (data) => {
-            const { error } = await supabase
-              .from('companies')
-              .update(data)
-              .eq('id', id!);
-            if (!error) {
+            try {
+              const { error } = await supabase
+                .from('companies')
+                .update(data)
+                .eq('id', id!);
+              if (error) throw error;
               setIsEditOpen(false);
               fetchCompanyData();
+            } catch (error) {
+              console.error('Error updating company:', error);
             }
           }}
           onCancel={() => setIsEditOpen(false)}
@@ -866,12 +869,15 @@ const EmpresaDetalhe = () => {
           defaultCompanyId={id}
           onSubmit={async (data) => {
             if (!user) return;
-            const { error } = await supabase
-              .from('contacts')
-              .insert({ ...data, user_id: user.id, company_id: id } as any);
-            if (!error) {
+            try {
+              const { error } = await supabase
+                .from('contacts')
+                .insert({ ...data, user_id: user.id, company_id: id } as any);
+              if (error) throw error;
               setIsAddContactOpen(false);
               fetchCompanyData();
+            } catch (error) {
+              console.error('Error adding contact:', error);
             }
           }}
           onCancel={() => setIsAddContactOpen(false)}
