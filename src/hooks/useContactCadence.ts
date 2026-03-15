@@ -151,7 +151,7 @@ export function useContactCadence() {
         .eq('contact_id', contactId)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const lastContactAt = latestInteraction?.created_at || new Date().toISOString();
       const nextContactDue = addDays(parseISO(lastContactAt), cadenceDays).toISOString();
