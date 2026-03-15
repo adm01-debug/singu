@@ -137,9 +137,17 @@ describe('Approach: Risk Level', () => {
     })).toBe('medium');
   });
 
-  it('low rapport alone pushes to medium', () => {
+  it('GAP: low rapport with positive sentiment = only 20 risk (low, not medium)', () => {
+    // positive sentiment adds 0, rapport<30 adds 20, total=20 < 25 threshold
     expect(calculateRiskLevel({
       objectionCount: 0, resistanceCount: 0, sentiment: 'positive', rapportScore: 25, confidence: 60
+    })).toBe('low');
+  });
+
+  it('low rapport with neutral sentiment = medium', () => {
+    // neutral adds 10, rapport<30 adds 20, total=30 ≥ 25
+    expect(calculateRiskLevel({
+      objectionCount: 0, resistanceCount: 0, sentiment: 'neutral', rapportScore: 25, confidence: 60
     })).toBe('medium');
   });
 });
