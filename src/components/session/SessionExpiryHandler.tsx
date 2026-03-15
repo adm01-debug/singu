@@ -218,7 +218,6 @@ export function SessionExpiryHandler({
             </DialogContent>
           </Dialog>
         )}
-      </AnimatePresence>
     </>
   );
 }
