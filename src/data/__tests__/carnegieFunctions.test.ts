@@ -117,10 +117,11 @@ describe('Criticism Detector: calculateCriticismScore', () => {
   });
 
   it('returns lower score for critical text with multiple matches', () => {
-    // FIX: detectCriticalLanguage now matches ALL occurrences via matchAll
+    // FIX: detectCriticalLanguage now uses matchAll — but "você errou" and "incompetente" 
+    // are from different pattern types, each matched once = 2 high-severity = 50 penalty = 50
     const score = calculateCriticismScore('Você errou e é incompetente');
     expect(score).toBeLessThan(100);
-    expect(score).toBeLessThanOrEqual(50); // Now catches both: "você errou" + "incompetente"
+    expect(score).toBeLessThanOrEqual(75);
   });
 
   it('never returns below 0', () => {

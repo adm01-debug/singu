@@ -365,9 +365,11 @@ export function detectEagerWants(text: string): DesireCategory[] {
         continue;
       }
       
-      // Stemming support: match keyword root (first 5+ chars) as word boundary
+      // Stemming support: match keyword root as word boundary
+      // Use ~60% of keyword length (min 5, max 8) to catch Portuguese morphological variants
       if (keyword.length >= 5) {
-        const stem = keyword.slice(0, Math.max(5, keyword.length - 2));
+        const stemLen = Math.min(8, Math.max(5, Math.floor(keyword.length * 0.6)));
+        const stem = keyword.slice(0, stemLen);
         const stemRegex = new RegExp(`\\b${stem}`, 'i');
         if (stemRegex.test(textLower)) {
           found = true;
