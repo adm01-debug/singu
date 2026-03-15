@@ -234,7 +234,7 @@ describe('Progress Celebration', () => {
   });
 
   it('detectProgress finds milestone keywords', () => {
-    const types = detectProgress('Alcançamos o marco de 100 clientes');
+    const type = detectProgressType('Alcançamos o marco de 100 clientes');
     expect(types.length).toBeGreaterThan(0);
   });
 });
