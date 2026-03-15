@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { FACE_SAVING_TECHNIQUES } from '@/data/carnegieFaceSaving';
 import { IDENTITY_LABELS, IDENTITY_DETECTION_PATTERNS, IDENTITY_REINFORCEMENT_SCRIPTS } from '@/data/carnegieIdentityLabels';
 import { OWNERSHIP_TECHNIQUES, OWNERSHIP_LANGUAGE, OWNERSHIP_BY_DISC, analyzeOwnershipLanguage, getTechniquesForDISC } from '@/data/carnegieOwnershipTransfer';
-import { PROGRESS_CELEBRATIONS, CELEBRATION_BY_DISC, PROGRESS_DETECTION_PATTERNS, getCelebrationTemplate, detectProgress } from '@/data/carnegieProgressCelebration';
+import { PROGRESS_CELEBRATIONS, CELEBRATION_BY_DISC, PROGRESS_DETECTION_PATTERNS, getCelebrationTemplate, detectProgressType } from '@/data/carnegieProgressCelebration';
 import { VULNERABILITY_TEMPLATES, VULNERABILITY_GUIDELINES } from '@/data/carnegieVulnerability';
 import {
   YES_LADDER_TEMPLATES,
