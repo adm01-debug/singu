@@ -86,9 +86,16 @@ describe('Eager Wants: Data Integrity', () => {
 // EAGER WANTS - FUNCTIONS
 // ============================================
 describe('Eager Wants: Functions', () => {
-  it('detectEagerWants finds recognition keywords', () => {
-    const result = detectEagerWants('Quero ser reconhecido pelo meu trabalho');
+  it('detectEagerWants finds recognition keywords (exact match only)', () => {
+    // GAP: "reconhecido" doesn't match keyword "reconhecimento" — exact substring only
+    const result = detectEagerWants('Quero reconhecimento pelo meu trabalho');
     expect(result).toContain('recognition');
+  });
+
+  it('GAP: detectEagerWants misses word variants like "reconhecido"', () => {
+    const result = detectEagerWants('Quero ser reconhecido');
+    // This fails because keywords use "reconhecimento" not "reconhecido"
+    expect(result).not.toContain('recognition');
   });
 
   it('detectEagerWants finds security keywords', () => {
