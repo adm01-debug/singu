@@ -19,12 +19,18 @@ const DISC_CLOSING_FACTORS: Record<string, { speed: number; style: string }> = {
   'C': { speed: 0.4, style: 'Analítico' }
 };
 
-// Pure functions extracted from hook logic
+// Pure functions extracted from hook logic (updated: proportional scoring)
 function calculateEngagementScore(recentInteractionCount: number, daysSinceLastContact: number): number {
-  if (recentInteractionCount >= 5 && daysSinceLastContact <= 7) return 90;
-  if (recentInteractionCount >= 3 && daysSinceLastContact <= 14) return 70;
-  if (recentInteractionCount >= 1 && daysSinceLastContact <= 30) return 50;
-  return 20;
+  // Recency component (0-50)
+  const recencyScore = daysSinceLastContact <= 3 ? 50
+    : daysSinceLastContact <= 7 ? 45
+    : daysSinceLastContact <= 14 ? 35
+    : daysSinceLastContact <= 21 ? 25
+    : daysSinceLastContact <= 30 ? 15
+    : 5;
+  // Frequency component (0-50)
+  const frequencyScore = Math.min(50, recentInteractionCount * 10);
+  return recencyScore + frequencyScore;
 }
 
 function getSentimentScore(sentiment: string | null): number {
