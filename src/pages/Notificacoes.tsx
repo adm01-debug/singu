@@ -132,45 +132,53 @@ const Notificacoes = () => {
     setNotificationSettings(newSettings);
     localStorage.setItem('notificationSettings', JSON.stringify(newSettings));
 
-    // Update in database if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ 
-          preferences: { 
-            notifications: newSettings 
-          } 
-        })
-        .eq('id', user.id);
+    try {
+      // Update in database if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ 
+            preferences: { 
+              notifications: newSettings 
+            } 
+          })
+          .eq('id', user.id);
+      }
+    } catch (error) {
+      console.error('Error saving notification settings:', error);
     }
   };
 
   // Load settings from localStorage and database
   useEffect(() => {
     const loadSettings = async () => {
-      // First try localStorage
-      const savedSettings = localStorage.getItem('notificationSettings');
-      if (savedSettings) {
-        setNotificationSettings(JSON.parse(savedSettings));
-      }
-      
-      // Then try database
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('preferences')
-          .eq('id', user.id)
-          .single();
+      try {
+        // First try localStorage
+        const savedSettings = localStorage.getItem('notificationSettings');
+        if (savedSettings) {
+          setNotificationSettings(JSON.parse(savedSettings));
+        }
         
-        if (profile?.preferences) {
-          const prefs = profile.preferences as { notifications?: typeof notificationSettings };
-          if (prefs.notifications) {
-            setNotificationSettings(prefs.notifications);
-            localStorage.setItem('notificationSettings', JSON.stringify(prefs.notifications));
+        // Then try database
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('preferences')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.preferences) {
+            const prefs = profile.preferences as { notifications?: typeof notificationSettings };
+            if (prefs.notifications) {
+              setNotificationSettings(prefs.notifications);
+              localStorage.setItem('notificationSettings', JSON.stringify(prefs.notifications));
+            }
           }
         }
+      } catch (error) {
+        console.error('Error loading notification settings:', error);
       }
     };
     

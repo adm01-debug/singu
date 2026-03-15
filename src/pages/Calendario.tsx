@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar as CalendarIcon, 
@@ -141,10 +142,12 @@ const Calendario = () => {
     try {
       const followUp = followUps.find(f => f.id === id);
       
-      await supabase
+      const { error } = await supabase
         .from('interactions')
         .update({ follow_up_required: false })
         .eq('id', id);
+
+      if (error) throw error;
       
       setFollowUps(prev => prev.filter(f => f.id !== id));
       setSelectedFollowUp(null);
@@ -160,6 +163,7 @@ const Calendario = () => {
       });
     } catch (error) {
       console.error('Error marking as completed:', error);
+      toast.error('Erro ao concluir follow-up. Tente novamente.');
     }
   };
 
