@@ -228,7 +228,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
     fallbacks: ['future_pacing', 'anticipation'],
     synergizes: ['storytelling', 'future_pacing', 'gift'],
     conflicts: [],
-    resistanceIndicators: [],
+    resistanceIndicators: ['já vi isso antes', 'não precisa dramatizar', 'prefiro algo constante', 'chega de surpresas'],
     saturationThreshold: 5,
   },
 
