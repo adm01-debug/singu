@@ -61,7 +61,7 @@ describe('Advanced Mental Triggers', () => {
   });
 
   it('all triggers have valid neuralTarget', () => {
-    const valid = ['limbic', 'cortex', 'prefrontal', 'amygdala', 'hippocampus', 'insula', 'anterior_cingulate', 'nucleus_accumbens'];
+    const valid = ['limbic', 'cortex', 'prefrontal', 'amygdala', 'hippocampus', 'insula', 'anterior_cingulate', 'nucleus_accumbens', 'reptilian'];
     for (const t of triggers) {
       expect(valid, `${t.id}: invalid neuralTarget ${t.neuralTarget}`).toContain(t.neuralTarget);
     }
