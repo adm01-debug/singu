@@ -22,7 +22,7 @@ export function usePrefetch() {
             interactions:interactions(id, title, type, created_at, sentiment)
           `)
           .eq('id', contactId)
-          .single();
+          .maybeSingle();
         return data;
       },
       staleTime: 5 * 60 * 1000, // 5 minutos
@@ -43,7 +43,7 @@ export function usePrefetch() {
             contacts:contacts(id, first_name, last_name, role, avatar_url)
           `)
           .eq('id', companyId)
-          .single();
+          .maybeSingle();
         return data;
       },
       staleTime: 5 * 60 * 1000,
