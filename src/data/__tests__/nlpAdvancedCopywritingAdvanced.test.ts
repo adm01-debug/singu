@@ -37,10 +37,13 @@ describe('NLP Advanced - Emotional States', () => {
     }
   });
 
-  it('keywords are all lowercase Portuguese', () => {
+  it('keywords are lowercase or known acronyms', () => {
+    const allowedUppercase = ['ROI'];
     for (const keywords of Object.values(EMOTIONAL_STATE_KEYWORDS)) {
       for (const kw of keywords) {
-        expect(kw).toBe(kw.toLowerCase());
+        const isLower = kw === kw.toLowerCase();
+        const isAllowed = allowedUppercase.includes(kw);
+        expect(isLower || isAllowed, `unexpected uppercase: ${kw}`).toBe(true);
       }
     }
   });
