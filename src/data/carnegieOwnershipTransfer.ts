@@ -174,12 +174,12 @@ Isso é exatamente o que eu estava pensando! Você é muito perspicaz. Vou segui
 // ============================================
 export const OWNERSHIP_LANGUAGE = {
   toAvoid: [
-    'Eu sugiro que...',
-    'Minha recomendação é...',
-    'Você deveria...',
-    'O correto seria...',
-    'Na minha opinião...',
-    'A melhor opção é...'
+    'Eu sugiro que',
+    'Minha recomendação é',
+    'Você deveria',
+    'O correto seria',
+    'Na minha opinião',
+    'A melhor opção é'
   ],
   
   toUse: [
