@@ -54,6 +54,7 @@ export function useRealtimeNotifications() {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<RealtimeNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const userId = user?.id;
 
   // Handle new alert
   const handleNewAlert = useCallback((payload: RealtimePostgresChangesPayload<AlertPayload>) => {
@@ -211,7 +212,6 @@ export function useRealtimeNotifications() {
   }, [userId, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
 
   // Load initial notifications
-  const userId = user?.id;
   useEffect(() => {
     if (!userId) return;
 
