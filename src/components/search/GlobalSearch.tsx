@@ -572,7 +572,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           </>
         )}
 
-        {query && !hasResults && !isLoading && (
+        {query && !hasResults && !hasLocalResults && !isLoading && (
           <CommandEmpty>
             <div className="flex flex-col items-center gap-3 py-8">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
