@@ -523,8 +523,12 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-6xl grid-cols-9">
+          <TabsList className="grid w-full max-w-7xl grid-cols-10">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="advanced" className="gap-1">
+              <BarChart3 className="w-3.5 h-3.5" />
+              Avançado
+            </TabsTrigger>
             <TabsTrigger value="disc" className="gap-1">
               <Brain className="w-3.5 h-3.5" />
               DISC

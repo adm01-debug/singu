@@ -247,9 +247,15 @@ export default function Automacoes() {
   const [editingRule, setEditingRule] = useState<(CreateRuleData & { id: string }) | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [logsRuleId, setLogsRuleId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('rules');
 
   const handleCreate = async (data: CreateRuleData) => {
     await createRule(data);
+  };
+
+  const handleUseTemplate = (data: CreateRuleData) => {
+    setEditingRule({ ...data, id: '' } as any);
+    setActiveTab('rules');
   };
 
   const handleEdit = async (data: CreateRuleData) => {
