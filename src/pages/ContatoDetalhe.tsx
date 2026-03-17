@@ -54,7 +54,7 @@ const ContatoDetalhe = () => {
   const { id } = useParams();
   const { contact, company, interactions, insights, alerts, loading, error, refetch, dismissAlert, dismissInsight } = useContactDetail(id);
   const { trackView } = useRecentlyViewed();
-  const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
+  const proactiveIntelligence = useProactiveIntelligence(contact, interactions);
 
   useEffect(() => {
     if (contact && id) {
