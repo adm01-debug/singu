@@ -348,8 +348,8 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {socialProfiles.length > 0 ? (
           <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
             <div className="space-y-2">
-              {socialProfiles.map((profile: any, i: number) => (
-                <SocialProfileCard key={i} profile={profile} />
+              {socialProfiles.map((profile, i: number) => (
+                <SocialProfileCard key={i} profile={profile as unknown as SocialProfile} />
               ))}
             </div>
           </DataCard>
@@ -365,8 +365,8 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {stakeholders.length > 0 ? (
           <DataCard title={`Stakeholders Identificados (${stakeholders.length})`} icon={Users} iconColor="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
             <div className="space-y-2">
-              {stakeholders.map((s: any, i: number) => (
-                <StakeholderCard key={i} stakeholder={s} index={i} />
+              {stakeholders.map((s, i: number) => (
+                <StakeholderCard key={i} stakeholder={s as unknown as Stakeholder} index={i} />
               ))}
             </div>
           </DataCard>
@@ -473,7 +473,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             {profile.education && profile.education.length > 0 && (
               <DataCard title="Formação" icon={GraduationCap} iconColor="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">
                 <div className="space-y-3">
-                  {profile.education.map((e: any, i: number) => (
+                  {profile.education.map((e: string | { degree?: string; institution?: string }, i: number) => (
                     <div key={i} className="p-3 rounded-lg bg-muted/50">
                       <p className="text-sm font-medium">
                         {typeof e === 'string' ? e : e.degree}
@@ -556,8 +556,8 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {socialProfiles.length > 0 && (
           <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
             <div className="space-y-2">
-              {socialProfiles.map((p: any, i: number) => (
-                <SocialProfileCard key={i} profile={p} />
+              {socialProfiles.map((p, i: number) => (
+                <SocialProfileCard key={i} profile={p as unknown as SocialProfile} />
               ))}
             </div>
           </DataCard>
