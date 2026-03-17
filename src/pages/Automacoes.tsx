@@ -266,13 +266,23 @@ export default function Automacoes() {
   };
 
   const handleUseTemplate = (data: CreateRuleData) => {
-    setEditingRule({ ...data, id: '' } as any);
+    // Template usage: open create dialog pre-filled with template data
+    setEditingRule(null);
+    setFormOpen(true);
+    // Use a micro-delay so the create dialog mounts with fresh initialData
+    setTimeout(() => {
+      setTemplateData(data);
+    }, 0);
     setActiveTab('rules');
   };
 
   const handleEdit = async (data: CreateRuleData) => {
-    if (!editingRule?.id) return;
-    await updateRule(editingRule.id, data);
+    if (editingRule?.id) {
+      await updateRule(editingRule.id, data);
+    } else {
+      // Creating from template (no id)
+      await createRule(data);
+    }
     setEditingRule(null);
   };
 
