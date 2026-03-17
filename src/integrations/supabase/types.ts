@@ -818,6 +818,84 @@ export type Database = {
           },
         ]
       }
+      deals: {
+        Row: {
+          closed_at: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          currency: string | null
+          expected_close_date: string | null
+          id: string
+          lost_reason: string | null
+          notes: string | null
+          priority: string | null
+          probability: number | null
+          stage: string
+          stage_entered_at: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          closed_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          priority?: string | null
+          probability?: number | null
+          stage?: string
+          stage_entered_at?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          closed_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          currency?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          priority?: string | null
+          probability?: number | null
+          stage?: string
+          stage_entered_at?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decision_criteria: {
         Row: {
           contact_id: string
