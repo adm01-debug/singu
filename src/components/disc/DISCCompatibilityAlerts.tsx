@@ -72,7 +72,24 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
     importantMinScore: 70
   });
 
-  const sellerProfile: Exclude<DISCProfile, null> = 'I'; // TODO: Get from user settings
+  const [sellerProfile, setSellerProfile] = useState<Exclude<DISCProfile, null>>('I');
+
+  // Fetch the user's own DISC profile from their NLP profile settings
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('profiles')
+      .select('nlp_profile')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        const nlp = data?.nlp_profile as Record<string, unknown> | null;
+        const disc = nlp?.discProfile as string | undefined;
+        if (disc && ['D', 'I', 'S', 'C'].includes(disc)) {
+          setSellerProfile(disc as Exclude<DISCProfile, null>);
+        }
+      });
+  }, [user]);
 
   const fetchAlerts = useCallback(async () => {
     if (!user) return;
