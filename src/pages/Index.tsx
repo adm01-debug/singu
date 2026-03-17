@@ -20,7 +20,6 @@ import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Header } from '@/components/layout/Header';
 import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,20 +36,10 @@ import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
-import { YourDaySection } from '@/components/dashboard/YourDaySection';
-import { PreContactBriefing } from '@/components/briefing/PreContactBriefing';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';
 import { EmptyState } from '@/components/ui/empty-state';
-import {
-  ActivityChart,
-  RelationshipEvolutionChart,
-  ContactDistributionChart,
-  RelationshipScoreChart,
-  SentimentChart,
-  type PeriodFilter,
-} from '@/components/dashboard/DashboardCharts';
 
 // Hooks for real data
 import { useContacts } from '@/hooks/useContacts';
@@ -59,6 +48,18 @@ import { useInteractions } from '@/hooks/useInteractions';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import type { ContactRole, SentimentType, Contact, Interaction, InteractionType, RelationshipStage, LifeEvent } from '@/types';
 import { getBehavior } from '@/types/behavior';
+
+// Lazy-loaded heavy components — NOT needed on initial render
+const FloatingQuickActions = lazy(() => import('@/components/quick-actions/FloatingQuickActions').then(m => ({ default: m.FloatingQuickActions })));
+const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
+const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
+
+// Dashboard charts — only rendered in "analytics" tab
+const ActivityChart = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.ActivityChart })));
+const RelationshipEvolutionChart = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.RelationshipEvolutionChart })));
+const ContactDistributionChart = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.ContactDistributionChart })));
+const RelationshipScoreChart = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.RelationshipScoreChart })));
+const SentimentChart = lazy(() => import('@/components/dashboard/DashboardCharts').then(m => ({ default: m.SentimentChart })));
 
 // Lazy-loaded below-the-fold components
 const SmartRemindersPanel = lazy(() => import('@/components/smart-reminders/SmartRemindersPanel').then(m => ({ default: m.SmartRemindersPanel })));
@@ -76,6 +77,8 @@ const PurchasePatternsPanel = lazy(() => import('@/components/analytics/Purchase
 const BehaviorAlertsPanel = lazy(() => import('@/components/analytics/BehaviorAlertsPanel').then(m => ({ default: m.BehaviorAlertsPanel })));
 const RFMAnalysisPanel = lazy(() => import('@/components/analytics/RFMAnalysisPanel').then(m => ({ default: m.RFMAnalysisPanel })));
 const DISCCompatibilityAlerts = lazy(() => import('@/components/disc').then(m => ({ default: m.DISCCompatibilityAlerts })));
+
+export type { PeriodFilter } from '@/components/dashboard/DashboardCharts';
 
 const LazyFallback = () => (
   <Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />
