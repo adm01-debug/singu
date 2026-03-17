@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Fuse from 'fuse.js';
 import { 
   Building2, 
   Users, 
@@ -170,6 +171,11 @@ function addRecentItem(item: Omit<RecentItem, 'timestamp'>) {
   localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(newRecent));
 }
 
+// Normalize text removing accents for better matching
+function normalizeText(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
@@ -186,6 +192,54 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+
+  // Fuse.js instances for local fuzzy search
+  const navigationFuse = useMemo(() => new Fuse(navigationItems, {
+    keys: ['label', 'description'],
+    threshold: 0.4,
+    ignoreLocation: true,
+    getFn: (obj, path) => {
+      const value = Fuse.config.getFn(obj, path);
+      if (typeof value === 'string') return normalizeText(value);
+      if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v);
+      return value;
+    },
+  }), []);
+
+  const quickActionsFuse = useMemo(() => new Fuse(quickActions, {
+    keys: ['label', 'description'],
+    threshold: 0.4,
+    ignoreLocation: true,
+    getFn: (obj, path) => {
+      const value = Fuse.config.getFn(obj, path);
+      if (typeof value === 'string') return normalizeText(value);
+      if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v);
+      return value;
+    },
+  }), []);
+
+  // Filtered local items based on fuzzy search
+  const filteredNavigation = useMemo(() => {
+    if (!query.trim()) return navigationItems;
+    const normalizedQuery = normalizeText(query);
+    return navigationFuse.search(normalizedQuery).map(r => r.item);
+  }, [query, navigationFuse]);
+
+  const filteredQuickActions = useMemo(() => {
+    if (!query.trim()) return quickActions;
+    const normalizedQuery = normalizeText(query);
+    return quickActionsFuse.search(normalizedQuery).map(r => r.item);
+  }, [query, quickActionsFuse]);
+
+  const filteredRecent = useMemo(() => {
+    if (!query.trim()) return recentItems;
+    const fuse = new Fuse(recentItems, {
+      keys: ['title'],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+    return fuse.search(query).map(r => r.item);
+  }, [query, recentItems]);
 
   // Sync search query with URL params (#10)
   useEffect(() => {
@@ -259,7 +313,11 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     }
 
     setIsLoading(true);
-    const searchTerm = `%${searchQuery.toLowerCase()}%`;
+    // Normalize accents for better matching (e.g., "joao" matches "João")
+    const normalizedSearch = normalizeText(searchQuery);
+    const searchTerm = `%${normalizedSearch}%`;
+    // Also keep original for exact matches
+    const originalTerm = `%${searchQuery.toLowerCase()}%`;
 
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
@@ -404,6 +462,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   };
 
   const hasResults = results.contacts.length > 0 || results.companies.length > 0 || results.interactions.length > 0;
+  const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
   const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
 
@@ -419,7 +478,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
-        {!query && (
+        {(!query || filteredQuickActions.length > 0) && (
           <>
             {/* Quick Actions */}
             <CommandGroup heading={
@@ -428,7 +487,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 <span>Ações Rápidas</span>
               </div>
             }>
-              {quickActions.map((action) => {
+              {filteredQuickActions.map((action) => {
                 const Icon = action.icon;
                 return (
                   <CommandItem 
@@ -450,7 +509,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             </CommandGroup>
 
             {/* Recent Items */}
-            {recentItems.length > 0 && (
+            {filteredRecent.length > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup heading={
@@ -459,7 +518,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     <span>Recentes</span>
                   </div>
                 }>
-                  {recentItems.map((item, index) => (
+                  {filteredRecent.map((item, index) => (
                     <CommandItem
                       key={`${item.type}-${item.id}-${index}`}
                       onSelect={() => handleRecentSelect(item)}
@@ -479,42 +538,45 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               </>
             )}
 
-            {/* Navigation */}
-            <CommandSeparator />
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Command className="w-3 h-3" />
-                <span>Navegação</span>
-              </div>
-            }>
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <CommandItem 
-                    key={item.path} 
-                    onSelect={() => handleNavigate(item.path, item.label)} 
-                    className={`gap-3 ${isActive ? 'bg-primary/5' : ''}`}
-                  >
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
-                    </div>
-                    {isActive && (
-                      <Badge variant="secondary" className="text-[10px]">Atual</Badge>
-                    )}
-                    <CommandShortcut>Alt+{item.key}</CommandShortcut>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
+            {filteredNavigation.length > 0 && (
+              <>
+                <CommandSeparator />
+                <CommandGroup heading={
+                  <div className="flex items-center gap-2">
+                    <Command className="w-3 h-3" />
+                    <span>Navegação</span>
+                  </div>
+                }>
+                  {filteredNavigation.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <CommandItem 
+                        key={item.path} 
+                        onSelect={() => handleNavigate(item.path, item.label)} 
+                        className={`gap-3 ${isActive ? 'bg-primary/5' : ''}`}
+                      >
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>{item.label}</p>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
+                        </div>
+                        {isActive && (
+                          <Badge variant="secondary" className="text-[10px]">Atual</Badge>
+                        )}
+                        <CommandShortcut>Alt+{item.key}</CommandShortcut>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </>
+            )}
           </>
         )}
 
-        {query && !hasResults && !isLoading && (
+        {query && !hasResults && !hasLocalResults && !isLoading && (
           <CommandEmpty>
             <div className="flex flex-col items-center gap-3 py-8">
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
