@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
 import { BrainSystem, PrimalStimulus } from '@/types/neuromarketing';
+import { DISCProfile } from '@/types';
 import { cn } from '@/lib/utils';
 
 interface NeuroBriefingCardProps {
@@ -46,7 +47,7 @@ const NeuroBriefingCard = ({
       .join('\n\n');
     
     let analysis = allText.length >= 50 ? analyzeText(allText) : null;
-    const discBasedProfile = discProfile ? generateNeuroProfileFromDISC(discProfile as any) : null;
+    const discBasedProfile = discProfile ? generateNeuroProfileFromDISC(discProfile as DISCProfile) : null;
 
     const brainScores = analysis?.brainSystemScores || {
       reptilian: discBasedProfile?.brainBalance?.reptilian || 33,
