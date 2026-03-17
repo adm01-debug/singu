@@ -119,6 +119,16 @@ export function useContacts(companyId?: string) {
   };
 
   const updateContact = async (id: string, updates: ContactUpdate) => {
+    // Optimistic: apply changes immediately, rollback on failure
+    let previousContact: Contact | undefined;
+    setContacts(prev => prev.map(c => {
+      if (c.id === id) {
+        previousContact = c;
+        return { ...c, ...updates } as Contact;
+      }
+      return c;
+    }));
+
     try {
       const { data, error } = await supabase
         .from('contacts')
@@ -129,17 +139,18 @@ export function useContacts(companyId?: string) {
 
       if (error) throw error;
 
+      // Replace with server-confirmed data
       setContacts(prev => prev.map(c => c.id === id ? data : c));
-      toast({
-        title: 'Contato atualizado',
-        description: 'As alterações foram salvas.',
-      });
       return data;
     } catch (error) {
       console.error('Error updating contact:', error);
+      // Rollback
+      if (previousContact) {
+        setContacts(prev => prev.map(c => c.id === id ? previousContact! : c));
+      }
       toast({
         title: 'Erro ao atualizar contato',
-        description: 'Verifique os dados e tente novamente.',
+        description: 'As alterações foram revertidas.',
         variant: 'destructive',
       });
       return null;
