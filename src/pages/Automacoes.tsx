@@ -390,7 +390,7 @@ export default function Automacoes() {
             <AnimatePresence>
               {rules.map((rule, index) => {
                 const trigger = TRIGGER_OPTIONS.find(t => t.value === rule.trigger_type);
-                const actionLabels = rule.actions.map(a => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
+                const actionLabels = (Array.isArray(rule.actions) ? rule.actions : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
 
                 return (
                   <motion.div
