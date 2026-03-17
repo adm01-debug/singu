@@ -534,7 +534,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
               </>
             )}
 
-            {/* Navigation */}
+            {filteredNavigation.length > 0 && (
+            <>
             <CommandSeparator />
             <CommandGroup heading={
               <div className="flex items-center gap-2">
