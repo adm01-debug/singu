@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             break;
             
           case 'TOKEN_REFRESHED':
-            console.log('🔄 Token refreshed via auth event');
+            if (import.meta.env.DEV) console.log('🔄 Token refreshed via auth event');
             scheduleTokenRefresh(newSession);
             break;
             

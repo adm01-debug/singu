@@ -105,7 +105,11 @@ export function QuickActionsMenu({
   const handleLinkedIn = () => {
     if (linkedin) {
       const url = linkedin.startsWith('http') ? linkedin : `https://${linkedin}`;
-      window.open(url, '_blank');
+      try {
+        const parsed = new URL(url);
+        if (!['linkedin.com', 'www.linkedin.com'].includes(parsed.hostname.replace(/^.*\.(?=linkedin\.com$)/, ''))) return;
+        window.open(parsed.href, '_blank', 'noopener,noreferrer');
+      } catch { /* invalid URL */ }
     }
   };
 
