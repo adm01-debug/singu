@@ -246,7 +246,7 @@ const EmpresaDetalhe = () => {
             <LuxButton
               onClick={() => triggerLux({
                 name: company.name,
-                cnpj: (company as any).cnpj,
+                cnpj: (company as Record<string, unknown>).cnpj as string | undefined,
                 website: company.website,
                 industry: company.industry,
                 city: company.city,
@@ -796,7 +796,7 @@ const EmpresaDetalhe = () => {
                           loading={luxLoading}
                           onTrigger={() => triggerLux({
                             name: company.name,
-                            cnpj: (company as any).cnpj,
+                            cnpj: (company as Record<string, unknown>).cnpj as string | undefined,
                             website: company.website,
                             industry: company.industry,
                             city: company.city,

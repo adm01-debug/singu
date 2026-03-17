@@ -69,7 +69,7 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
     return () => clearInterval(interval);
   }, [latestRecord?.status, fetchRecords]);
 
-  const triggerLux = useCallback(async (entityData: any) => {
+  const triggerLux = useCallback(async (entityData: Record<string, unknown>) => {
     if (!user || !entityId) return null;
     setTriggering(true);
     try {

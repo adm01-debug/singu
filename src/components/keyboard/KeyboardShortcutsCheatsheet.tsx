@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef } from 'react';
-import { isMacOS } from '@/lib/utils';
+import { isMacOS, cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, Search, X, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 
 interface Shortcut {
   keys: string[];
