@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, AlertTriangle, Lightbulb, Heart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
