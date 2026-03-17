@@ -470,8 +470,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
-        {/* DB Results first when searching */}
-        {query && results.contacts.length > 0 && (
+        {/* Quick Actions */}
+        {(!query || filteredQuickActions.length > 0) && (
           <CommandGroup heading={
             <div className="flex items-center gap-2">
               <Zap className="w-3 h-3" />
