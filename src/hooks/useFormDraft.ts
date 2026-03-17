@@ -32,26 +32,31 @@ export function useFormDraft<T extends FieldValues>(
 
   // Restore draft on mount
   useEffect(() => {
-    if (!enabled) return;
-    
+    if (!enabled) {
+      // Clear any pending timeout when disabled
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = undefined;
+      }
+      return;
+    }
+
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object') {
           hasDraftRef.current = true;
-          // Only restore non-empty values to avoid overwriting defaults
           const currentValues = form.getValues();
           const mergedValues: Record<string, unknown> = {};
-          
+
           for (const [fieldKey, value] of Object.entries(parsed)) {
-            // Only restore if current value is empty/default
             const currentVal = currentValues[fieldKey as keyof T];
             if (!currentVal || currentVal === '' || currentVal === null) {
               mergedValues[fieldKey] = value;
             }
           }
-          
+
           if (Object.keys(mergedValues).length > 0) {
             form.reset({ ...currentValues, ...mergedValues } as T);
           }
