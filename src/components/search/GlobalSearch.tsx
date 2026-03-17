@@ -535,38 +535,40 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             )}
 
             {filteredNavigation.length > 0 && (
-            <>
-            <CommandSeparator />
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Command className="w-3 h-3" />
-                <span>Navegação</span>
-              </div>
-            }>
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <CommandItem 
-                    key={item.path} 
-                    onSelect={() => handleNavigate(item.path, item.label)} 
-                    className={`gap-3 ${isActive ? 'bg-primary/5' : ''}`}
-                  >
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>{item.label}</p>
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
-                    </div>
-                    {isActive && (
-                      <Badge variant="secondary" className="text-[10px]">Atual</Badge>
-                    )}
-                    <CommandShortcut>Alt+{item.key}</CommandShortcut>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
+              <>
+                <CommandSeparator />
+                <CommandGroup heading={
+                  <div className="flex items-center gap-2">
+                    <Command className="w-3 h-3" />
+                    <span>Navegação</span>
+                  </div>
+                }>
+                  {filteredNavigation.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <CommandItem 
+                        key={item.path} 
+                        onSelect={() => handleNavigate(item.path, item.label)} 
+                        className={`gap-3 ${isActive ? 'bg-primary/5' : ''}`}
+                      >
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>{item.label}</p>
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
+                        </div>
+                        {isActive && (
+                          <Badge variant="secondary" className="text-[10px]">Atual</Badge>
+                        )}
+                        <CommandShortcut>Alt+{item.key}</CommandShortcut>
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              </>
+            )}
           </>
         )}
 
