@@ -325,19 +325,19 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           .from('contacts')
           .select('id, first_name, last_name, email, phone, role_title, company_id')
           .eq('user_id', user.id)
-          .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},role_title.ilike.${searchTerm}`)
+          .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},role_title.ilike.${searchTerm},first_name.ilike.${originalTerm},last_name.ilike.${originalTerm},email.ilike.${originalTerm}`)
           .limit(5),
         supabase
           .from('companies')
           .select('id, name, industry, city, state')
           .eq('user_id', user.id)
-          .or(`name.ilike.${searchTerm},industry.ilike.${searchTerm},city.ilike.${searchTerm}`)
+          .or(`name.ilike.${searchTerm},industry.ilike.${searchTerm},city.ilike.${searchTerm},name.ilike.${originalTerm},industry.ilike.${originalTerm}`)
           .limit(5),
         supabase
           .from('interactions')
           .select('id, title, type, created_at, contact_id')
           .eq('user_id', user.id)
-          .or(`title.ilike.${searchTerm},content.ilike.${searchTerm}`)
+          .or(`title.ilike.${searchTerm},content.ilike.${searchTerm},title.ilike.${originalTerm},content.ilike.${originalTerm}`)
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
