@@ -2,10 +2,7 @@
 // NLP Components - Enterprise Module Export
 // ==============================================
 
-export { default as NLPEvolutionTimeline } from './NLPEvolutionTimeline';
 export { default as NLPTrainingMode } from './NLPTrainingMode';
-export { default as UnifiedScriptGenerator } from './UnifiedScriptGenerator';
-export { default as CommunicationCoherencePanel } from './CommunicationCoherencePanel';
 export { default as NLPConversionMetrics } from './NLPConversionMetrics';
 
 // Advanced NLP Rapport & Communication
@@ -25,6 +22,3 @@ export { default as AnchorTrackingSystem } from './AnchorTrackingSystem';
 export { default as StateElicitationToolkit } from './StateElicitationToolkit';
 export { default as SubmodalityModifier } from './SubmodalityModifier';
 export { default as SwishPatternGenerator } from './SwishPatternGenerator';
-
-// Copywriting Sales Tools
-export { default as CopywritingSalesTools } from './CopywritingSalesTools';

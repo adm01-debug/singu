@@ -12,4 +12,3 @@ export { VulnerabilityPanel } from './VulnerabilityPanel';
 export { ProgressCelebrationPanel } from './ProgressCelebrationPanel';
 export { AppreciationPanel } from './AppreciationPanel';
 export { CarnegieDashboard } from './CarnegieDashboard';
-export { CarnegieQuickAccess } from './CarnegieQuickAccess';
