@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { 
@@ -176,7 +176,7 @@ function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
+export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(({ open, onOpenChange }, ref) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
     contacts: SearchResult[];
@@ -459,7 +459,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} shouldFilter={false}>
+    <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
       <div className="flex items-center gap-2 px-3 border-b border-border">
         <Zap className="w-4 h-4 text-primary" />
         <span className="text-xs font-medium text-muted-foreground">Super Command Palette</span>
@@ -665,4 +665,6 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       </div>
     </CommandDialog>
   );
-}
+});
+
+GlobalSearch.displayName = 'GlobalSearch';
