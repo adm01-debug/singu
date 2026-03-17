@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,27 +14,27 @@ import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { WhatsNewModal } from "@/components/features/WhatsNewModal";
 import { SessionExpiryHandler } from "@/components/session/SessionExpiryHandler";
 import { useEasterEggs } from "@/hooks/useEasterEggs";
+import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 
-import Index from "./pages/Index";
-import Analytics from "./pages/Analytics";
-import Empresas from "./pages/Empresas";
-import EmpresaDetalhe from "./pages/EmpresaDetalhe";
-import Contatos from "./pages/Contatos";
-import ContatoDetalhe from "./pages/ContatoDetalhe";
-import Interacoes from "./pages/Interacoes";
-import Insights from "./pages/Insights";
-import Configuracoes from "./pages/Configuracoes";
-import Calendario from "./pages/Calendario";
-import Notificacoes from "./pages/Notificacoes";
-import Network from "./pages/Network";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import NotFound from "./pages/NotFound";
-import RelatorioContato from "./pages/RelatorioContato";
-import Automacoes from "./pages/Automacoes";
-
-
-import DesignSystem from "./pages/DesignSystem";
+// Lazy-loaded pages — code splitting per route
+const Index = lazy(() => import("./pages/Index"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Empresas = lazy(() => import("./pages/Empresas"));
+const EmpresaDetalhe = lazy(() => import("./pages/EmpresaDetalhe"));
+const Contatos = lazy(() => import("./pages/Contatos"));
+const ContatoDetalhe = lazy(() => import("./pages/ContatoDetalhe"));
+const Interacoes = lazy(() => import("./pages/Interacoes"));
+const Insights = lazy(() => import("./pages/Insights"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const Calendario = lazy(() => import("./pages/Calendario"));
+const Notificacoes = lazy(() => import("./pages/Notificacoes"));
+const Network = lazy(() => import("./pages/Network"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
+const Automacoes = lazy(() => import("./pages/Automacoes"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,87 +60,98 @@ const WhatsNewWrapper = () => {
   return <WhatsNewModal />;
 };
 
+// Suspense wrapper for lazy routes
+const LazyPage = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<PageLoadingFallback />}>
+    <PageTransition>{children}</PageTransition>
+  </Suspense>
+);
+
 // Routes wrapper
 const AnimatedRoutes = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/auth" element={<LazyPage><Auth /></LazyPage>} />
       <Route path="/onboarding" element={
         <RequireAuth>
-          <PageTransition><Onboarding /></PageTransition>
+          <LazyPage><Onboarding /></LazyPage>
         </RequireAuth>
       } />
       
       {/* Protected routes */}
       <Route path="/" element={
         <RequireAuth>
-          <PageTransition><Index /></PageTransition>
+          <LazyPage><Index /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/empresas" element={
         <RequireAuth>
-          <PageTransition><Empresas /></PageTransition>
+          <LazyPage><Empresas /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/empresas/:id" element={
         <RequireAuth>
-          <EmpresaDetalhe />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <EmpresaDetalhe />
+          </Suspense>
         </RequireAuth>
       } />
       <Route path="/contatos" element={
         <RequireAuth>
-          <PageTransition><Contatos /></PageTransition>
+          <LazyPage><Contatos /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/contatos/:id" element={
         <RequireAuth>
-          <ContatoDetalhe />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <ContatoDetalhe />
+          </Suspense>
         </RequireAuth>
       } />
       <Route path="/interacoes" element={
         <RequireAuth>
-          <PageTransition><Interacoes /></PageTransition>
+          <LazyPage><Interacoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/insights" element={
         <RequireAuth>
-          <PageTransition><Insights /></PageTransition>
+          <LazyPage><Insights /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/analytics" element={
         <RequireAuth>
-          <PageTransition><Analytics /></PageTransition>
+          <LazyPage><Analytics /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/configuracoes" element={
         <RequireAuth>
-          <PageTransition><Configuracoes /></PageTransition>
+          <LazyPage><Configuracoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/calendario" element={
         <RequireAuth>
-          <PageTransition><Calendario /></PageTransition>
+          <LazyPage><Calendario /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/notificacoes" element={
         <RequireAuth>
-          <PageTransition><Notificacoes /></PageTransition>
+          <LazyPage><Notificacoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/network" element={
         <RequireAuth>
-          <PageTransition><Network /></PageTransition>
+          <LazyPage><Network /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/relatorio/:id" element={
         <RequireAuth>
-          <PageTransition><RelatorioContato /></PageTransition>
+          <LazyPage><RelatorioContato /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/automacoes" element={
         <RequireAuth>
-          <PageTransition><Automacoes /></PageTransition>
+          <LazyPage><Automacoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={
@@ -148,11 +160,11 @@ const AnimatedRoutes = () => {
         </RequireAuth>
       } />
       <Route path="/design-system" element={
-        <PageTransition><DesignSystem /></PageTransition>
+        <LazyPage><DesignSystem /></LazyPage>
       } />
           
       {/* Catch-all */}
-      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
     </Routes>
   );
 };

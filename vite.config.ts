@@ -73,4 +73,31 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    target: 'es2022',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core vendor — loaded on every page
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          // Heavy UI libs — loaded on demand
+          'vendor-charts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+          // UI primitives shared across pages
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-select',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-scroll-area',
+          ],
+        },
+      },
+    },
+  },
 }));
