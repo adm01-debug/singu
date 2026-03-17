@@ -459,7 +459,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange} shouldFilter={false}>
+    <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
       <div className="flex items-center gap-2 px-3 border-b border-border">
         <Zap className="w-4 h-4 text-primary" />
         <span className="text-xs font-medium text-muted-foreground">Super Command Palette</span>
