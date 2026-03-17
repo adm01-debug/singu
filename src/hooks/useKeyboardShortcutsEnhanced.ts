@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { isMacOS } from '@/lib/utils';
 
 // ============================================
 // ENHANCED KEYBOARD SHORTCUTS - Pilar 5 & 7
@@ -281,8 +282,9 @@ export function useKeyboardShortcutsEnhanced(options: UseKeyboardShortcutsOption
   // Format shortcut keys for display
   const formatShortcut = useCallback((shortcut: ShortcutConfig): string[] => {
     const keys: string[] = [];
-    if (shortcut.ctrl) keys.push(navigator.platform.includes('Mac') ? '⌘' : 'Ctrl');
-    if (shortcut.alt) keys.push(navigator.platform.includes('Mac') ? '⌥' : 'Alt');
+    const mac = isMacOS();
+    if (shortcut.ctrl) keys.push(mac ? '⌘' : 'Ctrl');
+    if (shortcut.alt) keys.push(mac ? '⌥' : 'Alt');
     if (shortcut.shift) keys.push('⇧');
     keys.push(shortcut.key.toUpperCase());
     return keys;

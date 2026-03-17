@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { isMacOS } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, Search, X, Command } from 'lucide-react';
 import {
@@ -21,7 +22,7 @@ export function KeyboardShortcutsDialogEnhanced() {
   
   const { groupedShortcuts, formatShortcut } = useKeyboardShortcutsEnhanced({ enabled: false });
   
-  const isMac = typeof navigator !== 'undefined' && navigator.platform.includes('Mac');
+  const isMac = isMacOS();
 
   useEffect(() => {
     const handleShowShortcuts = () => setIsOpen(true);

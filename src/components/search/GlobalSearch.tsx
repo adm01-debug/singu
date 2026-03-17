@@ -38,6 +38,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { isMacOS } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface SearchResult {
@@ -374,7 +375,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         })) || [],
       });
     } catch (error) {
-      console.error('Search error:', error);
+      void error;
       toast.error('Não foi possível completar a busca agora.');
       setResults({ contacts: [], companies: [], interactions: [] });
     } finally {
@@ -463,7 +464,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   const hasResults = results.contacts.length > 0 || results.companies.length > 0 || results.interactions.length > 0;
   const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
-  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = isMacOS();
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
@@ -518,9 +519,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     <span>Recentes</span>
                   </div>
                 }>
-                  {filteredRecent.map((item, index) => (
+                  {filteredRecent.map((item) => (
                     <CommandItem
-                      key={`${item.type}-${item.id}-${index}`}
+                      key={`${item.type}-${item.id}`}
                       onSelect={() => handleRecentSelect(item)}
                       className="gap-3"
                     >

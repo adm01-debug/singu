@@ -1,4 +1,5 @@
 import { useState, useEffect, forwardRef } from 'react';
+import { isMacOS } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, Search, X, Command } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ export const KeyboardShortcutsCheatsheet = forwardRef<HTMLDivElement, KeyboardSh
     return acc;
   }, {} as Record<string, Shortcut[]>);
 
-  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = isMacOS();
 
   const formatKey = (key: string) => {
     if (isMac) {

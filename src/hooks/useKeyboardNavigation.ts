@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { isMacOS } from '@/lib/utils';
 
 interface NavigationRoute {
   key: string;
@@ -45,7 +46,7 @@ export function useKeyboardNavigation({
       return;
     }
 
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isMac = isMacOS();
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
     // ⌘/Ctrl + K - Open search (handled by GlobalSearch)

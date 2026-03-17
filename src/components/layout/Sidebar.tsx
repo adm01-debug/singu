@@ -21,7 +21,7 @@ import {
   Heart,
   AlertTriangle
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, isMacOS } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
@@ -83,7 +83,7 @@ interface SidebarProps {
 }
 
 function KeyboardShortcutsDialog() {
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = isMacOS();
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   const shortcuts = [
@@ -165,7 +165,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
     ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
     : user?.email || 'Usuário';
 
-  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const isMac = isMacOS();
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
