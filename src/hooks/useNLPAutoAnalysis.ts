@@ -144,7 +144,7 @@ export function useNLPAutoAnalysis() {
         analyzedAt: new Date().toISOString()
       };
 
-      console.log('✅ NLP Auto-Analysis complete:', result);
+      if (import.meta.env.DEV) console.log('✅ NLP Auto-Analysis complete');
 
       return result;
     } catch (error) {
