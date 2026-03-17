@@ -197,17 +197,23 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <OfflineIndicator />
-            <InstallPrompt />
-            <NetworkStatusBadge />
+            <Suspense fallback={null}>
+              <PWAShell />
+            </Suspense>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <EasterEggsProvider />
-              <KeyboardShortcutsDialogEnhanced />
+              <Suspense fallback={null}>
+                <EasterEggsProvider />
+              </Suspense>
+              <Suspense fallback={null}>
+                <KeyboardShortcutsDialogEnhanced />
+              </Suspense>
               <AuthProvider>
-                <SessionExpiryHandler>
-                  <WhatsNewWrapper />
-                  <AnimatedRoutes />
-                </SessionExpiryHandler>
+                <Suspense fallback={null}>
+                  <SessionExpiryHandler>
+                    <WhatsNewWrapper />
+                    <AnimatedRoutes />
+                  </SessionExpiryHandler>
+                </Suspense>
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
