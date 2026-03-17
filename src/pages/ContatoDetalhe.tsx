@@ -9,8 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { useProactiveIntelligence } from '@/hooks/useProactiveIntelligence';
 import { LuxButton } from '@/components/lux/LuxButton';
 import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
+import { ProactiveIntelligencePanel } from '@/components/proactive-intelligence/ProactiveIntelligencePanel';
 import {
   ContactDetailHeader,
   ContactOverviewTab,
