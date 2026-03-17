@@ -82,7 +82,13 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     },
   });
 
-  const handleSubmit = async (data: CompanyFormData) => {
+  // Auto-save draft (only for new companies)
+  const draftKey = company ? `company-edit-${company.id}` : 'company-new';
+  const { clearDraft } = useFormDraft(form, {
+    key: draftKey,
+    enabled: !company,
+  });
+
     // Clean optional empty strings
     const cleanedData = {
       ...data,
