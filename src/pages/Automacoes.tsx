@@ -54,6 +54,18 @@ function RuleFormDialog({
     initialData?.actions ?? [{ type: 'create_alert', config: { title: 'Alerta automático' } }]
   );
 
+  // Reset form state when initialData changes (useState only initializes once)
+  useEffect(() => {
+    if (open) {
+      setName(initialData?.name ?? '');
+      setDescription(initialData?.description ?? '');
+      setTriggerType(initialData?.trigger_type ?? 'interaction_created');
+      setTriggerConfig(initialData?.trigger_config ? JSON.stringify(initialData.trigger_config, null, 2) : '{}');
+      setConditions(initialData?.conditions ?? []);
+      setActions(initialData?.actions ?? [{ type: 'create_alert', config: { title: 'Alerta automático' } }]);
+    }
+  }, [open, initialData]);
+
   const handleSubmit = () => {
     if (!name.trim()) return;
     let parsedConfig = {};
