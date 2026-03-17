@@ -32,7 +32,7 @@ export function useContactDetail(contactId: string | undefined) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchContactDetail = useCallback(async () => {
+  const fetchContactDetail = useCallback(async (signal?: AbortSignal) => {
     if (!user || !contactId) {
       setLoading(false);
       return;
@@ -42,12 +42,13 @@ export function useContactDetail(contactId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch contact from local database
       const { data: contactData, error: contactError } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', contactId)
         .single();
+
+      if (signal?.aborted) return;
 
       if (contactError || !contactData) {
         setError('Contato não encontrado');
@@ -55,7 +56,6 @@ export function useContactDetail(contactId: string | undefined) {
         return;
       }
 
-      // Fetch company - try local first, then external
       let companyData: Company | null = null;
       if (contactData?.company_id) {
         const { data: localCompany } = await supabase
@@ -77,53 +77,42 @@ export function useContactDetail(contactId: string | undefined) {
         }
       }
 
-      // Fetch interactions for this contact
-      const { data: interactionsData, error: interactionsError } = await supabase
-        .from('interactions')
-        .select('id, type, title, content, sentiment, tags, duration, attachments, audio_url, transcription, key_insights, initiated_by, response_time, follow_up_required, follow_up_date, emotion_analysis, created_at, contact_id, company_id, user_id')
-        .eq('contact_id', contactId)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      if (signal?.aborted) return;
 
-      if (interactionsError) {
-        console.error('Error fetching interactions:', interactionsError);
-      }
+      const [interactionsRes, insightsRes, alertsRes] = await Promise.allSettled([
+        supabase
+          .from('interactions')
+          .select('id, type, title, content, sentiment, tags, duration, attachments, audio_url, transcription, key_insights, initiated_by, response_time, follow_up_required, follow_up_date, emotion_analysis, created_at, contact_id, company_id, user_id')
+          .eq('contact_id', contactId)
+          .order('created_at', { ascending: false })
+          .limit(50),
+        supabase
+          .from('insights')
+          .select('id, category, title, description, confidence, source, actionable, action_suggestion, expires_at, dismissed, created_at, contact_id, user_id')
+          .eq('contact_id', contactId)
+          .eq('dismissed', false)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('alerts')
+          .select('id, type, priority, title, description, action_url, dismissed, expires_at, created_at, contact_id, user_id')
+          .eq('contact_id', contactId)
+          .eq('dismissed', false)
+          .order('created_at', { ascending: false })
+          .limit(10),
+      ]);
 
-      // Fetch insights for this contact
-      const { data: insightsData, error: insightsError } = await supabase
-        .from('insights')
-        .select('id, category, title, description, confidence, source, actionable, action_suggestion, expires_at, dismissed, created_at, contact_id, user_id')
-        .eq('contact_id', contactId)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (insightsError) {
-        console.error('Error fetching insights:', insightsError);
-      }
-
-      // Fetch alerts for this contact
-      const { data: alertsData, error: alertsError } = await supabase
-        .from('alerts')
-        .select('id, type, priority, title, description, action_url, dismissed, expires_at, created_at, contact_id, user_id')
-        .eq('contact_id', contactId)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (alertsError) {
-        console.error('Error fetching alerts:', alertsError);
-      }
+      if (signal?.aborted) return;
 
       setData({
         contact: contactData,
         company: companyData,
-        interactions: interactionsData || [],
-        insights: insightsData || [],
-        alerts: alertsData || [],
+        interactions: (interactionsRes.status === 'fulfilled' ? interactionsRes.value.data : null) || [],
+        insights: (insightsRes.status === 'fulfilled' ? insightsRes.value.data : null) || [],
+        alerts: (alertsRes.status === 'fulfilled' ? alertsRes.value.data : null) || [],
       });
-    } catch (err) {
-      console.error('Error fetching contact detail:', err);
+    } catch {
+      if (signal?.aborted) return;
       setError('Erro ao carregar dados do contato');
       toast({
         title: 'Erro ao carregar contato',
@@ -131,12 +120,14 @@ export function useContactDetail(contactId: string | undefined) {
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [user, contactId, toast]);
 
   useEffect(() => {
-    fetchContactDetail();
+    const abortController = new AbortController();
+    fetchContactDetail(abortController.signal);
+    return () => abortController.abort();
   }, [fetchContactDetail]);
 
   // Set up realtime subscription for updates
@@ -172,10 +163,11 @@ export function useContactDetail(contactId: string | undefined) {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setData(prev => ({
-              ...prev,
-              interactions: [payload.new as Interaction, ...prev.interactions],
-            }));
+            const newInteraction = payload.new as Interaction;
+            setData(prev => {
+              if (prev.interactions.some(i => i.id === newInteraction.id)) return prev;
+              return { ...prev, interactions: [newInteraction, ...prev.interactions] };
+            });
           } else if (payload.eventType === 'DELETE') {
             setData(prev => ({
               ...prev,
@@ -194,10 +186,11 @@ export function useContactDetail(contactId: string | undefined) {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setData(prev => ({
-              ...prev,
-              insights: [payload.new as Insight, ...prev.insights],
-            }));
+            const newInsight = payload.new as Insight;
+            setData(prev => {
+              if (prev.insights.some(i => i.id === newInsight.id)) return prev;
+              return { ...prev, insights: [newInsight, ...prev.insights] };
+            });
           }
         }
       )
@@ -211,18 +204,15 @@ export function useContactDetail(contactId: string | undefined) {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setData(prev => ({
-              ...prev,
-              alerts: [payload.new as Alert, ...prev.alerts],
-            }));
+            const newAlert = payload.new as Alert;
+            setData(prev => {
+              if (prev.alerts.some(a => a.id === newAlert.id)) return prev;
+              return { ...prev, alerts: [newAlert, ...prev.alerts] };
+            });
           }
         }
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.error(`Realtime subscription error for contact ${contactId}`);
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -254,7 +244,7 @@ export function useContactDetail(contactId: string | undefined) {
 
       return updatedContact;
     } catch (err) {
-      console.error('Error updating contact:', err);
+      void err;
       toast({
         title: 'Erro ao atualizar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -297,7 +287,7 @@ export function useContactDetail(contactId: string | undefined) {
 
       return newInteraction;
     } catch (err) {
-      console.error('Error adding interaction:', err);
+      void err;
       toast({
         title: 'Erro ao registrar interação',
         description: 'Verifique os dados e tente novamente.',
@@ -325,7 +315,7 @@ export function useContactDetail(contactId: string | undefined) {
         title: 'Alerta dispensado',
       });
     } catch (err) {
-      console.error('Error dismissing alert:', err);
+      void err;
     }
   };
 
@@ -347,7 +337,7 @@ export function useContactDetail(contactId: string | undefined) {
         title: 'Insight dispensado',
       });
     } catch (err) {
-      console.error('Error dismissing insight:', err);
+      void err;
     }
   };
 
