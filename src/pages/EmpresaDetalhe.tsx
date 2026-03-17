@@ -873,7 +873,7 @@ const EmpresaDetalhe = () => {
             try {
               const { error } = await supabase
                 .from('contacts')
-                .insert({ ...data, user_id: user.id, company_id: id } as any);
+                .insert({ ...data, user_id: user.id, company_id: id } as Record<string, unknown>);
               if (error) throw error;
               setIsAddContactOpen(false);
               fetchCompanyData();

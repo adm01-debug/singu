@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 import { Contact } from '@/types';
 import { useAdvancedTriggers } from '@/hooks/useAdvancedTriggers';
 import { MENTAL_TRIGGERS } from '@/types/triggers';
+import type { AllTriggerTypes } from '@/types/triggers-advanced';
 import { DEMO_CONTACT } from '@/lib/demo-contact';
 
 interface AdvancedTriggersPanelProps {
@@ -431,7 +432,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
 
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(advancedTriggers).map(([id, trigger], index) => {
-                    const recommendedIntensity = getRecommendedIntensity(id as any);
+                    const recommendedIntensity = getRecommendedIntensity(id as AllTriggerTypes);
                     const intensityInfo = intensityLevels[recommendedIntensity - 1];
 
                     return (
