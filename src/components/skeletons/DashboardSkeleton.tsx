@@ -1,10 +1,11 @@
+import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 // Dashboard complete skeleton
-const DashboardSkeleton = () => {
+const DashboardSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => {
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div ref={ref} className="p-6 space-y-6 animate-fade-in">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
@@ -172,6 +173,7 @@ const DashboardSkeleton = () => {
       </Card>
     </div>
   );
-};
+});
+DashboardSkeleton.displayName = 'DashboardSkeleton';
 
 export default DashboardSkeleton;
