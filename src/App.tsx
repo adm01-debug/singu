@@ -30,6 +30,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
+import Automacoes from "./pages/Automacoes";
 
 import DesignSystem from "./pages/DesignSystem";
 
@@ -133,6 +134,11 @@ const AnimatedRoutes = () => {
       <Route path="/relatorio/:id" element={
         <RequireAuth>
           <PageTransition><RelatorioContato /></PageTransition>
+        </RequireAuth>
+      } />
+      <Route path="/automacoes" element={
+        <RequireAuth>
+          <PageTransition><Automacoes /></PageTransition>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={

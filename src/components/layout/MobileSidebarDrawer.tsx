@@ -16,7 +16,8 @@ import {
   Search,
   LogOut,
   User,
-  Zap
+  Zap,
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,6 +39,7 @@ const navItems = [
   { icon: Calendar, label: 'Calendário', path: '/calendario', section: 'Ferramentas' },
   { icon: Bell, label: 'Notificações', path: '/notificacoes', section: 'Ferramentas' },
   { icon: Network, label: 'Network', path: '/network', section: 'Ferramentas' },
+  { icon: Workflow, label: 'Automações', path: '/automacoes', section: 'Ferramentas' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes', section: 'Sistema' },
 ];
 

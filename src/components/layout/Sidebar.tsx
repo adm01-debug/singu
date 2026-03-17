@@ -19,7 +19,8 @@ import {
   BarChart3,
   Share2,
   Heart,
-  AlertTriangle
+  AlertTriangle,
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -71,11 +72,12 @@ const menuItems: MenuItemConfig[] = [
   { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
   { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
+  { icon: Workflow, label: 'Automações', path: '/automacoes', shortcut: '9', tourId: 'automations' },
 ];
 
 const bottomMenuItems: MenuItemConfig[] = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9', tourId: 'notifications', badgeKey: 'total' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0', tourId: 'settings' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '-', tourId: 'settings' },
 ];
 
 interface SidebarProps {
