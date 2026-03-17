@@ -313,7 +313,11 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     }
 
     setIsLoading(true);
-    const searchTerm = `%${searchQuery.toLowerCase()}%`;
+    // Normalize accents for better matching (e.g., "joao" matches "João")
+    const normalizedSearch = normalizeText(searchQuery);
+    const searchTerm = `%${normalizedSearch}%`;
+    // Also keep original for exact matches
+    const originalTerm = `%${searchQuery.toLowerCase()}%`;
 
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
