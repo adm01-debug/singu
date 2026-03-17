@@ -463,6 +463,7 @@ const Contatos = () => {
         {/* Recently Viewed */}
         <RecentlyViewedSection type="contact" />
 
+        <PullToRefresh onRefresh={handleRefresh}>
         {/* Loading State */}
         {loading ? (
           viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
