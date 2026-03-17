@@ -25,7 +25,9 @@ const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 
 // Module-level singleton for fetch interceptor
 let fetchInterceptorInstalled = false;
+let originalFetch: typeof window.fetch | null = null;
 let refreshPromise: Promise<any> | null = null;
+let activeProviderCount = 0;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -51,24 +53,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (refreshTime > 0) {
       refreshTimeoutRef.current = setTimeout(async () => {
-        console.log('🔄 Refreshing session token...');
         try {
           const { data, error } = await supabase.auth.refreshSession();
           if (error) {
-            console.error('Failed to refresh session:', error);
-            // Sessão expirou, redirecionar para login
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
           } else if (data.session) {
-            console.log('✅ Session refreshed successfully');
             scheduleTokenRefresh(data.session);
           }
-        } catch (err) {
-          console.error('Error refreshing session:', err);
+        } catch {
+          // Refresh failed silently
         }
       }, refreshTime);
-    } else if (timeUntilExpiry <= 0) {
-      // Sessão já expirou
-      console.warn('⚠️ Session already expired');
     }
   }, []);
 
@@ -148,14 +143,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [scheduleTokenRefresh]);
 
-  // Interceptar erros 401 globalmente (singleton pattern)
+  // Interceptar erros 401 globalmente (singleton pattern with ref counting)
   useEffect(() => {
+    activeProviderCount++;
+
     if (!fetchInterceptorInstalled) {
       fetchInterceptorInstalled = true;
-      const originalFetch = window.fetch;
+      originalFetch = window.fetch;
 
       window.fetch = async (...args) => {
-        const response = await originalFetch(...args);
+        const response = await originalFetch!(...args);
 
         if (response.status !== 401) return response;
 
@@ -168,8 +165,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return response;
         }
 
-        console.warn('⚠️ 401 Unauthorized - attempting session refresh');
-
         try {
           if (!refreshPromise) {
             refreshPromise = supabase.auth.refreshSession().finally(() => {
@@ -180,11 +175,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!data?.session) {
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
             await supabase.auth.signOut();
-            setUser(null);
-            setSession(null);
           }
-        } catch (err) {
-          console.error('Failed to handle 401:', err);
+        } catch {
+          // Session refresh failed silently
         }
 
         return response;
@@ -192,7 +185,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return () => {
-      // Don't uninstall the interceptor as it's shared
+      activeProviderCount--;
+      if (activeProviderCount === 0 && originalFetch) {
+        window.fetch = originalFetch;
+        originalFetch = null;
+        fetchInterceptorInstalled = false;
+      }
     };
   }, []);
 
