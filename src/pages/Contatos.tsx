@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { PullToRefresh } from '@/components/ui/pull-to-refresh';
+import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -107,7 +109,7 @@ const sortOptions: SortOption[] = [
 const Contatos = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
+  const { contacts, loading, createContact, updateContact, deleteContact, fetchContacts } = useContacts();
   const { companies } = useCompanies();
   const { interactions } = useInteractions();
   
@@ -129,6 +131,11 @@ const Contatos = () => {
   
   // Mini celebration hook
   const celebration = useMiniCelebration();
+  
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    await fetchContacts();
+  }, [fetchContacts]);
   
   // Advanced filters state - restore from URL
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(() => {
@@ -456,6 +463,7 @@ const Contatos = () => {
         {/* Recently Viewed */}
         <RecentlyViewedSection type="contact" />
 
+        <PullToRefresh onRefresh={handleRefresh}>
         {/* Loading State */}
         {loading ? (
           viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
@@ -526,21 +534,26 @@ const Contatos = () => {
               ) : (
                 <div className="space-y-2">
                   {filteredAndSortedContacts.map((contact, index) => (
-                    <ContactCardWithContext
+                    <SwipeableListItem
                       key={contact.id}
-                      contact={contact}
-                      companyName={getCompanyName(contact.company_id)}
-                      lastInteraction={getLastInteractionDate(contact.id)}
-                      index={index}
-                      isSelected={selectedIds.has(contact.id)}
-                      isHighlighted={selectedIndex === index}
-                      selectionMode={selectionMode}
-                      onSelect={handleSelect}
-                      onEdit={setEditingContact}
-                      onDelete={setDeletingContact}
-                      onUpdate={updateContact}
-                      viewMode="list"
-                    />
+                      onDelete={() => setDeletingContact(contact)}
+                      onArchive={() => updateContact(contact.id, { relationship_stage: 'churned' })}
+                    >
+                      <ContactCardWithContext
+                        contact={contact}
+                        companyName={getCompanyName(contact.company_id)}
+                        lastInteraction={getLastInteractionDate(contact.id)}
+                        index={index}
+                        isSelected={selectedIds.has(contact.id)}
+                        isHighlighted={selectedIndex === index}
+                        selectionMode={selectionMode}
+                        onSelect={handleSelect}
+                        onEdit={setEditingContact}
+                        onDelete={setDeletingContact}
+                        onUpdate={updateContact}
+                        viewMode="list"
+                      />
+                    </SwipeableListItem>
                   ))}
                 </div>
               )
@@ -584,6 +597,7 @@ const Contatos = () => {
             )}
           </>
         )}
+        </PullToRefresh>
       </div>
 
       {/* Bulk Actions Bar */}

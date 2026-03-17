@@ -35,8 +35,6 @@ export { ErrorState, InlineError, LoadingWithError } from './ErrorState';
 // Other feedback components
 export { ErrorBoundary } from './ErrorBoundary';
 export { OfflineBanner } from './OfflineBanner';
-export { SwipeableListItem } from './SwipeableListItem';
-export { PullToRefresh } from './PullToRefresh';
 export { ContextualHelp, FeatureHighlight, InlineHelp } from './ContextualHelp';
 export { FeatureSpotlight } from './FeatureSpotlight';
 export { DraftRecoveryBanner } from './DraftRecoveryBanner';
