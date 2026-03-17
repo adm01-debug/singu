@@ -555,6 +555,11 @@ const Analytics = () => {
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
+          {/* Advanced Analytics Tab - Real Data */}
+          <TabsContent value="advanced" className="space-y-6">
+            <AdvancedAnalyticsTab />
+          </TabsContent>
+
           {/* Neuromarketing Tab - FULL ADVANCED SUITE */}
           <TabsContent value="neuro" className="space-y-6">
             <motion.div

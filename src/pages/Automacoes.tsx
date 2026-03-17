@@ -335,6 +335,18 @@ export default function Automacoes() {
           </Card>
         </div>
 
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="rules">Minhas Regras</TabsTrigger>
+            <TabsTrigger value="templates">📦 Templates Prontos</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="templates" className="mt-4">
+            <AutomationTemplates onUseTemplate={handleUseTemplate} />
+          </TabsContent>
+
+          <TabsContent value="rules" className="mt-4">
+
         {/* Rules List */}
         {loading ? (
           <div className="space-y-3">
