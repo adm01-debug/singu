@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import MainLayout from '@/components/layout/MainLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 import type { Deal } from '@/hooks/useDeals';
 
 const Pipeline = () => {
