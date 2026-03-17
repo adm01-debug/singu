@@ -9,8 +9,7 @@ async function verifyWebhookSignature(req: Request, body: string): Promise<boole
   const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
   const secret = Deno.env.get('WEBHOOK_SECRET');
   if (!secret) {
-    console.warn('WEBHOOK_SECRET not configured, skipping signature verification');
-    return true; // Allow if not configured (backward compat)
+    return false; // Reject requests when WEBHOOK_SECRET is not configured
   }
   if (!signature) return false;
   const encoder = new TextEncoder();
