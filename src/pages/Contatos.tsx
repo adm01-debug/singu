@@ -132,6 +132,11 @@ const Contatos = () => {
   // Mini celebration hook
   const celebration = useMiniCelebration();
   
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    await fetchContacts();
+  }, [fetchContacts]);
+  
   // Advanced filters state - restore from URL
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(() => {
     try {
