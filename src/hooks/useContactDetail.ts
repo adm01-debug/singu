@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { queryExternalData } from '@/lib/externalData';
+import { logger } from '@/lib/logger';
 import type { Tables, TablesUpdate, Json } from '@/integrations/supabase/types';
 
 export type Contact = Tables<'contacts'>;
@@ -312,7 +313,9 @@ export function useContactDetail(contactId: string | undefined) {
       toast({
         title: 'Alerta dispensado',
       });
-    } catch {
+    } catch (err) {
+      logger.error('Failed to dismiss alert:', err);
+      toast({ title: 'Erro ao dispensar alerta', variant: 'destructive' });
     }
   };
 
@@ -333,7 +336,9 @@ export function useContactDetail(contactId: string | undefined) {
       toast({
         title: 'Insight dispensado',
       });
-    } catch {
+    } catch (err) {
+      logger.error('Failed to dismiss insight:', err);
+      toast({ title: 'Erro ao dispensar insight', variant: 'destructive' });
     }
   };
 

@@ -8,6 +8,7 @@ import {
   getSubscriptionStatus,
   registerServiceWorker
 } from '@/lib/pushNotifications';
+import { logger } from '@/lib/logger';
 
 interface NotificationPermission {
   permission: 'default' | 'granted' | 'denied';
@@ -221,7 +222,8 @@ export const useNotifications = () => {
           );
         }
       }
-    } catch {
+    } catch (err) {
+      logger.error('Failed to check follow-up alerts:', err);
     }
   }, [permissionState.permission, showNotification]);
 
@@ -268,7 +270,8 @@ export const useNotifications = () => {
           }
         );
       }
-    } catch {
+    } catch (err) {
+      logger.error('Failed to check birthday alerts:', err);
     }
   }, [permissionState.permission, showNotification]);
 
@@ -337,7 +340,8 @@ export const useNotifications = () => {
           }
         }
       }
-    } catch {
+    } catch (err) {
+      logger.error('Failed to check stakeholder alerts:', err);
     }
   }, [permissionState.permission, showNotification]);
 

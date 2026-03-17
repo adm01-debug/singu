@@ -279,7 +279,13 @@ export const CelebratoryAction = ({
 
   return (
     <>
-      <div onClick={handleClick} className={cn("cursor-pointer", className, disabled && "opacity-50 cursor-not-allowed")}>
+      <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        onClick={handleClick}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(e as unknown as React.MouseEvent<HTMLDivElement>); } }}
+        className={cn("cursor-pointer", className, disabled && "opacity-50 cursor-not-allowed")}
+      >
         {children}
       </div>
       <MiniCelebration
