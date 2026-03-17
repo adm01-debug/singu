@@ -22,6 +22,7 @@ import {
 } from '@/data/discAdvancedData';
 import { toast } from 'sonner';
 import { getContactBehavior } from '@/lib/contact-utils';
+import { logger } from '@/lib/logger';
 
 interface UseDISCAnalysisReturn {
   // State
@@ -208,7 +209,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
 
       return record;
     } catch (err) {
-      console.error('DISC analysis error:', err);
+      logger.error('DISC analysis error:', err);
       toast.error('Erro na análise DISC');
       return null;
     } finally {
@@ -297,7 +298,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
         setLatestAnalysis(records[0]);
       }
     } catch (err) {
-      console.error('Error fetching DISC history:', err);
+      logger.error('Error fetching DISC history:', err);
     }
   }, [user, contactId]);
 
@@ -344,7 +345,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
       setLatestAnalysis(record);
       return record;
     } catch (err) {
-      console.error('Error fetching latest DISC analysis:', err);
+      logger.error('Error fetching latest DISC analysis:', err);
       return null;
     }
   }, [user, contactId]);
@@ -397,7 +398,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
       toast.success('Perfil DISC salvo com sucesso');
       await fetchAnalysisHistory();
     } catch (err) {
-      console.error('Error saving manual DISC profile:', err);
+      logger.error('Error saving manual DISC profile:', err);
       toast.error('Erro ao salvar perfil DISC');
     }
   }, [user, contactId, fetchAnalysisHistory]);
@@ -502,7 +503,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
         averageConfidence: confidenceCount > 0 ? Math.round(totalConfidence / confidenceCount) : 0
       });
     } catch (err) {
-      console.error('Error fetching DISC dashboard data:', err);
+      logger.error('Error fetching DISC dashboard data:', err);
     }
   }, [user]);
 

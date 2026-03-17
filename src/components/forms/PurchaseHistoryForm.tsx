@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 const formSchema = z.object({
   productName: z.string().min(1, 'Nome do produto é obrigatório'),
@@ -90,7 +91,7 @@ export function PurchaseHistoryForm({ contactId, onSuccess, trigger }: PurchaseH
       setOpen(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error saving purchase:', error);
+      logger.error('Error saving purchase:', error);
       toast.error('Erro ao salvar compra');
     } finally {
       setIsSubmitting(false);

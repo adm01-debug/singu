@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useOnboardingTour } from '@/components/onboarding/OnboardingTour';
 import { 
+import { logger } from '@/lib/logger';
   isPushSupported, 
   subscribeToPush, 
   unsubscribeFromPush, 
@@ -81,7 +82,7 @@ export function TourPreferencesPanel() {
         }
       }
     } catch (error) {
-      console.error('Push toggle error:', error);
+      logger.error('Push toggle error:', error);
       toast.error('Erro ao alterar configurações de push');
     } finally {
       setPushLoading(false);

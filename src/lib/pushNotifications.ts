@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 // VAPID public key - this should be generated and stored securely
 // For now, we'll generate it dynamically or use a placeholder
@@ -21,7 +22,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) {
-    console.warn('Service Worker not supported');
+    logger.warn('Service Worker not supported');
     return null;
   }
 
@@ -29,10 +30,10 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     const registration = await navigator.serviceWorker.register('/sw-push.js', {
       scope: '/'
     });
-    console.log('Service Worker registered:', registration);
+    logger.log('Service Worker registered:', registration);
     return registration;
   } catch (error) {
-    console.error('Service Worker registration failed:', error);
+    logger.error('Service Worker registration failed:', error);
     return null;
   }
 }
@@ -59,7 +60,7 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
     
     return subscription;
   } catch (error) {
-    console.error('Failed to subscribe to push notifications:', error);
+    logger.error('Failed to subscribe to push notifications:', error);
     return null;
   }
 }
@@ -81,7 +82,7 @@ export async function unsubscribeFromPush(): Promise<boolean> {
     
     return true;
   } catch (error) {
-    console.error('Failed to unsubscribe from push notifications:', error);
+    logger.error('Failed to unsubscribe from push notifications:', error);
     return false;
   }
 }
@@ -105,7 +106,7 @@ async function saveSubscription(subscription: PushSubscription): Promise<void> {
     });
 
   if (error) {
-    console.error('Failed to save subscription:', error);
+    logger.error('Failed to save subscription:', error);
     throw error;
   }
 }
@@ -121,7 +122,7 @@ async function removeSubscription(endpoint: string): Promise<void> {
     .eq('endpoint', endpoint);
 
   if (error) {
-    console.error('Failed to remove subscription:', error);
+    logger.error('Failed to remove subscription:', error);
   }
 }
 
@@ -138,7 +139,7 @@ export async function getSubscriptionStatus(): Promise<{
     const subscription = await (registration as any).pushManager.getSubscription();
     return { isSubscribed: !!subscription, subscription };
   } catch (error) {
-    console.error('Failed to get subscription status:', error);
+    logger.error('Failed to get subscription status:', error);
     return { isSubscribed: false, subscription: null };
   }
 }

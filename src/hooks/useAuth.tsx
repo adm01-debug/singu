@@ -3,6 +3,7 @@ import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         scheduleTokenRefresh(data.session);
       }
     } catch (err) {
-      console.error('Error refreshing session:', err);
+      logger.error('Error refreshing session:', err);
       toast.error('Erro ao atualizar sessão.');
     }
   }, [scheduleTokenRefresh]);
@@ -87,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, newSession) => {
-        console.log('🔐 Auth event:', event);
+        logger.log('🔐 Auth event:', event);
         
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -108,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             break;
             
           case 'TOKEN_REFRESHED':
-            console.log('🔄 Token refreshed via auth event');
+            logger.log('🔄 Token refreshed via auth event');
             scheduleTokenRefresh(newSession);
             break;
             

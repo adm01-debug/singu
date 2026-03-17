@@ -38,6 +38,7 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 type ExportFormat = 'csv' | 'json' | 'xlsx';
 type EntityType = 'contacts' | 'companies' | 'interactions';
@@ -221,7 +222,7 @@ export function AdvancedDataExporter({ entityType, className }: AdvancedDataExpo
       }, 2000);
 
     } catch (error) {
-      console.error('Export error:', error);
+      logger.error('Export error:', error);
       toast.error('Erro ao exportar dados');
     } finally {
       setIsExporting(false);

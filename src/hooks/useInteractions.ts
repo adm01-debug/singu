@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 export type Interaction = Tables<'interactions'>;
 export type InteractionInsert = TablesInsert<'interactions'>;
@@ -52,7 +53,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
       
       return { data, count, hasMore: (data?.length || 0) === pageSize };
     } catch (error) {
-      console.error('Error fetching interactions:', error);
+      logger.error('Error fetching interactions:', error);
       toast({
         title: 'Erro ao carregar interações',
         description: 'Tente novamente mais tarde.',
@@ -136,7 +137,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       return data;
     } catch (error) {
-      console.error('Error creating interaction:', error);
+      logger.error('Error creating interaction:', error);
       toast({
         title: 'Erro ao registrar interação',
         description: 'Verifique os dados e tente novamente.',
@@ -164,7 +165,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
       });
       return data;
     } catch (error) {
-      console.error('Error updating interaction:', error);
+      logger.error('Error updating interaction:', error);
       toast({
         title: 'Erro ao atualizar interação',
         description: 'Verifique os dados e tente novamente.',
@@ -190,7 +191,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
       });
       return true;
     } catch (error) {
-      console.error('Error deleting interaction:', error);
+      logger.error('Error deleting interaction:', error);
       toast({
         title: 'Erro ao excluir interação',
         description: 'Não foi possível excluir a interação.',

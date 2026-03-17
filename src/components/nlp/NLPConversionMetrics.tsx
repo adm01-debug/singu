@@ -18,6 +18,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { VAK_LABELS, VAKType } from '@/types/vak';
+import { logger } from '@/lib/logger';
 
 interface ProfileMetrics {
   profile: string;
@@ -162,7 +163,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
       setVakMetrics(processedVak);
       setEmotionalMetrics(processedEmotional);
     } catch (error) {
-      console.error('Error fetching NLP metrics:', error);
+      logger.error('Error fetching NLP metrics:', error);
     } finally {
       setLoading(false);
     }

@@ -31,6 +31,7 @@ import { DISCProfile } from '@/types';
 import { getContactBehavior } from '@/lib/contact-utils';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 interface ContactWithDISC {
   id: string;
@@ -141,7 +142,7 @@ const DISCAnalyticsPanel = () => {
       await fetchDashboardData();
 
     } catch (err) {
-      console.error('Error loading DISC data:', err);
+      logger.error('Error loading DISC data:', err);
     } finally {
       setLoading(false);
     }

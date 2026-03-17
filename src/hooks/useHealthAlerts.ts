@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface HealthAlert {
   id: string;
@@ -77,7 +78,7 @@ export function useHealthAlerts() {
       
       setAlerts((data || []) as unknown as HealthAlert[]);
     } catch (error) {
-      console.error('Error fetching health alerts:', error);
+      logger.error('Error fetching health alerts:', error);
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ export function useHealthAlerts() {
       
       setSettings(data as HealthAlertSettings | null);
     } catch (error) {
-      console.error('Error fetching health alert settings:', error);
+      logger.error('Error fetching health alert settings:', error);
     } finally {
       setSettingsLoading(false);
     }
@@ -123,7 +124,7 @@ export function useHealthAlerts() {
       setAlerts(prev => prev.filter(a => a.id !== alertId));
       toast.success('Alerta dispensado');
     } catch (error) {
-      console.error('Error dismissing alert:', error);
+      logger.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
   }, [user]);
@@ -143,7 +144,7 @@ export function useHealthAlerts() {
       setAlerts([]);
       toast.success('Todos os alertas foram dispensados');
     } catch (error) {
-      console.error('Error dismissing all alerts:', error);
+      logger.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
   }, [user]);
@@ -170,7 +171,7 @@ export function useHealthAlerts() {
       setSettings(data as HealthAlertSettings);
       toast.success('Configurações salvas');
     } catch (error) {
-      console.error('Error saving settings:', error);
+      logger.error('Error saving settings:', error);
       toast.error('Erro ao salvar configurações');
     }
   }, [user, settings]);
@@ -190,7 +191,7 @@ export function useHealthAlerts() {
         toast.info('Nenhum cliente com saúde crítica encontrado');
       }
     } catch (error) {
-      console.error('Error checking health:', error);
+      logger.error('Error checking health:', error);
       toast.error('Erro ao verificar saúde dos clientes');
     }
   }, [fetchAlerts]);

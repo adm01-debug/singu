@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 export type AlertType = 
   | 'sentiment_drop' 
@@ -141,7 +142,7 @@ export function useBehaviorAlerts() {
 
       setAlerts(formattedAlerts);
     } catch (error) {
-      console.error('Error fetching behavior alerts:', error);
+      logger.error('Error fetching behavior alerts:', error);
     } finally {
       setLoading(false);
     }
@@ -306,7 +307,7 @@ export function useBehaviorAlerts() {
         });
       }
     } catch (error) {
-      console.error('Error detecting new alerts:', error);
+      logger.error('Error detecting new alerts:', error);
     }
   }, [user, fetchAlerts, toast]);
 
@@ -325,7 +326,7 @@ export function useBehaviorAlerts() {
         description: 'O alerta foi removido da sua lista.',
       });
     } catch (error) {
-      console.error('Error dismissing alert:', error);
+      logger.error('Error dismissing alert:', error);
     }
   }, [toast]);
 
@@ -349,7 +350,7 @@ export function useBehaviorAlerts() {
         description: 'A ação foi marcada como concluída.',
       });
     } catch (error) {
-      console.error('Error marking action taken:', error);
+      logger.error('Error marking action taken:', error);
     }
   }, [toast]);
 

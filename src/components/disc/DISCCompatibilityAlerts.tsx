@@ -25,6 +25,7 @@ import { Link } from 'react-router-dom';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES, getCompatibility } from '@/data/discAdvancedData';
 import { getContactBehavior, getDISCProfile } from '@/lib/contact-utils';
+import { logger } from '@/lib/logger';
 
 interface CompatibilityAlert {
   id: string;
@@ -125,7 +126,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
 
       setAlerts(newAlerts.slice(0, maxItems));
     } catch (error) {
-      console.error('Error fetching compatibility alerts:', error);
+      logger.error('Error fetching compatibility alerts:', error);
     } finally {
       setLoading(false);
     }

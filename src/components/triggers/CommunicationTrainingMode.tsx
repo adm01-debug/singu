@@ -41,6 +41,7 @@ import { METAPROGRAM_LABELS } from '@/types/metaprograms';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface SalespersonProfile {
   vakProfile: VAKType | null;
@@ -690,7 +691,7 @@ export function CommunicationTrainingMode() {
         setSalespersonProfile(data.nlp_profile as unknown as SalespersonProfile);
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      logger.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
     }

@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { logger } from '@/lib/logger';
 
 interface RecentItem {
   id: string;
@@ -58,7 +59,7 @@ export function useRecentItems() {
           timestamp: new Date(item.timestamp)
         })));
       } catch (e) {
-        console.error('Error parsing recent items:', e);
+        logger.error('Error parsing recent items:', e);
       }
     }
 
@@ -66,7 +67,7 @@ export function useRecentItems() {
       try {
         setFavoriteItems(JSON.parse(storedFavorites));
       } catch (e) {
-        console.error('Error parsing favorites:', e);
+        logger.error('Error parsing favorites:', e);
       }
     }
   }, []);

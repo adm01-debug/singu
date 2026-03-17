@@ -10,6 +10,7 @@ import { useVAKAnalysis } from './useVAKAnalysis';
 import { useMetaprogramAnalysis } from './useMetaprogramAnalysis';
 import { useEmotionalStates } from './useEmotionalStates';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface NLPAnalysisResult {
   vak: {
@@ -81,7 +82,7 @@ export function useNLPAutoAnalysis() {
     analysisQueue.current.add(analysisKey);
 
     try {
-      console.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
+      logger.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
 
       // 1. VAK Analysis
       let vakResult;
@@ -89,7 +90,7 @@ export function useNLPAutoAnalysis() {
         vakResult = analyzeVAK(text);
         await saveVAKAnalysis(contactId, vakResult, text, interactionId);
       } catch (vakError) {
-        console.error('VAK analysis/save error:', vakError);
+        logger.error('VAK analysis/save error:', vakError);
         analysisQueue.current.delete(analysisKey);
         return null;
       }
@@ -100,7 +101,7 @@ export function useNLPAutoAnalysis() {
         metaResult = analyzeMetaprograms(text);
         await saveMetaprogramAnalysis(contactId, interactionId, metaResult, text);
       } catch (metaError) {
-        console.error('Metaprogram analysis/save error:', metaError);
+        logger.error('Metaprogram analysis/save error:', metaError);
         analysisQueue.current.delete(analysisKey);
         return null;
       }
@@ -122,7 +123,7 @@ export function useNLPAutoAnalysis() {
 
         if (emotionalInsertError) throw emotionalInsertError;
       } catch (emotionalError) {
-        console.error('Emotional state save error:', emotionalError);
+        logger.error('Emotional state save error:', emotionalError);
         analysisQueue.current.delete(analysisKey);
         return null;
       }
@@ -165,11 +166,11 @@ export function useNLPAutoAnalysis() {
         analyzedAt: new Date().toISOString()
       };
 
-      console.log('✅ NLP Auto-Analysis complete:', result);
+      logger.log('✅ NLP Auto-Analysis complete:', result);
 
       return result;
     } catch (error) {
-      console.error('❌ NLP Auto-Analysis error:', error);
+      logger.error('❌ NLP Auto-Analysis error:', error);
       analysisQueue.current.clear();
       return null;
     } finally {
@@ -229,7 +230,7 @@ export function useNLPAutoAnalysis() {
 
       return { analyzed, total: interactions.length };
     } catch (error) {
-      console.error('Error batch analyzing interactions:', error);
+      logger.error('Error batch analyzing interactions:', error);
       return { analyzed: 0, total: 0 };
     }
   }, [user, shouldAnalyze, analyzeInteraction]);
@@ -275,7 +276,7 @@ export function useNLPAutoAnalysis() {
         lastAnalyzed: vakData.data?.[0]?.created_at || null
       };
     } catch (error) {
-      console.error('Error fetching NLP profile:', error);
+      logger.error('Error fetching NLP profile:', error);
       return null;
     }
   }, [user]);

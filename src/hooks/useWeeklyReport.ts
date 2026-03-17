@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface WeeklyReportSettings {
   id: string;
@@ -94,7 +95,7 @@ export function useWeeklyReport() {
       if (error) throw error;
       setSettings(data as WeeklyReportSettings | null);
     } catch (error) {
-      console.error('Error fetching weekly report settings:', error);
+      logger.error('Error fetching weekly report settings:', error);
     } finally {
       setLoading(false);
     }
@@ -114,7 +115,7 @@ export function useWeeklyReport() {
       if (error) throw error;
       setReports((data || []) as unknown as WeeklyReportData[]);
     } catch (error) {
-      console.error('Error fetching weekly reports:', error);
+      logger.error('Error fetching weekly reports:', error);
     }
   }, [user]);
 
@@ -145,7 +146,7 @@ export function useWeeklyReport() {
       setSettings(data as WeeklyReportSettings);
       toast.success('Configurações salvas com sucesso');
     } catch (error) {
-      console.error('Error saving settings:', error);
+      logger.error('Error saving settings:', error);
       toast.error('Erro ao salvar configurações');
     }
   }, [user, settings]);
@@ -175,7 +176,7 @@ export function useWeeklyReport() {
       toast.info('Relatório gerado - verifique seu email se configurado');
       return data;
     } catch (error) {
-      console.error('Error generating report:', error);
+      logger.error('Error generating report:', error);
       toast.error('Erro ao gerar relatório');
       return null;
     } finally {
@@ -204,7 +205,7 @@ export function useWeeklyReport() {
 
       toast.success('Email de teste enviado!');
     } catch (error) {
-      console.error('Error sending test email:', error);
+      logger.error('Error sending test email:', error);
       toast.error('Erro ao enviar email. Verifique se o Resend está configurado.');
     }
   }, [user, settings]);

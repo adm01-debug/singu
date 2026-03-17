@@ -28,6 +28,7 @@ import { EMOTIONAL_STATE_INFO } from '@/data/nlpAdvancedData';
 import { EmotionalState } from '@/types/nlp-advanced';
 import { format, subDays, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from '@/lib/logger';
 
 interface NLPEvolutionTimelineProps {
   contactId: string;
@@ -157,7 +158,7 @@ const NLPEvolutionTimeline: React.FC<NLPEvolutionTimelineProps> = ({
       setVakData(processedVak);
       setEmotionalData(processedEmotional);
     } catch (error) {
-      console.error('Error fetching evolution data:', error);
+      logger.error('Error fetching evolution data:', error);
     } finally {
       setLoading(false);
     }

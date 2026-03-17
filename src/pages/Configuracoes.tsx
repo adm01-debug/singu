@@ -40,6 +40,7 @@ import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityA
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
+import { logger } from '@/lib/logger';
 
 interface ProfileData {
   first_name: string;
@@ -89,7 +90,7 @@ const Configuracoes = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('Error fetching profile:', error);
     }
   };
 

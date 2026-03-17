@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import type { UseFormReturn, FieldValues } from 'react-hook-form';
+import { logger } from '@/lib/logger';
 
 interface UseFormDraftOptions {
   /** Unique key for this form draft (e.g. 'contact-new' or 'contact-edit-{id}') */
@@ -87,7 +88,7 @@ export function useFormDraft<T extends FieldValues>(
         } catch (err) {
           // Handle localStorage quota errors
           if (err instanceof DOMException && (err.code === 22 || err.code === 1014 || err.name === 'QuotaExceededError')) {
-            console.warn('localStorage quota exceeded, draft not saved');
+            logger.warn('localStorage quota exceeded, draft not saved');
           }
         }
       }, debounceMs);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface EasterEgg {
   id: string;
@@ -124,8 +125,8 @@ export function useEasterEggs() {
 
   // Developer mode
   const devAction = useCallback(() => {
-    console.log('%c🛠️ Developer Mode Activated!', 'font-size: 24px; color: #00ff00;');
-    console.log('%cWelcome, fellow developer! 👨‍💻', 'font-size: 16px; color: #00ccff;');
+    logger.log('%c🛠️ Developer Mode Activated!', 'font-size: 24px; color: #00ff00;');
+    logger.log('%cWelcome, fellow developer! 👨‍💻', 'font-size: 16px; color: #00ccff;');
     console.table({
       'React Version': '18.3.1',
       'Framework': 'Vite + React + TypeScript',

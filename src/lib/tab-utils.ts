@@ -12,7 +12,7 @@ export function createTabHandler<T extends string>(
 ): (value: string) => void {
   return (value: string) => {
     if (validValues && !validValues.includes(value as T)) {
-      console.warn(`Invalid tab value: ${value}`);
+      logger.warn(`Invalid tab value: ${value}`);
       return;
     }
     setter(value as T);

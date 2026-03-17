@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 export type Company = Tables<'companies'>;
 export type CompanyInsert = TablesInsert<'companies'>;
@@ -55,7 +56,7 @@ export function useCompanies() {
       setCompanies(mapped);
       setTotalCount(count || 0);
     } catch (error) {
-      console.error('Error fetching companies from external DB:', error);
+      logger.error('Error fetching companies from external DB:', error);
       toast({
         title: 'Erro ao carregar empresas',
         description: 'Tente novamente mais tarde.',
@@ -89,7 +90,7 @@ export function useCompanies() {
       });
       return data;
     } catch (error) {
-      console.error('Error creating company:', error);
+      logger.error('Error creating company:', error);
       toast({
         title: 'Erro ao criar empresa',
         description: 'Verifique os dados e tente novamente.',
@@ -117,7 +118,7 @@ export function useCompanies() {
       });
       return data;
     } catch (error) {
-      console.error('Error updating company:', error);
+      logger.error('Error updating company:', error);
       toast({
         title: 'Erro ao atualizar empresa',
         description: 'Verifique os dados e tente novamente.',
@@ -143,7 +144,7 @@ export function useCompanies() {
       });
       return true;
     } catch (error) {
-      console.error('Error deleting company:', error);
+      logger.error('Error deleting company:', error);
       toast({
         title: 'Erro ao excluir empresa',
         description: 'Não foi possível excluir a empresa.',

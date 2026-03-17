@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { addMinutes, isWithinInterval, parseISO, format } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { getContactBehavior } from '@/lib/contact-utils';
+import { logger } from '@/lib/logger';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -424,7 +425,7 @@ export function usePreContactBriefing(): PreContactBriefingData {
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching pre-contact briefings:', error);
+      logger.error('Error fetching pre-contact briefings:', error);
       setLoading(false);
     }
   }, [user, dismissedIds, activeBriefing]);

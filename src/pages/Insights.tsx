@@ -41,6 +41,7 @@ import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import type { Tables } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -143,7 +144,7 @@ const Insights = () => {
         await generateInsights(contactsRes.data || [], interactionsRes.data || [], companiesRes.data || []);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      logger.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -213,7 +214,7 @@ const Insights = () => {
         toast.info('Adicione mais dados para gerar insights personalizados');
       }
     } catch (error) {
-      console.error('Error generating insights:', error);
+      logger.error('Error generating insights:', error);
       toast.error(error instanceof Error ? error.message : 'Erro ao gerar insights');
     } finally {
       setGenerating(false);
@@ -234,7 +235,7 @@ const Insights = () => {
         companiesRes.data || []
       );
     } catch (error) {
-      console.error('Error refreshing insights:', error);
+      logger.error('Error refreshing insights:', error);
       toast.error('Erro ao atualizar insights. Tente novamente.');
     }
   };

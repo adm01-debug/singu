@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 const formSchema = z.object({
   eventType: z.string().min(1, 'Selecione o tipo de evento'),
@@ -90,7 +91,7 @@ export function LifeEventForm({ contactId, onSuccess, trigger }: LifeEventFormPr
       setOpen(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error saving event:', error);
+      logger.error('Error saving event:', error);
       toast.error('Erro ao salvar evento');
     } finally {
       setIsSubmitting(false);

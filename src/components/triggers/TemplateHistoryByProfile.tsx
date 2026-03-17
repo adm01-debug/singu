@@ -38,6 +38,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from '@/lib/logger';
 
 interface TemplateHistoryByProfileProps {
   className?: string;
@@ -503,7 +504,7 @@ export function TemplateHistoryByProfile({ className }: TemplateHistoryByProfile
         });
         setContactDISCMap(discMap);
       } catch (error) {
-        console.error('Error fetching contact DISC profiles:', error);
+        logger.error('Error fetching contact DISC profiles:', error);
       } finally {
         setLoading(false);
       }

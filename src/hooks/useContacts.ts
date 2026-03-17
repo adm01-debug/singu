@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 export type Contact = Tables<'contacts'>;
 export type ContactInsert = TablesInsert<'contacts'>;
@@ -67,7 +68,7 @@ export function useContacts(companyId?: string) {
       
       return { data, count, hasMore: (data?.length || 0) === pageSize };
     } catch (error) {
-      console.error('Error fetching contacts from external DB:', error);
+      logger.error('Error fetching contacts from external DB:', error);
       toast({
         title: 'Erro ao carregar contatos',
         description: 'Tente novamente mais tarde.',
@@ -108,7 +109,7 @@ export function useContacts(companyId?: string) {
       });
       return data;
     } catch (error) {
-      console.error('Error creating contact:', error);
+      logger.error('Error creating contact:', error);
       toast({
         title: 'Erro ao criar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -136,7 +137,7 @@ export function useContacts(companyId?: string) {
       });
       return data;
     } catch (error) {
-      console.error('Error updating contact:', error);
+      logger.error('Error updating contact:', error);
       toast({
         title: 'Erro ao atualizar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -162,7 +163,7 @@ export function useContacts(companyId?: string) {
       });
       return true;
     } catch (error) {
-      console.error('Error deleting contact:', error);
+      logger.error('Error deleting contact:', error);
       toast({
         title: 'Erro ao excluir contato',
         description: 'Não foi possível excluir o contato.',

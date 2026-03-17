@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { differenceInDays, parseISO } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { getDISCProfile } from '@/types/behavior';
+import { logger } from '@/lib/logger';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -412,7 +413,7 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
         );
       }
     } catch (error) {
-      console.error('Error calculating closing score:', error);
+      logger.error('Error calculating closing score:', error);
     } finally {
       setLoading(false);
       setAnalyzing(false);
@@ -482,7 +483,7 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
           });
       }
     } catch (error) {
-      console.error('Error checking score alert:', error);
+      logger.error('Error checking score alert:', error);
     }
   };
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from '@/lib/logger';
 
 export interface TemplateNotificationSettings {
   enabled: boolean;
@@ -47,7 +48,7 @@ export function useTemplateNotifications() {
         });
       }
     } catch (error) {
-      console.error('Error loading notification settings:', error);
+      logger.error('Error loading notification settings:', error);
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ export function useTemplateNotifications() {
 
       return true;
     } catch (error) {
-      console.error('Error updating notification settings:', error);
+      logger.error('Error updating notification settings:', error);
       return false;
     }
   };
@@ -103,7 +104,7 @@ export function useTemplateNotifications() {
 
       return data;
     } catch (error) {
-      console.error('Error checking for high performers:', error);
+      logger.error('Error checking for high performers:', error);
       return null;
     }
   }, [user, settings.enabled]);

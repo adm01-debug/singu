@@ -48,6 +48,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface PortfolioCompatibilityReportProps {
   className?: string;
@@ -543,7 +544,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
 
       setContacts(contactsWithCompatibility);
     } catch (error) {
-      console.error('Error loading portfolio data:', error);
+      logger.error('Error loading portfolio data:', error);
       toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);

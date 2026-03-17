@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface SavedFilter {
   id: string;
@@ -34,7 +35,7 @@ export function useSavedFilters(type: 'contacts' | 'companies' | 'interactions')
         }
       }
     } catch (error) {
-      console.error('Failed to load saved filters:', error);
+      logger.error('Failed to load saved filters:', error);
     }
   }, [type]);
 
@@ -50,7 +51,7 @@ export function useSavedFilters(type: 'contacts' | 'companies' | 'interactions')
       
       localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(newAllFilters));
     } catch (error) {
-      console.error('Failed to save filters:', error);
+      logger.error('Failed to save filters:', error);
     }
   }, [type]);
 

@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { DISCProfile, DISC_LABELS } from '@/types';
 import { VAKType, VAK_LABELS } from '@/types/vak';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface SalespersonProfile {
   vakProfile: VAKType | null;
@@ -178,7 +179,7 @@ export function useCompatibilityAlerts() {
       }
 
     } catch (err) {
-      console.error('Error checking compatibility alerts:', err);
+      logger.error('Error checking compatibility alerts:', err);
     } finally {
       setChecking(false);
     }

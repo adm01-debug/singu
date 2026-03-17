@@ -35,6 +35,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCelebration } from '@/components/celebrations/CelebrationProvider';
 import type { Tables } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 type Interaction = Tables<'interactions'>;
 type Contact = Tables<'contacts'>;
@@ -132,7 +133,7 @@ const Calendario = () => {
 
       setFollowUps(enrichedFollowUps);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      logger.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -162,7 +163,7 @@ const Calendario = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error marking as completed:', error);
+      logger.error('Error marking as completed:', error);
       toast.error('Erro ao concluir follow-up. Tente novamente.');
     }
   };

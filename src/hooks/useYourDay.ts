@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { startOfDay, endOfDay, addDays, format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
+import { logger } from '@/lib/logger';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
@@ -189,7 +190,7 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         loading: false,
       });
     } catch (error) {
-      console.error('Error fetching your day data:', error);
+      logger.error('Error fetching your day data:', error);
       setData(prev => ({ ...prev, loading: false }));
     }
   }, [user]);

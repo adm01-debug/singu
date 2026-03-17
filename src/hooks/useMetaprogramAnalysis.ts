@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
+import { logger } from '@/lib/logger';
   MetaprogramScores,
   MetaprogramProfile,
   MetaprogramAnalysisResult,
@@ -121,7 +122,7 @@ export function useMetaprogramAnalysis() {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error saving metaprogram analysis:', error);
+      logger.error('Error saving metaprogram analysis:', error);
       return null;
     }
   }, [user]);
@@ -250,7 +251,7 @@ export function useMetaprogramAnalysis() {
         analyzedInteractions: data.length
       };
     } catch (error) {
-      console.error('Error getting metaprogram profile:', error);
+      logger.error('Error getting metaprogram profile:', error);
       return null;
     }
   }, [user]);
@@ -286,7 +287,7 @@ export function useMetaprogramAnalysis() {
         description: `${analyzedCount} interações analisadas para metaprogramas`
       });
     } catch (error) {
-      console.error('Error analyzing interactions:', error);
+      logger.error('Error analyzing interactions:', error);
       toast({
         title: "Erro na análise",
         description: "Não foi possível analisar as interações",
@@ -315,7 +316,7 @@ export function useMetaprogramAnalysis() {
         description: "Histórico de metaprogramas removido"
       });
     } catch (error) {
-      console.error('Error clearing analysis:', error);
+      logger.error('Error clearing analysis:', error);
       toast({
         title: "Erro",
         description: "Não foi possível limpar a análise",

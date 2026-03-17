@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface VoiceInputProps {
   onTranscription: (text: string) => void;
@@ -66,7 +67,7 @@ export function VoiceInput({
       }, 1000);
 
     } catch (err) {
-      console.error('Error starting recording:', err);
+      logger.error('Error starting recording:', err);
       setError('Não foi possível acessar o microfone');
       toast({
         title: 'Erro ao gravar',
@@ -123,7 +124,7 @@ export function VoiceInput({
         throw new Error('Nenhum texto reconhecido');
       }
     } catch (err) {
-      console.error('Error processing audio:', err);
+      logger.error('Error processing audio:', err);
       setError('Erro ao processar áudio');
       toast({
         title: 'Erro na transcrição',

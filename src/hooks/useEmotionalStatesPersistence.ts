@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { EmotionalState, EmotionalAnchor } from '@/types/nlp-advanced';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface EmotionalStateRecord {
   id: string;
@@ -63,7 +64,7 @@ export function useEmotionalStatesPersistence(contactId: string) {
       setPositiveAnchors(anchors.filter(a => a.anchor_type === 'positive'));
       setNegativeAnchors(anchors.filter(a => a.anchor_type === 'negative'));
     } catch (error) {
-      console.error('Error fetching emotional history:', error);
+      logger.error('Error fetching emotional history:', error);
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export function useEmotionalStatesPersistence(contactId: string) {
       setStateHistory(prev => [data, ...prev]);
       return data;
     } catch (error) {
-      console.error('Error saving emotional state:', error);
+      logger.error('Error saving emotional state:', error);
       toast.error('Erro ao salvar estado emocional');
       return null;
     }
@@ -142,7 +143,7 @@ export function useEmotionalStatesPersistence(contactId: string) {
       
       return record;
     } catch (error) {
-      console.error('Error saving anchor:', error);
+      logger.error('Error saving anchor:', error);
       toast.error('Erro ao salvar âncora emocional');
       return null;
     }
@@ -200,7 +201,7 @@ export function useEmotionalStatesPersistence(contactId: string) {
       toast.success('Análise emocional salva com sucesso!');
       return true;
     } catch (error) {
-      console.error('Error persisting analysis:', error);
+      logger.error('Error persisting analysis:', error);
       toast.error('Erro ao persistir análise');
       return false;
     } finally {
@@ -226,7 +227,7 @@ export function useEmotionalStatesPersistence(contactId: string) {
       toast.success('Âncora removida');
       return true;
     } catch (error) {
-      console.error('Error deleting anchor:', error);
+      logger.error('Error deleting anchor:', error);
       toast.error('Erro ao remover âncora');
       return false;
     }

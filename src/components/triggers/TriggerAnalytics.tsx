@@ -43,6 +43,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { MENTAL_TRIGGERS, TriggerType, TRIGGER_CATEGORIES, TriggerCategory } from '@/types/triggers';
 import { TriggerResult } from '@/hooks/useTriggerHistory';
+import { logger } from '@/lib/logger';
 
 type DISCProfile = 'D' | 'I' | 'S' | 'C';
 
@@ -200,7 +201,7 @@ export function TriggerAnalytics({ className }: { className?: string }) {
 
       setUsageData(mergedData);
     } catch (error) {
-      console.error('Error fetching analytics data:', error);
+      logger.error('Error fetching analytics data:', error);
     } finally {
       setLoading(false);
     }
