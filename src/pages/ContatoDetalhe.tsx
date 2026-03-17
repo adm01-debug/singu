@@ -9,8 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContactDetail } from '@/hooks/useContactDetail';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { useProactiveIntelligence } from '@/hooks/useProactiveIntelligence';
 import { LuxButton } from '@/components/lux/LuxButton';
 import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
+import { ProactiveIntelligencePanel } from '@/components/proactive-intelligence/ProactiveIntelligencePanel';
 import {
   ContactDetailHeader,
   ContactOverviewTab,
@@ -53,6 +55,7 @@ const ContatoDetalhe = () => {
   const { contact, company, interactions, insights, alerts, loading, error, refetch, dismissAlert, dismissInsight } = useContactDetail(id);
   const { trackView } = useRecentlyViewed();
   const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
+  const proactiveIntelligence = useProactiveIntelligence(contact, interactions);
 
   useEffect(() => {
     if (contact && id) {
@@ -131,6 +134,12 @@ const ContatoDetalhe = () => {
           contact={contact}
           company={company}
           interactionCount={interactions.length}
+        />
+
+        {/* Proactive Intelligence Panel */}
+        <ProactiveIntelligencePanel
+          data={proactiveIntelligence}
+          contactName={`${contact.first_name} ${contact.last_name}`}
         />
 
         {/* Tab Navigation */}
