@@ -597,6 +597,7 @@ const Contatos = () => {
             )}
           </>
         )}
+        </PullToRefresh>
       </div>
 
       {/* Bulk Actions Bar */}
