@@ -98,7 +98,7 @@ export function QuickActionsMenu({
   const handleWhatsApp = () => {
     if (whatsapp) {
       const cleanNumber = whatsapp.replace(/\D/g, '');
-      window.open(`https://wa.me/55${cleanNumber}`, '_blank');
+      window.open(`https://wa.me/55${cleanNumber}`, '_blank', 'noopener,noreferrer');
     }
   };
 
