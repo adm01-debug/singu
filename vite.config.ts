@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => ({
         },
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -74,30 +74,70 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    target: 'es2022',
+    target: "es2022",
+    // Minification with esbuild (faster than terser, built-in)
+    minify: "esbuild",
+    // Enable CSS minification and code splitting
+    cssMinify: true,
+    cssCodeSplit: true,
+    // Reduce source map size in production
+    sourcemap: false,
+    // Chunk size warning threshold (kB)
+    chunkSizeWarningLimit: 600,
+    // Optimize asset inlining — inline assets < 8kB
+    assetsInlineLimit: 8192,
     rollupOptions: {
       output: {
+        // Compact output format
+        compact: true,
+        // Hashed filenames for long-term caching
+        chunkFileNames: "assets/js/[name]-[hash].js",
+        entryFileNames: "assets/js/[name]-[hash].js",
+        assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
         manualChunks: {
           // Core vendor — loaded on every page
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-query': ['@tanstack/react-query'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          // Heavy UI libs — loaded on demand
-          'vendor-charts': ['recharts'],
-          'vendor-motion': ['framer-motion'],
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          // Heavy UI libs — loaded on demand via lazy routes
+          "vendor-charts": ["recharts"],
+          "vendor-motion": ["framer-motion"],
           // UI primitives shared across pages
-          'vendor-radix': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-select',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-scroll-area',
+          "vendor-radix": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-select",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-scroll-area",
           ],
+          // Form handling
+          "vendor-forms": [
+            "react-hook-form",
+            "@hookform/resolvers",
+            "zod",
+          ],
+          // Date utilities
+          "vendor-date": ["date-fns"],
         },
       },
+      // Tree-shake more aggressively
+      treeshake: {
+        moduleSideEffects: "no-external",
+        preset: "recommended",
+      },
     },
+  },
+  // Optimize dependency pre-bundling
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "@supabase/supabase-js",
+    ],
   },
 }));
