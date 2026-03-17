@@ -136,6 +136,12 @@ const ContatoDetalhe = () => {
           interactionCount={interactions.length}
         />
 
+        {/* Proactive Intelligence Panel */}
+        <ProactiveIntelligencePanel
+          data={proactiveIntelligence}
+          contactName={`${contact.first_name} ${contact.last_name}`}
+        />
+
         {/* Tab Navigation */}
         <Tabs defaultValue="resumo" className="space-y-4">
           <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
