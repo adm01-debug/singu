@@ -12,14 +12,16 @@ import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 
 // Non-critical shell components — lazy loaded
 const PWAShell = lazy(() =>
-  import("@/components/pwa/PWAComponents").then(m => ({
-    default: () => (
-      <>
-        <m.OfflineIndicator />
-        <m.InstallPrompt />
-        <m.NetworkStatusBadge />
-      </>
-    ),
+  import("@/components/pwa/PWAComponents").then(({ OfflineIndicator, InstallPrompt, NetworkStatusBadge }) => ({
+    default: function PWAShellInner() {
+      return (
+        <>
+          <OfflineIndicator />
+          <InstallPrompt />
+          <NetworkStatusBadge />
+        </>
+      );
+    },
   }))
 );
 const KeyboardShortcutsDialogEnhanced = lazy(() =>
