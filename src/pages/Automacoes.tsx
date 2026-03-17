@@ -266,13 +266,8 @@ export default function Automacoes() {
   };
 
   const handleUseTemplate = (data: CreateRuleData) => {
-    // Template usage: open create dialog pre-filled with template data
-    setEditingRule(null);
-    setFormOpen(true);
-    // Use a micro-delay so the create dialog mounts with fresh initialData
-    setTimeout(() => {
-      setTemplateData(data);
-    }, 0);
+    // Open edit dialog pre-filled with template data (no id = create mode)
+    setEditingRule({ ...data, id: '' });
     setActiveTab('rules');
   };
 
