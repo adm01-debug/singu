@@ -60,6 +60,7 @@ import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurn
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
 import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
+import AdvancedAnalyticsTab from '@/components/analytics/AdvancedAnalyticsTab';
 import { 
   DISCTrainingMode, 
   DISCConversionMetrics
