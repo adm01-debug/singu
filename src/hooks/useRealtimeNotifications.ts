@@ -157,8 +157,7 @@ export function useRealtimeNotifications() {
     });
   }, []);
 
-  // Subscribe to realtime changes - use user.id to stabilize dependency
-  const userId = user?.id;
+  // Subscribe to realtime changes
   useEffect(() => {
     if (!userId) return;
 
@@ -204,11 +203,7 @@ export function useRealtimeNotifications() {
         },
         handleNewStakeholderAlert
       )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Realtime notifications channel error');
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -216,33 +211,42 @@ export function useRealtimeNotifications() {
   }, [userId, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
 
   // Load initial notifications
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
+
+    let cancelled = false;
 
     const loadNotifications = async () => {
-      const { data: alerts } = await supabase
-        .from('alerts')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const [alertsRes, insightsRes, healthAlertsRes] = await Promise.allSettled([
+        supabase
+          .from('alerts')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('dismissed', false)
+          .order('created_at', { ascending: false })
+          .limit(20),
+        supabase
+          .from('insights')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('dismissed', false)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('health_alerts')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('dismissed', false)
+          .order('created_at', { ascending: false })
+          .limit(10),
+      ]);
 
-      const { data: insights } = await supabase
-        .from('insights')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      if (cancelled) return;
 
-      const { data: healthAlerts } = await supabase
-        .from('health_alerts')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      const alerts = alertsRes.status === 'fulfilled' ? alertsRes.value.data : null;
+      const insights = insightsRes.status === 'fulfilled' ? insightsRes.value.data : null;
+      const healthAlerts = healthAlertsRes.status === 'fulfilled' ? healthAlertsRes.value.data : null;
 
       const allNotifications: RealtimeNotification[] = [
         ...(alerts || []).map(a => ({
@@ -272,7 +276,7 @@ export function useRealtimeNotifications() {
           entityType: 'contact',
           createdAt: h.created_at,
         })),
-      ].sort((a, b) => 
+      ].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ).slice(0, 50);
 
@@ -281,7 +285,9 @@ export function useRealtimeNotifications() {
     };
 
     loadNotifications();
-  }, [user]);
+
+    return () => { cancelled = true; };
+  }, [userId]);
 
   const clearUnread = useCallback(() => {
     setUnreadCount(0);
