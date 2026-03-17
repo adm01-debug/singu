@@ -30,6 +30,7 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
+import Automacoes from "./pages/Automacoes";
 
 import DesignSystem from "./pages/DesignSystem";
 
