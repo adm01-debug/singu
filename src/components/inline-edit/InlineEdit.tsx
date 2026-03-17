@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent, RefObject, RefCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, KeyboardEvent, RefObject, RefCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +44,8 @@ export function InlineEdit({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const isSavingRef = useRef(false);
 
   // Update edit value when prop changes
   useEffect(() => {
@@ -52,12 +54,15 @@ export function InlineEdit({
     }
   }, [value, isEditing]);
 
-  // Focus input when entering edit mode
+  // Focus input when entering edit mode + cleanup blur timeout
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
     }
+    return () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    };
   }, [isEditing]);
 
   const handleStartEdit = () => {
@@ -73,8 +78,7 @@ export function InlineEdit({
     setError(null);
   };
 
-  const handleSave = async () => {
-    // Validate if provided
+  const handleSave = useCallback(async () => {
     if (validate) {
       const validationError = validate(editValue);
       if (validationError) {
@@ -83,12 +87,12 @@ export function InlineEdit({
       }
     }
 
-    // Don't save if unchanged
     if (editValue === value) {
       setIsEditing(false);
       return;
     }
 
+    isSavingRef.current = true;
     setIsSaving(true);
     setError(null);
 
@@ -99,12 +103,13 @@ export function InlineEdit({
       } else {
         setError('Erro ao salvar');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao salvar');
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
-  };
+  }, [editValue, value, onSave, validate]);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !multiline) {
@@ -137,8 +142,8 @@ export function InlineEdit({
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onBlur={() => {
-                    setTimeout(() => {
-                      if (!isSaving) handleCancel();
+                    blurTimeoutRef.current = setTimeout(() => {
+                      if (!isSavingRef.current) handleCancel();
                     }, 150);
                   }}
                   placeholder={placeholder}
@@ -157,8 +162,8 @@ export function InlineEdit({
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onBlur={() => {
-                    setTimeout(() => {
-                      if (!isSaving) handleCancel();
+                    blurTimeoutRef.current = setTimeout(() => {
+                      if (!isSavingRef.current) handleCancel();
                     }, 150);
                   }}
                   placeholder={placeholder}
