@@ -173,6 +173,7 @@ const DashboardSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => {
       </Card>
     </div>
   );
-};
+});
+DashboardSkeleton.displayName = 'DashboardSkeleton';
 
 export default DashboardSkeleton;
