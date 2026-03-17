@@ -42,14 +42,30 @@ export function useContactDetail(contactId: string | undefined) {
     setError(null);
 
     try {
-      // Fetch contact from local database
-      const { data: contactData, error: contactError } = await supabase
+      // Fetch contact from local database, fallback to external database (prevents false "Contato não encontrado")
+      let contactData: Contact | null = null;
+
+      const { data: localContact, error: contactError } = await supabase
         .from('contacts')
         .select('*')
         .eq('id', contactId)
-        .single();
+        .maybeSingle();
 
-      if (contactError || !contactData) {
+      if (contactError) throw contactError;
+
+      if (localContact) {
+        contactData = localContact;
+      } else {
+        const { data: externalContacts, error: externalContactError } = await queryExternalData<Contact>({
+          table: 'contacts',
+          filters: [{ type: 'eq', column: 'id', value: contactId }],
+        });
+
+        if (externalContactError) throw externalContactError;
+        contactData = externalContacts?.[0] ?? null;
+      }
+
+      if (!contactData) {
         setError('Contato não encontrado');
         setLoading(false);
         return;
