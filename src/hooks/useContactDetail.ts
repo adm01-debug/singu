@@ -243,8 +243,7 @@ export function useContactDetail(contactId: string | undefined) {
       });
 
       return updatedContact;
-    } catch (err) {
-      void err;
+    } catch {
       toast({
         title: 'Erro ao atualizar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -286,8 +285,7 @@ export function useContactDetail(contactId: string | undefined) {
       });
 
       return newInteraction;
-    } catch (err) {
-      void err;
+    } catch {
       toast({
         title: 'Erro ao registrar interação',
         description: 'Verifique os dados e tente novamente.',
@@ -314,8 +312,7 @@ export function useContactDetail(contactId: string | undefined) {
       toast({
         title: 'Alerta dispensado',
       });
-    } catch (err) {
-      void err;
+    } catch {
     }
   };
 
@@ -336,8 +333,7 @@ export function useContactDetail(contactId: string | undefined) {
       toast({
         title: 'Insight dispensado',
       });
-    } catch (err) {
-      void err;
+    } catch {
     }
   };
 

@@ -374,8 +374,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           meta: new Date(i.created_at).toLocaleDateString('pt-BR'),
         })) || [],
       });
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Não foi possível completar a busca agora.');
       setResults({ contacts: [], companies: [], interactions: [] });
     } finally {

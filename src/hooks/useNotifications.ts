@@ -99,8 +99,7 @@ export const useNotifications = () => {
         });
         return false;
       }
-    } catch (error) {
-      void error;
+    } catch {
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao ativar as notificações.',
@@ -125,8 +124,7 @@ export const useNotifications = () => {
         });
       }
       return success;
-    } catch (error) {
-      void error;
+    } catch {
       return false;
     } finally {
       setIsLoading(false);
@@ -160,8 +158,7 @@ export const useNotifications = () => {
         });
       }
       return true;
-    } catch (error) {
-      void error;
+    } catch {
       return false;
     }
   }, [permissionState.permission, requestPermission]);
@@ -224,8 +221,7 @@ export const useNotifications = () => {
           );
         }
       }
-    } catch (error) {
-      void error;
+    } catch {
     }
   }, [permissionState.permission, showNotification]);
 
@@ -272,8 +268,7 @@ export const useNotifications = () => {
           }
         );
       }
-    } catch (error) {
-      void error;
+    } catch {
     }
   }, [permissionState.permission, showNotification]);
 
@@ -342,8 +337,7 @@ export const useNotifications = () => {
           }
         }
       }
-    } catch (error) {
-      void error;
+    } catch {
     }
   }, [permissionState.permission, showNotification]);
 

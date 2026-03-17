@@ -59,8 +59,7 @@ export function useClientValuesPersistence(contactId: string) {
 
       setSavedValues(valuesRes.data || []);
       setSavedCriteria((criteriaRes.data || []) as DecisionCriterionRecord[]);
-    } catch (error) {
-      void error;
+    } catch {
     } finally {
       setLoading(false);
     }
@@ -102,8 +101,7 @@ export function useClientValuesPersistence(contactId: string) {
       });
       
       return data;
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Erro ao salvar valor do cliente');
       return null;
     }
@@ -133,8 +131,7 @@ export function useClientValuesPersistence(contactId: string) {
       const record = data as DecisionCriterionRecord;
       setSavedCriteria(prev => [...prev, record].sort((a, b) => a.priority - b.priority));
       return record;
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Erro ao salvar critério de decisão');
       return null;
     }
@@ -205,8 +202,7 @@ export function useClientValuesPersistence(contactId: string) {
       await fetchSavedData();
       toast.success('Valores e critérios salvos com sucesso!');
       return true;
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Erro ao persistir análise de valores');
       return false;
     } finally {
@@ -230,8 +226,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedValues(prev => prev.filter(v => v.id !== valueId));
       toast.success('Valor removido');
       return true;
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Erro ao remover valor');
       return false;
     }
@@ -253,8 +248,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedCriteria(prev => prev.filter(c => c.id !== criterionId));
       toast.success('Critério removido');
       return true;
-    } catch (error) {
-      void error;
+    } catch {
       toast.error('Erro ao remover critério');
       return false;
     }
