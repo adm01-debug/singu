@@ -1,0 +1,225 @@
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Phone, Mail, MessageSquare, Users, Video, FileText,
+  Clock, AlertCircle, ArrowUpRight, ArrowDownLeft,
+  ChevronDown, ChevronUp, Plus
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { InteractionForm } from '@/components/forms/InteractionForm';
+import { cn } from '@/lib/utils';
+import { format, formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import type { Interaction, Contact as ContactType } from '@/hooks/useContactDetail';
+
+const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
+  call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+  email: { icon: Mail, label: 'Email', color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
+  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-green-500 bg-green-50 dark:bg-green-900/20' },
+  meeting: { icon: Users, label: 'Reunião', color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+  note: { icon: FileText, label: 'Nota', color: 'text-gray-500 bg-gray-50 dark:bg-gray-900/20' },
+  social: { icon: Video, label: 'Social', color: 'text-pink-500 bg-pink-50 dark:bg-pink-900/20' },
+};
+
+interface Props {
+  interactions: Interaction[];
+  contact: ContactType;
+  companyId: string | null;
+  onInteractionAdded?: () => void;
+}
+
+export function ContactInteractionsTab({ interactions, contact, companyId, onInteractionAdded }: Props) {
+  const { user } = useAuth();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const contactForForm = {
+    id: contact.id,
+    first_name: contact.first_name,
+    last_name: contact.last_name,
+    company_id: contact.company_id,
+  } as any;
+
+  const handleSubmit = useCallback(async (data: any) => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('interactions').insert({
+        ...data,
+        contact_id: contact.id,
+        company_id: companyId,
+        user_id: user.id,
+      });
+      if (error) throw error;
+      toast.success('Interação registrada');
+      setShowForm(false);
+      onInteractionAdded?.();
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao registrar interação');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [user, contact.id, companyId, onInteractionAdded]);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          {interactions.length} interação{interactions.length !== 1 ? 'ões' : ''} registrada{interactions.length !== 1 ? 's' : ''}
+        </p>
+        <Button size="sm" onClick={() => setShowForm(true)}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
+          Nova Interação
+        </Button>
+      </div>
+
+      {interactions.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <MessageSquare className="mb-3 h-10 w-10 text-muted-foreground/50" />
+            <p className="text-sm font-medium text-muted-foreground">Nenhuma interação registrada</p>
+            <p className="text-xs text-muted-foreground/70">Registre a primeira interação com este contato</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="relative space-y-0">
+          <div className="absolute left-5 top-3 bottom-3 w-px bg-border" />
+
+          {interactions.map((interaction, i) => {
+            const config = TYPE_CONFIG[interaction.type] || TYPE_CONFIG.note;
+            const Icon = config.icon;
+            const isExpanded = expandedId === interaction.id;
+
+            return (
+              <motion.div
+                key={interaction.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="relative pl-12"
+              >
+                <div className={cn(
+                  'absolute left-2.5 top-4 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-card',
+                  config.color
+                )}>
+                  <Icon className="h-3 w-3" />
+                </div>
+
+                <Card
+                  className={cn(
+                    'mb-2 cursor-pointer transition-all hover:shadow-sm',
+                    isExpanded && 'ring-1 ring-primary/20'
+                  )}
+                  onClick={() => setExpandedId(isExpanded ? null : interaction.id)}
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm text-foreground truncate">
+                            {interaction.title}
+                          </span>
+                          <Badge variant="outline" className="flex-shrink-0 text-xs">
+                            {config.label}
+                          </Badge>
+                          {interaction.initiated_by && (
+                            interaction.initiated_by === 'us' ? (
+                              <ArrowUpRight className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                            ) : (
+                              <ArrowDownLeft className="h-3 w-3 text-green-500 flex-shrink-0" />
+                            )
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{format(new Date(interaction.created_at), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}</span>
+                          <span>·</span>
+                          <span>{formatDistanceToNow(new Date(interaction.created_at), { addSuffix: true, locale: ptBR })}</span>
+                          {interaction.duration && (
+                            <>
+                              <span>·</span>
+                              <Clock className="h-3 w-3" />
+                              <span>{Math.floor(interaction.duration / 60)}min</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <SentimentIndicator sentiment={(interaction.sentiment as 'positive' | 'neutral' | 'negative') || 'neutral'} size="sm" />
+                        {interaction.follow_up_required && (
+                          <AlertCircle className="h-4 w-4 text-orange-500" />
+                        )}
+                        {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-3 space-y-2 border-t pt-3">
+                            {interaction.content && (
+                              <p className="text-sm text-foreground whitespace-pre-wrap">{interaction.content}</p>
+                            )}
+                            {interaction.key_insights && interaction.key_insights.length > 0 && (
+                              <div>
+                                <span className="text-xs font-medium text-muted-foreground">Insights-chave:</span>
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {interaction.key_insights.map((insight, j) => (
+                                    <Badge key={j} variant="secondary" className="text-xs">{insight}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {interaction.tags && interaction.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {interaction.tags.map(tag => (
+                                  <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                                ))}
+                              </div>
+                            )}
+                            {interaction.follow_up_required && interaction.follow_up_date && (
+                              <div className="flex items-center gap-1.5 text-xs text-orange-600 dark:text-orange-400">
+                                <AlertCircle className="h-3.5 w-3.5" />
+                                Follow-up: {format(new Date(interaction.follow_up_date), "dd/MM/yyyy")}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <InteractionForm
+            contacts={[contactForForm]}
+            defaultContactId={contact.id}
+            defaultCompanyId={companyId || undefined}
+            onSubmit={handleSubmit}
+            onCancel={() => setShowForm(false)}
+            isSubmitting={isSubmitting}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
