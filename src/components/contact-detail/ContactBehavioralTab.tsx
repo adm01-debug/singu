@@ -91,10 +91,10 @@ export function ContactBehavioralTab({ contact }: Props) {
                   </div>
                   {latestDisc && (
                     <div className="space-y-2">
-                      {['dominance_score', 'influence_score', 'steadiness_score', 'conscientiousness_score'].map(key => {
-                        const label = key.replace('_score', '').charAt(0).toUpperCase() + key.replace('_score', '').slice(1);
-                        const shortLabel = key[0].toUpperCase();
-                        const value = latestDisc[key] as number;
+                  {(['dominance_score', 'influence_score', 'steadiness_score', 'conscientiousness_score'] as const).map(key => {
+                        const labels: Record<string, string> = { dominance_score: 'D', influence_score: 'I', steadiness_score: 'S', conscientiousness_score: 'C' };
+                        const shortLabel = labels[key];
+                        const value = (latestDisc[key] as number) || 0;
                         return (
                           <div key={key} className="flex items-center gap-2">
                             <span className="w-6 text-xs font-bold text-muted-foreground">{shortLabel}</span>
