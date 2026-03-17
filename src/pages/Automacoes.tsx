@@ -473,6 +473,8 @@ export default function Automacoes() {
             </AnimatePresence>
           </div>
         )}
+          </TabsContent>
+        </Tabs>
 
         {/* Create Dialog */}
         <RuleFormDialog open={formOpen} onOpenChange={setFormOpen} onSubmit={handleCreate} />
