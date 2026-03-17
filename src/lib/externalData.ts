@@ -6,7 +6,7 @@ interface ExternalQueryOptions {
   filters?: Array<{
     type: 'eq' | 'ilike' | 'in';
     column: string;
-    value: any;
+    value: string | number | boolean | string[];
   }>;
   search?: {
     term: string;
@@ -22,7 +22,7 @@ interface ExternalQueryOptions {
   };
 }
 
-export async function queryExternalData<T = any>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
+export async function queryExternalData<T = unknown>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const url = `${supabaseUrl}/functions/v1/external-data`;

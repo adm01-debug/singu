@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 /** Detect macOS using userAgentData (modern) with navigator.platform fallback */
 export function isMacOS(): boolean {
   if (typeof navigator === 'undefined') return false;
-  const uad = (navigator as any).userAgentData;
-  if (uad?.platform) return uad.platform === 'macOS';
+  const nav = navigator as Navigator & { userAgentData?: { platform: string } };
+  if (nav.userAgentData?.platform) return nav.userAgentData.platform === 'macOS';
   return /mac/i.test(navigator.platform);
 }
