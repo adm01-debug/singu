@@ -546,7 +546,7 @@ export default function Automacoes() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium">
-                        {log.actions_executed.map(a => ACTION_OPTIONS.find(o => o.value === a.type)?.label).join(', ')}
+                        {(Array.isArray(log.actions_executed) ? log.actions_executed : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label).filter(Boolean).join(', ') || 'Ação executada'}
                       </p>
                       {log.error_message && (
                         <p className="text-xs text-destructive truncate">{log.error_message}</p>
