@@ -313,33 +313,25 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     }
 
     setIsLoading(true);
-    // Normalize accents for better matching (e.g., "joao" matches "João")
-    const normalizedSearch = normalizeText(searchQuery);
-    const searchTerm = `%${normalizedSearch}%`;
-    // Also keep original for exact matches
-    const originalTerm = `%${searchQuery.toLowerCase()}%`;
+    const searchTermTrimmed = searchQuery.trim();
 
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
-        supabase
-          .from('contacts')
-          .select('id, first_name, last_name, email, phone, role_title, company_id')
-          .eq('user_id', user.id)
-          .or(`first_name.ilike.${searchTerm},last_name.ilike.${searchTerm},email.ilike.${searchTerm},role_title.ilike.${searchTerm},first_name.ilike.${originalTerm},last_name.ilike.${originalTerm},email.ilike.${originalTerm}`)
-          .limit(5),
-        supabase
-          .from('companies')
-          .select('id, name, industry, city, state')
-          .eq('user_id', user.id)
-          .or(`name.ilike.${searchTerm},industry.ilike.${searchTerm},city.ilike.${searchTerm},name.ilike.${originalTerm},industry.ilike.${originalTerm}`)
-          .limit(5),
-        supabase
-          .from('interactions')
-          .select('id, title, type, created_at, contact_id')
-          .eq('user_id', user.id)
-          .or(`title.ilike.${searchTerm},content.ilike.${searchTerm},title.ilike.${originalTerm},content.ilike.${originalTerm}`)
-          .order('created_at', { ascending: false })
-          .limit(5),
+        supabase.rpc('search_contacts_unaccent', {
+          p_user_id: user.id,
+          p_query: searchQuery.trim(),
+          p_limit: 5,
+        }),
+        supabase.rpc('search_companies_unaccent', {
+          p_user_id: user.id,
+          p_query: searchQuery.trim(),
+          p_limit: 5,
+        }),
+        supabase.rpc('search_interactions_unaccent', {
+          p_user_id: user.id,
+          p_query: searchQuery.trim(),
+          p_limit: 5,
+        }),
       ]);
 
       if (contactsResponse.error || companiesResponse.error || interactionsResponse.error) {
@@ -478,6 +470,76 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
+        {/* Loading */}
+        {query && isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+              <p className="text-sm text-muted-foreground">Buscando...</p>
+            </div>
+          </div>
+        )}
+
+        {/* DB Results — show first when searching */}
+        {results.contacts.length > 0 && (
+          <CommandGroup heading={<div className="flex items-center gap-2"><Users className="w-3 h-3" /><span>Contatos</span><Badge variant="secondary" className="text-[10px] ml-auto">{results.contacts.length}</Badge></div>}>
+            {results.contacts.map((result) => (
+              <CommandItem key={result.id} onSelect={() => handleSelect(result)} className="gap-3 py-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10"><Users className="w-5 h-5 text-primary" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{result.title}</p>
+                  {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                </div>
+                {result.meta && <div className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="w-3 h-3" /><span className="truncate max-w-[100px]">{result.meta}</span></div>}
+                <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {results.companies.length > 0 && (
+          <><CommandSeparator /><CommandGroup heading={<div className="flex items-center gap-2"><Building2 className="w-3 h-3" /><span>Empresas</span><Badge variant="secondary" className="text-[10px] ml-auto">{results.companies.length}</Badge></div>}>
+            {results.companies.map((result) => (
+              <CommandItem key={result.id} onSelect={() => handleSelect(result)} className="gap-3 py-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10"><Building2 className="w-5 h-5 text-accent" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{result.title}</p>
+                  {result.subtitle && <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>}
+                </div>
+                {result.meta && <span className="text-xs text-muted-foreground">{result.meta}</span>}
+                <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              </CommandItem>
+            ))}
+          </CommandGroup></>
+        )}
+        {results.interactions.length > 0 && (
+          <><CommandSeparator /><CommandGroup heading={<div className="flex items-center gap-2"><MessageSquare className="w-3 h-3" /><span>Interações</span><Badge variant="secondary" className="text-[10px] ml-auto">{results.interactions.length}</Badge></div>}>
+            {results.interactions.map((result) => (
+              <CommandItem key={result.id} onSelect={() => handleSelect(result)} className="gap-3 py-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-warning/10"><MessageSquare className="w-5 h-5 text-warning" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{result.title}</p>
+                  {result.subtitle && <Badge variant="secondary" className="text-xs capitalize">{result.subtitle}</Badge>}
+                </div>
+                {result.meta && <div className="flex items-center gap-1 text-xs text-muted-foreground"><Calendar className="w-3 h-3" /><span>{result.meta}</span></div>}
+                <ArrowRight className="w-4 h-4 text-muted-foreground" />
+              </CommandItem>
+            ))}
+          </CommandGroup></>
+        )}
+
+        {/* Empty state */}
+        {query && !hasResults && !hasLocalResults && !isLoading && (
+          <CommandEmpty>
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div>
+              <div className="text-center">
+                <p className="font-medium">Nenhum resultado para "{query}"</p>
+                <p className="text-sm text-muted-foreground mt-1">Tente buscar por nome, email, empresa ou título</p>
+              </div>
+            </div>
+          </CommandEmpty>
+        )}
+
         {/* Quick Actions */}
         {(!query || filteredQuickActions.length > 0) && (
           <CommandGroup heading={
@@ -575,155 +637,6 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           </>
         )}
 
-        {query && !hasResults && !hasLocalResults && !isLoading && (
-          <CommandEmpty>
-            <div className="flex flex-col items-center gap-3 py-8">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                <Search className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="font-medium">Nenhum resultado para "{query}"</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Tente buscar por nome, email, empresa ou título
-                </p>
-              </div>
-              <div className="flex gap-2 mt-2">
-                {quickActions.map((action) => {
-                  const Icon = action.icon;
-                  return (
-                    <button
-                      key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${getColorClass(action.color)} hover:opacity-80`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      {action.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </CommandEmpty>
-        )}
-
-        {query && isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-              <p className="text-sm text-muted-foreground">Buscando...</p>
-            </div>
-          </div>
-        )}
-
-        {results.contacts.length > 0 && (
-          <CommandGroup heading={
-            <div className="flex items-center gap-2">
-              <Users className="w-3 h-3" />
-              <span>Contatos</span>
-              <Badge variant="secondary" className="text-[10px] ml-auto">{results.contacts.length}</Badge>
-            </div>
-          }>
-            {results.contacts.map((result) => (
-              <CommandItem
-                key={result.id}
-                onSelect={() => handleSelect(result)}
-                className="gap-3 py-3"
-              >
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{result.title}</p>
-                  {result.subtitle && (
-                    <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
-                  )}
-                </div>
-                {result.meta && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    <span className="truncate max-w-[100px]">{result.meta}</span>
-                  </div>
-                )}
-                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {results.companies.length > 0 && (
-          <>
-            {results.contacts.length > 0 && <CommandSeparator />}
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Building2 className="w-3 h-3" />
-                <span>Empresas</span>
-                <Badge variant="secondary" className="text-[10px] ml-auto">{results.companies.length}</Badge>
-              </div>
-            }>
-              {results.companies.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  onSelect={() => handleSelect(result)}
-                  className="gap-3 py-3"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10">
-                    <Building2 className="w-5 h-5 text-accent" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{result.title}</p>
-                    {result.subtitle && (
-                      <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
-                    )}
-                  </div>
-                  {result.meta && (
-                    <span className="text-xs text-muted-foreground">{result.meta}</span>
-                  )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {results.interactions.length > 0 && (
-          <>
-            {(results.contacts.length > 0 || results.companies.length > 0) && <CommandSeparator />}
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" />
-                <span>Interações</span>
-                <Badge variant="secondary" className="text-[10px] ml-auto">{results.interactions.length}</Badge>
-              </div>
-            }>
-              {results.interactions.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  onSelect={() => handleSelect(result)}
-                  className="gap-3 py-3"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-warning/10">
-                    <MessageSquare className="w-5 h-5 text-warning" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{result.title}</p>
-                    {result.subtitle && (
-                      <Badge variant="secondary" className="text-xs capitalize">
-                        {result.subtitle}
-                      </Badge>
-                    )}
-                  </div>
-                  {result.meta && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="w-3 h-3" />
-                      <span>{result.meta}</span>
-                    </div>
-                  )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
       </CommandList>
       
       {/* Enhanced Footer with keyboard hints */}
