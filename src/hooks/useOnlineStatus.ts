@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseOnlineStatusOptions {
   /** Callback when connection is lost */
@@ -25,52 +25,56 @@ interface UseOnlineStatusReturn {
  */
 export function useOnlineStatus(options: UseOnlineStatusOptions = {}): UseOnlineStatusReturn {
   const { onOffline, onOnline, pingInterval } = options;
-  
+
   const [isOnline, setIsOnline] = useState<boolean>(
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
   const [isChecking, setIsChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
 
-  // Check connection with a simple fetch
+  // Use refs for callbacks to break dependency cycle
+  const onOnlineRef = useRef(onOnline);
+  const onOfflineRef = useRef(onOffline);
+  onOnlineRef.current = onOnline;
+  onOfflineRef.current = onOffline;
+
+  // Check connection with a simple fetch — stable reference (no deps on isOnline)
   const checkConnection = useCallback(async (): Promise<boolean> => {
     if (typeof navigator === 'undefined') return true;
-    
+
     setIsChecking(true);
-    
+
     try {
-      // Use a small favicon or similar resource to check connectivity
       const response = await fetch('/favicon.ico', {
         method: 'HEAD',
         cache: 'no-store',
       });
-      
+
       const online = response.ok;
       setLastChecked(new Date());
-      
-      if (online !== isOnline) {
-        setIsOnline(online);
-        if (online) {
-          onOnline?.();
-        } else {
-          onOffline?.();
+
+      setIsOnline(prev => {
+        if (online !== prev) {
+          if (online) onOnlineRef.current?.();
+          else onOfflineRef.current?.();
         }
-      }
-      
+        return online;
+      });
+
       return online;
     } catch {
       setLastChecked(new Date());
-      
-      if (isOnline) {
-        setIsOnline(false);
-        onOffline?.();
-      }
-      
+
+      setIsOnline(prev => {
+        if (prev) onOfflineRef.current?.();
+        return false;
+      });
+
       return false;
     } finally {
       setIsChecking(false);
     }
-  }, [isOnline, onOnline, onOffline]);
+  }, []);
 
   // Listen for browser online/offline events
   useEffect(() => {
