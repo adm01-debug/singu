@@ -60,7 +60,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedValues(valuesRes.data || []);
       setSavedCriteria((criteriaRes.data || []) as DecisionCriterionRecord[]);
     } catch (error) {
-      console.error('Error fetching client values:', error);
+      void error;
     } finally {
       setLoading(false);
     }
@@ -103,7 +103,7 @@ export function useClientValuesPersistence(contactId: string) {
       
       return data;
     } catch (error) {
-      console.error('Error saving value:', error);
+      void error;
       toast.error('Erro ao salvar valor do cliente');
       return null;
     }
@@ -134,7 +134,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedCriteria(prev => [...prev, record].sort((a, b) => a.priority - b.priority));
       return record;
     } catch (error) {
-      console.error('Error saving criterion:', error);
+      void error;
       toast.error('Erro ao salvar critério de decisão');
       return null;
     }
@@ -171,14 +171,8 @@ export function useClientValuesPersistence(contactId: string) {
         if (valuesError) throw valuesError;
       }
 
-      // Delete old criteria and insert new ones
+      // Replace criteria: insert first, then delete old ones (safe order)
       if (criteria.length > 0) {
-        await supabase
-          .from('decision_criteria')
-          .delete()
-          .eq('contact_id', contactId)
-          .eq('user_id', user.id);
-
         const criteriaRecords = criteria.map(c => ({
           user_id: user.id,
           contact_id: contactId,
@@ -189,18 +183,30 @@ export function useClientValuesPersistence(contactId: string) {
           how_to_address: c.howToAddress || null
         }));
 
-        const { error: criteriaError } = await supabase
+        const { data: inserted, error: criteriaError } = await supabase
           .from('decision_criteria')
-          .insert(criteriaRecords);
+          .insert(criteriaRecords)
+          .select('id');
 
         if (criteriaError) throw criteriaError;
+
+        // Only delete old criteria after successful insert
+        const newIds = (inserted || []).map(r => r.id);
+        if (newIds.length > 0) {
+          await supabase
+            .from('decision_criteria')
+            .delete()
+            .eq('contact_id', contactId)
+            .eq('user_id', user.id)
+            .not('id', 'in', `(${newIds.join(',')})`);
+        }
       }
 
       await fetchSavedData();
       toast.success('Valores e critérios salvos com sucesso!');
       return true;
     } catch (error) {
-      console.error('Error persisting values map:', error);
+      void error;
       toast.error('Erro ao persistir análise de valores');
       return false;
     } finally {
@@ -225,7 +231,7 @@ export function useClientValuesPersistence(contactId: string) {
       toast.success('Valor removido');
       return true;
     } catch (error) {
-      console.error('Error deleting value:', error);
+      void error;
       toast.error('Erro ao remover valor');
       return false;
     }
@@ -248,7 +254,7 @@ export function useClientValuesPersistence(contactId: string) {
       toast.success('Critério removido');
       return true;
     } catch (error) {
-      console.error('Error deleting criterion:', error);
+      void error;
       toast.error('Erro ao remover critério');
       return false;
     }
