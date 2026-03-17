@@ -97,6 +97,101 @@ export type Database = {
           },
         ]
       }
+      automation_logs: {
+        Row: {
+          actions_executed: Json
+          error_message: string | null
+          executed_at: string
+          id: string
+          rule_id: string
+          success: boolean
+          trigger_entity_id: string
+          trigger_entity_type: string
+          user_id: string
+        }
+        Insert: {
+          actions_executed?: Json
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          rule_id: string
+          success?: boolean
+          trigger_entity_id: string
+          trigger_entity_type: string
+          user_id: string
+        }
+        Update: {
+          actions_executed?: Json
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          rule_id?: string
+          success?: boolean
+          trigger_entity_id?: string
+          trigger_entity_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_logs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string
+          description: string | null
+          execution_count: number
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_executed_at: string | null
+          name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_executed_at?: string | null
+          name: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          execution_count?: number
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_executed_at?: string | null
+          name?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_values: {
         Row: {
           category: string
