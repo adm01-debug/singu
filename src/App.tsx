@@ -6,15 +6,31 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, RequireAuth, useAuth } from "@/hooks/useAuth";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
-import { KeyboardShortcutsDialogEnhanced } from "@/components/keyboard/KeyboardShortcutsDialogEnhanced";
-import { InstallPrompt, OfflineIndicator, NetworkStatusBadge } from "@/components/pwa/PWAComponents";
-import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
-import { PageTransition } from "@/components/page-transition/PageTransition";
 import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
-import { WhatsNewModal } from "@/components/features/WhatsNewModal";
-import { SessionExpiryHandler } from "@/components/session/SessionExpiryHandler";
-import { useEasterEggs } from "@/hooks/useEasterEggs";
+import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
+
+// Non-critical shell components — lazy loaded
+const PWAShell = lazy(() =>
+  import("@/components/pwa/PWAComponents").then(m => ({
+    default: () => (
+      <>
+        <m.OfflineIndicator />
+        <m.InstallPrompt />
+        <m.NetworkStatusBadge />
+      </>
+    ),
+  }))
+);
+const KeyboardShortcutsDialogEnhanced = lazy(() =>
+  import("@/components/keyboard/KeyboardShortcutsDialogEnhanced").then(m => ({ default: m.KeyboardShortcutsDialogEnhanced }))
+);
+const SessionExpiryHandler = lazy(() =>
+  import("@/components/session/SessionExpiryHandler").then(m => ({ default: m.SessionExpiryHandler }))
+);
+const WhatsNewModal = lazy(() =>
+  import("@/components/features/WhatsNewModal").then(m => ({ default: m.WhatsNewModal }))
+);
 
 // Lazy-loaded pages — code splitting per route
 const Index = lazy(() => import("./pages/Index"));
@@ -39,31 +55,35 @@ const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
     },
   },
 });
 
-// Easter eggs component
-const EasterEggsProvider = () => {
-  useEasterEggs();
-  return null;
-};
+// Easter eggs — loaded after idle
+const EasterEggsProvider = lazy(() =>
+  import("@/hooks/useEasterEggs").then(m => ({
+    default: () => { m.useEasterEggs(); return null; },
+  }))
+);
 
-// What's New modal component - only for authenticated users outside auth route
+// What's New — only for authenticated users outside auth route
 const WhatsNewWrapper = () => {
   const { user } = useAuth();
   const location = useLocation();
-
   if (!user || location.pathname === '/auth') return null;
-  return <WhatsNewModal />;
+  return (
+    <Suspense fallback={null}>
+      <WhatsNewModal />
+    </Suspense>
+  );
 };
 
 // Suspense wrapper for lazy routes
 const LazyPage = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<PageLoadingFallback />}>
-    <PageTransition>{children}</PageTransition>
+    {children}
   </Suspense>
 );
 
