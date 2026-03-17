@@ -24,7 +24,10 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAutomationRules, TRIGGER_OPTIONS, ACTION_OPTIONS, type CreateRuleData, type AutomationAction, type TriggerType, type ActionType } from '@/hooks/useAutomationRules';
+import { useAutomationRules, TRIGGER_OPTIONS, ACTION_OPTIONS, type CreateRuleData, type AutomationAction, type AutomationCondition, type TriggerType, type ActionType } from '@/hooks/useAutomationRules';
+import { AutomationTemplates } from '@/components/automation/AutomationTemplates';
+import { ConditionBuilder } from '@/components/automation/ConditionBuilder';
+import { ActionConfigForm } from '@/components/automation/ActionConfigForm';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -44,6 +47,9 @@ function RuleFormDialog({
   const [triggerConfig, setTriggerConfig] = useState<string>(
     initialData?.trigger_config ? JSON.stringify(initialData.trigger_config, null, 2) : '{}'
   );
+  const [conditions, setConditions] = useState<AutomationCondition[]>(
+    initialData?.conditions ?? []
+  );
   const [actions, setActions] = useState<AutomationAction[]>(
     initialData?.actions ?? [{ type: 'create_alert', config: { title: 'Alerta automático' } }]
   );
@@ -58,7 +64,7 @@ function RuleFormDialog({
       description: description.trim() || null,
       trigger_type: triggerType,
       trigger_config: parsedConfig,
-      conditions: [],
+      conditions,
       actions,
     });
     onOpenChange(false);
@@ -66,6 +72,10 @@ function RuleFormDialog({
 
   const updateAction = (index: number, type: ActionType) => {
     setActions(prev => prev.map((a, i) => i === index ? { ...a, type } : a));
+  };
+
+  const updateActionConfig = (index: number, config: Record<string, unknown>) => {
+    setActions(prev => prev.map((a, i) => i === index ? { ...a, config } : a));
   };
 
   const removeAction = (index: number) => {
@@ -125,25 +135,60 @@ function RuleFormDialog({
               <p className="text-xs text-muted-foreground">{triggerMeta.description}</p>
             )}
 
-            {/* Trigger Config (advanced) */}
-            {(triggerType === 'no_contact_days' || triggerType === 'contact_stage_changed' || triggerType === 'score_changed') && (
+            {/* Trigger Config for specific triggers */}
+            {triggerType === 'no_contact_days' && (
               <div>
-                <Label htmlFor="trigger-config" className="text-xs text-muted-foreground">Configuração (JSON)</Label>
-                <Textarea 
-                  id="trigger-config" 
-                  value={triggerConfig} 
-                  onChange={e => setTriggerConfig(e.target.value)} 
-                  rows={3} 
-                  className="font-mono text-xs"
-                  placeholder='{"min_days": 30}'
+                <Label className="text-xs">Dias mínimos sem contato</Label>
+                <Input 
+                  type="number" className="text-xs h-8 w-32"
+                  value={(() => { try { return JSON.parse(triggerConfig)?.min_days || ''; } catch { return ''; } })()}
+                  onChange={e => setTriggerConfig(JSON.stringify({ min_days: Number(e.target.value) }))}
+                  placeholder="14"
                 />
+              </div>
+            )}
+            {triggerType === 'score_changed' && (
+              <div className="flex gap-2">
+                <div>
+                  <Label className="text-xs">Direção</Label>
+                  <Select 
+                    value={(() => { try { return JSON.parse(triggerConfig)?.direction || 'decrease'; } catch { return 'decrease'; } })()}
+                    onValueChange={v => {
+                      let cfg = {}; try { cfg = JSON.parse(triggerConfig); } catch {}
+                      setTriggerConfig(JSON.stringify({ ...cfg, direction: v }));
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="increase">Aumento</SelectItem>
+                      <SelectItem value="decrease">Queda</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Threshold</Label>
+                  <Input 
+                    type="number" className="text-xs h-8 w-24"
+                    value={(() => { try { return JSON.parse(triggerConfig)?.threshold || ''; } catch { return ''; } })()}
+                    onChange={e => {
+                      let cfg = {}; try { cfg = JSON.parse(triggerConfig); } catch {}
+                      setTriggerConfig(JSON.stringify({ ...cfg, threshold: Number(e.target.value) }));
+                    }}
+                    placeholder="10"
+                  />
+                </div>
               </div>
             )}
           </div>
 
           <Separator />
 
-          {/* Actions */}
+          {/* Visual Conditions */}
+          <ConditionBuilder conditions={conditions} onChange={setConditions} />
+
+          <Separator />
+
+          {/* Actions with config forms */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">⚡ Então (Ações)</Label>
@@ -153,27 +198,30 @@ function RuleFormDialog({
             </div>
             
             {actions.map((action, i) => (
-              <div key={i} className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/30">
-                <Select value={action.type} onValueChange={v => updateAction(i, v as ActionType)}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTION_OPTIONS.map(a => (
-                      <SelectItem key={a.value} value={a.value}>
-                        <span className="flex items-center gap-2">
-                          <span>{a.icon}</span>
-                          <span>{a.label}</span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {actions.length > 1 && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeAction(i)}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                )}
+              <div key={i} className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Select value={action.type} onValueChange={v => updateAction(i, v as ActionType)}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTION_OPTIONS.map(a => (
+                        <SelectItem key={a.value} value={a.value}>
+                          <span className="flex items-center gap-2">
+                            <span>{a.icon}</span>
+                            <span>{a.label}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {actions.length > 1 && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeAction(i)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                </div>
+                <ActionConfigForm action={action} onChange={(cfg) => updateActionConfig(i, cfg)} />
               </div>
             ))}
           </div>
@@ -199,9 +247,15 @@ export default function Automacoes() {
   const [editingRule, setEditingRule] = useState<(CreateRuleData & { id: string }) | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [logsRuleId, setLogsRuleId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('rules');
 
   const handleCreate = async (data: CreateRuleData) => {
     await createRule(data);
+  };
+
+  const handleUseTemplate = (data: CreateRuleData) => {
+    setEditingRule({ ...data, id: '' } as any);
+    setActiveTab('rules');
   };
 
   const handleEdit = async (data: CreateRuleData) => {
@@ -280,6 +334,18 @@ export default function Automacoes() {
             </CardContent>
           </Card>
         </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="rules">Minhas Regras</TabsTrigger>
+            <TabsTrigger value="templates">📦 Templates Prontos</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="templates" className="mt-4">
+            <AutomationTemplates onUseTemplate={handleUseTemplate} />
+          </TabsContent>
+
+          <TabsContent value="rules" className="mt-4">
 
         {/* Rules List */}
         {loading ? (
@@ -407,6 +473,8 @@ export default function Automacoes() {
             </AnimatePresence>
           </div>
         )}
+          </TabsContent>
+        </Tabs>
 
         {/* Create Dialog */}
         <RuleFormDialog open={formOpen} onOpenChange={setFormOpen} onSubmit={handleCreate} />
