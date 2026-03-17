@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -96,6 +97,13 @@ export function InteractionForm({
     },
   });
 
+  // Auto-save draft (only for new interactions)
+  const draftKey = interaction ? `interaction-edit-${interaction.id}` : 'interaction-new';
+  const { clearDraft } = useFormDraft(form, {
+    key: draftKey,
+    enabled: !interaction,
+  });
+
   const selectedContactId = form.watch('contact_id');
   const followUpRequired = form.watch('follow_up_required');
 
@@ -117,6 +125,7 @@ export function InteractionForm({
       company_id: data.company_id || null,
     };
     await onSubmit(cleanedData as InteractionFormData);
+    clearDraft();
   };
 
   return (

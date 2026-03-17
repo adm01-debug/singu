@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useFormDraft } from '@/hooks/useFormDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -81,8 +82,14 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     },
   });
 
+  // Auto-save draft (only for new companies)
+  const draftKey = company ? `company-edit-${company.id}` : 'company-new';
+  const { clearDraft } = useFormDraft(form, {
+    key: draftKey,
+    enabled: !company,
+  });
+
   const handleSubmit = async (data: CompanyFormData) => {
-    // Clean optional empty strings
     const cleanedData = {
       ...data,
       website: data.website || null,
@@ -97,6 +104,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       notes: data.notes || null,
     };
     await onSubmit(cleanedData as CompanyFormData);
+    clearDraft();
   };
 
   return (
