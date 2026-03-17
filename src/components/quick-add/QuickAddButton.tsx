@@ -1,50 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, User, Building2, MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import {
-  Dialog,
-  DialogContent,
-} from '@/components/ui/dialog';
-import {
-  Sheet,
-  SheetContent,
-} from '@/components/ui/sheet';
-import { ContactForm } from '@/components/forms/ContactForm';
-import { CompanyForm } from '@/components/forms/CompanyForm';
-import { InteractionForm } from '@/components/forms/InteractionForm';
-import { useContacts } from '@/hooks/useContacts';
-import { useCompanies } from '@/hooks/useCompanies';
-import { useInteractions } from '@/hooks/useInteractions';
-import { useIsMobile } from '@/hooks/use-mobile';
-
-type QuickAddType = 'contact' | 'company' | 'interaction' | null;
-
-const menuItems = [
-  {
-    type: 'interaction' as const,
-    label: 'Interação',
-    icon: MessageSquare,
-    color: 'bg-amber-500',
-    delay: 0,
-  },
-  {
-    type: 'company' as const,
-    label: 'Empresa',
-    icon: Building2,
-    color: 'bg-emerald-500',
-    delay: 0.05,
-  },
-  {
-    type: 'contact' as const,
-    label: 'Contato',
-    icon: User,
-    color: 'bg-blue-500',
-    delay: 0.1,
-  },
-];
-
-export function QuickAddButton() {
+...
+export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeForm, setActiveForm] = useState<QuickAddType>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
