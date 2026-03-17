@@ -176,7 +176,7 @@ function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
+export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(({ open, onOpenChange }, ref) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
     contacts: SearchResult[];
