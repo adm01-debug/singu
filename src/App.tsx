@@ -31,7 +31,7 @@ import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import RelatorioContato from "./pages/RelatorioContato";
 import Automacoes from "./pages/Automacoes";
-import Pipeline from "./pages/Pipeline";
+
 
 import DesignSystem from "./pages/DesignSystem";
 
@@ -140,11 +140,6 @@ const AnimatedRoutes = () => {
       <Route path="/automacoes" element={
         <RequireAuth>
           <PageTransition><Automacoes /></PageTransition>
-        </RequireAuth>
-      } />
-      <Route path="/pipeline" element={
-        <RequireAuth>
-          <PageTransition><Pipeline /></PageTransition>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={
