@@ -76,8 +76,8 @@ const menuItems: MenuItemConfig[] = [
 ];
 
 const bottomMenuItems: MenuItemConfig[] = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '9', tourId: 'notifications', badgeKey: 'total' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '0', tourId: 'settings' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '-', tourId: 'settings' },
 ];
 
 interface SidebarProps {

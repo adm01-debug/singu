@@ -136,6 +136,11 @@ const AnimatedRoutes = () => {
           <PageTransition><RelatorioContato /></PageTransition>
         </RequireAuth>
       } />
+      <Route path="/automacoes" element={
+        <RequireAuth>
+          <PageTransition><Automacoes /></PageTransition>
+        </RequireAuth>
+      } />
       <Route path="/whatsapp" element={
         <RequireAuth>
           <Navigate to="/interacoes?canal=whatsapp" replace />
