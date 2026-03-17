@@ -68,7 +68,7 @@ const Pipeline = () => {
   };
 
   return (
-    <MainLayout>
+    <AppLayout title="Pipeline de Vendas">
       <div className="flex flex-col h-full">
         {/* Header */}
         <motion.div
