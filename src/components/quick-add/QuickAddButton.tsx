@@ -63,7 +63,7 @@ export function QuickAddButton() {
     setActiveForm(null);
   };
 
-  const handleCreateContact = async (data: any) => {
+  const handleCreateContact = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createContact(data);
@@ -76,7 +76,7 @@ export function QuickAddButton() {
     }
   };
 
-  const handleCreateCompany = async (data: any) => {
+  const handleCreateCompany = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createCompany(data);
@@ -89,7 +89,7 @@ export function QuickAddButton() {
     }
   };
 
-  const handleCreateInteraction = async (data: any) => {
+  const handleCreateInteraction = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createInteraction(data);
