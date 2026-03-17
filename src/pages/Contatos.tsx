@@ -534,21 +534,26 @@ const Contatos = () => {
               ) : (
                 <div className="space-y-2">
                   {filteredAndSortedContacts.map((contact, index) => (
-                    <ContactCardWithContext
+                    <SwipeableListItem
                       key={contact.id}
-                      contact={contact}
-                      companyName={getCompanyName(contact.company_id)}
-                      lastInteraction={getLastInteractionDate(contact.id)}
-                      index={index}
-                      isSelected={selectedIds.has(contact.id)}
-                      isHighlighted={selectedIndex === index}
-                      selectionMode={selectionMode}
-                      onSelect={handleSelect}
-                      onEdit={setEditingContact}
-                      onDelete={setDeletingContact}
-                      onUpdate={updateContact}
-                      viewMode="list"
-                    />
+                      onDelete={() => setDeletingContact(contact)}
+                      onArchive={() => updateContact(contact.id, { relationship_stage: 'churned' })}
+                    >
+                      <ContactCardWithContext
+                        contact={contact}
+                        companyName={getCompanyName(contact.company_id)}
+                        lastInteraction={getLastInteractionDate(contact.id)}
+                        index={index}
+                        isSelected={selectedIds.has(contact.id)}
+                        isHighlighted={selectedIndex === index}
+                        selectionMode={selectionMode}
+                        onSelect={handleSelect}
+                        onEdit={setEditingContact}
+                        onDelete={setDeletingContact}
+                        onUpdate={updateContact}
+                        viewMode="list"
+                      />
+                    </SwipeableListItem>
                   ))}
                 </div>
               )
