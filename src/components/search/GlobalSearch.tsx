@@ -665,4 +665,6 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
       </div>
     </CommandDialog>
   );
-}
+});
+
+GlobalSearch.displayName = 'GlobalSearch';

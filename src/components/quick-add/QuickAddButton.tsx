@@ -190,4 +190,6 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
       )}
     </>
   );
-}
+});
+
+QuickAddButton.displayName = 'QuickAddButton';
