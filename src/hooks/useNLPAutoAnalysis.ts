@@ -80,7 +80,7 @@ export function useNLPAutoAnalysis() {
     analysisQueue.current.add(analysisKey);
 
     try {
-      console.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
+      if (import.meta.env.DEV) console.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
 
       // 1. VAK Analysis
       const vakResult = analyzeVAK(text);
