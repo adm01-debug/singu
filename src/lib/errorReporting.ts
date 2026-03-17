@@ -70,7 +70,7 @@ function createErrorReport(
     stack: error.stack,
     componentStack,
     timestamp: new Date().toISOString(),
-    url: window.location.href,
+    url: window.location.origin + window.location.pathname, // Exclude query params that may contain tokens
     userAgent: navigator.userAgent,
     userId: sessionStorage.getItem('singu_user_context') ?? undefined,
     metadata,
