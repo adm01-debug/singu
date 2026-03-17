@@ -20,8 +20,7 @@ import {
   Share2,
   Heart,
   AlertTriangle,
-  Workflow,
-  Kanban
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
