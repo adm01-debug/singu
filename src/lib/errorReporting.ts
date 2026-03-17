@@ -2,6 +2,7 @@
  * Sistema de Monitoramento de Erros em Produção
  * Captura, agrega e reporta erros para análise
  */
+import { logger } from '@/lib/logger';
 
 interface ErrorReport {
   id: string;
@@ -114,21 +115,19 @@ async function flushErrorBuffer(): Promise<void> {
 
         localStorage.setItem('error_logs', JSON.stringify(existingLogs));
       } catch (storageError) {
-        console.warn('Failed to persist error logs to localStorage:', storageError);
+        logger.warn('Failed to persist error logs to localStorage:', storageError);
       }
     }
     
-    // Log no console em dev
-    if (import.meta.env.DEV) {
-      console.group('🐛 Error Report Batch');
-      batch.errors.forEach(err => {
-        console.error(`[${err.severity.toUpperCase()}] ${err.message}`, err);
-      });
-      console.groupEnd();
-    }
+    // Log no console em dev (logger is already dev-only)
+    logger.group('🐛 Error Report Batch');
+    batch.errors.forEach(err => {
+      logger.error(`[${err.severity.toUpperCase()}] ${err.message}`, err);
+    });
+    logger.groupEnd();
   } catch (e) {
     // Silenciar erros do próprio sistema de logging
-    console.warn('Failed to flush error buffer:', e);
+    logger.warn('Failed to flush error buffer:', e);
   }
 }
 

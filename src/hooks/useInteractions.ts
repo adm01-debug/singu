@@ -115,7 +115,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
                 description: `Perfil: ${discResult.analysis?.blendProfile || discResult.analysis?.primaryProfile}`,
               });
             }
-          }).catch(console.error);
+          }).catch(err => logger.error('DISC analysis failed:', err));
         }
       }
 
@@ -131,7 +131,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
             data.transcription,
             data.type,
             true // showToast
-          ).catch(console.error);
+          ).catch(err => logger.error('NLP analysis failed:', err));
         }
       }
 
