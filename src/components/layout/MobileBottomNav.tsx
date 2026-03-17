@@ -32,6 +32,7 @@ const moreNavItems = [
   { icon: Calendar, label: 'Calendário', path: '/calendario' },
   { icon: Bell, label: 'Notificações', path: '/notificacoes' },
   { icon: Network, label: 'Network', path: '/network' },
+  { icon: Workflow, label: 'Automações', path: '/automacoes' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
