@@ -45,8 +45,7 @@ export function SessionExpiryHandler({
         return true;
       }
       return false;
-    } catch (error) {
-      console.error('Error refreshing session:', error);
+    } catch {
       toast.error('Erro ao renovar sessão');
       return false;
     } finally {
@@ -59,13 +58,13 @@ export function SessionExpiryHandler({
     await signOut();
   };
 
-  // Monitor session expiry
+  // Monitor session expiry + countdown in a single interval
   useEffect(() => {
     if (!user) return;
 
     const checkExpiry = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         setShowWarning(true);
         setExpiresIn(0);
@@ -86,15 +85,15 @@ export function SessionExpiryHandler({
         setExpiresIn(0);
         setShowWarning(true);
       } else if (autoRefresh && minutesUntilExpiry <= warningMinutes * 2) {
-        // Auto-refresh before warning threshold
         await refreshSession();
+      } else {
+        setShowWarning(false);
+        setExpiresIn(null);
       }
     };
 
-    // Check immediately
     checkExpiry();
 
-    // Check every minute
     const intervalId = setInterval(checkExpiry, 60 * 1000);
 
     return () => clearInterval(intervalId);
@@ -114,22 +113,6 @@ export function SessionExpiryHandler({
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Countdown timer when warning is shown
-  useEffect(() => {
-    if (!showWarning || expiresIn === null || expiresIn === 0) return;
-
-    const intervalId = setInterval(() => {
-      setExpiresIn((prev) => {
-        if (prev === null || prev <= 1) {
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 60 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [showWarning, expiresIn]);
 
   return (
     <>
