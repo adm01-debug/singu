@@ -252,15 +252,12 @@ const Contatos = () => {
     const contactToDelete = deletingContact;
     setDeletingContact(null);
     
-    // Optimistic: remove from UI immediately
-    toast.promise(
-      deleteContact(contactToDelete.id),
-      {
-        loading: 'Excluindo contato...',
-        success: `${contactToDelete.first_name} excluído com sucesso`,
-        error: 'Falha ao excluir contato. Recarregue para restaurar.',
-      }
-    );
+    // Contact is removed from UI instantly by optimistic deleteContact
+    const success = await deleteContact(contactToDelete.id);
+    if (success) {
+      toast.success(`${contactToDelete.first_name} excluído com sucesso`);
+      announce(`Contato ${contactToDelete.first_name} excluído`);
+    }
   };
 
   // Selection handlers
