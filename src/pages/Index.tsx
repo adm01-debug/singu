@@ -78,7 +78,7 @@ const BehaviorAlertsPanel = lazy(() => import('@/components/analytics/BehaviorAl
 const RFMAnalysisPanel = lazy(() => import('@/components/analytics/RFMAnalysisPanel').then(m => ({ default: m.RFMAnalysisPanel })));
 const DISCCompatibilityAlerts = lazy(() => import('@/components/disc').then(m => ({ default: m.DISCCompatibilityAlerts })));
 
-export type { PeriodFilter } from '@/components/dashboard/DashboardCharts';
+type PeriodFilter = '7d' | '30d' | '90d';
 
 const LazyFallback = () => (
   <Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />
