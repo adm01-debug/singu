@@ -147,6 +147,13 @@ export function useContacts(companyId?: string) {
   };
 
   const deleteContact = async (id: string) => {
+    // Optimistic: remove from UI immediately, rollback on failure
+    let removedContact: Contact | undefined;
+    setContacts(prev => {
+      removedContact = prev.find(c => c.id === id);
+      return prev.filter(c => c.id !== id);
+    });
+
     try {
       const { error } = await supabase
         .from('contacts')
@@ -154,18 +161,16 @@ export function useContacts(companyId?: string) {
         .eq('id', id);
 
       if (error) throw error;
-
-      setContacts(prev => prev.filter(c => c.id !== id));
-      toast({
-        title: 'Contato removido',
-        description: 'O contato foi excluído com sucesso.',
-      });
       return true;
     } catch (error) {
       console.error('Error deleting contact:', error);
+      // Rollback: restore the contact
+      if (removedContact) {
+        setContacts(prev => [removedContact!, ...prev]);
+      }
       toast({
         title: 'Erro ao excluir contato',
-        description: 'Não foi possível excluir o contato.',
+        description: 'Não foi possível excluir. O contato foi restaurado.',
         variant: 'destructive',
       });
       return false;
