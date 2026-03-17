@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Card,
@@ -75,7 +75,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useRFMAnalysis } from '@/hooks/useRFMAnalysis';
-import { RFM_SEGMENTS, RFMSegment, RFMAnalysis } from '@/types/rfm';
+import { RFM_SEGMENTS, RFMSegment, RFMAnalysis, RFMContactSummary, RFMHistory, RFMAction, CommunicationPriority } from '@/types/rfm';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -647,7 +647,7 @@ function SegmentCard({
   );
 }
 
-function ContactRFMCard({ summary }: { summary: any }) {
+function ContactRFMCard({ summary }: { summary: RFMContactSummary }) {
   const rfm = summary.rfmAnalysis;
   if (!rfm) return null;
   
@@ -761,7 +761,7 @@ function ContactRFMDetail({
   analyzing 
 }: { 
   rfm: RFMAnalysis; 
-  history: any[];
+  history: RFMHistory[];
   onRefresh: () => void;
   analyzing: boolean;
 }) {
@@ -997,9 +997,9 @@ function ScoreCard({
 
 function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
   const actionsByPriority = useMemo(() => {
-    const urgent: any[] = [];
-    const high: any[] = [];
-    const medium: any[] = [];
+    const urgent: { contactId: string; segment: RFMSegment; actions: RFMAction[]; priority: CommunicationPriority }[] = [];
+    const high: typeof urgent = [];
+    const medium: typeof urgent = [];
     
     rfmData.forEach(rfm => {
       const item = {
