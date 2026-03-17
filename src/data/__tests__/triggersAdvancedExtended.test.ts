@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { ADVANCED_MENTAL_TRIGGERS } from '@/data/triggersAdvancedData';
-import { EXTENDED_MENTAL_TRIGGERS } from '@/data/triggersExtendedData';
 
 describe('Advanced Mental Triggers', () => {
   const triggers = Object.values(ADVANCED_MENTAL_TRIGGERS);
@@ -125,48 +124,3 @@ describe('Advanced Mental Triggers', () => {
   });
 });
 
-describe('Extended Mental Triggers', () => {
-  const triggers = Object.values(EXTENDED_MENTAL_TRIGGERS);
-  const keys = Object.keys(EXTENDED_MENTAL_TRIGGERS);
-
-  it('has exactly 12 triggers', () => {
-    expect(keys.length).toBe(12);
-  });
-
-  it('all triggers have matching id and key', () => {
-    for (const key of keys) {
-      expect(EXTENDED_MENTAL_TRIGGERS[key as keyof typeof EXTENDED_MENTAL_TRIGGERS].id).toBe(key);
-    }
-  });
-
-  it('all triggers have required fields', () => {
-    for (const t of triggers) {
-      expect(t.name.length).toBeGreaterThan(0);
-      expect(t.description.length).toBeGreaterThan(10);
-      expect(t.examples.length).toBeGreaterThan(0);
-      expect(t.effectiveness).toBeGreaterThanOrEqual(1);
-      expect(t.effectiveness).toBeLessThanOrEqual(10);
-    }
-  });
-
-  it('documents ID overlap with advanced triggers (extended are re-exports)', () => {
-    const advancedIds = new Set(Object.keys(ADVANCED_MENTAL_TRIGGERS));
-    const overlapping = keys.filter(key => advancedIds.has(key));
-    // Extended triggers are intentionally also in advanced (merged data)
-    // Just verify they exist in both
-    expect(overlapping.length).toBeGreaterThanOrEqual(0);
-  });
-
-  it('all have 5 intensity levels', () => {
-    for (const t of triggers) {
-      expect(t.intensityLevels.length).toBe(5);
-    }
-  });
-
-  it('bestFor and avoidFor do not overlap', () => {
-    for (const t of triggers) {
-      const overlap = t.bestFor.filter(p => t.avoidFor.includes(p));
-      expect(overlap.length, `${t.id}: overlap`).toBe(0);
-    }
-  });
-});

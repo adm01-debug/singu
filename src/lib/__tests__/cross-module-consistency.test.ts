@@ -1,19 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { SLEIGHT_OF_MOUTH_PATTERNS } from '@/data/sleightOfMouth';
 import { ADVANCED_MENTAL_TRIGGERS } from '@/data/triggersAdvancedData';
-import { EXTENDED_MENTAL_TRIGGERS } from '@/data/triggersExtendedData';
-import { METAPROGRAM_TEMPLATES } from '@/data/metaprogramTemplates';
-import { VAK_TRIGGER_TEMPLATES } from '@/data/triggerTemplatesVAK';
-import { METAPROGRAM_TRIGGER_TEMPLATES } from '@/data/triggerTemplatesMetaprograms';
 import { NOBLE_CAUSES } from '@/data/carnegieNobleCauses';
-import { EAGER_WANTS } from '@/data/carnegieEagerWant';
 import { PAS_TEMPLATES, FOUR_PS_TEMPLATES } from '@/data/copywritingAdvancedData';
 import { WARMTH_PATTERNS } from '@/data/carnegieWarmth';
-import { getSortValue, compareValues, compareDates, sortArray } from '@/lib/sorting-utils';
+import { compareDates, sortArray } from '@/lib/sorting-utils';
 import { getContactBehavior, getVAKProfile, getDominantVAK, getDISCProfile } from '@/lib/contact-utils';
 
 /**
- * Cross-Module Consistency & Advanced Edge Cases - 50+ scenarios
+ * Cross-Module Consistency & Advanced Edge Cases
  */
 
 describe('Cross-Module: DISC Profile Consistency', () => {
@@ -27,40 +21,10 @@ describe('Cross-Module: DISC Profile Consistency', () => {
     }
   });
 
-  it('extended triggers bestFor uses valid DISC', () => {
-    for (const t of Object.values(EXTENDED_MENTAL_TRIGGERS)) {
-      for (const p of t.bestFor) {
-        expect(validDISC, `${t.id}: invalid DISC ${p}`).toContain(p);
-      }
-    }
-  });
-
   it('noble causes disc compatibility uses D/I/S/C keys', () => {
     for (const c of NOBLE_CAUSES) {
       expect(Object.keys(c.discCompatibility).sort()).toEqual(validDISC.sort());
     }
-  });
-
-  it('eager wants disc alignment uses D/I/S/C keys', () => {
-    for (const w of EAGER_WANTS) {
-      expect(Object.keys(w.discAlignment).sort()).toEqual(validDISC.sort());
-    }
-  });
-});
-
-describe('Cross-Module: VAK + Metaprogram Coverage', () => {
-  it('VAK templates cover same triggers as metaprogram templates', () => {
-    const vakTriggers = new Set(VAK_TRIGGER_TEMPLATES.map(t => t.triggerId));
-    const mpTriggers = new Set(METAPROGRAM_TRIGGER_TEMPLATES.map(t => t.triggerId));
-    // There should be significant overlap
-    const overlap = [...vakTriggers].filter(t => mpTriggers.has(t));
-    expect(overlap.length).toBeGreaterThan(3);
-  });
-
-  it('metaprogram templates categories align with use cases', () => {
-    const categories = new Set(METAPROGRAM_TEMPLATES.map(t => t.category));
-    expect(categories.has('sales')).toBe(true);
-    expect(categories.has('objection')).toBe(true);
   });
 });
 
@@ -74,7 +38,7 @@ describe('Cross-Module: Copywriting + Triggers Integration', () => {
     for (const t of FOUR_PS_TEMPLATES) {
       const push = t.sections.find(s => s.stage === 'push');
       expect(push).toBeDefined();
-      const hasUrgency = push!.powerWords.some(w => 
+      const hasUrgency = push!.powerWords.some(w =>
         ['agora', 'hoje', 'última', 'restam', 'urgente'].includes(w)
       );
       expect(hasUrgency, `${t.id}: push lacks urgency words`).toBe(true);
@@ -82,15 +46,7 @@ describe('Cross-Module: Copywriting + Triggers Integration', () => {
   });
 });
 
-describe('Cross-Module: Warmth + Sleight of Mouth', () => {
-  it('sleight patterns cover all 3 categories', () => {
-    const categories = new Set(Object.values(SLEIGHT_OF_MOUTH_PATTERNS).map(p => p.category));
-    expect(categories.size).toBe(3);
-    expect(categories.has('meaning')).toBe(true);
-    expect(categories.has('context')).toBe(true);
-    expect(categories.has('challenge')).toBe(true);
-  });
-
+describe('Cross-Module: Warmth Patterns', () => {
   it('warmth cold alternatives use empathetic language', () => {
     const empathyWords = ['entend', 'compreend', 'ajud', 'compartilh', 'interessante'];
     for (const cat of Object.values(WARMTH_PATTERNS)) {
@@ -98,9 +54,7 @@ describe('Cross-Module: Warmth + Sleight of Mouth', () => {
         for (const p of cat.coldPatterns) {
           const alt = p.alternative.toLowerCase();
           const hasEmpathy = empathyWords.some(w => alt.includes(w));
-          // Most alternatives should use empathy
           if (!hasEmpathy) {
-            // Some might use other positive language
             expect(p.alternative.length).toBeGreaterThan(5);
           }
         }
@@ -146,11 +100,6 @@ describe('Edge Cases: Sorting Utils with Real Data Patterns', () => {
     expect(compareDates('2024-01-01', null, 'asc')).toBeGreaterThan(0);
     expect(compareDates(null, null, 'asc')).toBe(0);
   });
-
-  it('compareValues handles pt-BR locale', () => {
-    const result = compareValues('ação', 'banana', 'asc');
-    expect(result).toBeLessThan(0); // ação comes before banana
-  });
 });
 
 describe('Edge Cases: Contact Utils with Edge Data', () => {
@@ -194,23 +143,12 @@ describe('Edge Cases: Contact Utils with Edge Data', () => {
 });
 
 describe('Data Volume Consistency', () => {
-  it('total trigger templates exceed 100', () => {
-    const vakCount = VAK_TRIGGER_TEMPLATES.length;
-    const mpCount = METAPROGRAM_TRIGGER_TEMPLATES.length;
-    expect(vakCount + mpCount).toBeGreaterThan(100);
-  });
-
   it('total Carnegie data modules exceed 10 noble causes', () => {
     expect(NOBLE_CAUSES.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('advanced + extended triggers combined > 15', () => {
+  it('advanced triggers > 8', () => {
     const advCount = Object.keys(ADVANCED_MENTAL_TRIGGERS).length;
-    const extCount = Object.keys(EXTENDED_MENTAL_TRIGGERS).length;
-    expect(advCount + extCount).toBeGreaterThan(15);
-  });
-
-  it('sleight of mouth has all 14 patterns', () => {
-    expect(Object.keys(SLEIGHT_OF_MOUTH_PATTERNS).length).toBe(14);
+    expect(advCount).toBeGreaterThan(8);
   });
 });

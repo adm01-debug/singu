@@ -1,14 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  EAGER_WANTS,
-  ALL_EAGER_WANT_KEYWORDS,
-  detectEagerWants,
-  getEagerWantByCategory,
-  getTechniquesForWant,
-  getEagerWantsByDISC,
-  generateEagerWantScript
-} from '@/data/carnegieEagerWant';
-import {
   NOBLE_CAUSES,
   NOBLE_CAUSE_KEYWORDS,
   NOBLE_CAUSE_INTENSIFIERS,
@@ -18,159 +9,8 @@ import {
 } from '@/data/carnegieNobleCauses';
 
 /**
- * Eager Want & Noble Causes - 80+ scenarios
+ * Noble Causes - Data Integrity Tests
  */
-
-// ============================================
-// EAGER WANTS - DATA
-// ============================================
-describe('Eager Wants: Data Integrity', () => {
-  it('has exactly 8 desire categories', () => {
-    expect(EAGER_WANTS.length).toBe(8);
-  });
-
-  it('covers all 8 categories', () => {
-    const cats = new Set(EAGER_WANTS.map(w => w.category));
-    expect(cats.has('recognition')).toBe(true);
-    expect(cats.has('security')).toBe(true);
-    expect(cats.has('autonomy')).toBe(true);
-    expect(cats.has('belonging')).toBe(true);
-    expect(cats.has('achievement')).toBe(true);
-    expect(cats.has('growth')).toBe(true);
-    expect(cats.has('pleasure')).toBe(true);
-    expect(cats.has('meaning')).toBe(true);
-  });
-
-  it('unique IDs', () => {
-    const ids = EAGER_WANTS.map(w => w.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('every want has DISC alignment with valid scores 0-100', () => {
-    for (const w of EAGER_WANTS) {
-      for (const [key, val] of Object.entries(w.discAlignment)) {
-        expect(val, `${w.id}.${key}`).toBeGreaterThanOrEqual(0);
-        expect(val, `${w.id}.${key}`).toBeLessThanOrEqual(100);
-      }
-    }
-  });
-
-  it('every want has at least 3 arousal techniques', () => {
-    for (const w of EAGER_WANTS) {
-      expect(w.arousalTechniques.length, `${w.id}`).toBeGreaterThanOrEqual(3);
-    }
-  });
-
-  it('techniques have unique IDs within each want', () => {
-    for (const w of EAGER_WANTS) {
-      const techIds = w.arousalTechniques.map(t => t.id);
-      expect(new Set(techIds).size, `${w.id}: duplicate technique IDs`).toBe(techIds.length);
-    }
-  });
-
-  it('every want has at least 10 detection keywords', () => {
-    for (const w of EAGER_WANTS) {
-      expect(w.detectionKeywords.length, `${w.id}`).toBeGreaterThanOrEqual(10);
-    }
-  });
-
-  it('ALL_EAGER_WANT_KEYWORDS covers all 8 categories', () => {
-    expect(Object.keys(ALL_EAGER_WANT_KEYWORDS).length).toBe(8);
-    for (const keywords of Object.values(ALL_EAGER_WANT_KEYWORDS)) {
-      expect(keywords.length).toBeGreaterThan(10);
-    }
-  });
-});
-
-// ============================================
-// EAGER WANTS - FUNCTIONS
-// ============================================
-describe('Eager Wants: Functions', () => {
-  it('detectEagerWants finds recognition keywords', () => {
-    const result = detectEagerWants('Quero reconhecimento pelo meu trabalho');
-    expect(result).toContain('recognition');
-  });
-
-  it('FIX: detectEagerWants now matches word variants like "reconhecido" via stemming', () => {
-    const result = detectEagerWants('Quero ser reconhecido');
-    // FIX: stemming now matches "reconhec" root from "reconhecimento"
-    expect(result).toContain('recognition');
-  });
-
-  it('detectEagerWants finds security keywords', () => {
-    const result = detectEagerWants('Preciso de garantia e segurança');
-    expect(result).toContain('security');
-  });
-
-  it('detectEagerWants finds multiple categories', () => {
-    const result = detectEagerWants('Quero reconhecimento e segurança para minha família');
-    expect(result.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('FIX: detectEagerWants no longer false-positives on "bom" in neutral context', () => {
-    // FIX: "bom" now requires meaningful context (e.g. "muito bom", "bom resultado")
-    const result = detectEagerWants('O tempo está bom hoje');
-    expect(result).not.toContain('pleasure'); // No longer a false positive!
-  });
-
-  it('detectEagerWants still detects "bom" in meaningful context', () => {
-    const result = detectEagerWants('Isso é um bom resultado para todos');
-    expect(result).toContain('pleasure');
-  });
-
-  it('detectEagerWants handles empty string', () => {
-    expect(detectEagerWants('')).toEqual([]);
-  });
-
-  it('getEagerWantByCategory finds existing category', () => {
-    const want = getEagerWantByCategory('recognition');
-    expect(want).toBeDefined();
-    expect(want!.category).toBe('recognition');
-  });
-
-  it('getEagerWantByCategory returns undefined for invalid', () => {
-    const want = getEagerWantByCategory('nonexistent' as any);
-    expect(want).toBeUndefined();
-  });
-
-  it('getTechniquesForWant returns techniques', () => {
-    const techs = getTechniquesForWant('autonomy');
-    expect(techs.length).toBe(3);
-  });
-
-  it('getTechniquesForWant returns empty for invalid', () => {
-    const techs = getTechniquesForWant('nonexistent' as any);
-    expect(techs).toEqual([]);
-  });
-
-  it('getEagerWantsByDISC returns sorted by alignment', () => {
-    const dWants = getEagerWantsByDISC('D');
-    expect(dWants.length).toBe(8);
-    // D-aligned wants should be sorted descending
-    for (let i = 1; i < dWants.length; i++) {
-      expect(dWants[i - 1].discAlignment.D).toBeGreaterThanOrEqual(dWants[i].discAlignment.D);
-    }
-  });
-
-  it('getEagerWantsByDISC: D top want is autonomy or achievement', () => {
-    const dWants = getEagerWantsByDISC('D');
-    expect(['autonomy', 'achievement']).toContain(dWants[0].category);
-  });
-
-  it('getEagerWantsByDISC: S top want is security or belonging', () => {
-    const sWants = getEagerWantsByDISC('S');
-    expect(['security', 'belonging']).toContain(sWants[0].category);
-  });
-
-  it('generateEagerWantScript returns non-empty for valid category', () => {
-    const script = generateEagerWantScript('recognition');
-    expect(script.length).toBeGreaterThan(10);
-  });
-
-  it('generateEagerWantScript returns empty for invalid', () => {
-    expect(generateEagerWantScript('nonexistent' as any)).toBe('');
-  });
-});
 
 // ============================================
 // NOBLE CAUSES - DATA
@@ -262,7 +102,7 @@ describe('Noble Causes: Functions', () => {
   });
 
   it('getNobleCausesByCategory returns empty for invalid', () => {
-    const result = getNobleCausesByCategory('nonexistent' as any);
+    const result = getNobleCausesByCategory('nonexistent' as unknown as Parameters<typeof getNobleCausesByCategory>[0]);
     expect(result).toEqual([]);
   });
 

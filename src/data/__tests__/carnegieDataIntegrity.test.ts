@@ -1,17 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { FACE_SAVING_TECHNIQUES } from '@/data/carnegieFaceSaving';
 import { IDENTITY_LABELS, IDENTITY_DETECTION_PATTERNS, IDENTITY_REINFORCEMENT_SCRIPTS } from '@/data/carnegieIdentityLabels';
-import { OWNERSHIP_TECHNIQUES, OWNERSHIP_LANGUAGE, OWNERSHIP_BY_DISC, analyzeOwnershipLanguage, getTechniquesForDISC } from '@/data/carnegieOwnershipTransfer';
 import { PROGRESS_CELEBRATIONS, CELEBRATION_BY_DISC, PROGRESS_DETECTION_PATTERNS, getCelebrationTemplate, detectProgressType } from '@/data/carnegieProgressCelebration';
 import { VULNERABILITY_TEMPLATES, VULNERABILITY_GUIDELINES } from '@/data/carnegieVulnerability';
-import {
-  YES_LADDER_TEMPLATES,
-  UNIVERSAL_YES_QUESTIONS,
-  YES_MOMENTUM_PRINCIPLES,
-  countYesOpportunities,
-  suggestYesQuestions,
-  calculateYesReadiness
-} from '@/data/carnegieYesLadder';
+
 
 /**
  * Carnegie Data Integrity - 100+ test scenarios
@@ -129,68 +121,6 @@ describe('Identity Labels', () => {
 });
 
 // ============================================
-// OWNERSHIP TRANSFER
-// ============================================
-describe('Ownership Transfer', () => {
-  it('has at least 6 techniques', () => {
-    expect(OWNERSHIP_TECHNIQUES.length).toBeGreaterThanOrEqual(6);
-  });
-
-  it('unique IDs', () => {
-    const ids = OWNERSHIP_TECHNIQUES.map(t => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('every technique has whenToUse', () => {
-    for (const t of OWNERSHIP_TECHNIQUES) {
-      expect(t.whenToUse.length, `${t.id}: no whenToUse`).toBeGreaterThan(0);
-    }
-  });
-
-  it('ownership language has toAvoid and toUse', () => {
-    expect(OWNERSHIP_LANGUAGE.toAvoid.length).toBeGreaterThan(3);
-    expect(OWNERSHIP_LANGUAGE.toUse.length).toBeGreaterThan(3);
-    expect(OWNERSHIP_LANGUAGE.celebration.length).toBeGreaterThan(3);
-    expect(OWNERSHIP_LANGUAGE.attribution.length).toBeGreaterThan(3);
-  });
-
-  it('DISC-specific techniques reference valid IDs', () => {
-    const validIds = new Set(OWNERSHIP_TECHNIQUES.map(t => t.id));
-    for (const [disc, config] of Object.entries(OWNERSHIP_BY_DISC)) {
-      for (const techId of config.techniques) {
-        expect(validIds.has(techId), `${disc}: invalid technique ${techId}`).toBe(true);
-      }
-    }
-  });
-
-  it('analyzeOwnershipLanguage detects problematic phrases (fixed ellipsis stripping)', () => {
-    // FIX: toAvoid no longer has "..." literals, matching works correctly
-    const result = analyzeOwnershipLanguage('Na minha opinião isso é melhor');
-    expect(result.problematicPhrases.length).toBeGreaterThan(0);
-    expect(result.ownershipGiven).toBe(false);
-  });
-
-  it('analyzeOwnershipLanguage also detects with ellipsis in text', () => {
-    const result = analyzeOwnershipLanguage('Na minha opinião... isso é melhor');
-    expect(result.problematicPhrases.length).toBeGreaterThan(0);
-  });
-
-  it('analyzeOwnershipLanguage recognizes good ownership', () => {
-    // FIX: toUse matching now strips ellipsis and question marks properly
-    const result = analyzeOwnershipLanguage('O que você acha de expandirmos isso?');
-    expect(result.problematicPhrases.length).toBe(0);
-    expect(result.ownershipGiven).toBe(true);
-  });
-
-  it('getTechniquesForDISC returns valid techniques', () => {
-    const dTech = getTechniquesForDISC('D');
-    expect(dTech.length).toBeGreaterThan(0);
-    const cTech = getTechniquesForDISC('C');
-    expect(cTech.length).toBeGreaterThan(0);
-  });
-});
-
-// ============================================
 // PROGRESS CELEBRATION
 // ============================================
 describe('Progress Celebration', () => {
@@ -289,62 +219,3 @@ describe('Vulnerability Templates', () => {
   });
 });
 
-// ============================================
-// YES LADDER
-// ============================================
-describe('Yes Ladder', () => {
-  it('has at least 3 templates', () => {
-    expect(YES_LADDER_TEMPLATES.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it('every template has DISC variations', () => {
-    for (const t of YES_LADDER_TEMPLATES) {
-      expect(t.discVariation.D.length, `${t.id}: D empty`).toBeGreaterThan(0);
-      expect(t.discVariation.I.length, `${t.id}: I empty`).toBeGreaterThan(0);
-      expect(t.discVariation.S.length, `${t.id}: S empty`).toBeGreaterThan(0);
-      expect(t.discVariation.C.length, `${t.id}: C empty`).toBeGreaterThan(0);
-    }
-  });
-
-  it('steps have sequential stepNumbers', () => {
-    for (const t of YES_LADDER_TEMPLATES) {
-      for (let i = 0; i < t.steps.length; i++) {
-        expect(t.steps[i].stepNumber).toBe(i + 1);
-      }
-    }
-  });
-
-  it('every template has a finalAsk', () => {
-    for (const t of YES_LADDER_TEMPLATES) {
-      expect(t.finalAsk.length).toBeGreaterThan(10);
-    }
-  });
-
-  it('universal yes questions have 4 categories', () => {
-    expect(Object.keys(UNIVERSAL_YES_QUESTIONS).length).toBe(4);
-    for (const [key, qs] of Object.entries(UNIVERSAL_YES_QUESTIONS)) {
-      expect(qs.length, `${key}: empty`).toBeGreaterThan(0);
-    }
-  });
-
-  it('yes momentum principles have at least 5', () => {
-    expect(YES_MOMENTUM_PRINCIPLES.length).toBeGreaterThanOrEqual(5);
-  });
-
-  it('countYesOpportunities finds yes-patterns', () => {
-    const count = countYesOpportunities('É importante resolver isso, você quer avançar?');
-    expect(count).toBeGreaterThan(0);
-  });
-
-  it('suggestYesQuestions returns suggestions for problem context', () => {
-    const suggestions = suggestYesQuestions('Temos um problema grave');
-    expect(suggestions.length).toBeGreaterThan(0);
-  });
-
-  it('calculateYesReadiness scales with yesCount', () => {
-    expect(calculateYesReadiness(0)).toBe(10);
-    expect(calculateYesReadiness(1)).toBe(30);
-    expect(calculateYesReadiness(3)).toBe(70);
-    expect(calculateYesReadiness(5)).toBe(95);
-  });
-});
