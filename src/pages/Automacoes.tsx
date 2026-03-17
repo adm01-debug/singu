@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -53,6 +53,18 @@ function RuleFormDialog({
   const [actions, setActions] = useState<AutomationAction[]>(
     initialData?.actions ?? [{ type: 'create_alert', config: { title: 'Alerta automático' } }]
   );
+
+  // Reset form state when initialData changes (useState only initializes once)
+  useEffect(() => {
+    if (open) {
+      setName(initialData?.name ?? '');
+      setDescription(initialData?.description ?? '');
+      setTriggerType(initialData?.trigger_type ?? 'interaction_created');
+      setTriggerConfig(initialData?.trigger_config ? JSON.stringify(initialData.trigger_config, null, 2) : '{}');
+      setConditions(initialData?.conditions ?? []);
+      setActions(initialData?.actions ?? [{ type: 'create_alert', config: { title: 'Alerta automático' } }]);
+    }
+  }, [open, initialData]);
 
   const handleSubmit = () => {
     if (!name.trim()) return;
@@ -254,13 +266,18 @@ export default function Automacoes() {
   };
 
   const handleUseTemplate = (data: CreateRuleData) => {
-    setEditingRule({ ...data, id: '' } as any);
+    // Open edit dialog pre-filled with template data (no id = create mode)
+    setEditingRule({ ...data, id: '' });
     setActiveTab('rules');
   };
 
   const handleEdit = async (data: CreateRuleData) => {
-    if (!editingRule?.id) return;
-    await updateRule(editingRule.id, data);
+    if (editingRule?.id) {
+      await updateRule(editingRule.id, data);
+    } else {
+      // Creating from template (no id)
+      await createRule(data);
+    }
     setEditingRule(null);
   };
 
@@ -373,7 +390,7 @@ export default function Automacoes() {
             <AnimatePresence>
               {rules.map((rule, index) => {
                 const trigger = TRIGGER_OPTIONS.find(t => t.value === rule.trigger_type);
-                const actionLabels = rule.actions.map(a => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
+                const actionLabels = (Array.isArray(rule.actions) ? rule.actions : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
 
                 return (
                   <motion.div
@@ -529,7 +546,7 @@ export default function Automacoes() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium">
-                        {log.actions_executed.map(a => ACTION_OPTIONS.find(o => o.value === a.type)?.label).join(', ')}
+                        {(Array.isArray(log.actions_executed) ? log.actions_executed : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label).filter(Boolean).join(', ') || 'Ação executada'}
                       </p>
                       {log.error_message && (
                         <p className="text-xs text-destructive truncate">{log.error_message}</p>
