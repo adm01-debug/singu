@@ -109,7 +109,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
       </AnimatePresence>
 
       {/* FAB Container */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-center gap-3">
+      <div ref={ref} className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-center gap-3">
         {/* Menu Items */}
         <AnimatePresence>
           {isOpen && menuItems.map((item, index) => (
