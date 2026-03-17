@@ -172,7 +172,7 @@ export function ContactBehavioralTab({ contact }: Props) {
                 ))}
                 <div className="mt-2">
                   <Badge variant="secondary">
-                    Canal Primário: {vakProfile.primary === 'V' ? 'Visual' : vakProfile.primary === 'A' ? 'Auditivo' : 'Cinestésico'}
+                    Canal Primário: {String(vakProfile.primary) === 'V' ? 'Visual' : String(vakProfile.primary) === 'A' ? 'Auditivo' : 'Cinestésico'}
                   </Badge>
                 </div>
               </div>
