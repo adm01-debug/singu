@@ -98,14 +98,18 @@ export function QuickActionsMenu({
   const handleWhatsApp = () => {
     if (whatsapp) {
       const cleanNumber = whatsapp.replace(/\D/g, '');
-      window.open(`https://wa.me/55${cleanNumber}`, '_blank');
+      window.open(`https://wa.me/55${cleanNumber}`, '_blank', 'noopener,noreferrer');
     }
   };
 
   const handleLinkedIn = () => {
     if (linkedin) {
       const url = linkedin.startsWith('http') ? linkedin : `https://${linkedin}`;
-      window.open(url, '_blank');
+      try {
+        const parsed = new URL(url);
+        if (!['linkedin.com', 'www.linkedin.com'].includes(parsed.hostname.replace(/^.*\.(?=linkedin\.com$)/, ''))) return;
+        window.open(parsed.href, '_blank', 'noopener,noreferrer');
+      } catch { /* invalid URL */ }
     }
   };
 

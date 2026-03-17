@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (refreshTime > 0) {
       refreshTimeoutRef.current = setTimeout(async () => {
-        console.log('🔄 Refreshing session token...');
+        if (import.meta.env.DEV) console.log('🔄 Refreshing session token...');
         try {
           const { data, error } = await supabase.auth.refreshSession();
           if (error) {
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Sessão expirou, redirecionar para login
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
           } else if (data.session) {
-            console.log('✅ Session refreshed successfully');
+            if (import.meta.env.DEV) console.log('✅ Session refreshed successfully');
             scheduleTokenRefresh(data.session);
           }
         } catch (err) {
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, refreshTime);
     } else if (timeUntilExpiry <= 0) {
       // Sessão já expirou
-      console.warn('⚠️ Session already expired');
+      if (import.meta.env.DEV) console.warn('⚠️ Session already expired');
     }
   }, []);
 
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, newSession) => {
-        console.log('🔐 Auth event:', event);
+        if (import.meta.env.DEV) console.log('🔐 Auth event:', event);
         
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             break;
             
           case 'TOKEN_REFRESHED':
-            console.log('🔄 Token refreshed via auth event');
+            if (import.meta.env.DEV) console.log('🔄 Token refreshed via auth event');
             scheduleTokenRefresh(newSession);
             break;
             
