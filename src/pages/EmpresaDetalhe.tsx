@@ -136,7 +136,7 @@ const EmpresaDetalhe = () => {
 
         if (contactsError) throw contactsError;
         // Normalize external contact data
-        const normalizedContacts = (contactsResult || []).map((c: any) => ({
+        const normalizedContacts = (contactsResult || []).map((c: Record<string, unknown>) => ({
           ...c,
           first_name: c.first_name || c.nome || 'Sem',
           last_name: c.last_name || c.sobrenome || 'nome',

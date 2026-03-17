@@ -37,12 +37,12 @@ export function useCompanies() {
         };
       }
 
-      const { data, count, error } = await queryExternalData<any>(options);
+      const { data, count, error } = await queryExternalData<Record<string, unknown>>(options);
 
       if (error) throw error;
-      
+
       // Map external DB fields to expected Company shape
-      const mapped = (data || []).map((ext: any) => ({
+      const mapped = (data || []).map((ext: Record<string, unknown>) => ({
         ...ext,
         name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
         industry: ext.ramo_atividade || null,
