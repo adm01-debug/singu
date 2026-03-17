@@ -13,7 +13,8 @@ import {
   Bell,
   Network,
   Settings,
-  X
+  X,
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
