@@ -370,16 +370,19 @@ export function ContactBehavioralTab({ contact }: Props) {
               <CardTitle className="text-sm">MBTI</CardTitle>
             </CardHeader>
             <CardContent>
-              {behavior?.mbtiProfile ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Badge className="text-lg font-bold">{(behavior.mbtiProfile as Record<string, unknown>).type as string}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Confiança: {(behavior.mbtiProfile as Record<string, number>).confidence}%
-                    </span>
+              {behavior?.mbtiProfile ? (() => {
+                const mbti = behavior.mbtiProfile as Record<string, unknown>;
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className="text-lg font-bold">{String(mbti.type || '?')}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Confiança: {String(mbti.confidence || 0)}%
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ) : (
+                );
+              })() : (
                 <p className="text-xs text-muted-foreground italic">Não analisado</p>
               )}
             </CardContent>
