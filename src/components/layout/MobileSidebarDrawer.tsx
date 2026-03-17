@@ -16,7 +16,8 @@ import {
   Search,
   LogOut,
   User,
-  Zap
+  Zap,
+  Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
