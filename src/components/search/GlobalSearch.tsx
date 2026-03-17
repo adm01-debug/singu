@@ -514,7 +514,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     <span>Recentes</span>
                   </div>
                 }>
-                  {recentItems.map((item, index) => (
+                  {filteredRecent.map((item, index) => (
                     <CommandItem
                       key={`${item.type}-${item.id}-${index}`}
                       onSelect={() => handleRecentSelect(item)}
