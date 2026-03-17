@@ -168,13 +168,13 @@ export function ContactCommercialTab({ contactId }: Props) {
                   <div>
                     <p className="font-medium text-foreground">{p.product_name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {p.category && `${p.category} · `}
+                      {p.product_category && `${p.product_category} · `}
                       {p.purchase_date && format(new Date(p.purchase_date), 'dd/MM/yyyy')}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-foreground">
-                      R$ {Number(p.value || 0).toLocaleString('pt-BR')}
+                      R$ {Number(p.amount || 0).toLocaleString('pt-BR')}
                     </p>
                     {p.renewal_date && (
                       <p className="text-xs text-muted-foreground">
