@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }, refreshTime);
     } else if (timeUntilExpiry <= 0) {
       // Sessão já expirou
-      console.warn('⚠️ Session already expired');
+      if (import.meta.env.DEV) console.warn('⚠️ Session already expired');
     }
   }, []);
 
