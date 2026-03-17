@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Mail, MessageSquare, Users, Video, FileText,
@@ -14,7 +14,10 @@ import { InteractionForm } from '@/components/forms/InteractionForm';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { Interaction } from '@/hooks/useContactDetail';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import type { Interaction, Contact as ContactType } from '@/hooks/useContactDetail';
 
 const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
   call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
@@ -27,14 +30,45 @@ const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: st
 
 interface Props {
   interactions: Interaction[];
-  contactId: string;
+  contact: ContactType;
   companyId: string | null;
   onInteractionAdded?: () => void;
 }
 
-export function ContactInteractionsTab({ interactions, contactId, companyId, onInteractionAdded }: Props) {
+export function ContactInteractionsTab({ interactions, contact, companyId, onInteractionAdded }: Props) {
+  const { user } = useAuth();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const contactForForm = {
+    id: contact.id,
+    first_name: contact.first_name,
+    last_name: contact.last_name,
+    company_id: contact.company_id,
+  } as any;
+
+  const handleSubmit = useCallback(async (data: any) => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('interactions').insert({
+        ...data,
+        contact_id: contact.id,
+        company_id: companyId,
+        user_id: user.id,
+      });
+      if (error) throw error;
+      toast.success('Interação registrada');
+      setShowForm(false);
+      onInteractionAdded?.();
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao registrar interação');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [user, contact.id, companyId, onInteractionAdded]);
 
   return (
     <div className="space-y-4">
@@ -58,7 +92,6 @@ export function ContactInteractionsTab({ interactions, contactId, companyId, onI
         </Card>
       ) : (
         <div className="relative space-y-0">
-          {/* Timeline line */}
           <div className="absolute left-5 top-3 bottom-3 w-px bg-border" />
 
           {interactions.map((interaction, i) => {
@@ -74,7 +107,6 @@ export function ContactInteractionsTab({ interactions, contactId, companyId, onI
                 transition={{ delay: i * 0.03 }}
                 className="relative pl-12"
               >
-                {/* Timeline dot */}
                 <div className={cn(
                   'absolute left-2.5 top-4 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-card',
                   config.color
@@ -179,13 +211,12 @@ export function ContactInteractionsTab({ interactions, contactId, companyId, onI
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <InteractionForm
-            contactId={contactId}
-            companyId={companyId || undefined}
-            onSuccess={() => {
-              setShowForm(false);
-              onInteractionAdded?.();
-            }}
+            contacts={[contactForForm]}
+            defaultContactId={contact.id}
+            defaultCompanyId={companyId || undefined}
+            onSubmit={handleSubmit}
             onCancel={() => setShowForm(false)}
+            isSubmitting={isSubmitting}
           />
         </DialogContent>
       </Dialog>

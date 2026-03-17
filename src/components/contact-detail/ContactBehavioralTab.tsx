@@ -394,16 +394,19 @@ export function ContactBehavioralTab({ contact }: Props) {
               <CardTitle className="text-sm">Eneagrama</CardTitle>
             </CardHeader>
             <CardContent>
-              {behavior?.enneagramProfile ? (
-                <div className="flex items-center gap-2">
-                  <Badge className="text-lg font-bold">Tipo {(behavior.enneagramProfile as Record<string, unknown>).type}</Badge>
-                  {(behavior.enneagramProfile as Record<string, unknown>).wing && (
-                    <span className="text-xs text-muted-foreground">
-                      Asa {(behavior.enneagramProfile as Record<string, unknown>).wing}
-                    </span>
-                  )}
-                </div>
-              ) : (
+              {behavior?.enneagramProfile ? (() => {
+                const enn = behavior.enneagramProfile as Record<string, unknown>;
+                return (
+                  <div className="flex items-center gap-2">
+                    <Badge className="text-lg font-bold">Tipo {String(enn.type || '?')}</Badge>
+                    {enn.wing && (
+                      <span className="text-xs text-muted-foreground">
+                        Asa {String(enn.wing)}
+                      </span>
+                    )}
+                  </div>
+                );
+              })() : (
                 <p className="text-xs text-muted-foreground italic">Não analisado</p>
               )}
             </CardContent>
