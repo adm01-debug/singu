@@ -72,6 +72,7 @@ const menuItems: MenuItemConfig[] = [
   { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
   { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
+  { icon: Workflow, label: 'Automações', path: '/automacoes', shortcut: '9', tourId: 'automations' },
 ];
 
 const bottomMenuItems: MenuItemConfig[] = [
