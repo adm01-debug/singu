@@ -505,7 +505,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             </CommandGroup>
 
             {/* Recent Items */}
-            {recentItems.length > 0 && (
+            {filteredRecent.length > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup heading={
