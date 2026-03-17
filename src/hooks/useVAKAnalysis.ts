@@ -1,11 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { 
-  VAKType, 
-  VAKProfile, 
-  VAKAnalysisResult, 
-  VAK_PREDICATES 
+import {
+  VAKType,
+  VAKProfile,
+  VAKAnalysisResult,
+  VAK_PREDICATES
 } from '@/types/vak';
 
 interface VAKAnalysisHistory {
@@ -24,26 +24,59 @@ interface VAKAnalysisHistory {
   created_at: string;
 }
 
+// Normalize text for analysis (lowercase, remove accents) - module level pure function
+const normalizeText = (text: string): string => {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+// Pre-normalize predicates once at module level for O(1) lookups
+const normalizedPredicateCache = (() => {
+  const types = Object.keys(VAK_PREDICATES) as VAKType[];
+
+  // Single-word predicates: Map from normalized word -> Set of VAKTypes
+  const singleWordExact = new Map<string, Set<VAKType>>();
+  // Single-word stems (for partial matching): Array of { stem, type } for words > 4 chars
+  const singleWordStems: Array<{ stem: string; type: VAKType }> = [];
+  // Multi-word predicates: Array of { normalized, original, type }
+  const multiWord: Array<{ normalized: string; original: string; type: VAKType }> = [];
+
+  for (const type of types) {
+    for (const pred of VAK_PREDICATES[type]) {
+      const normalized = normalizeText(pred);
+      if (pred.includes(' ')) {
+        multiWord.push({ normalized, original: pred, type });
+      } else {
+        // Add exact match
+        if (!singleWordExact.has(normalized)) {
+          singleWordExact.set(normalized, new Set());
+        }
+        singleWordExact.get(normalized)!.add(type);
+        // Add stem for partial matching
+        if (normalized.length > 4) {
+          singleWordStems.push({ stem: normalized.slice(0, -2), type });
+        }
+      }
+    }
+  }
+
+  return { singleWordExact, singleWordStems, multiWord };
+})();
+
 export function useVAKAnalysis() {
   const { user } = useAuth();
   const [analyzing, setAnalyzing] = useState(false);
-
-  // Normalize text for analysis (lowercase, remove accents)
-  const normalizeText = (text: string): string => {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  };
 
   // Analyze text and detect VAK predicates
   const analyzeText = useCallback((text: string): VAKAnalysisResult => {
     const normalizedText = normalizeText(text);
     const words = normalizedText.split(' ');
-    
+
     const results: Record<VAKType, { count: number; words: string[] }> = {
       V: { count: 0, words: [] },
       A: { count: 0, words: [] },
@@ -51,50 +84,51 @@ export function useVAKAnalysis() {
       D: { count: 0, words: [] },
     };
 
-    // Check each word against predicates
-    words.forEach(word => {
-      if (word.length < 3) return; // Skip very short words
-      
-      (Object.keys(VAK_PREDICATES) as VAKType[]).forEach(type => {
-        const predicates = VAK_PREDICATES[type];
-        const normalizedPredicates = predicates.map(p => normalizeText(p));
-        
-        // Check for exact match or partial match (for verb conjugations)
-        const match = normalizedPredicates.find(pred => {
-          // Exact match
-          if (pred === word) return true;
-          // Partial match for verb stems (e.g., "visualizo" matches "visualizar")
-          if (pred.length > 4 && word.length > 4) {
-            const stem = pred.slice(0, -2);
-            return word.startsWith(stem);
-          }
-          return false;
-        });
+    const wordSets: Record<VAKType, Set<string>> = {
+      V: new Set(),
+      A: new Set(),
+      K: new Set(),
+      D: new Set(),
+    };
 
-        if (match) {
+    // Check each word against pre-normalized predicates
+    for (const word of words) {
+      if (word.length < 3) continue; // Skip very short words
+
+      // O(1) exact match lookup
+      const exactTypes = normalizedPredicateCache.singleWordExact.get(word);
+      if (exactTypes) {
+        for (const type of exactTypes) {
           results[type].count++;
-          if (!results[type].words.includes(word)) {
-            results[type].words.push(word);
+          wordSets[type].add(word);
+        }
+      }
+
+      // Stem matching for verb conjugations (only if no exact match found for this word)
+      if (!exactTypes && word.length > 4) {
+        for (const { stem, type } of normalizedPredicateCache.singleWordStems) {
+          if (word.startsWith(stem)) {
+            results[type].count++;
+            wordSets[type].add(word);
+            break; // Only match the first stem per word
           }
         }
-      });
+      }
+    }
 
-      // Also check for multi-word expressions
-      const textLower = normalizedText;
-      (Object.keys(VAK_PREDICATES) as VAKType[]).forEach(type => {
-        VAK_PREDICATES[type].forEach(pred => {
-          if (pred.includes(' ')) {
-            const normalizedPred = normalizeText(pred);
-            if (textLower.includes(normalizedPred)) {
-              results[type].count++;
-              if (!results[type].words.includes(pred)) {
-                results[type].words.push(pred);
-              }
-            }
-          }
-        });
-      });
-    });
+    // Check multi-word expressions against the full text (once, not per word)
+    for (const { normalized, original, type } of normalizedPredicateCache.multiWord) {
+      if (normalizedText.includes(normalized)) {
+        results[type].count++;
+        wordSets[type].add(original);
+      }
+    }
+
+    // Convert Sets to arrays
+    results.V.words = Array.from(wordSets.V);
+    results.A.words = Array.from(wordSets.A);
+    results.K.words = Array.from(wordSets.K);
+    results.D.words = Array.from(wordSets.D);
 
     // Calculate scores (percentage of total detected predicates)
     const totalCount = results.V.count + results.A.count + results.K.count + results.D.count;

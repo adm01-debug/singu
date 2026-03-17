@@ -1,9 +1,30 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
+  const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
+  const secret = Deno.env.get('WEBHOOK_SECRET');
+  if (!secret) {
+    console.warn('WEBHOOK_SECRET not configured, skipping signature verification');
+    return true; // Allow if not configured (backward compat)
+  }
+  if (!signature) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computed = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return signature === computed;
+}
 
 interface BitrixCallEvent {
   event: string;
@@ -32,6 +53,15 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rawBody = await req.text();
+    const isValid = await verifyWebhookSignature(req, rawBody);
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -40,24 +70,24 @@ Deno.serve(async (req) => {
     // Bitrix24 sends data as form-urlencoded or JSON
     let payload: BitrixCallEvent;
     const contentType = req.headers.get('content-type') || '';
-    
+
     if (contentType.includes('application/json')) {
-      payload = await req.json();
+      payload = JSON.parse(rawBody);
     } else {
-      // Handle form-urlencoded data
-      const formData = await req.formData();
+      // Handle form-urlencoded data from rawBody
+      const params = new URLSearchParams(rawBody);
       payload = {
-        event: formData.get('event') as string || '',
+        event: params.get('event') || '',
         data: {
-          CALL_ID: formData.get('data[CALL_ID]') as string,
-          PHONE_NUMBER: formData.get('data[PHONE_NUMBER]') as string,
-          CALL_TYPE: parseInt(formData.get('data[CALL_TYPE]') as string) || undefined,
-          CALL_DURATION: parseInt(formData.get('data[CALL_DURATION]') as string) || undefined,
-          CALL_START_DATE: formData.get('data[CALL_START_DATE]') as string,
-          CALL_RECORD_URL: formData.get('data[CALL_RECORD_URL]') as string,
-          PORTAL_USER_ID: formData.get('data[PORTAL_USER_ID]') as string,
-          CRM_ENTITY_TYPE: formData.get('data[CRM_ENTITY_TYPE]') as string,
-          CRM_ENTITY_ID: formData.get('data[CRM_ENTITY_ID]') as string,
+          CALL_ID: params.get('data[CALL_ID]') || undefined,
+          PHONE_NUMBER: params.get('data[PHONE_NUMBER]') || undefined,
+          CALL_TYPE: parseInt(params.get('data[CALL_TYPE]') || '') || undefined,
+          CALL_DURATION: parseInt(params.get('data[CALL_DURATION]') || '') || undefined,
+          CALL_START_DATE: params.get('data[CALL_START_DATE]') || undefined,
+          CALL_RECORD_URL: params.get('data[CALL_RECORD_URL]') || undefined,
+          PORTAL_USER_ID: params.get('data[PORTAL_USER_ID]') || undefined,
+          CRM_ENTITY_TYPE: params.get('data[CRM_ENTITY_TYPE]') || undefined,
+          CRM_ENTITY_ID: params.get('data[CRM_ENTITY_ID]') || undefined,
         }
       };
     }

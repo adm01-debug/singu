@@ -23,6 +23,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Tempo antes da expiração para refresh automático (5 minutos)
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 
+// Module-level singleton for fetch interceptor
+let fetchInterceptorInstalled = false;
+let refreshPromise: Promise<any> | null = null;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -144,46 +148,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [scheduleTokenRefresh]);
 
-  // Interceptar erros 401 globalmente
+  // Interceptar erros 401 globalmente (singleton pattern)
   useEffect(() => {
-    const originalFetch = window.fetch;
+    if (!fetchInterceptorInstalled) {
+      fetchInterceptorInstalled = true;
+      const originalFetch = window.fetch;
 
-    window.fetch = async (...args) => {
-      const response = await originalFetch(...args);
+      window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
 
-      if (response.status !== 401) return response;
+        if (response.status !== 401) return response;
 
-      const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
-      const isBackendRequest =
-        url.includes('/auth/v1') || url.includes('/rest/v1') || url.includes('/functions/v1') || url.includes('supabase');
-      const isRefreshRequest = url.includes('/auth/v1/token');
+        const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof Request ? args[0].url : '';
+        const isBackendRequest =
+          url.includes('/auth/v1') || url.includes('/rest/v1') || url.includes('/functions/v1') || url.includes('supabase');
+        const isRefreshRequest = url.includes('/auth/v1/token');
 
-      if (!isBackendRequest || isRefreshRequest || isHandling401Ref.current) {
-        return response;
-      }
-
-      console.warn('⚠️ 401 Unauthorized - attempting session refresh');
-      isHandling401Ref.current = true;
-
-      try {
-        const { data, error } = await supabase.auth.refreshSession();
-        if (error || !data.session) {
-          toast.error('Sua sessão expirou. Por favor, faça login novamente.');
-          await supabase.auth.signOut();
-          setUser(null);
-          setSession(null);
+        if (!isBackendRequest || isRefreshRequest) {
+          return response;
         }
-      } catch (err) {
-        console.error('Failed to handle 401:', err);
-      } finally {
-        isHandling401Ref.current = false;
-      }
 
-      return response;
-    };
+        console.warn('⚠️ 401 Unauthorized - attempting session refresh');
+
+        try {
+          if (!refreshPromise) {
+            refreshPromise = supabase.auth.refreshSession().finally(() => {
+              refreshPromise = null;
+            });
+          }
+          const { data } = await refreshPromise;
+          if (!data?.session) {
+            toast.error('Sua sessão expirou. Por favor, faça login novamente.');
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+          }
+        } catch (err) {
+          console.error('Failed to handle 401:', err);
+        }
+
+        return response;
+      };
+    }
 
     return () => {
-      window.fetch = originalFetch;
+      // Don't uninstall the interceptor as it's shared
     };
   }, []);
 

@@ -1,9 +1,30 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
+  const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
+  const secret = Deno.env.get('WEBHOOK_SECRET');
+  if (!secret) {
+    console.warn('WEBHOOK_SECRET not configured, skipping signature verification');
+    return true; // Allow if not configured (backward compat)
+  }
+  if (!signature) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computed = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return signature === computed;
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,12 +32,21 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const rawBody = await req.text();
+    const isValid = await verifyWebhookSignature(req, rawBody);
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const payload = await req.json();
+    const payload = JSON.parse(rawBody);
     const event = payload.event;
     const instance = payload.instance;
 
@@ -133,10 +163,11 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
         const extContact = extContacts[0];
         console.log(`Found contact in EXTERNAL DB: ${extContact.id} (${extContact.first_name} ${extContact.last_name})`);
 
-        // Get the default user (first user in profiles) to assign interaction
+        // Get the default user (oldest/admin user) for deterministic assignment
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id')
+          .order('created_at', { ascending: true })
           .limit(1);
 
         const defaultUserId = profiles?.[0]?.id || null;
@@ -161,10 +192,11 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
   // 3. Not found anywhere - create a local contact
   console.log(`Contact not found for phone ${cleanPhone}, creating new local contact`);
 
-  // Get default user
+  // Get default user (oldest/admin user) for deterministic assignment
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id')
+    .order('created_at', { ascending: true })
     .limit(1);
 
   const defaultUserId = profiles?.[0]?.id || null;

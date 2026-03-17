@@ -101,18 +101,30 @@ export function useDashboardStats(): DashboardStats {
       ? Math.round(scoresWithValue.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / scoresWithValue.length)
       : 0;
 
+    // Build lookup maps for O(1) access
+    const companyMap = new Map(companies.map(c => [c.id, c]));
+    const contactMap = new Map(contacts.map(c => [c.id, c]));
+
+    // Build interaction index by contact_id
+    const interactionsByContact = new Map<string, typeof interactions>();
+    for (const interaction of interactions) {
+      const list = interactionsByContact.get(interaction.contact_id) || [];
+      list.push(interaction);
+      interactionsByContact.set(interaction.contact_id, list);
+    }
+
     // Top contacts by score
     const topContacts = [...contacts]
       .filter(c => c.relationship_score !== null)
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
       .slice(0, 4)
       .map(contact => {
-        const company = companies.find(c => c.id === contact.company_id);
-        const contactInteractions = interactions.filter(i => i.contact_id === contact.id);
-        const lastInteraction = contactInteractions.sort((a, b) => 
+        const company = contact.company_id ? companyMap.get(contact.company_id) : undefined;
+        const contactInteractions = interactionsByContact.get(contact.id) || [];
+        const lastInteraction = contactInteractions.sort((a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )[0];
-        
+
         return {
           id: contact.id,
           firstName: contact.first_name,
@@ -132,7 +144,7 @@ export function useDashboardStats(): DashboardStats {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5)
       .map(interaction => {
-        const contact = contacts.find(c => c.id === interaction.contact_id);
+        const contact = contactMap.get(interaction.contact_id);
         return {
           id: interaction.id,
           entityName: contact ? `${contact.first_name} ${contact.last_name}` : 'Contato',

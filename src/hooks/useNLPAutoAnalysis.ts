@@ -74,7 +74,8 @@ export function useNLPAutoAnalysis() {
     const analysisKey = `${contactId}-${interactionId}`;
     if (analysisQueue.current.has(analysisKey)) return null;
     
-    const text = transcription || content || '';
+    const text = (transcription || content || '').trim();
+    if (!text || text.length === 0) return null;
     if (!shouldAnalyze(type, content, transcription)) return null;
 
     analysisQueue.current.add(analysisKey);
@@ -83,28 +84,48 @@ export function useNLPAutoAnalysis() {
       console.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
 
       // 1. VAK Analysis
-      const vakResult = analyzeVAK(text);
-      await saveVAKAnalysis(contactId, vakResult, text, interactionId);
+      let vakResult;
+      try {
+        vakResult = analyzeVAK(text);
+        await saveVAKAnalysis(contactId, vakResult, text, interactionId);
+      } catch (vakError) {
+        console.error('VAK analysis/save error:', vakError);
+        analysisQueue.current.delete(analysisKey);
+        return null;
+      }
 
       // 2. Metaprogram Analysis
-      const metaResult = analyzeMetaprograms(text);
-      await saveMetaprogramAnalysis(contactId, interactionId, metaResult, text);
+      let metaResult;
+      try {
+        metaResult = analyzeMetaprograms(text);
+        await saveMetaprogramAnalysis(contactId, interactionId, metaResult, text);
+      } catch (metaError) {
+        console.error('Metaprogram analysis/save error:', metaError);
+        analysisQueue.current.delete(analysisKey);
+        return null;
+      }
 
       // 3. Emotional State Analysis
       const emotionalResult = detectEmotionalState(text);
-      
-      // Save emotional state to history
-      const { error: emotionalInsertError } = await supabase.from('emotional_states_history').insert({
-        user_id: user.id,
-        contact_id: contactId,
-        interaction_id: interactionId,
-        emotional_state: emotionalResult.state,
-        confidence: emotionalResult.confidence,
-        trigger: emotionalResult.matchedWords[0] || null,
-        context: text.substring(0, 200)
-      });
 
-      if (emotionalInsertError) throw emotionalInsertError;
+      // Save emotional state to history
+      try {
+        const { error: emotionalInsertError } = await supabase.from('emotional_states_history').insert({
+          user_id: user.id,
+          contact_id: contactId,
+          interaction_id: interactionId,
+          emotional_state: emotionalResult.state,
+          confidence: emotionalResult.confidence,
+          trigger: emotionalResult.matchedWords[0] || null,
+          context: text.substring(0, 200)
+        });
+
+        if (emotionalInsertError) throw emotionalInsertError;
+      } catch (emotionalError) {
+        console.error('Emotional state save error:', emotionalError);
+        analysisQueue.current.delete(analysisKey);
+        return null;
+      }
 
       // 4. Calculate overall confidence
       const overallConfidence = Math.round(
@@ -149,6 +170,7 @@ export function useNLPAutoAnalysis() {
       return result;
     } catch (error) {
       console.error('❌ NLP Auto-Analysis error:', error);
+      analysisQueue.current.clear();
       return null;
     } finally {
       analysisQueue.current.delete(analysisKey);

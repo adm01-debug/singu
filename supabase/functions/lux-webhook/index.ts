@@ -2,9 +2,30 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
+  const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
+  const secret = Deno.env.get('WEBHOOK_SECRET');
+  if (!secret) {
+    console.warn('WEBHOOK_SECRET not configured, skipping signature verification');
+    return true; // Allow if not configured (backward compat)
+  }
+  if (!signature) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+  const computed = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return signature === computed;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +33,16 @@ serve(async (req) => {
   }
 
   try {
-    const payload = await req.json();
+    const rawBody = await req.text();
+    const isValid = await verifyWebhookSignature(req, rawBody);
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const payload = JSON.parse(rawBody);
     const {
       luxRecordId,
       status,

@@ -72,7 +72,7 @@ function createErrorReport(
     timestamp: new Date().toISOString(),
     url: window.location.href,
     userAgent: navigator.userAgent,
-    userId: localStorage.getItem('userId') ?? undefined,
+    userId: sessionStorage.getItem('singu_user_context') ?? undefined,
     metadata,
     severity: determineSeverity(error),
     fingerprint: generateFingerprint(error),
@@ -103,15 +103,19 @@ async function flushErrorBuffer(): Promise<void> {
       // });
       
       // Por enquanto, salvar no localStorage para debug
-      const existingLogs = JSON.parse(localStorage.getItem('error_logs') || '[]');
-      existingLogs.push(...batch.errors);
-      
-      // Manter apenas os últimos 100 erros
-      if (existingLogs.length > 100) {
-        existingLogs.splice(0, existingLogs.length - 100);
+      try {
+        let existingLogs = JSON.parse(localStorage.getItem('error_logs') || '[]');
+        existingLogs.push(...batch.errors);
+
+        // Manter apenas os últimos 50 erros
+        if (existingLogs.length > 50) {
+          existingLogs = existingLogs.slice(-50);
+        }
+
+        localStorage.setItem('error_logs', JSON.stringify(existingLogs));
+      } catch (storageError) {
+        console.warn('Failed to persist error logs to localStorage:', storageError);
       }
-      
-      localStorage.setItem('error_logs', JSON.stringify(existingLogs));
     }
     
     // Log no console em dev
@@ -198,7 +202,7 @@ export function useErrorReporter() {
       captureError(new Error(message), undefined, { customMessage: true, severity });
     },
     setUserContext: (userId: string) => {
-      localStorage.setItem('userId', userId);
+      sessionStorage.setItem('singu_user_context', userId);
     },
   };
 }

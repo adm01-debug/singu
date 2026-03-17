@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -28,6 +28,28 @@ serve(async (req) => {
 
     if (!table || !['companies', 'contacts'].includes(table)) {
       throw new Error('Invalid table. Only "companies" and "contacts" are allowed.');
+    }
+
+    const allowedColumns = ['name', 'email', 'phone', 'company', 'tags', 'status', 'first_name', 'last_name', 'city', 'state', 'role', 'created_at', 'updated_at'];
+    if (filters) {
+      for (const filter of filters) {
+        if (!allowedColumns.includes(filter.column)) {
+          return new Response(JSON.stringify({ error: `Invalid filter column: ${filter.column}` }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+    }
+    if (search?.columns) {
+      for (const col of search.columns) {
+        if (!allowedColumns.includes(col)) {
+          return new Response(JSON.stringify({ error: `Invalid search column: ${col}` }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
     }
 
     let query = externalClient.from(table).select(select || '*', { count: 'exact' });

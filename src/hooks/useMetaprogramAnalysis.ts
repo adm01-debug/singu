@@ -15,6 +15,38 @@ import {
   METAPROGRAM_KEYWORDS
 } from '@/types/metaprograms';
 
+// Pre-build lowercased keyword maps at module level (computed once)
+type MetaprogramCategory = keyof typeof METAPROGRAM_KEYWORDS;
+const LOWERED_KEYWORDS: Record<MetaprogramCategory, Array<{ lower: string; original: string }>> = (() => {
+  const categories = Object.keys(METAPROGRAM_KEYWORDS) as MetaprogramCategory[];
+  const result = {} as Record<MetaprogramCategory, Array<{ lower: string; original: string }>>;
+  for (const category of categories) {
+    result[category] = METAPROGRAM_KEYWORDS[category].map(kw => ({
+      lower: kw.toLowerCase(),
+      original: kw,
+    }));
+  }
+  return result;
+})();
+
+const ALL_CATEGORIES: MetaprogramCategory[] = Object.keys(METAPROGRAM_KEYWORDS) as MetaprogramCategory[];
+
+// Map category names to score keys for MetaprogramScores
+const CATEGORY_TO_SCORE_KEY: Record<MetaprogramCategory, keyof MetaprogramScores> = {
+  toward: 'toward',
+  awayFrom: 'awayFrom',
+  internal: 'internal',
+  external: 'external',
+  options: 'options',
+  procedures: 'procedures',
+  general: 'general',
+  specific: 'specific',
+  proactive: 'proactive',
+  reactive: 'reactive',
+  sameness: 'sameness',
+  difference: 'difference',
+};
+
 export function useMetaprogramAnalysis() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -22,160 +54,35 @@ export function useMetaprogramAnalysis() {
   // Analyze text for metaprogram patterns
   const analyzeText = useCallback((text: string): MetaprogramAnalysisResult => {
     const lowerText = text.toLowerCase();
-    const words = lowerText.split(/\s+/);
-    
-    const result: MetaprogramAnalysisResult = {
-      scores: {
-        toward: 0,
-        awayFrom: 0,
-        internal: 0,
-        external: 0,
-        options: 0,
-        procedures: 0,
-        general: 0,
-        specific: 0,
-        proactive: 0,
-        reactive: 0,
-        sameness: 0,
-        difference: 0
-      },
-      detectedWords: {
-        toward: [],
-        awayFrom: [],
-        internal: [],
-        external: [],
-        options: [],
-        procedures: [],
-        general: [],
-        specific: [],
-        proactive: [],
-        reactive: [],
-        sameness: [],
-        difference: []
-      }
+
+    const scores: MetaprogramScores = {
+      toward: 0, awayFrom: 0, internal: 0, external: 0,
+      options: 0, procedures: 0, general: 0, specific: 0,
+      proactive: 0, reactive: 0, sameness: 0, difference: 0,
     };
 
-    // Check for toward keywords
-    METAPROGRAM_KEYWORDS.toward.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.toward++;
-        if (!result.detectedWords.toward.includes(keyword)) {
-          result.detectedWords.toward.push(keyword);
+    const detectedWords: MetaprogramAnalysisResult['detectedWords'] = {
+      toward: [], awayFrom: [], internal: [], external: [],
+      options: [], procedures: [], general: [], specific: [],
+      proactive: [], reactive: [], sameness: [], difference: [],
+    };
+
+    // Use pre-lowered keywords for all categories
+    for (const category of ALL_CATEGORIES) {
+      const scoreKey = CATEGORY_TO_SCORE_KEY[category];
+      const detectedSet = new Set<string>();
+
+      for (const { lower, original } of LOWERED_KEYWORDS[category]) {
+        if (lowerText.includes(lower)) {
+          scores[scoreKey]++;
+          detectedSet.add(original);
         }
       }
-    });
 
-    // Check for away from keywords
-    METAPROGRAM_KEYWORDS.awayFrom.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.awayFrom++;
-        if (!result.detectedWords.awayFrom.includes(keyword)) {
-          result.detectedWords.awayFrom.push(keyword);
-        }
-      }
-    });
+      detectedWords[category] = Array.from(detectedSet);
+    }
 
-    // Check for internal keywords
-    METAPROGRAM_KEYWORDS.internal.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.internal++;
-        if (!result.detectedWords.internal.includes(keyword)) {
-          result.detectedWords.internal.push(keyword);
-        }
-      }
-    });
-
-    // Check for external keywords
-    METAPROGRAM_KEYWORDS.external.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.external++;
-        if (!result.detectedWords.external.includes(keyword)) {
-          result.detectedWords.external.push(keyword);
-        }
-      }
-    });
-
-    // Check for options keywords
-    METAPROGRAM_KEYWORDS.options.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.options++;
-        if (!result.detectedWords.options.includes(keyword)) {
-          result.detectedWords.options.push(keyword);
-        }
-      }
-    });
-
-    // Check for procedures keywords
-    METAPROGRAM_KEYWORDS.procedures.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.procedures++;
-        if (!result.detectedWords.procedures.includes(keyword)) {
-          result.detectedWords.procedures.push(keyword);
-        }
-      }
-    });
-
-    // Check for general keywords
-    METAPROGRAM_KEYWORDS.general.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.general++;
-        if (!result.detectedWords.general.includes(keyword)) {
-          result.detectedWords.general.push(keyword);
-        }
-      }
-    });
-
-    // Check for specific keywords
-    METAPROGRAM_KEYWORDS.specific.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.specific++;
-        if (!result.detectedWords.specific.includes(keyword)) {
-          result.detectedWords.specific.push(keyword);
-        }
-      }
-    });
-
-    // Check for proactive keywords
-    METAPROGRAM_KEYWORDS.proactive.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.proactive++;
-        if (!result.detectedWords.proactive.includes(keyword)) {
-          result.detectedWords.proactive.push(keyword);
-        }
-      }
-    });
-
-    // Check for reactive keywords
-    METAPROGRAM_KEYWORDS.reactive.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.reactive++;
-        if (!result.detectedWords.reactive.includes(keyword)) {
-          result.detectedWords.reactive.push(keyword);
-        }
-      }
-    });
-
-    // Check for sameness keywords
-    METAPROGRAM_KEYWORDS.sameness.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.sameness++;
-        if (!result.detectedWords.sameness.includes(keyword)) {
-          result.detectedWords.sameness.push(keyword);
-        }
-      }
-    });
-
-    // Check for difference keywords
-    METAPROGRAM_KEYWORDS.difference.forEach(keyword => {
-      if (lowerText.includes(keyword.toLowerCase())) {
-        result.scores.difference++;
-        if (!result.detectedWords.difference.includes(keyword)) {
-          result.detectedWords.difference.push(keyword);
-        }
-      }
-    });
-
-    return result;
+    return { scores, detectedWords };
   }, []);
 
   // Save analysis to database

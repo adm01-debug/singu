@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  isPushSupported, 
-  subscribeToPush, 
-  unsubscribeFromPush, 
+import {
+  isPushSupported,
+  subscribeToPush,
+  unsubscribeFromPush,
   getSubscriptionStatus,
   registerServiceWorker
 } from '@/lib/pushNotifications';
@@ -22,21 +22,32 @@ export const useNotifications = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const isMountedRef = useRef(true);
+
+  // Cleanup isMounted ref
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Check if notifications are supported and current subscription status
   useEffect(() => {
     const checkStatus = async () => {
       const supported = isPushSupported();
       const permission = supported ? (Notification.permission as NotificationPermission['permission']) : 'denied';
-      
+
+      if (!isMountedRef.current) return;
       setPermissionState({ permission, supported });
-      
+
       if (supported && permission === 'granted') {
         const { isSubscribed: subscribed } = await getSubscriptionStatus();
+        if (!isMountedRef.current) return;
         setIsSubscribed(subscribed);
       }
     };
-    
+
     checkStatus();
   }, []);
 

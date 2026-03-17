@@ -157,19 +157,20 @@ export function useRealtimeNotifications() {
     });
   }, []);
 
-  // Subscribe to realtime changes
+  // Subscribe to realtime changes - use user.id to stabilize dependency
+  const userId = user?.id;
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const channel = supabase
-      .channel('realtime-notifications')
+      .channel(`realtime-notifications-${userId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'alerts',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         handleNewAlert
       )
@@ -179,7 +180,7 @@ export function useRealtimeNotifications() {
           event: 'INSERT',
           schema: 'public',
           table: 'insights',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         handleNewInsight
       )
@@ -189,7 +190,7 @@ export function useRealtimeNotifications() {
           event: 'INSERT',
           schema: 'public',
           table: 'health_alerts',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         handleNewHealthAlert
       )
@@ -199,16 +200,20 @@ export function useRealtimeNotifications() {
           event: 'INSERT',
           schema: 'public',
           table: 'stakeholder_alerts',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         handleNewStakeholderAlert
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Realtime notifications channel error');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
+  }, [userId, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
 
   // Load initial notifications
   useEffect(() => {

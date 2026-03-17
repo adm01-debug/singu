@@ -218,7 +218,11 @@ export function useContactDetail(contactId: string | undefined) {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          console.error(`Realtime subscription error for contact ${contactId}`);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

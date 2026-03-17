@@ -79,8 +79,11 @@ export function useFormDraft<T extends FieldValues>(
           if (hasData) {
             localStorage.setItem(storageKey, JSON.stringify(data));
           }
-        } catch {
-          // Silently fail
+        } catch (err) {
+          // Handle localStorage quota errors
+          if (err instanceof DOMException && (err.code === 22 || err.code === 1014 || err.name === 'QuotaExceededError')) {
+            console.warn('localStorage quota exceeded, draft not saved');
+          }
         }
       }, debounceMs);
     });

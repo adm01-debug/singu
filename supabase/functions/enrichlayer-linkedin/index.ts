@@ -2,9 +2,20 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 // EnrichLayer returns the profile data directly (not wrapped in data object)
 interface EnrichLayerProfile {
@@ -103,7 +114,7 @@ serve(async (req) => {
     const apiUrl = `https://enrichlayer.com/api/v2/profile?url=${encodeURIComponent(linkedinUrl)}`;
     console.log('Calling EnrichLayer API:', apiUrl);
     
-    const enrichResponse = await fetch(apiUrl, {
+    const enrichResponse = await fetchWithTimeout(apiUrl, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
