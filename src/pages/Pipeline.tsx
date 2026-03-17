@@ -210,7 +210,7 @@ const Pipeline = () => {
         onOpenChange={(open) => { setCreateOpen(open); if (!open) setEditingDeal(null); }}
         editingDeal={editingDeal}
       />
-    </MainLayout>
+    </AppLayout>
   );
 };
 
