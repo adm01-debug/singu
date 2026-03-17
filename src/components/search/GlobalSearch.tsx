@@ -483,7 +483,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 <span>Ações Rápidas</span>
               </div>
             }>
-              {quickActions.map((action) => {
+              {filteredQuickActions.map((action) => {
                 const Icon = action.icon;
                 return (
                   <CommandItem 
