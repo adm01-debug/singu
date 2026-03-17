@@ -109,7 +109,7 @@ const sortOptions: SortOption[] = [
 const Contatos = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
+  const { contacts, loading, createContact, updateContact, deleteContact, fetchContacts } = useContacts();
   const { companies } = useCompanies();
   const { interactions } = useInteractions();
   
