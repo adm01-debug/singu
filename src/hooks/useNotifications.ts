@@ -22,14 +22,12 @@ export const useNotifications = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const isMountedRef = useRef(true);
+  const isMountedRef = useRef(false);
 
-  // Cleanup isMounted ref
+  // Set isMounted only once on mount
   useEffect(() => {
     isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
+    return () => { isMountedRef.current = false; };
   }, []);
 
   // Check if notifications are supported and current subscription status
@@ -102,7 +100,7 @@ export const useNotifications = () => {
         return false;
       }
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      void error;
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao ativar as notificações.',
@@ -128,7 +126,7 @@ export const useNotifications = () => {
       }
       return success;
     } catch (error) {
-      console.error('Error unsubscribing:', error);
+      void error;
       return false;
     } finally {
       setIsLoading(false);
@@ -163,7 +161,7 @@ export const useNotifications = () => {
       }
       return true;
     } catch (error) {
-      console.error('Error showing notification:', error);
+      void error;
       return false;
     }
   }, [permissionState.permission, requestPermission]);
@@ -227,7 +225,7 @@ export const useNotifications = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking follow-up alerts:', error);
+      void error;
     }
   }, [permissionState.permission, showNotification]);
 
@@ -275,7 +273,7 @@ export const useNotifications = () => {
         );
       }
     } catch (error) {
-      console.error('Error checking birthday alerts:', error);
+      void error;
     }
   }, [permissionState.permission, showNotification]);
 
@@ -311,7 +309,12 @@ export const useNotifications = () => {
       if (error) throw error;
 
       // Check localStorage for already notified alerts
-      const notifiedAlerts = JSON.parse(localStorage.getItem('notified_stakeholder_alerts') || '[]');
+      let notifiedAlerts: string[] = [];
+      try {
+        notifiedAlerts = JSON.parse(localStorage.getItem('notified_stakeholder_alerts') || '[]');
+      } catch {
+        notifiedAlerts = [];
+      }
 
       for (const alert of alerts || []) {
         if (!notifiedAlerts.includes(alert.id)) {
@@ -327,14 +330,20 @@ export const useNotifications = () => {
               },
             }
           );
-          
-          // Mark as notified
+
           notifiedAlerts.push(alert.id);
-          localStorage.setItem('notified_stakeholder_alerts', JSON.stringify(notifiedAlerts));
+          // Limit stored IDs to prevent unbounded growth
+          const trimmed = notifiedAlerts.slice(-100);
+          try {
+            localStorage.setItem('notified_stakeholder_alerts', JSON.stringify(trimmed));
+          } catch {
+            // Quota exceeded — clear and retry
+            localStorage.removeItem('notified_stakeholder_alerts');
+          }
         }
       }
     } catch (error) {
-      console.error('Error checking stakeholder alerts:', error);
+      void error;
     }
   }, [permissionState.permission, showNotification]);
 
