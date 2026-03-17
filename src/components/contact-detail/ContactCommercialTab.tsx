@@ -29,7 +29,7 @@ export function ContactCommercialTab({ contactId }: Props) {
     const fetchData = async () => {
       const [rfmRes, purchaseRes] = await Promise.all([
         supabase.from('rfm_analysis').select('*').eq('contact_id', contactId).order('analyzed_at', { ascending: false }).limit(1),
-        supabase.from('purchase_history' as any).select('*').eq('contact_id', contactId).order('purchase_date', { ascending: false }).limit(20),
+        supabase.from('purchase_history').select('*').eq('contact_id', contactId).order('purchase_date', { ascending: false }).limit(20),
       ]);
 
       setRfm(rfmRes.data?.[0] || null);
