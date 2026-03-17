@@ -1,6 +1,49 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-...
+import { Plus, X, User, Building2, MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+} from '@/components/ui/sheet';
+import { ContactForm } from '@/components/forms/ContactForm';
+import { CompanyForm } from '@/components/forms/CompanyForm';
+import { InteractionForm } from '@/components/forms/InteractionForm';
+import { useContacts } from '@/hooks/useContacts';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useInteractions } from '@/hooks/useInteractions';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+type QuickAddType = 'contact' | 'company' | 'interaction' | null;
+
+const menuItems = [
+  {
+    type: 'interaction' as const,
+    label: 'Interação',
+    icon: MessageSquare,
+    color: 'bg-amber-500',
+    delay: 0,
+  },
+  {
+    type: 'company' as const,
+    label: 'Empresa',
+    icon: Building2,
+    color: 'bg-emerald-500',
+    delay: 0.05,
+  },
+  {
+    type: 'contact' as const,
+    label: 'Contato',
+    icon: User,
+    color: 'bg-blue-500',
+    delay: 0.1,
+  },
+];
+
 export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeForm, setActiveForm] = useState<QuickAddType>(null);
@@ -59,7 +102,6 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
     }
   };
 
-  // Form content based on active type
   const renderFormContent = () => {
     switch (activeForm) {
       case 'contact':
@@ -95,7 +137,6 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
 
   return (
     <>
-      {/* Backdrop */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -108,30 +149,28 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
         )}
       </AnimatePresence>
 
-      {/* FAB Container */}
       <div ref={ref} className="fixed bottom-6 right-6 z-50 flex flex-col-reverse items-center gap-3">
-        {/* Menu Items */}
         <AnimatePresence>
           {isOpen && menuItems.map((item, index) => (
             <motion.button
               key={item.type}
               initial={{ opacity: 0, scale: 0.3, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1, 
+              animate={{
+                opacity: 1,
+                scale: 1,
                 y: 0,
-                transition: { 
+                transition: {
                   delay: item.delay,
                   type: 'spring',
                   stiffness: 400,
                   damping: 25,
                 }
               }}
-              exit={{ 
-                opacity: 0, 
-                scale: 0.3, 
+              exit={{
+                opacity: 0,
+                scale: 0.3,
                 y: 20,
-                transition: { 
+                transition: {
                   delay: (menuItems.length - 1 - index) * 0.03,
                   duration: 0.15,
                 }
@@ -151,7 +190,6 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
           ))}
         </AnimatePresence>
 
-        {/* Main FAB */}
         <motion.button
           data-tour="quick-add"
           onClick={() => setIsOpen(!isOpen)}
@@ -174,7 +212,6 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
         </motion.button>
       </div>
 
-      {/* Form Dialog/Sheet */}
       {isMobile ? (
         <Sheet open={activeForm !== null} onOpenChange={() => handleCloseForm()}>
           <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
