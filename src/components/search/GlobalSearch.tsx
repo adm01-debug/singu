@@ -171,6 +171,11 @@ function addRecentItem(item: Omit<RecentItem, 'timestamp'>) {
   localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(newRecent));
 }
 
+// Normalize text removing accents for better matching
+function normalizeText(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
@@ -187,6 +192,54 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+
+  // Fuse.js instances for local fuzzy search
+  const navigationFuse = useMemo(() => new Fuse(navigationItems, {
+    keys: ['label', 'description'],
+    threshold: 0.4,
+    ignoreLocation: true,
+    getFn: (obj, path) => {
+      const value = Fuse.config.getFn(obj, path);
+      if (typeof value === 'string') return normalizeText(value);
+      if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v);
+      return value;
+    },
+  }), []);
+
+  const quickActionsFuse = useMemo(() => new Fuse(quickActions, {
+    keys: ['label', 'description'],
+    threshold: 0.4,
+    ignoreLocation: true,
+    getFn: (obj, path) => {
+      const value = Fuse.config.getFn(obj, path);
+      if (typeof value === 'string') return normalizeText(value);
+      if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v);
+      return value;
+    },
+  }), []);
+
+  // Filtered local items based on fuzzy search
+  const filteredNavigation = useMemo(() => {
+    if (!query.trim()) return navigationItems;
+    const normalizedQuery = normalizeText(query);
+    return navigationFuse.search(normalizedQuery).map(r => r.item);
+  }, [query, navigationFuse]);
+
+  const filteredQuickActions = useMemo(() => {
+    if (!query.trim()) return quickActions;
+    const normalizedQuery = normalizeText(query);
+    return quickActionsFuse.search(normalizedQuery).map(r => r.item);
+  }, [query, quickActionsFuse]);
+
+  const filteredRecent = useMemo(() => {
+    if (!query.trim()) return recentItems;
+    const fuse = new Fuse(recentItems, {
+      keys: ['title'],
+      threshold: 0.4,
+      ignoreLocation: true,
+    });
+    return fuse.search(query).map(r => r.item);
+  }, [query, recentItems]);
 
   // Sync search query with URL params (#10)
   useEffect(() => {
