@@ -364,6 +364,8 @@ const Auth = () => {
                 </svg>
                 Entrar com Google
               </Button>
+
+              <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
                   {mode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}
                   <button
