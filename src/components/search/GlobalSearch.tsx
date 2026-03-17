@@ -458,6 +458,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   };
 
   const hasResults = results.contacts.length > 0 || results.companies.length > 0 || results.interactions.length > 0;
+  const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
   const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
 
@@ -473,7 +474,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
-        {!query && (
+        {(!query || filteredQuickActions.length > 0) && (
           <>
             {/* Quick Actions */}
             <CommandGroup heading={
