@@ -2,6 +2,23 @@ import { useState } from 'react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
+
+interface SocialProfile {
+  platform?: string;
+  username?: string;
+  followers?: number;
+  url?: string;
+}
+
+interface Stakeholder {
+  first_name?: string;
+  last_name?: string;
+  name?: string;
+  role_title?: string;
+  position?: string;
+  email?: string;
+  linkedin?: string;
+}
 import {
   Sparkles, Globe, Users, Building2, Brain, Target, 
   Briefcase, GraduationCap, MapPin, Clock, AlertCircle,
@@ -79,7 +96,7 @@ const DataCard = ({
   </motion.div>
 );
 
-const SocialProfileCard = ({ profile }: { profile: any }) => {
+const SocialProfileCard = ({ profile }: { profile: SocialProfile }) => {
   const platformIcons: Record<string, typeof Linkedin> = {
     linkedin: Linkedin,
     instagram: Instagram,
@@ -120,7 +137,7 @@ const SocialProfileCard = ({ profile }: { profile: any }) => {
   );
 };
 
-const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: number }) => (
+const StakeholderCard = ({ stakeholder, index }: { stakeholder: Stakeholder; index: number }) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
@@ -264,7 +281,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                     Filiais ({fiscal.filiais.length})
                   </p>
                   <div className="space-y-2">
-                    {fiscal.filiais.map((f: any, i: number) => (
+                    {fiscal.filiais.map((f: { endereco?: string; nome?: string }, i: number) => (
                       <div key={i} className="text-xs text-muted-foreground p-2 rounded-lg bg-muted/50 flex items-center gap-2">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         <span className="truncate">{f.endereco || f.nome || `Filial ${i + 1}`}</span>

@@ -7,11 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { logger } from '@/lib/logger';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface ContactReport {
-  contact: any;
-  interactions: any[];
-  discHistory: any[];
+  contact: Tables<'contacts'> | null;
+  interactions: Tables<'interactions'>[];
+  discHistory: Tables<'disc_analysis_history'>[];
 }
 
 const RelatorioContato = () => {
