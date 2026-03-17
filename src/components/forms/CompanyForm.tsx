@@ -89,7 +89,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     enabled: !company,
   });
 
-    // Clean optional empty strings
+  const handleSubmit = async (data: CompanyFormData) => {
     const cleanedData = {
       ...data,
       website: data.website || null,
@@ -104,6 +104,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       notes: data.notes || null,
     };
     await onSubmit(cleanedData as CompanyFormData);
+    clearDraft();
   };
 
   return (
