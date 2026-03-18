@@ -5,8 +5,8 @@ import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
 import { differenceInDays } from 'date-fns';
 import type { TablesInsert } from '@/integrations/supabase/types';
-import {
 import { logger } from '@/lib/logger';
+import {
   RFMAnalysis,
   RFMHistory,
   RFMSegment,

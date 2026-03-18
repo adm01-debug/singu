@@ -16,12 +16,12 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useOnboardingTour } from '@/components/onboarding/OnboardingTour';
-import { 
 import { logger } from '@/lib/logger';
-  isPushSupported, 
-  subscribeToPush, 
-  unsubscribeFromPush, 
-  getSubscriptionStatus 
+import {
+  isPushSupported,
+  subscribeToPush,
+  unsubscribeFromPush,
+  getSubscriptionStatus
 } from '@/lib/pushNotifications';
 
 export function TourPreferencesPanel() {
