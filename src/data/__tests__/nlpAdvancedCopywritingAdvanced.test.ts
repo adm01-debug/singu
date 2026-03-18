@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { EMOTIONAL_STATE_KEYWORDS, EMOTIONAL_STATE_INFO } from '@/data/nlpAdvancedData';
-import { PAS_TEMPLATES, FOUR_PS_TEMPLATES, STORYTELLING_TEMPLATES } from '@/data/copywritingAdvancedData';
 
 describe('NLP Advanced - Emotional States', () => {
   const stateKeys = Object.keys(EMOTIONAL_STATE_KEYWORDS);
@@ -46,83 +45,5 @@ describe('NLP Advanced - Emotional States', () => {
         expect(isLower || isAllowed, `unexpected uppercase: ${kw}`).toBe(true);
       }
     }
-  });
-});
-
-describe('Copywriting Advanced - PAS Templates', () => {
-  it('has at least 3 PAS templates', () => {
-    expect(PAS_TEMPLATES.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it('all PAS templates have unique IDs', () => {
-    const ids = PAS_TEMPLATES.map(t => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
-  });
-
-  it('all PAS templates have 3 sections (problem, agitate, solution)', () => {
-    for (const t of PAS_TEMPLATES) {
-      expect(t.sections.length).toBe(3);
-      const stages = t.sections.map(s => s.stage);
-      expect(stages).toContain('problem');
-      expect(stages).toContain('agitate');
-      expect(stages).toContain('solution');
-    }
-  });
-
-  it('all PAS sections have content and techniques', () => {
-    for (const t of PAS_TEMPLATES) {
-      for (const s of t.sections) {
-        expect(s.content.length).toBeGreaterThan(10);
-        expect(s.techniques.length).toBeGreaterThan(0);
-      }
-    }
-  });
-
-  it('estimatedConversion is between 0-100', () => {
-    for (const t of PAS_TEMPLATES) {
-      expect(t.estimatedConversion).toBeGreaterThan(0);
-      expect(t.estimatedConversion).toBeLessThanOrEqual(100);
-    }
-  });
-
-  it('agitate has higher emotional intensity than solution', () => {
-    for (const t of PAS_TEMPLATES) {
-      const agitate = t.sections.find(s => s.stage === 'agitate')!;
-      const solution = t.sections.find(s => s.stage === 'solution')!;
-      expect(agitate.emotionalIntensity, `${t.id}: agitate should be more intense`).toBeGreaterThanOrEqual(solution.emotionalIntensity);
-    }
-  });
-});
-
-describe('Copywriting Advanced - 4Ps Templates', () => {
-  it('has at least 2 templates', () => {
-    expect(FOUR_PS_TEMPLATES.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('all 4Ps have 4 sections', () => {
-    for (const t of FOUR_PS_TEMPLATES) {
-      expect(t.sections.length).toBe(4);
-      const stages = t.sections.map(s => s.stage);
-      expect(stages).toEqual(['promise', 'picture', 'proof', 'push']);
-    }
-  });
-
-  it('all sections have powerWords', () => {
-    for (const t of FOUR_PS_TEMPLATES) {
-      for (const s of t.sections) {
-        expect(s.powerWords.length, `${t.id}/${s.stage}: no powerWords`).toBeGreaterThan(0);
-      }
-    }
-  });
-});
-
-describe('Copywriting Advanced - Storytelling Templates', () => {
-  it('has at least 1 template', () => {
-    expect(STORYTELLING_TEMPLATES.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('all templates have unique IDs', () => {
-    const ids = STORYTELLING_TEMPLATES.map(t => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
   });
 });

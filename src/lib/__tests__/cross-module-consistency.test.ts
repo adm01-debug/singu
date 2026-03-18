@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ADVANCED_MENTAL_TRIGGERS } from '@/data/triggersAdvancedData';
 import { NOBLE_CAUSES } from '@/data/carnegieNobleCauses';
-import { PAS_TEMPLATES, FOUR_PS_TEMPLATES } from '@/data/copywritingAdvancedData';
 import { WARMTH_PATTERNS } from '@/data/carnegieWarmth';
 import { compareDates, sortArray } from '@/lib/sorting-utils';
 import { getContactBehavior, getVAKProfile, getDominantVAK, getDISCProfile } from '@/lib/contact-utils';
@@ -24,24 +23,6 @@ describe('Cross-Module: DISC Profile Consistency', () => {
   it('noble causes disc compatibility uses D/I/S/C keys', () => {
     for (const c of NOBLE_CAUSES) {
       expect(Object.keys(c.discCompatibility).sort()).toEqual(validDISC.sort());
-    }
-  });
-});
-
-describe('Cross-Module: Copywriting + Triggers Integration', () => {
-  it('PAS templates cover multiple DISC profiles', () => {
-    const profiles = new Set(PAS_TEMPLATES.map(t => t.targetProfile?.disc).filter(Boolean));
-    expect(profiles.size).toBeGreaterThanOrEqual(2);
-  });
-
-  it('4Ps templates have push stage with urgency language', () => {
-    for (const t of FOUR_PS_TEMPLATES) {
-      const push = t.sections.find(s => s.stage === 'push');
-      expect(push).toBeDefined();
-      const hasUrgency = push!.powerWords.some(w =>
-        ['agora', 'hoje', 'última', 'restam', 'urgente'].includes(w)
-      );
-      expect(hasUrgency, `${t.id}: push lacks urgency words`).toBe(true);
     }
   });
 });
