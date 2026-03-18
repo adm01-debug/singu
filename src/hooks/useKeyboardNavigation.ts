@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { isMacOS } from '@/lib/utils';
 
@@ -32,6 +32,7 @@ export function useKeyboardNavigation({
 }: UseKeyboardNavigationOptions = {}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const pendingGKeyRef = useRef<{ handler: (e: KeyboardEvent) => void; timer: ReturnType<typeof setTimeout> } | null>(null);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!enabled) return;
@@ -72,7 +73,12 @@ export function useKeyboardNavigation({
 
     // G + number for navigation (g1, g2, etc.)
     if (event.key.toLowerCase() === 'g') {
-      // Set up listener for next key
+      // Clean up previous pending g-key listener
+      if (pendingGKeyRef.current) {
+        document.removeEventListener('keydown', pendingGKeyRef.current.handler);
+        clearTimeout(pendingGKeyRef.current.timer);
+      }
+
       const handleNextKey = (e: KeyboardEvent) => {
         const route = navigationRoutes.find(r => r.key === e.key);
         if (route && location.pathname !== route.path) {
@@ -80,13 +86,16 @@ export function useKeyboardNavigation({
           navigate(route.path);
         }
         document.removeEventListener('keydown', handleNextKey);
+        pendingGKeyRef.current = null;
       };
 
-      // Listen for the next key within 1 second
       document.addEventListener('keydown', handleNextKey);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         document.removeEventListener('keydown', handleNextKey);
+        pendingGKeyRef.current = null;
       }, 1000);
+
+      pendingGKeyRef.current = { handler: handleNextKey, timer };
       return;
     }
 
@@ -102,7 +111,15 @@ export function useKeyboardNavigation({
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Clean up pending g-key listener on unmount
+      if (pendingGKeyRef.current) {
+        document.removeEventListener('keydown', pendingGKeyRef.current.handler);
+        clearTimeout(pendingGKeyRef.current.timer);
+        pendingGKeyRef.current = null;
+      }
+    };
   }, [handleKeyDown]);
 
   return {

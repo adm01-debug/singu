@@ -13,7 +13,7 @@ const hapticPatterns: Record<HapticPattern, number | number[]> = {
 };
 
 export function useHapticFeedback() {
-  const isSupported = 'vibrate' in navigator;
+  const isSupported = typeof navigator !== 'undefined' && 'vibrate' in navigator;
 
   const vibrate = useCallback((pattern: HapticPattern | number | number[]) => {
     if (!isSupported) return false;

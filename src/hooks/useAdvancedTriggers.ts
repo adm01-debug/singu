@@ -125,7 +125,6 @@ export function useAdvancedTriggers(contact: Contact | null | undefined) {
 
     // Calculate overall resistance
     const overallResistance = Math.min(100, (failures * 15) + (neutrals * 5));
-    setResistanceScore(overallResistance);
 
     // Detect immunities (triggers that consistently fail)
     const triggerResults = new Map<string, { success: number; failure: number }>();
@@ -172,6 +171,13 @@ export function useAdvancedTriggers(contact: Contact | null | undefined) {
       antiPatterns: immunities.map(t => `Evite usar ${MENTAL_TRIGGERS[t as TriggerType]?.name || t}`),
     };
   }, [contact, history]);
+
+  // Sync resistance score from memoized profile (avoid setState inside useMemo)
+  useEffect(() => {
+    if (resistanceProfile) {
+      setResistanceScore(resistanceProfile.overallResistance);
+    }
+  }, [resistanceProfile]);
 
   // ============================================
   // OPTIMAL TIMING CALCULATION

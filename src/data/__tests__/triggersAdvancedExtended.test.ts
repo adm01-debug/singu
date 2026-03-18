@@ -116,10 +116,6 @@ describe('Advanced Mental Triggers', () => {
 
   it('flags triggers missing resistance indicators', () => {
     const missing = triggers.filter(t => t.resistanceIndicators.length === 0).map(t => t.id);
-    // Document known gaps - these should be fixed in data
-    if (missing.length > 0) {
-      console.warn('Triggers missing resistance indicators:', missing);
-    }
     expect(missing.length).toBeLessThan(3);
   });
 });

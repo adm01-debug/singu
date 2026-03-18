@@ -39,7 +39,7 @@ export function useSearchPresets(context: string = 'contacts') {
   const savePreset = useCallback((preset: Omit<SearchPreset, 'id' | 'createdAt'>) => {
     const newPreset: SearchPreset = {
       ...preset,
-      id: crypto.randomUUID(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       createdAt: new Date().toISOString(),
     };
     setPresets(prev => [newPreset, ...prev].slice(0, 10)); // max 10 presets
