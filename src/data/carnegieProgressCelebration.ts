@@ -453,19 +453,3 @@ export function getCelebrationForDISC(
   return { celebration, adaptedScript };
 }
 
-export function selectCelebrationIntensity(
-  progressSignificance: 'small' | 'medium' | 'large',
-  discProfile: 'D' | 'I' | 'S' | 'C'
-): 'micro' | 'standard' | 'major' {
-  const baseIntensity = 
-    progressSignificance === 'small' ? 0 :
-    progressSignificance === 'medium' ? 1 : 2;
-  
-  const discModifier = 
-    discProfile === 'I' ? 1 :
-    discProfile === 'D' ? -1 : 0;
-  
-  const finalIntensity = Math.max(0, Math.min(2, baseIntensity + discModifier));
-  
-  return finalIntensity === 0 ? 'micro' : finalIntensity === 1 ? 'standard' : 'major';
-}
