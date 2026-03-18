@@ -4,7 +4,6 @@ import { IDENTITY_LABELS, IDENTITY_DETECTION_PATTERNS, IDENTITY_REINFORCEMENT_SC
 import { PROGRESS_CELEBRATIONS, CELEBRATION_BY_DISC, PROGRESS_DETECTION_PATTERNS, getCelebrationTemplate, detectProgressType } from '@/data/carnegieProgressCelebration';
 import { VULNERABILITY_TEMPLATES, VULNERABILITY_GUIDELINES } from '@/data/carnegieVulnerability';
 
-
 /**
  * Carnegie Data Integrity - 100+ test scenarios
  */
