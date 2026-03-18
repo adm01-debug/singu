@@ -79,7 +79,7 @@ export function getDominantVAK(contact: Contact | RawContact | null | undefined)
 /**
  * Gets DISC profile with null fallback
  */
-export function getDISCProfile(contact: Contact | RawContact | null | undefined): DISCProfile {
+export function getDISCProfile(contact: Contact | RawContact | null | undefined): DISCProfile | null {
   const behavior = getContactBehavior(contact);
   return behavior?.discProfile || behavior?.disc || null;
 }

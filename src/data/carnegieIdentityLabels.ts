@@ -462,16 +462,6 @@ export const IDENTITY_REINFORCEMENT_SCRIPTS: Record<IdentityLabelCategory, {
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
-export function getLabelsByCategory(category: IdentityLabelCategory): IdentityLabel[] {
-  return IDENTITY_LABELS.filter(label => label.category === category);
-}
-
-export function getLabelsByDISC(discProfile: 'D' | 'I' | 'S' | 'C'): IdentityLabel[] {
-  return [...IDENTITY_LABELS].sort((a, b) => 
-    b.discAlignment[discProfile] - a.discAlignment[discProfile]
-  );
-}
-
 export function getTopLabelsForContact(
   discProfile: 'D' | 'I' | 'S' | 'C',
   vakProfile: 'V' | 'A' | 'K' | 'D',
@@ -487,9 +477,3 @@ export function getTopLabelsForContact(
     .map(item => item.label);
 }
 
-export function getReinforcementScript(
-  category: IdentityLabelCategory,
-  phase: 'initial' | 'ongoing' | 'challenge'
-): string {
-  return IDENTITY_REINFORCEMENT_SCRIPTS[category]?.[phase] || '';
-}

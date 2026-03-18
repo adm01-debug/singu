@@ -502,7 +502,7 @@ export function detectFaceSavingScenario(text: string): FaceSavingScenario | nul
   return null;
 }
 
-export function getTechniqueForScenario(scenario: FaceSavingScenario): FaceSavingTechnique | null {
+function getTechniqueForScenario(scenario: FaceSavingScenario): FaceSavingTechnique | null {
   return FACE_SAVING_TECHNIQUES.find(t => t.scenario === scenario) || null;
 }
 
@@ -519,6 +519,3 @@ export function getTechniqueForDISC(
   };
 }
 
-export function getAllTechniquesForScenario(scenario: FaceSavingScenario): FaceSavingTechnique[] {
-  return FACE_SAVING_TECHNIQUES.filter(t => t.scenario === scenario);
-}
