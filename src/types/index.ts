@@ -88,41 +88,6 @@ export const DISC_LABELS: Record<string, { name: string; description: string; co
   C: { name: 'Conforme', description: 'Analítico, preciso, focado em qualidade', color: 'bg-blue-100 text-blue-700 border-blue-200' },
 };
 
-export const DECISION_ROLE_LABELS: Record<DecisionRole, string> = {
-  final_decision: 'Decisor Final',
-  technical: 'Influenciador Técnico',
-  economic: 'Influenciador Econômico',
-  user: 'Usuário Final',
-  blocker: 'Bloqueador',
-  champion: 'Defensor Interno',
-};
-
-export const CAREER_STAGE_LABELS: Record<CareerStage, string> = {
-  early: 'Início de Carreira',
-  growth: 'Crescimento',
-  established: 'Consolidado',
-  transition: 'Transição',
-  senior: 'Sênior/Experiente',
-};
-
-export const DECISION_SPEED_LABELS: Record<DecisionSpeed, string> = {
-  impulsive: 'Impulsivo',
-  fast: 'Rápido',
-  moderate: 'Moderado',
-  slow: 'Lento',
-};
-
-export const DECISION_CRITERIA_LABELS: Record<DecisionCriteria, string> = {
-  price: 'Preço',
-  quality: 'Qualidade',
-  relationship: 'Relacionamento',
-  speed: 'Velocidade',
-  support: 'Suporte',
-  innovation: 'Inovação',
-  reputation: 'Reputação',
-  referral: 'Indicação',
-};
-
 export const RELATIONSHIP_STAGE_LABELS: Record<RelationshipStage, string> = {
   unknown: 'Desconhecido',
   prospect: 'Prospect',
