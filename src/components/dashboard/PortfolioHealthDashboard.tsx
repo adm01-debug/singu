@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,18 +83,18 @@ ClientRow.displayName = 'ClientRow';
 export function PortfolioHealthDashboard({ contacts, interactions, compact = false }: PortfolioHealthDashboardProps) {
   const metrics = usePortfolioHealth(contacts, interactions);
 
-  const distributionData = [
+  const distributionData = useMemo(() => [
     { name: 'Saudável', value: metrics.healthDistribution.healthy, color: statusColors.healthy },
     { name: 'Atenção', value: metrics.healthDistribution.warning, color: statusColors.warning },
     { name: 'Crítico', value: metrics.healthDistribution.critical, color: statusColors.critical }
-  ].filter(d => d.value > 0);
+  ].filter(d => d.value > 0), [metrics.healthDistribution]);
 
-  const churnData = [
+  const churnData = useMemo(() => [
     { name: 'Baixo', value: metrics.churnRisk.low, color: '#22c55e' },
     { name: 'Médio', value: metrics.churnRisk.medium, color: '#f59e0b' },
     { name: 'Alto', value: metrics.churnRisk.high, color: '#f97316' },
     { name: 'Crítico', value: metrics.churnRisk.critical, color: '#ef4444' }
-  ];
+  ], [metrics.churnRisk]);
 
   if (compact) {
     return (

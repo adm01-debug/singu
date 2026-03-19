@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -142,7 +142,7 @@ const Dashboard = () => {
   ];
 
   // Map contacts array for portfolio health
-  const mappedContacts = contacts.map(c => {
+  const mappedContacts = useMemo(() => contacts.map(c => {
     const company = companies.find(co => co.id === c.company_id);
     const contactInteractions = interactions.filter(i => i.contact_id === c.id);
     const lastInteraction = contactInteractions.length > 0 
@@ -196,9 +196,9 @@ const Dashboard = () => {
       roleTitle: c.role_title || '',
       birthday: c.birthday ? new Date(c.birthday) : undefined,
     };
-  }) as Contact[];
+  }) as Contact[], [contacts, companies, interactions]);
 
-  const mappedInteractions = interactions.map(i => ({
+  const mappedInteractions = useMemo(() => interactions.map(i => ({
     id: i.id,
     contactId: i.contact_id,
     companyId: i.company_id || '',
@@ -215,7 +215,7 @@ const Dashboard = () => {
     responseTime: i.response_time || undefined,
     attachments: i.attachments || [],
     createdAt: new Date(i.created_at),
-  })) as Interaction[];
+  })) as Interaction[], [interactions]);
 
   if (loading) {
     return (

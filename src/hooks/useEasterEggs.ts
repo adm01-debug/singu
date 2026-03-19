@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
@@ -164,8 +164,8 @@ export function useEasterEggs() {
     saveDiscoveredEgg('party');
   }, [saveDiscoveredEgg]);
 
-  // Define easter eggs
-  const easterEggs: EasterEgg[] = [
+  // Define easter eggs (memoized to prevent listener churn)
+  const easterEggs: EasterEgg[] = useMemo(() => [
     {
       id: 'konami',
       sequence: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'],
@@ -201,7 +201,7 @@ export function useEasterEggs() {
       description: 'Party Mode',
       discovered: discoveredEggs.has('party'),
     },
-  ];
+  ], [konamiAction, loveAction, matrixAction, devAction, partyAction, discoveredEggs]);
 
   // Listen for key sequence
   useEffect(() => {

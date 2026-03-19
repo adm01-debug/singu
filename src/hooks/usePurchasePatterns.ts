@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/logger';
@@ -44,6 +44,12 @@ export function usePurchasePatterns() {
   const [categoryPatterns, setCategoryPatterns] = useState<CategoryPattern[]>([]);
   const [predictions, setPredictions] = useState<PurchasePrediction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const analyzePurchasePatterns = useCallback(async () => {
     if (!user) return;
@@ -195,6 +201,7 @@ export function usePurchasePatterns() {
         return a.daysUntilPredictedPurchase - b.daysUntilPredictedPurchase;
       });
 
+      if (!mountedRef.current) return;
       setPatterns(contactPatterns);
 
       // Analyze category patterns
@@ -236,6 +243,7 @@ export function usePurchasePatterns() {
           .slice(0, 5)
       }));
 
+      if (!mountedRef.current) return;
       setCategoryPatterns(categories);
 
       // Generate predictions for upcoming opportunities
@@ -252,6 +260,7 @@ export function usePurchasePatterns() {
             : `Baseado em ciclo médio de ${p.averageCycleDays} dias`
         }));
 
+      if (!mountedRef.current) return;
       setPredictions(upcomingPredictions);
 
     } catch (error) {

@@ -67,32 +67,30 @@ const Configuracoes = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
     if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, avatar_url')
-        .eq('id', user.id)
-        .single();
 
-      if (data && !error) {
-        setProfile({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          avatar_url: data.avatar_url,
-        });
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        if (data && !error) {
+          setProfile({
+            first_name: data.first_name || '',
+            last_name: data.last_name || '',
+            avatar_url: data.avatar_url,
+          });
+        }
+      } catch (error) {
+        logger.error('Error fetching profile:', error);
       }
-    } catch (error) {
-      logger.error('Error fetching profile:', error);
-    }
-  };
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const handleSaveProfile = async () => {
     if (!user) return;

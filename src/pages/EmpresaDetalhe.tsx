@@ -92,6 +92,7 @@ const EmpresaDetalhe = () => {
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
 
   const fetchCompanyData = useCallback(async () => {
+    if (!id) return;
     setLoading(true);
     try {
       // Fetch company from external DB
@@ -150,7 +151,7 @@ const EmpresaDetalhe = () => {
         const { data: interactionsData, error: interactionsError } = await supabase
           .from('interactions')
           .select('*')
-          .eq('company_id', id!)
+          .eq('company_id', id)
           .order('created_at', { ascending: false })
           .limit(20);
 
@@ -848,7 +849,7 @@ const EmpresaDetalhe = () => {
               const { error } = await supabase
                 .from('companies')
                 .update(data)
-                .eq('id', id!);
+                .eq('id', id);
               if (error) throw error;
               setIsEditOpen(false);
               fetchCompanyData();

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { addMinutes, isWithinInterval, parseISO, format } from 'date-fns';
@@ -264,6 +264,8 @@ export function usePreContactBriefing(): PreContactBriefingData {
   const { user } = useAuth();
   const [upcomingBriefings, setUpcomingBriefings] = useState<NLPBriefing[]>([]);
   const [activeBriefing, setActiveBriefing] = useState<NLPBriefing | null>(null);
+  const activeBriefingRef = useRef(activeBriefing);
+  activeBriefingRef.current = activeBriefing;
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
@@ -416,7 +418,7 @@ export function usePreContactBriefing(): PreContactBriefingData {
       setUpcomingBriefings(briefings);
       
       // Auto-activate first briefing if within 30 minutes and none active
-      if (briefings.length > 0 && !activeBriefing) {
+      if (briefings.length > 0 && !activeBriefingRef.current) {
         const imminent = briefings.find(b => b.minutesUntilMeeting <= 30);
         if (imminent) {
           setActiveBriefing(imminent);
@@ -428,7 +430,7 @@ export function usePreContactBriefing(): PreContactBriefingData {
       logger.error('Error fetching pre-contact briefings:', error);
       setLoading(false);
     }
-  }, [user, dismissedIds, activeBriefing]);
+  }, [user, dismissedIds]);
 
   useEffect(() => {
     fetchUpcomingMeetings();
