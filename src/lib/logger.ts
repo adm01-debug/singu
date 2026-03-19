@@ -12,6 +12,7 @@ export const logger = {
   error: isDev ? console.error.bind(console) : () => {},
   info: isDev ? console.info.bind(console) : () => {},
   debug: isDev ? console.debug.bind(console) : () => {},
+  table: isDev ? console.table.bind(console) : () => {},
   group: isDev ? console.group.bind(console) : () => {},
   groupEnd: isDev ? console.groupEnd.bind(console) : () => {},
 };

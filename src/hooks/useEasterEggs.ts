@@ -127,7 +127,7 @@ export function useEasterEggs() {
   const devAction = useCallback(() => {
     logger.log('%c🛠️ Developer Mode Activated!', 'font-size: 24px; color: #00ff00;');
     logger.log('%cWelcome, fellow developer! 👨‍💻', 'font-size: 16px; color: #00ccff;');
-    console.table({
+    logger.table({
       'React Version': '18.3.1',
       'Framework': 'Vite + React + TypeScript',
       'UI Library': 'shadcn/ui',
