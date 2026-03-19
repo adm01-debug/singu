@@ -66,7 +66,7 @@ export function useFormDraft<T extends FieldValues>(
     } catch {
       // Silently fail if localStorage is unavailable
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable ref from useForm, including it causes infinite re-renders
   }, [storageKey, enabled]);
 
   // Watch and save changes
