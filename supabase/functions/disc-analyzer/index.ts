@@ -128,7 +128,16 @@ serve(async (req) => {
   }
 
   try {
-    const { texts, contactId, interactionId, userId } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { texts, contactId, interactionId, userId } = body;
 
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
       return new Response(
@@ -265,7 +274,7 @@ serve(async (req) => {
 
     if (saveError) {
       console.error("Save error:", saveError);
-      throw new Error(`Database save error: ${saveError.message}`);
+      throw new Error("Failed to save DISC analysis results");
     }
 
     // Update contact behavior
