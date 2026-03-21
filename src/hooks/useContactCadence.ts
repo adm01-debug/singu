@@ -209,6 +209,11 @@ export function useContactCadence() {
   const removeCadence = useCallback(async (contactId: string) => {
     if (!user) return;
 
+    const previousCadences = cadences;
+    const previousAlerts = alerts;
+    setCadences(prev => prev.filter(c => c.contact_id !== contactId));
+    setAlerts(prev => prev.filter(a => a.cadence.contact_id !== contactId));
+
     try {
       const { error } = await supabase
         .from('contact_cadence')
@@ -219,12 +224,13 @@ export function useContactCadence() {
       if (error) throw error;
 
       toast.success('Cadência removida');
-      fetchCadences();
     } catch (error) {
+      setCadences(previousCadences);
+      setAlerts(previousAlerts);
       console.error('Error removing cadence:', error);
       toast.error('Erro ao remover cadência');
     }
-  }, [user, fetchCadences]);
+  }, [user, cadences, alerts]);
 
   return {
     cadences,
