@@ -1,14 +1,30 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { ScoreMilestone } from './score-milestone';
 
 interface RelationshipScoreProps {
   score: number;
+  previousScore?: number;
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
+  showMilestone?: boolean;
   className?: string;
 }
 
-export function RelationshipScore({ score, size = 'md', showLabel, className }: RelationshipScoreProps) {
+export function RelationshipScore({ score, previousScore, size = 'md', showLabel, showMilestone = false, className }: RelationshipScoreProps) {
+  // Use gamified milestone version when enabled
+  if (showMilestone) {
+    return (
+      <ScoreMilestone
+        score={score}
+        previousScore={previousScore}
+        size={size}
+        showProgress={showLabel}
+        className={className}
+      />
+    );
+  }
+
   const getColor = (score: number) => {
     if (score >= 80) return 'text-success';
     if (score >= 60) return 'text-primary';
@@ -32,7 +48,7 @@ export function RelationshipScore({ score, size = 'md', showLabel, className }: 
   const sizes = sizeClasses[size];
 
   return (
-    <div className={cn('flex flex-col items-center gap-1', className)}>
+    <div className={cn('flex flex-col items-center gap-1', className)} role="meter" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100} aria-label={`Score de relacionamento: ${score}`}>
       <div
         className={cn(
           'rounded-full flex items-center justify-center border-2 border-current',
