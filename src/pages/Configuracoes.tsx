@@ -32,6 +32,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
@@ -50,6 +51,7 @@ interface ProfileData {
 const Configuracoes = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const accessibleToast = useAccessibleToast();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     first_name: '',
@@ -116,9 +118,9 @@ const Configuracoes = () => {
         }
       });
 
-      toast.success('Perfil atualizado com sucesso!');
+      accessibleToast.success('Perfil atualizado com sucesso!');
     } catch (error) {
-      toast.error('Erro ao atualizar perfil');
+      accessibleToast.error('Erro ao atualizar perfil');
     } finally {
       setLoading(false);
     }

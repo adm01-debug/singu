@@ -47,7 +47,7 @@ import { ContactCardWithContext } from '@/components/contact-card/ContactCardWit
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
-import { useAriaLiveRegion } from '@/components/feedback/AriaLiveRegion';
+import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -122,8 +122,8 @@ const Contatos = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   
-  // Accessibility announcements
-  const { announce } = useAriaLiveRegion();
+  // Accessible toast (toast + ARIA announce)
+  const accessibleToast = useAccessibleToast();
   
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
@@ -255,8 +255,7 @@ const Contatos = () => {
     // Contact is removed from UI instantly by optimistic deleteContact
     const success = await deleteContact(contactToDelete.id);
     if (success) {
-      toast.success(`${contactToDelete.first_name} excluído com sucesso`);
-      announce(`Contato ${contactToDelete.first_name} excluído`);
+      accessibleToast.success(`${contactToDelete.first_name} excluído com sucesso`);
     }
   };
 
