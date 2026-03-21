@@ -99,6 +99,7 @@ const priorityColors: Record<string, string> = {
 
 const Insights = () => {
   const { user, session } = useAuth();
+  const accessibleToast = useAccessibleToast();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
