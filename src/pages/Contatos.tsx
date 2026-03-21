@@ -47,7 +47,7 @@ import { ContactCardWithContext } from '@/components/contact-card/ContactCardWit
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
-import { useAriaLiveRegion } from '@/components/feedback/AriaLiveRegion';
+import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
