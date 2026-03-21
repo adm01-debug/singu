@@ -32,6 +32,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
