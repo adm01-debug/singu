@@ -255,8 +255,7 @@ const Contatos = () => {
     // Contact is removed from UI instantly by optimistic deleteContact
     const success = await deleteContact(contactToDelete.id);
     if (success) {
-      toast.success(`${contactToDelete.first_name} excluído com sucesso`);
-      announce(`Contato ${contactToDelete.first_name} excluído`);
+      accessibleToast.success(`${contactToDelete.first_name} excluído com sucesso`);
     }
   };
 
