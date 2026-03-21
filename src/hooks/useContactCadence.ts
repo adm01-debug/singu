@@ -66,24 +66,37 @@ export function useContactCadence() {
 
       if (error) throw error;
 
-      // Fetch companies for each contact
-      const cadencesWithCompanies: ContactCadence[] = [];
-      for (const cadence of data || []) {
-        let company = null;
-        if (cadence.contact?.company_id) {
+      // Fetch companies in parallel (avoid N+1 waterfall)
+      const baseCadences = data || [];
+      const companyIds = Array.from(
+        new Set(
+          baseCadences
+            .map(cadence => cadence.contact?.company_id)
+            .filter((id): id is string => Boolean(id))
+        )
+      );
+
+      const companyEntries = await Promise.all(
+        companyIds.map(async (companyId) => {
           const { data: companyData } = await supabase
             .from('companies')
             .select('name')
-            .eq('id', cadence.contact.company_id)
-            .single();
-          company = companyData;
-        }
-        cadencesWithCompanies.push({
-          ...cadence,
-          contact: cadence.contact,
-          company,
-        } as ContactCadence);
-      }
+            .eq('id', companyId)
+            .maybeSingle();
+
+          return [companyId, companyData] as const;
+        })
+      );
+
+      const companyMap = new Map(companyEntries);
+
+      const cadencesWithCompanies: ContactCadence[] = baseCadences.map((cadence) => ({
+        ...cadence,
+        contact: cadence.contact,
+        company: cadence.contact?.company_id
+          ? (companyMap.get(cadence.contact.company_id) ?? null)
+          : null,
+      } as ContactCadence));
 
       setCadences(cadencesWithCompanies);
 
