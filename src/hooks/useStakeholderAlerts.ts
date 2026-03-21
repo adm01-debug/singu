@@ -402,6 +402,9 @@ export function useStakeholderAlerts(companyId?: string) {
   }, [getStoredMetrics, saveMetrics, createAlert]);
 
   const dismissAlert = useCallback(async (alertId: string) => {
+    const previousAlerts = alerts;
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
+
     try {
       const { error } = await supabase
         .from('stakeholder_alerts')
@@ -409,19 +412,24 @@ export function useStakeholderAlerts(companyId?: string) {
         .eq('id', alertId);
 
       if (error) throw error;
-
-      setAlerts(prev => prev.filter(a => a.id !== alertId));
       toast.success('Alerta dispensado');
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
-  }, []);
+  }, [alerts]);
 
   const dismissAllAlerts = useCallback(async () => {
+    const previousAlerts = alerts;
+    setAlerts([]);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setAlerts(previousAlerts);
+        return;
+      }
 
       let query = supabase
         .from('stakeholder_alerts')
@@ -434,16 +442,15 @@ export function useStakeholderAlerts(companyId?: string) {
       }
 
       const { error } = await query;
-
       if (error) throw error;
 
-      setAlerts([]);
       toast.success('Todos os alertas foram dispensados');
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
-  }, [companyId]);
+  }, [companyId, alerts]);
 
   return {
     alerts,
