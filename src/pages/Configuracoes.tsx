@@ -51,6 +51,7 @@ interface ProfileData {
 const Configuracoes = () => {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const accessibleToast = useAccessibleToast();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     first_name: '',
