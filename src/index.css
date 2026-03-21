@@ -239,74 +239,77 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 228 30% 5%;
+    --foreground: 220 20% 95%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
+    --card: 228 28% 8%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 228 28% 8%;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 221 83% 60%;
-    --primary-foreground: 222 47% 11%;
-    --primary-glow: 250 83% 70%;
+    --primary: 234 85% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 270 80% 72%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 225 20% 14%;
+    --secondary-foreground: 220 20% 95%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 225 20% 14%;
+    --muted-foreground: 220 15% 60%;
 
-    --accent: 160 84% 45%;
+    --accent: 168 70% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 70% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 213 27% 84%;
+    --border: 225 18% 14%;
+    --input: 225 18% 14%;
+    --ring: 234 85% 65%;
     
     /* Contextual Focus Rings - Dark */
-    --ring-destructive: 0 63% 50%;
-    --ring-success: 142 76% 46%;
-    --ring-warning: 38 92% 60%;
+    --ring-destructive: 4 70% 55%;
+    --ring-success: 152 69% 46%;
+    --ring-warning: 36 96% 58%;
 
-    --sidebar-background: 222 47% 5%;
-    --sidebar-background-end: 222 47% 10%;
-    --sidebar-foreground: 215 20% 85%;
-    --sidebar-primary: 221 83% 60%;
+    --sidebar-background: 228 35% 4%;
+    --sidebar-background-end: 228 35% 8%;
+    --sidebar-foreground: 220 15% 78%;
+    --sidebar-primary: 234 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 12%;
-    --sidebar-accent-foreground: 215 20% 95%;
-    --sidebar-border: 222 47% 12%;
-    --sidebar-ring: 221 83% 53%;
-    --warning-glow: 25 95% 62%;
+    --sidebar-accent: 228 25% 12%;
+    --sidebar-accent-foreground: 220 15% 95%;
+    --sidebar-border: 228 22% 12%;
+    --sidebar-ring: 234 85% 65%;
+    --warning-glow: 28 95% 60%;
     
     /* Dark mode shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.25);
+    --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
+    --shadow-lg: 0 10px 24px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
+    --shadow-xl: 0 20px 40px -5px hsl(0 0% 0% / 0.45), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
     
     /* Surface Levels - Dark Mode */
-    --surface-0: 222 47% 6%;
-    --surface-1: 222 47% 8%;
-    --surface-2: 222 47% 10%;
-    --surface-3: 222 47% 12%;
-    --surface-4: 222 47% 14%;
+    --surface-0: 228 30% 5%;
+    --surface-1: 228 28% 7%;
+    --surface-2: 228 26% 9%;
+    --surface-3: 228 24% 11%;
+    --surface-4: 228 22% 13%;
     
     /* Role Colors - Dark Mode */
-    --role-owner: 280 67% 65%;
-    --role-manager: 221 83% 70%;
-    --role-buyer: 142 76% 50%;
-    --role-contact: 215 20% 65%;
+    --role-owner: 270 67% 65%;
+    --role-manager: 234 85% 72%;
+    --role-buyer: 152 69% 52%;
+    --role-contact: 220 15% 62%;
     
     /* Row States - Dark Mode */
-    --row-hover: 221 83% 60% / 0.06;
-    --row-selected: 221 83% 60% / 0.10;
-    --row-active: 221 83% 60% / 0.14;
+    --row-hover: 234 85% 65% / 0.06;
+    --row-selected: 234 85% 65% / 0.10;
+    --row-active: 234 85% 65% / 0.14;
+
+    /* Glass gradient - dark */
+    --gradient-glass: linear-gradient(135deg, hsl(228 28% 10% / 0.9) 0%, hsl(228 28% 8% / 0.6) 100%);
   }
 }
 
