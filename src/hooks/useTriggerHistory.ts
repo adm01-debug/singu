@@ -54,9 +54,67 @@ export function useTriggerHistory(contactId?: string) {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<TriggerStats | null>(null);
 
+  const calculateStats = useCallback((entries: TriggerUsageEntry[]): TriggerStats | null => {
+    if (entries.length === 0) return null;
+
+    const byResult: Record<TriggerResult, number> = {
+      success: 0,
+      neutral: 0,
+      failure: 0,
+      pending: 0,
+    };
+
+    const triggerCounts: Record<string, number> = {};
+    const triggerRatings: Record<string, { total: number; count: number }> = {};
+
+    entries.forEach((entry) => {
+      byResult[entry.result]++;
+      triggerCounts[entry.trigger_type] = (triggerCounts[entry.trigger_type] || 0) + 1;
+
+      if (entry.effectiveness_rating) {
+        if (!triggerRatings[entry.trigger_type]) {
+          triggerRatings[entry.trigger_type] = { total: 0, count: 0 };
+        }
+        triggerRatings[entry.trigger_type].total += entry.effectiveness_rating;
+        triggerRatings[entry.trigger_type].count++;
+      }
+    });
+
+    const completedEntries = entries.filter(e => e.result !== 'pending');
+    const successRate = completedEntries.length > 0
+      ? (byResult.success / completedEntries.length) * 100
+      : 0;
+
+    const mostUsedTrigger = Object.entries(triggerCounts).reduce<{ type: TriggerType; count: number } | null>(
+      (max, [type, count]) => (!max || count > max.count ? { type: type as TriggerType, count } : max),
+      null
+    );
+
+    const mostEffectiveTrigger = Object.entries(triggerRatings).reduce<{ type: TriggerType; avgRating: number } | null>(
+      (max, [type, { total, count }]) => {
+        const avg = total / count;
+        return !max || avg > max.avgRating ? { type: type as TriggerType, avgRating: avg } : max;
+      },
+      null
+    );
+
+    return {
+      totalUsages: entries.length,
+      successRate,
+      mostUsedTrigger,
+      mostEffectiveTrigger,
+      byResult,
+    };
+  }, []);
+
+  const applyHistoryState = useCallback((entries: TriggerUsageEntry[]) => {
+    setHistory(entries);
+    setStats(calculateStats(entries));
+  }, [calculateStats]);
+
   const fetchHistory = useCallback(async () => {
     if (!user) {
-      setHistory([]);
+      applyHistoryState([]);
       setLoading(false);
       return;
     }
@@ -73,71 +131,15 @@ export function useTriggerHistory(contactId?: string) {
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
 
-      setHistory((data as TriggerUsageEntry[]) || []);
-      
-      // Calculate stats
-      if (data && data.length > 0) {
-        const entries = data as TriggerUsageEntry[];
-        const byResult: Record<TriggerResult, number> = {
-          success: 0,
-          neutral: 0,
-          failure: 0,
-          pending: 0,
-        };
-        
-        const triggerCounts: Record<string, number> = {};
-        const triggerRatings: Record<string, { total: number; count: number }> = {};
-        
-        entries.forEach((entry) => {
-          byResult[entry.result]++;
-          triggerCounts[entry.trigger_type] = (triggerCounts[entry.trigger_type] || 0) + 1;
-          
-          if (entry.effectiveness_rating) {
-            if (!triggerRatings[entry.trigger_type]) {
-              triggerRatings[entry.trigger_type] = { total: 0, count: 0 };
-            }
-            triggerRatings[entry.trigger_type].total += entry.effectiveness_rating;
-            triggerRatings[entry.trigger_type].count++;
-          }
-        });
-
-        const completedEntries = entries.filter(e => e.result !== 'pending');
-        const successRate = completedEntries.length > 0
-          ? (byResult.success / completedEntries.length) * 100
-          : 0;
-
-        const mostUsedTrigger = Object.entries(triggerCounts).reduce<{ type: TriggerType; count: number } | null>(
-          (max, [type, count]) => (!max || count > max.count ? { type: type as TriggerType, count } : max),
-          null
-        );
-
-        const mostEffectiveTrigger = Object.entries(triggerRatings).reduce<{ type: TriggerType; avgRating: number } | null>(
-          (max, [type, { total, count }]) => {
-            const avg = total / count;
-            return !max || avg > max.avgRating ? { type: type as TriggerType, avgRating: avg } : max;
-          },
-          null
-        );
-
-        setStats({
-          totalUsages: entries.length,
-          successRate,
-          mostUsedTrigger,
-          mostEffectiveTrigger,
-          byResult,
-        });
-      } else {
-        setStats(null);
-      }
+      applyHistoryState((data as TriggerUsageEntry[]) || []);
     } catch (error) {
       console.error('Error fetching trigger history:', error);
     } finally {
       setLoading(false);
     }
-  }, [user, contactId]);
+  }, [user, contactId, applyHistoryState]);
 
   useEffect(() => {
     fetchHistory();
@@ -177,6 +179,12 @@ export function useTriggerHistory(contactId?: string) {
   const updateUsage = async (id: string, input: UpdateTriggerUsageInput): Promise<boolean> => {
     if (!user) return false;
 
+    const previousHistory = history;
+    const optimisticHistory = history.map(entry =>
+      entry.id === id ? { ...entry, ...input } : entry
+    );
+    applyHistoryState(optimisticHistory);
+
     try {
       const { error } = await supabase
         .from('trigger_usage_history')
@@ -186,9 +194,9 @@ export function useTriggerHistory(contactId?: string) {
 
       if (error) throw error;
 
-      await fetchHistory();
       return true;
     } catch (error) {
+      applyHistoryState(previousHistory);
       console.error('Error updating trigger usage:', error);
       return false;
     }
@@ -196,6 +204,10 @@ export function useTriggerHistory(contactId?: string) {
 
   const deleteUsage = async (id: string): Promise<boolean> => {
     if (!user) return false;
+
+    const previousHistory = history;
+    const optimisticHistory = history.filter(entry => entry.id !== id);
+    applyHistoryState(optimisticHistory);
 
     try {
       const { error } = await supabase
@@ -206,9 +218,9 @@ export function useTriggerHistory(contactId?: string) {
 
       if (error) throw error;
 
-      await fetchHistory();
       return true;
     } catch (error) {
+      applyHistoryState(previousHistory);
       console.error('Error deleting trigger usage:', error);
       return false;
     }
