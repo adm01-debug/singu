@@ -147,6 +147,9 @@ export function useInteractions(contactId?: string, companyId?: string) {
   };
 
   const updateInteraction = async (id: string, updates: InteractionUpdate) => {
+    const previousInteractions = interactions;
+    setInteractions(prev => prev.map(i => i.id === id ? { ...i, ...updates } as Interaction : i));
+
     try {
       const { data, error } = await supabase
         .from('interactions')
@@ -164,6 +167,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
       });
       return data;
     } catch (error) {
+      setInteractions(previousInteractions);
       console.error('Error updating interaction:', error);
       toast({
         title: 'Erro ao atualizar interação',
@@ -175,6 +179,9 @@ export function useInteractions(contactId?: string, companyId?: string) {
   };
 
   const deleteInteraction = async (id: string) => {
+    const previousInteractions = interactions;
+    setInteractions(prev => prev.filter(i => i.id !== id));
+
     try {
       const { error } = await supabase
         .from('interactions')
@@ -183,13 +190,13 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
-      setInteractions(prev => prev.filter(i => i.id !== id));
       toast({
         title: 'Interação removida',
         description: 'A interação foi excluída com sucesso.',
       });
       return true;
     } catch (error) {
+      setInteractions(previousInteractions);
       console.error('Error deleting interaction:', error);
       toast({
         title: 'Erro ao excluir interação',
