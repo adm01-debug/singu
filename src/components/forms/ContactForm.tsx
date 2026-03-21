@@ -240,8 +240,23 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormItem>
                 <FormLabel>Cargo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Gerente Comercial" {...field} />
+                  <Input 
+                    placeholder={suggestedRoleTitle || "Gerente Comercial"} 
+                    {...field}
+                    aria-describedby={suggestedRoleTitle ? "role-title-hint" : undefined}
+                  />
                 </FormControl>
+                {suggestedRoleTitle && !field.value && (
+                  <FormDescription id="role-title-hint" className="text-xs">
+                    <button
+                      type="button"
+                      className="text-primary hover:underline cursor-pointer"
+                      onClick={() => form.setValue('role_title', suggestedRoleTitle, { shouldDirty: true })}
+                    >
+                      Sugestão: {suggestedRoleTitle} ↵
+                    </button>
+                  </FormDescription>
+                )}
                 <FormMessage />
               </FormItem>
             )}
