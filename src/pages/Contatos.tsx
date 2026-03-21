@@ -122,8 +122,8 @@ const Contatos = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   
-  // Accessibility announcements
-  const { announce } = useAriaLiveRegion();
+  // Accessible toast (toast + ARIA announce)
+  const accessibleToast = useAccessibleToast();
   
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
