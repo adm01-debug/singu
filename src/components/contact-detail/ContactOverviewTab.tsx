@@ -299,3 +299,6 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
           <p className="text-muted-foreground text-xs italic">Nenhum evento de vida registrado</p>
         )}
       </CollapsibleSection>
+    </div>
+  );
+}
