@@ -216,7 +216,7 @@ describe('SavedFilter — Full Lifecycle', () => {
       createFilter('Recentes', 'contacts', { sort: 'recent' }),
       createFilter('Ativas', 'companies', { status: 'active' }),
     ];
-    // Simulate different usage counts
+    // Simulate different usage counts — note: createFilter sets isDefault=false
     filters[0].usageCount = 10;
     filters[1].usageCount = 25;
     filters[2].usageCount = 5;
