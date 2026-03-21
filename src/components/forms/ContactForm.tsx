@@ -100,8 +100,50 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
   const draftKey = contact ? `contact-edit-${contact.id}` : 'contact-new';
   const { clearDraft } = useFormDraft(form, { 
     key: draftKey, 
-    enabled: !contact, // Only auto-save drafts for new contacts
+    enabled: !contact,
   });
+
+  // Smart Defaults: auto-copy phone → WhatsApp when WhatsApp is empty
+  const phoneValue = useWatch({ control: form.control, name: 'phone' });
+  const whatsappValue = useWatch({ control: form.control, name: 'whatsapp' });
+  
+  useEffect(() => {
+    if (!contact && phoneValue && !whatsappValue) {
+      form.setValue('whatsapp', phoneValue, { shouldDirty: false });
+    }
+  }, [phoneValue, contact, form, whatsappValue]);
+
+  // Smart Defaults: suggest role_title based on selected company industry
+  const selectedCompanyId = useWatch({ control: form.control, name: 'company_id' });
+  const roleTitleValue = useWatch({ control: form.control, name: 'role_title' });
+  
+  const suggestedRoleTitle = useMemo(() => {
+    if (contact || roleTitleValue) return null;
+    const company = companies.find(c => c.id === selectedCompanyId);
+    if (!company?.industry) return null;
+    const suggestions: Record<string, string> = {
+      'Tecnologia': 'Gerente de TI',
+      'Saúde': 'Diretor Clínico',
+      'Educação': 'Coordenador Pedagógico',
+      'Varejo': 'Gerente Comercial',
+      'Financeiro': 'Diretor Financeiro',
+      'Jurídico': 'Advogado Sênior',
+      'Marketing': 'Diretor de Marketing',
+      'Indústria': 'Gerente de Produção',
+      'Construção': 'Engenheiro de Obras',
+      'Consultoria': 'Consultor Sênior',
+    };
+    return suggestions[company.industry] || null;
+  }, [selectedCompanyId, companies, contact, roleTitleValue]);
+
+  // Smart Defaults: set relationship_stage to 'prospect' for new contacts
+  const selectedRole = useWatch({ control: form.control, name: 'role' });
+
+  useEffect(() => {
+    if (!contact && selectedRole === 'buyer') {
+      form.setValue('relationship_stage', 'qualified_lead', { shouldDirty: false });
+    }
+  }, [selectedRole, contact, form]);
 
   const handleSubmit = async (data: ContactFormData) => {
     const cleanedData = {
