@@ -137,8 +137,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
               {stage.label}
             </Badge>
             <div className="flex items-center gap-1.5">
-              <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-              <span className="text-xs text-muted-foreground">Score</span>
+              <RelationshipScore score={contact.relationship_score || 0} size="sm" showMilestone />
             </div>
             <SentimentIndicator sentiment={(contact.sentiment as 'positive' | 'neutral' | 'negative') || 'neutral'} size="sm" />
             <span className="text-xs text-muted-foreground">
