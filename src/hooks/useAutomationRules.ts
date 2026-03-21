@@ -160,48 +160,60 @@ export function useAutomationRules() {
 
   const updateRule = useCallback(async (id: string, data: Partial<CreateRuleData> & { is_active?: boolean }) => {
     if (!user) return false;
-    try {
-      const updateData: Record<string, any> = {};
-      if (data.name !== undefined) updateData.name = data.name;
-      if (data.description !== undefined) updateData.description = data.description;
-      if (data.trigger_type !== undefined) updateData.trigger_type = data.trigger_type;
-      if (data.trigger_config !== undefined) updateData.trigger_config = data.trigger_config;
-      if (data.conditions !== undefined) updateData.conditions = data.conditions;
-      if (data.actions !== undefined) updateData.actions = data.actions;
-      if (data.is_active !== undefined) updateData.is_active = data.is_active;
 
+    const updateData: Record<string, any> = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.trigger_type !== undefined) updateData.trigger_type = data.trigger_type;
+    if (data.trigger_config !== undefined) updateData.trigger_config = data.trigger_config;
+    if (data.conditions !== undefined) updateData.conditions = data.conditions;
+    if (data.actions !== undefined) updateData.actions = data.actions;
+    if (data.is_active !== undefined) updateData.is_active = data.is_active;
+
+    const previousRules = rules;
+    setRules(prev => prev.map(r => r.id === id ? { ...r, ...updateData } : r));
+
+    try {
       const { error } = await supabase
         .from('automation_rules')
         .update(updateData)
         .eq('id', id)
         .eq('user_id', user.id);
+
       if (error) throw error;
-      setRules(prev => prev.map(r => r.id === id ? { ...r, ...updateData } : r));
+
       toast.success('Automação atualizada!');
       return true;
     } catch (e: any) {
+      setRules(previousRules);
       toast.error('Erro ao atualizar: ' + e.message);
       return false;
     }
-  }, [user]);
+  }, [user, rules]);
 
   const deleteRule = useCallback(async (id: string) => {
     if (!user) return false;
+
+    const previousRules = rules;
+    setRules(prev => prev.filter(r => r.id !== id));
+
     try {
       const { error } = await supabase
         .from('automation_rules')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
+
       if (error) throw error;
-      setRules(prev => prev.filter(r => r.id !== id));
+
       toast.success('Automação removida.');
       return true;
     } catch (e: any) {
+      setRules(previousRules);
       toast.error('Erro ao remover: ' + e.message);
       return false;
     }
-  }, [user]);
+  }, [user, rules]);
 
   const toggleRule = useCallback(async (id: string) => {
     const rule = rules.find(r => r.id === id);
