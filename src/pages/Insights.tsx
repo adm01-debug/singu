@@ -210,13 +210,13 @@ const Insights = () => {
       setInsights(data.insights || []);
       
       if (data.insights?.length > 0) {
-        toast.success(`${data.insights.length} insights gerados com IA!`);
+        accessibleToast.success(`${data.insights.length} insights gerados com IA!`);
       } else {
-        toast.info('Adicione mais dados para gerar insights personalizados');
+        accessibleToast.info('Adicione mais dados para gerar insights personalizados');
       }
     } catch (error) {
       console.error('Error generating insights:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao gerar insights');
+      accessibleToast.error(error instanceof Error ? error.message : 'Erro ao gerar insights');
     } finally {
       setGenerating(false);
     }
