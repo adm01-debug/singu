@@ -118,9 +118,9 @@ const Configuracoes = () => {
         }
       });
 
-      toast.success('Perfil atualizado com sucesso!');
+      accessibleToast.success('Perfil atualizado com sucesso!');
     } catch (error) {
-      toast.error('Erro ao atualizar perfil');
+      accessibleToast.error('Erro ao atualizar perfil');
     } finally {
       setLoading(false);
     }
