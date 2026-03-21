@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Building2, 
-  MoreVertical 
+  MoreVertical,
+  ChevronDown,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ export function ContactCardWithContext({
 }: ContactCardWithContextProps) {
   const behavior = contact.behavior as { discProfile?: DISCProfile } | null;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Prefetch on hover
   const { prefetchContact, prefetchInteractions } = usePrefetch();
@@ -88,6 +90,12 @@ export function ContactCardWithContext({
       return false;
     }
   };
+
+  const toggleExpand = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsExpanded(prev => !prev);
+  }, []);
 
   if (viewMode === 'grid') {
     return (
@@ -182,6 +190,7 @@ export function ContactCardWithContext({
                 </div>
 
                 <div className="pt-10 px-5 pb-5">
+                  {/* Essential info — always visible */}
                   <div className="mb-3">
                     {isInlineEditing ? (
                       <InlineEdit
@@ -204,23 +213,74 @@ export function ContactCardWithContext({
                     <p className="text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
                   </div>
 
-                  {companyName && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <Building2 className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{companyName}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                    {behavior?.discProfile && (
-                      <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                  {/* Desktop: always show details / Mobile: progressive disclosure */}
+                  <div className="hidden sm:block">
+                    {companyName && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                        <span className="text-sm text-muted-foreground">{companyName}</span>
+                      </div>
                     )}
-                    <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
+                      {behavior?.discProfile && (
+                        <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                      )}
+                      <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                    </div>
                   </div>
 
-                  <div className="mb-4">
-                    <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                  {/* Mobile: expand/collapse toggle */}
+                  <div className="sm:hidden">
+                    <div className="flex items-center gap-2 mb-2">
+                      <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
+                      <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                    </div>
+
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          {companyName && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                              <span className="text-sm text-muted-foreground">{companyName}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            {behavior?.discProfile && (
+                              <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                            )}
+                            <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <button
+                      onClick={toggleExpand}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-1 min-h-[var(--touch-target-min)]"
+                      aria-expanded={isExpanded}
+                      aria-label={isExpanded ? 'Recolher detalhes' : 'Ver mais detalhes'}
+                    >
+                      <motion.span
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </motion.span>
+                      {isExpanded ? 'Menos' : 'Mais'}
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-2 pt-4 border-t border-border">
@@ -303,21 +363,26 @@ export function ContactCardWithContext({
                       {contact.first_name} {contact.last_name}
                     </h3>
                     <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                    {behavior?.discProfile && (
-                      <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
-                    )}
-                    <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                    {/* Desktop: show all badges inline */}
+                    <span className="hidden sm:contents">
+                      {behavior?.discProfile && (
+                        <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                      )}
+                      <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span>{contact.role_title || 'Sem cargo'}</span>
+                    <span className="truncate">{contact.role_title || 'Sem cargo'}</span>
                     {companyName && (
                       <>
-                        <span>•</span>
-                        <span>{companyName}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:inline truncate">{companyName}</span>
                       </>
                     )}
-                    <span>•</span>
-                    <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                    <span className="hidden sm:inline">•</span>
+                    <span className="hidden sm:inline">
+                      <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                    </span>
                   </div>
                 </div>
 
