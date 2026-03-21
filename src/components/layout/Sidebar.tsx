@@ -1,11 +1,12 @@
+import { forwardRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  MessageSquare, 
-  Lightbulb, 
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  MessageSquare,
+  Lightbulb,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -18,8 +19,6 @@ import {
   Keyboard,
   BarChart3,
   Share2,
-  Heart,
-  AlertTriangle,
   Workflow
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -84,7 +83,7 @@ interface SidebarProps {
   onSearchClick?: () => void;
 }
 
-function KeyboardShortcutsDialog() {
+const KeyboardShortcutsDialog = forwardRef<HTMLDivElement>((_, ref) => {
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
 
@@ -97,48 +96,51 @@ function KeyboardShortcutsDialog() {
   ];
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <button className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground">
-          <Keyboard className="w-4 h-4" />
-        </button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Keyboard className="w-5 h-5" />
-            Atalhos de Teclado
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3 mt-4">
-          {shortcuts.map((shortcut, index) => (
-            <div key={index} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-              <span className="text-sm text-muted-foreground">{shortcut.description}</span>
-              <div className="flex items-center gap-1">
-                {shortcut.keys.map((key, i) => (
-                  <span key={i}>
-                    <kbd className="px-2 py-1 text-xs font-mono bg-muted rounded border border-border">
-                      {key}
-                    </kbd>
-                    {i < shortcut.keys.length - 1 && (
-                      <span className="mx-1 text-muted-foreground">+</span>
-                    )}
-                  </span>
-                ))}
+    <div ref={ref} className="contents">
+      <Dialog>
+        <DialogTrigger asChild>
+          <button type="button" className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground">
+            <Keyboard className="w-4 h-4" />
+          </button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Keyboard className="w-5 h-5" />
+              Atalhos de Teclado
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-4">
+            {shortcuts.map((shortcut, index) => (
+              <div key={index} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                <span className="text-sm text-muted-foreground">{shortcut.description}</span>
+                <div className="flex items-center gap-1">
+                  {shortcut.keys.map((key, i) => (
+                    <span key={i}>
+                      <kbd className="px-2 py-1 text-xs font-mono bg-muted rounded border border-border">
+                        {key}
+                      </kbd>
+                      {i < shortcut.keys.length - 1 && (
+                        <span className="mx-1 text-muted-foreground">+</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
+            ))}
+            <div className="pt-4 border-t">
+              <p className="text-xs text-muted-foreground">
+                <strong>Páginas:</strong> 1=Dashboard, 2=Empresas, 3=Contatos, 4=Interações, 5=Calendário, 6=Insights, 7=Analytics, 8=Notificações, 9=Configurações
+              </p>
             </div>
-          ))}
-          <div className="pt-4 border-t">
-            <p className="text-xs text-muted-foreground">
-              <strong>Páginas:</strong> 1=Dashboard, 2=Empresas, 3=Contatos, 4=Interações, 5=Calendário, 6=Insights, 7=Analytics, 8=Notificações, 9=Configurações
-            </p>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
-}
+});
 
+KeyboardShortcutsDialog.displayName = 'KeyboardShortcutsDialog';
 export function Sidebar({ onSearchClick }: SidebarProps) {
   const { collapsed, toggle } = useSidebarState();
   const location = useLocation();
