@@ -199,6 +199,9 @@ export function useClosingScoreAlerts() {
   const dismissAlert = useCallback(async (alertId: string) => {
     if (!user) return;
 
+    const previousAlerts = alerts;
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
+
     try {
       const { error } = await supabase
         .from('alerts')
@@ -207,18 +210,19 @@ export function useClosingScoreAlerts() {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      setAlerts(prev => prev.filter(a => a.id !== alertId));
       toast.success('Alerta dispensado');
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
-  }, [user]);
+  }, [user, alerts]);
 
-  // Dismiss all alerts
   const dismissAllAlerts = useCallback(async () => {
     if (!user || alerts.length === 0) return;
+
+    const previousAlerts = alerts;
+    setAlerts([]);
 
     try {
       const { error } = await supabase
@@ -229,10 +233,9 @@ export function useClosingScoreAlerts() {
         .eq('dismissed', false);
 
       if (error) throw error;
-
-      setAlerts([]);
       toast.success('Todos os alertas dispensados');
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
