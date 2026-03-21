@@ -129,31 +129,38 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10" />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ background: 'var(--gradient-primary)' }}>
+        <div className="absolute inset-0 bg-black/5" />
         
-        {/* Enhanced decorative elements */}
-        <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" />
+        {/* Modern geometric decorative elements */}
+        <div className="absolute top-16 left-16 w-72 h-72 bg-white/8 rounded-3xl blur-3xl rotate-12" />
+        <div className="absolute bottom-16 right-16 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 right-1/4 w-32 h-32 border border-white/10 rounded-2xl rotate-45" />
+        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 border border-white/10 rounded-full" />
+        
+        {/* Dot grid pattern */}
+        <div className="absolute inset-0 opacity-[0.07]" style={{
+          backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+          backgroundSize: '32px 32px'
+        }} />
         
         <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex items-center gap-4 mb-8"
+            className="flex items-center gap-4 mb-10"
           >
             <motion.div 
-              className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl"
+              className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-xl flex items-center justify-center ring-1 ring-white/20"
               whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
             >
-              <Zap className="w-8 h-8" aria-hidden="true" />
+              <Zap className="w-7 h-7" aria-hidden="true" />
             </motion.div>
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">SINGU</h1>
-              <p className="text-white/70 text-sm">Inteligência Relacional</p>
+              <h1 className="text-3xl font-bold tracking-tight">SINGU</h1>
+              <p className="text-white/60 text-sm tracking-widest uppercase">Inteligência Relacional</p>
             </div>
           </motion.div>
 
@@ -161,13 +168,14 @@ const Auth = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-6 max-w-md"
+            className="space-y-5 max-w-lg"
           >
-            <h2 className="text-4xl font-bold leading-tight">
-              Transforme relacionamentos em resultados
+            <h2 className="text-5xl font-bold leading-[1.1] tracking-tight">
+              Relacionamentos<br />
+              <span className="text-white/80">que convertem.</span>
             </h2>
-            <p className="text-xl text-white/80">
-              O CRM que entende pessoas. Análise comportamental profunda, insights automáticos e inteligência emocional para suas negociações.
+            <p className="text-lg text-white/65 leading-relaxed">
+              CRM com análise comportamental profunda, insights automáticos e inteligência emocional para suas negociações.
             </p>
           </motion.div>
 
@@ -175,7 +183,7 @@ const Auth = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-12 grid grid-cols-2 gap-6"
+            className="mt-14 grid grid-cols-2 gap-3"
           >
             {[
               { icon: '🎯', text: 'Perfil DISC automático' },
@@ -183,10 +191,15 @@ const Auth = () => {
               { icon: '💡', text: 'Insights proativos' },
               { icon: '📊', text: 'Score de relacionamento' },
             ].map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-lg px-4 py-3">
-                <span className="text-2xl">{feature.icon}</span>
-                <span className="text-sm font-medium">{feature.text}</span>
-              </div>
+              <motion.div 
+                key={index} 
+                className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/10"
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.12)' }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className="text-xl">{feature.icon}</span>
+                <span className="text-sm font-medium text-white/90">{feature.text}</span>
+              </motion.div>
             ))}
           </motion.div>
         </div>
