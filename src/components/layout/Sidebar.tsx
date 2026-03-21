@@ -176,7 +176,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border fixed left-0 top-0 z-40"
+        className="h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50 fixed left-0 top-0 z-40 backdrop-blur-xl"
         style={{ background: 'var(--gradient-sidebar)' }}
       >
         {/* Logo */}
