@@ -100,6 +100,10 @@ export function useCompanies() {
   };
 
   const updateCompany = async (id: string, updates: CompanyUpdate) => {
+    // Optimistic: apply update immediately
+    const previousCompanies = companies;
+    setCompanies(prev => prev.map(c => c.id === id ? { ...c, ...updates } as Company : c));
+
     try {
       const { data, error } = await supabase
         .from('companies')
@@ -110,6 +114,7 @@ export function useCompanies() {
 
       if (error) throw error;
 
+      // Replace with server-confirmed data
       setCompanies(prev => prev.map(c => c.id === id ? data : c));
       toast({
         title: 'Empresa atualizada',
@@ -117,6 +122,8 @@ export function useCompanies() {
       });
       return data;
     } catch (error) {
+      // Rollback on failure
+      setCompanies(previousCompanies);
       console.error('Error updating company:', error);
       toast({
         title: 'Erro ao atualizar empresa',
@@ -128,6 +135,10 @@ export function useCompanies() {
   };
 
   const deleteCompany = async (id: string) => {
+    // Optimistic: remove from UI immediately
+    const previousCompanies = companies;
+    setCompanies(prev => prev.filter(c => c.id !== id));
+
     try {
       const { error } = await supabase
         .from('companies')
@@ -136,13 +147,14 @@ export function useCompanies() {
 
       if (error) throw error;
 
-      setCompanies(prev => prev.filter(c => c.id !== id));
       toast({
         title: 'Empresa removida',
         description: 'A empresa foi excluída com sucesso.',
       });
       return true;
     } catch (error) {
+      // Rollback on failure
+      setCompanies(previousCompanies);
       console.error('Error deleting company:', error);
       toast({
         title: 'Erro ao excluir empresa',
