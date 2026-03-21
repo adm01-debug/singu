@@ -57,9 +57,11 @@ interface SavedFilter {
   usageCount: number;
 }
 
+let filterCounter = 0;
 function createFilter(name: string, type: SavedFilter['type'], config: Record<string, unknown>): SavedFilter {
+  filterCounter++;
   return {
-    id: `filter-${Date.now()}`,
+    id: `filter-${filterCounter}-${Math.random().toString(36).slice(2, 7)}`,
     name,
     type,
     filters: config,
