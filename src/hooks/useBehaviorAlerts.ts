@@ -311,6 +311,9 @@ export function useBehaviorAlerts() {
   }, [user, fetchAlerts, toast]);
 
   const dismissAlert = useCallback(async (alertId: string) => {
+    const previousAlerts = alerts;
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
+
     try {
       const { error } = await supabase
         .from('alerts')
@@ -319,17 +322,28 @@ export function useBehaviorAlerts() {
 
       if (error) throw error;
 
-      setAlerts(prev => prev.filter(a => a.id !== alertId));
       toast({
         title: 'Alerta dispensado',
         description: 'O alerta foi removido da sua lista.',
       });
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error dismissing alert:', error);
+      toast({
+        title: 'Erro ao dispensar alerta',
+        variant: 'destructive',
+      });
     }
-  }, [toast]);
+  }, [toast, alerts]);
 
   const markActionTaken = useCallback(async (alertId: string) => {
+    const previousAlerts = alerts;
+    setAlerts(prev => prev.map(a => 
+      a.id === alertId 
+        ? { ...a, actionTaken: true, actionTakenAt: new Date().toISOString() }
+        : a
+    ));
+
     try {
       const { error } = await supabase
         .from('alerts')
@@ -337,21 +351,20 @@ export function useBehaviorAlerts() {
         .eq('id', alertId);
 
       if (error) throw error;
-
-      setAlerts(prev => prev.map(a => 
-        a.id === alertId 
-          ? { ...a, actionTaken: true, actionTakenAt: new Date().toISOString() }
-          : a
-      ));
 
       toast({
         title: 'Ação registrada',
         description: 'A ação foi marcada como concluída.',
       });
     } catch (error) {
+      setAlerts(previousAlerts);
       console.error('Error marking action taken:', error);
+      toast({
+        title: 'Erro ao registrar ação',
+        variant: 'destructive',
+      });
     }
-  }, [toast]);
+  }, [toast, alerts]);
 
   useEffect(() => {
     fetchAlerts();
