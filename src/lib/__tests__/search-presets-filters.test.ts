@@ -235,8 +235,9 @@ describe('SavedFilter — Full Lifecycle', () => {
   });
 
   it('does not affect other filters on apply', () => {
+    const originalCount = filters[1].usageCount;
     const updated = applyFilter(filters, filters[0].id);
-    expect(updated.find(f => f.id === filters[1].id)?.usageCount).toBe(25);
+    expect(updated.find(f => f.id === filters[1].id)?.usageCount).toBe(originalCount);
   });
 
   it('sets default filter (only one)', () => {
