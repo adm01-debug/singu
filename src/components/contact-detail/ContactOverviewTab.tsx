@@ -241,67 +241,61 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
         </CardContent>
       </Card>
 
-      {/* Relatives */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Users className="h-4 w-4 text-purple-500" />
-            Relacionados ({relatives.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {relatives.length > 0 ? (
-            <div className="space-y-2">
-              {relatives.map((rel: any) => (
-                <div key={rel.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
-                  <div>
-                    <p className="font-medium text-foreground">{rel.name}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{rel.relationship_type}</p>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground">
-                    {rel.occupation && <p>{rel.occupation}</p>}
-                    {rel.is_decision_influencer && (
-                      <Badge variant="outline" className="text-xs text-amber-600">Influenciador</Badge>
-                    )}
-                  </div>
+      {/* Relatives — Progressive Disclosure */}
+      <CollapsibleSection
+        title="Relacionados"
+        icon={Users}
+        iconColor="text-purple-500"
+        badge={relatives.length}
+        defaultOpen={relatives.length > 0}
+      >
+        {relatives.length > 0 ? (
+          <div className="space-y-2">
+            {relatives.map((rel: any) => (
+              <div key={rel.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
+                <div>
+                  <p className="font-medium text-foreground">{rel.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{rel.relationship_type}</p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-xs italic">Nenhum relacionado registrado</p>
-          )}
-        </CardContent>
-      </Card>
+                <div className="text-right text-xs text-muted-foreground">
+                  {rel.occupation && <p>{rel.occupation}</p>}
+                  {rel.is_decision_influencer && (
+                    <Badge variant="outline" className="text-xs text-amber-600">Influenciador</Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs italic">Nenhum relacionado registrado</p>
+        )}
+      </CollapsibleSection>
 
-      {/* Life Events */}
-      <Card className="md:col-span-2 lg:col-span-3">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Gift className="h-4 w-4 text-green-500" />
-            Eventos de Vida ({lifeEvents.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {lifeEvents.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {lifeEvents.map((event: any) => (
-                <div key={event.id} className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium text-foreground">{event.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(event.event_date), "dd/MM/yyyy")} · {event.event_type}
-                      {event.recurring && ' · Recorrente'}
-                    </p>
-                  </div>
+      {/* Life Events — Progressive Disclosure */}
+      <CollapsibleSection
+        title="Eventos de Vida"
+        icon={Gift}
+        iconColor="text-green-500"
+        badge={lifeEvents.length}
+        defaultOpen={lifeEvents.length > 0}
+        className="md:col-span-2 lg:col-span-3"
+      >
+        {lifeEvents.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {lifeEvents.map((event: any) => (
+              <div key={event.id} className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-foreground">{event.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(event.event_date), "dd/MM/yyyy")} · {event.event_type}
+                    {event.recurring && ' · Recorrente'}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-xs italic">Nenhum evento de vida registrado</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs italic">Nenhum evento de vida registrado</p>
+        )}
+      </CollapsibleSection>
