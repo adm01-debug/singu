@@ -1092,6 +1092,11 @@
   top: 0;
 }
 
+/* Global touch-manipulation for interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
 /* iOS auto-zoom prevention — ensures inputs don't trigger zoom on focus */
 @supports (-webkit-touch-callout: none) {
   input[type="text"],
