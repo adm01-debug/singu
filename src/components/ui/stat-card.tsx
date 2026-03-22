@@ -272,7 +272,7 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       className={cn(
         'relative overflow-hidden rounded-2xl p-8 text-center',
         gradient 
-          ? 'bg-gradient-primary text-white' 
+          ? 'bg-gradient-primary text-primary-foreground' 
           : 'bg-card border',
         className
       )}
