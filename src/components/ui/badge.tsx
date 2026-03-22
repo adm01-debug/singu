@@ -18,9 +18,9 @@ const badgeVariants = cva(
         warning: "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
         info: "border-transparent bg-info text-info-foreground hover:bg-info/80",
         muted: "border-transparent bg-muted text-muted-foreground",
-        gradient: "border-0 bg-gradient-to-r from-primary to-accent text-white",
+        gradient: "border-0 bg-gradient-to-r from-primary to-accent text-primary-foreground",
         glass: "border-border/50 bg-background/50 backdrop-blur-sm text-foreground",
-        premium: "border-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white",
+        premium: "border-0 bg-gradient-to-r from-amber-500 to-orange-500 text-primary-foreground",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",

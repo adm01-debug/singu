@@ -638,7 +638,7 @@ function PhaseCard({
           <CollapsibleTrigger className="w-full p-4">
             <div className="flex items-center gap-4">
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold",
+                "w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold",
                 phaseColors[index % phaseColors.length]
               )}>
                 {index + 1}

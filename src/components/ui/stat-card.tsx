@@ -300,7 +300,7 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       {subtitle && (
         <p className={cn(
           'text-sm',
-          gradient ? 'text-white/70' : 'text-muted-foreground'
+          gradient ? 'text-primary-foreground/70' : 'text-muted-foreground'
         )}>
           {subtitle}
         </p>

@@ -200,7 +200,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
                     currentStep === idx 
                       ? 'bg-success text-success-foreground' 
                       : newPattern[step.field as keyof typeof newPattern]
-                      ? 'bg-lime-500/30 text-lime-400'
+                      ? 'bg-success/30 text-success'
                       : 'bg-muted text-muted-foreground'
                   )}
                 >

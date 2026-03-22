@@ -197,7 +197,7 @@ const NeuroTooltip = ({
             {/* Header */}
             <div className="flex items-center gap-2">
               <div 
-                className="p-1.5 rounded-md text-white text-sm"
+                className="p-1.5 rounded-md text-primary-foreground text-sm"
                 style={{ backgroundColor: content.color }}
               >
                 {typeof content.icon === 'string' ? content.icon : content.icon}
