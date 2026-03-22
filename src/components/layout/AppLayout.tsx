@@ -10,6 +10,7 @@ import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
+import { PageTransition } from '@/components/navigation/PageTransition';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -42,7 +43,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
         className={`transition-all duration-200 pb-20 md:pb-0 focus:outline-none md:ml-[280px] ${collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'}`}
         tabIndex={-1}
       >
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </main>
       
       {/* Mobile Bottom Navigation */}

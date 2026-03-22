@@ -41,7 +41,7 @@ import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityA
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
-
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 interface ProfileData {
   first_name: string;
   last_name: string;
@@ -53,11 +53,15 @@ const Configuracoes = () => {
   const { theme, setTheme } = useTheme();
   const accessibleToast = useAccessibleToast();
   const [loading, setLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     first_name: '',
     last_name: '',
     avatar_url: null,
   });
+
+  // Guard against accidental navigation with unsaved changes
+  useUnsavedChangesGuard(hasUnsavedChanges);
 
   // Notification preferences
   const [notifications, setNotifications] = useState({
@@ -118,6 +122,7 @@ const Configuracoes = () => {
         }
       });
 
+      setHasUnsavedChanges(false);
       accessibleToast.success('Perfil atualizado com sucesso!');
     } catch (error) {
       accessibleToast.error('Erro ao atualizar perfil');
@@ -234,7 +239,7 @@ const Configuracoes = () => {
                       <Input
                         id="first_name"
                         value={profile.first_name}
-                        onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                        onChange={(e) => { setProfile({ ...profile, first_name: e.target.value }); setHasUnsavedChanges(true); }}
                         placeholder="Seu nome"
                       />
                     </div>
@@ -243,7 +248,7 @@ const Configuracoes = () => {
                       <Input
                         id="last_name"
                         value={profile.last_name}
-                        onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                        onChange={(e) => { setProfile({ ...profile, last_name: e.target.value }); setHasUnsavedChanges(true); }}
                         placeholder="Seu sobrenome"
                       />
                     </div>
