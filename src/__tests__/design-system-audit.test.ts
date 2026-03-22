@@ -133,7 +133,7 @@ describe('Design System Audit - iOS & Mobile UX', () => {
     const content = fs.readFileSync(
       path.resolve(__dirname, '../index.css'), 'utf8'
     );
-    expect(content).toContain('touch-manipulation');
+    expect(content).toContain('touch-action: manipulation');
   });
 });
 
