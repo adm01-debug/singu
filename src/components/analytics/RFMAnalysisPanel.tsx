@@ -589,7 +589,7 @@ function PriorityCard({
     red: { bg: 'bg-red-100 dark:bg-red-950/30', bar: 'bg-red-500' },
     orange: { bg: 'bg-orange-100 dark:bg-orange-950/30', bar: 'bg-orange-500' },
     blue: { bg: 'bg-blue-100 dark:bg-blue-950/30', bar: 'bg-blue-500' },
-    gray: { bg: 'bg-gray-100 dark:bg-gray-800', bar: 'bg-gray-500' }
+    gray: { bg: 'bg-muted', bar: 'bg-muted-foreground' }
   };
 
   return (
