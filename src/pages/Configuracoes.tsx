@@ -247,7 +247,7 @@ const Configuracoes = () => {
                       <Input
                         id="last_name"
                         value={profile.last_name}
-                        onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                        onChange={(e) => { setProfile({ ...profile, last_name: e.target.value }); setHasUnsavedChanges(true); }}
                         placeholder="Seu sobrenome"
                       />
                     </div>
