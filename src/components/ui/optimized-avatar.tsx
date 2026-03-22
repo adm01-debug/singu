@@ -90,16 +90,21 @@ export function OptimizedAvatar({
       .slice(0, 2);
   };
 
+  // Generate meaningful alt text
+  const meaningfulAlt = alt && alt !== fallback
+    ? alt
+    : `Foto de ${fallback}`;
+
   return (
     <div ref={containerRef} className={cn('relative', sizeMap[size], className)}>
       {isLoading && showSkeleton ? (
-        <Skeleton className="h-full w-full rounded-full" />
+        <Skeleton className="h-full w-full rounded-full" aria-label={`Carregando avatar de ${fallback}`} />
       ) : (
         <Avatar className={cn('h-full w-full', className)}>
           {!hasError && isInView && src && (
             <AvatarImage
               src={src}
-              alt={alt}
+              alt={meaningfulAlt}
               loading={loading}
               decoding="async"
               onError={() => setHasError(true)}
@@ -109,6 +114,7 @@ export function OptimizedAvatar({
           <AvatarFallback 
             className="bg-primary/10 text-primary font-medium"
             delayMs={hasError ? 0 : 600}
+            aria-label={meaningfulAlt}
           >
             {getFallbackInitials(fallback)}
           </AvatarFallback>
