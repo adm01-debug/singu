@@ -53,11 +53,15 @@ const Configuracoes = () => {
   const { theme, setTheme } = useTheme();
   const accessibleToast = useAccessibleToast();
   const [loading, setLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     first_name: '',
     last_name: '',
     avatar_url: null,
   });
+
+  // Guard against accidental navigation with unsaved changes
+  useUnsavedChangesGuard(hasUnsavedChanges);
 
   // Notification preferences
   const [notifications, setNotifications] = useState({
