@@ -144,7 +144,7 @@ export function WhatsNewModal({
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5" aria-hidden="true" />
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+              <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-0">
                 v{version}
               </Badge>
             </div>
