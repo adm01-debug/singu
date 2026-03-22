@@ -10,6 +10,7 @@ import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
+import { PageTransition } from '@/components/navigation/PageTransition';
 
 interface AppLayoutProps {
   children: ReactNode;
