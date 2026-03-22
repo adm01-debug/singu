@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { PageHeader } from '@/components/navigation/PageHeader';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
