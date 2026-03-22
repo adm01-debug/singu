@@ -256,7 +256,7 @@ const EmpresaDetalhe = () => {
               variant="header"
             />
             <Button
-              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              className="bg-primary-foreground/10 backdrop-blur hover:bg-primary-foreground/20 text-primary-foreground border-0"
               onClick={() => setIsAddContactOpen(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
