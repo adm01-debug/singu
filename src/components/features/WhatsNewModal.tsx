@@ -159,7 +159,7 @@ export function WhatsNewModal({
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/10"
+            className="absolute top-4 right-4 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
             onClick={handleClose}
             aria-label="Fechar"
           >

@@ -64,7 +64,7 @@ const PreferencesStep = ({ data, onUpdate, onNext, onBack }: PreferencesStepProp
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${
-                    isSelected ? 'bg-gradient-primary text-white' : 'bg-muted text-muted-foreground'
+                    isSelected ? 'bg-gradient-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                   }`}>
                     <Icon className="w-5 h-5" />
                   </div>

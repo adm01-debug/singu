@@ -21,7 +21,7 @@ const statusColors = {
 const riskColors = {
   low: 'bg-success text-success-foreground',
   medium: 'bg-warning text-warning-foreground',
-  high: 'bg-orange-500 text-white',
+  high: 'bg-destructive text-destructive-foreground',
   critical: 'bg-destructive text-destructive-foreground'
 };
 

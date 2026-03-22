@@ -25,21 +25,21 @@ const menuItems = [
     type: 'interaction' as const,
     label: 'Interação',
     icon: MessageSquare,
-    color: 'bg-amber-500',
+    color: 'bg-warning',
     delay: 0,
   },
   {
     type: 'company' as const,
     label: 'Empresa',
     icon: Building2,
-    color: 'bg-emerald-500',
+    color: 'bg-success',
     delay: 0.05,
   },
   {
     type: 'contact' as const,
     label: 'Contato',
     icon: User,
-    color: 'bg-blue-500',
+    color: 'bg-primary',
     delay: 0.1,
   },
 ];
@@ -178,7 +178,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
               onClick={() => handleItemClick(item.type)}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-full shadow-lg',
-                'text-white font-medium text-sm',
+                'text-primary-foreground font-medium text-sm',
                 'hover:scale-105 active:scale-95 transition-transform',
                 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
                 item.color

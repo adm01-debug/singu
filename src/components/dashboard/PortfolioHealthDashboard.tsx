@@ -154,9 +154,9 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
             </CardTitle>
             <Badge 
               className={`text-lg px-3 py-1 ${
-                metrics.overallStatus === 'healthy' ? 'bg-success' : 
-                metrics.overallStatus === 'warning' ? 'bg-warning' : 'bg-destructive'
-              } text-white`}
+                metrics.overallStatus === 'healthy' ? 'bg-success text-success-foreground' : 
+                metrics.overallStatus === 'warning' ? 'bg-warning text-warning-foreground' : 'bg-destructive text-destructive-foreground'
+              }`}
             >
               {metrics.overallScore}%
             </Badge>

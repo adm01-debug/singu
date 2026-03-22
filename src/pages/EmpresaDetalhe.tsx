@@ -235,7 +235,7 @@ const EmpresaDetalhe = () => {
         <div className="h-56 bg-gradient-primary relative z-0 overflow-hidden rounded-2xl mx-4 md:mx-6 mt-2">
           <div className="absolute top-4 left-4">
             <Link to="/empresas">
-              <Button variant="ghost" className="text-white hover:bg-white/10">
+              <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar
               </Button>
@@ -256,14 +256,14 @@ const EmpresaDetalhe = () => {
               variant="header"
             />
             <Button
-              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              className="bg-primary-foreground/10 backdrop-blur hover:bg-primary-foreground/20 text-primary-foreground border-0"
               onClick={() => setIsAddContactOpen(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Contato
             </Button>
             <Button
-              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              className="bg-primary-foreground/10 backdrop-blur hover:bg-primary-foreground/20 text-primary-foreground border-0"
               onClick={() => setIsEditOpen(true)}
             >
               <Edit className="w-4 h-4 mr-2" />
@@ -283,7 +283,7 @@ const EmpresaDetalhe = () => {
               <Card className="overflow-visible">
                 <CardContent className="pt-0">
                   <div className="flex flex-col items-center -mt-8">
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-primary flex items-center justify-center text-white font-bold text-3xl shadow-strong border-4 border-card">
+                    <div className="w-24 h-24 rounded-2xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-strong border-4 border-card">
                       {company.logo_url ? (
                         <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
                       ) : (

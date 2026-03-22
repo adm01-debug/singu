@@ -189,7 +189,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
               whileHover={{ rotate: [0, -8, 8, 0], scale: 1.05 }}
               transition={{ duration: 0.4 }}
             >
-              <Zap className="w-5 h-5 text-white" aria-hidden="true" />
+              <Zap className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
             </motion.div>
             <AnimatePresence>
               {!collapsed && (

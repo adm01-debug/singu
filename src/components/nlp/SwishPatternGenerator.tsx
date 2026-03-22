@@ -198,9 +198,9 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
                   className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all",
                     currentStep === idx 
-                      ? 'bg-lime-500 text-white' 
+                      ? 'bg-success text-success-foreground' 
                       : newPattern[step.field as keyof typeof newPattern]
-                      ? 'bg-lime-500/30 text-lime-400'
+                      ? 'bg-success/30 text-success'
                       : 'bg-muted text-muted-foreground'
                   )}
                 >

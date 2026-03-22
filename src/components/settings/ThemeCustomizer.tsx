@@ -142,7 +142,7 @@ const ColorSwatch = memo(function ColorSwatch({
           animate={{ scale: 1 }}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <Check className="w-5 h-5 text-white drop-shadow-md" />
+          <Check className="w-5 h-5 text-primary-foreground drop-shadow-md" />
         </motion.div>
       )}
     </div>

@@ -211,8 +211,8 @@ export function AnimatedBadge({
   
   const variantClasses = {
     default: 'bg-primary text-primary-foreground',
-    success: 'bg-success text-white',
-    warning: 'bg-warning text-white',
+    success: 'bg-success text-success-foreground',
+    warning: 'bg-warning text-warning-foreground',
     destructive: 'bg-destructive text-destructive-foreground',
   };
 

@@ -144,7 +144,7 @@ const Auth = () => {
           backgroundSize: '32px 32px'
         }} />
         
-        <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center items-start p-16 text-primary-foreground">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -160,7 +160,7 @@ const Auth = () => {
             </motion.div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">SINGU</h1>
-              <p className="text-white/60 text-sm tracking-widest uppercase">Inteligência Relacional</p>
+              <p className="text-primary-foreground/60 text-sm tracking-widest uppercase">Inteligência Relacional</p>
             </div>
           </motion.div>
 
@@ -172,9 +172,9 @@ const Auth = () => {
           >
             <h2 className="text-5xl font-bold leading-[1.1] tracking-tight">
               Relacionamentos<br />
-              <span className="text-white/80">que convertem.</span>
+              <span className="text-primary-foreground/80">que convertem.</span>
             </h2>
-            <p className="text-lg text-white/65 leading-relaxed">
+            <p className="text-lg text-primary-foreground/65 leading-relaxed">
               CRM com análise comportamental profunda, insights automáticos e inteligência emocional para suas negociações.
             </p>
           </motion.div>
@@ -198,7 +198,7 @@ const Auth = () => {
                 transition={{ duration: 0.2 }}
               >
                 <span className="text-xl">{feature.icon}</span>
-                <span className="text-sm font-medium text-white/90">{feature.text}</span>
+                <span className="text-sm font-medium text-primary-foreground/90">{feature.text}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -216,7 +216,7 @@ const Auth = () => {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <Zap className="w-6 h-6 text-white" />
+              <Zap className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">SINGU</h1>

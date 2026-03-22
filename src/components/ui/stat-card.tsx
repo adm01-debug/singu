@@ -272,7 +272,7 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       className={cn(
         'relative overflow-hidden rounded-2xl p-8 text-center',
         gradient 
-          ? 'bg-gradient-primary text-white' 
+          ? 'bg-gradient-primary text-primary-foreground' 
           : 'bg-card border',
         className
       )}
@@ -280,27 +280,27 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       {Icon && (
         <div className={cn(
           'inline-flex p-4 rounded-2xl mb-4',
-          gradient ? 'bg-white/20' : 'bg-primary/10'
+          gradient ? 'bg-primary-foreground/20' : 'bg-primary/10'
         )}>
-          <Icon className={cn('w-8 h-8', gradient ? 'text-white' : 'text-primary')} aria-hidden="true" />
+          <Icon className={cn('w-8 h-8', gradient ? 'text-primary-foreground' : 'text-primary')} aria-hidden="true" />
         </div>
       )}
       <p className={cn(
         'text-sm font-medium mb-2',
-        gradient ? 'text-white/80' : 'text-muted-foreground'
+        gradient ? 'text-primary-foreground/80' : 'text-muted-foreground'
       )}>
         {title}
       </p>
       <p className={cn(
         'text-5xl font-bold mb-2',
-        gradient ? 'text-white' : 'text-foreground'
+        gradient ? 'text-primary-foreground' : 'text-foreground'
       )}>
         {value}
       </p>
       {subtitle && (
         <p className={cn(
           'text-sm',
-          gradient ? 'text-white/70' : 'text-muted-foreground'
+          gradient ? 'text-primary-foreground/70' : 'text-muted-foreground'
         )}>
           {subtitle}
         </p>

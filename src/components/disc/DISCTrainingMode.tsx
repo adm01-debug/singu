@@ -393,7 +393,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                            profile === 'S' ? 'bg-green-500' : 'bg-blue-500';
               return (
                 <div key={profile} className="text-center">
-                  <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-white font-bold mb-1`}>
+                  <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-primary-foreground font-bold mb-1`}>
                     {profile}
                   </div>
                   <div className="text-sm font-medium">{mastery}%</div>
@@ -486,9 +486,9 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                 <div className="flex items-start gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${
                     showCorrect
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-success text-success-foreground'
                       : showWrong
-                      ? 'bg-red-500 text-white'
+                      ? 'bg-destructive text-destructive-foreground'
                       : isSelected
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
@@ -518,8 +518,8 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
             >
               <div className="flex items-start gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  selectedOptionData.isCorrect ? 'bg-green-500' : 'bg-red-500'
-                } text-white`}>
+                  selectedOptionData.isCorrect ? 'bg-success' : 'bg-destructive'
+                } text-primary-foreground`}>
                   {selectedOptionData.isCorrect ? <Check /> : <X />}
                 </div>
                 <div className="flex-1">
