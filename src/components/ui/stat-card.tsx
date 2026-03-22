@@ -280,9 +280,9 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
       {Icon && (
         <div className={cn(
           'inline-flex p-4 rounded-2xl mb-4',
-          gradient ? 'bg-white/20' : 'bg-primary/10'
+          gradient ? 'bg-primary-foreground/20' : 'bg-primary/10'
         )}>
-          <Icon className={cn('w-8 h-8', gradient ? 'text-white' : 'text-primary')} aria-hidden="true" />
+          <Icon className={cn('w-8 h-8', gradient ? 'text-primary-foreground' : 'text-primary')} aria-hidden="true" />
         </div>
       )}
       <p className={cn(
