@@ -122,6 +122,7 @@ const Configuracoes = () => {
         }
       });
 
+      setHasUnsavedChanges(false);
       accessibleToast.success('Perfil atualizado com sucesso!');
     } catch (error) {
       accessibleToast.error('Erro ao atualizar perfil');
