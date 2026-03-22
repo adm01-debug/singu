@@ -263,7 +263,7 @@ const EmpresaDetalhe = () => {
               Novo Contato
             </Button>
             <Button
-              className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border-0"
+              className="bg-primary-foreground/10 backdrop-blur hover:bg-primary-foreground/20 text-primary-foreground border-0"
               onClick={() => setIsEditOpen(true)}
             >
               <Edit className="w-4 h-4 mr-2" />
