@@ -109,26 +109,19 @@ const ContatoDetalhe = () => {
     <AppLayout>
       <div className="min-h-screen p-4 md:p-6 space-y-4">
         {/* Breadcrumb + Lux */}
-        <nav aria-label="breadcrumb" className="flex items-center justify-between">
-          <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <li>
-              <Link to="/contatos" className="transition-colors hover:text-foreground flex items-center gap-1">
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Contatos
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li className="font-medium text-foreground">
-              {contact.first_name} {contact.last_name}
-            </li>
-          </ol>
-          <LuxButton
-            onClick={handleTriggerLux}
-            loading={triggering}
-            processing={isProcessing}
-            variant="header"
-          />
-        </nav>
+        <PageHeader
+          backTo="/contatos"
+          backLabel="Contatos"
+          title={`${contact.first_name} ${contact.last_name}`}
+          actions={
+            <LuxButton
+              onClick={handleTriggerLux}
+              loading={triggering}
+              processing={isProcessing}
+              variant="header"
+            />
+          }
+        />
 
         {/* Header Card */}
         <ContactDetailHeader
