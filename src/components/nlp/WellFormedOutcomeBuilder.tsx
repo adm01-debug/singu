@@ -170,7 +170,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
                 idx === currentIndex && !showSummary
                   ? 'bg-success text-success-foreground'
                   : c.isComplete
-                  ? 'bg-emerald-500/30 text-emerald-400'
+                  ? 'bg-success/30 text-success'
                   : 'bg-muted/50 text-muted-foreground'
               )}
             >
