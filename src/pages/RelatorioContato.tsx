@@ -87,10 +87,7 @@ const RelatorioContato = () => {
     <div className="min-h-screen bg-white">
       {/* Header com botões (não imprime) */}
       <div className="print:hidden bg-background border-b p-4 flex items-center justify-between sticky top-0 z-10">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
-        </Button>
+        <BackButton label="Voltar" />
         <div className="flex gap-2">
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
