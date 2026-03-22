@@ -46,7 +46,7 @@ export function FloatingQuickActions({
       id: 'contact',
       icon: UserPlus,
       label: 'Novo Contato',
-      color: 'bg-blue-500 hover:bg-blue-600',
+      color: 'bg-primary hover:bg-primary/90',
       action: () => {
         if (onCreateContact) {
           onCreateContact();
@@ -60,7 +60,7 @@ export function FloatingQuickActions({
       id: 'company',
       icon: Building2,
       label: 'Nova Empresa',
-      color: 'bg-emerald-500 hover:bg-emerald-600',
+      color: 'bg-success hover:bg-success/90',
       action: () => {
         if (onCreateCompany) {
           onCreateCompany();
@@ -74,7 +74,7 @@ export function FloatingQuickActions({
       id: 'interaction',
       icon: MessageSquare,
       label: 'Nova Interação',
-      color: 'bg-purple-500 hover:bg-purple-600',
+      color: 'bg-accent hover:bg-accent/90',
       action: () => {
         if (onCreateInteraction) {
           onCreateInteraction();
@@ -88,7 +88,7 @@ export function FloatingQuickActions({
       id: 'calendar',
       icon: CalendarPlus,
       label: 'Agendar',
-      color: 'bg-orange-500 hover:bg-orange-600',
+      color: 'bg-warning hover:bg-warning/90',
       action: () => {
         navigate('/calendario');
         setIsOpen(false);
@@ -98,7 +98,7 @@ export function FloatingQuickActions({
       id: 'search',
       icon: Search,
       label: 'Buscar',
-      color: 'bg-gray-600 hover:bg-gray-700',
+      color: 'bg-muted-foreground hover:bg-muted-foreground/90',
       action: () => {
         onOpenSearch?.();
         setIsOpen(false);
@@ -167,8 +167,9 @@ export function FloatingQuickActions({
                 </motion.span>
                 <Button
                   size="icon"
-                  className={cn('h-12 w-12 rounded-full shadow-lg text-white', action.color)}
+                  className={cn('h-12 w-12 rounded-full shadow-lg text-primary-foreground', action.color)}
                   onClick={action.action}
+                  aria-label={action.label}
                 >
                   <action.icon className="w-5 h-5" />
                 </Button>

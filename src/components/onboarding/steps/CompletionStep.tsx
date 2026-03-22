@@ -61,7 +61,7 @@ const CompletionStep = ({ data, onComplete, onBack, isLoading }: CompletionStepP
         className="relative"
       >
         <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-success to-emerald-400 flex items-center justify-center mx-auto mb-8 shadow-lg">
-          <PartyPopper className="w-12 h-12 text-white" />
+          <PartyPopper className="w-12 h-12 text-success-foreground" />
         </div>
         <motion.div
           initial={{ scale: 0 }}

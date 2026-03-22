@@ -34,9 +34,9 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           disabled={isDisabled}
           size="sm"
           className={cn(
-            "relative overflow-hidden bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600",
-            "hover:from-violet-500 hover:via-fuchsia-400 hover:to-violet-500",
-            "text-white border-0 shadow-lg shadow-violet-500/30",
+            "relative overflow-hidden bg-gradient-premium",
+            "hover:opacity-90",
+            "text-primary-foreground border-0 shadow-lg shadow-primary/30",
             "transition-all duration-300",
             processing && "animate-pulse",
             className
@@ -71,10 +71,10 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           disabled={isDisabled}
           className={cn(
             "relative overflow-hidden",
-            "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 bg-[length:200%_100%]",
+            "bg-gradient-premium bg-[length:200%_100%]",
             "hover:bg-[position:100%_0]",
-            "text-white border-0",
-            "shadow-lg shadow-violet-500/40",
+            "text-primary-foreground border-0",
+            "shadow-lg shadow-primary/40",
             "backdrop-blur-sm",
             "transition-all duration-500",
             "font-semibold tracking-wide",
@@ -157,10 +157,10 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
         size="lg"
         className={cn(
           "relative overflow-hidden w-full",
-          "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 bg-[length:200%_100%]",
+          "bg-gradient-premium bg-[length:200%_100%]",
           "hover:bg-[position:100%_0]",
-          "text-white border-0",
-          "shadow-xl shadow-violet-500/30",
+          "text-primary-foreground border-0",
+          "shadow-xl shadow-primary/30",
           "transition-all duration-500",
           "font-semibold text-base tracking-wide",
           "py-6",

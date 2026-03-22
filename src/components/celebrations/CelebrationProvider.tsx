@@ -203,7 +203,7 @@ const CelebrationOverlay = ({ config, onComplete }: CelebrationOverlayProps) => 
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <Icon className="w-16 h-16 text-white drop-shadow-lg" />
+              <Icon className="w-16 h-16 text-primary-foreground drop-shadow-lg" />
             </motion.div>
           </div>
           

@@ -3,7 +3,7 @@ import { RelationshipStage, RELATIONSHIP_STAGE_LABELS } from '@/types';
 import { motion } from 'framer-motion';
 
 const stageColors: Record<RelationshipStage, string> = {
-  unknown: 'bg-gray-100 text-gray-600 border-gray-200',
+  unknown: 'bg-muted text-muted-foreground border-border',
   prospect: 'bg-slate-100 text-slate-600 border-slate-200',
   qualified_lead: 'bg-blue-100 text-blue-600 border-blue-200',
   opportunity: 'bg-indigo-100 text-indigo-600 border-indigo-200',

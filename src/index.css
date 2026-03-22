@@ -1091,3 +1091,18 @@
 .skip-to-main:focus {
   top: 0;
 }
+
+/* iOS auto-zoom prevention — ensures inputs don't trigger zoom on focus */
+@supports (-webkit-touch-callout: none) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

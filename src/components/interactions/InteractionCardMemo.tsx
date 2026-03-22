@@ -51,7 +51,7 @@ const TYPE_CONFIG = {
   meeting: { icon: Users, label: 'Reunião', color: 'text-green-500 bg-green-500/10' },
   video_call: { icon: Video, label: 'Videochamada', color: 'text-orange-500 bg-orange-500/10' },
   whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-emerald-500 bg-emerald-500/10' },
-  other: { icon: Calendar, label: 'Outro', color: 'text-gray-500 bg-gray-500/10' },
+  other: { icon: Calendar, label: 'Outro', color: 'text-muted-foreground bg-muted' },
 } as const;
 
 // Função de comparação customizada

@@ -32,7 +32,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             ) : (
               <>
                 <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
+                  <Zap className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <span className="font-bold text-base text-foreground">SINGU</span>
               </>
@@ -51,9 +51,10 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             <motion.button
               whileTap={{ scale: 0.9 }}
               className="p-2 rounded-xl hover:bg-muted transition-colors relative"
+              aria-label="Notificações"
             >
               <Bell className="w-5 h-5 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" aria-hidden="true" />
             </motion.button>
           </div>
         </div>
