@@ -127,7 +127,7 @@ const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: numb
     transition={{ delay: index * 0.05 }}
     className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-indigo-50/50 to-violet-50/50 dark:from-indigo-950/20 dark:to-violet-950/20 border border-indigo-100/50 dark:border-indigo-800/30"
   >
-    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+    <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shadow-md">
       {(stakeholder.first_name || stakeholder.name || '?').charAt(0)}
     </div>
     <div className="flex-1 min-w-0">
