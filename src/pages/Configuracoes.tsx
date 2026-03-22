@@ -41,7 +41,7 @@ import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityA
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
-
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 interface ProfileData {
   first_name: string;
   last_name: string;
