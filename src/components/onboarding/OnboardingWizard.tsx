@@ -220,9 +220,9 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
                   isCompleted 
-                    ? 'bg-success text-white' 
+                    ? 'bg-success text-success-foreground' 
                     : isActive 
-                      ? 'bg-gradient-primary text-white shadow-glow' 
+                      ? 'bg-gradient-primary text-primary-foreground shadow-glow' 
                       : 'bg-sidebar-accent text-sidebar-foreground/50'
                 }`}>
                   {isCompleted ? (
