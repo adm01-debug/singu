@@ -144,7 +144,7 @@ const Auth = () => {
           backgroundSize: '32px 32px'
         }} />
         
-        <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center items-start p-16 text-primary-foreground">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
