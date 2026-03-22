@@ -182,7 +182,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
             className={cn(
               "px-3 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all",
               showSummary
-                ? 'bg-emerald-500 text-white'
+                ? 'bg-success text-success-foreground'
                 : 'bg-muted/50 text-muted-foreground'
             )}
           >

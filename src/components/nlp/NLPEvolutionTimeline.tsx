@@ -317,7 +317,7 @@ const NLPEvolutionTimeline: React.FC<NLPEvolutionTimelineProps> = ({
                     <span className="text-sm font-medium">Estado Emocional</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Badge className={EMOTIONAL_STATE_INFO[emotionalTrend.currentState]?.bgColor || 'bg-gray-100'}>
+                    <Badge className={EMOTIONAL_STATE_INFO[emotionalTrend.currentState]?.bgColor || 'bg-muted'}>
                       {EMOTIONAL_STATE_INFO[emotionalTrend.currentState]?.icon}{' '}
                       {EMOTIONAL_STATE_INFO[emotionalTrend.currentState]?.name}
                     </Badge>

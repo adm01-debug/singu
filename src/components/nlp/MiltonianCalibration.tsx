@@ -258,7 +258,7 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
       case 'metaphor': return 'bg-green-500/20 text-green-400';
       case 'pacing': return 'bg-yellow-500/20 text-yellow-400';
       case 'hypnotic': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
