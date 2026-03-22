@@ -168,7 +168,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
               className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all",
                 idx === currentIndex && !showSummary
-                  ? 'bg-emerald-500 text-white'
+                  ? 'bg-success text-success-foreground'
                   : c.isComplete
                   ? 'bg-emerald-500/30 text-emerald-400'
                   : 'bg-muted/50 text-muted-foreground'
