@@ -148,7 +148,7 @@ export function WhatsNewModal({
                 v{version}
               </Badge>
             </div>
-            <DialogTitle className="text-xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-primary-foreground">
               Novidades do SINGU
             </DialogTitle>
             <p className="text-white/80 text-sm mt-1">
