@@ -221,15 +221,11 @@ const EmpresaDetalhe = () => {
       <div className="min-h-screen pt-2 md:pt-4">
         {/* Breadcrumbs */}
         <div className="px-4 md:px-6 pt-3 md:pt-4">
-          <nav aria-label="breadcrumb">
-            <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <li>
-                <Link to="/empresas" className="transition-colors hover:text-foreground">Empresas</Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li className="font-medium text-foreground">{company.name}</li>
-            </ol>
-          </nav>
+          <PageHeader
+            backTo="/empresas"
+            backLabel="Empresas"
+            title={company.name}
+          />
         </div>
         
         {/* Header with gradient background */}
