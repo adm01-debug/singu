@@ -15,7 +15,6 @@ interface ContactReport {
 
 const RelatorioContato = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [data, setData] = useState<ContactReport | null>(null);
   const [loading, setLoading] = useState(true);
 
