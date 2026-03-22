@@ -80,6 +80,10 @@
     --info: 205 90% 52%;
     --info-foreground: 0 0% 100%;
 
+    /* Celebration - Gold for achievements */
+    --celebration: 45 93% 58%;
+    --celebration-foreground: 30 80% 15%;
+
     /* Borders and Inputs */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
