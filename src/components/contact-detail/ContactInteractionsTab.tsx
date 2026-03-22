@@ -24,7 +24,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: st
   email: { icon: Mail, label: 'Email', color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
   whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-green-500 bg-green-50 dark:bg-green-900/20' },
   meeting: { icon: Users, label: 'Reunião', color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
-  note: { icon: FileText, label: 'Nota', color: 'text-gray-500 bg-gray-50 dark:bg-gray-900/20' },
+  note: { icon: FileText, label: 'Nota', color: 'text-muted-foreground bg-muted' },
   social: { icon: Video, label: 'Social', color: 'text-pink-500 bg-pink-50 dark:bg-pink-900/20' },
 };
 
