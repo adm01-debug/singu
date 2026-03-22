@@ -97,8 +97,8 @@ export function AccountChurnPredictionPanel({
     switch (level) {
       case 'critical': return 'bg-destructive text-destructive-foreground';
       case 'high': return 'bg-warning text-warning-foreground';
-      case 'medium': return 'bg-yellow-500 text-white';
-      default: return 'bg-emerald-500 text-white';
+      case 'medium': return 'bg-warning text-warning-foreground';
+      default: return 'bg-success text-success-foreground';
     }
   };
 

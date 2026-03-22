@@ -151,7 +151,7 @@ export function WhatsNewModal({
             <DialogTitle className="text-xl font-bold text-primary-foreground">
               Novidades do SINGU
             </DialogTitle>
-            <p className="text-white/80 text-sm mt-1">
+            <p className="text-primary-foreground/80 text-sm mt-1">
               Confira as últimas melhorias e funcionalidades
             </p>
           </DialogHeader>

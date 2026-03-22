@@ -274,7 +274,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Zap className="w-4 h-4 text-white" />
+                <Zap className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-foreground">SINGU</span>
             </div>

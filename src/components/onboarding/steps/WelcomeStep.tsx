@@ -66,8 +66,8 @@ const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
               transition={{ delay: 0.5 + index * 0.1 }}
               className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 group"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-gradient-primary group-hover:text-white transition-all duration-300">
-                <Icon className="w-6 h-6 text-primary group-hover:text-white" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-gradient-primary group-hover:text-primary-foreground transition-all duration-300">
+                <Icon className="w-6 h-6 text-primary group-hover:text-primary-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">{feature.title}</h3>
               <p className="text-sm text-muted-foreground">{feature.description}</p>
