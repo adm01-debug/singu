@@ -233,7 +233,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${
-                    isActive ? 'text-white' : isCompleted ? 'text-sidebar-foreground' : 'text-sidebar-foreground/50'
+                    isActive ? 'text-sidebar-accent-foreground' : isCompleted ? 'text-sidebar-foreground' : 'text-sidebar-foreground/50'
                   }`}>
                     {step.title}
                   </p>
