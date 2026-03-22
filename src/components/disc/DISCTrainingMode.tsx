@@ -518,8 +518,8 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
             >
               <div className="flex items-start gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  selectedOptionData.isCorrect ? 'bg-green-500' : 'bg-red-500'
-                } text-white`}>
+                  selectedOptionData.isCorrect ? 'bg-success' : 'bg-destructive'
+                } text-primary-foreground`}>
                   {selectedOptionData.isCorrect ? <Check /> : <X />}
                 </div>
                 <div className="flex-1">

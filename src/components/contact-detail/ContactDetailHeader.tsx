@@ -90,7 +90,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
           />
           {discProfile && (
             <div className={cn(
-              'absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white ring-2 ring-card',
+              'absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-primary-foreground ring-2 ring-card',
               DISC_COLORS[discProfile] || 'bg-muted'
             )}>
               {discProfile}

@@ -178,7 +178,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
               onClick={() => handleItemClick(item.type)}
               className={cn(
                 'flex items-center gap-3 px-4 py-3 rounded-full shadow-lg',
-                'text-white font-medium text-sm',
+                'text-primary-foreground font-medium text-sm',
                 'hover:scale-105 active:scale-95 transition-transform',
                 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
                 item.color

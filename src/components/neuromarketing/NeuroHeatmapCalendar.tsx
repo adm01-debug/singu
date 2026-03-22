@@ -295,7 +295,7 @@ const NeuroHeatmapCalendar = ({
                   <div className="flex items-center gap-2">
                     <div className={cn(
                       "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
-                      index === 0 ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"
+                      index === 0 ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
                     )}>
                       {index + 1}
                     </div>

@@ -655,7 +655,7 @@ export function LuxIntelligencePanel({
       {/* Header with Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
+          <div className="p-2 rounded-xl bg-gradient-premium text-primary-foreground shadow-lg shadow-primary/30">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
