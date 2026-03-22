@@ -2,8 +2,8 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Printer, Download } from "lucide-react";
+import { BackButton } from "@/components/navigation/BackButton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -15,7 +15,6 @@ interface ContactReport {
 
 const RelatorioContato = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [data, setData] = useState<ContactReport | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -88,10 +87,7 @@ const RelatorioContato = () => {
     <div className="min-h-screen bg-white">
       {/* Header com botões (não imprime) */}
       <div className="print:hidden bg-background border-b p-4 flex items-center justify-between sticky top-0 z-10">
-        <Button variant="ghost" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
-        </Button>
+        <BackButton label="Voltar" />
         <div className="flex gap-2">
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />

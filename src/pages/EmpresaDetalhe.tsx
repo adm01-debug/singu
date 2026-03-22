@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { PageHeader } from '@/components/navigation/PageHeader';
 import { queryExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
@@ -220,27 +221,16 @@ const EmpresaDetalhe = () => {
       <div className="min-h-screen pt-2 md:pt-4">
         {/* Breadcrumbs */}
         <div className="px-4 md:px-6 pt-3 md:pt-4">
-          <nav aria-label="breadcrumb">
-            <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <li>
-                <Link to="/empresas" className="transition-colors hover:text-foreground">Empresas</Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li className="font-medium text-foreground">{company.name}</li>
-            </ol>
-          </nav>
+          <PageHeader
+            backTo="/empresas"
+            backLabel="Empresas"
+            title={company.name}
+          />
         </div>
         
         {/* Header with gradient background */}
         <div className="h-56 bg-gradient-primary relative z-0 overflow-hidden rounded-2xl mx-4 md:mx-6 mt-2">
-          <div className="absolute top-4 left-4">
-            <Link to="/empresas">
-              <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
-          </div>
+          {/* Back button removed - now in PageHeader above */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <LuxButton
               onClick={() => triggerLux({
