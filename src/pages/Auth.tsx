@@ -160,7 +160,7 @@ const Auth = () => {
             </motion.div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">SINGU</h1>
-              <p className="text-white/60 text-sm tracking-widest uppercase">Inteligência Relacional</p>
+              <p className="text-primary-foreground/60 text-sm tracking-widest uppercase">Inteligência Relacional</p>
             </div>
           </motion.div>
 
