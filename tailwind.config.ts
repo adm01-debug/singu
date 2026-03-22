@@ -101,6 +101,10 @@ export default {
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
+        celebration: {
+          DEFAULT: "hsl(var(--celebration))",
+          foreground: "hsl(var(--celebration-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
