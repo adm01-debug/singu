@@ -268,6 +268,10 @@
     --destructive: 4 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Celebration - Gold Dark */
+    --celebration: 45 90% 65%;
+    --celebration-foreground: 30 80% 10%;
+
     --border: 225 18% 14%;
     --input: 225 18% 14%;
     --ring: 234 85% 65%;
