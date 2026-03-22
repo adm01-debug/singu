@@ -230,14 +230,7 @@ const EmpresaDetalhe = () => {
         
         {/* Header with gradient background */}
         <div className="h-56 bg-gradient-primary relative z-0 overflow-hidden rounded-2xl mx-4 md:mx-6 mt-2">
-          <div className="absolute top-4 left-4">
-            <Link to="/empresas">
-              <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
-          </div>
+          {/* Back button removed - now in PageHeader above */}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <LuxButton
               onClick={() => triggerLux({
