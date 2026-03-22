@@ -71,10 +71,10 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           disabled={isDisabled}
           className={cn(
             "relative overflow-hidden",
-            "bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600 bg-[length:200%_100%]",
+            "bg-gradient-premium bg-[length:200%_100%]",
             "hover:bg-[position:100%_0]",
-            "text-white border-0",
-            "shadow-lg shadow-violet-500/40",
+            "text-primary-foreground border-0",
+            "shadow-lg shadow-primary/40",
             "backdrop-blur-sm",
             "transition-all duration-500",
             "font-semibold tracking-wide",
