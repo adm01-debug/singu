@@ -128,7 +128,7 @@ export function WhatsNewModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         {/* Header with gradient */}
-        <div className="bg-gradient-primary p-6 text-white relative overflow-hidden">
+        <div className="bg-gradient-primary p-6 text-primary-foreground relative overflow-hidden">
           <motion.div
             className="absolute inset-0 opacity-20"
             animate={{
@@ -144,14 +144,14 @@ export function WhatsNewModal({
           <DialogHeader className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5" aria-hidden="true" />
-              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+              <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-0">
                 v{version}
               </Badge>
             </div>
-            <DialogTitle className="text-xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-primary-foreground">
               Novidades do SINGU
             </DialogTitle>
-            <p className="text-white/80 text-sm mt-1">
+            <p className="text-primary-foreground/80 text-sm mt-1">
               Confira as últimas melhorias e funcionalidades
             </p>
           </DialogHeader>

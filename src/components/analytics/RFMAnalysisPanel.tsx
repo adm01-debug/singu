@@ -589,7 +589,7 @@ function PriorityCard({
     red: { bg: 'bg-red-100 dark:bg-red-950/30', bar: 'bg-red-500' },
     orange: { bg: 'bg-orange-100 dark:bg-orange-950/30', bar: 'bg-orange-500' },
     blue: { bg: 'bg-blue-100 dark:bg-blue-950/30', bar: 'bg-blue-500' },
-    gray: { bg: 'bg-gray-100 dark:bg-gray-800', bar: 'bg-gray-500' }
+    gray: { bg: 'bg-muted', bar: 'bg-muted-foreground' }
   };
 
   return (
@@ -742,7 +742,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     urgent: { color: 'bg-red-100 text-red-700', label: 'Urgente' },
     high: { color: 'bg-orange-100 text-orange-700', label: 'Alta' },
     medium: { color: 'bg-blue-100 text-blue-700', label: 'Média' },
-    low: { color: 'bg-gray-100 text-gray-700', label: 'Baixa' }
+    low: { color: 'bg-muted text-muted-foreground', label: 'Baixa' }
   };
   
   const cfg = config[priority] || config.medium;

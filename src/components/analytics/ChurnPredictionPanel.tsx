@@ -53,7 +53,7 @@ export function ChurnPredictionPanel({ compact = false, maxItems = 5 }: ChurnPre
     switch (level) {
       case 'critical': return 'bg-destructive text-destructive-foreground';
       case 'high': return 'bg-warning text-warning-foreground';
-      case 'medium': return 'bg-yellow-500 text-white';
+      case 'medium': return 'bg-warning text-warning-foreground';
       default: return 'bg-muted text-muted-foreground';
     }
   };
