@@ -128,7 +128,7 @@ export function WhatsNewModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         {/* Header with gradient */}
-        <div className="bg-gradient-primary p-6 text-white relative overflow-hidden">
+        <div className="bg-gradient-primary p-6 text-primary-foreground relative overflow-hidden">
           <motion.div
             className="absolute inset-0 opacity-20"
             animate={{
