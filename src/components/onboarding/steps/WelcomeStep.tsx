@@ -33,7 +33,7 @@ const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
         transition={{ type: 'spring', duration: 0.6 }}
         className="w-20 h-20 rounded-3xl bg-gradient-primary flex items-center justify-center mx-auto mb-8 shadow-glow"
       >
-        <Zap className="w-10 h-10 text-white" />
+        <Zap className="w-10 h-10 text-primary-foreground" />
       </motion.div>
 
       <motion.div
