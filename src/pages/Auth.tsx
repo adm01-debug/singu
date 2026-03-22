@@ -172,9 +172,9 @@ const Auth = () => {
           >
             <h2 className="text-5xl font-bold leading-[1.1] tracking-tight">
               Relacionamentos<br />
-              <span className="text-white/80">que convertem.</span>
+              <span className="text-primary-foreground/80">que convertem.</span>
             </h2>
-            <p className="text-lg text-white/65 leading-relaxed">
+            <p className="text-lg text-primary-foreground/65 leading-relaxed">
               CRM com análise comportamental profunda, insights automáticos e inteligência emocional para suas negociações.
             </p>
           </motion.div>
