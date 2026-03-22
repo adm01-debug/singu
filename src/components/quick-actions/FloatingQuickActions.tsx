@@ -98,7 +98,7 @@ export function FloatingQuickActions({
       id: 'search',
       icon: Search,
       label: 'Buscar',
-      color: 'bg-gray-600 hover:bg-gray-700',
+      color: 'bg-muted-foreground hover:bg-muted-foreground/90',
       action: () => {
         onOpenSearch?.();
         setIsOpen(false);
