@@ -198,7 +198,7 @@ const Auth = () => {
                 transition={{ duration: 0.2 }}
               >
                 <span className="text-xl">{feature.icon}</span>
-                <span className="text-sm font-medium text-white/90">{feature.text}</span>
+                <span className="text-sm font-medium text-primary-foreground/90">{feature.text}</span>
               </motion.div>
             ))}
           </motion.div>
