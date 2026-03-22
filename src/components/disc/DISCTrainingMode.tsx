@@ -393,7 +393,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                            profile === 'S' ? 'bg-green-500' : 'bg-blue-500';
               return (
                 <div key={profile} className="text-center">
-                  <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-white font-bold mb-1`}>
+                  <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-primary-foreground font-bold mb-1`}>
                     {profile}
                   </div>
                   <div className="text-sm font-medium">{mastery}%</div>
