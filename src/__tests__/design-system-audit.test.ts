@@ -515,7 +515,7 @@ describe('Design System Audit - CSS Variables Integrity', () => {
     const content = fs.readFileSync(
       path.resolve(__dirname, '../index.css'), 'utf8'
     );
-    expect(content).toContain('bg-gradient-primary');
+    expect(content).toContain('--gradient-primary');
   });
 
   it('index.css has dark mode definitions', () => {
