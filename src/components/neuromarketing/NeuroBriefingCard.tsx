@@ -45,7 +45,7 @@ const NeuroBriefingCard = ({
       .map(i => `${i.content || ''} ${i.transcription || ''}`)
       .join('\n\n');
     
-    let analysis = allText.length >= 50 ? analyzeText(allText) : null;
+    const analysis = allText.length >= 50 ? analyzeText(allText) : null;
     const discBasedProfile = discProfile ? generateNeuroProfileFromDISC(discProfile as any) : null;
 
     const brainScores = analysis?.brainSystemScores || {

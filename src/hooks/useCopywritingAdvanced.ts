@@ -316,7 +316,7 @@ export function useCopywritingAdvanced(contact?: Contact) {
     const previews: ChannelPreview[] = [];
 
     (Object.entries(CHANNEL_LIMITS) as [keyof typeof CHANNEL_LIMITS, typeof CHANNEL_LIMITS[keyof typeof CHANNEL_LIMITS]][]).forEach(([channel, limits]) => {
-      let formattedText = text;
+      const formattedText = text;
       const suggestions: string[] = [];
 
       // WhatsApp formatting

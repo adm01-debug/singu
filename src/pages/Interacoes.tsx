@@ -169,7 +169,7 @@ const Interacoes = () => {
   });
 
   const filteredAndSortedInteractions = useMemo(() => {
-    let result = fuzzyResults.filter(interaction => {
+    const result = fuzzyResults.filter(interaction => {
       // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;

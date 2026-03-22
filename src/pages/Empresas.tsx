@@ -132,7 +132,7 @@ const Empresas = () => {
 
   const filteredAndSortedCompanies = useMemo(() => {
     // Start with server-side search results
-    let result = companies.filter(company => {
+    const result = companies.filter(company => {
       // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;

@@ -155,7 +155,7 @@ export function useClientDictionary(contact: Contact, interactions: Interaction[
     // Determine vocabulary style
     let formalCount = 0;
     let informalCount = 0;
-    let technicalCount = techTermsUsed.length;
+    const technicalCount = techTermsUsed.length;
 
     const formalWords = ['prezado', 'cordialmente', 'atenciosamente', 'conforme', 'mediante', 'portanto'];
     const informalWords = ['oi', 'valeu', 'beleza', 'show', 'top', 'massa', 'legal', 'blz'];

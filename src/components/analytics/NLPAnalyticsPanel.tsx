@@ -245,7 +245,7 @@ export function NLPAnalyticsPanel() {
         .sort((a, b) => b.count - a.count);
 
       // Process VAK distribution
-      let vakTotals = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
+      const vakTotals = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
       vakData?.forEach((v) => {
         vakTotals.visual += v.visual_score || 0;
         vakTotals.auditory += v.auditory_score || 0;
