@@ -55,7 +55,7 @@ const SEVERITY_STYLES: Record<string, { bg: string; border: string; badge: strin
   medium: {
     bg: 'bg-yellow-500/10',
     border: 'border-yellow-500/50',
-    badge: 'bg-yellow-500 text-black'
+    badge: 'bg-yellow-500 text-foreground'
   },
   low: {
     bg: 'bg-primary/10',
