@@ -51,9 +51,10 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             <motion.button
               whileTap={{ scale: 0.9 }}
               className="p-2 rounded-xl hover:bg-muted transition-colors relative"
+              aria-label="Notificações"
             >
               <Bell className="w-5 h-5 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive" aria-hidden="true" />
             </motion.button>
           </div>
         </div>
