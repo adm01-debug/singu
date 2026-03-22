@@ -191,7 +191,7 @@ const ImportStep = ({ onImport, onNext, onBack }: ImportStepProps) => {
         {importedCount > 0 ? (
           <div className="text-center p-8 rounded-2xl bg-success/10 border border-success/20">
             <div className="w-16 h-16 rounded-full bg-success flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-white" />
+              <Check className="w-8 h-8 text-success-foreground" />
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
               {importedCount} contatos importados!

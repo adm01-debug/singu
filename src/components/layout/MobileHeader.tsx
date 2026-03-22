@@ -32,7 +32,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             ) : (
               <>
                 <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-white" />
+                  <Zap className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <span className="font-bold text-base text-foreground">SINGU</span>
               </>

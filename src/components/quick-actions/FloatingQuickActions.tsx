@@ -167,8 +167,9 @@ export function FloatingQuickActions({
                 </motion.span>
                 <Button
                   size="icon"
-                  className={cn('h-12 w-12 rounded-full shadow-lg text-white', action.color)}
+                  className={cn('h-12 w-12 rounded-full shadow-lg text-primary-foreground', action.color)}
                   onClick={action.action}
+                  aria-label={action.label}
                 >
                   <action.icon className="w-5 h-5" />
                 </Button>

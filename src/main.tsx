@@ -42,7 +42,6 @@ void (async () => {
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider defaultTheme="dark" storageKey="relateiq-theme">
-    <a href="#main-content" className="skip-to-main">Pular para conteúdo principal</a>
     <App />
   </ThemeProvider>
 );
