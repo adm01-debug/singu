@@ -486,9 +486,9 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                 <div className="flex items-start gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${
                     showCorrect
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-success text-success-foreground'
                       : showWrong
-                      ? 'bg-red-500 text-white'
+                      ? 'bg-destructive text-destructive-foreground'
                       : isSelected
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted text-muted-foreground'
