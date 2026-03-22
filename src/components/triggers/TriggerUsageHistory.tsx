@@ -54,7 +54,7 @@ interface TriggerUsageHistoryProps {
 
 const resultConfig: Record<TriggerResult, { label: string; icon: React.ElementType; color: string }> = {
   success: { label: 'Sucesso', icon: CheckCircle2, color: 'text-green-600 bg-green-100 border-green-200' },
-  neutral: { label: 'Neutro', icon: MinusCircle, color: 'text-gray-600 bg-gray-100 border-gray-200' },
+  neutral: { label: 'Neutro', icon: MinusCircle, color: 'text-muted-foreground bg-muted border-border' },
   failure: { label: 'Falhou', icon: XCircle, color: 'text-red-600 bg-red-100 border-red-200' },
   pending: { label: 'Pendente', icon: Clock, color: 'text-amber-600 bg-amber-100 border-amber-200' },
 };

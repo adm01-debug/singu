@@ -742,7 +742,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     urgent: { color: 'bg-red-100 text-red-700', label: 'Urgente' },
     high: { color: 'bg-orange-100 text-orange-700', label: 'Alta' },
     medium: { color: 'bg-blue-100 text-blue-700', label: 'Média' },
-    low: { color: 'bg-gray-100 text-gray-700', label: 'Baixa' }
+    low: { color: 'bg-muted text-muted-foreground', label: 'Baixa' }
   };
   
   const cfg = config[priority] || config.medium;
