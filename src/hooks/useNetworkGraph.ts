@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from "@/lib/logger";
 
 export interface GraphNode {
   id: string;
@@ -195,7 +196,7 @@ export function useNetworkGraph() {
 
       setGraphData({ nodes, links });
     } catch (err) {
-      console.error('Error fetching graph data:', err);
+      logger.error('Error fetching graph data:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);

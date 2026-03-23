@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientValue, DecisionCriterion, ValueCategory } from '@/types/nlp-advanced';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface ClientValueRecord {
   id: string;
@@ -60,7 +61,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedValues(valuesRes.data || []);
       setSavedCriteria((criteriaRes.data || []) as DecisionCriterionRecord[]);
     } catch (error) {
-      console.error('Error fetching client values:', error);
+      logger.error('Error fetching client values:', error);
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export function useClientValuesPersistence(contactId: string) {
       
       return data;
     } catch (error) {
-      console.error('Error saving value:', error);
+      logger.error('Error saving value:', error);
       toast.error('Erro ao salvar valor do cliente');
       return null;
     }
@@ -134,7 +135,7 @@ export function useClientValuesPersistence(contactId: string) {
       setSavedCriteria(prev => [...prev, record].sort((a, b) => a.priority - b.priority));
       return record;
     } catch (error) {
-      console.error('Error saving criterion:', error);
+      logger.error('Error saving criterion:', error);
       toast.error('Erro ao salvar critério de decisão');
       return null;
     }
@@ -200,7 +201,7 @@ export function useClientValuesPersistence(contactId: string) {
       toast.success('Valores e critérios salvos com sucesso!');
       return true;
     } catch (error) {
-      console.error('Error persisting values map:', error);
+      logger.error('Error persisting values map:', error);
       toast.error('Erro ao persistir análise de valores');
       return false;
     } finally {
@@ -225,7 +226,7 @@ export function useClientValuesPersistence(contactId: string) {
       toast.success('Valor removido');
       return true;
     } catch (error) {
-      console.error('Error deleting value:', error);
+      logger.error('Error deleting value:', error);
       toast.error('Erro ao remover valor');
       return false;
     }
@@ -248,7 +249,7 @@ export function useClientValuesPersistence(contactId: string) {
       toast.success('Critério removido');
       return true;
     } catch (error) {
-      console.error('Error deleting criterion:', error);
+      logger.error('Error deleting criterion:', error);
       toast.error('Erro ao remover critério');
       return false;
     }

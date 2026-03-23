@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { differenceInDays, parseISO, subDays } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { getDISCProfile as getContactDISC } from '@/lib/contact-utils';
+import { logger } from "@/lib/logger";
 
 type Contact = Tables<'contacts'>;
 
@@ -232,7 +233,7 @@ export function useClosingScoreRanking(
         nextAction
       };
     } catch (error) {
-      console.error('Error calculating score for contact:', contact.id, error);
+      logger.error('Error calculating score for contact:', contact.id, error);
       return null;
     }
   };
@@ -284,7 +285,7 @@ export function useClosingScoreRanking(
 
       setRankings(filteredScores);
     } catch (error) {
-      console.error('Error loading rankings:', error);
+      logger.error('Error loading rankings:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);

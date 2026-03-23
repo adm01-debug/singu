@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface CompatibilitySettings {
   alert_threshold: number;
@@ -65,7 +66,7 @@ export function CompatibilityAlertSettings() {
         });
       }
     } catch (err) {
-      console.error('Error fetching settings:', err);
+      logger.error('Error fetching settings:', err);
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export function CompatibilityAlertSettings() {
         description: `Você será alertado quando a compatibilidade cair abaixo de ${settings.alert_threshold}%`,
       });
     } catch (err) {
-      console.error('Error saving settings:', err);
+      logger.error('Error saving settings:', err);
       toast.error('Erro ao salvar configurações');
     } finally {
       setSaving(false);

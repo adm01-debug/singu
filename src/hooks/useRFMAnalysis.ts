@@ -20,6 +20,7 @@ import {
   determineRFMSegment,
   calculateRFMScore
 } from '@/types/rfm';
+import { logger } from "@/lib/logger";
 
 interface PurchaseData {
   contactId: string;
@@ -93,7 +94,7 @@ export function useRFMAnalysis(contactId?: string) {
       
       setRfmData(mapped);
     } catch (error) {
-      console.error('Error fetching RFM data:', error);
+      logger.error('Error fetching RFM data:', error);
     } finally {
       setLoading(false);
     }
@@ -127,7 +128,7 @@ export function useRFMAnalysis(contactId?: string) {
       
       setHistory(mapped);
     } catch (error) {
-      console.error('Error fetching RFM history:', error);
+      logger.error('Error fetching RFM history:', error);
     }
   }, [user?.id, contactId]);
 
@@ -274,7 +275,7 @@ export function useRFMAnalysis(contactId?: string) {
           .upsert(result, { onConflict: 'user_id,contact_id' });
         
         if (error) {
-          console.error('Error upserting RFM:', error);
+          logger.error('Error upserting RFM:', error);
         }
         
         // Save to history
@@ -293,7 +294,7 @@ export function useRFMAnalysis(contactId?: string) {
       await fetchRFMData();
       
     } catch (error) {
-      console.error('Error running RFM analysis:', error);
+      logger.error('Error running RFM analysis:', error);
     } finally {
       setAnalyzing(false);
     }

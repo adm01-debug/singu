@@ -42,6 +42,7 @@ import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
+import { logger } from "@/lib/logger";
 interface ProfileData {
   first_name: string;
   last_name: string;
@@ -95,7 +96,7 @@ const Configuracoes = () => {
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      logger.error('Error fetching profile:', error);
     }
   };
 

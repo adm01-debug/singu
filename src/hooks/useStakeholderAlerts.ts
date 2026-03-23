@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import { isPushSupported, getSubscriptionStatus } from '@/lib/pushNotifications';
+import { logger } from "@/lib/logger";
 
 export interface StakeholderAlert {
   id: string;
@@ -107,7 +108,7 @@ export function useStakeholderAlerts(companyId?: string) {
         await registration.showNotification(title, notificationOptions);
       }
     } catch (error) {
-      console.error('Error sending stakeholder push notification:', error);
+      logger.error('Error sending stakeholder push notification:', error);
     }
   }, []);
 
@@ -144,7 +145,7 @@ export function useStakeholderAlerts(companyId?: string) {
 
       setAlerts(typedData);
     } catch (error) {
-      console.error('Error fetching stakeholder alerts:', error);
+      logger.error('Error fetching stakeholder alerts:', error);
     } finally {
       setLoading(false);
     }
@@ -226,7 +227,7 @@ export function useStakeholderAlerts(companyId?: string) {
 
       fetchAlerts();
     } catch (error) {
-      console.error('Error creating stakeholder alert:', error);
+      logger.error('Error creating stakeholder alert:', error);
     }
   }, [fetchAlerts]);
 
@@ -415,7 +416,7 @@ export function useStakeholderAlerts(companyId?: string) {
       toast.success('Alerta dispensado');
     } catch (error) {
       setAlerts(previousAlerts);
-      console.error('Error dismissing alert:', error);
+      logger.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
   }, [alerts]);
@@ -447,7 +448,7 @@ export function useStakeholderAlerts(companyId?: string) {
       toast.success('Todos os alertas foram dispensados');
     } catch (error) {
       setAlerts(previousAlerts);
-      console.error('Error dismissing all alerts:', error);
+      logger.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
   }, [companyId, alerts]);

@@ -24,6 +24,7 @@ import {
 import { TrainingTipsTab } from './training/TrainingTipsTab';
 import { TrainingPracticeTab } from './training/TrainingPracticeTab';
 import { TrainingProgressTab } from './training/TrainingProgressTab';
+import { logger } from "@/lib/logger";
 
 export function CommunicationTrainingMode() {
   const { user } = useAuth();
@@ -52,7 +53,7 @@ export function CommunicationTrainingMode() {
         setSalespersonProfile(data.nlp_profile as unknown as SalespersonProfile);
       }
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      logger.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
     }

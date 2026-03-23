@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from "@/lib/logger";
 
 export interface SmartReminder {
   id: string;
@@ -103,7 +104,7 @@ export const useSmartReminders = (autoFetch = true) => {
         throw new Error('Failed to fetch reminders');
       }
     } catch (err) {
-      console.error('Error fetching smart reminders:', err);
+      logger.error('Error fetching smart reminders:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       toast({
         title: 'Erro ao carregar lembretes',

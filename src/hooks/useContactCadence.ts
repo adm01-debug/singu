@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { addDays, differenceInDays, parseISO } from 'date-fns';
+import { logger } from "@/lib/logger";
 
 export interface ContactCadence {
   id: string;
@@ -138,7 +139,7 @@ export function useContactCadence() {
 
       setAlerts(calculatedAlerts);
     } catch (error) {
-      console.error('Error fetching cadences:', error);
+      logger.error('Error fetching cadences:', error);
     } finally {
       setLoading(false);
     }
@@ -187,7 +188,7 @@ export function useContactCadence() {
       toast.success('Cadência configurada!');
       fetchCadences();
     } catch (error) {
-      console.error('Error setting cadence:', error);
+      logger.error('Error setting cadence:', error);
       toast.error('Erro ao configurar cadência');
     }
   }, [user, fetchCadences]);
@@ -215,7 +216,7 @@ export function useContactCadence() {
 
       fetchCadences();
     } catch (error) {
-      console.error('Error updating last contact:', error);
+      logger.error('Error updating last contact:', error);
     }
   }, [user, cadences, fetchCadences]);
 
@@ -240,7 +241,7 @@ export function useContactCadence() {
     } catch (error) {
       setCadences(previousCadences);
       setAlerts(previousAlerts);
-      console.error('Error removing cadence:', error);
+      logger.error('Error removing cadence:', error);
       toast.error('Erro ao remover cadência');
     }
   }, [user, cadences, alerts]);

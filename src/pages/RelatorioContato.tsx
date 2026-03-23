@@ -6,6 +6,7 @@ import { Printer, Download } from "lucide-react";
 import { BackButton } from "@/components/navigation/BackButton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { logger } from "@/lib/logger";
 
 interface ContactReport {
   contact: any;
@@ -47,7 +48,7 @@ const RelatorioContato = () => {
           discHistory: discRes.data || [],
         });
       } catch (error) {
-        console.error('Error fetching report data:', error);
+        logger.error('Error fetching report data:', error);
         setData(null);
       } finally {
         setLoading(false);

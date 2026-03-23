@@ -58,6 +58,7 @@ import type { ContactRole } from '@/types';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
 import type { SearchPreset } from '@/hooks/useSearchPresets';
+import { logger } from "@/lib/logger";
 
 type ViewMode = 'grid' | 'list';
 
@@ -322,7 +323,7 @@ const Contatos = () => {
         window.location.reload();
       }
     } catch (err: any) {
-      console.error('Enrichment error:', err);
+      logger.error('Enrichment error:', err);
       toast.error('Erro ao enriquecer contatos: ' + (err.message || 'Erro desconhecido'));
     } finally {
       setIsEnriching(false);

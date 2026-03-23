@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Interaction, Contact as ContactType } from '@/hooks/useContactDetail';
+import { logger } from "@/lib/logger";
 
 const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
   call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
@@ -63,7 +64,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
       setShowForm(false);
       onInteractionAdded?.();
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       toast.error('Erro ao registrar interação');
     } finally {
       setIsSubmitting(false);

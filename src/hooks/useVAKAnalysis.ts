@@ -7,6 +7,7 @@ import {
   VAKAnalysisResult, 
   VAK_PREDICATES 
 } from '@/types/vak';
+import { logger } from "@/lib/logger";
 
 interface VAKAnalysisHistory {
   id: string;
@@ -167,7 +168,7 @@ export function useVAKAnalysis() {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error saving VAK analysis:', error);
+      logger.error('Error saving VAK analysis:', error);
       return false;
     }
   }, [user]);
@@ -241,7 +242,7 @@ export function useVAKAnalysis() {
         totalWordsAnalyzed: totals.totalWords,
       };
     } catch (error) {
-      console.error('Error getting VAK profile:', error);
+      logger.error('Error getting VAK profile:', error);
       return null;
     }
   }, [user]);
@@ -278,7 +279,7 @@ export function useVAKAnalysis() {
       // Return aggregated profile
       return await getContactVAKProfile(contactId);
     } catch (error) {
-      console.error('Error analyzing contact interactions:', error);
+      logger.error('Error analyzing contact interactions:', error);
       return null;
     } finally {
       setAnalyzing(false);
@@ -299,7 +300,7 @@ export function useVAKAnalysis() {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error clearing VAK analysis:', error);
+      logger.error('Error clearing VAK analysis:', error);
       return false;
     }
   }, [user]);

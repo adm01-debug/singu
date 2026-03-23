@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface ScoreChange {
   contactId: string;
@@ -74,7 +75,7 @@ export function useClosingScoreAlerts() {
 
       setAlerts(parsedAlerts);
     } catch (error) {
-      console.error('Error fetching closing score alerts:', error);
+      logger.error('Error fetching closing score alerts:', error);
     } finally {
       setLoading(false);
     }
@@ -190,7 +191,7 @@ export function useClosingScoreAlerts() {
 
       return null;
     } catch (error) {
-      console.error('Error checking score change:', error);
+      logger.error('Error checking score change:', error);
       return null;
     }
   }, [user, fetchAlerts]);
@@ -213,7 +214,7 @@ export function useClosingScoreAlerts() {
       toast.success('Alerta dispensado');
     } catch (error) {
       setAlerts(previousAlerts);
-      console.error('Error dismissing alert:', error);
+      logger.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
   }, [user, alerts]);
@@ -236,7 +237,7 @@ export function useClosingScoreAlerts() {
       toast.success('Todos os alertas dispensados');
     } catch (error) {
       setAlerts(previousAlerts);
-      console.error('Error dismissing all alerts:', error);
+      logger.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
   }, [user, alerts]);

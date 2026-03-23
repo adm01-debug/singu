@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { queryExternalData } from '@/lib/externalData';
 import type { Tables, TablesUpdate, Json } from '@/integrations/supabase/types';
+import { logger } from "@/lib/logger";
 
 export type Contact = Tables<'contacts'>;
 export type Company = Tables<'companies'>;
@@ -102,7 +103,7 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(50);
 
       if (interactionsError) {
-        console.error('Error fetching interactions:', interactionsError);
+        logger.error('Error fetching interactions:', interactionsError);
       }
 
       // Fetch insights for this contact
@@ -115,7 +116,7 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(20);
 
       if (insightsError) {
-        console.error('Error fetching insights:', insightsError);
+        logger.error('Error fetching insights:', insightsError);
       }
 
       // Fetch alerts for this contact
@@ -128,7 +129,7 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(10);
 
       if (alertsError) {
-        console.error('Error fetching alerts:', alertsError);
+        logger.error('Error fetching alerts:', alertsError);
       }
 
       setData({
@@ -139,7 +140,7 @@ export function useContactDetail(contactId: string | undefined) {
         alerts: alertsData || [],
       });
     } catch (err) {
-      console.error('Error fetching contact detail:', err);
+      logger.error('Error fetching contact detail:', err);
       setError('Erro ao carregar dados do contato');
       toast({
         title: 'Erro ao carregar contato',
@@ -266,7 +267,7 @@ export function useContactDetail(contactId: string | undefined) {
 
       return updatedContact;
     } catch (err) {
-      console.error('Error updating contact:', err);
+      logger.error('Error updating contact:', err);
       toast({
         title: 'Erro ao atualizar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -309,7 +310,7 @@ export function useContactDetail(contactId: string | undefined) {
 
       return newInteraction;
     } catch (err) {
-      console.error('Error adding interaction:', err);
+      logger.error('Error adding interaction:', err);
       toast({
         title: 'Erro ao registrar interação',
         description: 'Verifique os dados e tente novamente.',
@@ -337,7 +338,7 @@ export function useContactDetail(contactId: string | undefined) {
         title: 'Alerta dispensado',
       });
     } catch (err) {
-      console.error('Error dismissing alert:', err);
+      logger.error('Error dismissing alert:', err);
     }
   };
 
@@ -359,7 +360,7 @@ export function useContactDetail(contactId: string | undefined) {
         title: 'Insight dispensado',
       });
     } catch (err) {
-      console.error('Error dismissing insight:', err);
+      logger.error('Error dismissing insight:', err);
     }
   };
 

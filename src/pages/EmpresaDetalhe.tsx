@@ -52,6 +52,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
+import { logger } from "@/lib/logger";
 
 type Company = Tables<'companies'>;
 type Contact = Tables<'contacts'>;
@@ -158,7 +159,7 @@ const EmpresaDetalhe = () => {
         setInteractions(interactionsData || []);
       }
     } catch (error) {
-      console.error('Error fetching company data:', error);
+      logger.error('Error fetching company data:', error);
     } finally {
       setLoading(false);
     }
@@ -842,7 +843,7 @@ const EmpresaDetalhe = () => {
               setIsEditOpen(false);
               fetchCompanyData();
             } catch (error) {
-              console.error('Error updating company:', error);
+              logger.error('Error updating company:', error);
             }
           }}
           onCancel={() => setIsEditOpen(false)}
@@ -867,7 +868,7 @@ const EmpresaDetalhe = () => {
               setIsAddContactOpen(false);
               fetchCompanyData();
             } catch (error) {
-              console.error('Error adding contact:', error);
+              logger.error('Error adding contact:', error);
             }
           }}
           onCancel={() => setIsAddContactOpen(false)}

@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { HiddenObjection, ObjectionType } from '@/types/nlp-advanced';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface ObjectionRecord {
   id: string;
@@ -44,7 +45,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       setSavedObjections(objections.filter(o => !o.resolved));
       setResolvedObjections(objections.filter(o => o.resolved));
     } catch (error) {
-      console.error('Error fetching objections:', error);
+      logger.error('Error fetching objections:', error);
     } finally {
       setLoading(false);
     }
@@ -86,7 +87,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       setSavedObjections(prev => [record, ...prev]);
       return record;
     } catch (error) {
-      console.error('Error saving objection:', error);
+      logger.error('Error saving objection:', error);
       toast.error('Erro ao salvar objeção');
       return null;
     }
@@ -116,7 +117,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       toast.success('Objeção marcada como resolvida!');
       return true;
     } catch (error) {
-      console.error('Error resolving objection:', error);
+      logger.error('Error resolving objection:', error);
       toast.error('Erro ao resolver objeção');
       return false;
     }
@@ -145,7 +146,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       setSavedObjections(prev => [record, ...prev]);
       return true;
     } catch (error) {
-      console.error('Error unresolving objection:', error);
+      logger.error('Error unresolving objection:', error);
       toast.error('Erro ao reabrir objeção');
       return false;
     }
@@ -193,7 +194,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       toast.success(`${newObjections.length} objeções salvas com sucesso!`);
       return true;
     } catch (error) {
-      console.error('Error persisting objections:', error);
+      logger.error('Error persisting objections:', error);
       toast.error('Erro ao persistir objeções');
       return false;
     } finally {
@@ -219,7 +220,7 @@ export function useHiddenObjectionsPersistence(contactId: string) {
       toast.success('Objeção removida');
       return true;
     } catch (error) {
-      console.error('Error deleting objection:', error);
+      logger.error('Error deleting objection:', error);
       toast.error('Erro ao remover objeção');
       return false;
     }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { TriggerType, PersuasionScenario } from '@/types/triggers';
+import { logger } from "@/lib/logger";
 
 export type TriggerResult = 'success' | 'neutral' | 'failure' | 'pending';
 
@@ -135,7 +136,7 @@ export function useTriggerHistory(contactId?: string) {
 
       applyHistoryState((data as TriggerUsageEntry[]) || []);
     } catch (error) {
-      console.error('Error fetching trigger history:', error);
+      logger.error('Error fetching trigger history:', error);
     } finally {
       setLoading(false);
     }
@@ -171,7 +172,7 @@ export function useTriggerHistory(contactId?: string) {
       await fetchHistory();
       return data as TriggerUsageEntry;
     } catch (error) {
-      console.error('Error creating trigger usage:', error);
+      logger.error('Error creating trigger usage:', error);
       return null;
     }
   };
@@ -197,7 +198,7 @@ export function useTriggerHistory(contactId?: string) {
       return true;
     } catch (error) {
       applyHistoryState(previousHistory);
-      console.error('Error updating trigger usage:', error);
+      logger.error('Error updating trigger usage:', error);
       return false;
     }
   };
@@ -221,7 +222,7 @@ export function useTriggerHistory(contactId?: string) {
       return true;
     } catch (error) {
       applyHistoryState(previousHistory);
-      console.error('Error deleting trigger usage:', error);
+      logger.error('Error deleting trigger usage:', error);
       return false;
     }
   };

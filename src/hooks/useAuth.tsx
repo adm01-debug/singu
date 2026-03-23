@@ -3,6 +3,7 @@ import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface AuthContextType {
   user: User | null;
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const { data, error } = await supabase.auth.refreshSession();
           if (error) {
-            console.error('Failed to refresh session:', error);
+            logger.error('Failed to refresh session:', error);
             // Sessão expirou, redirecionar para login
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
           } else if (data.session) {
@@ -59,12 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             scheduleTokenRefresh(data.session);
           }
         } catch (err) {
-          console.error('Error refreshing session:', err);
+          logger.error('Error refreshing session:', err);
         }
       }, refreshTime);
     } else if (timeUntilExpiry <= 0) {
       // Sessão já expirou
-      if (import.meta.env.DEV) console.warn('⚠️ Session already expired');
+      if (import.meta.env.DEV) logger.warn('⚠️ Session already expired');
     }
   }, []);
 
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         scheduleTokenRefresh(data.session);
       }
     } catch (err) {
-      console.error('Error refreshing session:', err);
+      logger.error('Error refreshing session:', err);
       toast.error('Erro ao atualizar sessão.');
     }
   }, [scheduleTokenRefresh]);
@@ -162,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return response;
       }
 
-      console.warn('⚠️ 401 Unauthorized - attempting session refresh');
+      logger.warn('⚠️ 401 Unauthorized - attempting session refresh');
       isHandling401Ref.current = true;
 
       try {
@@ -174,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
         }
       } catch (err) {
-        console.error('Failed to handle 401:', err);
+        logger.error('Failed to handle 401:', err);
       } finally {
         isHandling401Ref.current = false;
       }

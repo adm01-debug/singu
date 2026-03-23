@@ -10,6 +10,7 @@ import { useVAKAnalysis } from './useVAKAnalysis';
 import { useMetaprogramAnalysis } from './useMetaprogramAnalysis';
 import { useEmotionalStates } from './useEmotionalStates';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface NLPAnalysisResult {
   vak: {
@@ -148,7 +149,7 @@ export function useNLPAutoAnalysis() {
 
       return result;
     } catch (error) {
-      console.error('❌ NLP Auto-Analysis error:', error);
+      logger.error('❌ NLP Auto-Analysis error:', error);
       return null;
     } finally {
       analysisQueue.current.delete(analysisKey);
@@ -207,7 +208,7 @@ export function useNLPAutoAnalysis() {
 
       return { analyzed, total: interactions.length };
     } catch (error) {
-      console.error('Error batch analyzing interactions:', error);
+      logger.error('Error batch analyzing interactions:', error);
       return { analyzed: 0, total: 0 };
     }
   }, [user, shouldAnalyze, analyzeInteraction]);
@@ -253,7 +254,7 @@ export function useNLPAutoAnalysis() {
         lastAnalyzed: vakData.data?.[0]?.created_at || null
       };
     } catch (error) {
-      console.error('Error fetching NLP profile:', error);
+      logger.error('Error fetching NLP profile:', error);
       return null;
     }
   }, [user]);

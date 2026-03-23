@@ -122,9 +122,8 @@ async function flushErrorBuffer(): Promise<void> {
       });
       console.groupEnd();
     }
-  } catch (e) {
-    // Silenciar erros do próprio sistema de logging
-    console.warn('Failed to flush error buffer:', e);
+  } catch {
+    // Silenciar erros do próprio sistema de logging — noop em produção
   }
 }
 
