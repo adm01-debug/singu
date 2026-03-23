@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TelemetryCharts } from "@/components/admin/telemetry/TelemetryCharts";
 import { toast } from "sonner";
+import { useTelemetryExport, type TelemetryRow } from "@/hooks/useTelemetryExport";
 
 interface TelemetryRow {
   id: string;
