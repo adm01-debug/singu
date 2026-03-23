@@ -7,6 +7,7 @@ import {
   VAKAnalysisResult, 
   VAK_PREDICATES 
 } from '@/types/vak';
+import { logger } from "@/lib/logger";
 
 interface VAKAnalysisHistory {
   id: string;

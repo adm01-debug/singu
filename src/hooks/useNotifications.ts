@@ -8,6 +8,7 @@ import {
   getSubscriptionStatus,
   registerServiceWorker
 } from '@/lib/pushNotifications';
+import { logger } from "@/lib/logger";
 
 interface NotificationPermission {
   permission: 'default' | 'granted' | 'denied';

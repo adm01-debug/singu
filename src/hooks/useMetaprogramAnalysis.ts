@@ -14,6 +14,7 @@ import {
   ComparisonStyle,
   METAPROGRAM_KEYWORDS
 } from '@/types/metaprograms';
+import { logger } from "@/lib/logger";
 
 export function useMetaprogramAnalysis() {
   const { user } = useAuth();

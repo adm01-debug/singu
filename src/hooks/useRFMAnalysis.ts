@@ -20,6 +20,7 @@ import {
   determineRFMSegment,
   calculateRFMScore
 } from '@/types/rfm';
+import { logger } from "@/lib/logger";
 
 interface PurchaseData {
   contactId: string;
