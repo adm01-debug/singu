@@ -13,6 +13,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface SessionExpiryHandlerProps {
   /** Warning shown X minutes before expiry */
@@ -46,7 +47,7 @@ export function SessionExpiryHandler({
       }
       return false;
     } catch (error) {
-      console.error('Error refreshing session:', error);
+      logger.error('Error refreshing session:', error);
       toast.error('Erro ao renovar sessão');
       return false;
     } finally {

@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
+import { logger } from "@/lib/logger";
 
 interface TimelineDataPoint {
   date: string;
@@ -91,7 +92,7 @@ const DISCEvolutionTimeline: React.FC<DISCEvolutionTimelineProps> = ({
           setSelectedPoint(chartData[chartData.length - 1]);
         }
       } catch (error) {
-        console.error('Error fetching DISC history:', error);
+        logger.error('Error fetching DISC history:', error);
       } finally {
         setLoading(false);
       }

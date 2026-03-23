@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from "@/lib/logger";
 
 interface ExternalQueryOptions {
   table: 'companies' | 'contacts';
@@ -54,7 +55,7 @@ export async function queryExternalData<T = any>(options: ExternalQueryOptions):
 
     return { data: result?.data || [], count: result?.count || 0, error: null };
   } catch (err) {
-    console.error('Error querying external data:', err);
+    logger.error('Error querying external data:', err);
     return { data: null, count: null, error: err as Error };
   }
 }

@@ -39,6 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface SearchResult {
   id: string;
@@ -366,7 +367,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         })) || [],
       });
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error:', error);
       toast.error('Não foi possível completar a busca agora.');
       setResults({ contacts: [], companies: [], interactions: [] });
     } finally {

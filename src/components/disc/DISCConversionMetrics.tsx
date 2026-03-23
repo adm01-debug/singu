@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
 import { getContactBehavior, getDISCProfile } from '@/lib/contact-utils';
+import { logger } from "@/lib/logger";
 
 interface ProfileMetrics {
   profile: Exclude<DISCProfile, null>;
@@ -153,7 +154,7 @@ const DISCConversionMetrics: React.FC = () => {
 
         setMetrics(calculatedMetrics);
       } catch (error) {
-        console.error('Error fetching conversion metrics:', error);
+        logger.error('Error fetching conversion metrics:', error);
       } finally {
         setLoading(false);
       }

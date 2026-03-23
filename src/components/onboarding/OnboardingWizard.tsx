@@ -15,6 +15,7 @@ import ProfileStep from './steps/ProfileStep';
 import ImportStep from './steps/ImportStep';
 import PreferencesStep from './steps/PreferencesStep';
 import CompletionStep from './steps/CompletionStep';
+import { logger } from "@/lib/logger";
 
 export interface OnboardingData {
   profile: {
@@ -135,7 +136,7 @@ const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
       toast.success('🎉 Onboarding concluído! Bem-vindo ao SINGU!');
       onComplete();
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      logger.error('Error completing onboarding:', error);
       toast.error('Erro ao salvar configurações. Tente novamente.');
     } finally {
       setIsLoading(false);

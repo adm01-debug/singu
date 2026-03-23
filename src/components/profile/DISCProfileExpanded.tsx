@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from "@/lib/logger";
 
 interface DISCProfileExpandedProps {
   contact: Contact;
@@ -124,7 +125,7 @@ const DISCProfileExpanded: React.FC<DISCProfileExpandedProps> = ({ contact, onUp
       onUpdate?.();
 
     } catch (err) {
-      console.error('AI analysis error:', err);
+      logger.error('AI analysis error:', err);
       toast.error('Erro na análise por IA. Tente a análise local.');
       
       // Fallback to local analysis

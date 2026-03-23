@@ -22,6 +22,7 @@ import {
   unsubscribeFromPush, 
   getSubscriptionStatus 
 } from '@/lib/pushNotifications';
+import { logger } from "@/lib/logger";
 
 export function TourPreferencesPanel() {
   const { hasCompleted, resetTour, startTour, isOpen } = useOnboardingTour('main');
@@ -81,7 +82,7 @@ export function TourPreferencesPanel() {
         }
       }
     } catch (error) {
-      console.error('Push toggle error:', error);
+      logger.error('Push toggle error:', error);
       toast.error('Erro ao alterar configurações de push');
     } finally {
       setPushLoading(false);

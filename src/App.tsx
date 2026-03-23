@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -203,37 +204,39 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => (
-  <ErrorBoundary showDetails={import.meta.env.DEV}>
-    <QueryClientProvider client={queryClient}>
-      <CelebrationProvider>
-        <AriaLiveProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Suspense fallback={null}>
-              <PWAShell />
-            </Suspense>
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <AuthProvider>
-                <Suspense fallback={null}>
-                  <EasterEggsProvider />
-                </Suspense>
-                <Suspense fallback={null}>
-                  <KeyboardShortcutsDialogEnhanced />
-                </Suspense>
-                <Suspense fallback={null}>
-                  <SessionExpiryHandler>
-                    <WhatsNewWrapper />
-                    <AnimatedRoutes />
-                  </SessionExpiryHandler>
-                </Suspense>
-              </AuthProvider>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AriaLiveProvider>
-      </CelebrationProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
+  <HelmetProvider>
+    <ErrorBoundary showDetails={import.meta.env.DEV}>
+      <QueryClientProvider client={queryClient}>
+        <CelebrationProvider>
+          <AriaLiveProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Suspense fallback={null}>
+                <PWAShell />
+              </Suspense>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <AuthProvider>
+                  <Suspense fallback={null}>
+                    <EasterEggsProvider />
+                  </Suspense>
+                  <Suspense fallback={null}>
+                    <KeyboardShortcutsDialogEnhanced />
+                  </Suspense>
+                  <Suspense fallback={null}>
+                    <SessionExpiryHandler>
+                      <WhatsNewWrapper />
+                      <AnimatedRoutes />
+                    </SessionExpiryHandler>
+                  </Suspense>
+                </AuthProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AriaLiveProvider>
+        </CelebrationProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  </HelmetProvider>
 );
 
 export default App;
