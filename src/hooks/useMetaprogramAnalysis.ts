@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 import {
-import { logger } from "@/lib/logger";
   MetaprogramScores,
   MetaprogramProfile,
   MetaprogramAnalysisResult,
