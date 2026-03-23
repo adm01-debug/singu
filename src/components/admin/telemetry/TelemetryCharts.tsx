@@ -1,7 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from "recharts";
-import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
+  ResponsiveContainer, CartesianGrid, Cell,
+} from "recharts";
+import { BarChart3, TrendingUp, Database } from "lucide-react";
 
 interface TelemetryRow {
   id: string;
@@ -18,120 +21,208 @@ interface TelemetryChartsProps {
   timeFilter: string;
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  slow: "hsl(var(--warning))",
-  very_slow: "hsl(var(--destructive))",
-  error: "hsl(0 72% 51%)",
-  normal: "hsl(var(--primary))",
-};
+function getBucketMs(timeFilter: string): number {
+  switch (timeFilter) {
+    case "1h": return 5 * 60 * 1000;      // 5 min
+    case "6h": return 30 * 60 * 1000;     // 30 min
+    case "24h": return 60 * 60 * 1000;    // 1 hora
+    default: return 6 * 60 * 60 * 1000;   // 6 horas (7d)
+  }
+}
 
-const PIE_COLORS = [
-  "hsl(var(--destructive))",
-  "hsl(var(--warning))",
-  "hsl(0 72% 51%)",
-  "hsl(var(--muted-foreground))",
-];
+function formatBucketTime(ts: number, timeFilter: string): string {
+  const d = new Date(ts);
+  if (timeFilter === "7d" || timeFilter === "custom") {
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  }
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
 
 export function TelemetryCharts({ rows, timeFilter }: TelemetryChartsProps) {
+  // ── Chart 1: Alertas ao Longo do Tempo (AreaChart empilhado) ──
   const timelineData = useMemo(() => {
     if (!rows.length) return [];
-    const buckets = new Map<string, { label: string; slow: number; very_slow: number; error: number }>();
-    
+    const bucketMs = getBucketMs(timeFilter);
+    const buckets = new Map<number, { ts: number; muitoLentas: number; lentas: number; erros: number }>();
+
     for (const r of rows) {
-      const d = new Date(r.created_at);
-      let key: string;
-      if (timeFilter === "1h" || timeFilter === "6h") {
-        key = `${d.getHours().toString().padStart(2, "0")}:${(Math.floor(d.getMinutes() / 10) * 10).toString().padStart(2, "0")}`;
-      } else {
-        key = `${d.getDate().toString().padStart(2, "0")}/${(d.getMonth() + 1).toString().padStart(2, "0")} ${d.getHours().toString().padStart(2, "0")}h`;
-      }
-      
-      if (!buckets.has(key)) buckets.set(key, { label: key, slow: 0, very_slow: 0, error: 0 });
+      const t = new Date(r.created_at).getTime();
+      const key = Math.floor(t / bucketMs) * bucketMs;
+      if (!buckets.has(key)) buckets.set(key, { ts: key, muitoLentas: 0, lentas: 0, erros: 0 });
       const b = buckets.get(key)!;
-      if (r.severity === "slow") b.slow++;
-      else if (r.severity === "very_slow") b.very_slow++;
-      else if (r.severity === "error") b.error++;
+      if (r.severity === "very_slow") b.muitoLentas++;
+      else if (r.severity === "slow") b.lentas++;
+      else if (r.severity === "error") b.erros++;
     }
-    
-    return [...buckets.values()].reverse();
+
+    return [...buckets.values()].sort((a, b) => a.ts - b.ts);
   }, [rows, timeFilter]);
 
-  const severityDistribution = useMemo(() => {
-    const counts = { very_slow: 0, slow: 0, error: 0, normal: 0 };
+  // ── Chart 2: Duração Média / Máxima (AreaChart) ──
+  const durationData = useMemo(() => {
+    if (!rows.length) return [];
+    const bucketMs = getBucketMs(timeFilter);
+    const buckets = new Map<number, { ts: number; totalMs: number; maxMs: number; count: number }>();
+
     for (const r of rows) {
-      if (r.severity in counts) counts[r.severity as keyof typeof counts]++;
-      else counts.normal++;
+      const t = new Date(r.created_at).getTime();
+      const key = Math.floor(t / bucketMs) * bucketMs;
+      if (!buckets.has(key)) buckets.set(key, { ts: key, totalMs: 0, maxMs: 0, count: 0 });
+      const b = buckets.get(key)!;
+      b.totalMs += r.duration_ms;
+      b.maxMs = Math.max(b.maxMs, r.duration_ms);
+      b.count++;
     }
-    return [
-      { name: "Muito Lenta", value: counts.very_slow },
-      { name: "Lenta", value: counts.slow },
-      { name: "Erro", value: counts.error },
-      { name: "Normal", value: counts.normal },
-    ].filter(d => d.value > 0);
+
+    return [...buckets.values()]
+      .sort((a, b) => a.ts - b.ts)
+      .map(b => ({
+        ts: b.ts,
+        mediaMs: Math.round(b.totalMs / b.count),
+        maxMs: b.maxMs,
+      }));
+  }, [rows, timeFilter]);
+
+  // ── Chart 3: Alertas por Tabela (BarChart horizontal) ──
+  const tableData = useMemo(() => {
+    if (!rows.length) return [];
+    const counts = new Map<string, number>();
+    for (const r of rows) {
+      const key = r.rpc_name || r.table_name || "unknown";
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count }));
   }, [rows]);
 
   if (!rows.length) return null;
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card className="md:col-span-2">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Alertas ao Longo do Tempo
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={timelineData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} className="fill-muted-foreground" />
-              <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-              />
-              <Bar dataKey="very_slow" name="Muito Lenta" stackId="a" fill="hsl(var(--destructive))" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="slow" name="Lenta" stackId="a" fill="hsl(45 93% 47%)" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="error" name="Erro" stackId="a" fill="hsl(0 72% 51%)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+  const tooltipStyle = {
+    backgroundColor: "hsl(var(--card))",
+    border: "1px solid hsl(var(--border))",
+    borderRadius: 8,
+    fontSize: 12,
+  };
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <PieChartIcon className="h-4 w-4" />
-            Distribuição por Severidade
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center">
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={severityDistribution}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={3}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
-              >
-                {severityDistribution.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+  const BAR_COLORS = [
+    "hsl(var(--destructive))",
+    "hsl(var(--primary))",
+    "hsl(45 93% 47%)",
+    "hsl(var(--muted-foreground))",
+    "hsl(200 80% 50%)",
+    "hsl(280 60% 55%)",
+    "hsl(160 60% 45%)",
+    "hsl(20 80% 55%)",
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Row 1: Alertas ao Longo do Tempo + Duração Média/Máxima */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Alertas ao Longo do Tempo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={timelineData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis
+                  dataKey="ts"
+                  tickFormatter={(v) => formatBucketTime(v, timeFilter)}
+                  tick={{ fontSize: 10 }}
+                  className="fill-muted-foreground"
+                />
+                <YAxis tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
+                <Tooltip
+                  labelFormatter={(v) => formatBucketTime(v as number, timeFilter)}
+                  contentStyle={tooltipStyle}
+                />
+                <Area type="monotone" dataKey="muitoLentas" name="Muito Lentas" stackId="1"
+                  fill="hsl(var(--destructive))" stroke="hsl(var(--destructive))" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="lentas" name="Lentas" stackId="1"
+                  fill="hsl(45 93% 47%)" stroke="hsl(45 93% 47%)" fillOpacity={0.6} />
+                <Area type="monotone" dataKey="erros" name="Erros" stackId="1"
+                  fill="hsl(0 84% 60%)" stroke="hsl(0 84% 60%)" fillOpacity={0.6} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Duração Média / Máxima
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={durationData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis
+                  dataKey="ts"
+                  tickFormatter={(v) => formatBucketTime(v, timeFilter)}
+                  tick={{ fontSize: 10 }}
+                  className="fill-muted-foreground"
+                />
+                <YAxis
+                  tick={{ fontSize: 10 }}
+                  className="fill-muted-foreground"
+                  tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}s` : `${v}ms`}
+                />
+                <Tooltip
+                  labelFormatter={(v) => formatBucketTime(v as number, timeFilter)}
+                  formatter={(value: number) => value >= 1000 ? `${(value / 1000).toFixed(1)}s` : `${value}ms`}
+                  contentStyle={tooltipStyle}
+                />
+                <Area type="monotone" dataKey="maxMs" name="Máxima"
+                  fill="hsl(var(--destructive))" stroke="hsl(var(--destructive))" fillOpacity={0.2} />
+                <Area type="monotone" dataKey="mediaMs" name="Média"
+                  fill="hsl(var(--primary))" stroke="hsl(var(--primary))" fillOpacity={0.4} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 2: Alertas por Tabela */}
+      {tableData.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Alertas por Tabela/RPC
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={Math.max(160, tableData.length * 32)}>
+              <BarChart data={tableData} layout="vertical" margin={{ left: 80 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
+                <XAxis type="number" tick={{ fontSize: 10 }} className="fill-muted-foreground" allowDecimals={false} />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 11 }}
+                  className="fill-muted-foreground"
+                  width={75}
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="count" name="Alertas" radius={[0, 4, 4, 0]}>
+                  {tableData.map((_, i) => (
+                    <Cell key={i} fill={BAR_COLORS[i % BAR_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
