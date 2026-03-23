@@ -53,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -184,7 +185,12 @@ const AnimatedRoutes = () => {
       <Route path="/design-system" element={
         <LazyPage><DesignSystem /></LazyPage>
       } />
-          
+      <Route path="/admin/telemetria" element={
+        <RequireAuth>
+          <LazyPage><AdminTelemetria /></LazyPage>
+        </RequireAuth>
+      } />
+
       {/* Catch-all */}
       <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
     </Routes>
