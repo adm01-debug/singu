@@ -46,6 +46,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { logger } from "@/lib/logger";
 
 type PeriodFilter = '7d' | '30d' | '90d' | '365d';
 
@@ -411,7 +412,7 @@ export function NLPAnalyticsPanel() {
         emotionalTrend,
       });
     } catch (error) {
-      console.error('Error fetching NLP stats:', error);
+      logger.error('Error fetching NLP stats:', error);
     } finally {
       setLoading(false);
     }

@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { logger } from "@/lib/logger";
 
 interface CompatibilityAlert {
   id: string;
@@ -78,7 +79,7 @@ export function CompatibilityAlertsList({
       if (error) throw error;
       setAlerts(data || []);
     } catch (err) {
-      console.error('Error fetching alerts:', err);
+      logger.error('Error fetching alerts:', err);
     } finally {
       setLoading(false);
     }

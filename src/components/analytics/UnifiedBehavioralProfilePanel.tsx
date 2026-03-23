@@ -57,6 +57,7 @@ import { METAPROGRAM_LABELS, MetaprogramProfile } from '@/types/metaprograms';
 import { EQ_PILLAR_INFO } from '@/data/emotionalIntelligenceData';
 import { COGNITIVE_BIAS_INFO } from '@/data/cognitiveBiasesData';
 import { toast } from '@/hooks/use-toast';
+import { logger } from "@/lib/logger";
 
 interface UnifiedBehavioralProfilePanelProps {
   contact: Contact;
@@ -125,7 +126,7 @@ export function UnifiedBehavioralProfilePanel({ contact, interactions, className
         setVakProfile(vak);
         setMetaprogramProfile(meta);
       } catch (error) {
-        console.error('Error fetching profiles:', error);
+        logger.error('Error fetching profiles:', error);
       } finally {
         setLoading(false);
       }

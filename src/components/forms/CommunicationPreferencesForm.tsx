@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 const formSchema = z.object({
   preferredChannel: z.string().min(1, 'Selecione um canal'),
@@ -140,7 +141,7 @@ export function CommunicationPreferencesForm({ contactId, onSuccess, trigger }: 
       setOpen(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences:', error);
       toast.error('Erro ao salvar preferências');
     } finally {
       setIsSubmitting(false);

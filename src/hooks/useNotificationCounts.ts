@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from "@/lib/logger";
 
 interface NotificationCounts {
   notifications: number;
@@ -67,7 +68,7 @@ export function useNotificationCounts() {
         total: notifications + insights + healthAlerts + interactions,
       });
     } catch (error) {
-      console.error('Error fetching notification counts:', error);
+      logger.error('Error fetching notification counts:', error);
     } finally {
       setIsLoading(false);
     }

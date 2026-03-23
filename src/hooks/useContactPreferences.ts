@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 export interface ContactPreference {
   id: string;
@@ -68,7 +69,7 @@ export function useContactPreferences(contactId?: string) {
       if (error) throw error;
       setPreference(data as ContactPreference | null);
     } catch (error) {
-      console.error('Error fetching preferences:', error);
+      logger.error('Error fetching preferences:', error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +103,7 @@ export function useContactPreferences(contactId?: string) {
       toast.success('Preferências salvas!');
       fetchPreference();
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences:', error);
       toast.error('Erro ao salvar preferências');
     }
   }, [user, contactId, fetchPreference]);

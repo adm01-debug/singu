@@ -57,6 +57,7 @@ import { VAKProfile } from '@/types/vak';
 import { MetaprogramProfile } from '@/types/metaprograms';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { logger } from "@/lib/logger";
 
 interface ApproachRecommendationPanelProps {
   contact: Contact;
@@ -128,7 +129,7 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
         setVakProfile(vak);
         setMetaprogramProfile(meta);
       } catch (error) {
-        console.error('Error fetching profiles:', error);
+        logger.error('Error fetching profiles:', error);
       } finally {
         setLoading(false);
       }

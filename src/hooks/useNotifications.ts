@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { 
+import { logger } from "@/lib/logger";
   isPushSupported, 
   subscribeToPush, 
   unsubscribeFromPush, 
@@ -91,7 +92,7 @@ export const useNotifications = () => {
         return false;
       }
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      logger.error('Error requesting notification permission:', error);
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao ativar as notificações.',
@@ -117,7 +118,7 @@ export const useNotifications = () => {
       }
       return success;
     } catch (error) {
-      console.error('Error unsubscribing:', error);
+      logger.error('Error unsubscribing:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -152,7 +153,7 @@ export const useNotifications = () => {
       }
       return true;
     } catch (error) {
-      console.error('Error showing notification:', error);
+      logger.error('Error showing notification:', error);
       return false;
     }
   }, [permissionState.permission, requestPermission]);
@@ -216,7 +217,7 @@ export const useNotifications = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking follow-up alerts:', error);
+      logger.error('Error checking follow-up alerts:', error);
     }
   }, [permissionState.permission, showNotification]);
 
@@ -264,7 +265,7 @@ export const useNotifications = () => {
         );
       }
     } catch (error) {
-      console.error('Error checking birthday alerts:', error);
+      logger.error('Error checking birthday alerts:', error);
     }
   }, [permissionState.permission, showNotification]);
 
@@ -323,7 +324,7 @@ export const useNotifications = () => {
         }
       }
     } catch (error) {
-      console.error('Error checking stakeholder alerts:', error);
+      logger.error('Error checking stakeholder alerts:', error);
     }
   }, [permissionState.permission, showNotification]);
 

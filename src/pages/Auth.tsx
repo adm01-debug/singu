@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { logger } from "@/lib/logger";
 
 // Validation schemas
 const emailSchema = z.string().email('Email inválido');
@@ -114,7 +115,7 @@ const Auth = () => {
         }
       }
     } catch (error) {
-      console.error('Auth submit error:', error);
+      logger.error('Auth submit error:', error);
       toast.error('Não foi possível concluir a autenticação. Tente novamente.');
     } finally {
       setIsLoading(false);
@@ -365,7 +366,7 @@ const Auth = () => {
                   });
                   if (error) {
                     toast.error('Erro ao entrar com Google. Tente novamente.');
-                    console.error('Google OAuth error:', error);
+                    logger.error('Google OAuth error:', error);
                   }
                 }}
               >

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { logger } from "@/lib/logger";
 
 export interface FavoriteTemplate {
   id: string;
@@ -31,7 +32,7 @@ export function useFavoriteTemplates() {
 
       setFavorites(new Set(data?.map(f => f.template_id) || []));
     } catch (error) {
-      console.error('Error fetching favorites:', error);
+      logger.error('Error fetching favorites:', error);
     } finally {
       setLoading(false);
     }
@@ -57,7 +58,7 @@ export function useFavoriteTemplates() {
       setFavorites(prev => new Set([...prev, templateId]));
       return true;
     } catch (error) {
-      console.error('Error adding favorite:', error);
+      logger.error('Error adding favorite:', error);
       return false;
     }
   };
@@ -81,7 +82,7 @@ export function useFavoriteTemplates() {
       });
       return true;
     } catch (error) {
-      console.error('Error removing favorite:', error);
+      logger.error('Error removing favorite:', error);
       return false;
     }
   };

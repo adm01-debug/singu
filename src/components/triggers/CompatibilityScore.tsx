@@ -32,6 +32,7 @@ import { VAKType, VAKProfile, VAK_LABELS } from '@/types/vak';
 import { MetaprogramProfile, METAPROGRAM_LABELS } from '@/types/metaprograms';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from "@/lib/logger";
 
 interface CompatibilityScoreProps {
   contact: Contact;
@@ -110,7 +111,7 @@ export function CompatibilityScore({
         setSalespersonProfile(profile);
       }
     } catch (err) {
-      console.error('Error fetching salesperson profile:', err);
+      logger.error('Error fetching salesperson profile:', err);
     } finally {
       setLoading(false);
     }

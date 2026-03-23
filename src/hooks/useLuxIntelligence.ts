@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 export interface LuxIntelligenceRecord {
   id: string;
@@ -51,7 +52,7 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
       setRecords(typed);
       setLatestRecord(typed[0] || null);
     } catch (err) {
-      console.error('Error fetching lux records:', err);
+      logger.error('Error fetching lux records:', err);
     } finally {
       setLoading(false);
     }
@@ -85,7 +86,7 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
         throw new Error(data?.error || 'Falha ao iniciar varredura');
       }
     } catch (err) {
-      console.error('Error triggering Lux:', err);
+      logger.error('Error triggering Lux:', err);
       toast.error(`Erro ao ativar Lux: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
       return null;
     } finally {

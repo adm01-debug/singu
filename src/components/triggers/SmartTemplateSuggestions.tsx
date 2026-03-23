@@ -30,6 +30,7 @@ import { useTriggerHistory } from '@/hooks/useTriggerHistory';
 import { useClientTriggers } from '@/hooks/useClientTriggers';
 import { PersuasionTemplate, MENTAL_TRIGGERS, TriggerType, PersuasionScenario } from '@/types/triggers';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface SmartTemplateSuggestionsProps {
   contact: Contact;
@@ -308,7 +309,7 @@ export function SmartTemplateSuggestions({ contact, className, onSelectTemplate 
       
       setTemplateStats(statsMap);
     } catch (error) {
-      console.error('Error fetching template stats:', error);
+      logger.error('Error fetching template stats:', error);
     } finally {
       setLoading(false);
     }

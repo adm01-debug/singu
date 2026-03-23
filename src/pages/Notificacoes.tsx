@@ -27,6 +27,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SmartRemindersPanel } from '@/components/smart-reminders/SmartRemindersPanel';
+import { logger } from "@/lib/logger";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -146,7 +147,7 @@ const Notificacoes = () => {
           .eq('id', user.id);
       }
     } catch (error) {
-      console.error('Error saving notification settings:', error);
+      logger.error('Error saving notification settings:', error);
     }
   };
 
@@ -178,7 +179,7 @@ const Notificacoes = () => {
           }
         }
       } catch (error) {
-        console.error('Error loading notification settings:', error);
+        logger.error('Error loading notification settings:', error);
       }
     };
     

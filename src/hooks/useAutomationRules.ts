@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 // ===================== TYPES =====================
 
@@ -104,7 +105,7 @@ export function useAutomationRules() {
       if (error) throw error;
       setRules((data ?? []) as unknown as AutomationRule[]);
     } catch (e: any) {
-      console.error('Error fetching automation rules:', e);
+      logger.error('Error fetching automation rules:', e);
     } finally {
       setLoading(false);
     }
@@ -124,7 +125,7 @@ export function useAutomationRules() {
       if (error) throw error;
       setLogs((data ?? []) as unknown as AutomationLog[]);
     } catch (e: any) {
-      console.error('Error fetching automation logs:', e);
+      logger.error('Error fetching automation logs:', e);
     }
   }, [user]);
 
