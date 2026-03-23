@@ -86,15 +86,15 @@ export default function AdminTelemetriaPage() {
     }
   };
 
-  const exportMeta = () => ({ timeFilter, verySlow, slow, errors, avgDuration });
-  const handleExportCSV = () => exportCSV(rows, exportMeta());
-  const handleExportPDF = () => exportPDF(rows, exportMeta());
-
   // Stats
   const verySlow = rows.filter(r => r.severity === "very_slow").length;
   const slow = rows.filter(r => r.severity === "slow").length;
   const errors = rows.filter(r => r.severity === "error").length;
   const avgDuration = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.duration_ms, 0) / rows.length) : 0;
+
+  const exportMeta = () => ({ timeFilter, verySlow, slow, errors, avgDuration });
+  const handleExportCSV = () => exportCSV(rows, exportMeta());
+  const handleExportPDF = () => exportPDF(rows, exportMeta());
 
   // Top offenders
   const tableStats = new Map<string, { count: number; totalMs: number; maxMs: number }>();
