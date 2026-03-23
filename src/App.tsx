@@ -54,6 +54,7 @@ const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
+const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
