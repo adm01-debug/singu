@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Type-safe tab utilities for Radix UI Tabs
  */
