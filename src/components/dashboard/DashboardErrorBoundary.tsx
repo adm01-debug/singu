@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { logger } from "@/lib/logger";
 
 interface Props {
   children: ReactNode;
@@ -27,7 +28,7 @@ export class DashboardErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error(`[Dashboard] Error in ${this.props.sectionName || 'widget'}:`, error, errorInfo);
+    logger.error(`[Dashboard] Error in ${this.props.sectionName || 'widget'}:`, error, errorInfo);
   }
 
   handleRetry = () => {

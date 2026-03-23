@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { logger } from "@/lib/logger";
 
 interface ImportStepProps {
   onImport: (count: number) => void;
@@ -117,7 +118,7 @@ const ImportStep = ({ onImport, onNext, onBack }: ImportStepProps) => {
           );
 
         if (insertError) {
-          console.error('Batch insert error:', insertError);
+          logger.error('Batch insert error:', insertError);
         } else {
           imported += batch.length;
         }
@@ -129,7 +130,7 @@ const ImportStep = ({ onImport, onNext, onBack }: ImportStepProps) => {
       onImport(imported);
       toast.success(`${imported} contatos importados com sucesso!`);
     } catch (err) {
-      console.error('Import error:', err);
+      logger.error('Import error:', err);
       setError(err instanceof Error ? err.message : 'Erro ao importar arquivo');
     } finally {
       setImporting(false);

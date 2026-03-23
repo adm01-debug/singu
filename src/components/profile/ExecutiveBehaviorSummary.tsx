@@ -42,6 +42,7 @@ import { EQ_PILLAR_INFO } from '@/data/emotionalIntelligenceData';
 import { COGNITIVE_BIAS_INFO } from '@/data/cognitiveBiasesData';
 import { Contact, DISCProfile } from '@/types';
 import { toast } from '@/hooks/use-toast';
+import { logger } from "@/lib/logger";
 
 interface ExecutiveBehaviorSummaryProps {
   contact: Contact;
@@ -141,7 +142,7 @@ export function ExecutiveBehaviorSummary({ contact, interactions }: ExecutiveBeh
         setVakProfile(vak);
         setMetaprogramProfile(meta);
       } catch (error) {
-        console.error('Error fetching profiles:', error);
+        logger.error('Error fetching profiles:', error);
       } finally {
         setLoading(false);
       }
