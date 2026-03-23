@@ -128,12 +128,13 @@ export function useEasterEggs() {
       console.log('%c🛠️ Developer Mode Activated!', 'font-size: 24px; color: #00ff00;');
       console.log('%cWelcome, fellow developer! 👨‍💻', 'font-size: 16px; color: #00ccff;');
       console.table({
-      'React Version': '18.3.1',
-      'Framework': 'Vite + React + TypeScript',
-      'UI Library': 'shadcn/ui',
-      'Database': 'Supabase',
-      'Animations': 'Framer Motion',
-    });
+        'React Version': '18.3.1',
+        'Framework': 'Vite + React + TypeScript',
+        'UI Library': 'shadcn/ui',
+        'Database': 'Supabase',
+        'Animations': 'Framer Motion',
+      });
+    }
     
     toast.success('🛠️ Dev Mode Ativado!', {
       description: 'Confira o console para mais informações.',
