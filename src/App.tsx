@@ -53,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
