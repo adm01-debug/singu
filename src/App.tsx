@@ -185,7 +185,12 @@ const AnimatedRoutes = () => {
       <Route path="/design-system" element={
         <LazyPage><DesignSystem /></LazyPage>
       } />
-          
+      <Route path="/admin/telemetria" element={
+        <RequireAuth>
+          <LazyPage><AdminTelemetria /></LazyPage>
+        </RequireAuth>
+      } />
+
       {/* Catch-all */}
       <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
     </Routes>
