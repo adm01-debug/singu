@@ -214,12 +214,6 @@ const App = () => (
               <PWAShell />
             </Suspense>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <Suspense fallback={null}>
-                <EasterEggsProvider />
-              </Suspense>
-              <Suspense fallback={null}>
-                <KeyboardShortcutsDialogEnhanced />
-              </Suspense>
               <AuthProvider>
                 <Suspense fallback={null}>
                   <SessionExpiryHandler>
