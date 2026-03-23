@@ -16,22 +16,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { TelemetryCharts } from "@/components/admin/telemetry/TelemetryCharts";
 import { toast } from "sonner";
+import { useTelemetryExport, type TelemetryRow } from "@/hooks/useTelemetryExport";
 
-interface TelemetryRow {
-  id: string;
-  operation: string;
-  table_name: string | null;
-  rpc_name: string | null;
-  duration_ms: number;
-  record_count: number | null;
-  query_limit: number | null;
-  query_offset: number | null;
-  count_mode: string | null;
-  severity: string;
-  error_message: string | null;
-  user_id: string | null;
-  created_at: string;
-}
 
 type SeverityFilter = "all" | "slow" | "very_slow" | "error";
 type TimeFilter = "1h" | "6h" | "24h" | "7d" | "custom";
@@ -41,6 +27,7 @@ export default function AdminTelemetriaPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("24h");
   const [customDateFrom, setCustomDateFrom] = useState<Date | undefined>();
   const [customDateTo, setCustomDateTo] = useState<Date | undefined>();
+  const { exportCSV, exportPDF } = useTelemetryExport();
 
   const getTimeThreshold = (): { from: string; to: string } => {
     const now = new Date();
@@ -99,102 +86,15 @@ export default function AdminTelemetriaPage() {
     }
   };
 
-  // ── Export CSV ──
-  const handleExportCSV = () => {
-    if (!rows.length) return toast.error("Nenhum dado para exportar");
-    const headers = [
-      "Data/Hora", "Operação", "Tabela/RPC", "Duração (ms)", "Severidade",
-      "Registros", "Limit", "Offset", "Count Mode", "Erro",
-    ];
-    const csvRows = rows.map(r => [
-      new Date(r.created_at).toLocaleString("pt-BR"),
-      r.operation,
-      r.table_name || r.rpc_name || "-",
-      r.duration_ms,
-      r.severity,
-      r.record_count ?? "-",
-      r.query_limit ?? "-",
-      r.query_offset ?? "-",
-      r.count_mode ?? "-",
-      `"${(r.error_message || "").replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = [headers.join(";"), ...csvRows.map(r => r.join(";"))].join("\n");
-    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `telemetria_${format(new Date(), "yyyy-MM-dd")}_${timeFilter}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("CSV exportado com sucesso");
-  };
-
-  // ── Export PDF ──
-  const handleExportPDF = async () => {
-    if (!rows.length) return toast.error("Nenhum dado para exportar");
-    try {
-      const { default: jsPDF } = await import("jspdf");
-      const { default: autoTable } = await import("jspdf-autotable");
-
-      const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-      const now = new Date();
-
-      const periodLabels: Record<string, string> = {
-        "1h": "Última hora", "6h": "Últimas 6h", "24h": "Últimas 24h",
-        "7d": "Últimos 7 dias", "custom": "Personalizado",
-      };
-
-      doc.setFontSize(16);
-      doc.text("Telemetria de Queries — Banco Externo", 14, 15);
-      doc.setFontSize(9);
-      doc.text(
-        `Exportado em ${now.toLocaleString("pt-BR")} · Período: ${periodLabels[timeFilter] || timeFilter} · ${rows.length} registros`,
-        14, 22
-      );
-
-      // Summary line
-      doc.setFontSize(8);
-      doc.text(
-        `Muito Lentas: ${verySlow} | Lentas: ${slow} | Erros: ${errors} | Média: ${formatDuration(avgDuration)}`,
-        14, 27
-      );
-
-      const head = [["Data/Hora", "Operação", "Tabela/RPC", "Duração", "Severidade", "Records", "Limit", "Offset", "Count", "Erro"]];
-      const body = rows.map(r => [
-        new Date(r.created_at).toLocaleString("pt-BR"),
-        r.operation,
-        r.table_name || r.rpc_name || "-",
-        formatDuration(r.duration_ms),
-        r.severity === "very_slow" ? "Muito Lenta" : r.severity === "slow" ? "Lenta" : r.severity === "error" ? "Erro" : r.severity,
-        r.record_count?.toString() ?? "-",
-        r.query_limit?.toString() ?? "-",
-        r.query_offset?.toString() ?? "-",
-        r.count_mode || "-",
-        (r.error_message || "").substring(0, 60),
-      ]);
-
-      autoTable(doc, {
-        head,
-        body,
-        startY: 31,
-        styles: { fontSize: 7, cellPadding: 1.5 },
-        headStyles: { fillColor: [41, 37, 36], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 245, 244] },
-      });
-
-      doc.save(`telemetria_${format(now, "yyyy-MM-dd")}_${timeFilter}.pdf`);
-      toast.success("PDF exportado com sucesso");
-    } catch (err) {
-      console.error("PDF export error:", err);
-      toast.error("Erro ao gerar PDF");
-    }
-  };
-
   // Stats
   const verySlow = rows.filter(r => r.severity === "very_slow").length;
   const slow = rows.filter(r => r.severity === "slow").length;
   const errors = rows.filter(r => r.severity === "error").length;
   const avgDuration = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.duration_ms, 0) / rows.length) : 0;
+
+  const exportMeta = () => ({ timeFilter, verySlow, slow, errors, avgDuration });
+  const handleExportCSV = () => exportCSV(rows, exportMeta());
+  const handleExportPDF = () => exportPDF(rows, exportMeta());
 
   // Top offenders
   const tableStats = new Map<string, { count: number; totalMs: number; maxMs: number }>();

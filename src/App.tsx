@@ -54,6 +54,7 @@ const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
+const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -187,7 +188,11 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/admin/telemetria" element={
         <RequireAuth>
-          <LazyPage><AdminTelemetria /></LazyPage>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminTelemetria />
+            </RequireAdminLazy>
+          </LazyPage>
         </RequireAuth>
       } />
 
@@ -209,13 +214,13 @@ const App = () => (
               <PWAShell />
             </Suspense>
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <Suspense fallback={null}>
-                <EasterEggsProvider />
-              </Suspense>
-              <Suspense fallback={null}>
-                <KeyboardShortcutsDialogEnhanced />
-              </Suspense>
               <AuthProvider>
+                <Suspense fallback={null}>
+                  <EasterEggsProvider />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <KeyboardShortcutsDialogEnhanced />
+                </Suspense>
                 <Suspense fallback={null}>
                   <SessionExpiryHandler>
                     <WhatsNewWrapper />
