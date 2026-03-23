@@ -30,7 +30,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     const registration = await navigator.serviceWorker.register('/sw-push.js', {
       scope: '/'
     });
-    console.log('Service Worker registered:', registration);
+    logger.info('Service Worker registered:', registration);
     return registration;
   } catch (error) {
     logger.error('Service Worker registration failed:', error);
