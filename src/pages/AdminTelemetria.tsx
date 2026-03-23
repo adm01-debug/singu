@@ -27,6 +27,7 @@ export default function AdminTelemetriaPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("24h");
   const [customDateFrom, setCustomDateFrom] = useState<Date | undefined>();
   const [customDateTo, setCustomDateTo] = useState<Date | undefined>();
+  const { exportCSV, exportPDF } = useTelemetryExport();
 
   const getTimeThreshold = (): { from: string; to: string } => {
     const now = new Date();
