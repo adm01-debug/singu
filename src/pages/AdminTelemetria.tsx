@@ -128,7 +128,7 @@ export default function AdminTelemetriaPage() {
   };
 
   return (
-    <MainLayout>
+    <AppLayout>
       <div className="space-y-6 p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -333,6 +333,6 @@ export default function AdminTelemetriaPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </AppLayout>
   );
 }
