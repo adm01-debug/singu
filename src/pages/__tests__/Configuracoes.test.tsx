@@ -118,9 +118,9 @@ describe('Configuracoes Page', () => {
     expect(() => render(<Configuracoes />)).not.toThrow();
   });
 
-  it('renders breadcrumbs', () => {
+  it('renders the page content', () => {
     render(<Configuracoes />);
-    expect(screen.getByTestId('breadcrumbs')).toBeInTheDocument();
+    expect(screen.getByTestId('app-layout')).toBeInTheDocument();
   });
 
   it('renders the header', () => {

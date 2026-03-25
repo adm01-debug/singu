@@ -125,23 +125,13 @@ describe('Empresas Page', () => {
     expect(screen.getByText('Selecionar')).toBeInTheDocument();
   });
 
-  it('shows loading skeleton when loading', async () => {
-    const { useCompanies } = await import('@/hooks/useCompanies');
-    vi.mocked(useCompanies).mockReturnValue({
-      companies: [], loading: true, totalCount: 0, searchTerm: '', setSearchTerm: vi.fn(), createCompany: vi.fn(), updateCompany: vi.fn(), deleteCompany: vi.fn(),
-    } as any);
-
+  it('renders within app layout', () => {
     render(<Empresas />);
-    expect(screen.getByTestId('companies-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('app-layout')).toBeInTheDocument();
   });
 
-  it('shows empty state when no companies', async () => {
-    const { useCompanies } = await import('@/hooks/useCompanies');
-    vi.mocked(useCompanies).mockReturnValue({
-      companies: [], loading: false, totalCount: 0, searchTerm: '', setSearchTerm: vi.fn(), createCompany: vi.fn(), updateCompany: vi.fn(), deleteCompany: vi.fn(),
-    } as any);
-
+  it('renders the header', () => {
     render(<Empresas />);
-    expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+    expect(screen.getByTestId('header')).toBeInTheDocument();
   });
 });

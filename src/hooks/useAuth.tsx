@@ -27,7 +27,7 @@ const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 // Module-level singleton for fetch interceptor
 let fetchInterceptorInstalled = false;
 let originalFetch: typeof window.fetch | null = null;
-let refreshPromise: Promise<any> | null = null;
+let refreshPromise: Promise<{ data: { session: Session | null }; error: unknown }> | null = null;
 let activeProviderCount = 0;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -152,8 +152,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       fetchInterceptorInstalled = true;
       originalFetch = window.fetch;
 
-      window.fetch = async (...args) => {
-        const response = await originalFetch!(...args);
+      window.fetch = async (...args: Parameters<typeof fetch>) => {
+        if (!originalFetch) return new Response(null, { status: 500 });
+
+        // Check connectivity before making request
+        if (!navigator.onLine) {
+          return originalFetch(...args);
+        }
+
+        const response = await originalFetch(...args);
 
         if (response.status !== 401) return response;
 
@@ -178,7 +185,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await supabase.auth.signOut();
           }
         } catch {
-          // Session refresh failed silently
+          // Session refresh failed - user will be redirected on next auth check
+          logger.error('401 interceptor: session refresh failed');
         }
 
         return response;
@@ -191,6 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.fetch = originalFetch;
         originalFetch = null;
         fetchInterceptorInstalled = false;
+        refreshPromise = null;
       }
     };
   }, []);

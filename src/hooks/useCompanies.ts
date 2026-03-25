@@ -128,7 +128,20 @@ export function useCompanies() {
     }
   };
 
-  const deleteCompany = async (id: string) => {
+  const deleteCompany = async (id: string, skipConfirmation = false) => {
+    if (!skipConfirmation) {
+      const company = companies.find(c => c.id === id);
+      const name = company?.name || 'esta empresa';
+      const confirmed = window.confirm(
+        `Tem certeza que deseja excluir ${name}? Todos os dados associados serão perdidos. Esta ação não pode ser desfeita.`
+      );
+      if (!confirmed) return false;
+    }
+
+    // Optimistic update
+    const previousCompanies = companies;
+    setCompanies(prev => prev.filter(c => c.id !== id));
+
     try {
       const { error } = await supabase
         .from('companies')
@@ -137,13 +150,14 @@ export function useCompanies() {
 
       if (error) throw error;
 
-      setCompanies(prev => prev.filter(c => c.id !== id));
       toast({
         title: 'Empresa removida',
         description: 'A empresa foi excluída com sucesso.',
       });
       return true;
     } catch (error) {
+      // Rollback on error
+      setCompanies(previousCompanies);
       logger.error('Error deleting company:', error);
       toast({
         title: 'Erro ao excluir empresa',

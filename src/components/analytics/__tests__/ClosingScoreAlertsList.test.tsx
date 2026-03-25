@@ -53,7 +53,7 @@ describe('ClosingScoreAlertsList', () => {
   it('shows loading state with skeletons', () => {
     mockUseClosingScoreAlerts.mockReturnValue({ ...defaultMock, loading: true });
     const { container } = render(<ClosingScoreAlertsList />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

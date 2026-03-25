@@ -147,7 +147,20 @@ export function useContacts(companyId?: string) {
     }
   };
 
-  const deleteContact = async (id: string) => {
+  const deleteContact = async (id: string, skipConfirmation = false) => {
+    if (!skipConfirmation) {
+      const contact = contacts.find(c => c.id === id);
+      const name = contact ? `${contact.first_name} ${contact.last_name}` : 'este contato';
+      const confirmed = window.confirm(
+        `Tem certeza que deseja excluir ${name}? Esta ação não pode ser desfeita.`
+      );
+      if (!confirmed) return false;
+    }
+
+    // Optimistic update
+    const previousContacts = contacts;
+    setContacts(prev => prev.filter(c => c.id !== id));
+
     try {
       const { error } = await supabase
         .from('contacts')
@@ -156,13 +169,14 @@ export function useContacts(companyId?: string) {
 
       if (error) throw error;
 
-      setContacts(prev => prev.filter(c => c.id !== id));
       toast({
         title: 'Contato removido',
         description: 'O contato foi excluído com sucesso.',
       });
       return true;
     } catch (error) {
+      // Rollback on error
+      setContacts(previousContacts);
       logger.error('Error deleting contact:', error);
       toast({
         title: 'Erro ao excluir contato',

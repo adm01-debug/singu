@@ -50,7 +50,15 @@ describe('PortfolioHealthDashboard', () => {
 
   const defaultMock = {
     healthScore: 75,
-    statusDistribution: { healthy: 10, warning: 5, critical: 2 },
+    healthDistribution: { healthy: 10, warning: 5, critical: 2 },
+    churnRisk: { low: 5, medium: 3, high: 2, critical: 1 },
+    averageRelationshipScore: 72,
+    needsAttention: [],
+    topPerformers: [],
+    totalContacts: 17,
+    activeContacts: 15,
+    trendingUp: 8,
+    trendingDown: 3,
     clients: [],
     loading: false,
     trends: { weeklyChange: 3, monthlyChange: 8 },

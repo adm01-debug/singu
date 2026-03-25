@@ -65,7 +65,7 @@ describe('HealthAlertsPanel', () => {
   it('shows loading state with skeletons', () => {
     mockUseHealthAlerts.mockReturnValue({ ...defaultMock, loading: true });
     const { container } = render(<HealthAlertsPanel />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
@@ -80,23 +80,25 @@ describe('HealthAlertsPanel', () => {
       alerts: [
         {
           id: '1',
-          contactId: 'c1',
-          contactName: 'Test User',
+          contact_id: 'c1',
+          contact_name: 'Test User',
           type: 'relationship_declining',
           severity: 'critical',
           message: 'Score dropped',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          dismissed: false,
         },
       ],
       criticalAlerts: [
         {
           id: '1',
-          contactId: 'c1',
-          contactName: 'Test User',
+          contact_id: 'c1',
+          contact_name: 'Test User',
           type: 'relationship_declining',
           severity: 'critical',
           message: 'Score dropped',
-          createdAt: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          dismissed: false,
         },
       ],
     });

@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, memo } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
@@ -70,7 +70,7 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <span ref={ref} className={className}>0</span>;
 }
 
-export function StatCard({
+export const StatCard = memo(function StatCard({
   title,
   value,
   change,
@@ -201,7 +201,7 @@ export function StatCard({
       )}
     </motion.div>
   );
-}
+});
 
 // Compact stat for inline display
 interface MiniStatProps {
@@ -212,7 +212,7 @@ interface MiniStatProps {
   className?: string;
 }
 
-export function MiniStat({ label, value, icon: Icon, trend, className }: MiniStatProps) {
+export const MiniStat = memo(function MiniStat({ label, value, icon: Icon, trend, className }: MiniStatProps) {
   return (
     <div className={cn('flex items-center gap-2', className)}>
       {Icon && (
@@ -235,7 +235,7 @@ export function MiniStat({ label, value, icon: Icon, trend, className }: MiniSta
       </div>
     </div>
   );
-}
+});
 
 // Stats row for dashboard
 interface StatsRowProps {

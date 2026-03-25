@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -8,7 +9,7 @@ interface RelationshipScoreProps {
   className?: string;
 }
 
-export function RelationshipScore({ score, size = 'md', showLabel, className }: RelationshipScoreProps) {
+export const RelationshipScore = memo(function RelationshipScore({ score, size = 'md', showLabel, className }: RelationshipScoreProps) {
   const getColor = (score: number) => {
     if (score >= 80) return 'text-success';
     if (score >= 60) return 'text-primary';
@@ -57,4 +58,4 @@ export function RelationshipScore({ score, size = 'md', showLabel, className }: 
       )}
     </div>
   );
-}
+});

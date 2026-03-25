@@ -49,7 +49,7 @@ describe('DealVelocityPanel', () => {
   it('shows loading state with skeletons', () => {
     mockUseDealVelocity.mockReturnValue({ metrics: null, loading: true });
     const { container } = render(<DealVelocityPanel />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
@@ -116,7 +116,7 @@ describe('DealVelocityPanel', () => {
       },
     });
     render(<DealVelocityPanel />);
-    expect(screen.getByText('Proposta')).toBeInTheDocument();
+    expect(screen.getAllByText('Proposta').length).toBeGreaterThan(0);
     expect(screen.getByText('gargalo atual')).toBeInTheDocument();
   });
 
@@ -136,7 +136,7 @@ describe('DealVelocityPanel', () => {
       },
     });
     render(<DealVelocityPanel />);
-    expect(screen.getByText('Qualificação')).toBeInTheDocument();
+    expect(screen.getAllByText('Qualificação').length).toBeGreaterThan(0);
     expect(screen.getByText('mais rápido')).toBeInTheDocument();
   });
 

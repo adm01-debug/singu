@@ -55,7 +55,7 @@ vi.mock('recharts', () => ({
   Area: () => null,
 }));
 
-import NLPAnalyticsPanel from '../NLPAnalyticsPanel';
+import { NLPAnalyticsPanel } from '../NLPAnalyticsPanel';
 
 describe('NLPAnalyticsPanel', () => {
   it('renders without crashing', () => {
@@ -65,7 +65,7 @@ describe('NLPAnalyticsPanel', () => {
 
   it('shows loading state initially', () => {
     const { container } = render(<NLPAnalyticsPanel />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

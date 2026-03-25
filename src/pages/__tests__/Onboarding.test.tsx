@@ -4,8 +4,17 @@ import '@testing-library/jest-dom';
 
 const mockNavigate = vi.fn();
 
+const mockUseAuth = vi.fn().mockReturnValue({
+  user: { id: 'test-user', email: 'test@test.com', user_metadata: { first_name: 'Test', last_name: 'User' } },
+  session: { access_token: 'token' },
+  loading: false,
+  signIn: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+});
+
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: { id: 'test-user', email: 'test@test.com', user_metadata: { first_name: 'Test', last_name: 'User' } }, session: { access_token: 'token' }, loading: false, signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn() }),
+  useAuth: (...args: any[]) => mockUseAuth(...args),
   AuthProvider: ({ children }: any) => children,
 }));
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
@@ -62,37 +71,44 @@ describe('Onboarding Page', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
-  it('shows loading state when auth is loading', async () => {
-    const { useAuth } = await import('@/hooks/useAuth');
-    vi.mocked(useAuth).mockReturnValue({
+  it('shows loading state when auth is loading', () => {
+    mockUseAuth.mockReturnValue({
       user: null,
       session: null,
       loading: true,
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-    } as any);
+    });
 
     render(<Onboarding />);
     expect(screen.getByText('Carregando...')).toBeInTheDocument();
   });
 
-  it('redirects to auth when no user', async () => {
-    const { useAuth } = await import('@/hooks/useAuth');
-    vi.mocked(useAuth).mockReturnValue({
+  it('redirects to auth when no user', () => {
+    mockUseAuth.mockReturnValue({
       user: null,
       session: null,
       loading: false,
       signIn: vi.fn(),
       signUp: vi.fn(),
       signOut: vi.fn(),
-    } as any);
+    });
 
     render(<Onboarding />);
     expect(mockNavigate).toHaveBeenCalledWith('/auth');
   });
 
   it('does not redirect when user is present', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: 'test-user', email: 'test@test.com', user_metadata: { first_name: 'Test', last_name: 'User' } },
+      session: { access_token: 'token' },
+      loading: false,
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      signOut: vi.fn(),
+    });
+    mockNavigate.mockClear();
     render(<Onboarding />);
     expect(mockNavigate).not.toHaveBeenCalledWith('/auth');
   });

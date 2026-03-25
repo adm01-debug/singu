@@ -97,9 +97,8 @@ describe('WelcomeHeroCard', () => {
 
   it('renders today date', () => {
     render(<WelcomeHeroCard {...defaultProps} />);
-    // The component formats today's date in pt-BR
-    const container = document.body;
-    expect(container.innerHTML).toContain('202');
+    // The component formats today's date in pt-BR (e.g., "sábado, 21 de março")
+    expect(screen.getByText(/de março|de abril|de maio|de junho|de julho|de agosto|de setembro|de outubro|de novembro|de dezembro|de janeiro|de fevereiro/i)).toBeInTheDocument();
   });
 
   it('does not crash on re-render', () => {

@@ -27,7 +27,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
     try {
       let query = supabase
         .from('interactions')
-        .select('*', { count: 'exact' })
+        .select('id, contact_id, company_id, user_id, type, content, transcription, sentiment, duration, subject, channel, next_action, next_action_date, scheduled_date, outcome, created_at, updated_at', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(pageNum * pageSize, (pageNum + 1) * pageSize - 1);
 
@@ -175,7 +175,18 @@ export function useInteractions(contactId?: string, companyId?: string) {
     }
   };
 
-  const deleteInteraction = async (id: string) => {
+  const deleteInteraction = async (id: string, skipConfirmation = false) => {
+    if (!skipConfirmation) {
+      const confirmed = window.confirm(
+        'Tem certeza que deseja excluir esta interação? Esta ação não pode ser desfeita.'
+      );
+      if (!confirmed) return false;
+    }
+
+    // Optimistic update
+    const previousInteractions = interactions;
+    setInteractions(prev => prev.filter(i => i.id !== id));
+
     try {
       const { error } = await supabase
         .from('interactions')
@@ -184,13 +195,14 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
-      setInteractions(prev => prev.filter(i => i.id !== id));
       toast({
         title: 'Interação removida',
         description: 'A interação foi excluída com sucesso.',
       });
       return true;
     } catch (error) {
+      // Rollback on error
+      setInteractions(previousInteractions);
       logger.error('Error deleting interaction:', error);
       toast({
         title: 'Erro ao excluir interação',

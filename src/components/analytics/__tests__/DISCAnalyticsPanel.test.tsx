@@ -94,7 +94,7 @@ import DISCAnalyticsPanel from '../DISCAnalyticsPanel';
 describe('DISCAnalyticsPanel', () => {
   it('renders loading state initially', () => {
     const { container } = render(<DISCAnalyticsPanel />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 

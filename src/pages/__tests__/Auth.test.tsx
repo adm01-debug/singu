@@ -41,7 +41,7 @@ describe('Auth Page', () => {
 
   it('renders without crashing', () => {
     render(<Auth />);
-    expect(screen.getByText('Entrar')).toBeInTheDocument();
+    expect(screen.getByText('Digite suas credenciais para acessar')).toBeInTheDocument();
   });
 
   it('shows login form by default', () => {
@@ -64,8 +64,10 @@ describe('Auth Page', () => {
 
   it('toggles between login and signup mode', async () => {
     render(<Auth />);
-    const toggleButton = screen.getByText('Criar conta');
-    fireEvent.click(toggleButton);
+    // Find the toggle link (not the submit button)
+    const toggleButtons = screen.getAllByText('Criar conta');
+    // Click the last one which is the toggle link
+    fireEvent.click(toggleButtons[toggleButtons.length - 1]);
     expect(screen.getByText('Preencha os dados para começar')).toBeInTheDocument();
     expect(screen.getByLabelText('Nome')).toBeInTheDocument();
     expect(screen.getByLabelText('Sobrenome')).toBeInTheDocument();
@@ -73,7 +75,8 @@ describe('Auth Page', () => {
 
   it('shows signup form fields', () => {
     render(<Auth />);
-    fireEvent.click(screen.getByText('Criar conta'));
+    const toggleButtons = screen.getAllByText('Criar conta');
+    fireEvent.click(toggleButtons[toggleButtons.length - 1]);
     expect(screen.getByPlaceholderText('João')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Silva')).toBeInTheDocument();
   });
@@ -91,7 +94,8 @@ describe('Auth Page', () => {
 
   it('shows terms text in signup mode', () => {
     render(<Auth />);
-    fireEvent.click(screen.getByText('Criar conta'));
+    const toggleButtons = screen.getAllByText('Criar conta');
+    fireEvent.click(toggleButtons[toggleButtons.length - 1]);
     expect(screen.getByText(/Termos de Uso/)).toBeInTheDocument();
   });
 

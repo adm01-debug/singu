@@ -41,49 +41,67 @@ vi.mock('recharts', () => ({
   Line: () => null,
 }));
 
-import { DashboardCharts } from '../DashboardCharts';
+import { ActivityChart, RelationshipEvolutionChart, ContactDistributionChart, RelationshipScoreChart, SentimentChart } from '../DashboardCharts';
 
 describe('DashboardCharts', () => {
-  it('renders without crashing', () => {
-    const { container } = render(<DashboardCharts period="7d" />);
-    expect(container).toBeTruthy();
+  describe('ActivityChart', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<ActivityChart period="7d" />);
+      expect(container).toBeTruthy();
+    });
+
+    it('renders with 7d period', () => {
+      const { container } = render(<ActivityChart period="7d" />);
+      expect(container.innerHTML).not.toBe('');
+    });
+
+    it('renders with 30d period', () => {
+      const { container } = render(<ActivityChart period="30d" />);
+      expect(container).toBeTruthy();
+    });
+
+    it('renders with 90d period', () => {
+      const { container } = render(<ActivityChart period="90d" />);
+      expect(container).toBeTruthy();
+    });
+
+    it('does not crash on re-render with different period', () => {
+      const { rerender } = render(<ActivityChart period="7d" />);
+      expect(() => rerender(<ActivityChart period="30d" />)).not.toThrow();
+    });
   });
 
-  it('renders with 7d period', () => {
-    const { container } = render(<DashboardCharts period="7d" />);
-    expect(container.innerHTML).not.toBe('');
+  describe('ContactDistributionChart', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<ContactDistributionChart />);
+      expect(container).toBeTruthy();
+    });
+
+    it('renders pie chart', () => {
+      render(<ContactDistributionChart />);
+      const chart = document.querySelector('[data-testid="pie-chart"]');
+      expect(chart).toBeTruthy();
+    });
   });
 
-  it('renders with 30d period', () => {
-    const { container } = render(<DashboardCharts period="30d" />);
-    expect(container).toBeTruthy();
+  describe('RelationshipEvolutionChart', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<RelationshipEvolutionChart period="7d" />);
+      expect(container).toBeTruthy();
+    });
   });
 
-  it('renders with 90d period', () => {
-    const { container } = render(<DashboardCharts period="90d" />);
-    expect(container).toBeTruthy();
+  describe('RelationshipScoreChart', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<RelationshipScoreChart period="7d" />);
+      expect(container).toBeTruthy();
+    });
   });
 
-  it('renders charts', () => {
-    render(<DashboardCharts period="7d" />);
-    const charts = document.querySelectorAll('[data-testid]');
-    expect(charts.length).toBeGreaterThan(0);
-  });
-
-  it('does not crash on re-render with different period', () => {
-    const { rerender } = render(<DashboardCharts period="7d" />);
-    expect(() => rerender(<DashboardCharts period="30d" />)).not.toThrow();
-  });
-
-  it('renders card containers', () => {
-    const { container } = render(<DashboardCharts period="7d" />);
-    const cards = container.querySelectorAll('[class*="card"], [class*="Card"]');
-    expect(cards.length).toBeGreaterThan(0);
-  });
-
-  it('renders chart titles', () => {
-    const { container } = render(<DashboardCharts period="7d" />);
-    const headings = container.querySelectorAll('h3, [class*="title"], [class*="Title"]');
-    expect(headings.length).toBeGreaterThan(0);
+  describe('SentimentChart', () => {
+    it('renders without crashing', () => {
+      const { container } = render(<SentimentChart period="7d" />);
+      expect(container).toBeTruthy();
+    });
   });
 });

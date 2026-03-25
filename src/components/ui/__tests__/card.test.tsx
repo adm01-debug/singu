@@ -30,7 +30,7 @@ describe('Card', () => {
 
   it('applies custom padding', () => {
     const { container } = render(<Card padding="lg">Padded</Card>);
-    expect(container.firstChild).toHaveClass('p-8');
+    expect(container.firstChild?.className).toContain('p-8');
   });
 
   it('merges custom className', () => {

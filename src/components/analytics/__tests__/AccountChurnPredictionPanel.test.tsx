@@ -53,7 +53,7 @@ describe('AccountChurnPredictionPanel', () => {
   it('shows loading state with skeletons', () => {
     mockUseAccountChurnPrediction.mockReturnValue({ ...defaultMock, loading: true });
     const { container } = render(<AccountChurnPredictionPanel />);
-    const skeletons = container.querySelectorAll('.animate-pulse, [class*="skeleton"], [class*="Skeleton"]');
+    const skeletons = container.querySelectorAll('[class*="bg-muted"], [class*="shimmer"], .animate-pulse');
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
