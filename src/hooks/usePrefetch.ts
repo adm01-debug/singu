@@ -17,7 +17,7 @@ export function usePrefetch() {
         const { data } = await supabase
           .from('contacts')
           .select(`
-            *,
+            id, first_name, last_name, email, phone, avatar_url, company_id, role, relationship_score, relationship_stage, sentiment, behavior, birthday, notes, tags, lead_source, preferred_contact_method, preferred_contact_time, purchase_history, communication_style, next_purchase_date, custom_fields, created_at, updated_at, user_id,
             company:companies(id, name, industry, logo_url),
             interactions:interactions(id, title, type, created_at, sentiment)
           `)
@@ -39,7 +39,7 @@ export function usePrefetch() {
         const { data } = await supabase
           .from('companies')
           .select(`
-            *,
+            id, name, industry, logo_url, website, cnpj, segment, size, address, city, state, country, phone, email, notes, social_links, created_at, updated_at, user_id,
             contacts:contacts(id, first_name, last_name, role, avatar_url)
           `)
           .eq('id', companyId)
@@ -59,7 +59,7 @@ export function usePrefetch() {
       queryFn: async () => {
         const { data } = await supabase
           .from('interactions')
-          .select('*')
+          .select('id, type, title, content, sentiment, tags, duration, attachments, audio_url, transcription, key_insights, initiated_by, response_time, follow_up_required, follow_up_date, emotion_analysis, created_at, contact_id, company_id, user_id')
           .eq('contact_id', contactId)
           .order('created_at', { ascending: false })
           .limit(20);

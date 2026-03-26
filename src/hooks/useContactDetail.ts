@@ -45,7 +45,7 @@ export function useContactDetail(contactId: string | undefined) {
     try {
       const { data: contactData, error: contactError } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, first_name, last_name, email, phone, avatar_url, company_id, role, relationship_score, relationship_stage, sentiment, behavior, birthday, notes, tags, lead_source, preferred_contact_method, preferred_contact_time, purchase_history, communication_style, next_purchase_date, custom_fields, created_at, updated_at, user_id')
         .eq('id', contactId)
         .single();
 
@@ -61,7 +61,7 @@ export function useContactDetail(contactId: string | undefined) {
       if (contactData?.company_id) {
         const { data: localCompany } = await supabase
           .from('companies')
-          .select('*')
+          .select('id, name, industry, logo_url, website, cnpj, segment, size, address, city, state, country, phone, email, notes, social_links, created_at, updated_at, user_id')
           .eq('id', contactData.company_id)
           .single();
 

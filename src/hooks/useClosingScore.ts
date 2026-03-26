@@ -96,12 +96,12 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
         emotionalResult,
         vakResult
       ] = await Promise.all([
-        supabase.from('contacts').select('*').eq('id', contactId).maybeSingle(),
-        supabase.from('interactions').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }),
-        supabase.from('client_values').select('*').eq('contact_id', contactId),
-        supabase.from('hidden_objections').select('*').eq('contact_id', contactId),
-        supabase.from('emotional_states_history').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }),
-        supabase.from('vak_analysis_history').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(1)
+        supabase.from('contacts').select('id, first_name, last_name, relationship_score, sentiment, behavior').eq('id', contactId).maybeSingle(),
+        supabase.from('interactions').select('id, created_at, contact_id').eq('contact_id', contactId).order('created_at', { ascending: false }),
+        supabase.from('client_values').select('id, contact_id, importance, value_name').eq('contact_id', contactId),
+        supabase.from('hidden_objections').select('id, contact_id, resolved, objection_type').eq('contact_id', contactId),
+        supabase.from('emotional_states_history').select('id, contact_id, emotional_state, confidence, created_at').eq('contact_id', contactId).order('created_at', { ascending: false }),
+        supabase.from('vak_analysis_history').select('id, contact_id, visual_score, auditory_score, kinesthetic_score, digital_score, created_at').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(1)
       ]);
 
       const contact = contactResult.data;
@@ -433,7 +433,7 @@ export function useClosingScore(contactId: string, contactName?: string): Closin
       // Get the last stored score from alerts
       const { data: lastAlerts } = await supabase
         .from('alerts')
-        .select('*')
+        .select('id, description, created_at')
         .eq('user_id', user.id)
         .eq('contact_id', cId)
         .eq('type', 'closing_score_change')

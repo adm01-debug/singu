@@ -48,7 +48,7 @@ export function useRFMAnalysis(contactId?: string) {
     try {
       let query = supabase
         .from('rfm_analysis')
-        .select('*')
+        .select('id, user_id, contact_id, recency_score, frequency_score, monetary_score, rfm_score, total_score, days_since_last_purchase, days_since_last_interaction, total_purchases, total_interactions, total_monetary_value, average_order_value, segment, segment_description, segment_color, recency_trend, frequency_trend, monetary_trend, overall_trend, predicted_next_purchase_date, predicted_lifetime_value, churn_probability, recommended_actions, recommended_offers, communication_priority, analyzed_at, created_at, updated_at')
         .eq('user_id', user.id);
       
       if (contactId) {
@@ -107,7 +107,7 @@ export function useRFMAnalysis(contactId?: string) {
     try {
       const { data, error } = await supabase
         .from('rfm_history')
-        .select('*')
+        .select('id, contact_id, recency_score, frequency_score, monetary_score, segment, total_monetary_value, recorded_at')
         .eq('user_id', user.id)
         .eq('contact_id', contactId)
         .order('recorded_at', { ascending: false })
@@ -138,22 +138,30 @@ export function useRFMAnalysis(contactId?: string) {
     
     setAnalyzing(true);
     try {
-      // Get purchase history for all contacts
+      // Get purchase history for all contacts (with field projection)
       const { data: purchaseData } = await supabase
         .from('purchase_history')
-        .select('*')
+        .select('id, contact_id, amount, purchase_date')
         .eq('user_id', user.id);
-      
+
+      // Pre-index interactions by contact_id using Map for O(1) lookup
+      const interactionsByContact = new Map<string, typeof interactions>();
+      interactions.forEach(i => {
+        const list = interactionsByContact.get(i.contact_id ?? '') || [];
+        list.push(i);
+        interactionsByContact.set(i.contact_id ?? '', list);
+      });
+
       // Calculate metrics per contact
       const contactMetrics: Map<string, PurchaseData> = new Map();
-      
-      // Initialize with interaction data
+
+      // Initialize with interaction data (O(1) lookup per contact)
       contacts.forEach(contact => {
-        const contactInteractions = interactions.filter(i => i.contact_id === contact.id);
+        const contactInteractions = interactionsByContact.get(contact.id) || [];
         const lastInteraction = contactInteractions.length > 0
           ? new Date(Math.max(...contactInteractions.map(i => new Date(i.created_at).getTime())))
           : null;
-        
+
         contactMetrics.set(contact.id, {
           contactId: contact.id,
           totalPurchases: 0,
@@ -210,7 +218,7 @@ export function useRFMAnalysis(contactId?: string) {
           ? differenceInDays(new Date(), metrics.lastPurchaseDate)
           : 999;
         
-        const contactInteractions = interactions.filter(i => i.contact_id === contactId);
+        const contactInteractions = interactionsByContact.get(contactId) || [];
         const lastInteraction = contactInteractions.length > 0
           ? new Date(Math.max(...contactInteractions.map(i => new Date(i.created_at).getTime())))
           : null;
@@ -268,18 +276,18 @@ export function useRFMAnalysis(contactId?: string) {
         });
       }
       
-      // Upsert RFM analysis
-      for (const result of rfmResults) {
-        const { error } = await supabase
+      // Batch upsert RFM analysis (single query instead of N sequential queries)
+      if (rfmResults.length > 0) {
+        const { error: upsertError } = await supabase
           .from('rfm_analysis')
-          .upsert(result, { onConflict: 'user_id,contact_id' });
-        
-        if (error) {
-          logger.error('Error upserting RFM:', error);
+          .upsert(rfmResults, { onConflict: 'user_id,contact_id' });
+
+        if (upsertError) {
+          logger.error('Error batch upserting RFM:', upsertError);
         }
-        
-        // Save to history
-        await supabase.from('rfm_history').insert({
+
+        // Batch insert history records
+        const historyRecords = rfmResults.map(result => ({
           user_id: user.id,
           contact_id: result.contact_id,
           recency_score: result.recency_score,
@@ -287,7 +295,15 @@ export function useRFMAnalysis(contactId?: string) {
           monetary_score: result.monetary_score,
           segment: result.segment,
           total_monetary_value: result.total_monetary_value
-        });
+        }));
+
+        const { error: historyError } = await supabase
+          .from('rfm_history')
+          .insert(historyRecords);
+
+        if (historyError) {
+          logger.error('Error batch inserting RFM history:', historyError);
+        }
       }
       
       // Refresh data

@@ -46,7 +46,7 @@ export function useClosingScoreAlerts() {
     try {
       const { data, error } = await supabase
         .from('alerts')
-        .select('*')
+        .select('id, contact_id, type, title, description, priority, dismissed, created_at')
         .eq('user_id', user.id)
         .eq('type', 'closing_score_change')
         .eq('dismissed', false)
@@ -98,7 +98,7 @@ export function useClosingScoreAlerts() {
       // Get the last stored score for this contact
       const { data: lastAlert } = await supabase
         .from('alerts')
-        .select('*')
+        .select('id, description, created_at')
         .eq('user_id', user.id)
         .eq('contact_id', contactId)
         .eq('type', 'closing_score_change')

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Circle, User, Users, MessageSquare, Building2, X, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -24,7 +24,7 @@ interface OnboardingChecklistProps {
   hasInteractions: boolean;
 }
 
-export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, hasInteractions }: OnboardingChecklistProps) {
+export const OnboardingChecklist = memo(function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, hasInteractions }: OnboardingChecklistProps) {
   const [dismissed, setDismissed] = useState(false);
 
   // Check localStorage for dismiss state
@@ -109,4 +109,4 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
       </Surface>
     </motion.div>
   );
-}
+});

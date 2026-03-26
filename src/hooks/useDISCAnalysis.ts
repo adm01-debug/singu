@@ -259,7 +259,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
     try {
       const { data, error } = await supabase
         .from('disc_analysis_history')
-        .select('*')
+        .select('id, user_id, contact_id, interaction_id, dominance_score, influence_score, steadiness_score, conscientiousness_score, primary_profile, secondary_profile, blend_profile, stress_primary, stress_secondary, confidence, analysis_source, detected_keywords, detected_phrases, behavior_indicators, analyzed_text, analysis_notes, profile_summary, analyzed_at, created_at')
         .eq('user_id', user.id)
         .eq('contact_id', contactId)
         .order('analyzed_at', { ascending: false })
@@ -309,7 +309,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
     try {
       const { data, error } = await supabase
         .from('disc_analysis_history')
-        .select('*')
+        .select('id, user_id, contact_id, interaction_id, dominance_score, influence_score, steadiness_score, conscientiousness_score, primary_profile, secondary_profile, blend_profile, confidence, analysis_source, detected_keywords, detected_phrases, behavior_indicators, analyzed_text, profile_summary, analyzed_at, created_at')
         .eq('user_id', user.id)
         .eq('contact_id', contactId)
         .order('analyzed_at', { ascending: false })
@@ -417,7 +417,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
       // Fetch recent analyses
       const { data: recentAnalyses } = await supabase
         .from('disc_analysis_history')
-        .select('*')
+        .select('id, user_id, contact_id, interaction_id, dominance_score, influence_score, steadiness_score, conscientiousness_score, primary_profile, secondary_profile, blend_profile, confidence, analysis_source, detected_keywords, detected_phrases, behavior_indicators, analyzed_text, profile_summary, analyzed_at, created_at')
         .eq('user_id', user.id)
         .order('analyzed_at', { ascending: false })
         .limit(10);

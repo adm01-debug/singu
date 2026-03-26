@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -59,7 +59,7 @@ interface CompanyCardWithContextProps {
   onUpdate: (id: string, data: Partial<Company>) => Promise<Company | null>;
 }
 
-export function CompanyCardWithContext({
+export const CompanyCardWithContext = memo(function CompanyCardWithContext({
   company,
   index,
   isSelected,
@@ -262,4 +262,4 @@ export function CompanyCardWithContext({
       </QuickActionsMenu>
     </motion.div>
   );
-}
+});

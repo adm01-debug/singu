@@ -50,7 +50,7 @@ export function useCompatibilityAlerts() {
       // 1. Fetch user settings
       const { data: settingsData } = await supabase
         .from('compatibility_settings')
-        .select('*')
+        .select('id, user_id, alert_threshold, alert_only_important, important_min_relationship_score')
         .eq('user_id', user.id)
         .maybeSingle();
 

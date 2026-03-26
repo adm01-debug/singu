@@ -91,8 +91,7 @@ export function useNLPAutoAnalysis() {
         await saveVAKAnalysis(contactId, vakResult, text, interactionId);
       } catch (vakError) {
         logger.error('VAK analysis/save error:', vakError);
-        analysisQueue.current.delete(analysisKey);
-        return null;
+        // Continue with other analyses instead of aborting entirely
       }
 
       // 2. Metaprogram Analysis
@@ -102,8 +101,7 @@ export function useNLPAutoAnalysis() {
         await saveMetaprogramAnalysis(contactId, interactionId, metaResult, text);
       } catch (metaError) {
         logger.error('Metaprogram analysis/save error:', metaError);
-        analysisQueue.current.delete(analysisKey);
-        return null;
+        // Continue with other analyses
       }
 
       // 3. Emotional State Analysis
@@ -124,7 +122,11 @@ export function useNLPAutoAnalysis() {
         if (emotionalInsertError) throw emotionalInsertError;
       } catch (emotionalError) {
         logger.error('Emotional state save error:', emotionalError);
-        analysisQueue.current.delete(analysisKey);
+        // Continue - partial results are better than no results
+      }
+
+      // If all analyses failed, return null
+      if (!vakResult && !metaResult) {
         return null;
       }
 
@@ -244,21 +246,21 @@ export function useNLPAutoAnalysis() {
       const [vakData, metaData, emotionalData] = await Promise.all([
         supabase
           .from('vak_analysis_history')
-          .select('*')
+          .select('id, contact_id, user_id, dominant_system, visual_score, auditory_score, kinesthetic_score, digital_score, confidence, created_at')
           .eq('contact_id', contactId)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(20),
         supabase
           .from('metaprogram_analysis')
-          .select('*')
+          .select('id, contact_id, user_id, scores, dominant_patterns, confidence, created_at')
           .eq('contact_id', contactId)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(20),
         supabase
           .from('emotional_states_history')
-          .select('*')
+          .select('id, contact_id, user_id, emotional_state, confidence, trigger, context, created_at')
           .eq('contact_id', contactId)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })

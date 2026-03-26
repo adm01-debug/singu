@@ -62,14 +62,14 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
 
       // Fetch all required data in parallel
       const [contactsResult, companiesResult, interactionsResult, insightsResult] = await Promise.all([
-        supabase.from('contacts').select('*').order('updated_at', { ascending: false }),
-        supabase.from('companies').select('*'),
+        supabase.from('contacts').select('id, first_name, last_name, company_id, birthday, relationship_score, relationship_stage, sentiment, role, avatar_url, created_at, updated_at, user_id').order('updated_at', { ascending: false }),
+        supabase.from('companies').select('id, name, industry, logo_url'),
         supabase.from('interactions')
-          .select('*')
+          .select('id, contact_id, company_id, type, title, content, sentiment, follow_up_required, follow_up_date, created_at, user_id')
           .eq('follow_up_required', true)
           .order('follow_up_date', { ascending: true }),
         supabase.from('insights')
-          .select('*')
+          .select('id, category, title, description, confidence, source, actionable, action_suggestion, expires_at, dismissed, created_at, contact_id, user_id')
           .eq('dismissed', false)
           .order('created_at', { ascending: false })
           .limit(5),

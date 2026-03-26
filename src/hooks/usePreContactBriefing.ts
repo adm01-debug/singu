@@ -282,7 +282,7 @@ export function usePreContactBriefing(): PreContactBriefingData {
       // Fetch upcoming follow-ups (calls/meetings in next 60 min)
       const { data: interactions, error: interactionsError } = await supabase
         .from('interactions')
-        .select('*')
+        .select('id, contact_id, company_id, type, title, content, transcription, follow_up_required, follow_up_date, created_at')
         .eq('follow_up_required', true)
         .not('follow_up_date', 'is', null)
         .in('type', ['call', 'meeting', 'video_call'])
@@ -308,12 +308,12 @@ export function usePreContactBriefing(): PreContactBriefingData {
 
       // Fetch contacts, companies, and recent interactions in parallel
       const [contactsResult, companiesResult, recentInteractionsResult, valuesResult, objectionsResult, vakResult] = await Promise.all([
-        supabase.from('contacts').select('*').in('id', contactIds),
-        supabase.from('companies').select('*'),
-        supabase.from('interactions').select('*').in('contact_id', contactIds).order('created_at', { ascending: false }).limit(50),
-        supabase.from('client_values').select('*').in('contact_id', contactIds).order('importance', { ascending: false }),
-        supabase.from('hidden_objections').select('*').in('contact_id', contactIds).eq('resolved', false),
-        supabase.from('vak_analysis_history').select('*').in('contact_id', contactIds).order('created_at', { ascending: false })
+        supabase.from('contacts').select('id, first_name, last_name, company_id, behavior, relationship_score, sentiment, role, email, phone, avatar_url, birthday, relationship_stage, created_at, updated_at, user_id').in('id', contactIds),
+        supabase.from('companies').select('id, name, industry, logo_url, website, cnpj, segment, size, created_at, updated_at, user_id'),
+        supabase.from('interactions').select('id, contact_id, type, title, content, transcription, created_at').in('contact_id', contactIds).order('created_at', { ascending: false }).limit(50),
+        supabase.from('client_values').select('id, contact_id, value_name, importance').in('contact_id', contactIds).order('importance', { ascending: false }),
+        supabase.from('hidden_objections').select('id, contact_id, objection_type, resolved').in('contact_id', contactIds).eq('resolved', false),
+        supabase.from('vak_analysis_history').select('id, contact_id, visual_score, auditory_score, kinesthetic_score, digital_score, created_at').in('contact_id', contactIds).order('created_at', { ascending: false })
       ]);
 
       const contacts = contactsResult.data || [];

@@ -214,7 +214,7 @@ export function useVAKAnalysis() {
     try {
       const { data, error } = await supabase
         .from('vak_analysis_history')
-        .select('*')
+        .select('id, contact_id, interaction_id, visual_score, auditory_score, kinesthetic_score, digital_score, visual_words, auditory_words, kinesthetic_words, digital_words, analyzed_text, created_at')
         .eq('contact_id', contactId)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });

@@ -98,7 +98,7 @@ export function useBehaviorAlerts() {
       const { data: existingAlerts, error } = await supabase
         .from('alerts')
         .select(`
-          *,
+          id, contact_id, type, title, description, priority, action_url, dismissed, created_at,
           contacts:contact_id (
             first_name,
             last_name
@@ -155,7 +155,7 @@ export function useBehaviorAlerts() {
       // Get all contacts with their recent data
       const { data: contacts, error: contactsError } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, first_name, last_name, relationship_score, relationship_stage, sentiment, updated_at')
         .order('updated_at', { ascending: false });
 
       if (contactsError) throw contactsError;
@@ -166,7 +166,7 @@ export function useBehaviorAlerts() {
 
       const { data: recentInteractions, error: interactionsError } = await supabase
         .from('interactions')
-        .select('*')
+        .select('id, contact_id, sentiment, created_at')
         .gte('created_at', thirtyDaysAgo.toISOString());
 
       if (interactionsError) throw interactionsError;

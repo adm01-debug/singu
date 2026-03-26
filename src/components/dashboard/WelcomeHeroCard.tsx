@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Users, Calendar } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +12,7 @@ interface WelcomeHeroCardProps {
   averageScore: string | number;
 }
 
-export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScore }: WelcomeHeroCardProps) {
+export const WelcomeHeroCard = memo(function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScore }: WelcomeHeroCardProps) {
   const { user } = useAuth();
   
   const hour = new Date().getHours();
@@ -58,4 +59,4 @@ export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScor
       </Surface>
     </motion.div>
   );
-}
+});

@@ -83,20 +83,20 @@ export function useClosingScoreRanking(
       ] = await Promise.all([
         supabase
           .from('interactions')
-          .select('*')
+          .select('id, contact_id, created_at')
           .eq('contact_id', contact.id)
           .order('created_at', { ascending: false }),
         supabase
           .from('client_values')
-          .select('*')
+          .select('id, contact_id, importance')
           .eq('contact_id', contact.id),
         supabase
           .from('hidden_objections')
-          .select('*')
+          .select('id, contact_id, resolved')
           .eq('contact_id', contact.id),
         supabase
           .from('emotional_states_history')
-          .select('*')
+          .select('id, contact_id, emotional_state, created_at')
           .eq('contact_id', contact.id)
           .order('created_at', { ascending: false })
           .limit(5)
@@ -248,7 +248,7 @@ export function useClosingScoreRanking(
       // Fetch all contacts
       const { data: contacts, error } = await supabase
         .from('contacts')
-        .select('*')
+        .select('id, first_name, last_name, relationship_score, sentiment, behavior, relationship_stage, role, company_id, avatar_url, user_id, created_at, updated_at')
         .eq('user_id', user.id)
         .order('first_name');
 

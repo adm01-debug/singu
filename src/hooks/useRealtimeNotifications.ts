@@ -221,21 +221,21 @@ export function useRealtimeNotifications() {
       const [alertsRes, insightsRes, healthAlertsRes] = await Promise.allSettled([
         supabase
           .from('alerts')
-          .select('*')
+          .select('id, title, description, contact_id, created_at, action_url')
           .eq('user_id', userId)
           .eq('dismissed', false)
           .order('created_at', { ascending: false })
           .limit(20),
         supabase
           .from('insights')
-          .select('*')
+          .select('id, title, description, contact_id, created_at')
           .eq('user_id', userId)
           .eq('dismissed', false)
           .order('created_at', { ascending: false })
           .limit(10),
         supabase
           .from('health_alerts')
-          .select('*')
+          .select('id, title, description, contact_id, created_at, alert_type')
           .eq('user_id', userId)
           .eq('dismissed', false)
           .order('created_at', { ascending: false })

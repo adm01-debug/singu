@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -45,7 +45,7 @@ interface ContactCardWithContextProps {
   viewMode: 'grid' | 'list';
 }
 
-export function ContactCardWithContext({
+export const ContactCardWithContext = memo(function ContactCardWithContext({
   contact,
   companyName,
   lastInteraction,
@@ -353,4 +353,4 @@ export function ContactCardWithContext({
       </QuickActionsMenu>
     </motion.div>
   );
-}
+});

@@ -66,7 +66,7 @@ export function useHealthAlerts() {
       const { data, error } = await supabase
         .from('health_alerts')
         .select(`
-          *,
+          id, user_id, contact_id, alert_type, health_score, previous_score, title, description, factors, dismissed, notified_via, created_at,
           contact:contacts(first_name, last_name)
         `)
         .eq('user_id', user.id)
@@ -90,7 +90,7 @@ export function useHealthAlerts() {
     try {
       const { data, error } = await supabase
         .from('health_alert_settings')
-        .select('*')
+        .select('id, user_id, email_notifications, push_notifications, critical_threshold, warning_threshold, check_frequency_hours, notify_on_critical, notify_on_warning, email_address')
         .eq('user_id', user.id)
         .maybeSingle();
 
