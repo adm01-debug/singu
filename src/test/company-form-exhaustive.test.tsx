@@ -439,15 +439,21 @@ describe('CompanyForm — Null Safety & Edge Cases', () => {
 // SECTION 7: DATA MAPPING (EXTERNAL → LOCAL)
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — External Data Mapping', () => {
-  it('maps nome_crm as primary name', () => {
-    const ext = { ...minimalCompany, nome_crm: 'CRM Name', nome_fantasia: 'Fantasy', razao_social: 'Legal' };
+  it('maps nome_crm as primary name when name is empty', () => {
+    const ext = { ...minimalCompany, name: '', nome_crm: 'CRM Name', nome_fantasia: 'Fantasy', razao_social: 'Legal' };
     renderForm(ext);
-    // name field should show nome_crm (or minimalCompany.name since we set it)
     const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
     expect(nameInput).toHaveValue('CRM Name');
   });
 
-  it('falls back to nome_fantasia when nome_crm is empty', () => {
+  it('uses name field when available', () => {
+    const ext = { ...minimalCompany, name: 'Direct Name', nome_crm: 'CRM Name' };
+    renderForm(ext);
+    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    expect(nameInput).toHaveValue('Direct Name');
+  });
+
+  it('falls back to nome_fantasia when name and nome_crm are empty', () => {
     const ext = { ...minimalCompany, name: '', nome_crm: '', nome_fantasia: 'Fantasy Name', razao_social: 'Legal' };
     renderForm(ext);
     const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
