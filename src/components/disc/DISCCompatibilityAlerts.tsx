@@ -88,6 +88,9 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
         if (disc && ['D', 'I', 'S', 'C'].includes(disc)) {
           setSellerProfile(disc as Exclude<DISCProfile, null>);
         }
+      })
+      .catch(() => {
+        // Profile fetch failed - use default seller profile
       });
   }, [user]);
 

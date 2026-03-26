@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Bell,
@@ -37,13 +37,15 @@ export function TemplateNotificationSettings({ className }: { className?: string
   const [pushEnabled, setPushEnabled] = useState(false);
 
   // Check push subscription status on mount
-  useState(() => {
+  useEffect(() => {
     if (isPushSupported()) {
       getSubscriptionStatus().then(({ isSubscribed }) => {
         setPushEnabled(isSubscribed);
+      }).catch(() => {
+        // Push status check failed - leave disabled
       });
     }
-  });
+  }, []);
 
   const handleToggleEnabled = async (enabled: boolean) => {
     setSaving(true);

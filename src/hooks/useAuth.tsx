@@ -135,10 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(existingSession);
       setUser(existingSession?.user ?? null);
       setLoading(false);
-      
+
       if (existingSession) {
         scheduleTokenRefresh(existingSession);
       }
+    }).catch((err) => {
+      logger.error('Failed to get initial session:', err);
+      setLoading(false);
     });
 
     // Cleanup
