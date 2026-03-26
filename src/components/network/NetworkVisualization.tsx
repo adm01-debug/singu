@@ -290,7 +290,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={refetch}>
+                  <Button variant="ghost" size="icon" onClick={refetch} aria-label="Atualizar">
                     <RefreshCw className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
@@ -389,7 +389,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleZoomIn} className="shadow-lg">
+                <Button size="icon" variant="secondary" onClick={handleZoomIn} className="shadow-lg" aria-label="Aumentar zoom">
                   <ZoomIn className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -400,7 +400,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleZoomOut} className="shadow-lg">
+                <Button size="icon" variant="secondary" onClick={handleZoomOut} className="shadow-lg" aria-label="Diminuir zoom">
                   <ZoomOut className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -411,7 +411,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleCenter} className="shadow-lg">
+                <Button size="icon" variant="secondary" onClick={handleCenter} className="shadow-lg" aria-label="Centralizar">
                   <Maximize2 className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>

@@ -100,7 +100,8 @@ export const useNotifications = () => {
         });
         return false;
       }
-    } catch {
+    } catch (_err) {
+      logger.error('Failed to subscribe to push notifications:', _err);
       toast({
         title: 'Erro',
         description: 'Ocorreu um erro ao ativar as notificações.',
@@ -125,7 +126,8 @@ export const useNotifications = () => {
         });
       }
       return success;
-    } catch {
+    } catch (_err) {
+      logger.error('Failed to unsubscribe from push notifications:', _err);
       return false;
     } finally {
       setIsLoading(false);
@@ -159,7 +161,8 @@ export const useNotifications = () => {
         });
       }
       return true;
-    } catch {
+    } catch (_err) {
+      logger.error('Failed to show notification:', _err);
       return false;
     }
   }, [permissionState.permission, requestPermission]);
@@ -310,7 +313,8 @@ export const useNotifications = () => {
       let notifiedAlerts: string[] = [];
       try {
         notifiedAlerts = JSON.parse(localStorage.getItem('notified_stakeholder_alerts') || '[]');
-      } catch {
+      } catch (_err) {
+        // localStorage unavailable
         notifiedAlerts = [];
       }
 

@@ -105,7 +105,7 @@ export function NotificationGroup({
             Limpar todos
           </Button>
           {hasMore && (
-            <Button variant="ghost" size="icon" className="h-6 w-6">
+            <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={isExpanded ? "Recolher" : "Expandir"}>
               {isExpanded ? (
                 <ChevronUp className="w-4 h-4" />
               ) : (

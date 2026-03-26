@@ -103,7 +103,8 @@ export function InlineEdit({
       } else {
         setError('Erro ao salvar');
       }
-    } catch {
+    } catch (_err) {
+      logger.error('Inline edit save failed:', _err);
       setError('Erro ao salvar');
     } finally {
       isSavingRef.current = false;

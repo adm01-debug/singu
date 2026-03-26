@@ -246,7 +246,8 @@ export function useContactDetail(contactId: string | undefined) {
       });
 
       return updatedContact;
-    } catch {
+    } catch (_err) {
+      logger.error('Failed to update contact:', _err);
       toast({
         title: 'Erro ao atualizar contato',
         description: 'Verifique os dados e tente novamente.',
@@ -288,7 +289,8 @@ export function useContactDetail(contactId: string | undefined) {
       });
 
       return newInteraction;
-    } catch {
+    } catch (_err) {
+      logger.error('Failed to add interaction:', _err);
       toast({
         title: 'Erro ao registrar interação',
         description: 'Verifique os dados e tente novamente.',

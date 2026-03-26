@@ -24,8 +24,8 @@ export function useEasterEggs() {
       if (stored) {
         setDiscoveredEggs(new Set(JSON.parse(stored)));
       }
-    } catch {
-      // Ignore errors
+    } catch (_err) {
+      // localStorage unavailable
     }
   }, []);
 

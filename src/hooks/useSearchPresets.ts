@@ -22,7 +22,8 @@ export function useSearchPresets(context: string = 'contacts') {
     try {
       const stored = localStorage.getItem(storageKey);
       return stored ? JSON.parse(stored) : [];
-    } catch {
+    } catch (_err) {
+      // localStorage unavailable
       return [];
     }
   });
@@ -31,8 +32,8 @@ export function useSearchPresets(context: string = 'contacts') {
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(presets));
-    } catch {
-      // silently fail
+    } catch (_err) {
+      // localStorage unavailable
     }
   }, [presets, storageKey]);
 

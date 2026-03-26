@@ -130,8 +130,8 @@ export function QuickActionsMenu({
           title: entityName,
           url,
         });
-      } catch {
-        // User cancelled
+      } catch (_err) {
+        // User cancelled share dialog
       }
     } else {
       navigator.clipboard.writeText(url);

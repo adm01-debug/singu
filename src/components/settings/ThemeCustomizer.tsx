@@ -87,8 +87,8 @@ function loadSavedTheme(): CustomTheme {
     if (saved) {
       return JSON.parse(saved);
     }
-  } catch {
-    // Ignore parse errors
+  } catch (_err) {
+    // localStorage unavailable
   }
   return getDefaultTheme();
 }

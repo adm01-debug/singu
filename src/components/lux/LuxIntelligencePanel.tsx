@@ -126,7 +126,7 @@ const SocialProfileCard = ({ profile }: { profile: SocialProfile }) => {
           </Badge>
         )}
         {profile.url && (
-          <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Abrir link externo">
             <a href={profile.url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
@@ -157,14 +157,14 @@ const StakeholderCard = ({ stakeholder, index }: { stakeholder: Stakeholder; ind
     </div>
     <div className="flex items-center gap-1">
       {stakeholder.email && (
-        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Enviar e-mail">
           <a href={`mailto:${stakeholder.email}`}>
             <Share2 className="w-3.5 h-3.5" />
           </a>
         </Button>
       )}
       {stakeholder.linkedin && (
-        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild aria-label="Abrir LinkedIn">
           <a href={stakeholder.linkedin} target="_blank" rel="noopener noreferrer">
             <Linkedin className="w-3.5 h-3.5" />
           </a>

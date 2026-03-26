@@ -64,7 +64,8 @@ export const useSmartReminders = (autoFetch = true) => {
         }
         localStorage.setItem('dismissedReminders', JSON.stringify(cleaned));
         setDismissedIds(new Set(Object.keys(cleaned)));
-      } catch {
+      } catch (_err) {
+        // localStorage unavailable
         localStorage.removeItem('dismissedReminders');
       }
     }

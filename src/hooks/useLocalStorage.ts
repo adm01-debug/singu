@@ -41,8 +41,8 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       if (e.key === key && e.newValue !== null) {
         try {
           setStoredValue(JSON.parse(e.newValue) as T);
-        } catch {
-          // Ignore parse errors from other tabs
+        } catch (_err) {
+          // localStorage unavailable
         }
       }
     };

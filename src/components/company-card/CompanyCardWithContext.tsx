@@ -172,7 +172,7 @@ export const CompanyCardWithContext = memo(function CompanyCardWithContext({
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Mais opções">
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>

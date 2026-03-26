@@ -380,7 +380,7 @@ export function StakeholderInfluenceNetwork({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="secondary" onClick={handleZoomIn} className="h-8 w-8 shadow-md">
+              <Button size="icon" variant="secondary" onClick={handleZoomIn} className="h-8 w-8 shadow-md" aria-label="Aumentar zoom">
                 <ZoomIn className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -391,7 +391,7 @@ export function StakeholderInfluenceNetwork({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="secondary" onClick={handleZoomOut} className="h-8 w-8 shadow-md">
+              <Button size="icon" variant="secondary" onClick={handleZoomOut} className="h-8 w-8 shadow-md" aria-label="Diminuir zoom">
                 <ZoomOut className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -402,7 +402,7 @@ export function StakeholderInfluenceNetwork({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button size="icon" variant="secondary" onClick={handleCenter} className="h-8 w-8 shadow-md">
+              <Button size="icon" variant="secondary" onClick={handleCenter} className="h-8 w-8 shadow-md" aria-label="Centralizar">
                 <Maximize2 className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -481,7 +481,7 @@ export function StakeholderInfluenceNetwork({
                   )}
                 </div>
               </div>
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setSelectedNode(null)}>
+              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setSelectedNode(null)} aria-label="Fechar">
                 <X className="w-4 h-4" />
               </Button>
             </div>

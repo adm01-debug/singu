@@ -160,7 +160,8 @@ function getRecentItems(): RecentItem[] {
     const stored = localStorage.getItem(RECENT_ITEMS_KEY);
     if (!stored) return [];
     return JSON.parse(stored);
-  } catch {
+  } catch (_err) {
+    // localStorage unavailable
     return [];
   }
 }
@@ -374,7 +375,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           meta: new Date(i.created_at).toLocaleDateString('pt-BR'),
         })) || [],
       });
-    } catch {
+    } catch (_err) {
+      logger.error('Global search failed:', _err);
       toast.error('Não foi possível completar a busca agora.');
       setResults({ contacts: [], companies: [], interactions: [] });
     } finally {

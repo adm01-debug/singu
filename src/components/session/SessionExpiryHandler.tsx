@@ -45,7 +45,8 @@ export function SessionExpiryHandler({
         return true;
       }
       return false;
-    } catch {
+    } catch (_err) {
+      logger.error('Session refresh failed:', _err);
       toast.error('Erro ao renovar sessão');
       return false;
     } finally {

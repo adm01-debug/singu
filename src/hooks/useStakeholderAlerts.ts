@@ -161,7 +161,8 @@ export function useStakeholderAlerts(companyId?: string) {
     if (stored) {
       try {
         setStoredMetrics(JSON.parse(stored));
-      } catch {
+      } catch (_err) {
+        // localStorage unavailable
         setStoredMetrics([]);
       }
     }
