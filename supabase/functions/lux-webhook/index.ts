@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+// Constant-time string comparison to prevent timing attacks
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
   const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
   const secret = Deno.env.get('WEBHOOK_SECRET');
@@ -23,7 +33,7 @@ async function verifyWebhookSignature(req: Request, body: string): Promise<boole
   );
   const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
   const computed = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return signature === computed;
+  return timingSafeEqual(signature, computed);
 }
 
 serve(async (req) => {
@@ -42,6 +52,14 @@ serve(async (req) => {
     }
 
     const payload = JSON.parse(rawBody);
+
+    // Validate payload size (max 1MB of parsed JSON)
+    if (rawBody.length > 1_048_576) {
+      return new Response(JSON.stringify({ error: 'Payload too large (max 1MB)' }), {
+        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const {
       luxRecordId,
       status,
@@ -56,12 +74,19 @@ serve(async (req) => {
       fieldsUpdated,
       n8nExecutionId,
       errorMessage,
-      // Fields to update on the entity itself
       entityUpdates,
     } = payload;
 
-    if (!luxRecordId) {
-      return new Response(JSON.stringify({ error: 'luxRecordId is required' }), {
+    // Validate required fields and types
+    if (!luxRecordId || typeof luxRecordId !== 'string') {
+      return new Response(JSON.stringify({ error: 'luxRecordId is required and must be a string' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const validStatuses = ['pending', 'processing', 'completed', 'error', 'partial'];
+    if (status && !validStatuses.includes(status)) {
+      return new Response(JSON.stringify({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

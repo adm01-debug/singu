@@ -42,8 +42,10 @@ const PageLoader = () => (
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      refetchOnWindowFocus: false,
+      staleTime: 30 * 1000, // 30 seconds - CRM data needs freshness
+      gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
+      refetchOnWindowFocus: true, // Refresh stale data on tab return
+      retry: 2,
     },
   },
 });

@@ -54,8 +54,14 @@ serve(async (req) => {
 
     let query = externalClient.from(table).select(select || '*', { count: 'exact' });
 
-    // Apply search (OR across multiple columns)
+    // Apply search (OR across multiple columns) with length limit
     if (search && search.term) {
+      if (search.term.length > 100) {
+        return new Response(JSON.stringify({ error: 'Search term too long (max 100 chars)' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       const term = `%${search.term}%`;
       const columns = search.columns || [];
       if (columns.length > 0) {
@@ -77,8 +83,14 @@ serve(async (req) => {
       }
     }
 
-    // Apply ordering
+    // Apply ordering (validate column against allowlist)
     if (order) {
+      if (!allowedColumns.includes(order.column)) {
+        return new Response(JSON.stringify({ error: `Invalid order column: ${order.column}` }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       query = query.order(order.column, { ascending: order.ascending ?? false });
     }
 

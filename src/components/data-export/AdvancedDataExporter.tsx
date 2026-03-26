@@ -158,7 +158,7 @@ export function AdvancedDataExporter({ entityType, className }: AdvancedDataExpo
         query = query.lte('created_at', dateRange.to.toISOString());
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query.limit(10000);
 
       if (error) throw error;
 

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface RealtimeNotification {
@@ -204,7 +205,11 @@ export function useRealtimeNotifications() {
         },
         handleNewStakeholderAlert
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          logger.error('Realtime notifications subscription failed');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);

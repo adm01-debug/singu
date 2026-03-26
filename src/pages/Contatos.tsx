@@ -205,12 +205,22 @@ const Contatos = () => {
     return company?.name || null;
   }, [companies]);
 
-  const getLastInteractionDate = useCallback((contactId: string): string | null => {
-    const contactInteractions = interactions
-      .filter(i => i.contact_id === contactId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    return contactInteractions[0]?.created_at || null;
+  const lastInteractionMap = useMemo(() => {
+    const map = new Map<string, string>();
+    const sorted = [...interactions].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    for (const i of sorted) {
+      if (i.contact_id && !map.has(i.contact_id)) {
+        map.set(i.contact_id, i.created_at);
+      }
+    }
+    return map;
   }, [interactions]);
+
+  const getLastInteractionDate = useCallback((contactId: string): string | null => {
+    return lastInteractionMap.get(contactId) || null;
+  }, [lastInteractionMap]);
 
   const handleCreate = async (data: Parameters<typeof createContact>[0], event?: React.MouseEvent) => {
     setIsSubmitting(true);

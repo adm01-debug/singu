@@ -112,9 +112,11 @@ export function useContactDetail(contactId: string | undefined) {
         insights: (insightsRes.status === 'fulfilled' ? insightsRes.value.data : null) || [],
         alerts: (alertsRes.status === 'fulfilled' ? alertsRes.value.data : null) || [],
       });
-    } catch {
+    } catch (err) {
       if (signal?.aborted) return;
-      setError('Erro ao carregar dados do contato');
+      const message = err instanceof Error ? err.message : 'Erro ao carregar dados do contato';
+      logger.error('Contact detail fetch error:', message);
+      setError(message);
       toast({
         title: 'Erro ao carregar contato',
         description: 'Tente novamente mais tarde.',

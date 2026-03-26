@@ -52,11 +52,13 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
       return;
     }
 
+    let promptTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       // Show prompt after a delay to not interrupt user
-      setTimeout(() => setShowPrompt(true), 30000);
+      promptTimer = setTimeout(() => setShowPrompt(true), 30000);
     };
 
     const handleAppInstalled = () => {
@@ -69,6 +71,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      if (promptTimer) clearTimeout(promptTimer);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
@@ -158,14 +161,16 @@ export function OfflineIndicator() {
   const [showReconnecting, setShowReconnecting] = useState(false);
 
   useEffect(() => {
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
     const handleOnline = () => {
       setShowReconnecting(true);
-      setTimeout(() => {
+      reconnectTimer = setTimeout(() => {
         setIsOnline(true);
         setShowReconnecting(false);
       }, 1000);
     };
-    
+
     const handleOffline = () => {
       setIsOnline(false);
     };
@@ -174,6 +179,7 @@ export function OfflineIndicator() {
     window.addEventListener('offline', handleOffline);
 
     return () => {
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };

@@ -131,9 +131,9 @@ const Insights = () => {
     setLoading(true);
     try {
       const [contactsRes, interactionsRes, companiesRes] = await Promise.all([
-        supabase.from('contacts').select('*').limit(50),
-        supabase.from('interactions').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('companies').select('*').limit(20),
+        supabase.from('contacts').select('id, first_name, last_name, email, company_id, relationship_score, sentiment, user_id, created_at').limit(50),
+        supabase.from('interactions').select('id, contact_id, company_id, user_id, type, content, sentiment, channel, created_at').order('created_at', { ascending: false }).limit(100),
+        supabase.from('companies').select('id, name, status, is_customer, created_at').limit(20),
       ]);
 
       setContacts(contactsRes.data || []);
@@ -224,9 +224,9 @@ const Insights = () => {
   const handleRefreshInsights = async () => {
     try {
       const [contactsRes, interactionsRes, companiesRes] = await Promise.all([
-        supabase.from('contacts').select('*').limit(50),
-        supabase.from('interactions').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('companies').select('*').limit(20),
+        supabase.from('contacts').select('id, first_name, last_name, email, company_id, relationship_score, sentiment, user_id, created_at').limit(50),
+        supabase.from('interactions').select('id, contact_id, company_id, user_id, type, content, sentiment, channel, created_at').order('created_at', { ascending: false }).limit(100),
+        supabase.from('companies').select('id, name, status, is_customer, created_at').limit(20),
       ]);
 
       await generateInsights(

@@ -5,6 +5,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Constant-time string comparison to prevent timing attacks
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
   const signature = req.headers.get('X-Webhook-Signature') || req.headers.get('X-Hub-Signature-256') || '';
   const secret = Deno.env.get('WEBHOOK_SECRET');
@@ -22,7 +32,7 @@ async function verifyWebhookSignature(req: Request, body: string): Promise<boole
   );
   const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
   const computed = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return signature === computed;
+  return timingSafeEqual(signature, computed);
 }
 
 interface BitrixCallEvent {
