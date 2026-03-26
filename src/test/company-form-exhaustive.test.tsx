@@ -463,8 +463,9 @@ describe('CompanyForm — External Data Mapping', () => {
   it('preserves all external fields in edit mode', async () => {
     renderForm(fullExternalCompany);
 
-    // Básico tab
-    expect(screen.getByDisplayValue('Cooperativas Agroindustrial')).toBeInTheDocument(); // ramo_atividade
+    // ramo_atividade and industry share the same value, so use getAllBy
+    const ramoFields = screen.getAllByDisplayValue('Cooperativas Agroindustrial');
+    expect(ramoFields.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByDisplayValue('Agro')).toBeInTheDocument(); // nicho_cliente
 
     // Fiscal tab
