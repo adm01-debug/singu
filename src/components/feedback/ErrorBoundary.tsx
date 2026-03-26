@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getErrorMessage } from '@/lib/ux-messages';
 import { logger } from '@/lib/logger';
+import { errorReporter } from '@/lib/error-reporter';
 
 interface Props {
   children: ReactNode;
@@ -40,7 +41,14 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     this.setState({ errorInfo });
     this.props.onError?.(error, errorInfo);
-    
+
+    // Report to error tracking
+    errorReporter.captureError(error, {
+      context: 'ErrorBoundary',
+      level: 'error',
+      tags: { componentStack: errorInfo.componentStack?.slice(0, 200) ?? '' },
+    });
+
     // Log to console in development
     if (import.meta.env.DEV) {
       logger.error('ErrorBoundary caught an error:', error, errorInfo);

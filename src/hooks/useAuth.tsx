@@ -24,6 +24,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Tempo antes da expiração para refresh automático (5 minutos)
 const REFRESH_THRESHOLD_MS = 5 * 60 * 1000;
 
+// Rate limiting for sign-in attempts
+const MAX_SIGN_IN_ATTEMPTS = 5;
+const SIGN_IN_LOCKOUT_MS = 60 * 1000; // 1 minute lockout
+let signInAttempts = 0;
+let signInLockoutUntil = 0;
+
 // Module-level singleton for fetch interceptor
 let fetchInterceptorInstalled = false;
 let originalFetch: typeof window.fetch | null = null;
@@ -235,18 +241,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    // Rate limiting check
+    const now = Date.now();
+    if (now < signInLockoutUntil) {
+      const remainingSec = Math.ceil((signInLockoutUntil - now) / 1000);
+      return { error: new Error(`Muitas tentativas. Aguarde ${remainingSec}s antes de tentar novamente.`) };
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password
       });
 
       if (error) {
+        signInAttempts++;
+        if (signInAttempts >= MAX_SIGN_IN_ATTEMPTS) {
+          signInLockoutUntil = Date.now() + SIGN_IN_LOCKOUT_MS;
+          signInAttempts = 0;
+          return { error: new Error('Muitas tentativas de login. Aguarde 1 minuto.') };
+        }
+
         if (error.message.includes('Invalid login credentials')) {
           return { error: new Error('Email ou senha incorretos.') };
         }
         return { error };
       }
+
+      // Reset rate limiting on success
+      signInAttempts = 0;
+      signInLockoutUntil = 0;
 
       return { error: null };
     } catch (err) {
@@ -262,6 +286,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+
+    // Clear sensitive data from storage
+    sessionStorage.removeItem('singu_user_context');
+
+    // Reset rate limiting
+    signInAttempts = 0;
+    signInLockoutUntil = 0;
+
     toast.success('Logout realizado com sucesso!');
   };
 

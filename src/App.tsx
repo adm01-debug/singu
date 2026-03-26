@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,24 +15,29 @@ import { WhatsNewModal } from "@/components/features/WhatsNewModal";
 import { SessionExpiryHandler } from "@/components/session/SessionExpiryHandler";
 import { useEasterEggs } from "@/hooks/useEasterEggs";
 
-import Index from "./pages/Index";
-import Analytics from "./pages/Analytics";
-import Empresas from "./pages/Empresas";
-import EmpresaDetalhe from "./pages/EmpresaDetalhe";
-import Contatos from "./pages/Contatos";
-import ContatoDetalhe from "./pages/ContatoDetalhe";
-import Interacoes from "./pages/Interacoes";
-import Insights from "./pages/Insights";
-import Configuracoes from "./pages/Configuracoes";
-import Calendario from "./pages/Calendario";
-import Notificacoes from "./pages/Notificacoes";
-import Network from "./pages/Network";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import NotFound from "./pages/NotFound";
-import RelatorioContato from "./pages/RelatorioContato";
+const Index = lazy(() => import("./pages/Index"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Empresas = lazy(() => import("./pages/Empresas"));
+const EmpresaDetalhe = lazy(() => import("./pages/EmpresaDetalhe"));
+const Contatos = lazy(() => import("./pages/Contatos"));
+const ContatoDetalhe = lazy(() => import("./pages/ContatoDetalhe"));
+const Interacoes = lazy(() => import("./pages/Interacoes"));
+const Insights = lazy(() => import("./pages/Insights"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const Calendario = lazy(() => import("./pages/Calendario"));
+const Notificacoes = lazy(() => import("./pages/Notificacoes"));
+const Network = lazy(() => import("./pages/Network"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 
-import DesignSystem from "./pages/DesignSystem";
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +66,7 @@ const WhatsNewWrapper = () => {
 // Routes wrapper
 const AnimatedRoutes = () => {
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Public routes */}
       <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
@@ -147,6 +154,7 @@ const AnimatedRoutes = () => {
       {/* Catch-all */}
       <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
     </Routes>
+    </Suspense>
   );
 };
 
