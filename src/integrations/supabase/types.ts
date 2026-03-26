@@ -365,21 +365,54 @@ export type Database = {
         Row: {
           address: string | null
           annual_revenue: string | null
+          bitrix_company_id: number | null
+          capital_social: number | null
+          central_id: string | null
           challenges: string[] | null
           city: string | null
+          cnpj: string | null
+          cnpj_base: string | null
           competitors: string[] | null
+          confederacao_id: string | null
+          cores_marca: string | null
           created_at: string
+          data_fundacao: string | null
           email: string | null
           employee_count: string | null
+          extra_data_rf: Json | null
           financial_health: string | null
+          grupo_economico: string | null
+          grupo_economico_id: string | null
           id: string
           industry: string | null
+          inscricao_estadual: string | null
+          inscricao_municipal: string | null
+          is_carrier: boolean | null
+          is_customer: boolean | null
+          is_matriz: boolean | null
+          is_supplier: boolean | null
           logo_url: string | null
+          matriz_id: string | null
           name: string
+          natureza_juridica: string | null
+          natureza_juridica_desc: string | null
+          nicho_cliente: string | null
+          nome_crm: string | null
+          nome_fantasia: string | null
           notes: string | null
+          numero_cooperativa: string | null
           phone: string | null
+          porte_rf: string | null
+          ramo_atividade: string | null
+          razao_social: string | null
+          search_vector: unknown
+          singular_id: string | null
+          situacao_rf: string | null
+          situacao_rf_data: string | null
           state: string | null
+          status: string | null
           tags: string[] | null
+          tipo_cooperativa: string | null
           updated_at: string
           user_id: string
           website: string | null
@@ -387,21 +420,54 @@ export type Database = {
         Insert: {
           address?: string | null
           annual_revenue?: string | null
+          bitrix_company_id?: number | null
+          capital_social?: number | null
+          central_id?: string | null
           challenges?: string[] | null
           city?: string | null
+          cnpj?: string | null
+          cnpj_base?: string | null
           competitors?: string[] | null
+          confederacao_id?: string | null
+          cores_marca?: string | null
           created_at?: string
+          data_fundacao?: string | null
           email?: string | null
           employee_count?: string | null
+          extra_data_rf?: Json | null
           financial_health?: string | null
+          grupo_economico?: string | null
+          grupo_economico_id?: string | null
           id?: string
           industry?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          is_carrier?: boolean | null
+          is_customer?: boolean | null
+          is_matriz?: boolean | null
+          is_supplier?: boolean | null
           logo_url?: string | null
+          matriz_id?: string | null
           name: string
+          natureza_juridica?: string | null
+          natureza_juridica_desc?: string | null
+          nicho_cliente?: string | null
+          nome_crm?: string | null
+          nome_fantasia?: string | null
           notes?: string | null
+          numero_cooperativa?: string | null
           phone?: string | null
+          porte_rf?: string | null
+          ramo_atividade?: string | null
+          razao_social?: string | null
+          search_vector?: unknown
+          singular_id?: string | null
+          situacao_rf?: string | null
+          situacao_rf_data?: string | null
           state?: string | null
+          status?: string | null
           tags?: string[] | null
+          tipo_cooperativa?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
@@ -409,21 +475,54 @@ export type Database = {
         Update: {
           address?: string | null
           annual_revenue?: string | null
+          bitrix_company_id?: number | null
+          capital_social?: number | null
+          central_id?: string | null
           challenges?: string[] | null
           city?: string | null
+          cnpj?: string | null
+          cnpj_base?: string | null
           competitors?: string[] | null
+          confederacao_id?: string | null
+          cores_marca?: string | null
           created_at?: string
+          data_fundacao?: string | null
           email?: string | null
           employee_count?: string | null
+          extra_data_rf?: Json | null
           financial_health?: string | null
+          grupo_economico?: string | null
+          grupo_economico_id?: string | null
           id?: string
           industry?: string | null
+          inscricao_estadual?: string | null
+          inscricao_municipal?: string | null
+          is_carrier?: boolean | null
+          is_customer?: boolean | null
+          is_matriz?: boolean | null
+          is_supplier?: boolean | null
           logo_url?: string | null
+          matriz_id?: string | null
           name?: string
+          natureza_juridica?: string | null
+          natureza_juridica_desc?: string | null
+          nicho_cliente?: string | null
+          nome_crm?: string | null
+          nome_fantasia?: string | null
           notes?: string | null
+          numero_cooperativa?: string | null
           phone?: string | null
+          porte_rf?: string | null
+          ramo_atividade?: string | null
+          razao_social?: string | null
+          search_vector?: unknown
+          singular_id?: string | null
+          situacao_rf?: string | null
+          situacao_rf_data?: string | null
           state?: string | null
+          status?: string | null
           tags?: string[] | null
+          tipo_cooperativa?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
