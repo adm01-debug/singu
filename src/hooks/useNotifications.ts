@@ -338,8 +338,8 @@ export const useNotifications = () => {
           const trimmed = notifiedAlerts.slice(-100);
           try {
             localStorage.setItem('notified_stakeholder_alerts', JSON.stringify(trimmed));
-          } catch {
-            // Quota exceeded — clear and retry
+          } catch (_err) {
+            // localStorage unavailable — clear and retry
             localStorage.removeItem('notified_stakeholder_alerts');
           }
         }

@@ -213,7 +213,7 @@ function ContactCard({
               <p className="text-xs text-muted-foreground">{levelConfig.label}</p>
             </div>
 
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label={expanded ? "Recolher" : "Expandir"}>
               {expanded ? (
                 <ChevronUp className="w-4 h-4" />
               ) : (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/lib/logger';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { 

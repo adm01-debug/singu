@@ -24,7 +24,8 @@ export function useHapticFeedback() {
         : pattern;
       
       return navigator.vibrate(vibrationPattern);
-    } catch {
+    } catch (_err) {
+      // Vibration API unavailable
       return false;
     }
   }, [isSupported]);

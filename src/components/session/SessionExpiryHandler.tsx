@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/lib/logger';
 import { motion } from 'framer-motion';
 import { AlertTriangle, RefreshCw, LogOut, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';

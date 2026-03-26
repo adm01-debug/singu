@@ -16,7 +16,8 @@ export function useFeatureDiscovery() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : [];
-    } catch {
+    } catch (_err) {
+      // localStorage unavailable
       return [];
     }
   });
@@ -24,8 +25,8 @@ export function useFeatureDiscovery() {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(seenFeatures));
-    } catch {
-      // silently fail
+    } catch (_err) {
+      // localStorage unavailable
     }
   }, [seenFeatures]);
 

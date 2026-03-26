@@ -16,7 +16,8 @@ function getStoredItems(): RecentlyViewedItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
-  } catch {
+  } catch (_err) {
+    // localStorage unavailable
     return [];
   }
 }

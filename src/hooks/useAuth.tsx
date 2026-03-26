@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else if (data.session) {
             scheduleTokenRefresh(data.session);
           }
-        } catch {
-          // Refresh failed silently
+        } catch (_err) {
+          logger.error('Token refresh failed:', _err);
         }
       }, refreshTime);
     }
@@ -190,9 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
             await supabase.auth.signOut();
           }
-        } catch {
+        } catch (_err) {
           // Session refresh failed - user will be redirected on next auth check
-          logger.error('401 interceptor: session refresh failed');
+          logger.error('401 interceptor: session refresh failed', _err);
         }
 
         return response;

@@ -63,8 +63,8 @@ export function useFormDraft<T extends FieldValues>(
           }
         }
       }
-    } catch {
-      // Silently fail if localStorage is unavailable
+    } catch (_err) {
+      // localStorage unavailable
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- form is a stable ref from useForm, including it causes infinite re-renders
   }, [storageKey, enabled]);
@@ -106,8 +106,8 @@ export function useFormDraft<T extends FieldValues>(
     try {
       localStorage.removeItem(storageKey);
       hasDraftRef.current = false;
-    } catch {
-      // Silently fail
+    } catch (_err) {
+      // localStorage unavailable
     }
   }, [storageKey]);
 
