@@ -1,8 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CompanyForm } from '@/components/forms/CompanyForm';
 import { BrowserRouter } from 'react-router-dom';
+
+// Polyfill ResizeObserver for jsdom
+beforeAll(() => {
+  global.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as any;
+});
 
 // ─── Helpers ────────────────────────────────────────────────────
 const mockSubmit = vi.fn().mockResolvedValue(undefined);
