@@ -525,7 +525,7 @@ describe('CompanyForm — Stress & Boundary', () => {
         {Array.from({ length: 10 }, (_, i) => (
           <CompanyForm
             key={i}
-            company={{ ...fullExternalCompany, id: `id-${i}` }}
+            company={{ ...fullExternalCompany, id: `id-${i}` } as any}
             onSubmit={mockSubmit}
             onCancel={mockCancel}
           />
