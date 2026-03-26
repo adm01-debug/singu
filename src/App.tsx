@@ -68,80 +68,141 @@ const WhatsNewWrapper = () => {
 // Routes wrapper
 const AnimatedRoutes = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
     <Routes>
       {/* Public routes */}
-      <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+      <Route path="/auth" element={
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <PageTransition><Auth /></PageTransition>
+          </Suspense>
+        </ErrorBoundary>
+      } />
       <Route path="/onboarding" element={
         <RequireAuth>
-          <PageTransition><Onboarding /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Onboarding /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
-      
+
       {/* Protected routes */}
       <Route path="/" element={
         <RequireAuth>
-          <PageTransition><Index /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Index /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/empresas" element={
         <RequireAuth>
-          <PageTransition><Empresas /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Empresas /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/empresas/:id" element={
         <RequireAuth>
-          <EmpresaDetalhe />
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <EmpresaDetalhe />
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/contatos" element={
         <RequireAuth>
-          <PageTransition><Contatos /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Contatos /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/contatos/:id" element={
         <RequireAuth>
-          <ContatoDetalhe />
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <ContatoDetalhe />
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/interacoes" element={
         <RequireAuth>
-          <PageTransition><Interacoes /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Interacoes /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/insights" element={
         <RequireAuth>
-          <PageTransition><Insights /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Insights /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/analytics" element={
         <RequireAuth>
-          <PageTransition><Analytics /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Analytics /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/configuracoes" element={
         <RequireAuth>
-          <PageTransition><Configuracoes /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Configuracoes /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/calendario" element={
         <RequireAuth>
-          <PageTransition><Calendario /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Calendario /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/notificacoes" element={
         <RequireAuth>
-          <PageTransition><Notificacoes /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Notificacoes /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/network" element={
         <RequireAuth>
-          <PageTransition><Network /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><Network /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/relatorio/:id" element={
         <RequireAuth>
-          <PageTransition><RelatorioContato /></PageTransition>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <PageTransition><RelatorioContato /></PageTransition>
+            </Suspense>
+          </ErrorBoundary>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={
@@ -150,13 +211,22 @@ const AnimatedRoutes = () => {
         </RequireAuth>
       } />
       <Route path="/design-system" element={
-        <PageTransition><DesignSystem /></PageTransition>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <PageTransition><DesignSystem /></PageTransition>
+          </Suspense>
+        </ErrorBoundary>
       } />
-          
+
       {/* Catch-all */}
-      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      <Route path="*" element={
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoader />}>
+            <PageTransition><NotFound /></PageTransition>
+          </Suspense>
+        </ErrorBoundary>
+      } />
     </Routes>
-    </Suspense>
   );
 };
 
