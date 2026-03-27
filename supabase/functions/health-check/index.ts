@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,6 +25,13 @@ serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // Rate limiting (monitoring can be frequent)
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rateCheck = checkRateLimit(`health-check:${clientIP}`, { maxRequests: 60, windowMs: 60_000 });
+  if (!rateCheck.allowed) {
+    return rateLimitResponse(corsHeaders, rateCheck.resetAt);
   }
 
   const checks: HealthStatus["checks"] = {

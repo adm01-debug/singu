@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
@@ -25,6 +26,13 @@ serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Rate limiting (called rarely)
+  const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const rateCheck = checkRateLimit(`weekly-digest:${clientIP}`, { maxRequests: 5, windowMs: 60_000 });
+  if (!rateCheck.allowed) {
+    return rateLimitResponse(corsHeaders, rateCheck.resetAt);
   }
 
   try {
