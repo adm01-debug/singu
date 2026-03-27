@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limiter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app',
@@ -85,6 +86,13 @@ serve(async (req) => {
   }
 
   try {
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateCheck = checkRateLimit(`ai-writing-assistant:${clientIP}`, { maxRequests: 10, windowMs: 60000 });
+    if (!rateCheck.allowed) {
+      return rateLimitResponse(corsHeaders, rateCheck.resetAt);
+    }
+
     const { contact, recentInteractions, messageType, customContext, tone }: RequestPayload = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
