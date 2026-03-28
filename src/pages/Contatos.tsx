@@ -1,50 +1,14 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { sortArray } from '@/lib/sorting-utils';
-import { List as VirtualList } from 'react-window';
-import { 
-  Search,
-  Grid3X3,
-  List,
-  Crown,
-  Briefcase,
-  ShoppingCart,
-  User,
-  UserPlus,
-  Upload,
-  CheckSquare,
-  Keyboard,
-  RefreshCw,
-  Database
-} from 'lucide-react';
-import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
-import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
-import { AdvancedDataExporter } from '@/components/data-export/AdvancedDataExporter';
 import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
-import { ContactForm } from '@/components/forms/ContactForm';
-import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
+import { AdvancedFilters } from '@/components/filters/AdvancedFilters';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
-import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
-import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
 import { useAriaLiveRegion } from '@/components/feedback/AriaLiveRegion';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
@@ -52,58 +16,18 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-import type { ContactRole } from '@/types';
-import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
-import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
-import type { SearchPreset } from '@/hooks/useSearchPresets';
 import { logger } from '@/lib/logger';
 
+import {
+  ContatosSearchBar,
+  ContatosContactList,
+  ContatosDialogs,
+  filterConfigs,
+  sortOptions,
+} from '@/components/contatos';
+import type { SearchPreset } from '@/hooks/useSearchPresets';
+
 type ViewMode = 'grid' | 'list';
-
-const filterConfigs: FilterConfig[] = [
-  {
-    key: 'role',
-    label: 'Papel',
-    multiple: true,
-    options: [
-      { value: 'owner', label: 'Proprietário', icon: Crown },
-      { value: 'manager', label: 'Gerente', icon: Briefcase },
-      { value: 'buyer', label: 'Comprador', icon: ShoppingCart },
-      { value: 'contact', label: 'Contato', icon: User },
-    ],
-  },
-  {
-    key: 'sentiment',
-    label: 'Sentimento',
-    multiple: false,
-    options: [
-      { value: 'positive', label: 'Positivo' },
-      { value: 'neutral', label: 'Neutro' },
-      { value: 'negative', label: 'Negativo' },
-    ],
-  },
-  {
-    key: 'relationship_stage',
-    label: 'Estágio',
-    multiple: true,
-    options: [
-      { value: 'lead', label: 'Lead' },
-      { value: 'prospect', label: 'Prospect' },
-      { value: 'negotiation', label: 'Negociação' },
-      { value: 'client', label: 'Cliente' },
-      { value: 'partner', label: 'Parceiro' },
-      { value: 'churned', label: 'Inativo' },
-      { value: 'unknown', label: 'Desconhecido' },
-    ],
-  },
-];
-
-const sortOptions: SortOption[] = [
-  { value: 'first_name', label: 'Nome' },
-  { value: 'relationship_score', label: 'Score de Relacionamento' },
-  { value: 'created_at', label: 'Data de Criação' },
-  { value: 'updated_at', label: 'Última Atualização' },
-];
 
 const Contatos = () => {
   const navigate = useNavigate();
@@ -111,7 +35,7 @@ const Contatos = () => {
   const { contacts, loading, createContact, updateContact, deleteContact } = useContacts();
   const { companies } = useCompanies();
   const { interactions } = useInteractions();
-  
+
   // Initialize state from URL params
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
@@ -120,17 +44,17 @@ const Contatos = () => {
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  
+
   // Accessibility announcements
   const { announce } = useAriaLiveRegion();
-  
+
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  
+
   // Mini celebration hook
   const celebration = useMiniCelebration();
-  
+
   // Advanced filters state - restore from URL
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(() => {
     try {
@@ -151,7 +75,7 @@ const Contatos = () => {
     }
     if (sortBy !== 'updated_at') params.set('sort', sortBy);
     if (sortOrder !== 'desc') params.set('order', sortOrder);
-    
+
     setSearchParams(params, { replace: true });
   }, [searchTerm, viewMode, activeFilters, sortBy, sortOrder, setSearchParams]);
 
@@ -160,7 +84,7 @@ const Contatos = () => {
     keys: ['first_name', 'last_name', 'email', 'role_title'],
     threshold: 0.4,
   });
-  
+
   // Sync search term to fuzzy search
   const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
@@ -168,14 +92,11 @@ const Contatos = () => {
   }, [setFuzzyQuery]);
 
   const filteredAndSortedContacts = useMemo(() => {
-    // Use fuzzy search results when searching, otherwise use all contacts
     let result = searchTerm ? fuzzyResults : contacts;
-    
-    // Apply advanced filters
+
     result = result.filter(contact => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
-        
         const contactValue = contact[key as keyof Contact];
         if (!contactValue || !values.includes(String(contactValue))) {
           return false;
@@ -184,7 +105,6 @@ const Contatos = () => {
       return true;
     });
 
-    // Sort using type-safe utility
     return sortArray(result, sortBy as keyof Contact, sortOrder, {
       dateFields: ['created_at', 'updated_at', 'birthday'],
       numericFields: ['relationship_score']
@@ -255,8 +175,7 @@ const Contatos = () => {
     if (!deletingContact) return;
     const contactToDelete = deletingContact;
     setDeletingContact(null);
-    
-    // Optimistic: remove from UI immediately
+
     toast.promise(
       deleteContact(contactToDelete.id),
       {
@@ -337,11 +256,23 @@ const Contatos = () => {
     }
   };
 
+  const handleApplyPreset = useCallback((preset: SearchPreset) => {
+    setActiveFilters(preset.filters);
+    setSortBy(preset.sortBy);
+    setSortOrder(preset.sortOrder);
+    if (preset.searchTerm) handleSearchChange(preset.searchTerm);
+  }, [handleSearchChange]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setActiveFilters({});
+  }, []);
+
   return (
     <>
     <AppLayout>
-      <Header 
-        title="Contatos" 
+      <Header
+        title="Contatos"
         subtitle={`${filteredAndSortedContacts.length} de ${contacts.length} pessoas`}
         showAddButton
         addButtonLabel="Novo Contato"
@@ -349,108 +280,22 @@ const Contatos = () => {
       />
 
       <div className="p-6 space-y-6">
-        {/* Search and View Toggle */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              placeholder="Buscar por nome, cargo ou email (aceita erros de digitação)..."
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
-              aria-label="Buscar contatos"
-              aria-describedby="search-hint"
-            />
-            <span id="search-hint" className="sr-only">
-              A busca é inteligente e aceita erros de digitação
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ContextualHelpTooltip
-              title="Busca Inteligente"
-              description="A busca usa Fuzzy Search para encontrar resultados mesmo com erros de digitação."
-              tips={[
-                '"joao" encontra "João Silva"',
-                'Busca por nome, email e cargo',
-                'Resultados ordenados por relevância',
-              ]}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEnrichContacts}
-              disabled={isEnriching}
-              className="gap-2"
-              title="Enriquecer contatos com dados do banco externo"
-            >
-              {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              {isEnriching ? 'Enriquecendo...' : 'Enriquecer'}
-            </Button>
-            <FeatureSpotlight
-              featureId="search-presets"
-              title="Novo: Presets de Busca"
-              description="Salve combinações de filtros para reutilizar rapidamente. Ideal para buscas que você faz com frequência!"
-              position="bottom"
-            >
-              <SearchPresetsMenu
-                context="contacts"
-                currentFilters={activeFilters}
-                currentSortBy={sortBy}
-                currentSortOrder={sortOrder}
-                currentSearchTerm={searchTerm}
-                onApplyPreset={(preset: SearchPreset) => {
-                  setActiveFilters(preset.filters);
-                  setSortBy(preset.sortBy);
-                  setSortOrder(preset.sortOrder);
-                  if (preset.searchTerm) handleSearchChange(preset.searchTerm);
-                }}
-              />
-            </FeatureSpotlight>
-            <AdvancedDataExporter entityType="contacts" />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowShortcuts(true)}
-              className="text-muted-foreground"
-              aria-label="Ver atalhos de teclado"
-            >
-              <Keyboard className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={selectionMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={toggleSelectionMode}
-              className="gap-2"
-            >
-              <CheckSquare className="w-4 h-4" aria-hidden="true" />
-              {selectionMode ? 'Cancelar' : 'Selecionar'}
-            </Button>
-            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="h-8 w-8"
-                aria-label="Visualização em grade"
-                aria-pressed={viewMode === 'grid'}
-              >
-                <Grid3X3 className="w-4 h-4" aria-hidden="true" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8"
-                aria-label="Visualização em lista"
-                aria-pressed={viewMode === 'list'}
-              >
-                <List className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </div>
-          </div>
-        </div>
+        <ContatosSearchBar
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          selectionMode={selectionMode}
+          onToggleSelectionMode={toggleSelectionMode}
+          isEnriching={isEnriching}
+          onEnrichContacts={handleEnrichContacts}
+          onShowShortcuts={() => setShowShortcuts(true)}
+          activeFilters={activeFilters}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onApplyPreset={handleApplyPreset}
+        />
 
-        {/* Advanced Filters */}
         <AdvancedFilters
           filters={filterConfigs}
           sortOptions={sortOptions}
@@ -464,140 +309,28 @@ const Contatos = () => {
           }}
         />
 
-        {/* Recently Viewed */}
         <RecentlyViewedSection type="contact" />
 
-        {/* Loading State */}
-        {loading ? (
-          viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
-        ) : (
-          <>
-            {/* Contacts Grid/List */}
-            {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredAndSortedContacts.map((contact, index) => (
-                  <ContactCardWithContext
-                    key={contact.id}
-                    contact={contact}
-                    companyName={getCompanyName(contact.company_id)}
-                    lastInteraction={getLastInteractionDate(contact.id)}
-                    index={index}
-                    isSelected={selectedIds.has(contact.id)}
-                    isHighlighted={selectedIndex === index}
-                    selectionMode={selectionMode}
-                    onSelect={handleSelect}
-                    onEdit={setEditingContact}
-                    onDelete={setDeletingContact}
-                    onUpdate={updateContact}
-                    viewMode="grid"
-                  />
-                ))}
-              </div>
-            ) : (
-              filteredAndSortedContacts.length > 50 ? (
-                <VirtualList
-                  rowCount={filteredAndSortedContacts.length}
-                  rowHeight={88}
-                  rowProps={{
-                    contacts: filteredAndSortedContacts,
-                    getCompanyName,
-                    getLastInteractionDate,
-                    selectedIds,
-                    selectedIndex,
-                    selectionMode,
-                    handleSelect,
-                    setEditingContact,
-                    setDeletingContact,
-                    updateContact,
-                  }}
-                  style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
-                  rowComponent={({ index, style, ...props }: { index: number; style: React.CSSProperties; [key: string]: unknown }) => {
-                    const contact = props.contacts[index];
-                    if (!contact) return null;
-                    return (
-                      <div style={style} className="pb-2">
-                        <ContactCardWithContext
-                          contact={contact}
-                          companyName={props.getCompanyName(contact.company_id)}
-                          lastInteraction={props.getLastInteractionDate(contact.id)}
-                          index={index}
-                          isSelected={props.selectedIds.has(contact.id)}
-                          isHighlighted={props.selectedIndex === index}
-                          selectionMode={props.selectionMode}
-                          onSelect={props.handleSelect}
-                          onEdit={props.setEditingContact}
-                          onDelete={props.setDeletingContact}
-                          onUpdate={props.updateContact}
-                          viewMode="list"
-                        />
-                      </div>
-                    );
-                  }}
-                />
-              ) : (
-                <div className="space-y-2">
-                  {filteredAndSortedContacts.map((contact, index) => (
-                    <ContactCardWithContext
-                      key={contact.id}
-                      contact={contact}
-                      companyName={getCompanyName(contact.company_id)}
-                      lastInteraction={getLastInteractionDate(contact.id)}
-                      index={index}
-                      isSelected={selectedIds.has(contact.id)}
-                      isHighlighted={selectedIndex === index}
-                      selectionMode={selectionMode}
-                      onSelect={handleSelect}
-                      onEdit={setEditingContact}
-                      onDelete={setDeletingContact}
-                      onUpdate={updateContact}
-                      viewMode="list"
-                    />
-                  ))}
-                </div>
-              )
-            )}
-
-            {filteredAndSortedContacts.length === 0 && !loading && (
-              searchTerm || Object.keys(activeFilters).length > 0 ? (
-                <SearchEmptyState
-                  searchTerm={searchTerm || 'filtros ativos'}
-                  onClearSearch={() => {
-                    setSearchTerm('');
-                    setActiveFilters({});
-                  }}
-                  entityName="contatos"
-                />
-              ) : (
-                <EmptyState
-                  illustration="contacts"
-                  title="Sua rede de contatos começa aqui"
-                  description="Adicione seu primeiro contato para começar a gerenciar seus relacionamentos profissionais de forma inteligente."
-                  actions={[
-                    {
-                      label: 'Adicionar Contato',
-                      onClick: () => setIsFormOpen(true),
-                      icon: UserPlus,
-                    },
-                    {
-                      label: 'Importar CSV',
-                      onClick: () => {},
-                      variant: 'outline',
-                      icon: Upload,
-                    },
-                  ]}
-                  tips={[
-                    'Adicione informações como cargo e empresa para contextualizar',
-                    'Use tags para organizar seus contatos por projeto ou área',
-                    'O perfil DISC ajuda a personalizar sua comunicação',
-                  ]}
-                />
-              )
-            )}
-          </>
-        )}
+        <ContatosContactList
+          loading={loading}
+          viewMode={viewMode}
+          contacts={filteredAndSortedContacts}
+          searchTerm={searchTerm}
+          activeFilters={activeFilters}
+          selectedIds={selectedIds}
+          selectedIndex={selectedIndex}
+          selectionMode={selectionMode}
+          getCompanyName={getCompanyName}
+          getLastInteractionDate={getLastInteractionDate}
+          onSelect={handleSelect}
+          onEdit={setEditingContact}
+          onDelete={setDeletingContact}
+          onUpdate={updateContact}
+          onOpenCreateForm={() => setIsFormOpen(true)}
+          onClearSearch={handleClearSearch}
+        />
       </div>
 
-      {/* Bulk Actions Bar */}
       <BulkActionsBar
         selectedIds={Array.from(selectedIds)}
         totalCount={filteredAndSortedContacts.length}
@@ -608,61 +341,25 @@ const Contatos = () => {
         onAddTag={handleBulkAddTag}
       />
 
-      {/* Create Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <ContactForm
-            companies={companies}
-            onSubmit={handleCreate}
-            onCancel={() => setIsFormOpen(false)}
-            isSubmitting={isSubmitting}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Dialog */}
-      <Dialog open={!!editingContact} onOpenChange={(open) => !open && setEditingContact(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <ContactForm
-            contact={editingContact}
-            companies={companies}
-            onSubmit={handleUpdate}
-            onCancel={() => setEditingContact(null)}
-            isSubmitting={isSubmitting}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deletingContact} onOpenChange={(open) => !open && setDeletingContact(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir contato?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir <strong>{deletingContact?.first_name} {deletingContact?.last_name}</strong>? 
-              Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      {/* Floating Quick Actions */}
-      <FloatingQuickActions />
-      
-      {/* Keyboard Shortcuts Dialog */}
-      <KeyboardShortcutsCheatsheet 
-        open={showShortcuts} 
-        onOpenChange={setShowShortcuts} 
+      <ContatosDialogs
+        isFormOpen={isFormOpen}
+        onFormOpenChange={setIsFormOpen}
+        editingContact={editingContact}
+        onEditingContactChange={setEditingContact}
+        deletingContact={deletingContact}
+        onDeletingContactChange={setDeletingContact}
+        companies={companies}
+        isSubmitting={isSubmitting}
+        onCreateSubmit={handleCreate}
+        onEditSubmit={handleUpdate}
+        onDeleteConfirm={handleDelete}
+        showShortcuts={showShortcuts}
+        onShowShortcutsChange={setShowShortcuts}
       />
+
+      <FloatingQuickActions />
     </AppLayout>
-    
-    {/* Mini Celebration */}
+
     {celebration.MiniCelebrationComponent}
     </>
   );
