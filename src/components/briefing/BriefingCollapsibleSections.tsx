@@ -60,7 +60,7 @@ export function BriefingCollapsibleSections({
       <CollapsibleSection
         id="words"
         icon={<MessageSquare className="w-4 h-4 text-primary" />}
-        title="Palavras Magicas"
+        title="Palavras Mágicas"
         expanded={expandedSections.has('words')}
         onToggle={() => onToggleSection('words')}
       >
@@ -129,7 +129,7 @@ export function BriefingCollapsibleSections({
         <CollapsibleSection
           id="disc"
           icon={<Target className="w-4 h-4 text-primary" />}
-          title={`Estrategias DISC (${briefing.discProfile.type})`}
+          title={`Estratégias DISC (${briefing.discProfile.type})`}
           expanded={expandedSections.has('disc')}
           onToggle={() => onToggleSection('disc')}
         >

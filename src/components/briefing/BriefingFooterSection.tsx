@@ -16,7 +16,7 @@ export function BriefingObjections({ objections }: BriefingObjectionsProps) {
     <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
       <div className="flex items-center gap-2 mb-2">
         <AlertTriangle className="w-4 h-4 text-warning" />
-        <span className="text-sm font-medium text-warning">Atencao: Objecoes Detectadas</span>
+        <span className="text-sm font-medium text-warning">Atenção: Objeções Detectadas</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {objections.map((objection, idx) => (
