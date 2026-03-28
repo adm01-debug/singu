@@ -123,7 +123,7 @@ function analyzeEmotionalState(texts: string[]): EmotionalProfile {
   };
 }
 
-interface DISCProfileData {
+export interface DISCProfileData {
   type: string;
   description: string;
   salesStrategies: {
