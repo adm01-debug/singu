@@ -10,7 +10,7 @@ type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;
 type Company = Tables<'companies'>;
 
-interface VAKProfile {
+export interface VAKProfile {
   visual: number;
   auditory: number;
   kinesthetic: number;
@@ -18,13 +18,13 @@ interface VAKProfile {
   dominant: string;
 }
 
-interface EmotionalProfile {
+export interface EmotionalProfile {
   currentState: string;
   trend: 'improving' | 'stable' | 'declining';
   resistanceLevel: number;
 }
 
-interface NLPBriefing {
+export interface NLPBriefing {
   contact: Contact;
   company: Company | null;
   interaction: Interaction;

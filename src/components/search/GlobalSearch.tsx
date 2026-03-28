@@ -2,182 +2,28 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { logger } from '@/lib/logger';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
-import { 
-  Building2, 
-  Users, 
-  MessageSquare, 
-  Search,
-  ArrowRight,
-  Phone,
-  Calendar,
-  ExternalLink,
-  Home,
-  Lightbulb,
-  Settings,
-  Bell,
-  CalendarDays,
-  Plus,
-  Clock,
-  Zap,
-  Command,
-  LayoutDashboard,
-  TrendingUp,
-  UserPlus,
-  Building,
-  MessagesSquare,
-} from 'lucide-react';
+import { Zap } from 'lucide-react';
 import {
   CommandDialog,
-  CommandEmpty,
-  CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
-  CommandSeparator,
-  CommandShortcut,
 } from '@/components/ui/command';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { isMacOS } from '@/lib/utils';
 import { toast } from 'sonner';
 
-interface SearchResult {
-  id: string;
-  type: 'contact' | 'company' | 'interaction';
-  title: string;
-  subtitle?: string;
-  meta?: string;
-}
-
-interface RecentItem {
-  id: string;
-  type: 'contact' | 'company' | 'interaction' | 'page';
-  title: string;
-  path: string;
-  timestamp: number;
-}
-
-interface GlobalSearchProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-const navigationItems = [
-  { 
-    key: '1', 
-    path: '/', 
-    label: 'Dashboard', 
-    icon: LayoutDashboard,
-    description: 'Visão geral e métricas'
-  },
-  { 
-    key: '2', 
-    path: '/empresas', 
-    label: 'Empresas', 
-    icon: Building2,
-    description: 'Gerenciar empresas'
-  },
-  { 
-    key: '3', 
-    path: '/contatos', 
-    label: 'Contatos', 
-    icon: Users,
-    description: 'Gerenciar contatos'
-  },
-  { 
-    key: '4', 
-    path: '/interacoes', 
-    label: 'Interações', 
-    icon: MessageSquare,
-    description: 'Histórico de interações'
-  },
-  { 
-    key: '5', 
-    path: '/calendario', 
-    label: 'Calendário', 
-    icon: CalendarDays,
-    description: 'Eventos e lembretes'
-  },
-  { 
-    key: '6', 
-    path: '/insights', 
-    label: 'Insights', 
-    icon: Lightbulb,
-    description: 'Análises e tendências'
-  },
-  { 
-    key: '7', 
-    path: '/notificacoes', 
-    label: 'Notificações', 
-    icon: Bell,
-    description: 'Alertas e avisos'
-  },
-  { 
-    key: '8', 
-    path: '/configuracoes', 
-    label: 'Configurações', 
-    icon: Settings,
-    description: 'Preferências do sistema'
-  },
-];
-
-const quickActions = [
-  {
-    id: 'new-contact',
-    label: 'Novo Contato',
-    description: 'Adicionar um novo contato à sua rede',
-    icon: UserPlus,
-    shortcut: 'C',
-    color: 'primary',
-    path: '/contatos?new=true',
-  },
-  {
-    id: 'new-company',
-    label: 'Nova Empresa',
-    description: 'Cadastrar uma nova empresa',
-    icon: Building,
-    shortcut: 'E',
-    color: 'accent',
-    path: '/empresas?new=true',
-  },
-  {
-    id: 'new-interaction',
-    label: 'Nova Interação',
-    description: 'Registrar uma nova interação',
-    icon: MessagesSquare,
-    shortcut: 'I',
-    color: 'warning',
-    path: '/interacoes?new=true',
-  },
-];
-
-// Local storage key for recent items
-const RECENT_ITEMS_KEY = 'command-palette-recent';
-const MAX_RECENT_ITEMS = 5;
-
-function getRecentItems(): RecentItem[] {
-  try {
-    const stored = localStorage.getItem(RECENT_ITEMS_KEY);
-    if (!stored) return [];
-    return JSON.parse(stored);
-  } catch (_err) {
-    // localStorage unavailable
-    return [];
-  }
-}
-
-function addRecentItem(item: Omit<RecentItem, 'timestamp'>) {
-  const recent = getRecentItems();
-  const filtered = recent.filter(r => !(r.id === item.id && r.type === item.type));
-  const newRecent = [{ ...item, timestamp: Date.now() }, ...filtered].slice(0, MAX_RECENT_ITEMS);
-  localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(newRecent));
-}
-
-// Normalize text removing accents for better matching
-function normalizeText(text: string): string {
-  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
+import type { GlobalSearchProps, SearchResult, RecentItem } from './searchTypes';
+import {
+  navigationItems,
+  quickActions,
+  getRecentItems,
+  addRecentItem,
+  normalizeText,
+} from './searchTypes';
+import { QuickActionsGroup } from './QuickActionsGroup';
+import { SearchResultGroups } from './SearchResultGroups';
+import { SearchEmptyState, SearchLoadingState } from './SearchEmptyState';
+import { SearchFooter } from './SearchFooter';
 
 export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   const [query, setQuery] = useState('');
@@ -316,11 +162,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     }
 
     setIsLoading(true);
-    // Normalize accents for better matching (e.g., "joao" matches "João")
     const normalizedSearch = normalizeText(searchQuery);
     const searchTerm = `%${normalizedSearch}%`;
-    // Also keep original for exact matches
-    const originalTerm = `%${searchQuery.toLowerCase()}%`;
 
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
@@ -378,7 +221,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       });
     } catch (_err) {
       logger.error('Global search failed:', _err);
-      toast.error('Não foi possível completar a busca agora.');
+      toast.error('Nao foi possivel completar a busca agora.');
       setResults({ contacts: [], companies: [], interactions: [] });
     } finally {
       setIsLoading(false);
@@ -426,7 +269,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     navigate(path);
   };
 
-  const handleQuickAction = (action: typeof quickActions[0]) => {
+  const handleQuickAction = (action: typeof quickActions[number]) => {
     onOpenChange(false);
     navigate(action.path);
   };
@@ -436,38 +279,8 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     navigate(item.path);
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'contact':
-        return <Users className="w-4 h-4" />;
-      case 'company':
-        return <Building2 className="w-4 h-4" />;
-      case 'interaction':
-        return <MessageSquare className="w-4 h-4" />;
-      case 'page':
-        return <ExternalLink className="w-4 h-4" />;
-      default:
-        return <Search className="w-4 h-4" />;
-    }
-  };
-
-  const getColorClass = (color: string) => {
-    switch (color) {
-      case 'primary':
-        return 'bg-primary/10 text-primary';
-      case 'accent':
-        return 'bg-accent/10 text-accent';
-      case 'warning':
-        return 'bg-warning/10 text-warning';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
   const hasResults = results.contacts.length > 0 || results.companies.length > 0 || results.interactions.length > 0;
   const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
-  const isMac = isMacOS();
-  const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -475,285 +288,36 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         <Zap className="w-4 h-4 text-primary" />
         <span className="text-xs font-medium text-muted-foreground">Super Command Palette</span>
       </div>
-      <CommandInput 
-        placeholder="Buscar contatos, empresas, navegar ou executar ações..." 
+      <CommandInput
+        placeholder="Buscar contatos, empresas, navegar ou executar ações..."
         value={query}
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
         {(!query || filteredQuickActions.length > 0) && (
-          <>
-            {/* Quick Actions */}
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Zap className="w-3 h-3" />
-                <span>Ações Rápidas</span>
-              </div>
-            }>
-              {filteredQuickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <CommandItem 
-                    key={action.id} 
-                    onSelect={() => handleQuickAction(action)} 
-                    className="gap-3 py-3"
-                  >
-                    <div className={`flex items-center justify-center w-9 h-9 rounded-lg ${getColorClass(action.color)}`}>
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{action.label}</p>
-                      <p className="text-xs text-muted-foreground">{action.description}</p>
-                    </div>
-                    <CommandShortcut>Alt+{action.shortcut}</CommandShortcut>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-
-            {/* Recent Items */}
-            {filteredRecent.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3" />
-                    <span>Recentes</span>
-                  </div>
-                }>
-                  {filteredRecent.map((item) => (
-                    <CommandItem
-                      key={`${item.type}-${item.id}`}
-                      onSelect={() => handleRecentSelect(item)}
-                      className="gap-3"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted">
-                        {getTypeIcon(item.type)}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{item.title}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{item.type === 'page' ? 'Página' : item.type}</p>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-
-            {filteredNavigation.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={
-                  <div className="flex items-center gap-2">
-                    <Command className="w-3 h-3" />
-                    <span>Navegação</span>
-                  </div>
-                }>
-                  {filteredNavigation.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <CommandItem 
-                        key={item.path} 
-                        onSelect={() => handleNavigate(item.path, item.label)} 
-                        className={`gap-3 ${isActive ? 'bg-primary/5' : ''}`}
-                      >
-                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>{item.label}</p>
-                          <p className="text-xs text-muted-foreground">{item.description}</p>
-                        </div>
-                        {isActive && (
-                          <Badge variant="secondary" className="text-[10px]">Atual</Badge>
-                        )}
-                        <CommandShortcut>Alt+{item.key}</CommandShortcut>
-                      </CommandItem>
-                    );
-                  })}
-                </CommandGroup>
-              </>
-            )}
-          </>
+          <QuickActionsGroup
+            filteredQuickActions={filteredQuickActions}
+            filteredRecent={filteredRecent}
+            filteredNavigation={filteredNavigation}
+            currentPathname={location.pathname}
+            onQuickAction={handleQuickAction}
+            onRecentSelect={handleRecentSelect}
+            onNavigate={handleNavigate}
+          />
         )}
 
         {query && !hasResults && !hasLocalResults && !isLoading && (
-          <CommandEmpty>
-            <div className="flex flex-col items-center gap-3 py-8">
-              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                <Search className="w-6 h-6 text-muted-foreground" />
-              </div>
-              <div className="text-center">
-                <p className="font-medium">Nenhum resultado para "{query}"</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Tente buscar por nome, email, empresa ou título
-                </p>
-              </div>
-              <div className="flex gap-2 mt-2">
-                {quickActions.map((action) => {
-                  const Icon = action.icon;
-                  return (
-                    <button
-                      key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${getColorClass(action.color)} hover:opacity-80`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      {action.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </CommandEmpty>
+          <SearchEmptyState query={query} onQuickAction={handleQuickAction} />
         )}
 
         {query && isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-              <p className="text-sm text-muted-foreground">Buscando...</p>
-            </div>
-          </div>
+          <SearchLoadingState />
         )}
 
-        {results.contacts.length > 0 && (
-          <CommandGroup heading={
-            <div className="flex items-center gap-2">
-              <Users className="w-3 h-3" />
-              <span>Contatos</span>
-              <Badge variant="secondary" className="text-[10px] ml-auto">{results.contacts.length}</Badge>
-            </div>
-          }>
-            {results.contacts.map((result) => (
-              <CommandItem
-                key={result.id}
-                onSelect={() => handleSelect(result)}
-                className="gap-3 py-3"
-              >
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{result.title}</p>
-                  {result.subtitle && (
-                    <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
-                  )}
-                </div>
-                {result.meta && (
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Phone className="w-3 h-3" />
-                    <span className="truncate max-w-[100px]">{result.meta}</span>
-                  </div>
-                )}
-                <ArrowRight className="w-4 h-4 text-muted-foreground" />
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-
-        {results.companies.length > 0 && (
-          <>
-            {results.contacts.length > 0 && <CommandSeparator />}
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <Building2 className="w-3 h-3" />
-                <span>Empresas</span>
-                <Badge variant="secondary" className="text-[10px] ml-auto">{results.companies.length}</Badge>
-              </div>
-            }>
-              {results.companies.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  onSelect={() => handleSelect(result)}
-                  className="gap-3 py-3"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-accent/10">
-                    <Building2 className="w-5 h-5 text-accent" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{result.title}</p>
-                    {result.subtitle && (
-                      <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
-                    )}
-                  </div>
-                  {result.meta && (
-                    <span className="text-xs text-muted-foreground">{result.meta}</span>
-                  )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {results.interactions.length > 0 && (
-          <>
-            {(results.contacts.length > 0 || results.companies.length > 0) && <CommandSeparator />}
-            <CommandGroup heading={
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" />
-                <span>Interações</span>
-                <Badge variant="secondary" className="text-[10px] ml-auto">{results.interactions.length}</Badge>
-              </div>
-            }>
-              {results.interactions.map((result) => (
-                <CommandItem
-                  key={result.id}
-                  onSelect={() => handleSelect(result)}
-                  className="gap-3 py-3"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-warning/10">
-                    <MessageSquare className="w-5 h-5 text-warning" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{result.title}</p>
-                    {result.subtitle && (
-                      <Badge variant="secondary" className="text-xs capitalize">
-                        {result.subtitle}
-                      </Badge>
-                    )}
-                  </div>
-                  {result.meta && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Calendar className="w-3 h-3" />
-                      <span>{result.meta}</span>
-                    </div>
-                  )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
-        )}
+        <SearchResultGroups results={results} onSelect={handleSelect} />
       </CommandList>
-      
-      {/* Enhanced Footer with keyboard hints */}
-      <div className="border-t border-border p-2.5 bg-muted/30">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono shadow-sm">↑↓</kbd>
-              <span>navegar</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono shadow-sm">↵</kbd>
-              <span>selecionar</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono shadow-sm">esc</kbd>
-              <span>fechar</span>
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground/70">Abrir com</span>
-            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono shadow-sm">{modKey}</kbd>
-            <kbd className="px-1.5 py-0.5 bg-background border border-border rounded text-[10px] font-mono shadow-sm">K</kbd>
-          </div>
-        </div>
-      </div>
+
+      <SearchFooter />
     </CommandDialog>
   );
 }
