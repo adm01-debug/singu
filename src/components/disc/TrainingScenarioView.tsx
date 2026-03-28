@@ -41,7 +41,7 @@ export const ScenarioHeader: React.FC<ScenarioHeaderProps> = ({
       <div className="bg-background rounded-lg p-4 border">
         <MessageSquare className="w-4 h-4 text-muted-foreground mb-2" />
         <p className="text-lg italic">
-          &ldquo;{scenario.clientStatement}&rdquo;
+          &quot;{scenario.clientStatement}&quot;
         </p>
       </div>
     </div>
