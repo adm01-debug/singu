@@ -527,6 +527,7 @@ export function StakeholderSimulator({ stakeholders, className }: StakeholderSim
                       variant="ghost"
                       onClick={() => deleteScenario(scenario.id)}
                       className="h-7 w-7"
+                      aria-label="Excluir"
                     >
                       <X className="w-3 h-3 text-muted-foreground" />
                     </Button>

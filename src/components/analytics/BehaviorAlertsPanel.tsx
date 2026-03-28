@@ -292,6 +292,7 @@ export function BehaviorAlertsPanel({ compact = false }: BehaviorAlertsPanelProp
                             className="h-8 w-8 text-success hover:text-success hover:bg-success/10"
                             onClick={() => markActionTaken(alert.id)}
                             title="Marcar como resolvido"
+                            aria-label="Confirmar"
                           >
                             <Check className="w-4 h-4" />
                           </Button>
@@ -301,6 +302,7 @@ export function BehaviorAlertsPanel({ compact = false }: BehaviorAlertsPanelProp
                             className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             onClick={() => dismissAlert(alert.id)}
                             title="Dispensar"
+                            aria-label="Fechar"
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -310,6 +312,7 @@ export function BehaviorAlertsPanel({ compact = false }: BehaviorAlertsPanelProp
                               size="icon"
                               className="h-8 w-8"
                               title="Ver contato"
+                              aria-label="Ver contato"
                             >
                               <ChevronRight className="w-4 h-4" />
                             </Button>

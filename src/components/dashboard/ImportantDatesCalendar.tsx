@@ -201,6 +201,7 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
               size="icon"
               className="h-8 w-8"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              aria-label="Mês anterior"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -212,6 +213,7 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
               size="icon"
               className="h-8 w-8"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              aria-label="Próximo mês"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

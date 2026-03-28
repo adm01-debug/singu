@@ -193,6 +193,7 @@ export function NotificationGroup({
                     e.stopPropagation();
                     onDismiss(notification.id);
                   }}
+                  aria-label="Fechar"
                 >
                   <X className="h-3 w-3" />
                 </Button>

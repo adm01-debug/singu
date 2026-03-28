@@ -229,6 +229,7 @@ export function CompatibilityAlertsList({
                         size="icon"
                         className="h-7 w-7"
                         onClick={() => handleDismiss(alert.id)}
+                        aria-label="Fechar"
                       >
                         <X className="w-4 h-4" />
                       </Button>
@@ -237,6 +238,7 @@ export function CompatibilityAlertsList({
                         size="icon"
                         className="h-7 w-7"
                         asChild
+                        aria-label="Ver contato"
                       >
                         <Link to={`/contatos/${alert.contact_id}`}>
                           <ChevronRight className="w-4 h-4" />

@@ -263,6 +263,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                       size="icon"
                       className="h-6 w-6"
                       onClick={() => copyToClipboard(fiscal[key], key)}
+                      aria-label="Copiar"
                     >
                       {copiedField === key ? (
                         <Check className="w-3 h-3 text-emerald-500" />

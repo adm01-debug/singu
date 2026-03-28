@@ -210,6 +210,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => setShowSettings(!showSettings)}
+              aria-label="Configurações"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -218,6 +219,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
               size="icon"
               onClick={fetchAlerts}
               disabled={loading}
+              aria-label="Atualizar"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
@@ -404,6 +406,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
                         size="icon"
                         onClick={() => dismissAlert(alert.id)}
                         className="shrink-0"
+                        aria-label="Fechar"
                       >
                         <X className="w-4 h-4" />
                       </Button>

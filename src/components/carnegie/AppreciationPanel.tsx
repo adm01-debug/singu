@@ -132,6 +132,7 @@ export function AppreciationPanel({ contact = null, className }: AppreciationPan
                         variant="ghost"
                         className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                         onClick={() => copyToClipboard(template, 'Template')}
+                        aria-label="Copiar"
                       >
                         <Copy className="h-3 w-3" />
                       </Button>

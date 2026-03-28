@@ -738,6 +738,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
                 size="icon"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                 onClick={clearSearch}
+                aria-label="Limpar busca"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -770,6 +771,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
             variant="outline"
             size="icon"
             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            aria-label={sortOrder === 'asc' ? 'Ordenar decrescente' : 'Ordenar crescente'}
           >
             {sortOrder === 'desc' ? (
               <SortDesc className="w-4 h-4" />

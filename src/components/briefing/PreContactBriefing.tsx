@@ -210,6 +210,7 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
                     size="icon"
                     onClick={() => dismissBriefing(briefing.interaction.id)}
                     className="text-muted-foreground hover:text-foreground"
+                    aria-label="Fechar"
                   >
                     <X className="w-5 h-5" />
                   </Button>

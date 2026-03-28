@@ -169,6 +169,7 @@ export function FloatingQuickActions({
                   size="icon"
                   className={cn('h-12 w-12 rounded-full shadow-lg text-white', action.color)}
                   onClick={action.action}
+                  aria-label={action.label}
                 >
                   <action.icon className="w-5 h-5" />
                 </Button>
@@ -186,6 +187,7 @@ export function FloatingQuickActions({
         <Button
           size="icon"
           onClick={toggleMenu}
+          aria-label={isOpen ? "Fechar ações rápidas" : "Ações rápidas"}
           className={cn(
             'h-14 w-14 rounded-full shadow-lg transition-all',
             isOpen

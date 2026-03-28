@@ -366,6 +366,7 @@ function AlertCard({ alert, onDismiss, onNavigate }: AlertCardProps) {
             size="icon"
             className="h-7 w-7"
             onClick={() => onDismiss(alert.id)}
+            aria-label="Fechar"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -374,6 +375,7 @@ function AlertCard({ alert, onDismiss, onNavigate }: AlertCardProps) {
             size="icon"
             className="h-7 w-7"
             onClick={onNavigate}
+            aria-label="Ver detalhes"
           >
             <ArrowRight className="h-4 w-4" />
           </Button>

@@ -95,6 +95,7 @@ export function SearchPresetsMenu({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                  aria-label="Excluir"
                   onClick={(e) => {
                     e.stopPropagation();
                     deletePreset(preset.id);

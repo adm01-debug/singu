@@ -195,6 +195,7 @@ export function InlineEdit({
                 className="h-8 w-8"
                 onClick={handleSave}
                 disabled={isSaving}
+                aria-label="Confirmar"
               >
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -208,6 +209,7 @@ export function InlineEdit({
                 className="h-8 w-8"
                 onClick={handleCancel}
                 disabled={isSaving}
+                aria-label="Cancelar"
               >
                 <X className="w-4 h-4 text-muted-foreground" />
               </Button>

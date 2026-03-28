@@ -133,11 +133,12 @@ export const ContactCardWithContext = memo(function ContactCardWithContext({
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="absolute top-3 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white dark:bg-background/80 dark:hover:bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  aria-label="Mais opções"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </Button>
@@ -326,11 +327,12 @@ export const ContactCardWithContext = memo(function ContactCardWithContext({
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     className="opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
+                    aria-label="Mais opções"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </Button>

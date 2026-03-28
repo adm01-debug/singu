@@ -398,6 +398,7 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
                     variant="ghost"
                     onClick={() => fetchReminders(true)}
                     disabled={isLoading}
+                    aria-label="Atualizar"
                   >
                     <RefreshCw className={cn('w-4 h-4', isLoading && 'animate-spin')} />
                   </Button>
@@ -461,6 +462,7 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
                       variant="ghost"
                       className="h-6 w-6 shrink-0"
                       onClick={() => setShowInsights(false)}
+                      aria-label="Ocultar"
                     >
                       <EyeOff className="w-3 h-3" />
                     </Button>

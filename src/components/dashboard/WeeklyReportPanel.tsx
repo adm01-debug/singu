@@ -243,6 +243,7 @@ export function WeeklyReportPanel() {
                           size="icon"
                           onClick={sendTestEmail}
                           disabled={!localSettings.email_address}
+                          aria-label="Enviar"
                         >
                           <Send className="h-4 w-4" />
                         </Button>

@@ -283,6 +283,7 @@ export function RecentFavoritesMenu({
                             e.stopPropagation();
                             toggleFavorite(item);
                           }}
+                          aria-label="Favoritar"
                         >
                           <Star className={cn(
                             "h-3.5 w-3.5",
@@ -341,6 +342,7 @@ export function RecentFavoritesMenu({
                             e.stopPropagation();
                             toggleFavorite(item);
                           }}
+                          aria-label="Favoritar"
                         >
                           <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
                         </Button>

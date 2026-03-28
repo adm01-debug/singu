@@ -474,11 +474,12 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                     </Badge>
                   </div>
                 </div>
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
+                <Button
+                  size="icon"
+                  variant="ghost"
                   className="h-6 w-6"
                   onClick={() => setSelectedNode(null)}
+                  aria-label="Fechar"
                 >
                   <X className="w-4 h-4" />
                 </Button>

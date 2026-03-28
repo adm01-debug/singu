@@ -164,6 +164,7 @@ export function VoiceInput({
           "relative transition-all duration-300",
           isRecording && "animate-pulse"
         )}
+        aria-label={isRecording ? "Parar gravação" : "Gravar"}
       >
         <AnimatePresence mode="wait">
           {isProcessing ? (
