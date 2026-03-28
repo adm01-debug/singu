@@ -58,7 +58,7 @@ export function BriefingQuickStats({ briefing }: BriefingQuickStatsProps) {
       {/* Last Interaction */}
       {briefing.lastInteractionSummary && (
         <div className="p-3 rounded-lg bg-muted/50 text-sm">
-          <p className="text-xs text-muted-foreground mb-1">Ultima interacao:</p>
+          <p className="text-xs text-muted-foreground mb-1">Última interação:</p>
           <p className="font-medium">{briefing.lastInteractionSummary}</p>
         </div>
       )}

@@ -23,7 +23,7 @@ export function BriefingCompactList({ briefings, onShowBriefing, className }: Br
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
             <Brain className="w-4 h-4" />
-            Briefing Pre-Contato
+            Briefing Pré-Contato
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
