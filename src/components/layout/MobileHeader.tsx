@@ -76,7 +76,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border">
+      <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border safe-area-inset-top">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left: Menu or Back */}
           <motion.button
