@@ -347,10 +347,10 @@ const Dashboard = () => {
             {/* Tab: Overview */}
             <TabsContent value="overview" className="space-y-5 mt-4">
               <motion.div
-                key="overview"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
+                key={`overview-${tabDirection}`}
+                initial={tabAnimationVariants.initial}
+                animate={tabAnimationVariants.animate}
+                transition={tabAnimationVariants.transition}
                 className="space-y-5"
               >
               {/* Portfolio Health — contained height */}
@@ -550,7 +550,7 @@ const Dashboard = () => {
 
             {/* Tab: Analytics */}
             <TabsContent value="analytics" className="mt-4">
-              <motion.div key="analytics" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+              <motion.div key={`analytics-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
               {/* Period Filter */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -597,7 +597,7 @@ const Dashboard = () => {
 
             {/* Tab: Relationships */}
             <TabsContent value="relationships" className="mt-4">
-              <motion.div key="relationships" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+              <motion.div key={`relationships-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
               <DashboardErrorBoundary sectionName="Estatísticas de Relacionamento">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -621,7 +621,7 @@ const Dashboard = () => {
 
             {/* Tab: Intelligence */}
             <TabsContent value="intelligence" className="mt-4">
-              <motion.div key="intelligence" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
+              <motion.div key={`intelligence-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
               <DashboardErrorBoundary sectionName="Padrões de Compra">
                 <div className="flex items-center gap-2 mb-4">
                   <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
