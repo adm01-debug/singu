@@ -48,6 +48,7 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const { goBack } = useNavigationStack();
 
