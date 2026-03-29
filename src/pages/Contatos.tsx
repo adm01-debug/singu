@@ -63,6 +63,8 @@ import { logger } from "@/lib/logger";
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { DensityToggle } from '@/components/ui/density-toggle';
 import { KeyboardHint } from '@/components/ui/keyboard-hint';
+import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
+import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
 type ViewMode = 'grid' | 'list';
 
