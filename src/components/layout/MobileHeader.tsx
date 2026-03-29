@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Search, Bell, Zap, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 import { cn } from '@/lib/utils';
