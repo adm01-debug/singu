@@ -142,6 +142,7 @@ const Contatos = () => {
   
   // Table density
   const { density, toggle: toggleDensity } = useTableDensity();
+  const { celebrate } = useSuccessCelebration();
   
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
