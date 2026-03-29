@@ -332,11 +332,13 @@ const Dashboard = () => {
             </div>
 
             {/* Tab: Overview */}
-            <TabsContent value="overview" className="space-y-5 mt-4" asChild>
+            <TabsContent value="overview" className="space-y-5 mt-4">
               <motion.div
+                key="overview"
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-5"
               >
               {/* Portfolio Health — contained height */}
               <DashboardErrorBoundary sectionName="Saúde do Portfólio">
