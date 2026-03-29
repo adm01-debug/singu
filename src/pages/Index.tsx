@@ -653,7 +653,8 @@ const Dashboard = () => {
         </div>
       </div>
       
-      {/* Floating Quick Actions */}
+      {/* Floating Components */}
+      <ScrollToTopButton />
       <FloatingQuickActions />
     </AppLayout>
   );
