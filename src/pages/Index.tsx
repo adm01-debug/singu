@@ -260,7 +260,7 @@ const Dashboard = () => {
   const tabAnimationVariants = {
     initial: { opacity: 0, x: prefersReducedMotion ? 0 : tabDirection * 20 },
     animate: { opacity: 1, x: 0 },
-    transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: [0.25, 0.1, 0.25, 1] },
+    transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: 'easeOut' as const },
   };
 
   return (
