@@ -11,7 +11,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
-import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -22,16 +22,16 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { collapsed } = useSidebarState();
   
-  // Enable keyboard shortcuts
+  // Keyboard shortcuts
   useKeyboardShortcutsEnhanced();
-  
-  // Enable swipe-back gesture on mobile
-  useSwipeBack();
 
   return (
     <div className="min-h-screen bg-background">
       {/* Skip to main content for accessibility */}
       <SkipToContent />
+
+      {/* Swipe-back gesture indicator (mobile only) */}
+      <SwipeBackIndicator />
       
       {/* Mobile Header */}
       <MobileHeader onSearchClick={() => setIsOpen(true)} title={title} />
