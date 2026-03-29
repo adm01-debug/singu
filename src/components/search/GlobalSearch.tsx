@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
+import { useModalHistory } from '@/hooks/useModalHistory';
 import { 
   Building2, 
   Users, 
@@ -193,6 +194,9 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  
+  // Integrate with browser history so back button closes search
+  useModalHistory(open, () => onOpenChange(false), 'global-search');
 
   // Fuse.js instances for local fuzzy search
   const navigationFuse = useMemo(() => new Fuse(navigationItems, {
