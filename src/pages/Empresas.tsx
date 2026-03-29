@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search,
@@ -225,6 +226,7 @@ const Empresas = () => {
     }
     setSelectedIds(new Set());
     setSelectionMode(false);
+    toast.success(`${ids.length} empresa${ids.length > 1 ? 's' : ''} excluída${ids.length > 1 ? 's' : ''}`);
   };
 
   const handleBulkAddTag = async (ids: string[], tag: string) => {
@@ -238,6 +240,7 @@ const Empresas = () => {
       }
     }
     setSelectedIds(new Set());
+    toast.success(`Tag "${tag}" adicionada a ${ids.length} empresa${ids.length > 1 ? 's' : ''}`);
   };
 
   const toggleSelectionMode = () => {

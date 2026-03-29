@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Search, Bell, Zap, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 import { cn } from '@/lib/utils';
@@ -48,6 +48,7 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
   const { goBack } = useNavigationStack();
 
@@ -76,7 +77,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border">
+      <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border safe-area-inset-top">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left: Menu or Back */}
           <motion.button
@@ -118,6 +119,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/notificacoes')}
               className="p-2 rounded-xl hover:bg-muted transition-colors relative min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Notificações"
             >
