@@ -236,6 +236,11 @@ const Contatos = () => {
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      hapticSuccess();
+      // First contact celebration
+      if (contacts.length === 0) {
+        celebrate('confetti');
+      }
       if (event) {
         celebration.trigger(event, { variant: 'success', message: 'Contato criado!' });
       } else {
@@ -263,6 +268,7 @@ const Contatos = () => {
     if (!deletingContact) return;
     const contactToDelete = deletingContact;
     setDeletingContact(null);
+    hapticHeavy();
     
     // Contact is removed from UI instantly by optimistic deleteContact
     const success = await deleteContact(contactToDelete.id);
