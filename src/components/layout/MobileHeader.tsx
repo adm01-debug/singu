@@ -56,7 +56,15 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
   const isSubPage = SUB_PAGES.includes(location.pathname);
   const showBackButton = !isRoot && (isNested || isSubPage);
 
-  const resolvedTitle = title || ROUTE_TITLES[location.pathname];
+  // Resolve title: explicit prop > exact match > prefix match for detail pages
+  const resolvedTitle = title || ROUTE_TITLES[location.pathname] || (() => {
+    // Match detail pages like /contatos/:id → "Contato"
+    if (location.pathname.startsWith('/contatos/')) return 'Contato';
+    if (location.pathname.startsWith('/empresas/')) return 'Empresa';
+    if (location.pathname.startsWith('/relatorio/')) return 'Relatório';
+    if (location.pathname.startsWith('/admin/')) return 'Admin';
+    return undefined;
+  })();
 
   const handleLeftAction = () => {
     if (showBackButton) {
