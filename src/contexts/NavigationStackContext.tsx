@@ -116,6 +116,13 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
     }
   }, [location.pathname, location.search, navigate]);
 
+  // Listen for keyboard shortcut Alt+← event
+  useEffect(() => {
+    const handleNavigateBack = () => goBack('/');
+    window.addEventListener('navigate-back', handleNavigateBack);
+    return () => window.removeEventListener('navigate-back', handleNavigateBack);
+  }, [goBack]);
+
   const previousPath = (() => {
     const stack = stackRef.current;
     const currentPath = location.pathname + location.search;
