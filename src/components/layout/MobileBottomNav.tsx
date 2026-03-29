@@ -195,14 +195,19 @@ export function MobileBottomNav() {
                 setShowMore(!showMore);
               }}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
-                showMore ? "text-primary" : "text-muted-foreground"
+                "relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
+                (showMore || activeInMore) ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <MoreHorizontal className={cn("w-5 h-5 transition-transform", showMore && "rotate-90")} />
+              <div className="relative">
+                <MoreHorizontal className={cn("w-5 h-5 transition-transform", showMore && "rotate-90")} />
+                {activeInMore && !showMore && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary" aria-hidden="true" />
+                )}
+              </div>
               <span className={cn(
                 "text-[10px] font-medium transition-all",
-                showMore ? "opacity-100" : "opacity-70"
+                (showMore || activeInMore) ? "opacity-100" : "opacity-70"
               )}>
                 Mais
               </span>
