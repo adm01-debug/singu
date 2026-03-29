@@ -95,9 +95,12 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
   { value: '90d', label: 'Últimos 3 Meses' },
 ];
 
+const TAB_ORDER = ['overview', 'analytics', 'relationships', 'intelligence'];
+
 const Dashboard = () => {
   const [period, setPeriod] = useState<PeriodFilter>('7d');
   const [activeTab, setActiveTab] = useState('overview');
+  const [tabDirection, setTabDirection] = useState(0); // -1 left, 1 right
   const [briefingOpen, setBriefingOpen] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
   
