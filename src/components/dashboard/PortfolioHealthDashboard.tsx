@@ -317,16 +317,20 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
               Precisam de Atenção
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1">
-            {metrics.needsAttention.length > 0 ? (
-              metrics.needsAttention.map(client => (
-                <ClientRow key={client.contactId} client={client} />
-              ))
-            ) : (
-              <div className="text-center py-4 text-muted-foreground text-sm">
-                Nenhum cliente precisa de atenção urgente 🎉
+          <CardContent>
+            <ScrollArea className="max-h-[280px]">
+              <div className="space-y-1 pr-2">
+                {metrics.needsAttention.length > 0 ? (
+                  metrics.needsAttention.map(client => (
+                    <ClientRow key={client.contactId} client={client} />
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    Nenhum cliente precisa de atenção urgente 🎉
+                  </div>
+                )}
               </div>
-            )}
+            </ScrollArea>
           </CardContent>
         </Card>
 
@@ -338,10 +342,14 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
               Melhores Relacionamentos
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1">
-            {metrics.topPerformers.map(client => (
-              <ClientRow key={client.contactId} client={client} />
-            ))}
+          <CardContent>
+            <ScrollArea className="max-h-[280px]">
+              <div className="space-y-1 pr-2">
+                {metrics.topPerformers.map(client => (
+                  <ClientRow key={client.contactId} client={client} />
+                ))}
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
