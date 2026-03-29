@@ -249,9 +249,18 @@ const Dashboard = () => {
   const hasInteractions = dashboardStats.weeklyInteractions > 0;
 
   const handleTabChange = (value: string) => {
+    const oldIndex = TAB_ORDER.indexOf(activeTab);
+    const newIndex = TAB_ORDER.indexOf(value);
+    setTabDirection(newIndex > oldIndex ? 1 : -1);
     setActiveTab(value);
     // Scroll to tabs area when switching
     tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const tabAnimationVariants = {
+    initial: { opacity: 0, x: prefersReducedMotion ? 0 : tabDirection * 20 },
+    animate: { opacity: 1, x: 0 },
+    transition: { duration: prefersReducedMotion ? 0.01 : 0.2, ease: [0.25, 0.1, 0.25, 1] },
   };
 
   return (
