@@ -12,6 +12,7 @@ import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
+import { useWebVitals } from "@/hooks/useWebVitals";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
@@ -100,13 +101,17 @@ const WhatsNewWrapper = () => {
 
 // Suspense wrapper for lazy routes with optional custom fallback
 const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) => (
-  <Suspense fallback={fallback || <PageLoadingFallback />}>
-    {children}
-  </Suspense>
+  <ErrorBoundary showDetails={import.meta.env.DEV}>
+    <Suspense fallback={fallback || <PageLoadingFallback />}>
+      {children}
+    </Suspense>
+  </ErrorBoundary>
 );
 
 // Routes wrapper
 const AnimatedRoutes = () => {
+  useWebVitals();
+  
   return (
     <Routes>
       {/* Public routes */}
