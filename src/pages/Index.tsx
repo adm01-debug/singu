@@ -44,6 +44,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
 
 // Hooks for real data
 import { useContacts } from '@/hooks/useContacts';
