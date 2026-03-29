@@ -119,6 +119,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/notificacoes')}
               className="p-2 rounded-xl hover:bg-muted transition-colors relative min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Notificações"
             >
