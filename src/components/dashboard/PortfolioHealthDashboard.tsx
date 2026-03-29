@@ -143,7 +143,7 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       {/* Main Health Score */}
       <Card className="border-2 overflow-hidden">
         <div className={`h-1 ${metrics.overallStatus === 'healthy' ? 'bg-success' : metrics.overallStatus === 'warning' ? 'bg-warning' : 'bg-destructive'}`} />
@@ -163,33 +163,33 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {/* Key Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 rounded-lg bg-muted/50 text-center">
-              <Users className="h-5 w-5 mx-auto mb-1 text-primary" />
-              <div className="text-2xl font-bold">{metrics.totalClients}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 rounded-lg bg-muted/50 text-center">
+              <Users className="h-4 w-4 mx-auto mb-1 text-primary" />
+              <div className="text-xl font-bold">{metrics.totalClients}</div>
               <div className="text-xs text-muted-foreground">Total de Clientes</div>
             </div>
-            <div className="p-4 rounded-lg bg-success/10 text-center">
-              <Activity className="h-5 w-5 mx-auto mb-1 text-success" />
-              <div className="text-2xl font-bold text-success">{metrics.healthDistribution.healthy}</div>
+            <div className="p-3 rounded-lg bg-success/10 text-center">
+              <Activity className="h-4 w-4 mx-auto mb-1 text-success" />
+              <div className="text-xl font-bold text-success">{metrics.healthDistribution.healthy}</div>
               <div className="text-xs text-muted-foreground">Saudáveis</div>
             </div>
-            <div className="p-4 rounded-lg bg-warning/10 text-center">
-              <AlertTriangle className="h-5 w-5 mx-auto mb-1 text-warning" />
-              <div className="text-2xl font-bold text-warning">{metrics.atRiskClients}</div>
+            <div className="p-3 rounded-lg bg-warning/10 text-center">
+              <AlertTriangle className="h-4 w-4 mx-auto mb-1 text-warning" />
+              <div className="text-xl font-bold text-warning">{metrics.atRiskClients}</div>
               <div className="text-xs text-muted-foreground">Em Atenção</div>
             </div>
-            <div className="p-4 rounded-lg bg-destructive/10 text-center">
-              <Target className="h-5 w-5 mx-auto mb-1 text-destructive" />
-              <div className="text-2xl font-bold text-destructive">{metrics.criticalClients}</div>
+            <div className="p-3 rounded-lg bg-destructive/10 text-center">
+              <Target className="h-4 w-4 mx-auto mb-1 text-destructive" />
+              <div className="text-xl font-bold text-destructive">{metrics.criticalClients}</div>
               <div className="text-xs text-muted-foreground">Críticos</div>
             </div>
           </div>
 
           {/* Charts Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Health Distribution Pie */}
             <div className="p-4 rounded-lg bg-muted/30">
               <h4 className="text-sm font-medium mb-3">Distribuição de Saúde</h4>
@@ -308,7 +308,7 @@ export function PortfolioHealthDashboard({ contacts, interactions, compact = fal
       )}
 
       {/* Client Lists */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Needs Attention */}
         <Card>
           <CardHeader className="pb-2">

@@ -44,6 +44,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
 
 // Hooks for real data
 import { useContacts } from '@/hooks/useContacts';
@@ -309,29 +310,37 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS — sticky header ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-0 md:top-0 z-10 bg-background/95 backdrop-blur-xl pb-3 pt-1 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
+            <div className="sticky top-[57px] md:top-0 z-10 bg-background/95 backdrop-blur-xl pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="gap-2">
-                  <LayoutGrid className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Visão Geral</span>
+                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm">
+                  <LayoutGrid className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden xs:inline truncate">Geral</span>
+                  <span className="hidden sm:inline truncate">Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-2">
-                  <BarChart3 className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Analytics</span>
+                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
+                  <BarChart3 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="relationships" className="gap-2">
-                  <Heart className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Relacionamentos</span>
+                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm">
+                  <Heart className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">Relações</span>
                 </TabsTrigger>
-                <TabsTrigger value="intelligence" className="gap-2">
-                  <Brain className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Inteligência</span>
+                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm">
+                  <Brain className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">IA</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             {/* Tab: Overview */}
             <TabsContent value="overview" className="space-y-5 mt-4">
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-5"
+              >
               {/* Portfolio Health — contained height */}
               <DashboardErrorBoundary sectionName="Saúde do Portfólio">
                 <LazySection fallbackVariant="card" fallbackHeight="h-48">
@@ -524,24 +533,26 @@ const Dashboard = () => {
                   </div>
                 </DashboardErrorBoundary>
               </div>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Analytics */}
-            <TabsContent value="analytics" className="space-y-5 mt-4">
+            <TabsContent value="analytics" className="mt-4">
+              <motion.div key="analytics" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               {/* Period Filter */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="w-5 h-5" aria-hidden="true" />
                   <Typography variant="body" className="font-medium">Período dos Gráficos</Typography>
                 </div>
-                <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
+                <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg">
                   {periodOptions.map((option) => (
                     <Button
                       key={option.value}
                       variant={period === option.value ? "default" : "ghost"}
                       size="sm"
                       onClick={() => setPeriod(option.value)}
-                      className={`transition-all ${
+                      className={`text-xs sm:text-sm transition-all ${
                         period === option.value 
                           ? 'shadow-sm' 
                           : 'hover:bg-secondary'
@@ -569,10 +580,12 @@ const Dashboard = () => {
                   <SentimentChart period={period} />
                 </div>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Relationships */}
-            <TabsContent value="relationships" className="space-y-5 mt-4">
+            <TabsContent value="relationships" className="mt-4">
+              <motion.div key="relationships" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               <DashboardErrorBoundary sectionName="Estatísticas de Relacionamento">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -591,10 +604,12 @@ const Dashboard = () => {
                   <ClosingScoreAlertsList maxItems={3} compact />
                 </LazySection>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Intelligence */}
-            <TabsContent value="intelligence" className="space-y-5 mt-4">
+            <TabsContent value="intelligence" className="mt-4">
+              <motion.div key="intelligence" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               <DashboardErrorBoundary sectionName="Padrões de Compra">
                 <div className="flex items-center gap-2 mb-4">
                   <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -633,12 +648,14 @@ const Dashboard = () => {
                   </LazySection>
                 </div>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
       
-      {/* Floating Quick Actions */}
+      {/* Floating Components */}
+      <ScrollToTopButton />
       <FloatingQuickActions />
     </AppLayout>
   );
