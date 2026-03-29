@@ -47,6 +47,11 @@ export function MobileBottomNav() {
     setShowMore(false);
   }, [location.pathname]);
 
+  // Notify ScrollToTopButton about overlay state
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent(showMore ? 'mobile-overlay-open' : 'mobile-overlay-close'));
+  }, [showMore]);
+
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);

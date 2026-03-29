@@ -3,16 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 
+const HINT_STORAGE_KEY = 'singu_swipe_hint_shown';
+
 /**
  * Unified swipe-back gesture handler + visual indicator for mobile.
  * - Edge detection zone: 45px (wider for curved-edge devices)
  * - Dead zone: ignores first 10px to distinguish scroll from swipe
  * - Visual gradient bar feedback during gesture
+ * - Gesture affordance hint on first visit
  * - Threshold: 80px horizontal to trigger navigation
  */
 export function SwipeBackIndicator() {
   const [swipeProgress, setSwipeProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const location = useLocation();
   const { goBack } = useNavigationStack();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -39,12 +43,10 @@ export function SwipeBackIndicator() {
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
 
-    // Dead zone: wait until movement exceeds 10px in either direction
     if (!directionLockedRef.current) {
       if (deltaX > DEAD_ZONE || deltaY > DEAD_ZONE) {
         directionLockedRef.current = deltaX > deltaY ? 'horizontal' : 'vertical';
         if (directionLockedRef.current === 'vertical') {
-          // It's a scroll, abort swipe tracking
           isEdgeRef.current = false;
           setIsActive(false);
           setSwipeProgress(0);
@@ -83,6 +85,7 @@ export function SwipeBackIndicator() {
     setSwipeProgress(0);
   }, [goBack]);
 
+  // Touch event listeners
   useEffect(() => {
     if (isRoot) return;
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -99,25 +102,66 @@ export function SwipeBackIndicator() {
     };
   }, [isRoot, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
+  // Gesture affordance hint — shown once on first non-root page visit
+  useEffect(() => {
+    if (isRoot) return;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (!isTouchDevice) return;
+
+    try {
+      const shown = localStorage.getItem(HINT_STORAGE_KEY);
+      if (!shown) {
+        const timer = setTimeout(() => {
+          setShowHint(true);
+          localStorage.setItem(HINT_STORAGE_KEY, '1');
+          setTimeout(() => setShowHint(false), 2500);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
+  }, [isRoot]);
+
   if (isRoot) return null;
 
   return (
-    <AnimatePresence>
-      {isActive && swipeProgress > 0.05 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: swipeProgress }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.1 }}
-          className="fixed inset-y-0 left-0 z-50 pointer-events-none md:hidden"
-          style={{ width: `${Math.max(4, swipeProgress * 40)}px` }}
-        >
-          <div
-            className="h-full bg-gradient-to-r from-primary/30 to-transparent rounded-r-full"
-            style={{ opacity: swipeProgress }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <>
+      {/* Gesture hint — shown once on first detail page visit */}
+      <AnimatePresence>
+        {showHint && (
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.4 }}
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-50 pointer-events-none md:hidden"
+          >
+            <motion.div
+              animate={{ x: [0, 12, 0] }}
+              transition={{ duration: 1.2, repeat: 1, ease: 'easeInOut' }}
+              className="w-1.5 h-16 bg-primary/40 rounded-r-full shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active swipe progress indicator */}
+      <AnimatePresence>
+        {isActive && swipeProgress > 0.05 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: swipeProgress }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className="fixed inset-y-0 left-0 z-50 pointer-events-none md:hidden"
+            style={{ width: `${Math.max(4, swipeProgress * 40)}px` }}
+          >
+            <div
+              className="h-full bg-gradient-to-r from-primary/30 to-transparent rounded-r-full"
+              style={{ opacity: swipeProgress }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

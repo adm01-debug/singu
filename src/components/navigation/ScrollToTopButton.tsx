@@ -4,28 +4,41 @@ import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 /**
- * Botão flutuante que aparece quando o usuário rola a página para baixo,
- * permitindo voltar ao topo com um clique.
+ * Floating scroll-to-top button.
+ * Hides when overlays (e.g., MobileBottomNav "More") are open.
  */
 export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setVisible(window.scrollY > 400);
     };
 
+    const handleOverlayOpen = () => setOverlayOpen(true);
+    const handleOverlayClose = () => setOverlayOpen(false);
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mobile-overlay-open', handleOverlayOpen);
+    window.addEventListener('mobile-overlay-close', handleOverlayClose);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mobile-overlay-open', handleOverlayOpen);
+      window.removeEventListener('mobile-overlay-close', handleOverlayClose);
+    };
   }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const shouldShow = visible && !overlayOpen;
+
   return (
     <AnimatePresence>
-      {visible && (
+      {shouldShow && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -1,45 +1,78 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useIsFetching } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /**
- * Thin animated progress bar at the top of the page during route transitions.
- * Inspired by NProgress — starts fast, slows down, then completes on route change.
+ * Honest progress bar that reflects real loading state:
+ * - Triggers on route change
+ * - Stays active while React Query is fetching data
+ * - Completes when all queries resolve
+ * - Falls back to a quick flash for instant transitions
  */
 export function RouteProgressBar() {
   const location = useLocation();
+  const isFetching = useIsFetching();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const prevPathRef = useRef(location.pathname);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const completeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Start progress on route change
   useEffect(() => {
     if (location.pathname === prevPathRef.current) return;
     prevPathRef.current = location.pathname;
 
-    // Start progress
     setVisible(true);
-    setProgress(0);
+    setProgress(20); // Instant jump to 20% on route change
 
-    // Simulate fast then slow progress
-    let current = 0;
-    timerRef.current = setInterval(() => {
-      current += (95 - current) * 0.1; // Asymptotic approach to 95%
-      setProgress(Math.min(current, 95));
-    }, 50);
+    // Clean up any existing timers
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (completeTimerRef.current) clearTimeout(completeTimerRef.current);
+  }, [location.pathname]);
 
-    // Complete after a short delay (simulates page load)
-    const completeTimer = setTimeout(() => {
+  // Progress based on fetching state
+  useEffect(() => {
+    if (!visible) return;
+
+    if (isFetching > 0) {
+      // Data is loading — slow asymptotic progress to 85%
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = setInterval(() => {
+        setProgress(prev => {
+          const next = prev + (85 - prev) * 0.08;
+          return Math.min(next, 85);
+        });
+      }, 80);
+    } else {
+      // All fetches complete — finish the bar
       if (timerRef.current) clearInterval(timerRef.current);
       setProgress(100);
-      setTimeout(() => setVisible(false), 200);
-    }, 300);
+      completeTimerRef.current = setTimeout(() => {
+        setVisible(false);
+        setProgress(0);
+      }, 250);
+    }
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      clearTimeout(completeTimer);
     };
-  }, [location.pathname]);
+  }, [isFetching, visible]);
+
+  // Auto-complete if no fetches happen within 400ms of route change
+  useEffect(() => {
+    if (visible && isFetching === 0) {
+      const timer = setTimeout(() => {
+        setProgress(100);
+        setTimeout(() => {
+          setVisible(false);
+          setProgress(0);
+        }, 200);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, isFetching]);
 
   return (
     <AnimatePresence>
@@ -54,7 +87,7 @@ export function RouteProgressBar() {
           <motion.div
             className="h-full bg-gradient-to-r from-primary via-primary to-primary/60 rounded-r-full shadow-[0_0_10px_hsl(var(--primary)/0.4)]"
             style={{ width: `${progress}%` }}
-            transition={{ duration: 0.1, ease: 'easeOut' }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
           />
         </motion.div>
       )}

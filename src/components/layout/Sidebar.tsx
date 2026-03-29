@@ -269,8 +269,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isExactActive = location.pathname === item.path;
+            const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');
+            const isActive = isExactActive || isDetailActive;
             const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
+            
+            // Detail page sublabel (e.g., "Detalhe" when on /contatos/:id)
+            const detailHint = isDetailActive ? '· Detalhe' : null;
             
             return (
               <Tooltip key={item.path}>
@@ -310,7 +315,12 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                             exit={{ opacity: 0, width: 0 }}
                             className="flex items-center justify-between flex-1 overflow-hidden"
                           >
-                            <span className="font-medium whitespace-nowrap">{item.label}</span>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-medium whitespace-nowrap">{item.label}</span>
+                              {detailHint && (
+                                <span className="text-[10px] text-sidebar-foreground/50 whitespace-nowrap leading-tight">{detailHint}</span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-1.5">
                               {badgeCount > 0 && (
                                 <Badge 
