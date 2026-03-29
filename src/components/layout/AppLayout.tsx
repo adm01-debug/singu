@@ -12,6 +12,7 @@ import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanc
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
 import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
+import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 
 interface AppLayoutProps {
   children: ReactNode;
