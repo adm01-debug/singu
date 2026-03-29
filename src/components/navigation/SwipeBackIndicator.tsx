@@ -4,9 +4,11 @@ import { useLocation } from 'react-router-dom';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 
 /**
- * Visual edge indicator + swipe-back gesture handler for mobile.
- * Shows a subtle gradient bar on the left edge when the user starts
- * swiping from the edge, providing visual feedback before the gesture completes.
+ * Unified swipe-back gesture handler + visual indicator for mobile.
+ * - Edge detection zone: 45px (wider for curved-edge devices)
+ * - Dead zone: ignores first 10px to distinguish scroll from swipe
+ * - Visual gradient bar feedback during gesture
+ * - Threshold: 80px horizontal to trigger navigation
  */
 export function SwipeBackIndicator() {
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -15,15 +17,19 @@ export function SwipeBackIndicator() {
   const { goBack } = useNavigationStack();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const isEdgeRef = useRef(false);
+  const directionLockedRef = useRef<'horizontal' | 'vertical' | null>(null);
 
   const isRoot = location.pathname === '/';
+  const EDGE_WIDTH = 45;
+  const DEAD_ZONE = 10;
+  const THRESHOLD = 80;
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const touch = e.touches[0];
-    if (touch.clientX <= 25 && !isRoot) {
+    if (touch.clientX <= EDGE_WIDTH && !isRoot) {
       touchStartRef.current = { x: touch.clientX, y: touch.clientY };
       isEdgeRef.current = true;
-      setIsActive(true);
+      directionLockedRef.current = null;
     }
   }, [isRoot]);
 
@@ -32,10 +38,25 @@ export function SwipeBackIndicator() {
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    // Only track horizontal swipes
-    if (deltaX > 0 && deltaX > deltaY) {
-      const progress = Math.min(deltaX / 120, 1); // 120px = full progress
+
+    // Dead zone: wait until movement exceeds 10px in either direction
+    if (!directionLockedRef.current) {
+      if (deltaX > DEAD_ZONE || deltaY > DEAD_ZONE) {
+        directionLockedRef.current = deltaX > deltaY ? 'horizontal' : 'vertical';
+        if (directionLockedRef.current === 'vertical') {
+          // It's a scroll, abort swipe tracking
+          isEdgeRef.current = false;
+          setIsActive(false);
+          setSwipeProgress(0);
+          return;
+        }
+        setIsActive(true);
+      }
+      return;
+    }
+
+    if (directionLockedRef.current === 'horizontal' && deltaX > 0) {
+      const progress = Math.min(deltaX / 120, 1);
       setSwipeProgress(progress);
     }
   }, []);
@@ -51,12 +72,13 @@ export function SwipeBackIndicator() {
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
 
-    if (deltaX > 80 && deltaX > deltaY * 1.5) {
+    if (directionLockedRef.current === 'horizontal' && deltaX > THRESHOLD && deltaX > deltaY * 1.5) {
       goBack('/');
     }
 
     touchStartRef.current = null;
     isEdgeRef.current = false;
+    directionLockedRef.current = null;
     setIsActive(false);
     setSwipeProgress(0);
   }, [goBack]);
@@ -90,7 +112,7 @@ export function SwipeBackIndicator() {
           className="fixed inset-y-0 left-0 z-50 pointer-events-none md:hidden"
           style={{ width: `${Math.max(4, swipeProgress * 40)}px` }}
         >
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-primary/30 to-transparent rounded-r-full"
             style={{ opacity: swipeProgress }}
           />
