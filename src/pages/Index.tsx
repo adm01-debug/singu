@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense, useRef } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
   Building2,

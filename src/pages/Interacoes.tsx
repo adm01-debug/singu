@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
 import { 
