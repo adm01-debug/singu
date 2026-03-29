@@ -46,7 +46,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   const resolvedBackTo = backTo || PARENT_ROUTES[location.pathname] || '/';
 
   return (
-    <header ref={ref} className="hidden md:block bg-card border-b border-border px-4 md:px-6 py-3 md:py-4">
+    <header ref={ref} className="bg-card border-b border-border px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {/* Back button — hidden on mobile (MobileHeader handles it) */}
