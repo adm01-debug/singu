@@ -98,9 +98,9 @@ const WhatsNewWrapper = () => {
   );
 };
 
-// Suspense wrapper for lazy routes
-const LazyPage = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<PageLoadingFallback />}>
+// Suspense wrapper for lazy routes with optional custom fallback
+const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) => (
+  <Suspense fallback={fallback || <PageLoadingFallback />}>
     {children}
   </Suspense>
 );
