@@ -42,15 +42,22 @@ export function MobileBottomNav() {
   const [showMore, setShowMore] = useState(false);
   const haptic = useHapticFeedback();
 
+  // Auto-close "More" overlay on route change (e.g. swipe-back gesture)
+  useEffect(() => {
+    setShowMore(false);
+  }, [location.pathname]);
+
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
+  // Check if active route is in "more" section for indicator
+  const activeInMore = moreNavItems.some(item => isActive(item.path));
+
   const handleNavigate = (path: string) => {
     haptic.selection();
     navigate(path);
-    setShowMore(false);
   };
 
   return (

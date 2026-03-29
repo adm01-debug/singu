@@ -88,7 +88,7 @@ const RelatorioContato = () => {
     <div className="min-h-screen bg-white">
       {/* Header com botões (não imprime) */}
       <div className="print:hidden bg-background border-b p-4 flex items-center justify-between sticky top-0 z-10">
-        <BackButton label="Voltar" />
+        <BackButton to={`/contatos/${id}`} label="Voltar ao contato" />
         <div className="flex gap-2">
           <Button onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
