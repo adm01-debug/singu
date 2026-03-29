@@ -10,11 +10,13 @@ const HINT_STORAGE_KEY = 'singu_swipe_hint_shown';
  * - Edge detection zone: 45px (wider for curved-edge devices)
  * - Dead zone: ignores first 10px to distinguish scroll from swipe
  * - Visual gradient bar feedback during gesture
+ * - Gesture affordance hint on first visit
  * - Threshold: 80px horizontal to trigger navigation
  */
 export function SwipeBackIndicator() {
   const [swipeProgress, setSwipeProgress] = useState(0);
   const [isActive, setIsActive] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const location = useLocation();
   const { goBack } = useNavigationStack();
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -41,12 +43,10 @@ export function SwipeBackIndicator() {
     const deltaX = touch.clientX - touchStartRef.current.x;
     const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
 
-    // Dead zone: wait until movement exceeds 10px in either direction
     if (!directionLockedRef.current) {
       if (deltaX > DEAD_ZONE || deltaY > DEAD_ZONE) {
         directionLockedRef.current = deltaX > deltaY ? 'horizontal' : 'vertical';
         if (directionLockedRef.current === 'vertical') {
-          // It's a scroll, abort swipe tracking
           isEdgeRef.current = false;
           setIsActive(false);
           setSwipeProgress(0);
@@ -85,6 +85,7 @@ export function SwipeBackIndicator() {
     setSwipeProgress(0);
   }, [goBack]);
 
+  // Touch event listeners
   useEffect(() => {
     if (isRoot) return;
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -101,14 +102,12 @@ export function SwipeBackIndicator() {
     };
   }, [isRoot, handleTouchStart, handleTouchMove, handleTouchEnd]);
 
-  if (isRoot) return null;
-
-  // Show gesture hint on first visit to a detail page (one-time)
-  const [showHint, setShowHint] = useState(false);
+  // Gesture affordance hint — shown once on first non-root page visit
   useEffect(() => {
+    if (isRoot) return;
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (!isTouchDevice || isRoot) return;
-    
+    if (!isTouchDevice) return;
+
     try {
       const shown = localStorage.getItem(HINT_STORAGE_KEY);
       if (!shown) {
@@ -121,6 +120,8 @@ export function SwipeBackIndicator() {
       }
     } catch {}
   }, [isRoot]);
+
+  if (isRoot) return null;
 
   return (
     <>
