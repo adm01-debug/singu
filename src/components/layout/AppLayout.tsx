@@ -11,6 +11,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 
 interface AppLayoutProps {
   children: ReactNode;
