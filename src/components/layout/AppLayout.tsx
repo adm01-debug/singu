@@ -71,6 +71,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       
       {/* Onboarding Tour */}
       <OnboardingTourWrapper />
+      
+      {/* Global keyboard shortcuts help (? key) */}
+      <KeyboardShortcutsCheatsheet />
     </div>
   );
 }
