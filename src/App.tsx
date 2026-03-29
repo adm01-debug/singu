@@ -108,6 +108,8 @@ const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?
 
 // Routes wrapper
 const AnimatedRoutes = () => {
+  useWebVitals();
+  
   return (
     <Routes>
       {/* Public routes */}
