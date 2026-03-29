@@ -100,6 +100,7 @@ const priorityColors: Record<string, string> = {
 };
 
 const Insights = () => {
+  usePageTitle('Insights');
   const { user, session } = useAuth();
   const accessibleToast = useAccessibleToast();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
