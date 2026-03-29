@@ -266,8 +266,20 @@
     --accent: 168 70% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 4 70% 50%;
+    /* Success - Brighter in dark for contrast */
+    --success: 152 69% 46%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Slightly brighter in dark */
+    --warning: 36 96% 58%;
+    --warning-foreground: 30 80% 10%;
+
+    --destructive: 4 70% 55%;
     --destructive-foreground: 0 0% 100%;
+
+    /* Info - Brighter in dark */
+    --info: 205 90% 58%;
+    --info-foreground: 0 0% 100%;
 
     /* Celebration - Gold Dark */
     --celebration: 45 90% 65%;
@@ -293,11 +305,23 @@
     --sidebar-ring: 234 85% 65%;
     --warning-glow: 28 95% 60%;
     
-    /* Dark mode shadows */
+    /* Dark mode shadows - deeper, more diffused */
     --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.25);
     --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
     --shadow-lg: 0 10px 24px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
     --shadow-xl: 0 20px 40px -5px hsl(0 0% 0% / 0.45), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
+    --shadow-glow: 0 0 24px hsl(234 85% 65% / 0.2);
+    --shadow-glow-lg: 0 0 48px hsl(234 85% 65% / 0.25);
+    
+    /* Dark mode gradients - adjusted luminosity */
+    --gradient-primary: linear-gradient(135deg, hsl(234 85% 65%) 0%, hsl(270 80% 72%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(152 69% 46%) 0%, hsl(168 70% 48%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(36 96% 58%) 0%, hsl(28 95% 60%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(270 80% 72%) 0%, hsl(340 80% 65%) 100%);
+    --gradient-celebration: linear-gradient(135deg, hsl(45 90% 65%) 0%, hsl(36 96% 58%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(228 28% 8%) 0%, hsl(228 30% 5%) 100%);
+    --gradient-sidebar: linear-gradient(180deg, hsl(228 35% 4%) 0%, hsl(228 35% 8%) 100%);
+    --gradient-heading: linear-gradient(135deg, hsl(220 20% 95%) 0%, hsl(234 85% 65%) 100%);
     
     /* Surface Levels - Dark Mode */
     --surface-0: 228 30% 5%;
@@ -316,6 +340,12 @@
     --row-hover: 234 85% 65% / 0.06;
     --row-selected: 234 85% 65% / 0.10;
     --row-active: 234 85% 65% / 0.14;
+
+    /* Entity Colors - Dark Mode */
+    --entity-contact: 234 85% 72%;
+    --entity-company: 270 67% 65%;
+    --entity-interaction: 152 69% 52%;
+    --entity-insight: 36 96% 58%;
 
     /* Glass gradient - dark */
     --gradient-glass: linear-gradient(135deg, hsl(228 28% 10% / 0.9) 0%, hsl(228 28% 8% / 0.6) 100%);

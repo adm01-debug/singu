@@ -60,6 +60,9 @@ import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
 import type { SearchPreset } from '@/hooks/useSearchPresets';
 import { logger } from "@/lib/logger";
+import { useTableDensity } from '@/hooks/useTableDensity';
+import { DensityToggle } from '@/components/ui/density-toggle';
+import { KeyboardHint } from '@/components/ui/keyboard-hint';
 
 type ViewMode = 'grid' | 'list';
 
@@ -134,6 +137,9 @@ const Contatos = () => {
   
   // Mini celebration hook
   const celebration = useMiniCelebration();
+  
+  // Table density
+  const { density, toggle: toggleDensity } = useTableDensity();
   
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -422,6 +428,7 @@ const Contatos = () => {
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
               {selectionMode ? 'Cancelar' : 'Selecionar'}
             </Button>
+            <DensityToggle density={density} onToggle={toggleDensity} />
             <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
