@@ -99,6 +99,7 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
 const TAB_ORDER = ['overview', 'analytics', 'relationships', 'intelligence'];
 
 const Dashboard = () => {
+  usePageTitle('Dashboard');
   const [period, setPeriod] = useState<PeriodFilter>('7d');
   const [activeTab, setActiveTab] = useState('overview');
   const [tabDirection, setTabDirection] = useState(0); // -1 left, 1 right
