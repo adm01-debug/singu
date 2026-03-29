@@ -141,6 +141,7 @@ const sortOptions: SortOption[] = [
 ];
 
 const Interacoes = () => {
+  usePageTitle('Interações');
   const { interactions, loading, createInteraction, updateInteraction, deleteInteraction } = useInteractions();
   const { contacts } = useContacts();
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -61,6 +61,7 @@ import {
 import { CustomTooltip, PieTooltip, ComparisonBadge, StatCard } from '@/components/analytics/AnalyticsShared';
 
 const Analytics = () => {
+  usePageTitle('Analytics');
   const { user } = useAuth();
   const [period, setPeriod] = useState<PeriodFilter>('30d');
   const [loading, setLoading] = useState(true);

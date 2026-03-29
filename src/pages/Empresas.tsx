@@ -98,6 +98,7 @@ const sortOptions: SortOption[] = [
 ];
 
 const Empresas = () => {
+  usePageTitle('Empresas');
   const navigate = useNavigate();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
   const [localSearch, setLocalSearch] = useState('');
