@@ -31,6 +31,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       {/* Skip to main content for accessibility */}
       <SkipToContent />
 
+      {/* Route transition progress bar */}
+      <RouteProgressBar />
+
       {/* Swipe-back gesture indicator (mobile only) */}
       <SwipeBackIndicator />
       
