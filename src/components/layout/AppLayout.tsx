@@ -11,6 +11,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -23,6 +24,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   
   // Enable keyboard shortcuts
   useKeyboardShortcutsEnhanced();
+  
+  // Enable swipe-back gesture on mobile
+  useSwipeBack();
 
   return (
     <div className="min-h-screen bg-background">

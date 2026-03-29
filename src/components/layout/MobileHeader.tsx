@@ -1,8 +1,45 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Search, Bell, Zap } from 'lucide-react';
+import { Menu, Search, Bell, Zap, ArrowLeft } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
+import { useNavigationStack } from '@/contexts/NavigationStackContext';
 import { cn } from '@/lib/utils';
+
+/** Routes that are considered "detail" or "nested" — show back arrow instead of hamburger */
+const NESTED_ROUTE_PATTERNS = [
+  /^\/contatos\/.+/,
+  /^\/empresas\/.+/,
+  /^\/relatorio\/.+/,
+];
+
+/** Top-level sub-pages — show back arrow to go to dashboard */
+const SUB_PAGES = [
+  '/contatos',
+  '/empresas',
+  '/interacoes',
+  '/analytics',
+  '/insights',
+  '/calendario',
+  '/notificacoes',
+  '/network',
+  '/automacoes',
+  '/configuracoes',
+];
+
+/** Route-to-title mapping */
+const ROUTE_TITLES: Record<string, string> = {
+  '/contatos': 'Contatos',
+  '/empresas': 'Empresas',
+  '/interacoes': 'Interações',
+  '/analytics': 'Analytics',
+  '/insights': 'Insights',
+  '/calendario': 'Calendário',
+  '/notificacoes': 'Notificações',
+  '/network': 'Network',
+  '/automacoes': 'Automações',
+  '/configuracoes': 'Configurações',
+};
 
 interface MobileHeaderProps {
   onSearchClick?: () => void;
@@ -11,24 +48,46 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
+  const { goBack } = useNavigationStack();
+
+  const isRoot = location.pathname === '/';
+  const isNested = NESTED_ROUTE_PATTERNS.some(p => p.test(location.pathname));
+  const isSubPage = SUB_PAGES.includes(location.pathname);
+  const showBackButton = !isRoot && (isNested || isSubPage);
+
+  const resolvedTitle = title || ROUTE_TITLES[location.pathname];
+
+  const handleLeftAction = () => {
+    if (showBackButton) {
+      goBack('/');
+    } else {
+      setDrawerOpen(true);
+    }
+  };
 
   return (
     <>
       <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between px-4 py-3">
-          {/* Menu Button */}
+          {/* Left: Menu or Back */}
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors"
+            onClick={handleLeftAction}
+            className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label={showBackButton ? 'Voltar' : 'Abrir menu'}
           >
-            <Menu className="w-5 h-5 text-foreground" />
+            {showBackButton ? (
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            ) : (
+              <Menu className="w-5 h-5 text-foreground" />
+            )}
           </motion.button>
 
-          {/* Logo or Title */}
-          <div className="flex items-center gap-2">
-            {title ? (
-              <h1 className="text-base font-semibold text-foreground">{title}</h1>
+          {/* Center: Logo or Title */}
+          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
+            {resolvedTitle ? (
+              <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
             ) : (
               <>
                 <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
@@ -39,18 +98,19 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             )}
           </div>
 
-          {/* Actions */}
+          {/* Right: Actions */}
           <div className="flex items-center gap-1">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onSearchClick}
-              className="p-2 rounded-xl hover:bg-muted transition-colors"
+              className="p-2 rounded-xl hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Buscar"
             >
               <Search className="w-5 h-5 text-muted-foreground" />
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-xl hover:bg-muted transition-colors relative"
+              className="p-2 rounded-xl hover:bg-muted transition-colors relative min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Notificações"
             >
               <Bell className="w-5 h-5 text-muted-foreground" />
