@@ -12,6 +12,7 @@ import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Non-critical shell components — lazy loaded
 const PWAShell = lazy(() =>
