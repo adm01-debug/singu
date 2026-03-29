@@ -24,6 +24,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   
   // Enable keyboard shortcuts
   useKeyboardShortcutsEnhanced();
+  
+  // Enable swipe-back gesture on mobile
+  useSwipeBack();
 
   return (
     <div className="min-h-screen bg-background">
