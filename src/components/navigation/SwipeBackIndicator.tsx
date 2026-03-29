@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 
+const HINT_STORAGE_KEY = 'singu_swipe_hint_shown';
+
 /**
  * Unified swipe-back gesture handler + visual indicator for mobile.
  * - Edge detection zone: 45px (wider for curved-edge devices)
@@ -101,23 +103,64 @@ export function SwipeBackIndicator() {
 
   if (isRoot) return null;
 
+  // Show gesture hint on first visit to a detail page (one-time)
+  const [showHint, setShowHint] = useState(false);
+  useEffect(() => {
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (!isTouchDevice || isRoot) return;
+    
+    try {
+      const shown = localStorage.getItem(HINT_STORAGE_KEY);
+      if (!shown) {
+        const timer = setTimeout(() => {
+          setShowHint(true);
+          localStorage.setItem(HINT_STORAGE_KEY, '1');
+          setTimeout(() => setShowHint(false), 2500);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    } catch {}
+  }, [isRoot]);
+
   return (
-    <AnimatePresence>
-      {isActive && swipeProgress > 0.05 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: swipeProgress }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.1 }}
-          className="fixed inset-y-0 left-0 z-50 pointer-events-none md:hidden"
-          style={{ width: `${Math.max(4, swipeProgress * 40)}px` }}
-        >
-          <div
-            className="h-full bg-gradient-to-r from-primary/30 to-transparent rounded-r-full"
-            style={{ opacity: swipeProgress }}
-          />
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <>
+      {/* Gesture hint — shown once on first detail page visit */}
+      <AnimatePresence>
+        {showHint && (
+          <motion.div
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.4 }}
+            className="fixed left-0 top-1/2 -translate-y-1/2 z-50 pointer-events-none md:hidden"
+          >
+            <motion.div
+              animate={{ x: [0, 12, 0] }}
+              transition={{ duration: 1.2, repeat: 1, ease: 'easeInOut' }}
+              className="w-1.5 h-16 bg-primary/40 rounded-r-full shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Active swipe progress indicator */}
+      <AnimatePresence>
+        {isActive && swipeProgress > 0.05 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: swipeProgress }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className="fixed inset-y-0 left-0 z-50 pointer-events-none md:hidden"
+            style={{ width: `${Math.max(4, swipeProgress * 40)}px` }}
+          >
+            <div
+              className="h-full bg-gradient-to-r from-primary/30 to-transparent rounded-r-full"
+              style={{ opacity: swipeProgress }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
