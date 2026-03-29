@@ -298,23 +298,14 @@ export default function Automacoes() {
 
   return (
     <AppLayout title="Automações">
+      <Header 
+        title="Automações & Workflows" 
+        subtitle="Crie regras automáticas: Se X acontecer → Faça Y"
+        showAddButton
+        addButtonLabel="Nova Automação"
+        onAddClick={() => setFormOpen(true)}
+      />
       <div className="p-4 md:p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Zap className="w-6 h-6 text-primary" />
-              Automações & Workflows
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Crie regras automáticas: "Se X acontecer → Faça Y"
-            </p>
-          </div>
-          <Button onClick={() => setFormOpen(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Nova Automação
-          </Button>
-        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
