@@ -67,6 +67,7 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
       // We triggered this navigation via goBack — pop from stack
       isGoingBackRef.current = false;
       directionRef.current = 'back';
+      saveDirection('back');
       return;
     }
 
@@ -81,6 +82,7 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
     }
 
     directionRef.current = 'forward';
+    saveDirection('forward');
   }, [location.pathname, location.search]);
 
   const goBack = useCallback((fallback: string = '/') => {
