@@ -1,11 +1,11 @@
-import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useNavigationStack } from '@/contexts/NavigationStackContext';
 
 interface BackButtonProps {
-  /** Explicit path to navigate to. If omitted, uses browser history. */
+  /** Explicit path to navigate to. If omitted, uses internal navigation stack. */
   to?: string;
   /** Label shown next to the arrow. Defaults to "Voltar". */
   label?: string;
@@ -20,10 +20,10 @@ interface BackButtonProps {
 /**
  * Smart back button that:
  * - Uses explicit `to` path when provided
- * - Falls back to browser history (navigate(-1))
- * - Falls back to "/" if there's no history
+ * - Falls back to internal navigation stack (anti-loop, deduplication)
+ * - Falls back to "/" if stack is empty
  * - Includes accessible label and keyboard support
- * - Animates with framer-motion tap feedback
+ * - Provides contextual aria-label with destination info
  */
 export function BackButton({
   to,
@@ -32,18 +32,22 @@ export function BackButton({
   className,
   showLabelOnMobile = false,
 }: BackButtonProps) {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { goBack, previousPath } = useNavigationStack();
 
   const handleBack = () => {
     if (to) {
-      navigate(to);
-    } else if (window.history.length > 1) {
-      navigate(-1);
+      // Use navigation stack's navigate to maintain stack integrity
+      goBack(to);
     } else {
-      navigate('/');
+      goBack('/');
     }
   };
+
+  // Build contextual aria-label
+  const destinationHint = to || previousPath;
+  const contextualLabel = destinationHint
+    ? `${label} para ${destinationHint.replace(/^\//, '').split('/')[0] || 'início'}`
+    : label;
 
   const variantClasses = {
     default: 'text-muted-foreground hover:text-foreground',
@@ -62,7 +66,7 @@ export function BackButton({
           variantClasses[variant],
           className
         )}
-        aria-label={label}
+        aria-label={contextualLabel}
       >
         <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className={cn(!showLabelOnMobile && 'hidden sm:inline')}>

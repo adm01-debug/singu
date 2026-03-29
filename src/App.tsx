@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, RequireAuth, useAuth } from "@/hooks/useAuth";
+import { NavigationStackProvider } from "@/contexts/NavigationStackContext";
 import { CelebrationProvider } from "@/components/celebrations/CelebrationProvider";
 import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
@@ -217,18 +218,20 @@ const App = () => (
               </Suspense>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <AuthProvider>
-                  <Suspense fallback={null}>
-                    <EasterEggsProvider />
-                  </Suspense>
-                  <Suspense fallback={null}>
-                    <KeyboardShortcutsDialogEnhanced />
-                  </Suspense>
-                  <Suspense fallback={null}>
-                    <SessionExpiryHandler>
-                      <WhatsNewWrapper />
-                      <AnimatedRoutes />
-                    </SessionExpiryHandler>
-                  </Suspense>
+                  <NavigationStackProvider>
+                    <Suspense fallback={null}>
+                      <EasterEggsProvider />
+                    </Suspense>
+                    <Suspense fallback={null}>
+                      <KeyboardShortcutsDialogEnhanced />
+                    </Suspense>
+                    <Suspense fallback={null}>
+                      <SessionExpiryHandler>
+                        <WhatsNewWrapper />
+                        <AnimatedRoutes />
+                      </SessionExpiryHandler>
+                    </Suspense>
+                  </NavigationStackProvider>
                 </AuthProvider>
               </BrowserRouter>
             </TooltipProvider>
