@@ -29,7 +29,6 @@ export function OfflineBanner({
     if (!isOnline) {
       setWasOffline(true);
     } else if (wasOffline && showSyncMessage) {
-      // Show reconnected message briefly
       setShowReconnected(true);
       const timer = setTimeout(() => {
         setShowReconnected(false);
@@ -38,6 +37,15 @@ export function OfflineBanner({
       return () => clearTimeout(timer);
     }
   }, [isOnline, wasOffline, showSyncMessage]);
+
+  // Auto-retry connection every 10 seconds when offline
+  useEffect(() => {
+    if (isOnline || isChecking) return;
+    const interval = setInterval(() => {
+      checkConnection();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isOnline, isChecking, checkConnection]);
 
   const positionClasses = position === 'top'
     ? 'top-0 left-0 right-0'
