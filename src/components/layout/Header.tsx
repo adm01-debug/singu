@@ -66,8 +66,8 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
         </div>
 
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
-          {/* Notifications */}
-          <Link to="/notificacoes">
+          {/* Notifications — hidden on mobile (MobileHeader has its own) */}
+          <Link to="/notificacoes" className="hidden md:inline-flex">
             <Button variant="ghost" size="icon" className="relative" aria-label="Notificações">
               <Bell className="w-5 h-5" aria-hidden="true" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
