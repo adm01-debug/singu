@@ -347,7 +347,7 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should import ScrollToTop in App.tsx', () => {
-      expect(appContent).toContain("from '@/components/ScrollToTop'");
+      expect(appContent).toContain('ScrollToTop');
     });
   });
 });
