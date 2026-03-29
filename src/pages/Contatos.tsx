@@ -63,6 +63,8 @@ import { logger } from "@/lib/logger";
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { DensityToggle } from '@/components/ui/density-toggle';
 import { KeyboardHint } from '@/components/ui/keyboard-hint';
+import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
+import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
 type ViewMode = 'grid' | 'list';
 
@@ -140,6 +142,7 @@ const Contatos = () => {
   
   // Table density
   const { density, toggle: toggleDensity } = useTableDensity();
+  const { celebrate } = useSuccessCelebration();
   
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -233,6 +236,11 @@ const Contatos = () => {
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      hapticSuccess();
+      // First contact celebration
+      if (contacts.length === 0) {
+        celebrate('confetti');
+      }
       if (event) {
         celebration.trigger(event, { variant: 'success', message: 'Contato criado!' });
       } else {
@@ -260,6 +268,7 @@ const Contatos = () => {
     if (!deletingContact) return;
     const contactToDelete = deletingContact;
     setDeletingContact(null);
+    hapticHeavy();
     
     // Contact is removed from UI instantly by optimistic deleteContact
     const success = await deleteContact(contactToDelete.id);
