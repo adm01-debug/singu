@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, Search, Bell, Zap, ArrowLeft, ChevronRight } from 'lucide-react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
@@ -105,30 +105,38 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
           </motion.button>
 
           {/* Center: Logo, Title, or Micro-breadcrumb */}
-          <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
-            {parentSegment && resolvedTitle ? (
-              // Micro-breadcrumb for nested/detail pages
-              <div className="flex items-center gap-1 min-w-0">
-                <Link
-                  to={parentSegment.path}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                >
-                  {parentSegment.label}
-                </Link>
-                <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" aria-hidden="true" />
-                <h1 className="text-sm font-semibold text-foreground truncate">{resolvedTitle}</h1>
-              </div>
-            ) : resolvedTitle ? (
-              <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
-            ) : (
-              <>
-                <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-primary-foreground" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center gap-1.5 min-w-0 flex-1 justify-center"
+            >
+              {parentSegment && resolvedTitle ? (
+                <div className="flex items-center gap-1 min-w-0">
+                  <Link
+                    to={parentSegment.path}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                  >
+                    {parentSegment.label}
+                  </Link>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" aria-hidden="true" />
+                  <h1 className="text-sm font-semibold text-foreground truncate">{resolvedTitle}</h1>
                 </div>
-                <span className="font-bold text-base text-foreground">SINGU</span>
-              </>
-            )}
-          </div>
+              ) : resolvedTitle ? (
+                <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
+              ) : (
+                <>
+                  <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-primary-foreground" />
+                  </div>
+                  <span className="font-bold text-base text-foreground">SINGU</span>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Right: Actions */}
           <div className="flex items-center gap-1">
