@@ -36,6 +36,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Notificacoes = () => {
+  usePageTitle('Notificações');
   const { 
     permissionState, 
     isSubscribed,

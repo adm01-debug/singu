@@ -28,6 +28,7 @@ const NetworkErrorFallback = ({ error, resetErrorBoundary }: { error: Error; res
 );
 
 const Network = () => {
+  usePageTitle('Rede de Contatos');
   return (
     <AppLayout>
       <Header 

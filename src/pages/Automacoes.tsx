@@ -256,6 +256,7 @@ function RuleFormDialog({
 // ===================== MAIN PAGE =====================
 
 export default function Automacoes() {
+  usePageTitle('Automações');
   const { rules, logs, loading, createRule, updateRule, deleteRule, toggleRule, fetchLogs } = useAutomationRules();
   const [formOpen, setFormOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<(CreateRuleData & { id: string }) | null>(null);
