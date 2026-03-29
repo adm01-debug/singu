@@ -25,6 +25,13 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
     # SPA routing: serve index.html for all non-file routes
     location / {
         try_files $uri $uri/ /index.html;
@@ -34,12 +41,20 @@ server {
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
     }
 
     # Disable caching for index.html (so new deploys are picked up)
     location = /index.html {
         expires -1;
         add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
+    # Health check endpoint
+    location = /health {
+        access_log off;
+        return 200 '{"status":"ok"}';
+        add_header Content-Type application/json;
     }
 }
 EOF

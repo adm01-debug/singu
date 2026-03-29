@@ -1,14 +1,16 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limiter.ts";
+import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limiter.ts';
+
+const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'https://singu.app';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': allowedOrigin,
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 interface HealthStatus {
-  status: "healthy" | "degraded" | "unhealthy";
+  status: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: string;
   version: string;
   checks: {
@@ -23,77 +25,77 @@ const startTime = Date.now();
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   // Rate limiting (monitoring can be frequent)
   const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  const rateCheck = checkRateLimit(`health-check:${clientIP}`, { maxRequests: 60, windowMs: 60_000 });
+  const rateCheck = checkRateLimit(`health-check:${clientIP}`, {
+    maxRequests: 60,
+    windowMs: 60_000,
+  });
   if (!rateCheck.allowed) {
     return rateLimitResponse(corsHeaders, rateCheck.resetAt);
   }
 
-  const checks: HealthStatus["checks"] = {
-    database: { status: "unknown", latency_ms: 0 },
-    auth: { status: "unknown" },
-    storage: { status: "unknown" },
+  const checks: HealthStatus['checks'] = {
+    database: { status: 'unknown', latency_ms: 0 },
+    auth: { status: 'unknown' },
+    storage: { status: 'unknown' },
   };
 
-  let overallStatus: HealthStatus["status"] = "healthy";
+  let overallStatus: HealthStatus['status'] = 'healthy';
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Check database connectivity and latency
     const dbStart = performance.now();
-    const { error: dbError } = await supabase
-      .from("profiles")
-      .select("id")
-      .limit(1);
+    const { error: dbError } = await supabase.from('profiles').select('id').limit(1);
     const dbLatency = Math.round(performance.now() - dbStart);
 
     checks.database = {
-      status: dbError ? "unhealthy" : "healthy",
+      status: dbError ? 'unhealthy' : 'healthy',
       latency_ms: dbLatency,
     };
 
-    if (dbError) overallStatus = "unhealthy";
-    if (dbLatency > 2000) overallStatus = "degraded";
+    if (dbError) overallStatus = 'unhealthy';
+    if (dbLatency > 2000) overallStatus = 'degraded';
 
     // Check auth service
     const { error: authError } = await supabase.auth.getSession();
     checks.auth = {
-      status: authError ? "degraded" : "healthy",
+      status: authError ? 'degraded' : 'healthy',
     };
 
-    if (authError && overallStatus === "healthy") overallStatus = "degraded";
+    if (authError && overallStatus === 'healthy') overallStatus = 'degraded';
 
     // Storage check (lightweight)
-    checks.storage = { status: "healthy" };
-  } catch (error) {
-    overallStatus = "unhealthy";
-    checks.database = { status: "error", latency_ms: 0 };
+    checks.storage = { status: 'healthy' };
+  } catch {
+    overallStatus = 'unhealthy';
+    checks.database = { status: 'error', latency_ms: 0 };
   }
 
   const healthStatus: HealthStatus = {
     status: overallStatus,
     timestamp: new Date().toISOString(),
-    version: Deno.env.get("APP_VERSION") ?? "1.0.0",
+    version: Deno.env.get('APP_VERSION') ?? '1.0.0',
     checks,
     uptime_seconds: Math.round((Date.now() - startTime) / 1000),
   };
 
-  const httpStatus = overallStatus === "unhealthy" ? 503 : 200;
+  const httpStatus = overallStatus === 'unhealthy' ? 503 : 200;
 
   return new Response(JSON.stringify(healthStatus), {
     status: httpStatus,
     headers: {
       ...corsHeaders,
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   });
 });

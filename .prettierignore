@@ -1,0 +1,7 @@
+dist
+node_modules
+.next
+coverage
+*.min.js
+*.min.css
+src/integrations/supabase/types.ts

@@ -13,7 +13,12 @@ import { logger } from '@/lib/logger';
 
 // Validation schemas
 const emailSchema = z.string().email('Email inválido');
-const passwordSchema = z.string().min(6, 'Senha deve ter no mínimo 6 caracteres');
+const passwordSchema = z
+  .string()
+  .min(8, 'Senha deve ter no mínimo 8 caracteres')
+  .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+  .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+  .regex(/[0-9]/, 'Senha deve conter pelo menos um número');
 const nameSchema = z.string().min(2, 'Nome deve ter no mínimo 2 caracteres');
 
 type AuthMode = 'login' | 'signup';
@@ -27,7 +32,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
+
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,7 +87,7 @@ const Auth = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -100,7 +105,7 @@ const Auth = () => {
       } else {
         const { error, needsEmailVerification } = await signUp(email, password, {
           first_name: firstName,
-          last_name: lastName
+          last_name: lastName,
         });
         if (error) {
           toast.error(error.message);
@@ -131,12 +136,12 @@ const Auth = () => {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-primary relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
-        
+
         {/* Enhanced decorative elements */}
         <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-white/5 rounded-full blur-2xl animate-float" />
-        
+
         <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -144,7 +149,7 @@ const Auth = () => {
             transition={{ duration: 0.6 }}
             className="flex items-center gap-4 mb-8"
           >
-            <motion.div 
+            <motion.div
               className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-2xl"
               whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
@@ -167,7 +172,8 @@ const Auth = () => {
               Transforme relacionamentos em resultados
             </h2>
             <p className="text-xl text-white/80">
-              O CRM que entende pessoas. Análise comportamental profunda, insights automáticos e inteligência emocional para suas negociações.
+              O CRM que entende pessoas. Análise comportamental profunda, insights automáticos e
+              inteligência emocional para suas negociações.
             </p>
           </motion.div>
 
@@ -183,7 +189,10 @@ const Auth = () => {
               { icon: '💡', text: 'Insights proativos' },
               { icon: '📊', text: 'Score de relacionamento' },
             ].map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-lg px-4 py-3">
+              <div
+                key={index}
+                className="flex items-center gap-3 bg-white/10 backdrop-blur rounded-lg px-4 py-3"
+              >
                 <span className="text-2xl">{feature.icon}</span>
                 <span className="text-sm font-medium">{feature.text}</span>
               </div>
@@ -217,8 +226,8 @@ const Auth = () => {
                 {mode === 'login' ? 'Entrar' : 'Criar conta'}
               </CardTitle>
               <CardDescription>
-                {mode === 'login' 
-                  ? 'Digite suas credenciais para acessar' 
+                {mode === 'login'
+                  ? 'Digite suas credenciais para acessar'
                   : 'Preencha os dados para começar'}
               </CardDescription>
             </CardHeader>
@@ -279,9 +288,7 @@ const Auth = () => {
                       className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
                     />
                   </div>
-                  {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email}</p>
-                  )}
+                  {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -304,21 +311,31 @@ const Auth = () => {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  {errors.password && (
-                    <p className="text-xs text-destructive">{errors.password}</p>
-                  )}
+                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       {mode === 'login' ? 'Entrando...' : 'Criando conta...'}
                     </span>
@@ -350,7 +367,8 @@ const Auth = () => {
                   animate={{ opacity: 1 }}
                   className="mt-4 text-xs text-center text-muted-foreground"
                 >
-                  Ao criar uma conta, você concorda com nossos Termos de Uso e Política de Privacidade.
+                  Ao criar uma conta, você concorda com nossos Termos de Uso e Política de
+                  Privacidade.
                 </motion.p>
               )}
             </CardContent>

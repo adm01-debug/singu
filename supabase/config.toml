@@ -1,76 +1,82 @@
 project_id = "rqodmqosrotmtrjnnjul"
 
+# Authenticated user functions - JWT verified by Supabase gateway
 [functions.check-notifications]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-push-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-insights]
-verify_jwt = false
+verify_jwt = true
 
 [functions.suggest-next-action]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ai-writing-assistant]
-verify_jwt = false
+verify_jwt = true
 
 [functions.smart-reminders]
-verify_jwt = false
+verify_jwt = true
 
 [functions.voice-to-text]
-verify_jwt = false
+verify_jwt = true
 
 [functions.weekly-digest]
-verify_jwt = false
+verify_jwt = true
 
 [functions.template-success-notifications]
-verify_jwt = false
+verify_jwt = true
 
 [functions.check-health-alerts]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-offer-suggestions]
-verify_jwt = false
+verify_jwt = true
 
 [functions.client-notifications]
-verify_jwt = false
+verify_jwt = true
 
 [functions.social-profile-scraper]
-verify_jwt = false
+verify_jwt = true
 
 [functions.social-behavior-analyzer]
-verify_jwt = false
+verify_jwt = true
 
 [functions.social-events-detector]
-verify_jwt = false
+verify_jwt = true
 
 [functions.rfm-analyzer]
-verify_jwt = false
+verify_jwt = true
 
 [functions.disc-analyzer]
-verify_jwt = false
+verify_jwt = true
 
+[functions.evolution-api]
+verify_jwt = true
+
+[functions.firecrawl-scrape]
+verify_jwt = true
+
+[functions.enrichlayer-linkedin]
+verify_jwt = true
+
+[functions.external-data]
+verify_jwt = true
+
+[functions.lux-trigger]
+verify_jwt = true
+
+# Webhook functions - use signature verification instead of JWT
 [functions.evolution-webhook]
 verify_jwt = false
 
 [functions.bitrix24-webhook]
 verify_jwt = false
 
-[functions.evolution-api]
-verify_jwt = false
-
-[functions.firecrawl-scrape]
-verify_jwt = false
-
-[functions.enrichlayer-linkedin]
-verify_jwt = false
-
-[functions.external-data]
-verify_jwt = false
-
-[functions.lux-trigger]
-verify_jwt = false
-
 [functions.lux-webhook]
+verify_jwt = false
+
+# Public health check - no auth required
+[functions.health-check]
 verify_jwt = false
