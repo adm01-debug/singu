@@ -138,6 +138,9 @@ const Contatos = () => {
   // Mini celebration hook
   const celebration = useMiniCelebration();
   
+  // Table density
+  const { density, toggle: toggleDensity } = useTableDensity();
+  
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
     await fetchContacts();
