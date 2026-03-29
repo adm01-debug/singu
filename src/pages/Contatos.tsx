@@ -287,6 +287,7 @@ const Contatos = () => {
     }
     setSelectedIds(new Set());
     setSelectionMode(false);
+    accessibleToast.success(`${ids.length} contato${ids.length > 1 ? 's' : ''} excluído${ids.length > 1 ? 's' : ''}`);
   };
 
   const handleBulkAddTag = async (ids: string[], tag: string) => {
