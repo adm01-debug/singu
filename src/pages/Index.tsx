@@ -536,21 +536,22 @@ const Dashboard = () => {
             </TabsContent>
 
             {/* Tab: Analytics */}
-            <TabsContent value="analytics" className="space-y-5 mt-4">
+            <TabsContent value="analytics" className="mt-4">
+              <motion.div key="analytics" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               {/* Period Filter */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Calendar className="w-5 h-5" aria-hidden="true" />
                   <Typography variant="body" className="font-medium">Período dos Gráficos</Typography>
                 </div>
-                <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
+                <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg">
                   {periodOptions.map((option) => (
                     <Button
                       key={option.value}
                       variant={period === option.value ? "default" : "ghost"}
                       size="sm"
                       onClick={() => setPeriod(option.value)}
-                      className={`transition-all ${
+                      className={`text-xs sm:text-sm transition-all ${
                         period === option.value 
                           ? 'shadow-sm' 
                           : 'hover:bg-secondary'
@@ -578,10 +579,12 @@ const Dashboard = () => {
                   <SentimentChart period={period} />
                 </div>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Relationships */}
-            <TabsContent value="relationships" className="space-y-5 mt-4">
+            <TabsContent value="relationships" className="mt-4">
+              <motion.div key="relationships" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               <DashboardErrorBoundary sectionName="Estatísticas de Relacionamento">
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -600,10 +603,12 @@ const Dashboard = () => {
                   <ClosingScoreAlertsList maxItems={3} compact />
                 </LazySection>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Intelligence */}
-            <TabsContent value="intelligence" className="space-y-5 mt-4">
+            <TabsContent value="intelligence" className="mt-4">
+              <motion.div key="intelligence" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="space-y-5">
               <DashboardErrorBoundary sectionName="Padrões de Compra">
                 <div className="flex items-center gap-2 mb-4">
                   <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -642,6 +647,7 @@ const Dashboard = () => {
                   </LazySection>
                 </div>
               </DashboardErrorBoundary>
+              </motion.div>
             </TabsContent>
           </Tabs>
         </div>
