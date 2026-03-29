@@ -45,28 +45,28 @@ describe('Dashboard Layout Improvements Validation', () => {
 
   // === TAB ANIMATIONS ===
   describe('Tab Content Animations', () => {
-    it('should have motion.div wrapper for overview tab', () => {
-      expect(indexContent).toContain('key="overview"');
+    it('should have directional motion.div wrapper for overview tab', () => {
+      expect(indexContent).toContain('overview-${tabDirection}');
     });
 
-    it('should have motion.div wrapper for analytics tab', () => {
-      expect(indexContent).toContain('key="analytics"');
+    it('should have directional motion.div wrapper for analytics tab', () => {
+      expect(indexContent).toContain('analytics-${tabDirection}');
     });
 
-    it('should have motion.div wrapper for relationships tab', () => {
-      expect(indexContent).toContain('key="relationships"');
+    it('should have directional motion.div wrapper for relationships tab', () => {
+      expect(indexContent).toContain('relationships-${tabDirection}');
     });
 
-    it('should have motion.div wrapper for intelligence tab', () => {
-      expect(indexContent).toContain('key="intelligence"');
+    it('should have directional motion.div wrapper for intelligence tab', () => {
+      expect(indexContent).toContain('intelligence-${tabDirection}');
     });
 
-    it('should use fade-in animation', () => {
-      expect(indexContent).toContain('initial={{ opacity: 0, y: 8 }}');
+    it('should use tabAnimationVariants for consistent animation', () => {
+      expect(indexContent).toContain('tabAnimationVariants.initial');
     });
 
     it('should animate to full opacity', () => {
-      expect(indexContent).toContain('animate={{ opacity: 1, y: 0 }}');
+      expect(indexContent).toContain('animate={{ opacity: 1');
     });
 
     it('should have 200ms transition duration', () => {
