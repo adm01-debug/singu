@@ -60,6 +60,9 @@ import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
 import type { SearchPreset } from '@/hooks/useSearchPresets';
 import { logger } from "@/lib/logger";
+import { useTableDensity } from '@/hooks/useTableDensity';
+import { DensityToggle } from '@/components/ui/density-toggle';
+import { KeyboardHint } from '@/components/ui/keyboard-hint';
 
 type ViewMode = 'grid' | 'list';
 
