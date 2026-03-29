@@ -125,51 +125,51 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/empresas" element={
         <RequireAuth>
-          <LazyPage><Empresas /></LazyPage>
+          <LazyPage fallback={<CompaniesPageSkeleton />}><Empresas /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/empresas/:id" element={
         <RequireAuth>
-          <Suspense fallback={<PageLoadingFallback />}>
+          <Suspense fallback={<CompaniesPageSkeleton />}>
             <EmpresaDetalhe />
           </Suspense>
         </RequireAuth>
       } />
       <Route path="/contatos" element={
         <RequireAuth>
-          <LazyPage><Contatos /></LazyPage>
+          <LazyPage fallback={<ContactsPageSkeleton />}><Contatos /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/contatos/:id" element={
         <RequireAuth>
-          <Suspense fallback={<PageLoadingFallback />}>
+          <Suspense fallback={<ContactsPageSkeleton />}>
             <ContatoDetalhe />
           </Suspense>
         </RequireAuth>
       } />
       <Route path="/interacoes" element={
         <RequireAuth>
-          <LazyPage><Interacoes /></LazyPage>
+          <LazyPage fallback={<InteractionsPageSkeleton />}><Interacoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/insights" element={
         <RequireAuth>
-          <LazyPage><Insights /></LazyPage>
+          <LazyPage fallback={<InsightsPageSkeleton />}><Insights /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/analytics" element={
         <RequireAuth>
-          <LazyPage><Analytics /></LazyPage>
+          <LazyPage fallback={<AnalyticsPageSkeleton />}><Analytics /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/configuracoes" element={
         <RequireAuth>
-          <LazyPage><Configuracoes /></LazyPage>
+          <LazyPage fallback={<SettingsPageSkeleton />}><Configuracoes /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/calendario" element={
         <RequireAuth>
-          <LazyPage><Calendario /></LazyPage>
+          <LazyPage fallback={<CalendarPageSkeleton />}><Calendario /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/notificacoes" element={
@@ -179,7 +179,7 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/network" element={
         <RequireAuth>
-          <LazyPage><Network /></LazyPage>
+          <LazyPage fallback={<NetworkPageSkeleton />}><Network /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/relatorio/:id" element={
