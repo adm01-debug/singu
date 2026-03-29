@@ -104,9 +104,21 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             )}
           </motion.button>
 
-          {/* Center: Logo or Title */}
-          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
-            {resolvedTitle ? (
+          {/* Center: Logo, Title, or Micro-breadcrumb */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
+            {parentSegment && resolvedTitle ? (
+              // Micro-breadcrumb for nested/detail pages
+              <div className="flex items-center gap-1 min-w-0">
+                <Link
+                  to={parentSegment.path}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                >
+                  {parentSegment.label}
+                </Link>
+                <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" aria-hidden="true" />
+                <h1 className="text-sm font-semibold text-foreground truncate">{resolvedTitle}</h1>
+              </div>
+            ) : resolvedTitle ? (
               <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
             ) : (
               <>
