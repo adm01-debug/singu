@@ -12,6 +12,7 @@ import { useSidebarState } from '@/hooks/useSidebarState';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
+import { DynamicBreadcrumbs } from '@/components/navigation/DynamicBreadcrumbs';
 import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
@@ -57,6 +58,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
         )}
         tabIndex={-1}
       >
+        <DynamicBreadcrumbs className="hidden md:flex px-6 pt-4 pb-0" />
         <PageTransition>
           {children}
         </PageTransition>
