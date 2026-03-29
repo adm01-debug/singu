@@ -148,6 +148,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { counts } = useNotificationCounts();
+  const { preload, cancelPreload } = useRoutePreload();
 
   // Enable keyboard navigation
   useKeyboardNavigation({
@@ -284,6 +285,9 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                   <div className="relative group">
                     <Link
                       to={item.path}
+                      onMouseEnter={() => preload(item.path)}
+                      onFocus={() => preload(item.path)}
+                      onMouseLeave={cancelPreload}
                       data-tour={item.tourId}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
