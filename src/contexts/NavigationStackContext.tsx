@@ -16,6 +16,7 @@ const NavigationStackContext = createContext<NavigationStackContextType | null>(
 
 const MAX_STACK_SIZE = 20;
 const STORAGE_KEY = 'singu_nav_stack';
+const DIRECTION_KEY = 'singu_nav_direction';
 
 function loadStack(): string[] {
   try {
@@ -23,6 +24,16 @@ function loadStack(): string[] {
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
+  }
+}
+
+function loadDirection(): 'forward' | 'back' | 'replace' {
+  try {
+    const stored = sessionStorage.getItem(DIRECTION_KEY);
+    if (stored === 'back' || stored === 'replace') return stored;
+    return 'forward';
+  } catch {
+    return 'forward';
   }
 }
 
@@ -34,11 +45,17 @@ function saveStack(stack: string[]) {
   }
 }
 
+function saveDirection(direction: 'forward' | 'back' | 'replace') {
+  try {
+    sessionStorage.setItem(DIRECTION_KEY, direction);
+  } catch {}
+}
+
 export function NavigationStackProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const stackRef = useRef<string[]>(loadStack());
-  const directionRef = useRef<'forward' | 'back' | 'replace'>('forward');
+  const directionRef = useRef<'forward' | 'back' | 'replace'>(loadDirection());
   const isGoingBackRef = useRef(false);
 
   // Track route changes
@@ -50,6 +67,7 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
       // We triggered this navigation via goBack — pop from stack
       isGoingBackRef.current = false;
       directionRef.current = 'back';
+      saveDirection('back');
       return;
     }
 
@@ -64,6 +82,7 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
     }
 
     directionRef.current = 'forward';
+    saveDirection('forward');
   }, [location.pathname, location.search]);
 
   const goBack = useCallback((fallback: string = '/') => {
@@ -96,6 +115,13 @@ export function NavigationStackProvider({ children }: { children: ReactNode }) {
       navigate(fallback);
     }
   }, [location.pathname, location.search, navigate]);
+
+  // Listen for keyboard shortcut Alt+← event
+  useEffect(() => {
+    const handleNavigateBack = () => goBack('/');
+    window.addEventListener('navigate-back', handleNavigateBack);
+    return () => window.removeEventListener('navigate-back', handleNavigateBack);
+  }, [goBack]);
 
   const previousPath = (() => {
     const stack = stackRef.current;

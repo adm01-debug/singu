@@ -4,6 +4,29 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 
+/** Human-readable labels for route segments */
+const ROUTE_LABELS: Record<string, string> = {
+  '': 'início',
+  contatos: 'Contatos',
+  empresas: 'Empresas',
+  interacoes: 'Interações',
+  analytics: 'Analytics',
+  insights: 'Insights',
+  calendario: 'Calendário',
+  notificacoes: 'Notificações',
+  network: 'Network',
+  automacoes: 'Automações',
+  configuracoes: 'Configurações',
+  relatorio: 'Relatório',
+  admin: 'Admin',
+};
+
+function getReadableLabel(path: string | null): string {
+  if (!path) return 'início';
+  const segment = path.replace(/^\//, '').split('/')[0] || '';
+  return ROUTE_LABELS[segment] || segment || 'início';
+}
+
 interface BackButtonProps {
   /** Explicit path to navigate to. If omitted, uses internal navigation stack. */
   to?: string;
@@ -22,12 +45,12 @@ interface BackButtonProps {
  * - Uses explicit `to` path when provided
  * - Falls back to internal navigation stack (anti-loop, deduplication)
  * - Falls back to "/" if stack is empty
- * - Includes accessible label and keyboard support
- * - Provides contextual aria-label with destination info
+ * - Shows contextual destination label
+ * - Provides contextual aria-label with readable destination
  */
 export function BackButton({
   to,
-  label = 'Voltar',
+  label,
   variant = 'ghost',
   className,
   showLabelOnMobile = false,
@@ -36,18 +59,19 @@ export function BackButton({
 
   const handleBack = () => {
     if (to) {
-      // Use navigation stack's navigate to maintain stack integrity
       goBack(to);
     } else {
       goBack('/');
     }
   };
 
-  // Build contextual aria-label
-  const destinationHint = to || previousPath;
-  const contextualLabel = destinationHint
-    ? `${label} para ${destinationHint.replace(/^\//, '').split('/')[0] || 'início'}`
-    : label;
+  // Resolve visible label: explicit > contextual destination > "Voltar"
+  const destinationPath = to || previousPath;
+  const contextualDestination = getReadableLabel(destinationPath);
+  const displayLabel = label || contextualDestination;
+
+  // Build accessible aria-label
+  const ariaLabel = `Voltar para ${contextualDestination}`;
 
   const variantClasses = {
     default: 'text-muted-foreground hover:text-foreground',
@@ -66,11 +90,11 @@ export function BackButton({
           variantClasses[variant],
           className
         )}
-        aria-label={contextualLabel}
+        aria-label={ariaLabel}
       >
         <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className={cn(!showLabelOnMobile && 'hidden sm:inline')}>
-          {label}
+          {displayLabel}
         </span>
       </Button>
     </motion.div>

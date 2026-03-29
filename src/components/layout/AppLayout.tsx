@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 import { Sidebar } from './Sidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -50,7 +51,10 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       {/* Main Content */}
       <main 
         id="main-content"
-        className={`transition-all duration-200 pb-20 md:pb-0 focus:outline-none md:ml-[280px] ${collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'}`}
+        className={cn(
+          'pb-20 md:pb-0 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
+          collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'
+        )}
         tabIndex={-1}
       >
         <PageTransition>

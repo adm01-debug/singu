@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -42,15 +42,22 @@ export function MobileBottomNav() {
   const [showMore, setShowMore] = useState(false);
   const haptic = useHapticFeedback();
 
+  // Auto-close "More" overlay on route change (e.g. swipe-back gesture)
+  useEffect(() => {
+    setShowMore(false);
+  }, [location.pathname]);
+
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
+  // Check if active route is in "more" section for indicator
+  const activeInMore = moreNavItems.some(item => isActive(item.path));
+
   const handleNavigate = (path: string) => {
     haptic.selection();
     navigate(path);
-    setShowMore(false);
   };
 
   return (
@@ -188,14 +195,19 @@ export function MobileBottomNav() {
                 setShowMore(!showMore);
               }}
               className={cn(
-                "flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
-                showMore ? "text-primary" : "text-muted-foreground"
+                "relative flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all min-w-[64px]",
+                (showMore || activeInMore) ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <MoreHorizontal className={cn("w-5 h-5 transition-transform", showMore && "rotate-90")} />
+              <div className="relative">
+                <MoreHorizontal className={cn("w-5 h-5 transition-transform", showMore && "rotate-90")} />
+                {activeInMore && !showMore && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-primary" aria-hidden="true" />
+                )}
+              </div>
               <span className={cn(
                 "text-[10px] font-medium transition-all",
-                showMore ? "opacity-100" : "opacity-70"
+                (showMore || activeInMore) ? "opacity-100" : "opacity-70"
               )}>
                 Mais
               </span>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Search, Bell, Zap, ArrowLeft } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Menu, Search, Bell, Zap, ArrowLeft, ChevronRight } from 'lucide-react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
 import { cn } from '@/lib/utils';
@@ -57,9 +57,20 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
   const isSubPage = SUB_PAGES.includes(location.pathname);
   const showBackButton = !isRoot && (isNested || isSubPage);
 
+  // Build micro-breadcrumb for nested pages
+  const parentSegment = (() => {
+    if (!isNested) return null;
+    const segments = location.pathname.split('/').filter(Boolean);
+    if (segments.length >= 2) {
+      const parentPath = `/${segments[0]}`;
+      const parentLabel = ROUTE_TITLES[parentPath];
+      return parentLabel ? { path: parentPath, label: parentLabel } : null;
+    }
+    return null;
+  })();
+
   // Resolve title: explicit prop > exact match > prefix match for detail pages
   const resolvedTitle = title || ROUTE_TITLES[location.pathname] || (() => {
-    // Match detail pages like /contatos/:id → "Contato"
     if (location.pathname.startsWith('/contatos/')) return 'Contato';
     if (location.pathname.startsWith('/empresas/')) return 'Empresa';
     if (location.pathname.startsWith('/relatorio/')) return 'Relatório';
@@ -93,9 +104,21 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
             )}
           </motion.button>
 
-          {/* Center: Logo or Title */}
-          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
-            {resolvedTitle ? (
+          {/* Center: Logo, Title, or Micro-breadcrumb */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center">
+            {parentSegment && resolvedTitle ? (
+              // Micro-breadcrumb for nested/detail pages
+              <div className="flex items-center gap-1 min-w-0">
+                <Link
+                  to={parentSegment.path}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                >
+                  {parentSegment.label}
+                </Link>
+                <ChevronRight className="w-3 h-3 text-muted-foreground/50 shrink-0" aria-hidden="true" />
+                <h1 className="text-sm font-semibold text-foreground truncate">{resolvedTitle}</h1>
+              </div>
+            ) : resolvedTitle ? (
               <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
             ) : (
               <>
