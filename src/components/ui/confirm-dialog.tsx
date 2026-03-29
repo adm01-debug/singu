@@ -40,7 +40,7 @@ const variantConfig: Record<ConfirmVariant, {
   warning: {
     icon: AlertTriangle,
     iconClass: 'text-yellow-600 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-900/30',
-    actionClass: 'bg-yellow-600 text-white hover:bg-yellow-700',
+    actionClass: 'bg-yellow-600 text-primary-foreground hover:bg-yellow-700',
   },
   info: {
     icon: Info,
