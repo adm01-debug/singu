@@ -301,6 +301,7 @@ const Contatos = () => {
       }
     }
     setSelectedIds(new Set());
+    accessibleToast.success(`Tag "${tag}" adicionada a ${ids.length} contato${ids.length > 1 ? 's' : ''}`);
   };
 
   const toggleSelectionMode = () => {
