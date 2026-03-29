@@ -428,6 +428,7 @@ const Contatos = () => {
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
               {selectionMode ? 'Cancelar' : 'Selecionar'}
             </Button>
+            <DensityToggle density={density} onToggle={toggleDensity} />
             <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
