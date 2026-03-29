@@ -532,6 +532,7 @@ const Dashboard = () => {
                   </div>
                 </DashboardErrorBoundary>
               </div>
+              </motion.div>
             </TabsContent>
 
             {/* Tab: Analytics */}
