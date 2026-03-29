@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { hapticSuccess, hapticHeavy } from '@/lib/haptics';
+import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -176,12 +178,18 @@ const Empresas = () => {
 
   useKeyboardShortcutsEnhanced();
 
+  const { celebrate } = useSuccessCelebration();
+
   const handleCreate = async (data: Parameters<typeof createCompany>[0]) => {
     setIsSubmitting(true);
     const result = await createCompany(data);
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      hapticSuccess();
+      if (companies.length === 0) {
+        celebrate('confetti');
+      }
     }
   };
 
@@ -197,6 +205,7 @@ const Empresas = () => {
 
   const handleDelete = async () => {
     if (!deletingCompany) return;
+    hapticHeavy();
     await deleteCompany(deletingCompany.id);
     setDeletingCompany(null);
   };
