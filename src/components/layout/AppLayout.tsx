@@ -75,6 +75,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       
       {/* Global keyboard shortcuts help (? key) */}
       <KeyboardShortcutsCheatsheet />
+      
+      {/* Global scroll-to-top button */}
+      <ScrollToTopButton />
     </div>
   );
 }
