@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+// Test validates all dashboard layout improvements
 import * as fs from 'fs';
 import * as path from 'path';
 
