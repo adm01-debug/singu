@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -255,6 +256,7 @@ function RuleFormDialog({
 // ===================== MAIN PAGE =====================
 
 export default function Automacoes() {
+  usePageTitle('Automações');
   const { rules, logs, loading, createRule, updateRule, deleteRule, toggleRule, fetchLogs } = useAutomationRules();
   const [formOpen, setFormOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<(CreateRuleData & { id: string }) | null>(null);

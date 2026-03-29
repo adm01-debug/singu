@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -60,6 +61,7 @@ import {
 import { CustomTooltip, PieTooltip, ComparisonBadge, StatCard } from '@/components/analytics/AnalyticsShared';
 
 const Analytics = () => {
+  usePageTitle('Analytics');
   const { user } = useAuth();
   const [period, setPeriod] = useState<PeriodFilter>('30d');
   const [loading, setLoading] = useState(true);

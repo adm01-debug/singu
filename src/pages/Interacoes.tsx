@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
 import { 
@@ -140,6 +141,7 @@ const sortOptions: SortOption[] = [
 ];
 
 const Interacoes = () => {
+  usePageTitle('Interações');
   const { interactions, loading, createInteraction, updateInteraction, deleteInteraction } = useInteractions();
   const { contacts } = useContacts();
   const [isFormOpen, setIsFormOpen] = useState(false);

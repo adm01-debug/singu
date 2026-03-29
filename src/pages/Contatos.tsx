@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,6 +109,7 @@ const sortOptions: SortOption[] = [
 ];
 
 const Contatos = () => {
+  usePageTitle('Contatos');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { contacts, loading, createContact, updateContact, deleteContact, fetchContacts } = useContacts();

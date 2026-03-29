@@ -475,6 +475,14 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         onValueChange={setQuery}
       />
       <CommandList className="max-h-[400px]">
+        {/* Screen reader announcement for search results */}
+        {query && !isLoading && (
+          <div className="sr-only" aria-live="polite" aria-atomic="true">
+            {hasResults
+              ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados`
+              : 'Nenhum resultado encontrado'}
+          </div>
+        )}
         {/* Loading */}
         {query && isLoading && (
           <div className="flex items-center justify-center py-8">

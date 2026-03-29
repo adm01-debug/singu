@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -65,6 +66,7 @@ const interactionTypeLabels: Record<string, string> = {
 };
 
 const Calendario = () => {
+  usePageTitle('Calendário');
   const { user } = useAuth();
   const { celebrate } = useCelebration();
   const [currentMonth, setCurrentMonth] = useState(new Date());

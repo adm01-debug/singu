@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { NetworkVisualization } from '@/components/network/NetworkVisualization';
@@ -27,6 +28,7 @@ const NetworkErrorFallback = ({ error, resetErrorBoundary }: { error: Error; res
 );
 
 const Network = () => {
+  usePageTitle('Rede de Contatos');
   return (
     <AppLayout>
       <Header 

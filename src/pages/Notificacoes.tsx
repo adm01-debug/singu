@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import { 
   Bell, 
@@ -35,6 +36,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Notificacoes = () => {
+  usePageTitle('Notificações');
   const { 
     permissionState, 
     isSubscribed,

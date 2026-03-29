@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -50,6 +51,7 @@ interface ProfileData {
 }
 
 const Configuracoes = () => {
+  usePageTitle('Configurações');
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const accessibleToast = useAccessibleToast();

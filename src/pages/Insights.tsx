@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
@@ -99,6 +100,7 @@ const priorityColors: Record<string, string> = {
 };
 
 const Insights = () => {
+  usePageTitle('Insights');
   const { user, session } = useAuth();
   const accessibleToast = useAccessibleToast();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
