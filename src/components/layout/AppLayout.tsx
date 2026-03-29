@@ -29,6 +29,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
     <div className="min-h-screen bg-background">
       {/* Skip to main content for accessibility */}
       <SkipToContent />
+
+      {/* Swipe-back gesture indicator (mobile only) */}
+      <SwipeBackIndicator />
       
       {/* Mobile Header */}
       <MobileHeader onSearchClick={() => setIsOpen(true)} title={title} />
