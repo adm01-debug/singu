@@ -1,4 +1,5 @@
-import { forwardRef } from 'react';
+import { forwardRef, useCallback } from 'react';
+import { useRoutePreload } from '@/hooks/useRoutePreload';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
