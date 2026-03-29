@@ -12,6 +12,7 @@ import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
+import { useWebVitals } from "@/hooks/useWebVitals";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
