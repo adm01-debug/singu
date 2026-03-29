@@ -13,6 +13,16 @@ import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
 import ScrollToTop from "@/components/ScrollToTop";
+import {
+  ContactsPageSkeleton,
+  CompaniesPageSkeleton,
+  InteractionsPageSkeleton,
+  AnalyticsPageSkeleton,
+  InsightsPageSkeleton,
+  CalendarPageSkeleton,
+  SettingsPageSkeleton,
+  NetworkPageSkeleton,
+} from "@/components/skeletons/PageSkeletons";
 
 // Non-critical shell components — lazy loaded
 const PWAShell = lazy(() =>
