@@ -229,6 +229,7 @@ const App = () => (
                     <Suspense fallback={null}>
                       <SessionExpiryHandler>
                         <WhatsNewWrapper />
+                        <RouteAnnouncer />
                         <AnimatedRoutes />
                       </SessionExpiryHandler>
                     </Suspense>
