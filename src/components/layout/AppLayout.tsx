@@ -14,6 +14,7 @@ import { PageTransition } from '@/components/navigation/PageTransition';
 import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
+import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
 
 interface AppLayoutProps {
   children: ReactNode;
