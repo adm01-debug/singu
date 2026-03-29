@@ -49,12 +49,13 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
     <header ref={ref} className="bg-card border-b border-border px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
+          {/* Back button — hidden on mobile (MobileHeader handles it) */}
           {showBack && (
             <BackButton
               to={resolvedBackTo}
               label="Voltar"
               variant="ghost"
-              className="shrink-0 -ml-1"
+              className="shrink-0 -ml-1 hidden md:inline-flex"
             />
           )}
           <div className="min-w-0">
