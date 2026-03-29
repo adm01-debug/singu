@@ -309,29 +309,35 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS — sticky header ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-0 md:top-0 z-10 bg-background/95 backdrop-blur-xl pb-3 pt-1 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
+            <div className="sticky top-[57px] md:top-0 z-10 bg-background/95 backdrop-blur-xl pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
               <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="gap-2">
-                  <LayoutGrid className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Visão Geral</span>
+                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm">
+                  <LayoutGrid className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden xs:inline truncate">Geral</span>
+                  <span className="hidden sm:inline truncate">Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-2">
-                  <BarChart3 className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Analytics</span>
+                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm">
+                  <BarChart3 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="relationships" className="gap-2">
-                  <Heart className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Relacionamentos</span>
+                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm">
+                  <Heart className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">Relações</span>
                 </TabsTrigger>
-                <TabsTrigger value="intelligence" className="gap-2">
-                  <Brain className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Inteligência</span>
+                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm">
+                  <Brain className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span className="hidden sm:inline truncate">IA</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             {/* Tab: Overview */}
-            <TabsContent value="overview" className="space-y-5 mt-4">
+            <TabsContent value="overview" className="space-y-5 mt-4" asChild>
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+              >
               {/* Portfolio Health — contained height */}
               <DashboardErrorBoundary sectionName="Saúde do Portfólio">
                 <LazySection fallbackVariant="card" fallbackHeight="h-48">
