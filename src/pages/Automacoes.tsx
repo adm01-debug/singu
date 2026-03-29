@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { Header } from '@/components/layout/Header';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Zap, Power, Trash2, Edit2, History, 
