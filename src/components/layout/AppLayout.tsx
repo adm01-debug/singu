@@ -22,11 +22,8 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { collapsed } = useSidebarState();
   
-  // Enable keyboard shortcuts
+  // Keyboard shortcuts
   useKeyboardShortcutsEnhanced();
-  
-  // Enable swipe-back gesture on mobile
-  useSwipeBack();
 
   return (
     <div className="min-h-screen bg-background">
