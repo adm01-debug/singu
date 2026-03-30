@@ -39,27 +39,17 @@ Deno.serve(async (req) => {
 
     // ─── LIST TABLES (schema discovery) ───
     if (operation === 'list_tables') {
-      const { data, error } = await client.rpc('get_public_tables').select('*');
-      // Fallback: query using raw SQL via pg_tables
-      const { data: tables, error: tablesErr } = await client
-        .from('pg_tables' as any)
-        .select('tablename')
-        .eq('schemaname', 'public');
-      
-      if (tablesErr) {
-        // Try information_schema approach
-        const resp = await fetch(`${Deno.env.get('EXTERNAL_SUPABASE_URL')}/rest/v1/`, {
-          headers: {
-            'apikey': Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!,
-            'Authorization': `Bearer ${Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!}`,
-          }
-        });
-        const swagger = await resp.json();
-        const tableNames = swagger?.definitions ? Object.keys(swagger.definitions) : [];
-        return jsonResponse({ tables: tableNames });
-      }
-      
-      return jsonResponse({ tables: tables?.map((t: any) => t.tablename) || [] });
+      const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+      const extKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
+      const resp = await fetch(`${extUrl}/rest/v1/`, {
+        headers: {
+          'apikey': extKey,
+          'Authorization': `Bearer ${extKey}`,
+        }
+      });
+      const swagger = await resp.json();
+      const tableNames = swagger?.definitions ? Object.keys(swagger.definitions) : swagger?.paths ? Object.keys(swagger.paths).map((p: string) => p.replace('/', '')) : [];
+      return jsonResponse({ tables: tableNames });
     }
 
     if (!table || !ALLOWED_TABLES.includes(table)) {
