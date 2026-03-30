@@ -34,10 +34,6 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, table } = body;
 
-    if (!table || !ALLOWED_TABLES.includes(table)) {
-      throw new Error('Invalid table. Only "companies" and "contacts" are allowed.');
-    }
-
     const client = getExternalClient();
     const operation = action || 'select';
 
