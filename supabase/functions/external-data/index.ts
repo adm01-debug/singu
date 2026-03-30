@@ -11,7 +11,10 @@ function getExternalClient() {
   const url = Deno.env.get('EXTERNAL_SUPABASE_URL');
   const key = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !key) throw new Error('External database credentials not configured');
-  return createClient(url, key);
+  return createClient(url, key, {
+    db: { schema: 'public' },
+    global: { headers: { 'x-statement-timeout': '8000' } },
+  });
 }
 
 function getUserId(req: Request): string | null {
@@ -81,7 +84,8 @@ Deno.serve(async (req) => {
       }
 
       if (order) query = query.order(order.column, { ascending: order.ascending ?? false });
-      if (range) query = query.range(range.from, range.to);
+      const queryRange = range || { from: 0, to: 49 };
+      query = query.range(queryRange.from, queryRange.to);
 
       const { data, error, count } = await query;
       if (error) throw new Error(`Select failed: ${error.message}`);
