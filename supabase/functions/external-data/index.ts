@@ -84,7 +84,8 @@ Deno.serve(async (req) => {
       }
 
       if (order) query = query.order(order.column, { ascending: order.ascending ?? false });
-      if (range) query = query.range(range.from, range.to);
+      const queryRange = range || { from: 0, to: 49 };
+      query = query.range(queryRange.from, queryRange.to);
 
       const { data, error, count } = await query;
       if (error) throw new Error(`Select failed: ${error.message}`);
