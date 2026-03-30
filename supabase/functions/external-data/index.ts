@@ -34,12 +34,27 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action, table } = body;
 
-    if (!table || !ALLOWED_TABLES.includes(table)) {
-      throw new Error('Invalid table. Only "companies" and "contacts" are allowed.');
-    }
-
     const client = getExternalClient();
     const operation = action || 'select';
+
+    // ─── LIST TABLES (schema discovery) ───
+    if (operation === 'list_tables') {
+      const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+      const extKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
+      const resp = await fetch(`${extUrl}/rest/v1/`, {
+        headers: {
+          'apikey': extKey,
+          'Authorization': `Bearer ${extKey}`,
+        }
+      });
+      const swagger = await resp.json();
+      const tableNames = swagger?.definitions ? Object.keys(swagger.definitions) : swagger?.paths ? Object.keys(swagger.paths).map((p: string) => p.replace('/', '')) : [];
+      return jsonResponse({ tables: tableNames });
+    }
+
+    if (!table || !ALLOWED_TABLES.includes(table)) {
+      throw new Error('Invalid table. Only allowed tables are permitted.');
+    }
 
     // ─── SELECT (read) ───
     if (operation === 'select') {
