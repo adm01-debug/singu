@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { logger } from "@/lib/logger";
+import { checkRateLimit, recordFailedAttempt, recordSuccessfulAttempt, getRemainingAttempts, formatRetryTime } from '@/lib/rateLimiter';
 
 // Validation schemas
 const emailSchema = z.string().email('Email inválido');
