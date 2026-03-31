@@ -87,14 +87,33 @@ const Auth = () => {
     
     if (!validateForm()) return;
 
+    // Rate limiting check for login
+    if (mode === 'login') {
+      const { allowed, retryAfterSeconds } = checkRateLimit(email);
+      if (!allowed && retryAfterSeconds) {
+        toast.error(`Muitas tentativas. Tente novamente em ${formatRetryTime(retryAfterSeconds)}.`);
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
       if (mode === 'login') {
         const { error } = await signIn(email, password);
         if (error) {
-          toast.error(error.message);
+          const result = recordFailedAttempt(email);
+          const remaining = getRemainingAttempts(email);
+
+          if (result.lockedOut && result.retryAfterSeconds) {
+            toast.error(`Conta temporariamente bloqueada. Tente novamente em ${formatRetryTime(result.retryAfterSeconds)}.`);
+          } else if (remaining <= 2) {
+            toast.error(`${error.message} (${remaining} tentativa${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''})`);
+          } else {
+            toast.error(error.message);
+          }
         } else {
+          recordSuccessfulAttempt(email);
           const redirectTo = (location.state as { from?: string } | null)?.from || '/onboarding';
           toast.success('Bem-vindo de volta!');
           navigate(redirectTo, { replace: true });
