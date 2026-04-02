@@ -126,11 +126,11 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* No data state */}
       {!hasAnyData && (
-        <Card className="border-dashed bg-muted/30">
-          <CardContent className="py-8 text-center">
-            <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-success/60" />
-            <h3 className="font-semibold text-foreground mb-1">Tudo em dia!</h3>
-            <p className="text-sm text-muted-foreground">
+        <Card className="border-dashed border-border/50 bg-muted/20">
+          <CardContent className="py-6 text-center">
+            <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-success/50" />
+            <h3 className="text-sm font-semibold text-foreground mb-0.5">Tudo em dia!</h3>
+            <p className="text-xs text-muted-foreground">
               Nenhuma tarefa urgente ou follow-up pendente para hoje.
             </p>
           </CardContent>
