@@ -48,7 +48,7 @@ interface UseDashboardStatsParams {
   loading: boolean;
 }
 
-export function useDashboardStats({ contacts, companies, interactions, loading }: UseDashboardStatsParams): DashboardStats {
+export function useDashboardStats({ contacts = [], companies = [], interactions = [], loading = true }: UseDashboardStatsParams = {} as UseDashboardStatsParams): DashboardStats {
   const stats = useMemo(() => {
     if (loading) {
       return {
