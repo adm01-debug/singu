@@ -21,9 +21,9 @@ const statCardVariants = cva(
         interactive: 'bg-card border-border cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
       },
       size: {
-        sm: 'p-4',
-        default: 'p-6',
-        lg: 'p-8',
+        sm: 'p-3',
+        default: 'p-4',
+        lg: 'p-6',
       },
     },
     defaultVariants: {
@@ -138,15 +138,15 @@ export function StatCard({
       )}
 
       <div className="relative flex items-start justify-between">
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           <p className={cn(
-            'text-sm font-medium',
+            'text-xs font-medium',
             variant === 'gradient' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
-            'text-3xl font-bold tabular-nums',
+            'text-2xl font-bold tabular-nums',
             variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {isNumeric && animate ? (
@@ -180,14 +180,14 @@ export function StatCard({
         {/* Icon */}
         <motion.div 
           className={cn(
-            'p-3 rounded-xl',
+            'p-2 rounded-lg',
             variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
           )}
           whileHover={{ rotate: [0, -10, 10, 0] }}
           transition={{ duration: 0.5 }}
         >
           <Icon className={cn(
-            'w-6 h-6',
+            'w-5 h-5',
             variant === 'gradient' && 'text-primary-foreground'
           )} aria-hidden="true" />
         </motion.div>
@@ -286,13 +286,13 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
         </div>
       )}
       <p className={cn(
-        'text-sm font-medium mb-2',
+        'text-xs font-medium mb-2',
         gradient ? 'text-primary-foreground/80' : 'text-muted-foreground'
       )}>
         {title}
       </p>
       <p className={cn(
-        'text-5xl font-bold mb-2',
+        'text-3xl font-bold mb-2',
         gradient ? 'text-primary-foreground' : 'text-foreground'
       )}>
         {value}
