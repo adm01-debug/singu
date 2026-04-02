@@ -138,15 +138,15 @@ export function StatCard({
       )}
 
       <div className="relative flex items-start justify-between">
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           <p className={cn(
-            'text-sm font-medium',
+            'text-xs font-medium',
             variant === 'gradient' ? 'text-primary-foreground/80' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
-            'text-3xl font-bold tabular-nums',
+            'text-2xl font-bold tabular-nums',
             variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {isNumeric && animate ? (
