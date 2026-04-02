@@ -59,9 +59,9 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
             />
           )}
           <div className="min-w-0">
-            <Typography variant="h3" as="h1" className="truncate">{title}</Typography>
+            <Typography variant="h4" as="h1" className="truncate">{title}</Typography>
             {subtitle && (
-              <Typography variant="small" className="truncate">{subtitle}</Typography>
+              <Typography variant="caption" className="truncate normal-case tracking-normal">{subtitle}</Typography>
             )}
           </div>
         </div>
