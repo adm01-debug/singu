@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { queryExternalData } from '@/lib/externalData';
 import type { Contact, Company } from '@/hooks/useContactDetail';
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
