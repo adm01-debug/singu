@@ -60,7 +60,7 @@ export async function queryExternalData<T = any>(options: ExternalQueryOptions):
   }
 }
 
-export async function insertExternalData<T = any>(table: 'companies' | 'contacts', record: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function insertExternalData<T = any>(table: string, record: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'insert', table, record });
     return { data: result?.data || null, error: null };
