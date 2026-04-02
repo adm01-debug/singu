@@ -180,14 +180,14 @@ export function StatCard({
         {/* Icon */}
         <motion.div 
           className={cn(
-            'p-3 rounded-xl',
+            'p-2 rounded-lg',
             variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
           )}
           whileHover={{ rotate: [0, -10, 10, 0] }}
           transition={{ duration: 0.5 }}
         >
           <Icon className={cn(
-            'w-6 h-6',
+            'w-5 h-5',
             variant === 'gradient' && 'text-primary-foreground'
           )} aria-hidden="true" />
         </motion.div>
