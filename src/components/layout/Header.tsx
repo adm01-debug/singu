@@ -2,7 +2,6 @@ import { forwardRef } from 'react';
 import { Bell, Plus } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
 import { BackButton } from '@/components/navigation/BackButton';
 
 interface HeaderProps {
@@ -11,13 +10,10 @@ interface HeaderProps {
   showAddButton?: boolean;
   addButtonLabel?: string;
   onAddClick?: () => void;
-  /** Explicit back destination. If omitted, auto-detected from route depth. */
   backTo?: string;
-  /** Hide back button even on sub-pages */
   hideBack?: boolean;
 }
 
-/** Route-to-parent mapping for smart back navigation */
 const PARENT_ROUTES: Record<string, string> = {
   '/contatos': '/',
   '/empresas': '/',
@@ -46,10 +42,9 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   const resolvedBackTo = backTo || PARENT_ROUTES[location.pathname] || '/';
 
   return (
-    <header ref={ref} className="bg-card border-b border-border px-4 md:px-6 py-2.5 md:py-3">
+    <header ref={ref} className="bg-card/80 backdrop-blur-sm border-b border-border/50 px-4 md:px-6 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
-          {/* Back button — hidden on mobile (MobileHeader handles it) */}
           {showBack && (
             <BackButton
               to={resolvedBackTo}
@@ -59,26 +54,24 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
             />
           )}
           <div className="min-w-0">
-            <Typography variant="h4" as="h1" className="truncate">{title}</Typography>
+            <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
             {subtitle && (
-              <Typography variant="caption" className="truncate normal-case tracking-normal">{subtitle}</Typography>
+              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-4 shrink-0">
-          {/* Notifications — hidden on mobile (MobileHeader has its own) */}
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
           <Link to="/notificacoes" className="hidden md:inline-flex">
-            <Button variant="ghost" size="icon" className="relative" aria-label="Notificações">
-              <Bell className="w-5 h-5" aria-hidden="true" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+            <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label="Notificações">
+              <Bell className="w-4 h-4" aria-hidden="true" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full" />
             </Button>
           </Link>
 
-          {/* Add Button */}
           {showAddButton && (
-            <Button onClick={onAddClick} className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow">
-              <Plus className="w-4 h-4 mr-2" aria-hidden="true" />
+            <Button onClick={onAddClick} size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow h-8 text-xs">
+              <Plus className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
               <span className="hidden sm:inline">{addButtonLabel || 'Adicionar'}</span>
               <span className="sm:hidden">Novo</span>
             </Button>

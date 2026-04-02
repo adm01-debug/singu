@@ -9,21 +9,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // ============================================
 
 const statCardVariants = cva(
-  'relative overflow-hidden rounded-xl border transition-all duration-300 container-query',
+  'relative overflow-hidden rounded-xl border transition-all duration-200',
   {
     variants: {
       variant: {
-        default: 'bg-card border-border hover:shadow-md',
-        elevated: 'bg-card border-border/50 shadow-lg hover:shadow-xl',
+        default: 'bg-card border-border/60 hover:border-border hover:shadow-sm',
+        elevated: 'bg-card border-border/40 shadow-md hover:shadow-lg',
         gradient: 'bg-gradient-to-br border-0',
-        glass: 'bg-card/80 backdrop-blur-xl border-border/50',
+        glass: 'bg-card/80 backdrop-blur-xl border-border/40',
         outlined: 'bg-transparent border-2',
-        interactive: 'bg-card border-border cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
+        interactive: 'bg-card border-border/60 cursor-pointer hover:scale-[1.01] hover:shadow-md active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',
-        default: 'p-4',
-        lg: 'p-6',
+        default: 'p-3.5 md:p-4',
+        lg: 'p-5',
       },
     },
     defaultVariants: {
@@ -137,16 +137,16 @@ export function StatCard({
         </div>
       )}
 
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-1.5">
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0">
           <p className={cn(
-            'text-xs font-medium',
-            variant === 'gradient' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+            'text-[11px] font-medium uppercase tracking-wider',
+            variant === 'gradient' ? 'text-primary-foreground/70' : 'text-muted-foreground'
           )}>
             {title}
           </p>
           <p className={cn(
-            'text-2xl font-bold tabular-nums',
+            'text-xl md:text-2xl font-bold tabular-nums tracking-tight',
             variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
           )}>
             {isNumeric && animate ? (
@@ -158,19 +158,19 @@ export function StatCard({
           
           {/* Change indicator */}
           {change && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: delay * 0.05 + 0.2, type: 'spring' }}
+                transition={{ delay: delay * 0.05 + 0.15, type: 'spring', stiffness: 200 }}
                 className={cn(
-                  'flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
+                  'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
                   changeType === 'positive' && 'bg-success/10 text-success',
                   changeType === 'negative' && 'bg-destructive/10 text-destructive',
                   changeType === 'neutral' && 'bg-muted text-muted-foreground'
                 )}
               >
-                <ChangeIcon className="w-3 h-3" aria-hidden="true" />
+                <ChangeIcon className="w-2.5 h-2.5" aria-hidden="true" />
                 {change}
               </motion.div>
             </div>
@@ -178,27 +178,18 @@ export function StatCard({
         </div>
 
         {/* Icon */}
-        <motion.div 
+        <div 
           className={cn(
-            'p-2 rounded-lg',
+            'p-2 rounded-lg shrink-0',
             variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
           )}
-          whileHover={{ rotate: [0, -10, 10, 0] }}
-          transition={{ duration: 0.5 }}
         >
           <Icon className={cn(
-            'w-5 h-5',
+            'w-4 h-4',
             variant === 'gradient' && 'text-primary-foreground'
           )} aria-hidden="true" />
-        </motion.div>
-      </div>
-
-      {/* Decorative gradient overlay */}
-      {variant !== 'gradient' && (
-        <div className="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none">
-          <Icon className="w-full h-full" aria-hidden="true" />
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
