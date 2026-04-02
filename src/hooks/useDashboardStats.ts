@@ -131,11 +131,12 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         };
       });
 
+    const contactMap = new Map(contacts.map(c => [c.id, c]));
     const recentActivities = interactions
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5)
       .map(interaction => {
-        const contact = contacts.find(c => c.id === interaction.contact_id);
+        const contact = contactMap.get(interaction.contact_id);
         return {
           id: interaction.id,
           entityName: contact ? `${contact.first_name} ${contact.last_name}` : 'Contato',
