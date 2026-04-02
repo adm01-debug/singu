@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -110,6 +110,55 @@ const WhatsNewWrapper = () => {
     <Suspense fallback={null}>
       <WhatsNewModal />
     </Suspense>
+  );
+};
+
+const DeferredAppChrome = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    setIsReady(false);
+
+    if (location.pathname === '/auth') return;
+
+    const timer = window.setTimeout(() => {
+      setIsReady(true);
+    }, 1500);
+
+    return () => window.clearTimeout(timer);
+  }, [location.pathname]);
+
+  const shouldLoadAuthenticatedChrome = isReady && !!user && location.pathname !== '/auth';
+  const shouldLoadShell = isReady && location.pathname !== '/auth';
+
+  return (
+    <>
+      {shouldLoadShell && (
+        <Suspense fallback={null}>
+          <PWAShell />
+        </Suspense>
+      )}
+
+      {shouldLoadAuthenticatedChrome && (
+        <>
+          <Suspense fallback={null}>
+            <EasterEggsProvider />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <KeyboardShortcutsDialogEnhanced />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <SessionExpiryHandler />
+          </Suspense>
+
+          <WhatsNewWrapper />
+        </>
+      )}
+    </>
   );
 };
 
@@ -244,26 +293,13 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <Suspense fallback={null}>
-                <PWAShell />
-              </Suspense>
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <AuthProvider>
-                <NavigationStackProvider>
+                  <NavigationStackProvider>
                     <ScrollToTop />
-                    <Suspense fallback={null}>
-                      <EasterEggsProvider />
-                    </Suspense>
-                    <Suspense fallback={null}>
-                      <KeyboardShortcutsDialogEnhanced />
-                    </Suspense>
-                    <Suspense fallback={null}>
-                      <SessionExpiryHandler>
-                        <WhatsNewWrapper />
-                        <RouteAnnouncer />
-                        <AnimatedRoutes />
-                      </SessionExpiryHandler>
-                    </Suspense>
+                    <RouteAnnouncer />
+                    <AnimatedRoutes />
+                    <DeferredAppChrome />
                   </NavigationStackProvider>
                 </AuthProvider>
               </BrowserRouter>
