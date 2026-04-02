@@ -187,12 +187,24 @@ export function useCompatibilityAlerts() {
 
   // Auto-check on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      checkAndCreateAlerts();
-    }, 3000); // Delay to avoid blocking initial load
+    if (!user || typeof window === 'undefined') return;
 
-    return () => clearTimeout(timer);
-  }, [checkAndCreateAlerts]);
+    const scheduleCheck = () => {
+      void checkAndCreateAlerts();
+    };
+
+    const timer = window.setTimeout(() => {
+      if ('requestIdleCallback' in window) {
+        const idleId = window.requestIdleCallback(scheduleCheck, { timeout: 5000 });
+        return () => window.cancelIdleCallback(idleId);
+      }
+
+      scheduleCheck();
+      return undefined;
+    }, 5000);
+
+    return () => window.clearTimeout(timer);
+  }, [checkAndCreateAlerts, user]);
 
   return {
     checking,
