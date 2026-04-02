@@ -70,7 +70,7 @@ export async function insertExternalData<T = any>(table: string, record: Record<
   }
 }
 
-export async function updateExternalData<T = any>(table: 'companies' | 'contacts', id: string, updates: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function updateExternalData<T = any>(table: string, id: string, updates: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'update', table, id, updates });
     return { data: result?.data || null, error: null };
