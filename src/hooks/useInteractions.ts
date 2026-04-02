@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -10,70 +11,44 @@ export type Interaction = Tables<'interactions'>;
 export type InteractionInsert = TablesInsert<'interactions'>;
 export type InteractionUpdate = TablesUpdate<'interactions'>;
 
+const PAGE_SIZE = 50;
+
+async function fetchInteractionsPage(contactId?: string, companyId?: string) {
+  let query = supabase
+    .from('interactions')
+    .select('*', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(0, PAGE_SIZE - 1);
+
+  if (contactId) query = query.eq('contact_id', contactId);
+  if (companyId) query = query.eq('company_id', companyId);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data || [];
+}
+
 export function useInteractions(contactId?: string, companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { triggerAnalysis } = useNLPAutoAnalysis();
-  const [interactions, setInteractions] = useState<Interaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
-  const pageSize = 50;
+  const queryClient = useQueryClient();
 
-  const fetchInteractions = useCallback(async (pageNum = 0, append = false) => {
-    if (!user) return;
-    
-    setLoading(true);
-    try {
-      let query = supabase
-        .from('interactions')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(pageNum * pageSize, (pageNum + 1) * pageSize - 1);
+  const queryKey = ['interactions', contactId ?? '__all__', companyId ?? '__all__'];
 
-      if (contactId) {
-        query = query.eq('contact_id', contactId);
-      }
-      if (companyId) {
-        query = query.eq('company_id', companyId);
-      }
+  const { data: interactions = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: () => fetchInteractionsPage(contactId, companyId),
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
-      const { data, error, count } = await query;
+  const hasMore = interactions.length >= PAGE_SIZE;
+  const loadMore = useCallback(() => {}, []);
 
-      if (error) throw error;
-      
-      if (append) {
-        setInteractions(prev => [...prev, ...(data || [])]);
-      } else {
-        setInteractions(data || []);
-      }
-      
-      setHasMore((data?.length || 0) === pageSize);
-      setPage(pageNum);
-      
-      return { data, count, hasMore: (data?.length || 0) === pageSize };
-    } catch (error) {
-      logger.error('Error fetching interactions:', error);
-      toast({
-        title: 'Erro ao carregar interações',
-        description: 'Tente novamente mais tarde.',
-        variant: 'destructive',
-      });
-      return { data: [], count: 0, hasMore: false };
-    } finally {
-      setLoading(false);
-    }
-  }, [user, contactId, companyId, toast]);
-
-  const loadMore = useCallback(() => {
-    if (hasMore && !loading) {
-      fetchInteractions(page + 1, true);
-    }
-  }, [hasMore, loading, page, fetchInteractions]);
-
-  useEffect(() => {
-    fetchInteractions();
-  }, [fetchInteractions]);
+  const fetchInteractions = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey });
+  }, [queryClient, queryKey]);
 
   const createInteraction = async (
     interaction: Omit<InteractionInsert, 'user_id'>,
@@ -90,7 +65,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
-      setInteractions(prev => [data, ...prev]);
+      queryClient.setQueryData<Interaction[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
       toast({
         title: 'Interação registrada',
         description: 'A interação foi salva com sucesso.',
@@ -148,8 +123,10 @@ export function useInteractions(contactId?: string, companyId?: string) {
   };
 
   const updateInteraction = async (id: string, updates: InteractionUpdate) => {
-    const previousInteractions = interactions;
-    setInteractions(prev => prev.map(i => i.id === id ? { ...i, ...updates } as Interaction : i));
+    const previous = queryClient.getQueryData<Interaction[]>(queryKey);
+    queryClient.setQueryData<Interaction[]>(queryKey, prev =>
+      prev?.map(i => i.id === id ? { ...i, ...updates } as Interaction : i) ?? []
+    );
 
     try {
       const { data, error } = await supabase
@@ -161,14 +138,16 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
-      setInteractions(prev => prev.map(i => i.id === id ? data : i));
+      queryClient.setQueryData<Interaction[]>(queryKey, prev =>
+        prev?.map(i => i.id === id ? data : i) ?? []
+      );
       toast({
         title: 'Interação atualizada',
         description: 'As alterações foram salvas.',
       });
       return data;
     } catch (error) {
-      setInteractions(previousInteractions);
+      if (previous) queryClient.setQueryData<Interaction[]>(queryKey, previous);
       logger.error('Error updating interaction:', error);
       toast({
         title: 'Erro ao atualizar interação',
@@ -180,8 +159,8 @@ export function useInteractions(contactId?: string, companyId?: string) {
   };
 
   const deleteInteraction = async (id: string) => {
-    const previousInteractions = interactions;
-    setInteractions(prev => prev.filter(i => i.id !== id));
+    const previous = queryClient.getQueryData<Interaction[]>(queryKey);
+    queryClient.setQueryData<Interaction[]>(queryKey, prev => prev?.filter(i => i.id !== id) ?? []);
 
     try {
       const { error } = await supabase
@@ -197,7 +176,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
       });
       return true;
     } catch (error) {
-      setInteractions(previousInteractions);
+      if (previous) queryClient.setQueryData<Interaction[]>(queryKey, previous);
       logger.error('Error deleting interaction:', error);
       toast({
         title: 'Erro ao excluir interação',
