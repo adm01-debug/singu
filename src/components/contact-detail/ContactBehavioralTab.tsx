@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { queryExternalData } from '@/lib/externalData';
 import type { Contact } from '@/hooks/useContactDetail';
 
 const DISC_LABELS: Record<string, { name: string; color: string }> = {
@@ -18,6 +19,20 @@ const DISC_LABELS: Record<string, { name: string; color: string }> = {
 
 interface Props {
   contact: Contact;
+}
+
+async function fetchWithFallback<T>(
+  localFn: () => Promise<{ data: T | null; error: any }>,
+  extTable: string,
+  filters: Array<{ type: 'eq'; column: string; value: any }>,
+  options?: { order?: { column: string; ascending?: boolean }; range?: { from: number; to: number } },
+): Promise<T | null> {
+  const { data: local } = await localFn();
+  if (local && (Array.isArray(local) ? local.length > 0 : true)) return local;
+  const { data: ext } = await queryExternalData<any>({ table: extTable, filters, ...options });
+  if (Array.isArray(ext) && ext.length > 0) return ext as unknown as T;
+  if (ext && !Array.isArray(ext)) return ext as unknown as T;
+  return Array.isArray(local) ? ([] as unknown as T) : null;
 }
 
 export function ContactBehavioralTab({ contact }: Props) {
@@ -32,18 +47,36 @@ export function ContactBehavioralTab({ contact }: Props) {
   useEffect(() => {
     if (!user || !contact.id) return;
 
+    const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
+
     const fetchData = async () => {
       const [discRes, eqRes, biasRes, metaRes] = await Promise.all([
-        supabase.from('disc_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(5),
-        supabase.from('eq_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
-        supabase.from('cognitive_bias_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
-        supabase.from('metaprogram_analysis').select('*').eq('contact_id', contact.id).order('created_at', { ascending: false }).limit(1),
+        fetchWithFallback<any[]>(
+          async () => supabase.from('disc_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(5),
+          'disc_analysis_history', contactFilter,
+          { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 4 } },
+        ),
+        fetchWithFallback<any[]>(
+          async () => supabase.from('eq_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
+          'eq_analysis_history', contactFilter,
+          { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 0 } },
+        ),
+        fetchWithFallback<any[]>(
+          async () => supabase.from('cognitive_bias_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
+          'cognitive_bias_history', contactFilter,
+          { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 0 } },
+        ),
+        fetchWithFallback<any[]>(
+          async () => supabase.from('metaprogram_analysis' as any).select('*').eq('contact_id', contact.id).order('created_at', { ascending: false }).limit(1),
+          'metaprogram_analysis', contactFilter,
+          { order: { column: 'created_at', ascending: false }, range: { from: 0, to: 0 } },
+        ),
       ]);
 
-      setDiscHistory(discRes.data || []);
-      setEqAnalysis(eqRes.data?.[0] || null);
-      setBiases(biasRes.data?.[0] || null);
-      setMetaprograms(metaRes.data?.[0] || null);
+      setDiscHistory((discRes as any[]) || []);
+      setEqAnalysis((eqRes as any[])?.[0] || null);
+      setBiases((biasRes as any[])?.[0] || null);
+      setMetaprograms((metaRes as any[])?.[0] || null);
     };
 
     fetchData();
