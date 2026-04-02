@@ -2,8 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
 
 interface ExternalQueryOptions {
-  table: 'companies' | 'contacts';
-  select?: string;
+  table: string;
   filters?: Array<{
     type: 'eq' | 'ilike' | 'in' | 'neq' | 'is';
     column: string;
@@ -61,7 +60,7 @@ export async function queryExternalData<T = any>(options: ExternalQueryOptions):
   }
 }
 
-export async function insertExternalData<T = any>(table: 'companies' | 'contacts', record: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function insertExternalData<T = any>(table: string, record: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'insert', table, record });
     return { data: result?.data || null, error: null };
@@ -71,7 +70,7 @@ export async function insertExternalData<T = any>(table: 'companies' | 'contacts
   }
 }
 
-export async function updateExternalData<T = any>(table: 'companies' | 'contacts', id: string, updates: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function updateExternalData<T = any>(table: string, id: string, updates: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'update', table, id, updates });
     return { data: result?.data || null, error: null };
@@ -81,7 +80,7 @@ export async function updateExternalData<T = any>(table: 'companies' | 'contacts
   }
 }
 
-export async function deleteExternalData(table: 'companies' | 'contacts', id: string): Promise<{ success: boolean; error: Error | null }> {
+export async function deleteExternalData(table: string, id: string): Promise<{ success: boolean; error: Error | null }> {
   try {
     await callExternalData({ action: 'delete', table, id });
     return { success: true, error: null };

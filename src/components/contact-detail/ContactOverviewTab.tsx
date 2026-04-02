@@ -13,6 +13,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { queryExternalData } from '@/lib/externalData';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 
 interface Props {
@@ -34,18 +35,45 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
   useEffect(() => {
     if (!user || !contact.id) return;
 
+    const fetchWithFallback = async <T,>(
+      localFn: () => Promise<{ data: T | null; error: any }>,
+      extTable: string,
+      filters: Array<{ type: 'eq'; column: string; value: any }>,
+    ): Promise<T | null> => {
+      const { data: local } = await localFn();
+      if (local && (Array.isArray(local) ? local.length > 0 : true)) return local;
+      const { data: ext } = await queryExternalData<any>({ table: extTable, filters });
+      if (Array.isArray(ext) && ext.length > 0) return ext as unknown as T;
+      if (ext && !Array.isArray(ext)) return ext as unknown as T;
+      return Array.isArray(local) ? ([] as unknown as T) : null;
+    };
+
     const fetchData = async () => {
-      const [relRes, eventsRes, cadenceRes, prefRes] = await Promise.all([
-        supabase.from('contact_relatives').select('*').eq('contact_id', contact.id).order('name'),
-        supabase.from('life_events').select('*').eq('contact_id', contact.id).order('event_date', { ascending: false }),
-        supabase.from('contact_cadence').select('*').eq('contact_id', contact.id).maybeSingle(),
-        supabase.from('contact_preferences').select('*').eq('contact_id', contact.id).maybeSingle(),
+      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
+
+      const [relData, eventsData, cadenceData, prefData] = await Promise.all([
+        fetchWithFallback<any[]>(
+          async () => supabase.from('contact_relatives').select('*').eq('contact_id', contact.id).order('name'),
+          'contact_relatives', contactFilter,
+        ),
+        fetchWithFallback<any[]>(
+          async () => supabase.from('life_events').select('*').eq('contact_id', contact.id).order('event_date', { ascending: false }),
+          'life_events', contactFilter,
+        ),
+        fetchWithFallback<any>(
+          async () => supabase.from('contact_cadence').select('*').eq('contact_id', contact.id).maybeSingle(),
+          'contact_cadence', contactFilter,
+        ),
+        fetchWithFallback<any>(
+          async () => supabase.from('contact_preferences').select('*').eq('contact_id', contact.id).maybeSingle(),
+          'contact_preferences', contactFilter,
+        ),
       ]);
 
-      setRelatives(relRes.data || []);
-      setLifeEvents(eventsRes.data || []);
-      setCadence(cadenceRes.data);
-      setPreferences(prefRes.data);
+      setRelatives(relData || []);
+      setLifeEvents(eventsData || []);
+      setCadence(cadenceData);
+      setPreferences(prefData);
     };
 
     fetchData();
