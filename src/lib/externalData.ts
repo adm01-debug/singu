@@ -80,7 +80,7 @@ export async function updateExternalData<T = any>(table: string, id: string, upd
   }
 }
 
-export async function deleteExternalData(table: 'companies' | 'contacts', id: string): Promise<{ success: boolean; error: Error | null }> {
+export async function deleteExternalData(table: string, id: string): Promise<{ success: boolean; error: Error | null }> {
   try {
     await callExternalData({ action: 'delete', table, id });
     return { success: true, error: null };
