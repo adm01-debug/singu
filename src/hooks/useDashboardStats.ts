@@ -100,16 +100,22 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
 
     const companyMap = new Map(companies.map(c => [c.id, c]));
 
+    // Pre-build interaction counts by contact for O(1) lookup
+    const interactionCountByContact = new Map<string, number>();
+    const latestInteractionByContact = new Map<string, string>();
+    for (const i of interactions) {
+      interactionCountByContact.set(i.contact_id, (interactionCountByContact.get(i.contact_id) || 0) + 1);
+      const current = latestInteractionByContact.get(i.contact_id);
+      if (!current || i.created_at > current) latestInteractionByContact.set(i.contact_id, i.created_at);
+    }
+
     const topContacts = [...contacts]
       .filter(c => c.relationship_score !== null)
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
       .slice(0, 4)
       .map(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) : undefined;
-        const contactInteractions = interactions.filter(i => i.contact_id === contact.id);
-        const lastInteraction = contactInteractions.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )[0];
+        const latestDate = latestInteractionByContact.get(contact.id);
         
         return {
           id: contact.id,
@@ -120,8 +126,8 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
           role: contact.role || 'contact',
           relationshipScore: contact.relationship_score || 0,
           sentiment: contact.sentiment || 'neutral',
-          interactionCount: contactInteractions.length,
-          lastInteraction: lastInteraction ? new Date(lastInteraction.created_at) : null,
+          interactionCount: interactionCountByContact.get(contact.id) || 0,
+          lastInteraction: latestDate ? new Date(latestDate) : null,
         };
       });
 
