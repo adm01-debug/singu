@@ -41,6 +41,12 @@ const ALLOWED_TABLES = [
   'automation_logs',
   'favorite_templates',
   'lux_intelligence',
+  'metaprogram_analysis',
+  'vak_analysis_history',
+  'rfm_analysis',
+  'offer_suggestions',
+  'trigger_bundles',
+  'trigger_intensity_history',
 ];
 
 function getExternalClient() {
