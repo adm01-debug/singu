@@ -21,9 +21,9 @@ const statCardVariants = cva(
         interactive: 'bg-card border-border cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
       },
       size: {
-        sm: 'p-4',
-        default: 'p-6',
-        lg: 'p-8',
+        sm: 'p-3',
+        default: 'p-4',
+        lg: 'p-6',
       },
     },
     defaultVariants: {
