@@ -9,21 +9,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 // ============================================
 
 const statCardVariants = cva(
-  'relative overflow-hidden rounded-xl border transition-all duration-300 container-query',
+  'relative overflow-hidden rounded-xl border transition-all duration-200',
   {
     variants: {
       variant: {
-        default: 'bg-card border-border hover:shadow-md',
-        elevated: 'bg-card border-border/50 shadow-lg hover:shadow-xl',
+        default: 'bg-card border-border/60 hover:border-border hover:shadow-sm',
+        elevated: 'bg-card border-border/40 shadow-md hover:shadow-lg',
         gradient: 'bg-gradient-to-br border-0',
-        glass: 'bg-card/80 backdrop-blur-xl border-border/50',
+        glass: 'bg-card/80 backdrop-blur-xl border-border/40',
         outlined: 'bg-transparent border-2',
-        interactive: 'bg-card border-border cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]',
+        interactive: 'bg-card border-border/60 cursor-pointer hover:scale-[1.01] hover:shadow-md active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',
-        default: 'p-4',
-        lg: 'p-6',
+        default: 'p-3.5 md:p-4',
+        lg: 'p-5',
       },
     },
     defaultVariants: {
