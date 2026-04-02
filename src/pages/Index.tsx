@@ -253,6 +253,7 @@ const Dashboard = () => {
       attachments: i.attachments || [],
       createdAt: new Date(i.created_at),
     })) as Interaction[];
+  }, [interactions, activeTab]);
 
   if (loading) {
     return (
