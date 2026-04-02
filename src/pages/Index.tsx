@@ -106,11 +106,16 @@ const Dashboard = () => {
   const [briefingOpen, setBriefingOpen] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
   
-  // Real data hooks
-  const { contacts } = useContacts();
-  const { companies } = useCompanies();
-  const { interactions } = useInteractions();
-  const dashboardStats = useDashboardStats();
+  // Real data hooks — single instance, shared with useDashboardStats
+  const { contacts, loading: contactsLoading } = useContacts();
+  const { companies, loading: companiesLoading } = useCompanies();
+  const { interactions, loading: interactionsLoading } = useInteractions();
+  const dashboardStats = useDashboardStats({
+    contacts,
+    companies,
+    interactions,
+    loading: contactsLoading || companiesLoading || interactionsLoading,
+  });
   
   // Check for compatibility alerts
   useCompatibilityAlerts();

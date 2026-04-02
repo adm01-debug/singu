@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { startOfDay, endOfDay, addDays, format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
+import { format, parseISO, isToday, isPast } from 'date-fns';
 import type { Tables } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
 
@@ -39,6 +39,11 @@ export interface YourDayData {
   loading: boolean;
 }
 
+// Lightweight contact type for dashboard — excludes heavy fields like behavior/life_events
+const CONTACT_LIGHT_SELECT = 'id, first_name, last_name, email, phone, avatar_url, birthday, company_id, role, relationship_score, sentiment, updated_at, created_at';
+const COMPANY_LIGHT_SELECT = 'id, name';
+const INTERACTION_FOLLOWUP_SELECT = 'id, type, title, content, sentiment, follow_up_required, follow_up_date, created_at, contact_id, company_id, user_id';
+
 export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
   const { user } = useAuth();
   const [data, setData] = useState<YourDayData>({
@@ -60,35 +65,75 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
       const today = new Date();
       const todayStr = format(today, 'yyyy-MM-dd');
 
-      // Fetch all required data in parallel
-      const [contactsResult, companiesResult, interactionsResult, insightsResult] = await Promise.all([
-        supabase.from('contacts').select('*').order('updated_at', { ascending: false }),
-        supabase.from('companies').select('*'),
-        supabase.from('interactions')
-          .select('*')
+      // Fetch only what we need, in parallel, with limits and lean selects
+      const [followUpsResult, birthdayContactsResult, attentionContactsResult, insightsResult] = await Promise.all([
+        // Follow-ups: only interactions that need follow-up (limited)
+        supabase
+          .from('interactions')
+          .select(INTERACTION_FOLLOWUP_SELECT)
           .eq('follow_up_required', true)
-          .order('follow_up_date', { ascending: true }),
-        supabase.from('insights')
+          .not('follow_up_date', 'is', null)
+          .order('follow_up_date', { ascending: true })
+          .limit(50),
+
+        // Birthday contacts: only contacts with birthdays set (limited)
+        supabase
+          .from('contacts')
+          .select(CONTACT_LIGHT_SELECT)
+          .not('birthday', 'is', null)
+          .limit(200),
+
+        // Needs attention: contacts with low score or negative sentiment
+        supabase
+          .from('contacts')
+          .select(CONTACT_LIGHT_SELECT)
+          .or('relationship_score.lt.30,sentiment.eq.negative,role.eq.decision_maker,role.eq.owner')
+          .order('updated_at', { ascending: true })
+          .limit(50),
+
+        // Insights: only non-dismissed, recent
+        supabase
+          .from('insights')
           .select('*')
           .eq('dismissed', false)
           .order('created_at', { ascending: false })
           .limit(5),
       ]);
 
-      const contacts = contactsResult.data || [];
-      const companies = companiesResult.data || [];
-      const interactions = interactionsResult.data || [];
-      const insights = insightsResult.data || [];
+      const followUpInteractions = (followUpsResult.data || []) as Interaction[];
+      const birthdayContacts = (birthdayContactsResult.data || []) as Contact[];
+      const attentionContacts = (attentionContactsResult.data || []) as Contact[];
+      const insights = (insightsResult.data || []) as Insight[];
 
-      // Create lookup maps
-      const contactMap = new Map(contacts.map(c => [c.id, c]));
-      const companyMap = new Map(companies.map(c => [c.id, c]));
+      // Collect unique company IDs from all results for a single batch lookup
+      const companyIds = new Set<string>();
+      const contactIds = new Set<string>();
+
+      followUpInteractions.forEach(i => {
+        if (i.company_id) companyIds.add(i.company_id);
+        contactIds.add(i.contact_id);
+      });
+      birthdayContacts.forEach(c => { if (c.company_id) companyIds.add(c.company_id); });
+      attentionContacts.forEach(c => { if (c.company_id) companyIds.add(c.company_id); });
+
+      // Batch fetch related contacts and companies
+      const [contactsForFollowUps, companiesBatch] = await Promise.all([
+        contactIds.size > 0
+          ? supabase.from('contacts').select(CONTACT_LIGHT_SELECT).in('id', Array.from(contactIds)).limit(100)
+          : Promise.resolve({ data: [] }),
+        companyIds.size > 0
+          ? supabase.from('companies').select(COMPANY_LIGHT_SELECT).in('id', Array.from(companyIds)).limit(100)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      const contactMap = new Map((contactsForFollowUps.data || []).map((c: any) => [c.id, c as Contact]));
+      const companyMap = new Map((companiesBatch.data || []).map((c: any) => [c.id, c as Company]));
 
       // Process follow-ups
       const todayFollowUps: FollowUp[] = [];
       const overdueFollowUps: FollowUp[] = [];
 
-      interactions.forEach(interaction => {
+      followUpInteractions.forEach(interaction => {
         if (!interaction.follow_up_date) return;
         
         const followUpDate = parseISO(interaction.follow_up_date);
@@ -107,13 +152,12 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
       // Process birthdays (next 7 days)
       const upcomingBirthdays: BirthdayContact[] = [];
       
-      contacts.forEach(contact => {
+      birthdayContacts.forEach(contact => {
         if (!contact.birthday) return;
         
         const birthday = parseISO(contact.birthday);
         const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
         
-        // If birthday passed this year, check next year
         if (thisYearBirthday < today) {
           thisYearBirthday.setFullYear(today.getFullYear() + 1);
         }
@@ -126,45 +170,36 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
-      // Sort by days until birthday
       upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
 
       // Process contacts needing attention
       const needsAttention: NeedsAttention[] = [];
       
-      contacts.forEach(contact => {
+      attentionContacts.forEach(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
         const lastUpdate = contact.updated_at ? new Date(contact.updated_at) : new Date(contact.created_at);
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
         
-        // High priority: Low relationship score + long time without contact
         if ((contact.relationship_score || 0) < 30 && daysSinceContact > 14) {
           needsAttention.push({
-            contact,
-            company,
+            contact, company,
             reason: 'Score baixo e sem contato há mais de 2 semanas',
             priority: 'high',
             daysSinceContact,
           });
-        }
-        // Medium priority: Key contacts (decision makers) without recent contact
-        else if (
+        } else if (
           (contact.role === 'decision_maker' || contact.role === 'owner') &&
           daysSinceContact > 21
         ) {
           needsAttention.push({
-            contact,
-            company,
+            contact, company,
             reason: 'Decisor sem contato há mais de 3 semanas',
             priority: 'medium',
             daysSinceContact,
           });
-        }
-        // Low priority: Any contact with negative sentiment
-        else if (contact.sentiment === 'negative' && daysSinceContact > 7) {
+        } else if (contact.sentiment === 'negative' && daysSinceContact > 7) {
           needsAttention.push({
-            contact,
-            company,
+            contact, company,
             reason: 'Sentimento negativo precisa de atenção',
             priority: 'low',
             daysSinceContact,
@@ -172,7 +207,6 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
-      // Sort by priority and days since contact
       needsAttention.sort((a, b) => {
         const priorityOrder = { high: 0, medium: 1, low: 2 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
