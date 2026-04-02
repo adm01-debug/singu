@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
-import { useContacts } from './useContacts';
-import { useCompanies } from './useCompanies';
-import { useInteractions } from './useInteractions';
-import { differenceInDays, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+import { startOfWeek, endOfWeek, subWeeks } from 'date-fns';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Contact = Tables<'contacts'>;
+type Company = Tables<'companies'>;
+type Interaction = Tables<'interactions'>;
 
 interface TopContact {
   id: string;
@@ -39,13 +41,14 @@ export interface DashboardStats {
   loading: boolean;
 }
 
-export function useDashboardStats(): DashboardStats {
-  const { contacts, loading: contactsLoading } = useContacts();
-  const { companies, loading: companiesLoading } = useCompanies();
-  const { interactions, loading: interactionsLoading } = useInteractions();
+interface UseDashboardStatsParams {
+  contacts: Contact[];
+  companies: Company[];
+  interactions: Interaction[];
+  loading: boolean;
+}
 
-  const loading = contactsLoading || companiesLoading || interactionsLoading;
-
+export function useDashboardStats({ contacts, companies, interactions, loading }: UseDashboardStatsParams): DashboardStats {
   const stats = useMemo(() => {
     if (loading) {
       return {
@@ -69,20 +72,15 @@ export function useDashboardStats(): DashboardStats {
     const lastWeekStart = subWeeks(thisWeekStart, 1);
     const lastWeekEnd = subWeeks(thisWeekEnd, 1);
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    // Companies created this month
     const companiesThisMonth = companies.filter(c => 
       new Date(c.created_at) >= thisMonthStart
     ).length;
     
-    // Contacts created this month
     const contactsThisMonth = contacts.filter(c => 
       new Date(c.created_at) >= thisMonthStart
     ).length;
 
-    // Weekly interactions
     const thisWeekInteractions = interactions.filter(i => {
       const date = new Date(i.created_at);
       return date >= thisWeekStart && date <= thisWeekEnd;
@@ -95,19 +93,19 @@ export function useDashboardStats(): DashboardStats {
 
     const interactionDiff = thisWeekInteractions - lastWeekInteractions;
 
-    // Average relationship score
     const scoresWithValue = contacts.filter(c => c.relationship_score !== null && c.relationship_score !== undefined);
     const avgScore = scoresWithValue.length > 0
       ? Math.round(scoresWithValue.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / scoresWithValue.length)
       : 0;
 
-    // Top contacts by score
+    const companyMap = new Map(companies.map(c => [c.id, c]));
+
     const topContacts = [...contacts]
       .filter(c => c.relationship_score !== null)
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
       .slice(0, 4)
       .map(contact => {
-        const company = companies.find(c => c.id === contact.company_id);
+        const company = contact.company_id ? companyMap.get(contact.company_id) : undefined;
         const contactInteractions = interactions.filter(i => i.contact_id === contact.id);
         const lastInteraction = contactInteractions.sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -127,7 +125,6 @@ export function useDashboardStats(): DashboardStats {
         };
       });
 
-    // Recent activities from interactions
     const recentActivities = interactions
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5)
@@ -152,7 +149,7 @@ export function useDashboardStats(): DashboardStats {
       interactionChange: interactionDiff >= 0 
         ? `+${interactionDiff} vs semana anterior` 
         : `${interactionDiff} vs semana anterior`,
-      scoreChange: '+0% vs mês anterior', // Would need historical data
+      scoreChange: '+0% vs mês anterior',
       topContacts,
       recentActivities,
       loading: false,
