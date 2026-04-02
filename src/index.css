@@ -501,51 +501,51 @@
      ============================================ */
   
   .text-display {
-    @apply text-5xl md:text-6xl font-bold tracking-tight;
-    line-height: var(--leading-tight);
-  }
-  
-  .text-h1 {
     @apply text-3xl md:text-4xl font-bold tracking-tight;
     line-height: var(--leading-tight);
   }
   
+  .text-h1 {
+    @apply text-2xl md:text-3xl font-bold tracking-tight;
+    line-height: var(--leading-tight);
+  }
+  
   .text-h2 {
-    @apply text-2xl md:text-3xl font-semibold tracking-tight;
+    @apply text-xl md:text-2xl font-semibold tracking-tight;
     line-height: var(--leading-snug);
   }
   
   .text-h3 {
-    @apply text-xl md:text-2xl font-semibold;
+    @apply text-lg md:text-xl font-semibold;
     line-height: var(--leading-snug);
   }
   
   .text-h4 {
-    @apply text-lg md:text-xl font-medium;
+    @apply text-base md:text-lg font-medium;
     line-height: var(--leading-normal);
   }
   
   .text-lead {
-    @apply text-lg text-muted-foreground;
+    @apply text-base text-muted-foreground;
     line-height: var(--leading-relaxed);
   }
   
   .text-body {
-    @apply text-base;
+    @apply text-sm;
     line-height: var(--leading-normal);
   }
   
   .text-small {
-    @apply text-sm text-muted-foreground;
+    @apply text-xs text-muted-foreground;
     line-height: var(--leading-normal);
   }
   
   .text-caption {
-    @apply text-xs text-muted-foreground uppercase tracking-wide font-medium;
+    @apply text-2xs text-muted-foreground uppercase tracking-wide font-medium;
   }
   
   .text-eyebrow {
-    @apply text-xs uppercase tracking-widest font-semibold text-primary;
+    @apply text-2xs uppercase tracking-widest font-semibold text-primary;
   }
   
   .text-gradient-heading {

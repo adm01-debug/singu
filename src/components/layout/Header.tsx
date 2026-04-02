@@ -46,7 +46,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   const resolvedBackTo = backTo || PARENT_ROUTES[location.pathname] || '/';
 
   return (
-    <header ref={ref} className="bg-card border-b border-border px-4 md:px-6 py-3 md:py-4">
+    <header ref={ref} className="bg-card border-b border-border px-4 md:px-6 py-2.5 md:py-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {/* Back button — hidden on mobile (MobileHeader handles it) */}
@@ -59,9 +59,9 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
             />
           )}
           <div className="min-w-0">
-            <Typography variant="h3" as="h1" className="truncate">{title}</Typography>
+            <Typography variant="h4" as="h1" className="truncate">{title}</Typography>
             {subtitle && (
-              <Typography variant="small" className="truncate">{subtitle}</Typography>
+              <Typography variant="caption" className="truncate normal-case tracking-normal">{subtitle}</Typography>
             )}
           </div>
         </div>

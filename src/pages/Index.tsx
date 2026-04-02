@@ -296,7 +296,7 @@ const Dashboard = () => {
         subtitle="Visão geral do seu relacionamento com clientes"
       />
 
-      <div className="p-4 md:p-6 space-y-4 md:space-y-5">
+      <div className="p-3 md:p-5 space-y-3 md:space-y-4">
         {/* Welcome Hero Card — compact version */}
         <WelcomeHeroCard
           totalContacts={dashboardStats.totalContacts}

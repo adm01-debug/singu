@@ -32,17 +32,17 @@ export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScor
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <Surface level={1} rounded="xl" className="relative overflow-hidden p-6 ring-1 ring-border/50">
+      <Surface level={1} rounded="xl" className="relative overflow-hidden p-4 md:p-5 ring-1 ring-border/50">
         {/* Subtle gradient mesh */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ background: 'var(--gradient-primary)' }} />
-        <div className="absolute -top-12 -right-12 w-56 h-56 rounded-full opacity-[0.06] pointer-events-none" style={{ background: 'var(--gradient-premium)' }} />
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-[0.06] pointer-events-none" style={{ background: 'var(--gradient-premium)' }} />
         
-        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <Typography variant="h3" gradient>
+            <Typography variant="h4" gradient>
               {greeting}, {firstName}! <span aria-hidden="true">👋</span>
             </Typography>
-            <Typography variant="small" className="mt-1.5 capitalize text-muted-foreground">
+            <Typography variant="caption" className="mt-1 capitalize text-muted-foreground normal-case tracking-normal">
               {today}
             </Typography>
           </div>
