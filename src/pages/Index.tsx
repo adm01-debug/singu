@@ -161,81 +161,98 @@ const Dashboard = () => {
     },
   ];
 
-  // Map contacts array for portfolio health
-  const mappedContacts = contacts.map(c => {
-    const company = companies.find(co => co.id === c.company_id);
-    const contactInteractions = interactions.filter(i => i.contact_id === c.id);
-    const lastInteraction = contactInteractions.length > 0 
-      ? new Date(contactInteractions.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )[0].created_at)
-      : undefined;
-    
-    return {
-      id: c.id,
-      firstName: c.first_name,
-      lastName: c.last_name,
-      email: c.email || '',
-      phone: c.phone || '',
-      whatsapp: c.whatsapp || undefined,
-      linkedin: c.linkedin || undefined,
-      instagram: c.instagram || undefined,
-      twitter: c.twitter || undefined,
-      role: (c.role as ContactRole) || 'contact',
-      companyId: c.company_id || '',
-      companyName: company?.name || '',
-      relationshipScore: c.relationship_score || 0,
-      sentiment: (c.sentiment as SentimentType) || 'neutral',
-      avatar: c.avatar_url || undefined,
-      interactionCount: contactInteractions.length,
-      lastInteraction,
-      createdAt: new Date(c.created_at),
-      updatedAt: new Date(c.updated_at),
-      tags: c.tags || [],
-      notes: c.notes || '',
-      hobbies: c.hobbies || [],
-      interests: c.interests || [],
-      familyInfo: c.family_info || undefined,
-      personalNotes: c.personal_notes || undefined,
-      behavior: getBehavior(c.behavior) || {
-        discProfile: null,
-        discConfidence: 0,
-        preferredChannel: 'whatsapp',
-        formalityLevel: 3 as const,
-        decisionCriteria: [],
-        needsApproval: false,
-        decisionPower: 5,
-        supportLevel: 5,
-        influencedByIds: [],
-        influencesIds: [],
-        currentChallenges: [],
-        competitorsUsed: [],
-      },
-      lifeEvents: (Array.isArray(c.life_events) ? c.life_events as unknown as LifeEvent[] : []),
-      relationshipStage: (c.relationship_stage as RelationshipStage) || 'unknown',
-      roleTitle: c.role_title || '',
-      birthday: c.birthday ? new Date(c.birthday) : undefined,
-    };
-  }) as Contact[];
+  // Memoized O(1) lookup maps — only recomputed when source data changes
+  const companyMap = useMemo(() => new Map(companies.map(c => [c.id, c])), [companies]);
+  const interactionsByContact = useMemo(() => {
+    const map = new Map<string, typeof interactions>();
+    for (const i of interactions) {
+      const list = map.get(i.contact_id);
+      if (list) list.push(i);
+      else map.set(i.contact_id, [i]);
+    }
+    return map;
+  }, [interactions]);
 
-  const mappedInteractions = interactions.map(i => ({
-    id: i.id,
-    contactId: i.contact_id,
-    companyId: i.company_id || '',
-    type: (i.type as InteractionType) || 'note',
-    title: i.title,
-    content: i.content || '',
-    sentiment: (i.sentiment as SentimentType) || 'neutral',
-    followUpRequired: i.follow_up_required || false,
-    followUpDate: i.follow_up_date ? new Date(i.follow_up_date) : undefined,
-    tags: i.tags || [],
-    keyInsights: i.key_insights || [],
-    initiatedBy: (i.initiated_by as 'us' | 'them') || 'us',
-    duration: i.duration || undefined,
-    responseTime: i.response_time || undefined,
-    attachments: i.attachments || [],
-    createdAt: new Date(i.created_at),
-  })) as Interaction[];
+  // Only compute heavy mappings when overview tab is active
+  const mappedContacts = useMemo(() => {
+    if (activeTab !== 'overview') return [] as Contact[];
+    return contacts.map(c => {
+      const company = c.company_id ? companyMap.get(c.company_id) : undefined;
+      const contactInteractions = interactionsByContact.get(c.id) || [];
+      const lastInteraction = contactInteractions.length > 0 
+        ? new Date(contactInteractions.reduce((latest, i) => 
+            i.created_at > latest ? i.created_at : latest, contactInteractions[0].created_at
+          ))
+        : undefined;
+      
+      return {
+        id: c.id,
+        firstName: c.first_name,
+        lastName: c.last_name,
+        email: c.email || '',
+        phone: c.phone || '',
+        whatsapp: c.whatsapp || undefined,
+        linkedin: c.linkedin || undefined,
+        instagram: c.instagram || undefined,
+        twitter: c.twitter || undefined,
+        role: (c.role as ContactRole) || 'contact',
+        companyId: c.company_id || '',
+        companyName: company?.name || '',
+        relationshipScore: c.relationship_score || 0,
+        sentiment: (c.sentiment as SentimentType) || 'neutral',
+        avatar: c.avatar_url || undefined,
+        interactionCount: contactInteractions.length,
+        lastInteraction,
+        createdAt: new Date(c.created_at),
+        updatedAt: new Date(c.updated_at),
+        tags: c.tags || [],
+        notes: c.notes || '',
+        hobbies: c.hobbies || [],
+        interests: c.interests || [],
+        familyInfo: c.family_info || undefined,
+        personalNotes: c.personal_notes || undefined,
+        behavior: getBehavior(c.behavior) || {
+          discProfile: null,
+          discConfidence: 0,
+          preferredChannel: 'whatsapp',
+          formalityLevel: 3 as const,
+          decisionCriteria: [],
+          needsApproval: false,
+          decisionPower: 5,
+          supportLevel: 5,
+          influencedByIds: [],
+          influencesIds: [],
+          currentChallenges: [],
+          competitorsUsed: [],
+        },
+        lifeEvents: (Array.isArray(c.life_events) ? c.life_events as unknown as LifeEvent[] : []),
+        relationshipStage: (c.relationship_stage as RelationshipStage) || 'unknown',
+        roleTitle: c.role_title || '',
+        birthday: c.birthday ? new Date(c.birthday) : undefined,
+      };
+    }) as Contact[];
+  }, [contacts, companyMap, interactionsByContact, activeTab]);
+
+  const mappedInteractions = useMemo(() => {
+    if (activeTab !== 'overview') return [] as Interaction[];
+    return interactions.map(i => ({
+      id: i.id,
+      contactId: i.contact_id,
+      companyId: i.company_id || '',
+      type: (i.type as InteractionType) || 'note',
+      title: i.title,
+      content: i.content || '',
+      sentiment: (i.sentiment as SentimentType) || 'neutral',
+      followUpRequired: i.follow_up_required || false,
+      followUpDate: i.follow_up_date ? new Date(i.follow_up_date) : undefined,
+      tags: i.tags || [],
+      keyInsights: i.key_insights || [],
+      initiatedBy: (i.initiated_by as 'us' | 'them') || 'us',
+      duration: i.duration || undefined,
+      responseTime: i.response_time || undefined,
+      attachments: i.attachments || [],
+      createdAt: new Date(i.created_at),
+    })) as Interaction[];
 
   if (loading) {
     return (
