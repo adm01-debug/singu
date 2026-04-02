@@ -5,7 +5,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const ALLOWED_TABLES = ['companies', 'contacts'];
+const ALLOWED_TABLES = [
+  'companies',
+  'contacts',
+  'interactions',
+  'insights',
+  'alerts',
+  'activities',
+  'life_events',
+  'contact_phones',
+  'contact_emails',
+  'contact_addresses',
+  'contact_social_media',
+  'contact_relatives',
+  'contact_cadence',
+  'contact_preferences',
+  'contact_time_analysis',
+  'communication_preferences',
+  'client_values',
+  'decision_criteria',
+  'disc_analysis_history',
+  'disc_communication_logs',
+  'disc_conversion_metrics',
+  'disc_profile_config',
+  'eq_analysis_history',
+  'cognitive_bias_history',
+  'emotional_anchors',
+  'emotional_states_history',
+  'hidden_objections',
+  'health_alerts',
+  'health_alert_settings',
+  'compatibility_alerts',
+  'compatibility_settings',
+  'automation_rules',
+  'automation_logs',
+  'favorite_templates',
+  'lux_intelligence',
+];
 
 function getExternalClient() {
   const url = Deno.env.get('EXTERNAL_SUPABASE_URL');
