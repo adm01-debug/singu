@@ -97,13 +97,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       className={className}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-warning/20 to-warning/5">
-            <Sun className="w-6 h-6 text-warning" />
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-warning/20 to-warning/5">
+            <Sun className="w-5 h-5 text-warning" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">
+            <h2 className="text-base font-bold text-foreground">
               {greeting}
             </h2>
             <p className="text-sm text-muted-foreground">

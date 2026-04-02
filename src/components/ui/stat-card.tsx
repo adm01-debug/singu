@@ -286,13 +286,13 @@ export function HeroStat({ title, value, subtitle, icon: Icon, gradient, classNa
         </div>
       )}
       <p className={cn(
-        'text-sm font-medium mb-2',
+        'text-xs font-medium mb-2',
         gradient ? 'text-primary-foreground/80' : 'text-muted-foreground'
       )}>
         {title}
       </p>
       <p className={cn(
-        'text-5xl font-bold mb-2',
+        'text-3xl font-bold mb-2',
         gradient ? 'text-primary-foreground' : 'text-foreground'
       )}>
         {value}
