@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { queryExternalData } from "@/lib/externalData";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import { BackButton } from "@/components/navigation/BackButton";
@@ -24,29 +25,33 @@ const RelatorioContato = () => {
       if (!id) return;
 
       try {
-        const [contactRes, interactionsRes, discRes] = await Promise.all([
-          supabase
-            .from("contacts")
-            .select("*")
-            .eq("id", id)
-            .maybeSingle(),
-          supabase
-            .from("interactions")
-            .select("*")
-            .eq("contact_id", id)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("disc_analysis_history")
-            .select("*")
-            .eq("contact_id", id)
-            .order("analyzed_at", { ascending: false }),
-        ]);
+        // Fetch contact - local first, then external
+        let contact: any = null;
+        const { data: localContact } = await supabase.from("contacts").select("*").eq("id", id).maybeSingle();
+        if (localContact) {
+          contact = localContact;
+        } else {
+          const { data: extContact } = await queryExternalData({ table: 'contacts', filters: [{ type: 'eq', column: 'id', value: id }] });
+          contact = extContact?.[0] || null;
+        }
 
-        setData({
-          contact: contactRes.data,
-          interactions: interactionsRes.data || [],
-          discHistory: discRes.data || [],
-        });
+        // Fetch interactions - local first, then external
+        const { data: localInteractions } = await supabase.from("interactions").select("*").eq("contact_id", id).order("created_at", { ascending: false });
+        let interactions = localInteractions || [];
+        if (interactions.length === 0) {
+          const { data: extInteractions } = await queryExternalData({ table: 'interactions', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'created_at', ascending: false } });
+          interactions = extInteractions || [];
+        }
+
+        // Fetch DISC - local first, then external
+        const { data: localDisc } = await supabase.from("disc_analysis_history").select("*").eq("contact_id", id).order("analyzed_at", { ascending: false });
+        let discHistory = localDisc || [];
+        if (discHistory.length === 0) {
+          const { data: extDisc } = await queryExternalData({ table: 'disc_analysis_history', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'analyzed_at', ascending: false } });
+          discHistory = extDisc || [];
+        }
+
+        setData({ contact, interactions, discHistory });
       } catch (error) {
         logger.error('Error fetching report data:', error);
         setData(null);
