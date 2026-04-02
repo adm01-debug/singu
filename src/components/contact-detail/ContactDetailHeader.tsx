@@ -54,10 +54,26 @@ interface Props {
 
 export function ContactDetailHeader({ contact, company, interactionCount, onEdit }: Props) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [extraPhones, setExtraPhones] = useState<string[]>([]);
+  const [extraEmails, setExtraEmails] = useState<string[]>([]);
   const fullName = `${contact.first_name} ${contact.last_name}`.trim();
   const stage = STAGE_CONFIG[contact.relationship_stage || 'unknown'] || STAGE_CONFIG.unknown;
   const behavior = contact.behavior as Record<string, unknown> | null;
   const discProfile = behavior?.discProfile as string | null;
+
+  // Fetch normalized phones/emails from external DB
+  useEffect(() => {
+    const fetchNormalized = async () => {
+      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
+      const [phonesRes, emailsRes] = await Promise.all([
+        queryExternalData<{ phone: string; label?: string }>({ table: 'contact_phones', filters: contactFilter }),
+        queryExternalData<{ email: string; label?: string }>({ table: 'contact_emails', filters: contactFilter }),
+      ]);
+      if (phonesRes.data) setExtraPhones(phonesRes.data.map(p => p.phone).filter(Boolean));
+      if (emailsRes.data) setExtraEmails(emailsRes.data.map(e => e.email).filter(Boolean));
+    };
+    fetchNormalized();
+  }, [contact.id]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -65,7 +81,8 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const contactChannels = [
+  // Build channels from contact fields + normalized external tables
+  const baseChannels = [
     { icon: Mail, value: contact.email, label: 'Email', href: `mailto:${contact.email}` },
     { icon: Phone, value: contact.phone, label: 'Telefone', href: `tel:${contact.phone}` },
     { icon: MessageSquare, value: contact.whatsapp, label: 'WhatsApp', href: `https://wa.me/${contact.whatsapp?.replace(/\D/g, '')}` },
@@ -73,6 +90,20 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
     { icon: Instagram, value: contact.instagram, label: 'Instagram', href: `https://instagram.com/${contact.instagram?.replace('@', '')}` },
     { icon: Twitter, value: contact.twitter, label: 'Twitter', href: `https://twitter.com/${contact.twitter?.replace('@', '')}` },
   ].filter(c => c.value);
+
+  // Add extra phones/emails not already shown
+  const existingPhones = new Set([contact.phone, contact.whatsapp].filter(Boolean).map(p => p!.replace(/\D/g, '')));
+  const existingEmails = new Set([contact.email].filter(Boolean).map(e => e!.toLowerCase()));
+
+  const extraPhoneChannels = extraPhones
+    .filter(p => !existingPhones.has(p.replace(/\D/g, '')))
+    .map((p, i) => ({ icon: Phone, value: p, label: `Tel ${i + 2}`, href: `tel:${p}` }));
+
+  const extraEmailChannels = extraEmails
+    .filter(e => !existingEmails.has(e.toLowerCase()))
+    .map((e, i) => ({ icon: Mail, value: e, label: `Email ${i + 2}`, href: `mailto:${e}` }));
+
+  const contactChannels = [...baseChannels, ...extraPhoneChannels, ...extraEmailChannels];
 
   return (
     <motion.div
