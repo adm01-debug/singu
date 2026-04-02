@@ -94,8 +94,9 @@ export function useContactDetail(contactId: string | undefined) {
         }
       }
 
-      // Fetch interactions for this contact
-      const { data: interactionsData, error: interactionsError } = await supabase
+      // Fetch interactions for this contact - try local first, then external
+      let interactionsData: Interaction[] = [];
+      const { data: localInteractions, error: interactionsError } = await supabase
         .from('interactions')
         .select('id, type, title, content, sentiment, tags, duration, attachments, audio_url, transcription, key_insights, initiated_by, response_time, follow_up_required, follow_up_date, emotion_analysis, created_at, contact_id, company_id, user_id')
         .eq('contact_id', contactId)
@@ -103,11 +104,26 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(50);
 
       if (interactionsError) {
-        logger.error('Error fetching interactions:', interactionsError);
+        logger.error('Error fetching local interactions:', interactionsError);
       }
 
-      // Fetch insights for this contact
-      const { data: insightsData, error: insightsError } = await supabase
+      if (localInteractions && localInteractions.length > 0) {
+        interactionsData = localInteractions;
+      } else {
+        const { data: extInteractions } = await queryExternalData<Interaction>({
+          table: 'interactions',
+          filters: [{ type: 'eq', column: 'contact_id', value: contactId }],
+          order: { column: 'created_at', ascending: false },
+          range: { from: 0, to: 49 },
+        });
+        if (extInteractions && extInteractions.length > 0) {
+          interactionsData = extInteractions;
+        }
+      }
+
+      // Fetch insights for this contact - try local first, then external
+      let insightsData: Insight[] = [];
+      const { data: localInsights, error: insightsError } = await supabase
         .from('insights')
         .select('id, category, title, description, confidence, source, actionable, action_suggestion, expires_at, dismissed, created_at, contact_id, user_id')
         .eq('contact_id', contactId)
@@ -116,11 +132,29 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(20);
 
       if (insightsError) {
-        logger.error('Error fetching insights:', insightsError);
+        logger.error('Error fetching local insights:', insightsError);
       }
 
-      // Fetch alerts for this contact
-      const { data: alertsData, error: alertsError } = await supabase
+      if (localInsights && localInsights.length > 0) {
+        insightsData = localInsights;
+      } else {
+        const { data: extInsights } = await queryExternalData<Insight>({
+          table: 'insights',
+          filters: [
+            { type: 'eq', column: 'contact_id', value: contactId },
+            { type: 'eq', column: 'dismissed', value: false },
+          ],
+          order: { column: 'created_at', ascending: false },
+          range: { from: 0, to: 19 },
+        });
+        if (extInsights && extInsights.length > 0) {
+          insightsData = extInsights;
+        }
+      }
+
+      // Fetch alerts for this contact - try local first, then external
+      let alertsData: Alert[] = [];
+      const { data: localAlerts, error: alertsError } = await supabase
         .from('alerts')
         .select('id, type, priority, title, description, action_url, dismissed, expires_at, created_at, contact_id, user_id')
         .eq('contact_id', contactId)
@@ -129,7 +163,24 @@ export function useContactDetail(contactId: string | undefined) {
         .limit(10);
 
       if (alertsError) {
-        logger.error('Error fetching alerts:', alertsError);
+        logger.error('Error fetching local alerts:', alertsError);
+      }
+
+      if (localAlerts && localAlerts.length > 0) {
+        alertsData = localAlerts;
+      } else {
+        const { data: extAlerts } = await queryExternalData<Alert>({
+          table: 'alerts',
+          filters: [
+            { type: 'eq', column: 'contact_id', value: contactId },
+            { type: 'eq', column: 'dismissed', value: false },
+          ],
+          order: { column: 'created_at', ascending: false },
+          range: { from: 0, to: 9 },
+        });
+        if (extAlerts && extAlerts.length > 0) {
+          alertsData = extAlerts;
+        }
       }
 
       setData({
