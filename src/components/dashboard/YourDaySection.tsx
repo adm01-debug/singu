@@ -286,7 +286,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                           {formatContactName(item.contact.first_name, item.contact.last_name)}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {item.company?.name || 'Sem empresa'}
+                          {toTitleCase(item.company?.name || '') || 'Sem empresa'}
                         </p>
                       </div>
                       <Badge 
