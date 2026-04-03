@@ -321,13 +321,9 @@ const Dashboard = () => {
         hideBack
       />
 
-      <div className="p-4 md:p-6 space-y-4 md:space-y-5">
-        {/* Welcome Hero Card — compact version */}
-        <WelcomeHeroCard
-          totalContacts={dashboardStats.totalContacts}
-          weeklyInteractions={dashboardStats.weeklyInteractions}
-          averageScore={dashboardStats.averageScore}
-        />
+      <div className="p-4 md:p-6 space-y-5 md:space-y-6">
+        {/* Welcome — clean greeting only */}
+        <WelcomeHeroCard />
 
         {/* Onboarding Checklist */}
         <OnboardingChecklist
