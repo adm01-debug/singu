@@ -208,7 +208,7 @@ export function ContactCardWithContext({
                           setIsInlineEditing(true);
                         }}
                       >
-                        {contact.first_name} {contact.last_name}
+                        {formatContactName(contact.first_name, contact.last_name)}
                       </h3>
                     )}
                     {contact.role_title && (
