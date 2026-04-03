@@ -425,7 +425,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <p className="text-xs font-medium mb-2 text-muted-foreground">Legenda</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <div className="w-3 h-3 rounded-full bg-info" />
               <span>Você</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
