@@ -26,13 +26,22 @@ export function toTitleCase(str: string): string {
   // Remove redundant city/state suffix after " - " (e.g. "PAC IPUA - IPUA/SP" → "PAC IPUA")
   // Pattern: " - CityName/UF" or " - CityName-UF" where it duplicates info
   const dashParts = input.split(/\s+[-–—]\s+/);
-  if (dashParts.length === 2) {
-    const suffix = normalizeForCompare(dashParts[1].replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim());
-    const mainNorm = normalizeForCompare(dashParts[0]);
+  if (dashParts.length >= 2) {
+    // Try to match redundant suffix in the last part
+    const lastPart = dashParts[dashParts.length - 1];
+    const mainParts = dashParts.slice(0, -1).join(' - ');
+    const suffix = normalizeForCompare(lastPart.replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim());
+    const mainNorm = normalizeForCompare(mainParts);
     // If the suffix is contained in the main name, it's redundant — strip it but keep the UF
     if (mainNorm.includes(suffix) && suffix.length >= 3) {
-      const ufMatch = dashParts[1].match(/[\/\-]\s*([A-Za-z]{2})$/);
-      input = dashParts[0] + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
+      const ufMatch = lastPart.match(/[\/\-]\s*([A-Za-z]{2})$/);
+      // Check if UF is already in the mainParts (avoid double " - RJ - RJ")
+      const existingUf = mainParts.match(/\s*[-–—]\s*([A-Z]{2})$/);
+      if (existingUf) {
+        input = mainParts; // UF already present, just drop the redundant suffix
+      } else {
+        input = mainParts + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
+      }
     }
   }
   
