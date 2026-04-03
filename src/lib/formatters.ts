@@ -18,7 +18,20 @@ export function toTitleCase(str: string): string {
   
   // Strip leading numeric prefix like "05 - " for cleaner display
   const stripped = str.replace(/^\d+\s*[-–—]\s*/, '');
-  const input = stripped || str;
+  let input = stripped || str;
+
+  // Remove redundant city/state suffix after " - " (e.g. "PAC IPUA - IPUA/SP" → "PAC IPUA")
+  // Pattern: " - CityName/UF" or " - CityName-UF" where it duplicates info
+  const dashParts = input.split(/\s+[-–—]\s+/);
+  if (dashParts.length === 2) {
+    const suffix = dashParts[1].replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim().toLowerCase();
+    const mainLower = dashParts[0].toLowerCase();
+    // If the suffix is contained in the main name, it's redundant — strip it but keep the UF
+    if (mainLower.includes(suffix) && suffix.length >= 3) {
+      const ufMatch = dashParts[1].match(/[\/\-]\s*([A-Za-z]{2})$/);
+      input = dashParts[0] + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
+    }
+  }
   
   // Skip if string already looks well-formatted
   const words = input.split(/\s+/);
@@ -30,17 +43,17 @@ export function toTitleCase(str: string): string {
 
   return input
     .toLowerCase()
-    .split(/(\s+|-+)/)
+    .split(/(\s+|-+|\/+)/)
     .map((word, index) => {
       const upperWord = word.toUpperCase();
       
       // Keep separators as-is
-      if (/^[\s-]+$/.test(word)) return word;
+      if (/^[\s\-\/]+$/.test(word)) return word;
       
       // Keep known uppercase words
       if (UPPERCASE_WORDS.has(upperWord)) return upperWord;
       
-      // Keep state abbreviations (2-letter uppercase after dash/space)
+      // Keep state abbreviations (2-letter after separator)
       if (word.length === 2 && /^[a-z]{2}$/.test(word)) {
         const upper = word.toUpperCase();
         if (UPPERCASE_WORDS.has(upper)) return upper;
