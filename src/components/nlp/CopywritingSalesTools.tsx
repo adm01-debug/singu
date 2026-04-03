@@ -620,9 +620,9 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       </div>
 
                       {preview.suggestions.length > 0 && (
-                        <div className="px-3 py-2 bg-yellow-500/10 text-xs">
+                        <div className="px-3 py-2 bg-warning/10 text-xs">
                           {preview.suggestions.map((s, i) => (
-                            <p key={i} className="text-yellow-700">⚠️ {s}</p>
+                            <p key={i} className="text-warning">⚠️ {s}</p>
                           ))}
                         </div>
                       )}
