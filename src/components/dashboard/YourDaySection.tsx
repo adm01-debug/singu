@@ -162,7 +162,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <Link
                         key={item.interaction.id}
                         to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 transition-colors group"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 hover:translate-x-1 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
@@ -220,7 +220,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <Link
                         key={item.interaction.id}
                         to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors group"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 hover:translate-x-1 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
@@ -272,7 +272,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
@@ -328,7 +328,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
