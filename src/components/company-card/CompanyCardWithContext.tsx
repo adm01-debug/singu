@@ -156,7 +156,11 @@ export function CompanyCardWithContext({
                       }}
                     />
                   ) : null}
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft ${company.logo_url ? 'hidden' : ''}`}>
+                  <div className={cn(
+                    'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
+                    healthColorMap[company.financial_health || 'unknown'],
+                    company.logo_url && 'hidden'
+                  )}>
                     {(displayName || 'E')[0]}
                   </div>
                   <div>
