@@ -122,12 +122,13 @@ const healthBadgeConfig: Record<string, { className: string; label: string }> = 
 };
 
 /* ── Avatar gradient based on score ── */
-function getAvatarGradient(score: number | null): string {
-  const s = score ?? 0;
-  if (s >= 7) return 'from-success to-success/70';
-  if (s >= 5) return 'from-info to-primary';
-  if (s >= 3) return 'from-warning to-warning/70';
-  if (s > 0) return 'from-destructive to-destructive/70';
+function getAvatarGradient(health: string | null, status: string | null): string {
+  if (health === 'excellent' || health === 'good' || health === 'growing') return 'from-success to-success/70';
+  if (health === 'stable') return 'from-info to-primary';
+  if (health === 'average') return 'from-warning to-warning/70';
+  if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
+  if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
+  if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
   return 'from-primary to-primary/70';
 }
 
