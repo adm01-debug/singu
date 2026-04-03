@@ -204,8 +204,8 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(indexContent).toContain('text-xs sm:text-sm');
     });
 
-    it('should have abbreviated labels for mobile', () => {
-      expect(indexContent).toContain('>Geral<');
+    it('should have clean labels for tabs', () => {
+      expect(indexContent).toContain('>Visão Geral<');
       expect(indexContent).toContain('>Relações<');
       expect(indexContent).toContain('>IA<');
     });
