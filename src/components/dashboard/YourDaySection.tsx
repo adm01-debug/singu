@@ -334,7 +334,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
                         fallback={`${item.contact.first_name?.[0]}${item.contact.last_name?.[0]}`}
                         size="sm"
-                        className="h-9 w-9 border border-accent/20"
+                        className="h-9 w-9 border border-warning/20"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
