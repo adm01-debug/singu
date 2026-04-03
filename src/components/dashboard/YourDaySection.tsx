@@ -327,7 +327,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || ''}
