@@ -50,7 +50,7 @@ export async function perfTrack<T>(name: string, fn: () => Promise<T>): Promise<
     const result = await fn();
     const duration = perfMeasure(name, markStart, `${name}-end`);
     if (import.meta.env.DEV && duration !== null) {
-      console.info(`⏱ [${name}]: ${duration}ms`);
+      logger.info(`⏱ [${name}]: ${duration}ms`);
     }
     return result;
   } catch (error) {
