@@ -21,12 +21,12 @@ import type { Interaction, Contact as ContactType } from '@/hooks/useContactDeta
 import { logger } from "@/lib/logger";
 
 const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
-  call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-  email: { icon: Mail, label: 'Email', color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
-  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-green-500 bg-green-50 dark:bg-green-900/20' },
-  meeting: { icon: Users, label: 'Reunião', color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+  call: { icon: Phone, label: 'Ligação', color: 'text-info bg-info/10' },
+  email: { icon: Mail, label: 'Email', color: 'text-warning bg-warning/10' },
+  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-success bg-success/10' },
+  meeting: { icon: Users, label: 'Reunião', color: 'text-primary bg-primary/10' },
   note: { icon: FileText, label: 'Nota', color: 'text-muted-foreground bg-muted' },
-  social: { icon: Video, label: 'Social', color: 'text-pink-500 bg-pink-50 dark:bg-pink-900/20' },
+  social: { icon: Video, label: 'Social', color: 'text-accent-foreground bg-accent' },
 };
 
 interface Props {
