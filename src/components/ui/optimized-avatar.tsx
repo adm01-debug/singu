@@ -75,7 +75,7 @@ export function OptimizedAvatar({
       setHasError(true);
       setIsLoading(false);
     };
-    img.src = src;
+    img.src = effectiveSrc;
 
     return () => {
       img.onload = null;
