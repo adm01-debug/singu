@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getErrorMessage } from '@/lib/ux-messages';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
