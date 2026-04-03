@@ -163,7 +163,7 @@ export function useAutomationRules() {
   const updateRule = useCallback(async (id: string, data: Partial<CreateRuleData> & { is_active?: boolean }) => {
     if (!user) return false;
 
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.trigger_type !== undefined) updateData.trigger_type = data.trigger_type;
