@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (refreshTime > 0) {
       refreshTimeoutRef.current = setTimeout(async () => {
-        if (import.meta.env.DEV) console.log('🔄 Refreshing session token...');
+        if (import.meta.env.DEV) logger.log('🔄 Refreshing session token...');
         try {
           const { data, error } = await supabase.auth.refreshSession();
           if (error) {
