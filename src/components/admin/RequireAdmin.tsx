@@ -23,7 +23,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
       const { data, error } = await supabase
         .rpc('has_role', { _user_id: user.id, _role: 'admin' });
       if (error) {
-        if (import.meta.env.DEV) console.warn("Role check error:", error.message);
+        if (import.meta.env.DEV) logger.warn("Role check error:", error.message);
         return false;
       }
       return !!data;

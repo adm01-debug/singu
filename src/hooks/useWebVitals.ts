@@ -30,7 +30,7 @@ export function useWebVitals() {
 
       // Console em desenvolvimento para debug
       if (import.meta.env.DEV) {
-        console.info(`[Web Vital] ${metric.name}: ${entry.value} (${metric.rating})`);
+        logger.info(`[Web Vital] ${metric.name}: ${entry.value} (${metric.rating})`);
       }
     };
 

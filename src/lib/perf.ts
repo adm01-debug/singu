@@ -56,7 +56,7 @@ export async function perfTrack<T>(name: string, fn: () => Promise<T>): Promise<
   } catch (error) {
     const duration = perfMeasure(`${name}-error`, markStart, `${name}-error-end`);
     if (import.meta.env.DEV && duration !== null) {
-      console.warn(`⏱ [${name}] failed after ${duration}ms`);
+      logger.warn(`⏱ [${name}] failed after ${duration}ms`);
     }
     throw error;
   }
