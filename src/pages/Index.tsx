@@ -269,7 +269,7 @@ const Dashboard = () => {
       <AppLayout>
         <Header 
           title="Dashboard" 
-          subtitle="Visão geral do seu relacionamento com clientes"
+          hideBack
         />
         <DashboardSkeleton />
       </AppLayout>
