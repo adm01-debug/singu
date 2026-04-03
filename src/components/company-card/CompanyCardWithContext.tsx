@@ -81,29 +81,24 @@ function HealthRing({ health, status }: { health: string | null; status: string 
   if (!derivedConfig) {
     return (
       <div className="flex items-center gap-1.5 text-muted-foreground">
-        <div className="w-7 h-7 rounded-full border-2 border-border flex items-center justify-center">
-          <span className="text-[10px]">–</span>
-        </div>
+        <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
         <span className="text-xs">Sem dados</span>
       </div>
     );
   }
 
-  const size = 28;
-  const stroke = 3;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (derivedConfig.percent / 100) * circumference;
+  // Simple dot indicator instead of SVG ring for cleaner look
+  const dotColorMap: Record<string, string> = {
+    'text-success': 'bg-success',
+    'text-info': 'bg-info',
+    'text-warning': 'bg-warning',
+    'text-destructive': 'bg-destructive',
+  };
+  const dotColor = dotColorMap[derivedConfig.color] || 'bg-primary';
 
   return (
     <div className={cn('flex items-center gap-1.5', derivedConfig.color)}>
-      <svg width={size} height={size} className="rotate-[-90deg]">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
-          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
-          className="transition-all duration-700"
-        />
-      </svg>
+      <span className={cn('w-2 h-2 rounded-full', dotColor)} />
       <span className="text-xs font-medium">{derivedConfig.label}</span>
     </div>
   );
@@ -121,15 +116,41 @@ const healthBadgeConfig: Record<string, { className: string; label: string }> = 
   critical:  { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Crítica' },
 };
 
-/* ── Avatar gradient based on score ── */
-function getAvatarGradient(health: string | null, status: string | null): string {
+/* ── Deterministic avatar color from name hash ── */
+function hashStringToHue(str: string): number {
+  // Use FNV-1a for better distribution with similar prefixes
+  let hash = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return Math.abs(hash) % 360;
+}
+
+function getAvatarGradient(health: string | null, status: string | null, name?: string): string {
   if (health === 'excellent' || health === 'good' || health === 'growing') return 'from-success to-success/70';
   if (health === 'stable') return 'from-info to-primary';
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
   if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
+  // Deterministic color based on company name
+  if (name) {
+    const hue = hashStringToHue(name);
+    // Use CSS custom property via inline style instead
+    return `from-primary to-primary/70`;
+  }
   return 'from-primary to-primary/70';
+}
+
+function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
+  // Only apply custom color when there's no health/status-based color
+  if (health && healthRingConfig[health]) return undefined;
+  if (status === 'active' || status === 'ativo' || status === 'inactive' || status === 'inativo') return undefined;
+  const hue = hashStringToHue(name);
+  return {
+    background: `linear-gradient(135deg, hsl(${hue}, 55%, 50%), hsl(${(hue + 30) % 360}, 45%, 40%))`,
+  };
 }
 
 interface CompanyCardWithContextProps {
@@ -188,7 +209,7 @@ export function CompanyCardWithContext({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.4) }}
       whileHover={{ scale: 1.01, y: -2 }}
       {...hoverProps}
     >
@@ -230,11 +251,14 @@ export function CompanyCardWithContext({
                       }}
                     />
                   ) : null}
-                  <div className={cn(
-                    'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft',
-                    getAvatarGradient(company.financial_health, company.status),
-                    company.logo_url && 'hidden'
-                  )}>
+                  <div 
+                    className={cn(
+                      'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
+                      getAvatarGradient(company.financial_health, company.status, company.name),
+                      company.logo_url && 'hidden'
+                    )}
+                    style={getAvatarStyle(company.financial_health, company.status, company.name)}
+                  >
                     {getAvatarInitial(company.name)}
                   </div>
                   <div>
@@ -256,14 +280,12 @@ export function CompanyCardWithContext({
                         {displayName}
                       </h3>
                     )}
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <IndustryIcon className="w-3.5 h-3.5" />
-                      {hasSegment ? (
+                    {hasSegment && (
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <IndustryIcon className="w-3.5 h-3.5" />
                         <span>{company.industry}</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/50 italic">Sem segmento</span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </div>
