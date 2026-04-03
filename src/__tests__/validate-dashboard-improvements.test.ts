@@ -188,8 +188,8 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(indexContent).toContain('p-4 md:p-6');
     });
 
-    it('should use responsive spacing (space-y-4 md:space-y-5)', () => {
-      expect(indexContent).toContain('space-y-4 md:space-y-5');
+    it('should use responsive spacing (space-y-5 md:space-y-6)', () => {
+      expect(indexContent).toContain('space-y-5 md:space-y-6');
     });
 
     it('should have 2-col grid on mobile for stats', () => {
