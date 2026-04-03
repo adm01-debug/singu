@@ -274,9 +274,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
                     >
                       <OptimizedAvatar 
-                        src={item.contact.avatar_url || ''}
+                        src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name?.[0]}${item.contact.last_name?.[0]}`}
+                        fallback={`${item.contact.first_name?.[0] || '?'}${item.contact.last_name?.[0] || '?'}`}
                         size="sm"
                         className="h-9 w-9 border border-warning/20"
                       />
