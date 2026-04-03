@@ -173,12 +173,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     },
   });
 
-  const draftKey = company ? `company-edit-${(company as any).id}` : 'company-new';
+  const draftKey = company ? `company-edit-${(company as Record<string, unknown>).id}` : 'company-new';
   const { clearDraft } = useFormDraft(form, { key: draftKey, enabled: !company });
 
   const handleSubmit = async (data: CompanyFormData) => {
     // Clean empty strings to null
-    const cleaned: Record<string, any> = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value === '' || value === undefined) {
         cleaned[key] = null;

@@ -93,10 +93,9 @@ export function SalespersonProfileSettings() {
     
     setSaving(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await supabase
         .from('profiles')
-        .update({ nlp_profile: profile as any })
+        .update({ nlp_profile: profile as unknown as Record<string, unknown> })
         .eq('id', user.id);
 
       if (error) throw error;

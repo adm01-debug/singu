@@ -56,27 +56,27 @@ export function ContactBehavioralTab({ contact }: Props) {
           'disc_analysis_history', contactFilter,
           { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 4 } },
         ),
-        fetchWithFallback<any[]>(
+        fetchWithFallback<Record<string, unknown>[]>(
           async () => supabase.from('eq_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
           'eq_analysis_history', contactFilter,
           { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 0 } },
         ),
-        fetchWithFallback<any[]>(
+        fetchWithFallback<Record<string, unknown>[]>(
           async () => supabase.from('cognitive_bias_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(1),
           'cognitive_bias_history', contactFilter,
           { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 0 } },
         ),
-        fetchWithFallback<any[]>(
-          async () => supabase.from('metaprogram_analysis' as any).select('*').eq('contact_id', contact.id).order('created_at', { ascending: false }).limit(1),
+        fetchWithFallback<Record<string, unknown>[]>(
+          async () => supabase.from('metaprogram_analysis').select('*').eq('contact_id', contact.id).order('created_at', { ascending: false }).limit(1),
           'metaprogram_analysis', contactFilter,
           { order: { column: 'created_at', ascending: false }, range: { from: 0, to: 0 } },
         ),
       ]);
 
-      setDiscHistory((discRes as any[]) || []);
-      setEqAnalysis((eqRes as any[])?.[0] || null);
-      setBiases((biasRes as any[])?.[0] || null);
-      setMetaprograms((metaRes as any[])?.[0] || null);
+      setDiscHistory((discRes as Record<string, unknown>[]) || []);
+      setEqAnalysis((eqRes as Record<string, unknown>[])?.[0] || null);
+      setBiases((biasRes as Record<string, unknown>[])?.[0] || null);
+      setMetaprograms((metaRes as Record<string, unknown>[])?.[0] || null);
     };
 
     fetchData();

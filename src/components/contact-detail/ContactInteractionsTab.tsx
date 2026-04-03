@@ -47,9 +47,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
     first_name: contact.first_name,
     last_name: contact.last_name,
     company_id: contact.company_id,
-  } as any;
+  };
 
-  const handleSubmit = useCallback(async (data: any) => {
+  const handleSubmit = useCallback(async (data: Record<string, unknown>) => {
     if (!user) return;
     setIsSubmitting(true);
     try {
