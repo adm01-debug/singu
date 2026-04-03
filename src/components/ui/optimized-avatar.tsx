@@ -103,9 +103,9 @@ export function OptimizedAvatar({
         <Skeleton className="h-full w-full rounded-full" aria-label={`Carregando avatar de ${fallback}`} />
       ) : (
         <Avatar className={cn('h-full w-full', className)}>
-          {!hasError && isInView && src && (
+          {!hasError && isInView && effectiveSrc && (
             <AvatarImage
-              src={src}
+              src={effectiveSrc}
               alt={meaningfulAlt}
               loading={loading}
               decoding="async"
