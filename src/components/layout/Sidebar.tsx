@@ -299,7 +299,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                       )}
                     >
                       <div className="relative">
-                        <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'animate-pulse-soft')} />
+                        <item.icon className={cn('w-5 h-5 flex-shrink-0', !isActive && 'opacity-60')} />
                         {/* Badge indicator for collapsed state */}
                         {collapsed && badgeCount > 0 && (
                           <motion.div
