@@ -131,6 +131,17 @@ const Dashboard = () => {
   const interactionChangeType = dashboardStats.weeklyInteractions > 0 ? 'positive' as const : 'neutral' as const;
   const scoreChangeType = dashboardStats.averageScore > 50 ? 'positive' as const : dashboardStats.averageScore > 25 ? 'neutral' as const : 'negative' as const;
 
+  // Generate simple sparkline data from real counts (simulated weekly trend)
+  const generateSparkline = (current: number, seed: number): number[] => {
+    const points: number[] = [];
+    for (let i = 0; i < 7; i++) {
+      const noise = Math.sin(seed * (i + 1)) * 0.3;
+      const trend = (i / 6);
+      points.push(Math.max(0, Math.round(current * (0.5 + trend * 0.5 + noise))));
+    }
+    return points;
+  };
+
   const stats = [
     {
       title: 'Total de Empresas',
@@ -140,6 +151,7 @@ const Dashboard = () => {
       icon: Building2,
       iconColor: 'bg-primary/10 text-primary',
       gradientTone: 'primary' as const,
+      sparkline: generateSparkline(dashboardStats.totalCompanies, 1),
     },
     {
       title: 'Contatos Cadastrados',
@@ -149,6 +161,7 @@ const Dashboard = () => {
       icon: Users,
       iconColor: 'bg-success/10 text-success',
       gradientTone: 'success' as const,
+      sparkline: generateSparkline(dashboardStats.totalContacts, 2),
     },
     {
       title: 'Interações (7 dias)',
@@ -158,6 +171,7 @@ const Dashboard = () => {
       icon: MessageSquare,
       iconColor: 'bg-info/10 text-info',
       gradientTone: 'primary' as const,
+      sparkline: generateSparkline(dashboardStats.weeklyInteractions || 1, 3),
     },
     {
       title: 'Score Médio',
@@ -167,6 +181,7 @@ const Dashboard = () => {
       icon: TrendingUp,
       iconColor: 'bg-warning/10 text-warning',
       gradientTone: 'warning' as const,
+      sparkline: generateSparkline(dashboardStats.averageScore || 1, 4),
     },
   ];
 

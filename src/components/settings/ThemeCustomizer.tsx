@@ -19,16 +19,16 @@ interface ColorPreset {
 const COLOR_PRESETS: ColorPreset[] = [
   {
     id: 'default',
-    name: 'Azul Profissional',
-    primary: '221 83% 53%',
-    accent: '160 84% 39%',
+    name: 'Electric Indigo',
+    primary: '234 89% 60%',
+    accent: '168 76% 42%',
     description: 'Tema padrão elegante e profissional',
   },
   {
     id: 'emerald',
     name: 'Esmeralda',
     primary: '160 84% 39%',
-    accent: '221 83% 53%',
+    accent: '234 89% 60%',
     description: 'Verde vibrante para produtividade',
   },
   {
@@ -74,8 +74,8 @@ interface CustomTheme {
 function getDefaultTheme(): CustomTheme {
   return {
     presetId: 'default',
-    primary: '221 83% 53%',
-    accent: '160 84% 39%',
+    primary: '234 89% 60%',
+    accent: '168 76% 42%',
     saturation: 100,
     brightness: 100,
   };

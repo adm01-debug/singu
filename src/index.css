@@ -354,16 +354,10 @@
 
 /* ============================================
    SMOOTH THEME TRANSITIONS - Pilar 8.1
+   Scoped to direct color properties only, no wildcard !important
    ============================================ */
-:root {
-  --theme-transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.theme-transitioning,
-.theme-transitioning *,
-.theme-transitioning *::before,
-.theme-transitioning *::after {
-  transition: var(--theme-transition) !important;
+.theme-transitioning {
+  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 @layer base {

@@ -39,6 +39,14 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase } from '@/lib/formatters';
 
+const healthColorMap: Record<string, string> = {
+  excellent: 'from-success to-accent',
+  good: 'from-success/80 to-success',
+  average: 'from-warning to-warning/80',
+  poor: 'from-destructive to-destructive/80',
+  unknown: 'from-primary to-primary-glow',
+};
+
 const industryIcons: Record<string, React.ElementType> = {
   'Tecnologia': Cpu,
   'Saúde': HeartPulse,
@@ -148,7 +156,11 @@ export function CompanyCardWithContext({
                       }}
                     />
                   ) : null}
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft ${company.logo_url ? 'hidden' : ''}`}>
+                  <div className={cn(
+                    'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
+                    healthColorMap[company.financial_health || 'unknown'],
+                    company.logo_url && 'hidden'
+                  )}>
                     {(displayName || 'E')[0]}
                   </div>
                   <div>

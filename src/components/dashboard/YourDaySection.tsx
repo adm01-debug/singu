@@ -315,9 +315,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.25 }}
             >
-              <Card className="border-accent/30 bg-accent/5 h-full border-l-4 border-l-accent">
+              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-accent">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <AlertTriangle className="w-4 h-4" />
                     Precisam de Atenção
                   </CardTitle>
@@ -327,17 +327,17 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || ''}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
                         fallback={`${item.contact.first_name?.[0]}${item.contact.last_name?.[0]}`}
                         size="sm"
-                        className="h-9 w-9 border border-accent/20"
+                        className="h-9 w-9 border border-warning/20"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
+                        <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
                           {item.contact.first_name} {item.contact.last_name}
                         </p>
                         <p className="text-xs text-muted-foreground line-clamp-1">
@@ -352,7 +352,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                   ))}
                   {needsAttention.length > 3 && (
                     <Link to="/contatos" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-accent hover:text-accent">
+                      <Button variant="ghost" size="sm" className="w-full text-warning hover:text-warning">
                         +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
