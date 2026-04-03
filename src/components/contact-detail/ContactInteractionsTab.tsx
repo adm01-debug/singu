@@ -157,7 +157,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <SentimentIndicator sentiment={(interaction.sentiment as 'positive' | 'neutral' | 'negative') || 'neutral'} size="sm" />
                         {interaction.follow_up_required && (
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
+                          <AlertCircle className="h-4 w-4 text-warning" />
                         )}
                         {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
