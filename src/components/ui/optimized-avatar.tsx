@@ -60,7 +60,7 @@ export function OptimizedAvatar({
     }
 
     return () => observer.disconnect();
-  }, [loading, src]);
+  }, [loading, effectiveSrc]);
 
   // Preload image when in view
   useEffect(() => {
