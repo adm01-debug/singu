@@ -253,17 +253,23 @@ export function CompanyCardWithContext({
                   <Badge 
                     variant="outline" 
                     className={
-                      company.financial_health === 'excellent' || company.financial_health === 'good'
+                      company.financial_health === 'excellent' || company.financial_health === 'good' || company.financial_health === 'growing'
                         ? 'border-success/50 text-success bg-success/10'
-                        : company.financial_health === 'average'
+                        : company.financial_health === 'average' || company.financial_health === 'stable'
+                        ? 'border-info/50 text-info bg-info/10'
+                        : company.financial_health === 'declining'
                         ? 'border-warning/50 text-warning bg-warning/10'
                         : 'border-destructive/50 text-destructive bg-destructive/10'
                     }
                   >
                     {company.financial_health === 'excellent' ? 'Excelente' :
                      company.financial_health === 'good' ? 'Boa' :
+                     company.financial_health === 'growing' ? 'Crescendo' :
+                     company.financial_health === 'stable' ? 'Estável' :
                      company.financial_health === 'average' ? 'Regular' :
-                     company.financial_health === 'poor' ? 'Ruim' : ''}
+                     company.financial_health === 'declining' ? 'Em declínio' :
+                     company.financial_health === 'poor' ? 'Ruim' :
+                     company.financial_health === 'critical' ? 'Crítica' : ''}
                   </Badge>
                 </div>
               )}
