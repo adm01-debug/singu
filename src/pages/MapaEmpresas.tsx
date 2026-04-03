@@ -5,8 +5,8 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "leaflet.markercluster";
-import { useQuery } from "@tanstack/react-query";
-import { queryExternalData } from "@/lib/externalData";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Header } from "@/components/layout/Header";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { logger } from "@/lib/logger";
+import { toast } from "sonner";
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as { _getIconUrl?: () => string })._getIconUrl;
@@ -39,11 +39,16 @@ const blueIcon = mkIcon("blue");
 
 interface MappableCompany {
   id: string;
-  nome_crm: string;
+  name: string;
+  nome_crm: string | null;
   ramo_atividade: string | null;
   status: string | null;
   cnpj: string | null;
+  email: string | null;
+  phone: string | null;
   website: string | null;
+  city: string | null;
+  state: string | null;
   lat: number;
   lng: number;
   relationship_score: number;
@@ -56,7 +61,7 @@ function getIcon(score: number) {
   return blueIcon;
 }
 
-/* ── Geocoding cache ── */
+/* ── Geocoding ── */
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 
 async function geocode(location: string): Promise<{ lat: number; lng: number } | null> {
@@ -80,18 +85,30 @@ async function geocode(location: string): Promise<{ lat: number; lng: number } |
   }
 }
 
-/* ── Extract city from extra_data_rf ── */
-function extractCity(extraDataRf: string | null): string | null {
-  if (!extraDataRf) return null;
-  try {
-    const parsed = typeof extraDataRf === 'string' ? JSON.parse(extraDataRf) : extraDataRf;
-    return parsed.cidade_rfb || null;
-  } catch {
-    return null;
+function buildLocationString(company: Record<string, unknown>): string | null {
+  const city = company.city as string | null;
+  const state = company.state as string | null;
+  const address = company.address as string | null;
+  
+  // Try extra_data_rf for cidade_rfb
+  let rfCity: string | null = null;
+  const extra = company.extra_data_rf;
+  if (extra && typeof extra === 'object') {
+    rfCity = (extra as Record<string, unknown>).cidade_rfb as string | null;
   }
+  
+  const effectiveCity = city || rfCity;
+  if (effectiveCity) {
+    const parts = [effectiveCity];
+    if (state) parts.push(state);
+    return parts.join(", ") + ", Brasil";
+  }
+  if (address) return address + ", Brasil";
+  return null;
 }
 
 /* ── Marker Cluster ── */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function MarkerClusterLayer({ companies }: { companies: MappableCompany[] }) {
   const map = useMap();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +123,7 @@ function MarkerClusterLayer({ companies }: { companies: MappableCompany[] }) {
       maxClusterRadius: 50,
       spiderfyOnMaxZoom: true,
       showCoverageOnHover: false,
-      iconCreateFunction: (c) => {
+      iconCreateFunction: (c: { getChildCount: () => number }) => {
         const count = c.getChildCount();
         const size = count > 50 ? 48 : count > 10 ? 40 : 32;
         return L.divIcon({
@@ -133,12 +150,17 @@ function MarkerClusterLayer({ companies }: { companies: MappableCompany[] }) {
 
       const scoreColor = company.relationship_score >= 60 ? "#22c55e"
         : company.relationship_score >= 30 ? "#eab308" : "#ef4444";
+      
+      const locationText = [company.city, company.state].filter(Boolean).join(", ");
 
       marker.bindPopup(`
-        <div style="min-width:220px;font-size:12px;font-family:system-ui;">
-          <p style="font-weight:700;font-size:14px;margin:0 0 4px">${company.nome_crm}</p>
-          ${company.ramo_atividade ? `<p style="color:#888;margin:2px 0">${company.ramo_atividade}</p>` : ""}
+        <div style="min-width:240px;font-size:12px;font-family:system-ui;">
+          <p style="font-weight:700;font-size:14px;margin:0 0 4px">${company.nome_crm || company.name}</p>
+          ${company.ramo_atividade ? `<p style="color:#888;margin:2px 0">🏢 ${company.ramo_atividade}</p>` : ""}
+          ${locationText ? `<p style="margin:2px 0">📍 ${locationText}</p>` : ""}
           ${company.cnpj ? `<p style="margin:2px 0">📋 ${company.cnpj}</p>` : ""}
+          ${company.email ? `<p style="margin:2px 0">✉️ ${company.email}</p>` : ""}
+          ${company.phone ? `<p style="margin:2px 0">📞 ${company.phone}</p>` : ""}
           ${company.website ? `<p style="margin:2px 0">🌐 <a href="${company.website}" target="_blank" rel="noopener">${company.website.replace(/https?:\/\//, "").slice(0, 30)}</a></p>` : ""}
           <div style="border-top:1px solid #ddd;margin-top:6px;padding-top:4px;display:flex;justify-content:space-between">
             <span style="font-weight:600">Score</span>
@@ -171,80 +193,111 @@ export default function MapaEmpresas() {
   const [minScore, setMinScore] = useState(0);
   const [selectedSector, setSelectedSector] = useState("all");
   const [showFilters, setShowFilters] = useState(true);
-  const [geocodedCompanies, setGeocodedCompanies] = useState<MappableCompany[]>([]);
+  const [mappedCompanies, setMappedCompanies] = useState<MappableCompany[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState(0);
+  const [geocodingTotal, setGeocodingTotal] = useState(0);
+  const queryClient = useQueryClient();
 
-  // Fetch companies with cities from external DB
+  // Fetch companies from Supabase
   const { data: rawCompanies, isLoading } = useQuery({
     queryKey: ["companies-map-data"],
     queryFn: async () => {
-      const { data, error } = await queryExternalData<Record<string, unknown>>({
-        table: 'companies',
-        select: 'id,nome_crm,ramo_atividade,status,cnpj,website,extra_data_rf',
-        range: { from: 0, to: 99 },
-        order: { column: 'updated_at', ascending: false },
-      });
+      const { data, error } = await supabase
+        .from("companies")
+        .select("id,name,nome_crm,ramo_atividade,status,cnpj,email,phone,website,city,state,address,extra_data_rf,lat,lng")
+        .order("updated_at", { ascending: false });
       if (error) throw error;
       return data || [];
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Geocode companies
-  const doGeocode = useCallback(async () => {
+  // Process: separate already-geocoded vs needs-geocoding
+  const processAndGeocode = useCallback(async () => {
     if (!rawCompanies || rawCompanies.length === 0 || isGeocoding) return;
-    setIsGeocoding(true);
-    const results: MappableCompany[] = [];
-    let progress = 0;
 
-    for (const company of rawCompanies) {
-      const city = extractCity(company.extra_data_rf as string | null);
-      if (!city) continue;
+    const alreadyMapped: MappableCompany[] = [];
+    const needsGeocoding: typeof rawCompanies = [];
 
-      const coords = await geocode(city + ", Brasil");
-      if (coords) {
-        results.push({
-          id: company.id as string,
-          nome_crm: (company.nome_crm || company.nome_fantasia || 'Sem nome') as string,
-          ramo_atividade: company.ramo_atividade as string | null,
-          status: company.status as string | null,
-          cnpj: company.cnpj as string | null,
-          website: company.website as string | null,
-          lat: coords.lat,
-          lng: coords.lng,
-          relationship_score: 50, // default
+    for (const c of rawCompanies) {
+      if (c.lat != null && c.lng != null && !isNaN(c.lat) && !isNaN(c.lng) && c.lat !== 0) {
+        alreadyMapped.push({
+          id: c.id, name: c.name,
+          nome_crm: c.nome_crm, ramo_atividade: c.ramo_atividade,
+          status: c.status, cnpj: c.cnpj, email: c.email, phone: c.phone,
+          website: c.website, city: c.city, state: c.state,
+          lat: c.lat, lng: c.lng, relationship_score: 50,
         });
+      } else {
+        const loc = buildLocationString(c as Record<string, unknown>);
+        if (loc) needsGeocoding.push(c);
       }
-      progress++;
-      setGeocodingProgress(progress);
+    }
+
+    // Show already mapped immediately
+    setMappedCompanies(alreadyMapped);
+
+    if (needsGeocoding.length === 0) return;
+
+    setIsGeocoding(true);
+    setGeocodingTotal(needsGeocoding.length);
+    setGeocodingProgress(0);
+
+    const newResults: MappableCompany[] = [...alreadyMapped];
+    let geocoded = 0;
+
+    for (const c of needsGeocoding) {
+      const loc = buildLocationString(c as Record<string, unknown>);
+      if (!loc) continue;
+
+      const coords = await geocode(loc);
+      if (coords) {
+        // Persist coordinates to DB
+        await supabase.from("companies").update({ lat: coords.lat, lng: coords.lng }).eq("id", c.id);
+
+        newResults.push({
+          id: c.id, name: c.name,
+          nome_crm: c.nome_crm, ramo_atividade: c.ramo_atividade,
+          status: c.status, cnpj: c.cnpj, email: c.email, phone: c.phone,
+          website: c.website, city: c.city, state: c.state,
+          lat: coords.lat, lng: coords.lng, relationship_score: 50,
+        });
+        geocoded++;
+      }
+      setGeocodingProgress(prev => prev + 1);
       // Nominatim rate limit
       await new Promise(r => setTimeout(r, 1100));
     }
 
-    setGeocodedCompanies(results);
+    setMappedCompanies(newResults);
     setIsGeocoding(false);
-  }, [rawCompanies, isGeocoding]);
+
+    if (geocoded > 0) {
+      toast.success(`${geocoded} empresas geolocalizadas com sucesso`);
+      queryClient.invalidateQueries({ queryKey: ["companies-map-data"] });
+    }
+  }, [rawCompanies, isGeocoding, queryClient]);
 
   useEffect(() => {
-    if (rawCompanies && rawCompanies.length > 0 && geocodedCompanies.length === 0 && !isGeocoding) {
-      doGeocode();
+    if (rawCompanies && rawCompanies.length > 0 && mappedCompanies.length === 0 && !isGeocoding) {
+      processAndGeocode();
     }
-  }, [rawCompanies, geocodedCompanies.length, isGeocoding, doGeocode]);
+  }, [rawCompanies, mappedCompanies.length, isGeocoding, processAndGeocode]);
 
   const sectors = useMemo(() => {
     const s = new Set<string>();
-    geocodedCompanies.forEach(c => { if (c.ramo_atividade) s.add(c.ramo_atividade); });
+    mappedCompanies.forEach(c => { if (c.ramo_atividade) s.add(c.ramo_atividade); });
     return Array.from(s).sort();
-  }, [geocodedCompanies]);
+  }, [mappedCompanies]);
 
   const filtered = useMemo(() => {
-    return geocodedCompanies.filter(c => {
+    return mappedCompanies.filter(c => {
       if (c.relationship_score < minScore) return false;
       if (selectedSector !== "all" && c.ramo_atividade !== selectedSector) return false;
       return true;
     });
-  }, [geocodedCompanies, minScore, selectedSector]);
+  }, [mappedCompanies, minScore, selectedSector]);
 
   const hasActiveFilters = minScore > 0 || selectedSector !== "all";
   const clearFilters = () => { setMinScore(0); setSelectedSector("all"); };
@@ -266,7 +319,7 @@ export default function MapaEmpresas() {
                 {hasActiveFilters && " (filtrado)"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {rawCompanies?.length ?? 0} carregadas · {geocodedCompanies.length} geolocalizadas
+                {rawCompanies?.length ?? 0} carregadas · {mappedCompanies.length} geolocalizadas
               </p>
             </div>
           </div>
@@ -275,7 +328,7 @@ export default function MapaEmpresas() {
             {isGeocoding && (
               <div className="flex items-center gap-1.5 text-xs text-primary">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Geolocalizando... {geocodingProgress}/{rawCompanies?.length ?? 0}
+                Geolocalizando... {geocodingProgress}/{geocodingTotal}
               </div>
             )}
             <Button
@@ -351,7 +404,7 @@ export default function MapaEmpresas() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Carregando empresas...</p>
             </div>
-          ) : geocodedCompanies.length === 0 && !isGeocoding ? (
+          ) : mappedCompanies.length === 0 && !isGeocoding ? (
             <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
               <Building2 className="h-12 w-12 opacity-30" />
               <p className="text-sm">Nenhuma empresa com localização disponível</p>
