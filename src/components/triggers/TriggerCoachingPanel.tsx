@@ -48,6 +48,7 @@ import { ADVANCED_MENTAL_TRIGGERS } from '@/data/triggersAdvancedData';
 import { EXTENDED_MENTAL_TRIGGERS, ExtendedTriggerType } from '@/data/triggersExtendedData';
 import { COMPLETE_TRIGGER_CONFLICTS, COMPLETE_TRIGGER_SYNERGIES } from '@/data/triggerConflictsMatrix';
 import { VAK_TRIGGER_TEMPLATES, getVAKTemplatesForTrigger } from '@/data/triggerTemplatesVAK';
+import type { VAKType } from '@/types/vak';
 import { METAPROGRAM_TRIGGER_TEMPLATES, getMetaprogramTemplatesForTrigger, MetaprogramType } from '@/data/triggerTemplatesMetaprograms';
 import { getDominantVAK } from '@/lib/contact-utils';
 import { DEMO_CONTACT } from '@/lib/demo-contact';

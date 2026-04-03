@@ -95,7 +95,7 @@ export function SalespersonProfileSettings() {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ nlp_profile: profile as Json })
+        .update({ nlp_profile: profile as unknown as import('@/integrations/supabase/types').Json })
         .eq('id', user.id);
 
       if (error) throw error;
