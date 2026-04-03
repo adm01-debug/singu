@@ -64,7 +64,7 @@ export function OptimizedAvatar({
 
   // Preload image when in view
   useEffect(() => {
-    if (!isInView || !src || hasError) {
+    if (!isInView || !effectiveSrc || hasError) {
       setIsLoading(false);
       return;
     }
