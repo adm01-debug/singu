@@ -118,9 +118,11 @@ const healthBadgeConfig: Record<string, { className: string; label: string }> = 
 
 /* ── Deterministic avatar color from name hash ── */
 function hashStringToHue(str: string): number {
-  let hash = 0;
+  // Use FNV-1a for better distribution with similar prefixes
+  let hash = 2166136261;
   for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
   return Math.abs(hash) % 360;
 }
