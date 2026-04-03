@@ -42,10 +42,20 @@ import { toTitleCase } from '@/lib/formatters';
 const healthColorMap: Record<string, string> = {
   excellent: 'from-success to-accent',
   good: 'from-success/80 to-success',
+  growing: 'from-success to-accent',
+  stable: 'from-info to-primary',
   average: 'from-warning to-warning/80',
+  declining: 'from-destructive/80 to-warning',
   poor: 'from-destructive to-destructive/80',
+  critical: 'from-destructive to-destructive/80',
   unknown: 'from-primary to-primary-glow',
 };
+
+/** Strip leading numeric prefix like "05 - " or "32 - " from company names for display */
+function getAvatarInitial(name: string): string {
+  const cleaned = name.replace(/^\d+\s*[-–—]\s*/, '');
+  return (cleaned || name || 'E')[0].toUpperCase();
+}
 
 const industryIcons: Record<string, React.ElementType> = {
   'Tecnologia': Cpu,
@@ -161,7 +171,7 @@ export function CompanyCardWithContext({
                     healthColorMap[company.financial_health || 'unknown'],
                     company.logo_url && 'hidden'
                   )}>
-                    {(displayName || 'E')[0]}
+                    {getAvatarInitial(company.name)}
                   </div>
                   <div>
                     {isInlineEditing ? (
