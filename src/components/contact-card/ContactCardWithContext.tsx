@@ -379,7 +379,7 @@ export function ContactCardWithContext({
                     {companyName && (
                       <>
                         <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline truncate">{companyName}</span>
+                        <span className="hidden sm:inline truncate">{toTitleCase(companyName)}</span>
                       </>
                     )}
                     <span className="hidden sm:inline">•</span>
