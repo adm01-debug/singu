@@ -363,7 +363,7 @@ export function ContactCardWithContext({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-foreground truncate">
-                      {contact.first_name} {contact.last_name}
+                      {formatContactName(contact.first_name, contact.last_name)}
                     </h3>
                     <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {/* Desktop: show all badges inline */}
