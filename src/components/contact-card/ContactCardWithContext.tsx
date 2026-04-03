@@ -210,7 +210,9 @@ export function ContactCardWithContext({
                         {contact.first_name} {contact.last_name}
                       </h3>
                     )}
-                    <p className="text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
+                    {contact.role_title && (
+                      <p className="text-sm text-muted-foreground">{contact.role_title}</p>
+                    )}
                   </div>
 
                   {/* Desktop: always show details / Mobile: progressive disclosure */}
@@ -372,7 +374,7 @@ export function ContactCardWithContext({
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="truncate">{contact.role_title || 'Sem cargo'}</span>
+                    <span className="truncate">{contact.role_title || contact.email || ''}</span>
                     {companyName && (
                       <>
                         <span className="hidden sm:inline">•</span>
