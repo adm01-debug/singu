@@ -71,6 +71,52 @@ export function toTitleCase(str: string): string {
 }
 
 /**
+ * Format a contact display name, handling edge cases:
+ * - "WhatsApp 5518991665844" → "(55) 18991-665844"
+ * - Email-only → extract name from local part
+ * - Empty / "Sem nome" → "Contato"
+ */
+export function formatContactName(firstName?: string | null, lastName?: string | null): string {
+  const full = `${firstName || ''} ${lastName || ''}`.trim();
+  
+  if (!full || full === 'Sem nome') return 'Contato';
+  
+  // WhatsApp + phone number
+  if (/^whatsapp\s+\d{8,}/i.test(full)) {
+    const phone = full.replace(/^whatsapp\s+/i, '');
+    return formatPhoneDisplay(phone);
+  }
+  
+  // Pure phone number as name
+  if (/^\+?\d{10,}$/.test(full.replace(/\s/g, ''))) {
+    return formatPhoneDisplay(full.replace(/\s/g, ''));
+  }
+  
+  // Email as name
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(full)) {
+    const local = full.split('@')[0];
+    return local
+      .replace(/[._-]/g, ' ')
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  }
+  
+  return full;
+}
+
+function formatPhoneDisplay(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length >= 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length >= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return phone;
+}
+
+/**
  * Returns a color class based on a score (0-10 scale)
  */
 export function getScoreColor(score: number): {

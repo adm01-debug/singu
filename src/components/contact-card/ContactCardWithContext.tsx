@@ -30,6 +30,7 @@ import { ptBR } from 'date-fns/locale';
 import type { Contact } from '@/hooks/useContacts';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
 import { cn } from '@/lib/utils';
+import { formatContactName, toTitleCase } from '@/lib/formatters';
 
 interface ContactCardWithContextProps {
   contact: Contact;
@@ -207,7 +208,7 @@ export function ContactCardWithContext({
                           setIsInlineEditing(true);
                         }}
                       >
-                        {contact.first_name} {contact.last_name}
+                        {formatContactName(contact.first_name, contact.last_name)}
                       </h3>
                     )}
                     {contact.role_title && (
@@ -220,7 +221,7 @@ export function ContactCardWithContext({
                     {companyName && (
                       <div className="flex items-center gap-2 mb-3">
                         <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">{companyName}</span>
+                        <span className="text-sm text-muted-foreground">{toTitleCase(companyName)}</span>
                       </div>
                     )}
 
@@ -256,7 +257,7 @@ export function ContactCardWithContext({
                           {companyName && (
                             <div className="flex items-center gap-2 mb-2">
                               <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                              <span className="text-sm text-muted-foreground">{companyName}</span>
+                              <span className="text-sm text-muted-foreground">{toTitleCase(companyName)}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -362,7 +363,7 @@ export function ContactCardWithContext({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold text-foreground truncate">
-                      {contact.first_name} {contact.last_name}
+                      {formatContactName(contact.first_name, contact.last_name)}
                     </h3>
                     <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {/* Desktop: show all badges inline */}
@@ -378,7 +379,7 @@ export function ContactCardWithContext({
                     {companyName && (
                       <>
                         <span className="hidden sm:inline">•</span>
-                        <span className="hidden sm:inline truncate">{companyName}</span>
+                        <span className="hidden sm:inline truncate">{toTitleCase(companyName)}</span>
                       </>
                     )}
                     <span className="hidden sm:inline">•</span>

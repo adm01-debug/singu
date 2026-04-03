@@ -31,14 +31,16 @@ export function OptimizedAvatar({
   loading = 'lazy',
   showSkeleton = true,
 }: OptimizedAvatarProps) {
-  const [isLoading, setIsLoading] = useState(!!src);
+  // Treat empty strings as no src
+  const effectiveSrc = src && src.trim().length > 0 ? src : null;
+  const [isLoading, setIsLoading] = useState(!!effectiveSrc);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(loading === 'eager');
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Intersection Observer for true lazy loading
   useEffect(() => {
-    if (loading === 'eager' || !src) {
+    if (loading === 'eager' || !effectiveSrc) {
       setIsInView(true);
       return;
     }
@@ -58,11 +60,11 @@ export function OptimizedAvatar({
     }
 
     return () => observer.disconnect();
-  }, [loading, src]);
+  }, [loading, effectiveSrc]);
 
   // Preload image when in view
   useEffect(() => {
-    if (!isInView || !src || hasError) {
+    if (!isInView || !effectiveSrc || hasError) {
       setIsLoading(false);
       return;
     }
@@ -73,13 +75,13 @@ export function OptimizedAvatar({
       setHasError(true);
       setIsLoading(false);
     };
-    img.src = src;
+    img.src = effectiveSrc;
 
     return () => {
       img.onload = null;
       img.onerror = null;
     };
-  }, [isInView, src, hasError]);
+  }, [isInView, effectiveSrc, hasError]);
 
   const getFallbackInitials = (text: string) => {
     return text
@@ -101,9 +103,9 @@ export function OptimizedAvatar({
         <Skeleton className="h-full w-full rounded-full" aria-label={`Carregando avatar de ${fallback}`} />
       ) : (
         <Avatar className={cn('h-full w-full', className)}>
-          {!hasError && isInView && src && (
+          {!hasError && isInView && effectiveSrc && (
             <AvatarImage
-              src={src}
+              src={effectiveSrc}
               alt={meaningfulAlt}
               loading={loading}
               decoding="async"

@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 // ============================================
@@ -47,6 +48,8 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   animate?: boolean;
   sparkline?: number[];
   onClick?: () => void;
+  /** CTA label shown when value is 0 */
+  emptyAction?: { label: string; href: string };
 }
 
 // Animated number component using framer-motion spring
@@ -86,6 +89,7 @@ export function StatCard({
   animate = true,
   sparkline,
   onClick,
+  emptyAction,
 }: StatCardProps) {
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
@@ -120,7 +124,7 @@ export function StatCard({
     >
       {/* Sparkline Background */}
       {sparkline && sparkline.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-12 opacity-30">
+        <div className="absolute bottom-0 left-0 right-0 h-12 opacity-40">
           <svg className="w-full h-full" viewBox={`0 0 ${sparkline.length * 10} 40`} preserveAspectRatio="none">
             <path
               d={`M0,${40 - (sparkline[0] / Math.max(...sparkline)) * 40} ${sparkline.map((v, i) => 
@@ -174,6 +178,20 @@ export function StatCard({
                 {change}
               </motion.div>
             </div>
+          )}
+          
+          {/* Empty state CTA */}
+          {emptyAction && numericValue === 0 && (
+            <Link 
+              to={emptyAction.href}
+              className={cn(
+                'flex items-center gap-1 text-[11px] font-medium mt-0.5 hover:underline',
+                variant === 'gradient' ? 'text-primary-foreground/80' : 'text-primary'
+              )}
+            >
+              {emptyAction.label}
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           )}
         </div>
 
