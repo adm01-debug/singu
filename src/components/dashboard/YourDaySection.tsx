@@ -97,30 +97,22 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       transition={{ duration: 0.4 }}
       className={className}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      {/* Header — clean, no duplicate greeting */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-warning/10">
-            <Sun className="w-4 h-4 text-warning" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">
-              {greeting}
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-              {totalTasks > 0 && (
-                <span className="ml-1.5 text-primary font-medium">
-                  · {totalTasks} tarefa{totalTasks !== 1 ? 's' : ''} para hoje
-                </span>
-              )}
-            </p>
-          </div>
+          <h2 className="text-sm font-semibold text-foreground">
+            Seu dia
+          </h2>
+          {totalTasks > 0 && (
+            <span className="text-xs text-muted-foreground">
+              · {totalTasks} tarefa{totalTasks !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
         <Link to="/calendario">
-          <Button variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
+          <Button variant="ghost" size="sm" className="gap-1.5 h-7 text-xs text-muted-foreground hover:text-foreground">
             <Calendar className="w-3.5 h-3.5" />
-            Ver Calendário
+            Calendário
           </Button>
         </Link>
       </div>
