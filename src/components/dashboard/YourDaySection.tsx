@@ -167,7 +167,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
                           alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={`${item.contact?.first_name?.[0] || '?'}${item.contact?.last_name?.[0] || '?'}`}
+                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
                           size="sm"
                           className="h-9 w-9 border border-destructive/20"
                         />
@@ -225,7 +225,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
                           alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={`${item.contact?.first_name?.[0] || '?'}${item.contact?.last_name?.[0] || '?'}`}
+                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
                           size="sm"
                           className="h-9 w-9 border border-primary/20"
                         />
@@ -277,7 +277,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name?.[0] || '?'}${item.contact.last_name?.[0] || '?'}`}
+                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
                         size="sm"
                         className="h-9 w-9 border border-warning/20"
                       />
@@ -333,7 +333,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name?.[0] || '?'}${item.contact.last_name?.[0] || '?'}`}
+                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
                         size="sm"
                         className="h-9 w-9 border border-warning/20"
                       />
