@@ -586,11 +586,11 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                     >
                       <div className="bg-muted px-3 py-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {preview.channel === 'whatsapp' && <Smartphone className="h-4 w-4 text-green-500" />}
-                          {preview.channel === 'email' && <Mail className="h-4 w-4 text-blue-500" />}
-                          {preview.channel === 'instagram' && <Smartphone className="h-4 w-4 text-pink-500" />}
-                          {preview.channel === 'linkedin' && <Smartphone className="h-4 w-4 text-blue-600" />}
-                          {preview.channel === 'sms' && <MessageSquare className="h-4 w-4 text-gray-500" />}
+                          {preview.channel === 'whatsapp' && <Smartphone className="h-4 w-4 text-success" />}
+                          {preview.channel === 'email' && <Mail className="h-4 w-4 text-info" />}
+                          {preview.channel === 'instagram' && <Smartphone className="h-4 w-4 text-primary" />}
+                          {preview.channel === 'linkedin' && <Smartphone className="h-4 w-4 text-info" />}
+                          {preview.channel === 'sms' && <MessageSquare className="h-4 w-4 text-muted-foreground" />}
                           <span className="font-medium capitalize">{preview.channel}</span>
                         </div>
                         <Badge variant={preview.isWithinLimit ? 'secondary' : 'destructive'} className="text-xs">
