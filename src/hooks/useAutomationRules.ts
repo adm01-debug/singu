@@ -144,9 +144,9 @@ export function useAutomationRules() {
           name: data.name,
           description: data.description,
           trigger_type: data.trigger_type,
-          trigger_config: data.trigger_config as Record<string, unknown>,
-          conditions: data.conditions as unknown as Record<string, unknown>,
-          actions: data.actions as unknown as Record<string, unknown>,
+          trigger_config: data.trigger_config as Json,
+          conditions: data.conditions as unknown as Json,
+          actions: data.actions as unknown as Json,
         })
         .select()
         .single();
