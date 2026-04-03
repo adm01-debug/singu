@@ -168,7 +168,7 @@ export function ContactCardWithContext({
             <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
                 {/* Header with gradient */}
-                <div className="h-16 bg-gradient-primary relative mt-1">
+                <div className="h-16 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/10 relative mt-1">
                   <div className="absolute -bottom-8 left-5">
                     <div className="relative">
                       <OptimizedAvatar 
@@ -200,18 +200,27 @@ export function ContactCardWithContext({
                         onSave={(v) => handleInlineSave('name', v)}
                         className="font-semibold text-foreground"
                       />
-                    ) : (
-                      <h3 
-                        className="font-semibold text-foreground group-hover:text-primary transition-colors cursor-pointer"
-                        onDoubleClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setIsInlineEditing(true);
-                        }}
-                      >
-                        {formatContactName(contact.first_name, contact.last_name)}
-                      </h3>
-                    )}
+                    ) : (() => {
+                      const displayName = formatContactName(contact.first_name, contact.last_name);
+                      const isGenericName = !contact.first_name || /^(contato|sem nome|posto|cliente|fornecedor)$/i.test(displayName);
+                      return (
+                        <h3 
+                          className={cn(
+                            "font-semibold transition-colors cursor-pointer",
+                            isGenericName 
+                              ? "text-muted-foreground italic" 
+                              : "text-foreground group-hover:text-primary"
+                          )}
+                          onDoubleClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsInlineEditing(true);
+                          }}
+                        >
+                          {isGenericName ? `${displayName} — editar` : displayName}
+                        </h3>
+                      );
+                    })()}
                     {contact.role_title && (
                       <p className="text-sm text-muted-foreground">{contact.role_title}</p>
                     )}
