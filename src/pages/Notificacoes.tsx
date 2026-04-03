@@ -301,11 +301,11 @@ const Notificacoes = () => {
                 </div>
               ) : isSubscribed ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-green-500/10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-success/10 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-500" />
+                      <Check className="w-5 h-5 text-success" />
                       <div>
-                        <p className="text-sm font-medium text-green-600">
+                        <p className="text-sm font-medium text-success">
                           Notificações push ativadas
                         </p>
                         <p className="text-xs text-muted-foreground">
