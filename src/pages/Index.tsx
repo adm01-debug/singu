@@ -172,6 +172,7 @@ const Dashboard = () => {
       iconColor: 'bg-info/10 text-info',
       gradientTone: 'primary' as const,
       sparkline: generateSparkline(dashboardStats.weeklyInteractions || 1, 3),
+      emptyAction: { label: 'Registrar interação', href: '/interacoes' },
     },
     {
       title: 'Score Médio',
