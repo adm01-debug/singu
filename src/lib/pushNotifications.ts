@@ -44,12 +44,12 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
 
   try {
     // Check if already subscribed
-    let subscription = await (registration as any).pushManager.getSubscription();
+    let subscription = await registration.pushManager?.getSubscription();
     
     if (!subscription) {
       // Subscribe to push notifications
       const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      subscription = await (registration as any).pushManager.subscribe({
+      subscription = await registration.pushManager?.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey.buffer as ArrayBuffer
       });
