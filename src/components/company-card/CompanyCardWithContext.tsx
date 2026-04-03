@@ -15,7 +15,7 @@ import {
   Cpu,
   HeartPulse,
   GraduationCap,
-  Tag
+  
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
