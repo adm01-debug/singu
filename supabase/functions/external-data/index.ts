@@ -55,7 +55,7 @@ function getExternalClient() {
   if (!url || !key) throw new Error('External database credentials not configured');
   return createClient(url, key, {
     db: { schema: 'public' },
-    global: { headers: { 'x-statement-timeout': '8000' } },
+    global: { headers: { 'x-statement-timeout': '15000' } },
   });
 }
 
