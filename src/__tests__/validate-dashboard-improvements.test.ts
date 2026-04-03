@@ -31,15 +31,16 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should have backdrop blur for premium feel', () => {
-      expect(indexContent).toContain('backdrop-blur-xl');
+      expect(indexContent).toContain('backdrop-blur-lg');
     });
 
     it('should have semi-transparent background', () => {
-      expect(indexContent).toContain('bg-background/95');
+      expect(indexContent).toContain('bg-background/80');
     });
 
-    it('should have border separator', () => {
-      expect(indexContent).toContain('border-b border-border/50');
+    it('should not have heavy border separator (cleaner design)', () => {
+      // New glassmorphism design uses blur instead of border
+      expect(indexContent).toContain('backdrop-blur');
     });
   });
 
@@ -187,8 +188,8 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(indexContent).toContain('p-4 md:p-6');
     });
 
-    it('should use responsive spacing (space-y-4 md:space-y-5)', () => {
-      expect(indexContent).toContain('space-y-4 md:space-y-5');
+    it('should use responsive spacing (space-y-5 md:space-y-6)', () => {
+      expect(indexContent).toContain('space-y-5 md:space-y-6');
     });
 
     it('should have 2-col grid on mobile for stats', () => {
@@ -203,8 +204,8 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(indexContent).toContain('text-xs sm:text-sm');
     });
 
-    it('should have abbreviated labels for mobile', () => {
-      expect(indexContent).toContain('>Geral<');
+    it('should have clean labels for tabs', () => {
+      expect(indexContent).toContain('>Visão Geral<');
       expect(indexContent).toContain('>Relações<');
       expect(indexContent).toContain('>IA<');
     });

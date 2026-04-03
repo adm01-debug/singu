@@ -610,38 +610,29 @@ describe('WelcomeHeroCard Improvements', () => {
     expect(content).toContain('Boa noite');
   });
 
-  it('uses emoji for greetings', () => {
-    expect(content).toContain('☀️');
-    expect(content).toContain('🌤️');
-    expect(content).toContain('🌙');
+  it('has clean greeting without emoji clutter', () => {
+    expect(content).toContain('Bom dia');
+    expect(content).toContain('Boa tarde');
+    expect(content).toContain('Boa noite');
   });
 
   it('shows today date in pt-BR', () => {
     expect(content).toContain("'pt-BR'");
   });
 
-  it('has stats with semantic colors', () => {
-    expect(content).toContain('text-primary');
-    expect(content).toContain('text-accent');
-    expect(content).toContain('text-success');
+  it('uses semantic foreground tokens', () => {
+    expect(content).toContain('text-foreground');
+    expect(content).toContain('text-muted-foreground');
   });
 
-  it('has semantic background colors for stats', () => {
-    expect(content).toContain('bg-primary/10');
-    expect(content).toContain('bg-accent/10');
-    expect(content).toContain('bg-success/10');
+  it('is minimal — no stat cards in hero', () => {
+    expect(content).not.toContain("'Contatos'");
+    expect(content).not.toContain("'Interações'");
+    expect(content).not.toContain("'Score'");
   });
 
-  it('shows Contatos stat', () => {
-    expect(content).toContain("'Contatos'");
-  });
-
-  it('shows Interações stat', () => {
-    expect(content).toContain("'Interações'");
-  });
-
-  it('shows Score stat', () => {
-    expect(content).toContain("'Score'");
+  it('uses Calendar icon for date display', () => {
+    expect(content).toContain('Calendar');
   });
 
   it('uses motion for animations', () => {
@@ -652,8 +643,8 @@ describe('WelcomeHeroCard Improvements', () => {
     expect(content).toContain('first_name');
   });
 
-  it('has TrendingUp icon', () => {
-    expect(content).toContain('TrendingUp');
+  it('uses Intl.DateTimeFormat for proper date formatting', () => {
+    expect(content).toContain('Intl.DateTimeFormat');
   });
 });
 

@@ -237,11 +237,12 @@ describe('Design System Audit - Component Semantic Tokens', () => {
     expect(content).not.toMatch(/Check.*text-white/);
   });
 
-  it('stat-card gradient variant uses primary-foreground', () => {
+  it('stat-card uses semantic foreground tokens', () => {
     const content = fs.readFileSync(
       path.resolve(COMPONENTS_DIR, 'ui/stat-card.tsx'), 'utf8'
     );
-    expect(content).toContain('text-primary-foreground');
+    expect(content).toContain('text-foreground');
+    expect(content).toContain('text-muted-foreground');
     expect(content).not.toMatch(/gradient.*text-white/);
   });
 
@@ -493,7 +494,7 @@ describe('Design System Audit - CSS Variables Integrity', () => {
     );
     const requiredTokens = [
       '--background', '--foreground',
-      '--primary', '--primary-foreground', '--primary-glow',
+      '--primary', '--primary-foreground',
       '--secondary', '--secondary-foreground',
       '--muted', '--muted-foreground',
       '--accent', '--accent-foreground',
@@ -511,11 +512,13 @@ describe('Design System Audit - CSS Variables Integrity', () => {
     }
   });
 
-  it('index.css defines gradient utilities', () => {
+  it('index.css defines glass and surface utilities', () => {
     const content = fs.readFileSync(
       path.resolve(__dirname, '../index.css'), 'utf8'
     );
-    expect(content).toContain('--gradient-primary');
+    expect(content).toContain('--glass-bg');
+    expect(content).toContain('--glass-blur');
+    expect(content).toContain('--surface-0');
   });
 
   it('index.css has dark mode definitions', () => {
