@@ -179,7 +179,7 @@ export function CompanyCardWithContext({
       >
         <Card className={cn(
           "h-full card-hover group cursor-pointer transition-all duration-200",
-          "hover:shadow-medium hover:border-primary/20",
+          "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
@@ -238,10 +238,13 @@ export function CompanyCardWithContext({
                       {hasSegment ? (
                         <span>{company.industry}</span>
                       ) : (
-                        <span className="flex items-center gap-1 text-muted-foreground/60 italic text-xs">
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(company); }}
+                          className="flex items-center gap-1 text-primary/60 hover:text-primary italic text-xs transition-colors"
+                        >
                           <Tag className="w-3 h-3" />
                           Definir segmento
-                        </span>
+                        </button>
                       )}
                     </div>
                   </div>

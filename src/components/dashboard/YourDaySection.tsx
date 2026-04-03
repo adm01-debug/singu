@@ -147,7 +147,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive">
+              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive shadow-sm shadow-destructive/10">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-destructive">
                     <AlertCircle className="w-4 h-4" />
@@ -315,7 +315,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.25 }}
             >
-              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning">
+              <Card className="border-warning/40 bg-warning/5 h-full border-l-4 border-l-warning shadow-sm shadow-warning/10">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <AlertTriangle className="w-4 h-4" />
