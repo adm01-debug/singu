@@ -147,7 +147,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="border-destructive/30 bg-destructive/5 h-full">
+              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-destructive">
                     <AlertCircle className="w-4 h-4" />
@@ -179,7 +179,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                             {item.interaction.title}
                           </p>
                         </div>
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="destructive" className="text-xs shrink-0">
                           {item.interaction.follow_up_date && 
                             format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
                         </Badge>
