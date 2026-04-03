@@ -261,6 +261,11 @@ const AnimatedRoutes = () => {
           <LazyPage><Automacoes /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/mapa-empresas" element={
+        <RequireAuth>
+          <LazyPage><MapaEmpresas /></LazyPage>
+        </RequireAuth>
+      } />
       <Route path="/whatsapp" element={
         <RequireAuth>
           <Navigate to="/interacoes?canal=whatsapp" replace />
