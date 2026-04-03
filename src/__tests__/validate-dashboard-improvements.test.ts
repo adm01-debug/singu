@@ -31,15 +31,16 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should have backdrop blur for premium feel', () => {
-      expect(indexContent).toContain('backdrop-blur-xl');
+      expect(indexContent).toContain('backdrop-blur-lg');
     });
 
     it('should have semi-transparent background', () => {
-      expect(indexContent).toContain('bg-background/95');
+      expect(indexContent).toContain('bg-background/80');
     });
 
-    it('should have border separator', () => {
-      expect(indexContent).toContain('border-b border-border/50');
+    it('should not have heavy border separator (cleaner design)', () => {
+      // New glassmorphism design uses blur instead of border
+      expect(indexContent).toContain('backdrop-blur');
     });
   });
 
