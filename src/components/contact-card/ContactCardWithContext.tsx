@@ -168,7 +168,7 @@ export function ContactCardWithContext({
             <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
                 {/* Header with gradient */}
-                <div className="h-16 bg-gradient-primary relative mt-1">
+                <div className="h-16 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/10 relative mt-1">
                   <div className="absolute -bottom-8 left-5">
                     <div className="relative">
                       <OptimizedAvatar 
