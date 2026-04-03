@@ -67,6 +67,47 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
+const healthScoreConfig: Record<string, { color: string; label: string; percent: number }> = {
+  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
+  good:      { color: 'text-success', label: 'Boa', percent: 85 },
+  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
+  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
+  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
+  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
+  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
+  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
+};
+
+function HealthScoreRing({ health }: { health: string | null }) {
+  const config = healthScoreConfig[health || ''];
+  if (!config) {
+    return (
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Users className="w-4 h-4" />
+        <span className="text-xs">Sem dados</span>
+      </div>
+    );
+  }
+  const size = 28;
+  const stroke = 3;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (config.percent / 100) * circumference;
+
+  return (
+    <div className={cn('flex items-center gap-1.5', config.color)}>
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
+          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          className="transition-all duration-700"
+        />
+      </svg>
+      <span className="text-xs font-medium">{config.label}</span>
+    </div>
+  );
+}
+
 interface CompanyCardWithContextProps {
   company: Company;
   index: number;
@@ -253,17 +294,23 @@ export function CompanyCardWithContext({
                   <Badge 
                     variant="outline" 
                     className={
-                      company.financial_health === 'excellent' || company.financial_health === 'good'
+                      company.financial_health === 'excellent' || company.financial_health === 'good' || company.financial_health === 'growing'
                         ? 'border-success/50 text-success bg-success/10'
-                        : company.financial_health === 'average'
+                        : company.financial_health === 'average' || company.financial_health === 'stable'
+                        ? 'border-info/50 text-info bg-info/10'
+                        : company.financial_health === 'declining'
                         ? 'border-warning/50 text-warning bg-warning/10'
                         : 'border-destructive/50 text-destructive bg-destructive/10'
                     }
                   >
                     {company.financial_health === 'excellent' ? 'Excelente' :
                      company.financial_health === 'good' ? 'Boa' :
+                     company.financial_health === 'growing' ? 'Crescendo' :
+                     company.financial_health === 'stable' ? 'Estável' :
                      company.financial_health === 'average' ? 'Regular' :
-                     company.financial_health === 'poor' ? 'Ruim' : ''}
+                     company.financial_health === 'declining' ? 'Em declínio' :
+                     company.financial_health === 'poor' ? 'Ruim' :
+                     company.financial_health === 'critical' ? 'Crítica' : ''}
                   </Badge>
                 </div>
               )}
@@ -284,10 +331,7 @@ export function CompanyCardWithContext({
               )}
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Users className="w-4 h-4" />
-                  <span>--</span>
-                </div>
+                <HealthScoreRing health={company.financial_health} />
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
                 </span>
