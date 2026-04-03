@@ -371,6 +371,44 @@ const Dashboard = () => {
                 transition={tabAnimationVariants.transition}
                 className="space-y-5"
               >
+              {/* Your Day Section */}
+              <DashboardErrorBoundary sectionName="Seu Dia">
+                <YourDaySection />
+              </DashboardErrorBoundary>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                {stats.map((stat, index) => (
+                  <StatCard
+                    key={stat.title}
+                    {...stat}
+                    delay={prefersReducedMotion ? 0 : index}
+                    variant={index === 0 ? 'gradient' : 'elevated'}
+                  />
+                ))}
+              </div>
+
+              {/* Pre-Contact Briefing — collapsible */}
+              <DashboardErrorBoundary sectionName="Briefing">
+                <Collapsible open={briefingOpen} onOpenChange={setBriefingOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
+                    >
+                      <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
+                        <Brain className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="font-medium">Briefing Pré-Contato</span>
+                      {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3">
+                    <PreContactBriefing compact />
+                  </CollapsibleContent>
+                </Collapsible>
+              </DashboardErrorBoundary>
               {/* Portfolio Health — contained height */}
               <DashboardErrorBoundary sectionName="Saúde do Portfólio">
                 <LazySection fallbackVariant="card" fallbackHeight="h-48">
