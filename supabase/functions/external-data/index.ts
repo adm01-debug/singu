@@ -127,7 +127,9 @@ Deno.serve(async (req) => {
 
       if (order) query = query.order(order.column, { ascending: order.ascending ?? false });
       const queryRange = range || { from: 0, to: 49 };
-      query = query.range(queryRange.from, queryRange.to);
+      const maxPageSize = 100;
+      const clampedTo = Math.min(queryRange.to, queryRange.from + maxPageSize - 1);
+      query = query.range(queryRange.from, clampedTo);
 
       const { data, error, count } = await query;
       if (error) throw new Error(`Select failed: ${error.message}`);
