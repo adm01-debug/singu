@@ -125,39 +125,48 @@ const Dashboard = () => {
   const recentActivityAnimations = useStaggerAnimation(recentActivities.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
   const topContactAnimations = useStaggerAnimation(topContacts.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
 
-  // Build stats from real data
+  // Build stats from real data with visual enhancements
+  const companyChangeType = dashboardStats.companyChange?.startsWith('+') && dashboardStats.companyChange !== '+0' ? 'positive' as const : 'neutral' as const;
+  const contactChangeType = dashboardStats.contactChange?.startsWith('+') && dashboardStats.contactChange !== '+0' ? 'positive' as const : 'neutral' as const;
+  const interactionChangeType = dashboardStats.weeklyInteractions > 0 ? 'positive' as const : 'neutral' as const;
+  const scoreChangeType = dashboardStats.averageScore > 50 ? 'positive' as const : dashboardStats.averageScore > 25 ? 'neutral' as const : 'negative' as const;
+
   const stats = [
     {
       title: 'Total de Empresas',
       value: dashboardStats.totalCompanies,
       change: dashboardStats.companyChange,
-      changeType: 'positive' as const,
+      changeType: companyChangeType,
       icon: Building2,
       iconColor: 'bg-primary/10 text-primary',
+      gradientTone: 'primary' as const,
     },
     {
       title: 'Contatos Cadastrados',
       value: dashboardStats.totalContacts,
       change: dashboardStats.contactChange,
-      changeType: 'positive' as const,
+      changeType: contactChangeType,
       icon: Users,
       iconColor: 'bg-success/10 text-success',
+      gradientTone: 'success' as const,
     },
     {
       title: 'Interações (7 dias)',
       value: dashboardStats.weeklyInteractions,
       change: dashboardStats.interactionChange,
-      changeType: 'positive' as const,
+      changeType: interactionChangeType,
       icon: MessageSquare,
       iconColor: 'bg-info/10 text-info',
+      gradientTone: 'primary' as const,
     },
     {
       title: 'Score Médio',
       value: `${dashboardStats.averageScore}%`,
       change: dashboardStats.scoreChange,
-      changeType: 'positive' as const,
+      changeType: scoreChangeType,
       icon: TrendingUp,
       iconColor: 'bg-warning/10 text-warning',
+      gradientTone: 'warning' as const,
     },
   ];
 
