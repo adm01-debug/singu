@@ -143,9 +143,9 @@ export function useAutomationRules() {
           name: data.name,
           description: data.description,
           trigger_type: data.trigger_type,
-          trigger_config: data.trigger_config as any,
-          conditions: data.conditions as any,
-          actions: data.actions as any,
+          trigger_config: data.trigger_config as Record<string, unknown>,
+          conditions: data.conditions as unknown as Record<string, unknown>,
+          actions: data.actions as unknown as Record<string, unknown>,
         })
         .select()
         .single();
@@ -153,8 +153,9 @@ export function useAutomationRules() {
       setRules(prev => [created as unknown as AutomationRule, ...prev]);
       toast.success('Automação criada com sucesso!');
       return created;
-    } catch (e: any) {
-      toast.error('Erro ao criar automação: ' + e.message);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Erro desconhecido';
+      toast.error('Erro ao criar automação: ' + message);
       return null;
     }
   }, [user]);
