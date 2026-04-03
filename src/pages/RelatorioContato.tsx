@@ -442,7 +442,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
 
         {/* Probabilidade de Conversão */}
         <section className="mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-lg text-center">
+          <div className="bg-gradient-success text-success-foreground p-6 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-2">Probabilidade de Conversão</h2>
             <div className="text-5xl font-bold">78%</div>
             <p className="text-sm mt-2 opacity-90">Utilizando a abordagem recomendada neste relatório</p>
