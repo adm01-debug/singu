@@ -433,7 +433,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
               <span>Empresas</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <div className="w-3 h-3 rounded-full bg-success" />
               <span>Score Alto</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
