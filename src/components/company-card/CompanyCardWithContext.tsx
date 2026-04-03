@@ -52,28 +52,51 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
-/* ── Score Ring with semantic colors ── */
-function ScoreRing({ score }: { score: number | null }) {
-  const s = score ?? 0;
-  const size = 32;
+/* ── Health Score Ring with semantic colors ── */
+const healthRingConfig: Record<string, { color: string; label: string; percent: number }> = {
+  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
+  good:      { color: 'text-success', label: 'Boa', percent: 85 },
+  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
+  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
+  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
+  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
+  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
+  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
+};
+
+function HealthRing({ health, status }: { health: string | null; status: string | null }) {
+  const config = healthRingConfig[health || ''];
+  
+  // Derive visual from status if no financial_health
+  const derivedConfig = config || (
+    status === 'active' || status === 'ativo'
+      ? { color: 'text-success', label: 'Ativo', percent: 70 }
+      : status === 'inactive' || status === 'inativo'
+      ? { color: 'text-destructive', label: 'Inativo', percent: 15 }
+      : status === 'prospect' || status === 'prospecto'
+      ? { color: 'text-info', label: 'Prospecto', percent: 50 }
+      : null
+  );
+
+  if (!derivedConfig) {
+    return (
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="w-7 h-7 rounded-full border-2 border-border flex items-center justify-center">
+          <span className="text-[10px]">–</span>
+        </div>
+        <span className="text-xs">Sem dados</span>
+      </div>
+    );
+  }
+
+  const size = 28;
   const stroke = 3;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (s / 10) * circumference;
-
-  // Semantic color based on score value (0-10)
-  const colorClass = s <= 2
-    ? 'text-destructive'
-    : s <= 4
-    ? 'text-warning'
-    : s <= 6
-    ? 'text-info'
-    : 'text-success';
-
-  const label = s === 0 ? '–' : s.toString();
+  const offset = circumference - (derivedConfig.percent / 100) * circumference;
 
   return (
-    <div className={cn('flex items-center gap-1.5', colorClass)}>
+    <div className={cn('flex items-center gap-1.5', derivedConfig.color)}>
       <svg width={size} height={size} className="rotate-[-90deg]">
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
@@ -81,7 +104,7 @@ function ScoreRing({ score }: { score: number | null }) {
           className="transition-all duration-700"
         />
       </svg>
-      <span className="text-sm font-bold tabular-nums">{label}</span>
+      <span className="text-xs font-medium">{derivedConfig.label}</span>
     </div>
   );
 }
@@ -99,12 +122,13 @@ const healthBadgeConfig: Record<string, { className: string; label: string }> = 
 };
 
 /* ── Avatar gradient based on score ── */
-function getAvatarGradient(score: number | null): string {
-  const s = score ?? 0;
-  if (s >= 7) return 'from-success to-success/70';
-  if (s >= 5) return 'from-info to-primary';
-  if (s >= 3) return 'from-warning to-warning/70';
-  if (s > 0) return 'from-destructive to-destructive/70';
+function getAvatarGradient(health: string | null, status: string | null): string {
+  if (health === 'excellent' || health === 'good' || health === 'growing') return 'from-success to-success/70';
+  if (health === 'stable') return 'from-info to-primary';
+  if (health === 'average') return 'from-warning to-warning/70';
+  if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
+  if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
+  if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
   return 'from-primary to-primary/70';
 }
 
@@ -158,10 +182,6 @@ export function CompanyCardWithContext({
 
   const displayName = toTitleCase(company.name);
   const hasSegment = !!company.industry;
-  // Derive a simple 0-10 score from relationship_score (0-100) or fallback
-  const score10 = typeof (company as Record<string, unknown>).relationship_score === 'number'
-    ? Math.round(((company as Record<string, unknown>).relationship_score as number) / 10)
-    : null;
   const healthConfig = healthBadgeConfig[company.financial_health || ''];
 
   return (
@@ -212,7 +232,7 @@ export function CompanyCardWithContext({
                   ) : null}
                   <div className={cn(
                     'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
-                    getAvatarGradient(score10),
+                    getAvatarGradient(company.financial_health, company.status),
                     company.logo_url && 'hidden'
                   )}>
                     {getAvatarInitial(company.name)}
@@ -319,7 +339,7 @@ export function CompanyCardWithContext({
               )}
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <ScoreRing score={score10} />
+                <HealthRing health={company.financial_health} status={company.status} />
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
                 </span>
