@@ -144,7 +144,8 @@ export function getContactInitials(firstName?: string | null, lastName?: string 
   return `${f}${l}` || '?';
 }
 
-
+/**
+ * Returns a color class based on a score (0-10 scale)
  */
 export function getScoreColor(score: number): {
   bg: string;
