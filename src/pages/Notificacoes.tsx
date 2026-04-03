@@ -513,8 +513,8 @@ const Notificacoes = () => {
                 </li>
               </ul>
               
-              <div className="mt-6 p-4 bg-amber-500/10 rounded-lg">
-                <p className="text-sm text-amber-600 dark:text-amber-400">
+              <div className="mt-6 p-4 bg-warning/10 rounded-lg">
+                <p className="text-sm text-warning">
                   <strong>Dica:</strong> Para receber notificações em dispositivos móveis, adicione o app à tela inicial do seu celular.
                 </p>
               </div>
