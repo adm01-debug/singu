@@ -31,7 +31,9 @@ export function OptimizedAvatar({
   loading = 'lazy',
   showSkeleton = true,
 }: OptimizedAvatarProps) {
-  const [isLoading, setIsLoading] = useState(!!src);
+  // Treat empty strings as no src
+  const effectiveSrc = src && src.trim().length > 0 ? src : null;
+  const [isLoading, setIsLoading] = useState(!!effectiveSrc);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(loading === 'eager');
   const containerRef = useRef<HTMLDivElement>(null);
