@@ -71,7 +71,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
           </Link>
 
           {showAddButton && (
-            <Button onClick={onAddClick} size="sm" className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-glow h-8 text-xs">
+            <Button onClick={onAddClick} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 text-xs">
               <Plus className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
               <span className="hidden sm:inline">{addButtonLabel || 'Adicionar'}</span>
               <span className="sm:hidden">Novo</span>

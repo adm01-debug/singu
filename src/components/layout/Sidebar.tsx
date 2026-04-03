@@ -182,16 +182,15 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50 fixed left-0 top-0 z-40 backdrop-blur-xl"
-        style={{ background: 'var(--gradient-sidebar)' }}
+        className="h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50 fixed left-0 top-0 z-40"
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-3 min-w-0 group">
             <motion.div 
-              className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow flex-shrink-0"
-              whileHover={{ rotate: [0, -8, 8, 0], scale: 1.05 }}
-              transition={{ duration: 0.4 }}
+              className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
             >
               <Zap className="w-5 h-5 text-primary-foreground" aria-hidden="true" />
             </motion.div>
