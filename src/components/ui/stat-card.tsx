@@ -124,7 +124,7 @@ export function StatCard({
     >
       {/* Sparkline Background */}
       {sparkline && sparkline.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-12 opacity-30">
+        <div className="absolute bottom-0 left-0 right-0 h-12 opacity-40">
           <svg className="w-full h-full" viewBox={`0 0 ${sparkline.length * 10} 40`} preserveAspectRatio="none">
             <path
               d={`M0,${40 - (sparkline[0] / Math.max(...sparkline)) * 40} ${sparkline.map((v, i) => 
