@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { formatContactName, toTitleCase, getContactInitials } from '@/lib/formatters';
 import { 
-  Sun, 
   Calendar, 
   Cake, 
   AlertTriangle, 
@@ -15,7 +14,6 @@ import {
   AlertCircle,
   User
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useYourDay } from '@/hooks/useYourDay';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 const interactionTypeIcons: Record<string, React.ElementType> = {
   call: Phone,
@@ -33,27 +32,40 @@ const interactionTypeIcons: Record<string, React.ElementType> = {
 };
 
 const YourDaySkeleton = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    {[...Array(4)].map((_, i) => (
-      <Card key={i} className="relative overflow-hidden">
-        <CardHeader className="pb-2">
-          <Skeleton className="h-5 w-32" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {[...Array(2)].map((_, j) => (
-            <div key={j} className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-1">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-3 w-2/3" />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+  <div className="space-y-3">
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50">
+        <Skeleton className="h-9 w-9 rounded-full" />
+        <div className="flex-1 space-y-1.5">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-48" />
+        </div>
+        <Skeleton className="h-5 w-12 rounded-full" />
+      </div>
     ))}
   </div>
 );
+
+interface SectionHeaderProps {
+  icon: React.ElementType;
+  label: string;
+  count: number;
+  colorClass: string;
+}
+
+function SectionHeader({ icon: Icon, label, count, colorClass }: SectionHeaderProps) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <div className={cn('w-1.5 h-1.5 rounded-full', colorClass)} />
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {label}
+      </span>
+      <span className={cn('text-xs font-bold', colorClass.replace('bg-', 'text-'))}>
+        {count}
+      </span>
+    </div>
+  );
+}
 
 interface YourDaySectionProps {
   className?: string;
@@ -70,7 +82,6 @@ export function YourDaySection({ className }: YourDaySectionProps) {
   } = useYourDay();
 
   const totalTasks = todayFollowUps.length + overdueFollowUps.length;
-  const greeting = getGreeting();
 
   if (loading) {
     return (
@@ -97,7 +108,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       transition={{ duration: 0.4 }}
       className={className}
     >
-      {/* Header — clean, no duplicate greeting */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold text-foreground">
@@ -119,240 +130,189 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* No data state */}
       {!hasAnyData && (
-        <Card className="border-dashed border-border/50 bg-muted/20">
-          <CardContent className="py-6 text-center">
-            <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-success/50" />
-            <h3 className="text-sm font-semibold text-foreground mb-0.5">Tudo em dia!</h3>
-            <p className="text-xs text-muted-foreground">
-              Nenhuma tarefa urgente ou follow-up pendente para hoje.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-dashed border-border/50 bg-muted/10 py-8 text-center">
+          <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/40" />
+          <h3 className="text-sm font-semibold text-foreground mb-0.5">Tudo em dia!</h3>
+          <p className="text-xs text-muted-foreground">
+            Nenhuma tarefa urgente ou follow-up pendente.
+          </p>
+        </div>
       )}
 
-      {/* Main Grid */}
+      {/* Unified list layout */}
       {hasAnyData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="space-y-5">
           {/* Overdue Follow-ups */}
           {overdueFollowUps.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive shadow-sm shadow-destructive/10 hover:shadow-md hover:shadow-destructive/15 hover:scale-[1.01] transition-all duration-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-destructive">
-                    <AlertCircle className="w-4 h-4" />
-                    Atrasados ({overdueFollowUps.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {overdueFollowUps.slice(0, 3).map((item, index) => {
-                    const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
-                    return (
-                      <Link
-                        key={item.interaction.id}
-                        to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 hover:translate-x-1 transition-all duration-200 group"
-                      >
-                        <OptimizedAvatar 
-                          src={item.contact?.avatar_url || undefined}
-                          alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
-                          size="sm"
-                          className="h-9 w-9 border border-destructive/20"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate group-hover:text-destructive transition-colors">
-                            {formatContactName(item.contact?.first_name, item.contact?.last_name)}
-                          </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Icon className="w-3 h-3" />
-                            {item.interaction.title}
-                          </p>
-                        </div>
-                        <Badge variant="destructive" className="text-xs shrink-0">
-                          {item.interaction.follow_up_date && 
-                            format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
-                        </Badge>
-                      </Link>
-                    );
-                  })}
-                  {overdueFollowUps.length > 3 && (
-                    <Link to="/calendario" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive">
-                        +{overdueFollowUps.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
+            <div>
+              <SectionHeader icon={AlertCircle} label="Atrasados" count={overdueFollowUps.length} colorClass="bg-destructive" />
+              <div className="space-y-1">
+                {overdueFollowUps.slice(0, 3).map((item) => {
+                  const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
+                  return (
+                    <Link
+                      key={item.interaction.id}
+                      to={`/contatos/${item.interaction.contact_id}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
+                    >
+                      <OptimizedAvatar 
+                        src={item.contact?.avatar_url || undefined}
+                        alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                        fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
+                        size="sm"
+                        className="h-8 w-8"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate text-foreground">
+                          {formatContactName(item.contact?.first_name, item.contact?.last_name)}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Icon className="w-3 h-3" />
+                          {item.interaction.title}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0">
+                        {item.interaction.follow_up_date && 
+                          format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
+                      </Badge>
                     </Link>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+                  );
+                })}
+                {overdueFollowUps.length > 3 && (
+                  <Link to="/calendario" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    +{overdueFollowUps.length - 3} mais <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Today's Follow-ups */}
           {todayFollowUps.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              <Card className="border-primary/30 bg-primary/5 h-full border-l-4 border-l-primary hover:shadow-md hover:shadow-primary/15 hover:scale-[1.01] transition-all duration-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-                    <Clock className="w-4 h-4" />
-                    Hoje ({todayFollowUps.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {todayFollowUps.slice(0, 3).map((item) => {
-                    const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
-                    return (
-                      <Link
-                        key={item.interaction.id}
-                        to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 hover:translate-x-1 transition-all duration-200 group"
-                      >
-                        <OptimizedAvatar 
-                          src={item.contact?.avatar_url || undefined}
-                          alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
-                          size="sm"
-                          className="h-9 w-9 border border-primary/20"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                            {formatContactName(item.contact?.first_name, item.contact?.last_name)}
-                          </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Icon className="w-3 h-3" />
-                            {item.interaction.title}
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {todayFollowUps.length > 3 && (
-                    <Link to="/calendario" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-primary hover:text-primary">
-                        +{todayFollowUps.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
+            <div>
+              <SectionHeader icon={Clock} label="Hoje" count={todayFollowUps.length} colorClass="bg-primary" />
+              <div className="space-y-1">
+                {todayFollowUps.slice(0, 3).map((item) => {
+                  const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
+                  return (
+                    <Link
+                      key={item.interaction.id}
+                      to={`/contatos/${item.interaction.contact_id}`}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
+                    >
+                      <OptimizedAvatar 
+                        src={item.contact?.avatar_url || undefined}
+                        alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                        fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
+                        size="sm"
+                        className="h-8 w-8"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate text-foreground">
+                          {formatContactName(item.contact?.first_name, item.contact?.last_name)}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Icon className="w-3 h-3" />
+                          {item.interaction.title}
+                        </p>
+                      </div>
                     </Link>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+                  );
+                })}
+                {todayFollowUps.length > 3 && (
+                  <Link to="/calendario" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    +{todayFollowUps.length - 3} mais <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Birthdays */}
           {upcomingBirthdays.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning hover:shadow-md hover:shadow-warning/15 hover:scale-[1.01] transition-all duration-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
-                    <Cake className="w-4 h-4" />
-                    Aniversários
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {upcomingBirthdays.slice(0, 3).map((item) => (
-                    <Link
-                      key={item.contact.id}
-                      to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
-                    >
-                      <OptimizedAvatar 
-                        src={item.contact.avatar_url || undefined}
-                        alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
-                        size="sm"
-                        className="h-9 w-9 border border-warning/20"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
-                          {formatContactName(item.contact.first_name, item.contact.last_name)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {toTitleCase(item.company?.name || '') || 'Sem empresa'}
-                        </p>
-                      </div>
-                      <Badge 
-                        variant={item.daysUntil === 0 ? 'default' : 'secondary'} 
-                        className={item.daysUntil === 0 ? 'bg-warning text-warning-foreground' : ''}
-                      >
-                        {item.daysUntil === 0 ? 'Hoje!' : `${item.daysUntil}d`}
-                      </Badge>
-                    </Link>
-                  ))}
-                  {upcomingBirthdays.length > 3 && (
-                    <Link to="/contatos" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-warning hover:text-warning">
-                        +{upcomingBirthdays.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
-                    </Link>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div>
+              <SectionHeader icon={Cake} label="Aniversários" count={upcomingBirthdays.length} colorClass="bg-warning" />
+              <div className="space-y-1">
+                {upcomingBirthdays.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.contact.id}
+                    to={`/contatos/${item.contact.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
+                  >
+                    <OptimizedAvatar 
+                      src={item.contact.avatar_url || undefined}
+                      alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                      fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
+                      size="sm"
+                      className="h-8 w-8"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-foreground">
+                        {formatContactName(item.contact.first_name, item.contact.last_name)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {toTitleCase(item.company?.name || '') || 'Sem empresa'}
+                      </p>
+                    </div>
+                    <span className={cn(
+                      'text-[10px] font-semibold px-2 py-0.5 rounded-full',
+                      item.daysUntil === 0 
+                        ? 'bg-warning/15 text-warning' 
+                        : 'bg-muted text-muted-foreground'
+                    )}>
+                      {item.daysUntil === 0 ? 'Hoje!' : `${item.daysUntil}d`}
+                    </span>
+                  </Link>
+                ))}
+                {upcomingBirthdays.length > 3 && (
+                  <Link to="/contatos" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    +{upcomingBirthdays.length - 3} mais <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Needs Attention */}
           {needsAttention.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25 }}
-            >
-              <Card className="border-warning/40 bg-warning/5 h-full border-l-4 border-l-warning shadow-sm shadow-warning/10 hover:shadow-md hover:shadow-warning/15 hover:scale-[1.01] transition-all duration-200">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
-                    <AlertTriangle className="w-4 h-4" />
-                    Precisam de Atenção
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {needsAttention.slice(0, 3).map((item) => (
-                    <Link
-                      key={item.contact.id}
-                      to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
-                    >
-                      <OptimizedAvatar 
-                        src={item.contact.avatar_url || undefined}
-                        alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
-                        size="sm"
-                        className="h-9 w-9 border border-warning/20"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
-                          {formatContactName(item.contact.first_name, item.contact.last_name)}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          {item.reason}
-                        </p>
-                      </div>
-                      <div className={`w-2 h-2 rounded-full ${
-                        item.priority === 'high' ? 'bg-destructive' :
-                        item.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground'
-                      }`} />
-                    </Link>
-                  ))}
-                  {needsAttention.length > 3 && (
-                    <Link to="/contatos" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-warning hover:text-warning">
-                        +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
-                    </Link>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+            <div>
+              <SectionHeader icon={AlertTriangle} label="Precisam de atenção" count={needsAttention.length} colorClass="bg-warning" />
+              <div className="space-y-1">
+                {needsAttention.slice(0, 3).map((item) => (
+                  <Link
+                    key={item.contact.id}
+                    to={`/contatos/${item.contact.id}`}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
+                  >
+                    <OptimizedAvatar 
+                      src={item.contact.avatar_url || undefined}
+                      alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                      fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
+                      size="sm"
+                      className="h-8 w-8"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-foreground">
+                        {formatContactName(item.contact.first_name, item.contact.last_name)}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {item.reason}
+                      </p>
+                    </div>
+                    <div className={cn(
+                      'w-1.5 h-1.5 rounded-full shrink-0',
+                      item.priority === 'high' ? 'bg-destructive' :
+                      item.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground/40'
+                    )} />
+                  </Link>
+                ))}
+                {needsAttention.length > 3 && (
+                  <Link to="/contatos" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3" />
+                  </Link>
+                )}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -365,28 +325,20 @@ export function YourDaySection({ className }: YourDaySectionProps) {
           transition={{ delay: 0.3 }}
           className="mt-4"
         >
-          <Link to="/insights">
-            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 hover:border-primary/40 transition-colors cursor-pointer group">
-              <CardContent className="py-3 px-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-foreground">
-                    {newInsights.length} novo{newInsights.length !== 1 ? 's' : ''} insight{newInsights.length !== 1 ? 's' : ''} da IA disponível
-                  </span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
-              </CardContent>
-            </Card>
+          <Link 
+            to="/insights"
+            className="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/5 hover:bg-primary/8 border border-primary/10 hover:border-primary/20 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                {newInsights.length} novo{newInsights.length !== 1 ? 's' : ''} insight{newInsights.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
           </Link>
         </motion.div>
       )}
     </motion.div>
   );
-}
-
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Bom dia!';
-  if (hour < 18) return 'Boa tarde!';
-  return 'Boa noite!';
 }
