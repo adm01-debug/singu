@@ -336,13 +336,13 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
             <p className="text-xs text-muted-foreground">Média Conexões</p>
           </motion.div>
           <motion.div 
-            className="p-3 rounded-lg bg-amber-500/10 text-center"
+            className="p-3 rounded-lg bg-warning/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.clusters} 
-              className="text-2xl font-bold text-amber-600" 
+              className="text-2xl font-bold text-warning" 
             />
             <p className="text-xs text-muted-foreground">Clusters</p>
           </motion.div>
