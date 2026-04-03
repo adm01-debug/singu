@@ -186,7 +186,7 @@ export function useAutomationRules() {
 
       toast.success('Automação atualizada!');
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setRules(previousRules);
       toast.error('Erro ao atualizar: ' + e.message);
       return false;
