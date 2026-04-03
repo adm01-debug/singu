@@ -77,9 +77,11 @@ export function toTitleCase(str: string): string {
  * - Empty / "Sem nome" → "Contato"
  */
 export function formatContactName(firstName?: string | null, lastName?: string | null): string {
-  const full = `${firstName || ''} ${lastName || ''}`.trim();
+  const fn = (firstName || '').trim();
+  const ln = (lastName || '').trim();
+  const full = `${fn} ${ln}`.trim();
   
-  if (!full || full === 'Sem nome') return 'Contato';
+  if (!full || /^sem\s+nome$/i.test(full)) return 'Contato';
   
   // WhatsApp + phone number
   if (/^whatsapp\s+\d{8,}/i.test(full)) {
@@ -92,7 +94,23 @@ export function formatContactName(firstName?: string | null, lastName?: string |
     return formatPhoneDisplay(full.replace(/\s/g, ''));
   }
   
-  // Email as name
+  // Email in firstName — extract readable name from local part
+  const emailInFirst = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fn);
+  if (emailInFirst) {
+    const local = fn.split('@')[0];
+    const extracted = local
+      .replace(/[._-]/g, ' ')
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+    // If there's a real last name that's not part of the email, append it
+    if (ln && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ln)) {
+      return `${extracted} ${ln.charAt(0).toUpperCase() + ln.slice(1)}`;
+    }
+    return extracted;
+  }
+  
+  // Full string is an email (no separate last name)
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(full)) {
     const local = full.split('@')[0];
     return local
