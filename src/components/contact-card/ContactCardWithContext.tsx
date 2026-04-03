@@ -119,7 +119,7 @@ export function ContactCardWithContext({
           onDelete={() => onDelete(contact)}
         >
           <Card className={cn(
-            "h-full card-hover group cursor-pointer overflow-hidden relative",
+            "h-full card-hover group cursor-pointer overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
             isHighlighted && "ring-2 ring-primary",
             isSelected && "bg-primary/5"
           )}>
