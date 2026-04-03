@@ -210,7 +210,9 @@ export function ContactCardWithContext({
                         {contact.first_name} {contact.last_name}
                       </h3>
                     )}
-                    <p className="text-sm text-muted-foreground">{contact.role_title || 'Sem cargo'}</p>
+                    {contact.role_title && (
+                      <p className="text-sm text-muted-foreground">{contact.role_title}</p>
+                    )}
                   </div>
 
                   {/* Desktop: always show details / Mobile: progressive disclosure */}
