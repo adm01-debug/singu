@@ -53,12 +53,13 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
     if (!user) return;
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('interactions').insert({
+      const insertData = {
         ...data,
         contact_id: contact.id,
         company_id: companyId,
         user_id: user.id,
-      });
+      } as unknown as import('@/integrations/supabase/types').Database['public']['Tables']['interactions']['Insert'];
+      const { error } = await supabase.from('interactions').insert(insertData);
       if (error) throw error;
       toast.success('Interação registrada');
       setShowForm(false);
