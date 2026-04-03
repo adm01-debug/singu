@@ -81,7 +81,7 @@ export function OptimizedAvatar({
       img.onload = null;
       img.onerror = null;
     };
-  }, [isInView, src, hasError]);
+  }, [isInView, effectiveSrc, hasError]);
 
   const getFallbackInitials = (text: string) => {
     return text
