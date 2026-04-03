@@ -353,7 +353,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
         {/* Graph container */}
         <div 
           ref={containerRef} 
-          className="w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-b-lg overflow-hidden"
+          className="w-full bg-gradient-to-br from-muted/50 to-muted rounded-b-lg overflow-hidden"
           style={{ height: `${height}px` }}
         >
           <ForceGraph2D
