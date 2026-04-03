@@ -256,9 +256,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const AUTH_FALLBACK: AuthContextType = {
+  user: null,
+  session: null,
+  loading: true,
+  signUp: async () => ({ error: new Error('AuthProvider not mounted') as any }),
+  signIn: async () => ({ error: new Error('AuthProvider not mounted') as any }),
+  signOut: async () => {},
+  refreshSession: async () => {},
+};
+
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
+    // During HMR the provider may momentarily unmount; return a safe fallback
+    // instead of throwing, which would crash the entire tree.
+    if (import.meta.env.DEV) {
+      return AUTH_FALLBACK;
+    }
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
