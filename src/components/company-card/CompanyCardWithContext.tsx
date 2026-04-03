@@ -17,7 +17,8 @@ import {
   Landmark,
   Cpu,
   HeartPulse,
-  GraduationCap
+  GraduationCap,
+  Tag
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
+import { toTitleCase } from '@/lib/formatters';
 
 const industryIcons: Record<string, React.ElementType> = {
   'Tecnologia': Cpu,
