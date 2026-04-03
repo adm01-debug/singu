@@ -16,7 +16,11 @@ interface RoleBadgeProps {
 }
 
 export function RoleBadge({ role, className }: RoleBadgeProps) {
+  // Don't show badge for the default "contact" role — it's redundant
+  if (role === 'contact') return null;
+  
   const config = roleConfig[role];
+  if (!config) return null;
   
   return (
     <span
