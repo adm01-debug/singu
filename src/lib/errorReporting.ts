@@ -2,6 +2,7 @@
  * Sistema de Monitoramento de Erros em Produção
  * Captura, agrega e reporta erros para análise
  */
+import { logger } from '@/lib/logger';
 
 interface ErrorReport {
   id: string;
