@@ -171,7 +171,7 @@ export function CompanyCardWithContext({
                     healthColorMap[company.financial_health || 'unknown'],
                     company.logo_url && 'hidden'
                   )}>
-                    {(displayName || 'E')[0]}
+                    {getAvatarInitial(company.name)}
                   </div>
                   <div>
                     {isInlineEditing ? (

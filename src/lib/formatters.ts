@@ -28,7 +28,7 @@ export function toTitleCase(str: string): string {
   // Only transform if there are problematic patterns
   if (!hasLongAllCapsWord && !isAllLower) return input;
 
-  return str
+  return input
     .toLowerCase()
     .split(/(\s+|-+)/)
     .map((word, index) => {
