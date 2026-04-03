@@ -30,7 +30,7 @@ import { ptBR } from 'date-fns/locale';
 import type { Contact } from '@/hooks/useContacts';
 import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
 import { cn } from '@/lib/utils';
-import { formatContactName } from '@/lib/formatters';
+import { formatContactName, toTitleCase } from '@/lib/formatters';
 
 interface ContactCardWithContextProps {
   contact: Contact;
