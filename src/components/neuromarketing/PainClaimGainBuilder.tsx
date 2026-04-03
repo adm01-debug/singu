@@ -191,7 +191,7 @@ O que faz mais sentido para você?"
       </CardHeader>
 
       <CardContent>
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'pain' | 'claim' | 'gain')}>
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="pain" className="flex items-center gap-1">
               <AlertCircle className="h-4 w-4" />
