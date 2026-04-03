@@ -123,13 +123,13 @@ const porteRfOptions = [
 ];
 
 // Helper to safely read any company field (handles external data mapping)
-function getCompanyField(company: any, field: string, fallback = '') {
+function getCompanyField(company: Record<string, unknown> | null | undefined, field: string, fallback = '') {
   if (!company) return fallback;
-  return company[field] ?? fallback;
+  return (company[field] as string) ?? fallback;
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
-  const c = company as any; // external data may have extra fields
+  const c = company as Record<string, unknown> | null; // external data may have extra fields
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
