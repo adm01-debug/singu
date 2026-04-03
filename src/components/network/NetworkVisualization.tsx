@@ -502,8 +502,8 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                       <div 
                         className={cn(
                           'h-full rounded-full transition-all',
-                          selectedNode.relationshipScore >= 70 ? 'bg-emerald-500' :
-                          selectedNode.relationshipScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                          selectedNode.relationshipScore >= 70 ? 'bg-success' :
+                          selectedNode.relationshipScore >= 40 ? 'bg-warning' : 'bg-destructive'
                         )}
                         style={{ width: `${selectedNode.relationshipScore}%` }}
                       />
