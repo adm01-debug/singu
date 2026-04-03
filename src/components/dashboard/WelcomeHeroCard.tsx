@@ -25,9 +25,9 @@ export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScor
   }).format(new Date());
 
   const stats = [
-    { label: 'Contatos', value: totalContacts, icon: Users, color: 'text-primary' },
-    { label: 'Interações', value: weeklyInteractions, icon: Activity, color: 'text-accent' },
-    { label: 'Score', value: `${averageScore}%`, icon: TrendingUp, color: 'text-success' },
+    { label: 'Contatos', value: totalContacts, icon: Users, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { label: 'Interações', value: weeklyInteractions, icon: Activity, color: 'text-accent', bgColor: 'bg-accent/10' },
+    { label: 'Score', value: `${averageScore}%`, icon: TrendingUp, color: 'text-success', bgColor: 'bg-success/10' },
   ];
 
   return (
