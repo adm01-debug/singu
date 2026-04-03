@@ -98,11 +98,15 @@ export function CompanyCardWithContext({
     }
   };
 
+  const displayName = toTitleCase(company.name);
+  const hasSegment = !!company.industry;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
+      whileHover={{ scale: 1.01, y: -2 }}
       {...hoverProps}
     >
       <QuickActionsMenu
@@ -115,7 +119,8 @@ export function CompanyCardWithContext({
         onDelete={() => onDelete(company)}
       >
         <Card className={cn(
-          "h-full card-hover group cursor-pointer",
+          "h-full card-hover group cursor-pointer transition-all duration-200",
+          "hover:shadow-medium hover:border-primary/20",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
@@ -135,16 +140,16 @@ export function CompanyCardWithContext({
                   {company.logo_url ? (
                     <img 
                       src={company.logo_url} 
-                      alt={company.name} 
-                      className="w-12 h-12 rounded-xl object-cover shadow-glow"
+                      alt={displayName} 
+                      className="w-12 h-12 rounded-xl object-cover shadow-soft"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
                       }}
                     />
                   ) : null}
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-glow ${company.logo_url ? 'hidden' : ''}`}>
-                    {(company.name || 'E')[0]}
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft ${company.logo_url ? 'hidden' : ''}`}>
+                    {(displayName || 'E')[0]}
                   </div>
                   <div>
                     {isInlineEditing ? (
@@ -155,19 +160,26 @@ export function CompanyCardWithContext({
                       />
                     ) : (
                       <h3 
-                        className="font-semibold text-foreground group-hover:text-primary transition-colors"
+                        className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2"
                         onDoubleClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
                           setIsInlineEditing(true);
                         }}
                       >
-                        {company.name}
+                        {displayName}
                       </h3>
                     )}
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <IndustryIcon className="w-3.5 h-3.5" />
-                      <span>{company.industry || 'Sem segmento'}</span>
+                      {hasSegment ? (
+                        <span>{company.industry}</span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-muted-foreground/60 italic text-xs">
+                          <Tag className="w-3 h-3" />
+                          Definir segmento
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
