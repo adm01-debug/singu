@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
+import type { Json } from '@/integrations/supabase/types';
 
 // ===================== TYPES =====================
 
@@ -143,9 +144,9 @@ export function useAutomationRules() {
           name: data.name,
           description: data.description,
           trigger_type: data.trigger_type,
-          trigger_config: data.trigger_config as any,
-          conditions: data.conditions as any,
-          actions: data.actions as any,
+          trigger_config: data.trigger_config as Json,
+          conditions: data.conditions as unknown as Json,
+          actions: data.actions as unknown as Json,
         })
         .select()
         .single();
@@ -153,8 +154,9 @@ export function useAutomationRules() {
       setRules(prev => [created as unknown as AutomationRule, ...prev]);
       toast.success('Automação criada com sucesso!');
       return created;
-    } catch (e: any) {
-      toast.error('Erro ao criar automação: ' + e.message);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Erro desconhecido';
+      toast.error('Erro ao criar automação: ' + message);
       return null;
     }
   }, [user]);
@@ -162,7 +164,7 @@ export function useAutomationRules() {
   const updateRule = useCallback(async (id: string, data: Partial<CreateRuleData> & { is_active?: boolean }) => {
     if (!user) return false;
 
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.trigger_type !== undefined) updateData.trigger_type = data.trigger_type;
@@ -185,9 +187,9 @@ export function useAutomationRules() {
 
       toast.success('Automação atualizada!');
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setRules(previousRules);
-      toast.error('Erro ao atualizar: ' + e.message);
+      toast.error('Erro ao atualizar: ' + (e instanceof Error ? e.message : 'Erro desconhecido'));
       return false;
     }
   }, [user, rules]);
@@ -209,9 +211,9 @@ export function useAutomationRules() {
 
       toast.success('Automação removida.');
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setRules(previousRules);
-      toast.error('Erro ao remover: ' + e.message);
+      toast.error('Erro ao remover: ' + (e instanceof Error ? e.message : 'Erro desconhecido'));
       return false;
     }
   }, [user, rules]);

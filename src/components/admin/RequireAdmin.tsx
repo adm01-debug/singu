@@ -21,11 +21,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     queryFn: async () => {
       if (!user) return false;
       const { data, error } = await supabase
-        .from("user_roles" as any)
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+        .rpc('has_role', { _user_id: user.id, _role: 'admin' });
       if (error) {
         if (import.meta.env.DEV) console.warn("Role check error:", error.message);
         return false;
