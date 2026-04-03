@@ -283,7 +283,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
-                          {item.contact.first_name} {item.contact.last_name}
+                          {formatContactName(item.contact.first_name, item.contact.last_name)}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {item.company?.name || 'Sem empresa'}
