@@ -67,6 +67,47 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
+const healthScoreConfig: Record<string, { color: string; label: string; percent: number }> = {
+  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
+  good:      { color: 'text-success', label: 'Boa', percent: 85 },
+  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
+  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
+  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
+  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
+  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
+  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
+};
+
+function HealthScoreRing({ health }: { health: string | null }) {
+  const config = healthScoreConfig[health || ''];
+  if (!config) {
+    return (
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Users className="w-4 h-4" />
+        <span className="text-xs">Sem dados</span>
+      </div>
+    );
+  }
+  const size = 28;
+  const stroke = 3;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (config.percent / 100) * circumference;
+
+  return (
+    <div className={cn('flex items-center gap-1.5', config.color)}>
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
+        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
+          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          className="transition-all duration-700"
+        />
+      </svg>
+      <span className="text-xs font-medium">{config.label}</span>
+    </div>
+  );
+}
+
 interface CompanyCardWithContextProps {
   company: Company;
   index: number;
