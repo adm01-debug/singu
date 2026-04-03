@@ -262,7 +262,7 @@ const Notificacoes = () => {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     {isSubscribed ? (
-                      <Bell className="w-5 h-5 text-green-500" />
+                      <Bell className="w-5 h-5 text-success" />
                     ) : (
                       <BellOff className="w-5 h-5 text-muted-foreground" />
                     )}
