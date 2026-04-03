@@ -181,10 +181,7 @@ export function CompanyCardWithContext({
 
   const displayName = toTitleCase(company.name);
   const hasSegment = !!company.industry;
-  // Derive a simple 0-10 score from relationship_score (0-100) or fallback
-  const score10 = typeof (company as Record<string, unknown>).relationship_score === 'number'
-    ? Math.round(((company as Record<string, unknown>).relationship_score as number) / 10)
-    : null;
+  const healthConfig = healthBadgeConfig[company.financial_health || ''];
   const healthConfig = healthBadgeConfig[company.financial_health || ''];
 
   return (
