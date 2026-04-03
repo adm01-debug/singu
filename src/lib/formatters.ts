@@ -13,6 +13,9 @@ const UPPERCASE_WORDS = new Set([
   'PAC', 'SICOOB', 'SICREDI', 'CRESOL', 'UNICRED', 'CNPJ', 'CPF', 'LTDA', 'SA', 'ME', 'EPP',
 ]);
 
+/** Normalize to ASCII for comparison (strips accents) */
+const normalizeForCompare = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 export function toTitleCase(str: string): string {
   if (!str) return str;
   
