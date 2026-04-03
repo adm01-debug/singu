@@ -43,7 +43,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   const resolvedBackTo = backTo || PARENT_ROUTES[location.pathname] || '/';
 
   return (
-    <header ref={ref} className="bg-card/80 backdrop-blur-sm border-b border-border/50 px-4 md:px-6 py-2.5">
+    <header ref={ref} className="bg-card border-b border-border/50 px-4 md:px-6 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {showBack && (
