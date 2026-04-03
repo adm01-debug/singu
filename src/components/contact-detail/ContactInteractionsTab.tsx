@@ -137,7 +137,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                             interaction.initiated_by === 'us' ? (
                               <ArrowUpRight className="h-3 w-3 text-info flex-shrink-0" />
                             ) : (
-                              <ArrowDownLeft className="h-3 w-3 text-green-500 flex-shrink-0" />
+                              <ArrowDownLeft className="h-3 w-3 text-success flex-shrink-0" />
                             )
                           )}
                         </div>
