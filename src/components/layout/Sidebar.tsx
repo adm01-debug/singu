@@ -20,7 +20,8 @@ import {
   Keyboard,
   BarChart3,
   Share2,
-  Workflow
+  Workflow,
+  MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
