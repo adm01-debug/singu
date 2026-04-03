@@ -90,7 +90,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
                 description: `Perfil: ${discResult.analysis?.blendProfile || discResult.analysis?.primaryProfile}`,
               });
             }
-          }).catch(console.error);
+          }).catch(err => logger.error('DISC analysis error:', err));
         }
       }
 
