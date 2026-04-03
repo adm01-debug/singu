@@ -273,7 +273,7 @@ const Notificacoes = () => {
                   </CardDescription>
                 </div>
                 {isSubscribed && (
-                  <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                  <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                     Ativo
                   </Badge>
                 )}
