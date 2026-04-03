@@ -42,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
     
     // Log to console in development
     if (import.meta.env.DEV) {
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
+      logger.error('ErrorBoundary caught an error:', error, errorInfo);
     }
   }
 
