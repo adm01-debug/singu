@@ -62,7 +62,7 @@ export interface WeeklyReportData {
   created_at: string;
 }
 
-const defaultSettings: Omit<WeeklyReportSettings, 'id' | 'user_id' | 'last_sent_at'> = {
+const DEFAULT_SETTINGS: Omit<WeeklyReportSettings, 'id' | 'user_id' | 'last_sent_at'> = {
   enabled: true,
   send_day: 'monday',
   send_time: '09:00',
@@ -75,23 +75,32 @@ const defaultSettings: Omit<WeeklyReportSettings, 'id' | 'user_id' | 'last_sent_
   include_performance_metrics: true
 };
 
+export const DAY_OPTIONS = [
+  { value: 'monday', label: 'Segunda-feira' },
+  { value: 'tuesday', label: 'Terça-feira' },
+  { value: 'wednesday', label: 'Quarta-feira' },
+  { value: 'thursday', label: 'Quinta-feira' },
+  { value: 'friday', label: 'Sexta-feira' },
+  { value: 'saturday', label: 'Sábado' },
+  { value: 'sunday', label: 'Domingo' }
+] as const;
+
 export function useWeeklyReport() {
   const { user } = useAuth();
+  const userId = user?.id;
   const [settings, setSettings] = useState<WeeklyReportSettings | null>(null);
   const [reports, setReports] = useState<WeeklyReportData[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
   const fetchSettings = useCallback(async () => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
       const { data, error } = await supabase
         .from('weekly_report_settings')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
-
       if (error) throw error;
       setSettings(data as WeeklyReportSettings | null);
     } catch (error) {
@@ -99,25 +108,23 @@ export function useWeeklyReport() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
 
   const fetchReports = useCallback(async () => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
       const { data, error } = await supabase
         .from('weekly_reports')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(10);
-
       if (error) throw error;
       setReports((data || []) as unknown as WeeklyReportData[]);
     } catch (error) {
       logger.error('Error fetching weekly reports:', error);
     }
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     fetchSettings();
@@ -125,54 +132,38 @@ export function useWeeklyReport() {
   }, [fetchSettings, fetchReports]);
 
   const saveSettings = useCallback(async (newSettings: Partial<WeeklyReportSettings>) => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
-      const settingsToSave = {
-        ...defaultSettings,
-        ...settings,
-        ...newSettings,
-        user_id: user.id
-      };
-
+      const toSave = { ...DEFAULT_SETTINGS, ...settings, ...newSettings, user_id: userId };
       const { data, error } = await supabase
         .from('weekly_report_settings')
-        .upsert(settingsToSave, { onConflict: 'user_id' })
+        .upsert(toSave, { onConflict: 'user_id' })
         .select()
         .single();
-
       if (error) throw error;
-
       setSettings(data as WeeklyReportSettings);
       toast.success('Configurações salvas com sucesso');
     } catch (error) {
       logger.error('Error saving settings:', error);
       toast.error('Erro ao salvar configurações');
     }
-  }, [user, settings]);
+  }, [userId, settings]);
 
   const generateReport = useCallback(async () => {
-    if (!user) return null;
-
+    if (!userId) return null;
     setGenerating(true);
     try {
       toast.info('Gerando relatório semanal...');
-      
       const { data, error } = await supabase.functions.invoke('weekly-digest', {
-        body: { userId: user.id, generateOnly: true }
+        body: { userId, generateOnly: true }
       });
-      
       if (error) throw error;
-
-      // Find the user's digest in the response
-      const userDigest = data.digests?.find((d: { userId: string }) => d.userId === user.id);
-      
+      const userDigest = data.digests?.find((d: { userId: string }) => d.userId === userId);
       if (userDigest) {
         toast.success('Relatório gerado com sucesso!');
         fetchReports();
         return userDigest;
       }
-
       toast.info('Relatório gerado - verifique seu email se configurado');
       return data;
     } catch (error) {
@@ -182,43 +173,25 @@ export function useWeeklyReport() {
     } finally {
       setGenerating(false);
     }
-  }, [user, fetchReports]);
+  }, [userId, fetchReports]);
 
   const sendTestEmail = useCallback(async () => {
-    if (!user || !settings?.email_address) {
+    if (!userId || !settings?.email_address) {
       toast.error('Configure um email primeiro');
       return;
     }
-
     try {
       toast.info('Enviando email de teste...');
-      
       const { error } = await supabase.functions.invoke('weekly-digest', {
-        body: { 
-          userId: user.id, 
-          sendEmail: true,
-          testMode: true 
-        }
+        body: { userId, sendEmail: true, testMode: true }
       });
-      
       if (error) throw error;
-
       toast.success('Email de teste enviado!');
     } catch (error) {
       logger.error('Error sending test email:', error);
       toast.error('Erro ao enviar email. Verifique se o Resend está configurado.');
     }
-  }, [user, settings]);
-
-  const dayOptions = [
-    { value: 'monday', label: 'Segunda-feira' },
-    { value: 'tuesday', label: 'Terça-feira' },
-    { value: 'wednesday', label: 'Quarta-feira' },
-    { value: 'thursday', label: 'Quinta-feira' },
-    { value: 'friday', label: 'Sexta-feira' },
-    { value: 'saturday', label: 'Sábado' },
-    { value: 'sunday', label: 'Domingo' }
-  ];
+  }, [userId, settings]);
 
   return {
     settings,
@@ -228,7 +201,7 @@ export function useWeeklyReport() {
     saveSettings,
     generateReport,
     sendTestEmail,
-    dayOptions,
+    dayOptions: DAY_OPTIONS,
     refreshSettings: fetchSettings,
     refreshReports: fetchReports
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -41,7 +41,7 @@ export interface HealthAlertSettings {
   email_address: string | null;
 }
 
-const defaultSettings: Omit<HealthAlertSettings, 'id' | 'user_id'> = {
+const DEFAULT_SETTINGS: Omit<HealthAlertSettings, 'id' | 'user_id'> = {
   email_notifications: false,
   push_notifications: true,
   critical_threshold: 30,
@@ -52,142 +52,128 @@ const defaultSettings: Omit<HealthAlertSettings, 'id' | 'user_id'> = {
   email_address: null
 };
 
-export function useHealthAlerts() {
-  const { user } = useAuth();
+function useHealthAlertsFetch(userId?: string) {
   const [alerts, setAlerts] = useState<HealthAlert[]>([]);
-  const [settings, setSettings] = useState<HealthAlertSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [settingsLoading, setSettingsLoading] = useState(true);
 
   const fetchAlerts = useCallback(async () => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
       const { data, error } = await supabase
         .from('health_alerts')
-        .select(`
-          *,
-          contact:contacts(first_name, last_name)
-        `)
-        .eq('user_id', user.id)
+        .select('*, contact:contacts(first_name, last_name)')
+        .eq('user_id', userId)
         .eq('dismissed', false)
         .order('created_at', { ascending: false })
         .limit(20);
-
       if (error) throw error;
-      
       setAlerts((data || []) as unknown as HealthAlert[]);
     } catch (error) {
       logger.error('Error fetching health alerts:', error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
+
+  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
+
+  return { alerts, setAlerts, loading, fetchAlerts };
+}
+
+function useHealthAlertSettingsFetch(userId?: string) {
+  const [settings, setSettings] = useState<HealthAlertSettings | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
       const { data, error } = await supabase
         .from('health_alert_settings')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .maybeSingle();
-
       if (error) throw error;
-      
       setSettings(data as HealthAlertSettings | null);
     } catch (error) {
       logger.error('Error fetching health alert settings:', error);
     } finally {
-      setSettingsLoading(false);
+      setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
 
-  useEffect(() => {
-    fetchAlerts();
-    fetchSettings();
-  }, [fetchAlerts, fetchSettings]);
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+
+  return { settings, setSettings, loading, fetchSettings };
+}
+
+export function useHealthAlerts() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const { alerts, setAlerts, loading, fetchAlerts } = useHealthAlertsFetch(userId);
+  const { settings, setSettings, loading: settingsLoading, fetchSettings } = useHealthAlertSettingsFetch(userId);
 
   const dismissAlert = useCallback(async (alertId: string) => {
-    if (!user) return;
-
-    const previousAlerts = alerts;
+    if (!userId) return;
+    const previous = alerts;
     setAlerts(prev => prev.filter(a => a.id !== alertId));
-
     try {
       const { error } = await supabase
         .from('health_alerts')
         .update({ dismissed: true })
         .eq('id', alertId)
-        .eq('user_id', user.id);
-
+        .eq('user_id', userId);
       if (error) throw error;
       toast.success('Alerta dispensado');
     } catch (error) {
-      setAlerts(previousAlerts);
+      setAlerts(previous);
       logger.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
-  }, [user, alerts]);
+  }, [userId, alerts, setAlerts]);
 
   const dismissAllAlerts = useCallback(async () => {
-    if (!user) return;
-
-    const previousAlerts = alerts;
+    if (!userId) return;
+    const previous = alerts;
     setAlerts([]);
-
     try {
       const { error } = await supabase
         .from('health_alerts')
         .update({ dismissed: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('dismissed', false);
-
       if (error) throw error;
       toast.success('Todos os alertas foram dispensados');
     } catch (error) {
-      setAlerts(previousAlerts);
+      setAlerts(previous);
       logger.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
-  }, [user, alerts]);
+  }, [userId, alerts, setAlerts]);
 
   const saveSettings = useCallback(async (newSettings: Partial<HealthAlertSettings>) => {
-    if (!user) return;
-
+    if (!userId) return;
     try {
-      const settingsToSave = {
-        ...defaultSettings,
-        ...settings,
-        ...newSettings,
-        user_id: user.id
-      };
-
+      const toSave = { ...DEFAULT_SETTINGS, ...settings, ...newSettings, user_id: userId };
       const { data, error } = await supabase
         .from('health_alert_settings')
-        .upsert(settingsToSave, { onConflict: 'user_id' })
+        .upsert(toSave, { onConflict: 'user_id' })
         .select()
         .single();
-
       if (error) throw error;
-
       setSettings(data as HealthAlertSettings);
       toast.success('Configurações salvas');
     } catch (error) {
       logger.error('Error saving settings:', error);
       toast.error('Erro ao salvar configurações');
     }
-  }, [user, settings]);
+  }, [userId, settings, setSettings]);
 
   const checkHealthNow = useCallback(async () => {
     try {
       toast.info('Verificando saúde dos clientes...');
-      
       const { data, error } = await supabase.functions.invoke('check-health-alerts');
-      
       if (error) throw error;
-
       if (data.alertsCreated > 0) {
         toast.success(`${data.alertsCreated} novo(s) alerta(s) criado(s)!`);
         fetchAlerts();
@@ -200,8 +186,8 @@ export function useHealthAlerts() {
     }
   }, [fetchAlerts]);
 
-  const criticalAlerts = alerts.filter(a => a.alert_type === 'critical');
-  const warningAlerts = alerts.filter(a => a.alert_type === 'warning');
+  const criticalAlerts = useMemo(() => alerts.filter(a => a.alert_type === 'critical'), [alerts]);
+  const warningAlerts = useMemo(() => alerts.filter(a => a.alert_type === 'warning'), [alerts]);
 
   return {
     alerts,
