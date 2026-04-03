@@ -179,7 +179,7 @@ export function CompanyCardWithContext({
       >
         <Card className={cn(
           "h-full card-hover group cursor-pointer transition-all duration-200",
-          "hover:shadow-medium hover:border-primary/20",
+          "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
