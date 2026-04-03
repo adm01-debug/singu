@@ -340,9 +340,15 @@ export function CompanyCardWithContext({
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <HealthRing health={company.financial_health} status={company.status} />
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
-                </span>
+                {(() => {
+                  const daysSince = Math.floor((Date.now() - new Date(company.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                  const urgencyColor = daysSince <= 3 ? 'text-success' : daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
+                  return (
+                    <span className={`text-xs ${urgencyColor}`}>
+                      {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
+                    </span>
+                  );
+                })()}
               </div>
             </Link>
           </CardContent>
