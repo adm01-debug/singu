@@ -39,6 +39,14 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase } from '@/lib/formatters';
 
+const healthColorMap: Record<string, string> = {
+  excellent: 'from-success to-accent',
+  good: 'from-success/80 to-success',
+  average: 'from-warning to-warning/80',
+  poor: 'from-destructive to-destructive/80',
+  unknown: 'from-primary to-primary-glow',
+};
+
 const industryIcons: Record<string, React.ElementType> = {
   'Tecnologia': Cpu,
   'Saúde': HeartPulse,
