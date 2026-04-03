@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
+import { logger } from "@/lib/logger";
 
 interface RequireAdminProps {
   children: ReactNode;

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { Metric } from 'web-vitals';
+import { logger } from '@/lib/logger';
 
 /**
  * Hook para monitorar Core Web Vitals em produção.

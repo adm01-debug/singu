@@ -2,6 +2,7 @@
  * Utilitários para medição de performance com Performance API.
  * Usa User Timing API (mark/measure) para métricas customizadas.
  */
+import { logger } from '@/lib/logger';
 
 const PREFIX = 'singu';
 
