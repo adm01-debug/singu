@@ -16,9 +16,13 @@ const UPPERCASE_WORDS = new Set([
 export function toTitleCase(str: string): string {
   if (!str) return str;
   
-  // If the string is not all caps and not all lower, assume it's already formatted
-  const isAllCaps = str === str.toUpperCase() && /[A-Z]/.test(str);
-  if (!isAllCaps) return str;
+  // Skip if string already looks well-formatted (has mix of upper and lower with no ALL CAPS words > 3 chars)
+  const words = str.split(/\s+/);
+  const hasLongAllCapsWord = words.some(w => w.length > 3 && w === w.toUpperCase() && /[A-Z]/.test(w));
+  const isAllLower = str === str.toLowerCase();
+  
+  // Only transform if there are problematic patterns (ALL CAPS words or all lowercase)
+  if (!hasLongAllCapsWord && !isAllLower) return str;
 
   return str
     .toLowerCase()
