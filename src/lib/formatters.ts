@@ -16,13 +16,17 @@ const UPPERCASE_WORDS = new Set([
 export function toTitleCase(str: string): string {
   if (!str) return str;
   
-  // Skip if string already looks well-formatted (has mix of upper and lower with no ALL CAPS words > 3 chars)
-  const words = str.split(/\s+/);
-  const hasLongAllCapsWord = words.some(w => w.length >= 3 && w === w.toUpperCase() && /[A-Z]/.test(w) && !UPPERCASE_WORDS.has(w));
-  const isAllLower = str === str.toLowerCase();
+  // Strip leading numeric prefix like "05 - " for cleaner display
+  const stripped = str.replace(/^\d+\s*[-–—]\s*/, '');
+  const input = stripped || str;
   
-  // Only transform if there are problematic patterns (ALL CAPS words or all lowercase)
-  if (!hasLongAllCapsWord && !isAllLower) return str;
+  // Skip if string already looks well-formatted
+  const words = input.split(/\s+/);
+  const hasLongAllCapsWord = words.some(w => w.length >= 3 && w === w.toUpperCase() && /[A-Z]/.test(w) && !UPPERCASE_WORDS.has(w));
+  const isAllLower = input === input.toLowerCase();
+  
+  // Only transform if there are problematic patterns
+  if (!hasLongAllCapsWord && !isAllLower) return input;
 
   return str
     .toLowerCase()
