@@ -314,13 +314,13 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
             <p className="text-xs text-muted-foreground">Nós</p>
           </motion.div>
           <motion.div 
-            className="p-3 rounded-lg bg-purple-500/10 text-center"
+            className="p-3 rounded-lg bg-primary/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.totalLinks} 
-              className="text-2xl font-bold text-purple-600" 
+              className="text-2xl font-bold text-primary" 
             />
             <p className="text-xs text-muted-foreground">Conexões</p>
           </motion.div>
