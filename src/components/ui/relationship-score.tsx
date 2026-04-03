@@ -1,6 +1,11 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ScoreMilestone } from './score-milestone';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface RelationshipScoreProps {
   score: number;
@@ -9,6 +14,14 @@ interface RelationshipScoreProps {
   showLabel?: boolean;
   showMilestone?: boolean;
   className?: string;
+}
+
+function getScoreLabel(score: number): string {
+  if (score >= 80) return 'Excelente';
+  if (score >= 60) return 'Bom';
+  if (score >= 40) return 'Regular';
+  if (score >= 20) return 'Baixo';
+  return 'Crítico';
 }
 
 export function RelationshipScore({ score, previousScore, size = 'md', showLabel, showMilestone = false, className }: RelationshipScoreProps) {
@@ -47,17 +60,29 @@ export function RelationshipScore({ score, previousScore, size = 'md', showLabel
 
   const sizes = sizeClasses[size];
 
+  const scoreCircle = (
+    <div
+      className={cn(
+        'rounded-full flex items-center justify-center border-2 border-current',
+        sizes.container,
+        getColor(score)
+      )}
+    >
+      <span className={cn('font-bold', sizes.text)}>{score}</span>
+    </div>
+  );
+
   return (
     <div className={cn('flex flex-col items-center gap-1', className)} role="meter" aria-valuenow={score} aria-valuemin={0} aria-valuemax={100} aria-label={`Score de relacionamento: ${score}`}>
-      <div
-        className={cn(
-          'rounded-full flex items-center justify-center border-2 border-current',
-          sizes.container,
-          getColor(score)
-        )}
-      >
-        <span className={cn('font-bold', sizes.text)}>{score}</span>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {scoreCircle}
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          <p className="font-medium">Score: {score}/100 — {getScoreLabel(score)}</p>
+          <p className="text-muted-foreground">Nível de relacionamento</p>
+        </TooltipContent>
+      </Tooltip>
       {showLabel && (
         <div className="w-full">
           <div className={cn('w-full bg-muted rounded-full overflow-hidden', sizes.bar)}>
