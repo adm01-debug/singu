@@ -464,7 +464,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                     fallback={selectedNode.name.substring(0, 2).toUpperCase()}
                     size="md"
                     className={cn(
-                      selectedNode.type === 'company' ? 'ring-2 ring-purple-500/50' : 'ring-2 ring-blue-500/50'
+                      selectedNode.type === 'company' ? 'ring-2 ring-primary/50' : 'ring-2 ring-info/50'
                     )}
                   />
                   <div>
