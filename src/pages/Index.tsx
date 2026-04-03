@@ -329,7 +329,12 @@ const Dashboard = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {stats.map((stat, index) => (
-            <StatCard key={stat.title} {...stat} delay={prefersReducedMotion ? 0 : index} />
+            <StatCard
+              key={stat.title}
+              {...stat}
+              delay={prefersReducedMotion ? 0 : index}
+              variant="interactive"
+            />
           ))}
         </div>
 
