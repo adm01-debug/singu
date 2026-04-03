@@ -74,8 +74,8 @@ interface CustomTheme {
 function getDefaultTheme(): CustomTheme {
   return {
     presetId: 'default',
-    primary: '221 83% 53%',
-    accent: '160 84% 39%',
+    primary: '234 89% 60%',
+    accent: '168 76% 42%',
     saturation: 100,
     brightness: 100,
   };
