@@ -261,13 +261,7 @@ export function CompanyCardWithContext({
                       {hasSegment ? (
                         <span>{company.industry}</span>
                       ) : (
-                        <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(company); }}
-                          className="flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-medium transition-colors underline underline-offset-2 decoration-primary/30 hover:decoration-primary/60"
-                        >
-                          <Tag className="w-3 h-3" />
-                          Definir segmento
-                        </button>
+                        <span className="text-xs text-muted-foreground/50 italic">Sem segmento</span>
                       )}
                     </div>
                   </div>
