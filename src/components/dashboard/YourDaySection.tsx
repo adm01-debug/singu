@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { formatContactName, toTitleCase } from '@/lib/formatters';
+import { formatContactName, toTitleCase, getContactInitials } from '@/lib/formatters';
 import { 
   Sun, 
   Calendar, 
@@ -148,7 +148,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive shadow-sm shadow-destructive/10">
+              <Card className="border-destructive/30 bg-destructive/5 h-full border-l-4 border-l-destructive shadow-sm shadow-destructive/10 hover:shadow-md hover:shadow-destructive/15 hover:scale-[1.01] transition-all duration-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-destructive">
                     <AlertCircle className="w-4 h-4" />
@@ -162,12 +162,12 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <Link
                         key={item.interaction.id}
                         to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 transition-colors group"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 hover:translate-x-1 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
                           alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={`${item.contact?.first_name?.[0] || '?'}${item.contact?.last_name?.[0] || '?'}`}
+                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
                           size="sm"
                           className="h-9 w-9 border border-destructive/20"
                         />
@@ -206,7 +206,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15 }}
             >
-              <Card className="border-primary/30 bg-primary/5 h-full border-l-4 border-l-primary">
+              <Card className="border-primary/30 bg-primary/5 h-full border-l-4 border-l-primary hover:shadow-md hover:shadow-primary/15 hover:scale-[1.01] transition-all duration-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
                     <Clock className="w-4 h-4" />
@@ -220,12 +220,12 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       <Link
                         key={item.interaction.id}
                         to={`/contatos/${item.interaction.contact_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors group"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 hover:translate-x-1 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact?.avatar_url || undefined}
                           alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                          fallback={`${item.contact?.first_name?.[0] || '?'}${item.contact?.last_name?.[0] || '?'}`}
+                          fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
                           size="sm"
                           className="h-9 w-9 border border-primary/20"
                         />
@@ -260,7 +260,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning">
+              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning hover:shadow-md hover:shadow-warning/15 hover:scale-[1.01] transition-all duration-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <Cake className="w-4 h-4" />
@@ -272,12 +272,12 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name?.[0] || '?'}${item.contact.last_name?.[0] || '?'}`}
+                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
                         size="sm"
                         className="h-9 w-9 border border-warning/20"
                       />
@@ -316,7 +316,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.25 }}
             >
-              <Card className="border-warning/40 bg-warning/5 h-full border-l-4 border-l-warning shadow-sm shadow-warning/10">
+              <Card className="border-warning/40 bg-warning/5 h-full border-l-4 border-l-warning shadow-sm shadow-warning/10 hover:shadow-md hover:shadow-warning/15 hover:scale-[1.01] transition-all duration-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <AlertTriangle className="w-4 h-4" />
@@ -328,12 +328,12 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <Link
                       key={item.contact.id}
                       to={`/contatos/${item.contact.id}`}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 transition-colors group"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-warning/10 hover:translate-x-1 transition-all duration-200 group"
                     >
                       <OptimizedAvatar 
                         src={item.contact.avatar_url || undefined}
                         alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                        fallback={`${item.contact.first_name?.[0] || '?'}${item.contact.last_name?.[0] || '?'}`}
+                        fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
                         size="sm"
                         className="h-9 w-9 border border-warning/20"
                       />

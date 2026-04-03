@@ -104,6 +104,7 @@ export function ContactCardWithContext({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.05 }}
+        whileHover={{ scale: 1.01, y: -2 }}
         {...hoverProps}
       >
         <QuickActionsMenu
@@ -118,7 +119,7 @@ export function ContactCardWithContext({
           onDelete={() => onDelete(contact)}
         >
           <Card className={cn(
-            "h-full card-hover group cursor-pointer overflow-hidden relative",
+            "h-full card-hover group cursor-pointer overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
             isHighlighted && "ring-2 ring-primary",
             isSelected && "bg-primary/5"
           )}>
@@ -306,6 +307,7 @@ export function ContactCardWithContext({
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
+      whileHover={{ x: 4 }}
       {...hoverProps}
     >
       <QuickActionsMenu
@@ -320,7 +322,7 @@ export function ContactCardWithContext({
         onDelete={() => onDelete(contact)}
       >
         <Card className={cn(
-          "card-hover cursor-pointer group overflow-hidden relative",
+          "card-hover cursor-pointer group overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>

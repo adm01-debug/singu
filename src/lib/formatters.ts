@@ -117,6 +117,34 @@ function formatPhoneDisplay(phone: string): string {
 }
 
 /**
+ * Get smart initials for a contact, handling phone/email/WhatsApp names.
+ * Returns up to 2 characters.
+ */
+export function getContactInitials(firstName?: string | null, lastName?: string | null): string {
+  const full = `${firstName || ''} ${lastName || ''}`.trim();
+  
+  if (!full || full === 'Sem nome') return '?';
+  
+  // WhatsApp or phone number → use phone icon-like initials
+  if (/^whatsapp\s+\d{8,}/i.test(full) || /^\+?\d{10,}$/.test(full.replace(/\s/g, ''))) {
+    const digits = full.replace(/\D/g, '');
+    // Use last 2 digits for unique differentiation
+    return digits.slice(-2);
+  }
+  
+  // Email → use first 2 chars of local part
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(full)) {
+    const local = full.split('@')[0];
+    return local.slice(0, 2).toUpperCase();
+  }
+  
+  // Normal name
+  const f = firstName?.[0]?.toUpperCase() || '';
+  const l = lastName?.[0]?.toUpperCase() || '';
+  return `${f}${l}` || '?';
+}
+
+/**
  * Returns a color class based on a score (0-10 scale)
  */
 export function getScoreColor(score: number): {

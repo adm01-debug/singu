@@ -25,9 +25,9 @@ export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScor
   }).format(new Date());
 
   const stats = [
-    { label: 'Contatos', value: totalContacts, icon: Users, color: 'text-primary' },
-    { label: 'Interações', value: weeklyInteractions, icon: Activity, color: 'text-accent' },
-    { label: 'Score', value: `${averageScore}%`, icon: TrendingUp, color: 'text-success' },
+    { label: 'Contatos', value: totalContacts, icon: Users, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { label: 'Interações', value: weeklyInteractions, icon: Activity, color: 'text-accent', bgColor: 'bg-accent/10' },
+    { label: 'Score', value: `${averageScore}%`, icon: TrendingUp, color: 'text-success', bgColor: 'bg-success/10' },
   ];
 
   return (
@@ -56,13 +56,15 @@ export function WelcomeHeroCard({ totalContacts, weeklyInteractions, averageScor
         </div>
 
         {/* Quick stats */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {stats.map((stat, i) => (
             <div
               key={stat.label}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg ${stat.bgColor} hover:opacity-80 transition-all duration-200 group cursor-default`}
             >
-              <stat.icon className={`w-3.5 h-3.5 ${stat.color} shrink-0`} />
+              <div className={`w-6 h-6 rounded-md ${stat.bgColor} flex items-center justify-center`}>
+                <stat.icon className={`w-3.5 h-3.5 ${stat.color} shrink-0`} />
+              </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-sm font-bold text-foreground tabular-nums">{stat.value}</span>
                 <span className="text-[11px] text-muted-foreground hidden sm:inline">{stat.label}</span>
