@@ -76,7 +76,8 @@ export default function AdminTelemetriaPage() {
   const handleCleanup = async () => {
     const threshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { error } = await supabase
-      .from("query_telemetry" as unknown as 'activities')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic admin table
+      .from("query_telemetry" as any)
       .delete()
       .lt("created_at", threshold);
     if (error) {
