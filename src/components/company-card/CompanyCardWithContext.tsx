@@ -232,10 +232,10 @@ export function CompanyCardWithContext({
                     variant="outline" 
                     className={
                       company.financial_health === 'excellent' || company.financial_health === 'good'
-                        ? 'border-green-500/50 text-green-600 bg-green-500/10'
+                        ? 'border-success/50 text-success bg-success/10'
                         : company.financial_health === 'average'
-                        ? 'border-yellow-500/50 text-yellow-600 bg-yellow-500/10'
-                        : 'border-red-500/50 text-red-600 bg-red-500/10'
+                        ? 'border-warning/50 text-warning bg-warning/10'
+                        : 'border-destructive/50 text-destructive bg-destructive/10'
                     }
                   >
                     {company.financial_health === 'excellent' ? 'Excelente' :
