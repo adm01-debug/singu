@@ -373,8 +373,7 @@ const EmpresaDetalhe = () => {
           onSubmit={async (data) => {
             if (!user) return;
             try {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { error } = await supabase.from('contacts').insert({ ...data, user_id: user.id, company_id: id } as any);
+              const { error } = await supabase.from('contacts').insert({ ...data, user_id: user.id, company_id: id } as unknown as import('@/integrations/supabase/types').Database['public']['Tables']['contacts']['Insert']);
               if (error) throw error;
               setIsAddContactOpen(false);
               fetchCompanyData();

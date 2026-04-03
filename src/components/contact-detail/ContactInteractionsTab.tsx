@@ -21,12 +21,12 @@ import type { Interaction, Contact as ContactType } from '@/hooks/useContactDeta
 import { logger } from "@/lib/logger";
 
 const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
-  call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-  email: { icon: Mail, label: 'Email', color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' },
-  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-green-500 bg-green-50 dark:bg-green-900/20' },
-  meeting: { icon: Users, label: 'Reunião', color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/20' },
+  call: { icon: Phone, label: 'Ligação', color: 'text-info bg-info/10' },
+  email: { icon: Mail, label: 'Email', color: 'text-warning bg-warning/10' },
+  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-success bg-success/10' },
+  meeting: { icon: Users, label: 'Reunião', color: 'text-primary bg-primary/10' },
   note: { icon: FileText, label: 'Nota', color: 'text-muted-foreground bg-muted' },
-  social: { icon: Video, label: 'Social', color: 'text-pink-500 bg-pink-50 dark:bg-pink-900/20' },
+  social: { icon: Video, label: 'Social', color: 'text-accent-foreground bg-accent' },
 };
 
 interface Props {
@@ -42,25 +42,24 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contactForForm = {
     id: contact.id,
     first_name: contact.first_name,
     last_name: contact.last_name,
     company_id: contact.company_id,
-  } as any;
+  } as unknown as import('@/hooks/useContacts').Contact;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = useCallback(async (data: any) => {
+  const handleSubmit = useCallback(async (data: Record<string, unknown>) => {
     if (!user) return;
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('interactions').insert({
+      const insertData = {
         ...data,
         contact_id: contact.id,
         company_id: companyId,
         user_id: user.id,
-      });
+      } as unknown as import('@/integrations/supabase/types').Database['public']['Tables']['interactions']['Insert'];
+      const { error } = await supabase.from('interactions').insert(insertData);
       if (error) throw error;
       toast.success('Interação registrada');
       setShowForm(false);
@@ -136,9 +135,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                           </Badge>
                           {interaction.initiated_by && (
                             interaction.initiated_by === 'us' ? (
-                              <ArrowUpRight className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                              <ArrowUpRight className="h-3 w-3 text-info flex-shrink-0" />
                             ) : (
-                              <ArrowDownLeft className="h-3 w-3 text-green-500 flex-shrink-0" />
+                              <ArrowDownLeft className="h-3 w-3 text-success flex-shrink-0" />
                             )
                           )}
                         </div>
@@ -158,7 +157,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <SentimentIndicator sentiment={(interaction.sentiment as 'positive' | 'neutral' | 'negative') || 'neutral'} size="sm" />
                         {interaction.follow_up_required && (
-                          <AlertCircle className="h-4 w-4 text-orange-500" />
+                          <AlertCircle className="h-4 w-4 text-warning" />
                         )}
                         {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
@@ -194,7 +193,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                               </div>
                             )}
                             {interaction.follow_up_required && interaction.follow_up_date && (
-                              <div className="flex items-center gap-1.5 text-xs text-orange-600 dark:text-orange-400">
+                              <div className="flex items-center gap-1.5 text-xs text-warning">
                                 <AlertCircle className="h-3.5 w-3.5" />
                                 Follow-up: {format(new Date(interaction.follow_up_date), "dd/MM/yyyy")}
                               </div>

@@ -2,6 +2,7 @@
  * Sistema de Monitoramento de Erros em Produção
  * Captura, agrega e reporta erros para análise
  */
+import { logger } from '@/lib/logger';
 
 interface ErrorReport {
   id: string;
@@ -116,11 +117,11 @@ async function flushErrorBuffer(): Promise<void> {
     
     // Log no console em dev
     if (import.meta.env.DEV) {
-      console.group('🐛 Error Report Batch');
+      logger.group('🐛 Error Report Batch');
       batch.errors.forEach(err => {
-        console.error(`[${err.severity.toUpperCase()}] ${err.message}`, err);
+        logger.error(`[${err.severity.toUpperCase()}] ${err.message}`, err);
       });
-      console.groupEnd();
+      logger.groupEnd();
     }
   } catch {
     // Silenciar erros do próprio sistema de logging — noop em produção

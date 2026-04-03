@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { logger } from "@/lib/logger";
 import { useEffect } from "react";
 import { Home, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ const NotFound = () => {
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      console.error("404: Rota não encontrada:", location.pathname);
+      logger.error("404: Rota não encontrada:", location.pathname);
     }
   }, [location.pathname]);
 

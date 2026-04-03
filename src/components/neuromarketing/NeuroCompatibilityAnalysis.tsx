@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
+import type { NeuroDecisionProfile, Neurochemical } from '@/types/neuromarketing';
 
 type DISCProfile = 'D' | 'I' | 'S' | 'C';
 
@@ -55,12 +56,10 @@ const NeuroCompatibilityAnalysis = ({
     return calculateNeuroCompatibility(salespersonDISC, {
       contactId: '',
       dominantBrain: contactProfile.dominantBrain,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      brainBalance: contactProfile.brainBalance as any,
-      responsiveStimuli: contactProfile.responsiveStimuli || [],
-      dominantNeurochemical: contactProfile.dominantNeurochemical || 'oxytocin',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      neurochemicalBalance: { dopamine: 50, serotonin: 50, oxytocin: 50, cortisol: 50, adrenaline: 50, endorphin: 50 } as any,
+      brainBalance: contactProfile.brainBalance as NeuroDecisionProfile['brainBalance'],
+      responsiveStimuli: (contactProfile.responsiveStimuli || []) as NeuroDecisionProfile['responsiveStimuli'],
+      dominantNeurochemical: (contactProfile.dominantNeurochemical || 'oxytocin') as Neurochemical,
+      neurochemicalBalance: { dopamine: 50, serotonin: 50, oxytocin: 50, cortisol: 50, adrenaline: 50, endorphin: 50 } as Record<Neurochemical, number>,
       decisionSpeed: contactProfile.decisionSpeed || 'moderate',
       riskTolerance: contactProfile.riskTolerance || 'medium',
       primaryMotivation: contactProfile.primaryMotivation || 'balanced',

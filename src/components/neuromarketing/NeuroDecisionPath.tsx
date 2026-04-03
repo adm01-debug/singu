@@ -63,7 +63,7 @@ const NeuroDecisionPath = ({
   // Generate profile from DISC if no analysis
   const discBasedProfile = useMemo(() => {
     if (!discProfile) return null;
-    return generateNeuroProfileFromDISC(discProfile as any);
+    return generateNeuroProfileFromDISC(discProfile as 'D' | 'I' | 'S' | 'C');
   }, [discProfile, generateNeuroProfileFromDISC]);
 
   // Combined brain scores

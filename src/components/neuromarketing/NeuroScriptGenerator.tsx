@@ -83,7 +83,7 @@ const NeuroScriptGenerator = ({
 
   const discBasedProfile = useMemo(() => {
     if (!discProfile) return null;
-    return generateNeuroProfileFromDISC(discProfile as any);
+    return generateNeuroProfileFromDISC(discProfile as 'D' | 'I' | 'S' | 'C');
   }, [discProfile, generateNeuroProfileFromDISC]);
 
   const dominantBrain = neuroProfile?.detectedBrainSystem || discBasedProfile?.dominantBrain || 'limbic';

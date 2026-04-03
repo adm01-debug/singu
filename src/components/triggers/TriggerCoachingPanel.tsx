@@ -48,6 +48,7 @@ import { ADVANCED_MENTAL_TRIGGERS } from '@/data/triggersAdvancedData';
 import { EXTENDED_MENTAL_TRIGGERS, ExtendedTriggerType } from '@/data/triggersExtendedData';
 import { COMPLETE_TRIGGER_CONFLICTS, COMPLETE_TRIGGER_SYNERGIES } from '@/data/triggerConflictsMatrix';
 import { VAK_TRIGGER_TEMPLATES, getVAKTemplatesForTrigger } from '@/data/triggerTemplatesVAK';
+import type { VAKType } from '@/types/vak';
 import { METAPROGRAM_TRIGGER_TEMPLATES, getMetaprogramTemplatesForTrigger, MetaprogramType } from '@/data/triggerTemplatesMetaprograms';
 import { getDominantVAK } from '@/lib/contact-utils';
 import { DEMO_CONTACT } from '@/lib/demo-contact';
@@ -284,7 +285,7 @@ export function TriggerCoachingPanel({
   // Get personalized template for trigger
   const getPersonalizedTemplate = useCallback((triggerId: string): string | null => {
     // Try VAK-specific first
-    const vakTemplates = getVAKTemplatesForTrigger(triggerId, vakType as any);
+    const vakTemplates = getVAKTemplatesForTrigger(triggerId, vakType as VAKType);
     if (vakTemplates.length > 0) {
       return vakTemplates[0].template;
     }
