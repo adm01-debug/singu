@@ -254,11 +254,14 @@ export function CompanyCardWithContext({
                       }}
                     />
                   ) : null}
-                  <div className={cn(
-                    'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft',
-                    getAvatarGradient(company.financial_health, company.status),
-                    company.logo_url && 'hidden'
-                  )}>
+                  <div 
+                    className={cn(
+                      'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
+                      getAvatarGradient(company.financial_health, company.status, company.name),
+                      company.logo_url && 'hidden'
+                    )}
+                    style={getAvatarStyle(company.financial_health, company.status, company.name)}
+                  >
                     {getAvatarInitial(company.name)}
                   </div>
                   <div>
@@ -280,14 +283,12 @@ export function CompanyCardWithContext({
                         {displayName}
                       </h3>
                     )}
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <IndustryIcon className="w-3.5 h-3.5" />
-                      {hasSegment ? (
+                    {hasSegment && (
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <IndustryIcon className="w-3.5 h-3.5" />
                         <span>{company.industry}</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground/50 italic">Sem segmento</span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </div>
