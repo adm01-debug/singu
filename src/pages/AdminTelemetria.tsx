@@ -53,7 +53,8 @@ export default function AdminTelemetriaPage() {
     queryFn: async () => {
       const { from, to } = getTimeThreshold();
       let query = supabase
-        .from("query_telemetry" as unknown as 'activities')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic admin table
+        .from("query_telemetry" as any)
         .select("*")
         .gte("created_at", from)
         .lte("created_at", to)
