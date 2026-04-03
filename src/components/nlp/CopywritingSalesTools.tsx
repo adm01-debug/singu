@@ -297,7 +297,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex flex-wrap gap-1 mb-2">
                         <span className="text-xs text-muted-foreground">Presentes:</span>
                         {analysisResult.triggerDensity.dominantTriggers.map(t => (
-                          <Badge key={t} variant="secondary" className="text-xs bg-green-500/20 text-green-700">
+                          <Badge key={t} variant="secondary" className="text-xs bg-success/20 text-success">
                             {t}
                           </Badge>
                         ))}
