@@ -63,7 +63,7 @@ export const PERSUASION_TEMPLATES: PersuasionTemplate[] = [
     tips: ['Faça a pessoa se sentir especial', 'Mencione seleção exclusiva'],
   },
   {
-    id: 'i-storytelling-1', trigger: 'storytelling', discProfile: 'I', relationshipStage: 'early' as any, channel: 'any',
+    id: 'i-storytelling-1', trigger: 'storytelling', discProfile: 'I', relationshipStage: 'early', channel: 'any',
     title: 'História Envolvente',
     template: '{nome}, deixa eu te contar uma história rápida. {cliente_historia} estava exatamente na mesma situação que você. Depois de {tempo}, {resultado_historia}. Incrível, né?',
     variables: ['nome', 'cliente_historia', 'tempo', 'resultado_historia'],

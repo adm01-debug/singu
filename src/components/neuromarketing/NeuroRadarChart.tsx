@@ -48,7 +48,7 @@ const NeuroRadarChart = ({
       .join('\n\n');
     
     let analysis = allText.length >= 50 ? analyzeText(allText) : null;
-    const discBasedProfile = discProfile ? generateNeuroProfileFromDISC(discProfile as any) : null;
+    const discBasedProfile = discProfile ? generateNeuroProfileFromDISC(discProfile as 'D' | 'I' | 'S' | 'C') : null;
 
     const brainScores = analysis?.brainSystemScores || {
       reptilian: discBasedProfile?.brainBalance?.reptilian || 33,

@@ -284,7 +284,7 @@ export function TriggerCoachingPanel({
   // Get personalized template for trigger
   const getPersonalizedTemplate = useCallback((triggerId: string): string | null => {
     // Try VAK-specific first
-    const vakTemplates = getVAKTemplatesForTrigger(triggerId, vakType as any);
+    const vakTemplates = getVAKTemplatesForTrigger(triggerId, vakType as VAKType);
     if (vakTemplates.length > 0) {
       return vakTemplates[0].template;
     }
