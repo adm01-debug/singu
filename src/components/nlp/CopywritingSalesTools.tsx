@@ -328,8 +328,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                             <li key={idx} className="text-sm">
                               <span className={cn(
                                 "font-medium",
-                                issue.severity === 'high' ? 'text-red-600' :
-                                issue.severity === 'medium' ? 'text-orange-600' : 'text-yellow-600'
+                                issue.severity === 'high' ? 'text-destructive' :
+                                issue.severity === 'medium' ? 'text-warning' : 'text-warning'
                               )}>
                                 {issue.issue}
                               </span>
