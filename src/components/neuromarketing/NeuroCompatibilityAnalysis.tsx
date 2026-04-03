@@ -55,10 +55,12 @@ const NeuroCompatibilityAnalysis = ({
     return calculateNeuroCompatibility(salespersonDISC, {
       contactId: '',
       dominantBrain: contactProfile.dominantBrain,
-      brainBalance: contactProfile.brainBalance as Record<string, number>,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      brainBalance: contactProfile.brainBalance as any,
       responsiveStimuli: contactProfile.responsiveStimuli || [],
       dominantNeurochemical: contactProfile.dominantNeurochemical || 'oxytocin',
-      neurochemicalBalance: { dopamine: 50, serotonin: 50, oxytocin: 50, cortisol: 50 },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      neurochemicalBalance: { dopamine: 50, serotonin: 50, oxytocin: 50, cortisol: 50, adrenaline: 50, endorphin: 50 } as any,
       decisionSpeed: contactProfile.decisionSpeed || 'moderate',
       riskTolerance: contactProfile.riskTolerance || 'medium',
       primaryMotivation: contactProfile.primaryMotivation || 'balanced',

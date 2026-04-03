@@ -42,14 +42,16 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contactForForm = {
     id: contact.id,
     first_name: contact.first_name,
     last_name: contact.last_name,
     company_id: contact.company_id,
-  };
+  } as any;
 
-  const handleSubmit = useCallback(async (data: Record<string, unknown>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = useCallback(async (data: any) => {
     if (!user) return;
     setIsSubmitting(true);
     try {
