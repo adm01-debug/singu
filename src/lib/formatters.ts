@@ -24,10 +24,10 @@ export function toTitleCase(str: string): string {
   // Pattern: " - CityName/UF" or " - CityName-UF" where it duplicates info
   const dashParts = input.split(/\s+[-–—]\s+/);
   if (dashParts.length === 2) {
-    const suffix = dashParts[1].replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim().toLowerCase();
-    const mainLower = dashParts[0].toLowerCase();
+    const suffix = normalizeForCompare(dashParts[1].replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim());
+    const mainNorm = normalizeForCompare(dashParts[0]);
     // If the suffix is contained in the main name, it's redundant — strip it but keep the UF
-    if (mainLower.includes(suffix) && suffix.length >= 3) {
+    if (mainNorm.includes(suffix) && suffix.length >= 3) {
       const ufMatch = dashParts[1].match(/[\/\-]\s*([A-Za-z]{2})$/);
       input = dashParts[0] + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
     }
