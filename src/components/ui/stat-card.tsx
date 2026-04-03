@@ -179,6 +179,20 @@ export function StatCard({
               </motion.div>
             </div>
           )}
+          
+          {/* Empty state CTA */}
+          {emptyAction && numericValue === 0 && (
+            <Link 
+              to={emptyAction.href}
+              className={cn(
+                'flex items-center gap-1 text-[11px] font-medium mt-0.5 hover:underline',
+                variant === 'gradient' ? 'text-primary-foreground/80' : 'text-primary'
+              )}
+            >
+              {emptyAction.label}
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          )}
         </div>
 
         {/* Icon */}
