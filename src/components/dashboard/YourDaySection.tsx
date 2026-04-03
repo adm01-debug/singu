@@ -315,9 +315,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.25 }}
             >
-              <Card className="border-accent/30 bg-accent/5 h-full border-l-4 border-l-accent">
+              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-accent">
+                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <AlertTriangle className="w-4 h-4" />
                     Precisam de Atenção
                   </CardTitle>
