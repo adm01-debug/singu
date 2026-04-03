@@ -81,7 +81,7 @@ export function useNLPAutoAnalysis() {
     analysisQueue.current.add(analysisKey);
 
     try {
-      if (import.meta.env.DEV) console.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
+      if (import.meta.env.DEV) logger.log('🧠 NLP Auto-Analysis starting for interaction:', interactionId);
 
       // 1. VAK Analysis
       const vakResult = analyzeVAK(text);
@@ -145,7 +145,7 @@ export function useNLPAutoAnalysis() {
         analyzedAt: new Date().toISOString()
       };
 
-      if (import.meta.env.DEV) console.log('✅ NLP Auto-Analysis complete');
+      if (import.meta.env.DEV) logger.log('✅ NLP Auto-Analysis complete');
 
       return result;
     } catch (error) {

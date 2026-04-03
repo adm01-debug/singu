@@ -2,6 +2,7 @@
  * Utilitários para medição de performance com Performance API.
  * Usa User Timing API (mark/measure) para métricas customizadas.
  */
+import { logger } from '@/lib/logger';
 
 const PREFIX = 'singu';
 
@@ -50,13 +51,13 @@ export async function perfTrack<T>(name: string, fn: () => Promise<T>): Promise<
     const result = await fn();
     const duration = perfMeasure(name, markStart, `${name}-end`);
     if (import.meta.env.DEV && duration !== null) {
-      console.info(`⏱ [${name}]: ${duration}ms`);
+      logger.info(`⏱ [${name}]: ${duration}ms`);
     }
     return result;
   } catch (error) {
     const duration = perfMeasure(`${name}-error`, markStart, `${name}-error-end`);
     if (import.meta.env.DEV && duration !== null) {
-      console.warn(`⏱ [${name}] failed after ${duration}ms`);
+      logger.warn(`⏱ [${name}] failed after ${duration}ms`);
     }
     throw error;
   }

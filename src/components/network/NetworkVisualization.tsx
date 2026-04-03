@@ -303,46 +303,46 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
         {/* Stats with MorphingNumber */}
         <div className="grid grid-cols-4 gap-3 mt-4">
           <motion.div 
-            className="p-3 rounded-lg bg-blue-500/10 text-center"
+            className="p-3 rounded-lg bg-info/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.totalNodes} 
-              className="text-2xl font-bold text-blue-600" 
+              className="text-2xl font-bold text-info" 
             />
             <p className="text-xs text-muted-foreground">Nós</p>
           </motion.div>
           <motion.div 
-            className="p-3 rounded-lg bg-purple-500/10 text-center"
+            className="p-3 rounded-lg bg-primary/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.totalLinks} 
-              className="text-2xl font-bold text-purple-600" 
+              className="text-2xl font-bold text-primary" 
             />
             <p className="text-xs text-muted-foreground">Conexões</p>
           </motion.div>
           <motion.div 
-            className="p-3 rounded-lg bg-emerald-500/10 text-center"
+            className="p-3 rounded-lg bg-success/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.avgConnections} 
-              className="text-2xl font-bold text-emerald-600" 
+              className="text-2xl font-bold text-success" 
             />
             <p className="text-xs text-muted-foreground">Média Conexões</p>
           </motion.div>
           <motion.div 
-            className="p-3 rounded-lg bg-amber-500/10 text-center"
+            className="p-3 rounded-lg bg-warning/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.clusters} 
-              className="text-2xl font-bold text-amber-600" 
+              className="text-2xl font-bold text-warning" 
             />
             <p className="text-xs text-muted-foreground">Clusters</p>
           </motion.div>
@@ -353,7 +353,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
         {/* Graph container */}
         <div 
           ref={containerRef} 
-          className="w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-b-lg overflow-hidden"
+          className="w-full bg-gradient-to-br from-muted/50 to-muted rounded-b-lg overflow-hidden"
           style={{ height: `${height}px` }}
         >
           <ForceGraph2D
@@ -425,23 +425,23 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <p className="text-xs font-medium mb-2 text-muted-foreground">Legenda</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-blue-500" />
+              <div className="w-3 h-3 rounded-full bg-info" />
               <span>Você</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-purple-500" />
+              <div className="w-3 h-3 rounded-full bg-primary" />
               <span>Empresas</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-emerald-500" />
+              <div className="w-3 h-3 rounded-full bg-success" />
               <span>Score Alto</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-warning" />
               <span>Score Médio</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
+              <div className="w-3 h-3 rounded-full bg-destructive" />
               <span>Score Baixo</span>
             </div>
           </div>
@@ -464,7 +464,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                     fallback={selectedNode.name.substring(0, 2).toUpperCase()}
                     size="md"
                     className={cn(
-                      selectedNode.type === 'company' ? 'ring-2 ring-purple-500/50' : 'ring-2 ring-blue-500/50'
+                      selectedNode.type === 'company' ? 'ring-2 ring-primary/50' : 'ring-2 ring-info/50'
                     )}
                   />
                   <div>
@@ -502,8 +502,8 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                       <div 
                         className={cn(
                           'h-full rounded-full transition-all',
-                          selectedNode.relationshipScore >= 70 ? 'bg-emerald-500' :
-                          selectedNode.relationshipScore >= 40 ? 'bg-yellow-500' : 'bg-red-500'
+                          selectedNode.relationshipScore >= 70 ? 'bg-success' :
+                          selectedNode.relationshipScore >= 40 ? 'bg-warning' : 'bg-destructive'
                         )}
                         style={{ width: `${selectedNode.relationshipScore}%` }}
                       />
@@ -536,7 +536,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
       {stats.topInfluencers.length > 0 && (
         <div className="p-4 border-t">
           <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-500" />
+            <Star className="w-4 h-4 text-warning" />
             Principais Influenciadores
           </h4>
           <div className="flex flex-wrap gap-2">

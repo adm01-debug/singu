@@ -107,11 +107,11 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
   }, []);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-emerald-500';
-    if (score >= 40) return 'text-yellow-500';
-    if (score >= 20) return 'text-orange-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-success';
+    if (score >= 40) return 'text-warning';
+    if (score >= 20) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
@@ -297,7 +297,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex flex-wrap gap-1 mb-2">
                         <span className="text-xs text-muted-foreground">Presentes:</span>
                         {analysisResult.triggerDensity.dominantTriggers.map(t => (
-                          <Badge key={t} variant="secondary" className="text-xs bg-green-500/20 text-green-700">
+                          <Badge key={t} variant="secondary" className="text-xs bg-success/20 text-success">
                             {t}
                           </Badge>
                         ))}
@@ -307,7 +307,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex flex-wrap gap-1">
                         <span className="text-xs text-muted-foreground">Faltando:</span>
                         {analysisResult.triggerDensity.missingTriggers.slice(0, 4).map(t => (
-                          <Badge key={t} variant="outline" className="text-xs border-red-300 text-red-600">
+                          <Badge key={t} variant="outline" className="text-xs border-destructive/30 text-destructive">
                             {t}
                           </Badge>
                         ))}
@@ -318,8 +318,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                   {/* Issues & Strengths */}
                   <div className="grid md:grid-cols-2 gap-4">
                     {analysisResult.issues.length > 0 && (
-                      <div className="bg-red-500/10 rounded-lg p-4">
-                        <h4 className="font-medium mb-2 text-red-600 flex items-center gap-2">
+                      <div className="bg-destructive/10 rounded-lg p-4">
+                        <h4 className="font-medium mb-2 text-destructive flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4" />
                           Pontos a Melhorar
                         </h4>
@@ -328,8 +328,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                             <li key={idx} className="text-sm">
                               <span className={cn(
                                 "font-medium",
-                                issue.severity === 'high' ? 'text-red-600' :
-                                issue.severity === 'medium' ? 'text-orange-600' : 'text-yellow-600'
+                                issue.severity === 'high' ? 'text-destructive' :
+                                issue.severity === 'medium' ? 'text-warning' : 'text-warning'
                               )}>
                                 {issue.issue}
                               </span>
@@ -340,8 +340,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       </div>
                     )}
                     {analysisResult.strengths.length > 0 && (
-                      <div className="bg-green-500/10 rounded-lg p-4">
-                        <h4 className="font-medium mb-2 text-green-600 flex items-center gap-2">
+                      <div className="bg-success/10 rounded-lg p-4">
+                        <h4 className="font-medium mb-2 text-success flex items-center gap-2">
                           <CheckCircle className="h-4 w-4" />
                           Pontos Fortes
                         </h4>
@@ -586,11 +586,11 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                     >
                       <div className="bg-muted px-3 py-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          {preview.channel === 'whatsapp' && <Smartphone className="h-4 w-4 text-green-500" />}
-                          {preview.channel === 'email' && <Mail className="h-4 w-4 text-blue-500" />}
-                          {preview.channel === 'instagram' && <Smartphone className="h-4 w-4 text-pink-500" />}
-                          {preview.channel === 'linkedin' && <Smartphone className="h-4 w-4 text-blue-600" />}
-                          {preview.channel === 'sms' && <MessageSquare className="h-4 w-4 text-gray-500" />}
+                          {preview.channel === 'whatsapp' && <Smartphone className="h-4 w-4 text-success" />}
+                          {preview.channel === 'email' && <Mail className="h-4 w-4 text-info" />}
+                          {preview.channel === 'instagram' && <Smartphone className="h-4 w-4 text-primary" />}
+                          {preview.channel === 'linkedin' && <Smartphone className="h-4 w-4 text-info" />}
+                          {preview.channel === 'sms' && <MessageSquare className="h-4 w-4 text-muted-foreground" />}
                           <span className="font-medium capitalize">{preview.channel}</span>
                         </div>
                         <Badge variant={preview.isWithinLimit ? 'secondary' : 'destructive'} className="text-xs">
@@ -620,9 +620,9 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       </div>
 
                       {preview.suggestions.length > 0 && (
-                        <div className="px-3 py-2 bg-yellow-500/10 text-xs">
+                        <div className="px-3 py-2 bg-warning/10 text-xs">
                           {preview.suggestions.map((s, i) => (
-                            <p key={i} className="text-yellow-700">⚠️ {s}</p>
+                            <p key={i} className="text-warning">⚠️ {s}</p>
                           ))}
                         </div>
                       )}

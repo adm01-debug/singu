@@ -232,11 +232,11 @@ const Notificacoes = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="border-green-500/50 bg-green-500/5">
+            <Card className="border-success/50 bg-success/5">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-full">
-                    <Check className="w-6 h-6 text-green-500" />
+                  <div className="p-3 bg-success/10 rounded-full">
+                    <Check className="w-6 h-6 text-success" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">App Instalado</h3>
@@ -262,7 +262,7 @@ const Notificacoes = () => {
                 <div>
                   <CardTitle className="flex items-center gap-2">
                     {isSubscribed ? (
-                      <Bell className="w-5 h-5 text-green-500" />
+                      <Bell className="w-5 h-5 text-success" />
                     ) : (
                       <BellOff className="w-5 h-5 text-muted-foreground" />
                     )}
@@ -273,7 +273,7 @@ const Notificacoes = () => {
                   </CardDescription>
                 </div>
                 {isSubscribed && (
-                  <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">
+                  <Badge variant="outline" className="bg-success/10 text-success border-success/30">
                     Ativo
                   </Badge>
                 )}
@@ -301,11 +301,11 @@ const Notificacoes = () => {
                 </div>
               ) : isSubscribed ? (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-green-500/10 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-success/10 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-green-500" />
+                      <Check className="w-5 h-5 text-success" />
                       <div>
-                        <p className="text-sm font-medium text-green-600">
+                        <p className="text-sm font-medium text-success">
                           Notificações push ativadas
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -387,8 +387,8 @@ const Notificacoes = () => {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/10 rounded-lg">
-                    <Calendar className="w-5 h-5 text-blue-500" />
+                  <div className="p-2 bg-info/10 rounded-lg">
+                    <Calendar className="w-5 h-5 text-info" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Follow-ups</p>
@@ -406,8 +406,8 @@ const Notificacoes = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/10 rounded-lg">
-                    <Users className="w-5 h-5 text-amber-500" />
+                  <div className="p-2 bg-warning/10 rounded-lg">
+                    <Users className="w-5 h-5 text-warning" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Aniversários</p>
@@ -425,8 +425,8 @@ const Notificacoes = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/10 rounded-lg">
-                    <Lightbulb className="w-5 h-5 text-purple-500" />
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Lightbulb className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Insights</p>
@@ -444,8 +444,8 @@ const Notificacoes = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-500/10 rounded-lg">
-                    <Thermometer className="w-5 h-5 text-red-500" />
+                  <div className="p-2 bg-destructive/10 rounded-lg">
+                    <Thermometer className="w-5 h-5 text-destructive" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Relacionamentos Esfriando</p>
@@ -463,8 +463,8 @@ const Notificacoes = () => {
 
               <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-500/10 rounded-lg">
-                    <Mail className="w-5 h-5 text-green-500" />
+                  <div className="p-2 bg-success/10 rounded-lg">
+                    <Mail className="w-5 h-5 text-success" />
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Resumo Semanal</p>
@@ -513,8 +513,8 @@ const Notificacoes = () => {
                 </li>
               </ul>
               
-              <div className="mt-6 p-4 bg-amber-500/10 rounded-lg">
-                <p className="text-sm text-amber-600 dark:text-amber-400">
+              <div className="mt-6 p-4 bg-warning/10 rounded-lg">
+                <p className="text-sm text-warning">
                   <strong>Dica:</strong> Para receber notificações em dispositivos móveis, adicione o app à tela inicial do seu celular.
                 </p>
               </div>
