@@ -348,7 +348,7 @@ const Dashboard = () => {
               key={stat.title}
               {...stat}
               delay={prefersReducedMotion ? 0 : index}
-              variant="interactive"
+              variant={index === 0 ? 'gradient' : 'elevated'}
             />
           ))}
         </div>
