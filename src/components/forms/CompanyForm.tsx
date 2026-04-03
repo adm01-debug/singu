@@ -123,13 +123,13 @@ const porteRfOptions = [
 ];
 
 // Helper to safely read any company field (handles external data mapping)
-function getCompanyField(company: any, field: string, fallback = '') {
+function getCompanyField(company: Record<string, unknown> | null | undefined, field: string, fallback = '') {
   if (!company) return fallback;
-  return company[field] ?? fallback;
+  return (company[field] as string) ?? fallback;
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
-  const c = company as any; // external data may have extra fields
+  const c = company as Record<string, unknown> | null; // external data may have extra fields
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -150,7 +150,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       status: getCompanyField(c, 'status', 'ativo'),
       notes: getCompanyField(c, 'notes'),
       cnpj: getCompanyField(c, 'cnpj'),
-      capital_social: c?.capital_social ?? 0,
+      capital_social: (c?.capital_social as number) ?? 0,
       natureza_juridica: getCompanyField(c, 'natureza_juridica'),
       natureza_juridica_desc: getCompanyField(c, 'natureza_juridica_desc'),
       porte_rf: getCompanyField(c, 'porte_rf'),
@@ -159,10 +159,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       data_fundacao: getCompanyField(c, 'data_fundacao'),
       inscricao_estadual: getCompanyField(c, 'inscricao_estadual'),
       inscricao_municipal: getCompanyField(c, 'inscricao_municipal'),
-      is_customer: c?.is_customer ?? false,
-      is_supplier: c?.is_supplier ?? false,
-      is_carrier: c?.is_carrier ?? false,
-      is_matriz: c?.is_matriz ?? undefined,
+      is_customer: (c?.is_customer as boolean) ?? false,
+      is_supplier: (c?.is_supplier as boolean) ?? false,
+      is_carrier: (c?.is_carrier as boolean) ?? false,
+      is_matriz: (c?.is_matriz as boolean) ?? undefined,
       grupo_economico: getCompanyField(c, 'grupo_economico'),
       tipo_cooperativa: getCompanyField(c, 'tipo_cooperativa'),
       numero_cooperativa: getCompanyField(c, 'numero_cooperativa'),
@@ -173,12 +173,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     },
   });
 
-  const draftKey = company ? `company-edit-${(company as any).id}` : 'company-new';
+  const draftKey = company ? `company-edit-${(company as Record<string, unknown>).id}` : 'company-new';
   const { clearDraft } = useFormDraft(form, { key: draftKey, enabled: !company });
 
   const handleSubmit = async (data: CompanyFormData) => {
     // Clean empty strings to null
-    const cleaned: Record<string, any> = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value === '' || value === undefined) {
         cleaned[key] = null;
