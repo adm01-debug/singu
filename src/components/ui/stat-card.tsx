@@ -1,36 +1,27 @@
 import { ReactNode, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { LucideIcon, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
-
-// ============================================
-// ENHANCED STAT CARD - Pilar 4 & 10
-// ============================================
 
 const statCardVariants = cva(
   'relative overflow-hidden rounded-xl border transition-all duration-200',
   {
     variants: {
       variant: {
-        default: 'bg-card border-border/60 hover:border-border hover:shadow-sm',
-        elevated: 'bg-card border-border/40 shadow-md hover:shadow-lg',
-        gradient: 'bg-gradient-to-br border-0',
-        glass: 'bg-card/80 backdrop-blur-xl border-border/40',
-        outlined: 'bg-transparent border-2',
-        interactive: 'bg-card border-border/60 cursor-pointer hover:scale-[1.01] hover:shadow-md active:scale-[0.99]',
+        default: 'bg-card border-border/50 shadow-soft hover:shadow-medium hover:border-border',
+        elevated: 'bg-card border-border/40 shadow-medium',
+        glass: 'glass',
+        interactive: 'bg-card border-border/50 shadow-soft cursor-pointer hover:shadow-medium hover:border-border active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',
-        default: 'p-3.5 md:p-4',
+        default: 'p-4',
         lg: 'p-5',
       },
     },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
+    defaultVariants: { variant: 'default', size: 'default' },
   }
 );
 
@@ -39,7 +30,6 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
-  changeValue?: number;
   icon: LucideIcon;
   iconColor?: string;
   gradientTone?: 'primary' | 'success' | 'warning' | 'premium';
@@ -48,146 +38,69 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   animate?: boolean;
   sparkline?: number[];
   onClick?: () => void;
-  /** CTA label shown when value is 0 */
   emptyAction?: { label: string; href: string };
 }
 
-// Animated number component using framer-motion spring
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   const motionValue = useMotionValue(0);
   const spring = useSpring(motionValue, { stiffness: 100, damping: 30, mass: 1 });
   const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
   const ref = useRef<HTMLSpanElement>(null);
 
+  useEffect(() => { motionValue.set(value); }, [value, motionValue]);
   useEffect(() => {
-    motionValue.set(value);
-  }, [value, motionValue]);
-
-  useEffect(() => {
-    const unsubscribe = display.on('change', (v) => {
-      if (ref.current) ref.current.textContent = v;
-    });
-    return unsubscribe;
+    const unsub = display.on('change', (v) => { if (ref.current) ref.current.textContent = v; });
+    return unsub;
   }, [display]);
 
   return <span ref={ref} className={className}>0</span>;
 }
 
 export function StatCard({
-  title,
-  value,
-  change,
-  changeType = 'neutral',
-  changeValue,
-  icon: Icon,
-  iconColor = 'bg-primary/10 text-primary',
-  gradientTone = 'primary',
-  className,
-  delay = 0,
-  variant,
-  size,
-  animate = true,
-  sparkline,
-  onClick,
-  emptyAction,
+  title, value, change, changeType = 'neutral', icon: Icon,
+  iconColor = 'bg-primary/8 text-primary', className, delay = 0,
+  variant, size, animate = true, sparkline, onClick, emptyAction,
 }: StatCardProps) {
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
 
-  const getChangeIcon = () => {
-    if (changeType === 'positive') return TrendingUp;
-    if (changeType === 'negative') return TrendingDown;
-    return Minus;
-  };
-
-  const ChangeIcon = getChangeIcon();
-  const gradientBackgroundMap = {
-    primary: 'var(--gradient-primary)',
-    success: 'var(--gradient-success)',
-    warning: 'var(--gradient-warning)',
-    premium: 'var(--gradient-premium)',
-  } as const;
+  const ChangeIcon = changeType === 'positive' ? TrendingUp : changeType === 'negative' ? TrendingDown : Minus;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: delay * 0.05 }}
-      whileHover={variant === 'interactive' ? { scale: 1.02 } : undefined}
-      whileTap={variant === 'interactive' ? { scale: 0.98 } : undefined}
+      transition={{ duration: 0.3, delay: delay * 0.04 }}
       onClick={onClick}
-      className={cn(
-        statCardVariants({ variant, size }),
-        className
-      )}
-      style={variant === 'gradient' ? { backgroundImage: gradientBackgroundMap[gradientTone] } : undefined}
+      className={cn(statCardVariants({ variant, size }), className)}
     >
-      {/* Sparkline Background */}
-      {sparkline && sparkline.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-12 opacity-40">
-          <svg className="w-full h-full" viewBox={`0 0 ${sparkline.length * 10} 40`} preserveAspectRatio="none">
-            <path
-              d={`M0,${40 - (sparkline[0] / Math.max(...sparkline)) * 40} ${sparkline.map((v, i) => 
-                `L${i * 10},${40 - (v / Math.max(...sparkline)) * 40}`
-              ).join(' ')} L${(sparkline.length - 1) * 10},40 L0,40 Z`}
-              fill="currentColor"
-              className={cn(
-                changeType === 'positive' && 'text-success',
-                changeType === 'negative' && 'text-destructive',
-                changeType === 'neutral' && 'text-primary'
-              )}
-            />
-          </svg>
-        </div>
-      )}
-
-      <div className="relative flex items-start justify-between gap-2">
-        <div className="space-y-1 min-w-0">
-          <p className={cn(
-            'text-[11px] font-medium uppercase tracking-wider',
-            variant === 'gradient' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-          )}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 min-w-0">
+          <p className="text-xs font-medium text-muted-foreground tracking-wide">
             {title}
           </p>
-          <p className={cn(
-            'text-xl md:text-2xl font-bold tabular-nums tracking-tight',
-            variant === 'gradient' ? 'text-primary-foreground' : 'text-foreground'
-          )}>
-            {isNumeric && animate ? (
-              <AnimatedNumber value={numericValue} />
-            ) : (
-              value
-            )}
+          <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+            {isNumeric && animate ? <AnimatedNumber value={numericValue} /> : value}
           </p>
           
-          {/* Change indicator */}
           {change && (
-            <div className="flex items-center gap-1">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: delay * 0.05 + 0.15, type: 'spring', stiffness: 200 }}
-                className={cn(
-                  'flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold',
-                  changeType === 'positive' && 'bg-success/10 text-success',
-                  changeType === 'negative' && 'bg-destructive/10 text-destructive',
-                  changeType === 'neutral' && 'bg-muted text-muted-foreground'
-                )}
-              >
-                <ChangeIcon className="w-2.5 h-2.5" aria-hidden="true" />
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className={cn(
+                'flex items-center gap-0.5 text-xs font-medium',
+                changeType === 'positive' && 'text-success',
+                changeType === 'negative' && 'text-destructive',
+                changeType === 'neutral' && 'text-muted-foreground'
+              )}>
+                <ChangeIcon className="w-3 h-3" aria-hidden="true" />
                 {change}
-              </motion.div>
+              </span>
             </div>
           )}
           
-          {/* Empty state CTA */}
           {emptyAction && numericValue === 0 && (
             <Link 
               to={emptyAction.href}
-              className={cn(
-                'flex items-center gap-1 text-[11px] font-medium mt-0.5 hover:underline',
-                variant === 'gradient' ? 'text-primary-foreground/80' : 'text-primary'
-              )}
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-1"
             >
               {emptyAction.label}
               <ArrowRight className="w-3 h-3" />
@@ -195,17 +108,8 @@ export function StatCard({
           )}
         </div>
 
-        {/* Icon */}
-        <div 
-          className={cn(
-            'p-2 rounded-lg shrink-0',
-            variant === 'gradient' ? 'bg-primary-foreground/20' : iconColor
-          )}
-        >
-          <Icon className={cn(
-            'w-4 h-4',
-            variant === 'gradient' && 'text-primary-foreground'
-          )} aria-hidden="true" />
+        <div className={cn('p-2.5 rounded-xl shrink-0', iconColor)}>
+          <Icon className="w-4 h-4" aria-hidden="true" />
         </div>
       </div>
     </motion.div>
@@ -225,7 +129,7 @@ export function MiniStat({ label, value, icon: Icon, trend, className }: MiniSta
   return (
     <div className={cn('flex items-center gap-2', className)}>
       {Icon && (
-        <div className="p-1.5 bg-muted rounded-md">
+        <div className="p-1.5 bg-muted/60 rounded-lg">
           <Icon className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
         </div>
       )}
@@ -233,11 +137,7 @@ export function MiniStat({ label, value, icon: Icon, trend, className }: MiniSta
         <span className="text-sm font-semibold text-foreground">{value}</span>
         <span className="text-xs text-muted-foreground">{label}</span>
         {trend && (
-          <span className={cn(
-            'text-xs',
-            trend === 'up' && 'text-success',
-            trend === 'down' && 'text-destructive'
-          )}>
+          <span className={cn('text-xs', trend === 'up' && 'text-success', trend === 'down' && 'text-destructive')}>
             {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
           </span>
         )}
@@ -246,78 +146,28 @@ export function MiniStat({ label, value, icon: Icon, trend, className }: MiniSta
   );
 }
 
-// Stats row for dashboard
-interface StatsRowProps {
-  children: ReactNode;
-  className?: string;
+export function StatsRow({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn('grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4', className)}>{children}</div>;
 }
 
-export function StatsRow({ children, className }: StatsRowProps) {
-  return (
-    <div className={cn(
-      'grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
-      className
-    )}>
-      {children}
-    </div>
-  );
-}
-
-// Large display stat (hero stat)
-interface HeroStatProps {
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  icon?: LucideIcon;
-  gradient?: boolean;
-  className?: string;
-}
-
-export function HeroStat({ title, value, subtitle, icon: Icon, gradient, className }: HeroStatProps) {
+export function HeroStat({ title, value, subtitle, icon: Icon, className }: {
+  title: string; value: string | number; subtitle?: string; icon?: LucideIcon;
+  gradient?: boolean; className?: string;
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn(
-        'relative overflow-hidden rounded-2xl p-8 text-center',
-        gradient 
-          ? 'bg-gradient-primary text-primary-foreground' 
-          : 'bg-card border',
-        className
-      )}
+      className={cn('relative overflow-hidden rounded-2xl p-8 text-center bg-card border border-border/50', className)}
     >
       {Icon && (
-        <div className={cn(
-          'inline-flex p-4 rounded-2xl mb-4',
-          gradient ? 'bg-primary-foreground/20' : 'bg-primary/10'
-        )}>
-          <Icon className={cn('w-8 h-8', gradient ? 'text-primary-foreground' : 'text-primary')} aria-hidden="true" />
+        <div className="inline-flex p-4 rounded-2xl bg-primary/8 mb-4">
+          <Icon className="w-8 h-8 text-primary" aria-hidden="true" />
         </div>
       )}
-      <p className={cn(
-        'text-xs font-medium mb-2',
-        gradient ? 'text-primary-foreground/80' : 'text-muted-foreground'
-      )}>
-        {title}
-      </p>
-      <p className={cn(
-        'text-3xl font-bold mb-2',
-        gradient ? 'text-primary-foreground' : 'text-foreground'
-      )}>
-        {value}
-      </p>
-      {subtitle && (
-        <p className={cn(
-          'text-sm',
-          gradient ? 'text-primary-foreground/70' : 'text-muted-foreground'
-        )}>
-          {subtitle}
-        </p>
-      )}
-      
-      {/* Decorative elements */}
-      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
-      <div className="absolute -bottom-8 -left-8 w-24 h-24 rounded-full bg-white/5 blur-xl" />
+      <p className="text-xs font-medium text-muted-foreground mb-2">{title}</p>
+      <p className="text-3xl font-bold text-foreground mb-2">{value}</p>
+      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
     </motion.div>
   );
 }
