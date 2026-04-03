@@ -352,7 +352,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                   ))}
                   {needsAttention.length > 3 && (
                     <Link to="/contatos" className="block">
-                      <Button variant="ghost" size="sm" className="w-full text-accent hover:text-accent">
+                      <Button variant="ghost" size="sm" className="w-full text-warning hover:text-warning">
                         +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </Link>
