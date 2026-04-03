@@ -2,6 +2,7 @@
  * Converts a string to Title Case, handling special cases for Brazilian naming.
  * "PAC SANTA MÔNICA-PR" → "Pac Santa Mônica - PR"
  * "COOPERATIVA DE CRÉDITO" → "Cooperativa de Crédito"
+ * "Pac Guará - Guara/sp" → "Pac Guará - SP"
  */
 const LOWERCASE_WORDS = new Set([
   'de', 'do', 'da', 'dos', 'das', 'e', 'em', 'no', 'na', 'nos', 'nas', 'por', 'para', 'com',
@@ -23,36 +24,25 @@ export function toTitleCase(str: string): string {
   const stripped = str.replace(/^\d+\s*[-–—]\s*/, '');
   let input = stripped || str;
 
-  // Remove redundant city/state suffix after " - " (e.g. "PAC IPUA - IPUA/SP" → "PAC IPUA")
-  // Pattern: " - CityName/UF" or " - CityName-UF" where it duplicates info
+  // Remove redundant city/state suffix after " - " (e.g. "PAC IPUA - IPUA/SP" → "PAC IPUA - SP")
   const dashParts = input.split(/\s+[-–—]\s+/);
   if (dashParts.length >= 2) {
-    // Try to match redundant suffix in the last part
     const lastPart = dashParts[dashParts.length - 1];
     const mainParts = dashParts.slice(0, -1).join(' - ');
     const suffix = normalizeForCompare(lastPart.replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim());
     const mainNorm = normalizeForCompare(mainParts);
-    // If the suffix is contained in the main name, it's redundant — strip it but keep the UF
     if (mainNorm.includes(suffix) && suffix.length >= 3) {
       const ufMatch = lastPart.match(/[\/\-]\s*([A-Za-z]{2})$/);
-      // Check if UF is already in the mainParts (avoid double " - RJ - RJ")
       const existingUf = mainParts.match(/\s*[-–—]\s*([A-Z]{2})$/);
       if (existingUf) {
-        input = mainParts; // UF already present, just drop the redundant suffix
+        input = mainParts;
       } else {
         input = mainParts + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
       }
     }
   }
   
-  // Skip if string already looks well-formatted
-  const words = input.split(/\s+/);
-  const hasLongAllCapsWord = words.some(w => w.length >= 3 && w === w.toUpperCase() && /[A-Z]/.test(w) && !UPPERCASE_WORDS.has(w));
-  const isAllLower = input === input.toLowerCase();
-  
-  // Only transform if there are problematic patterns
-  if (!hasLongAllCapsWord && !isAllLower) return input;
-
+  // ALWAYS normalize — convert to title case regardless of current casing
   return input
     .toLowerCase()
     .split(/(\s+|-+|\/+)/)

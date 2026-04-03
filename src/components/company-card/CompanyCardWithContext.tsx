@@ -8,9 +8,6 @@ import {
   Mail, 
   Users,
   MoreVertical,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Factory,
   Briefcase,
   ShoppingCart,
@@ -39,18 +36,6 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase } from '@/lib/formatters';
 
-const healthColorMap: Record<string, string> = {
-  excellent: 'from-success to-accent',
-  good: 'from-success/80 to-success',
-  growing: 'from-success to-accent',
-  stable: 'from-info to-primary',
-  average: 'from-warning to-warning/80',
-  declining: 'from-destructive/80 to-warning',
-  poor: 'from-destructive to-destructive/80',
-  critical: 'from-destructive to-destructive/80',
-  unknown: 'from-primary to-primary-glow',
-};
-
 /** Strip leading numeric prefix like "05 - " or "32 - " from company names for display */
 function getAvatarInitial(name: string): string {
   const cleaned = name.replace(/^\d+\s*[-–—]\s*/, '');
@@ -67,35 +52,28 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
-const healthScoreConfig: Record<string, { color: string; label: string; percent: number }> = {
-  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
-  good:      { color: 'text-success', label: 'Boa', percent: 85 },
-  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
-  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
-  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
-  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
-  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
-  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
-};
-
-function HealthScoreRing({ health }: { health: string | null }) {
-  const config = healthScoreConfig[health || ''];
-  if (!config) {
-    return (
-      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Users className="w-4 h-4" />
-        <span className="text-xs">Sem dados</span>
-      </div>
-    );
-  }
-  const size = 28;
+/* ── Score Ring with semantic colors ── */
+function ScoreRing({ score }: { score: number | null }) {
+  const s = score ?? 0;
+  const size = 32;
   const stroke = 3;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (config.percent / 100) * circumference;
+  const offset = circumference - (s / 10) * circumference;
+
+  // Semantic color based on score value (0-10)
+  const colorClass = s <= 2
+    ? 'text-destructive'
+    : s <= 4
+    ? 'text-warning'
+    : s <= 6
+    ? 'text-info'
+    : 'text-success';
+
+  const label = s === 0 ? '–' : s.toString();
 
   return (
-    <div className={cn('flex items-center gap-1.5', config.color)}>
+    <div className={cn('flex items-center gap-1.5', colorClass)}>
       <svg width={size} height={size} className="rotate-[-90deg]">
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
@@ -103,9 +81,31 @@ function HealthScoreRing({ health }: { health: string | null }) {
           className="transition-all duration-700"
         />
       </svg>
-      <span className="text-xs font-medium">{config.label}</span>
+      <span className="text-sm font-bold tabular-nums">{label}</span>
     </div>
   );
+}
+
+/* ── Health badge ── */
+const healthBadgeConfig: Record<string, { className: string; label: string }> = {
+  excellent: { className: 'border-success/50 text-success bg-success/10', label: 'Excelente' },
+  good:      { className: 'border-success/50 text-success bg-success/10', label: 'Boa' },
+  growing:   { className: 'border-success/50 text-success bg-success/10', label: 'Crescendo' },
+  stable:    { className: 'border-info/50 text-info bg-info/10', label: 'Estável' },
+  average:   { className: 'border-warning/50 text-warning bg-warning/10', label: 'Regular' },
+  declining: { className: 'border-warning/50 text-warning bg-warning/10', label: 'Em Declínio' },
+  poor:      { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Ruim' },
+  critical:  { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Crítica' },
+};
+
+/* ── Avatar gradient based on score ── */
+function getAvatarGradient(score: number | null): string {
+  const s = score ?? 0;
+  if (s >= 7) return 'from-success to-success/70';
+  if (s >= 5) return 'from-info to-primary';
+  if (s >= 3) return 'from-warning to-warning/70';
+  if (s > 0) return 'from-destructive to-destructive/70';
+  return 'from-primary to-primary/70';
 }
 
 interface CompanyCardWithContextProps {
@@ -134,7 +134,6 @@ export function CompanyCardWithContext({
   const IndustryIcon = industryIcons[company.industry || ''] || Building2;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   
-  // Prefetch on hover
   const { prefetchCompany } = usePrefetch();
   const prefetchFn = useCallback(() => {
     prefetchCompany(company.id);
@@ -152,13 +151,18 @@ export function CompanyCardWithContext({
         await onUpdate(company.id, { phone: value });
       }
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
 
   const displayName = toTitleCase(company.name);
   const hasSegment = !!company.industry;
+  // Derive a simple 0-10 score from relationship_score (0-100) or fallback
+  const score10 = typeof (company as Record<string, unknown>).relationship_score === 'number'
+    ? Math.round(((company as Record<string, unknown>).relationship_score as number) / 10)
+    : null;
+  const healthConfig = healthBadgeConfig[company.financial_health || ''];
 
   return (
     <motion.div
@@ -179,14 +183,13 @@ export function CompanyCardWithContext({
       >
         <Card className={cn(
           "h-full card-hover group cursor-pointer transition-all duration-200",
-          "hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30",
+          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
           <CardContent className="p-5">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
-                {/* Selection Checkbox */}
                 {selectionMode && (
                   <Checkbox
                     checked={isSelected}
@@ -209,7 +212,7 @@ export function CompanyCardWithContext({
                   ) : null}
                   <div className={cn(
                     'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
-                    healthColorMap[company.financial_health || 'unknown'],
+                    getAvatarGradient(score10),
                     company.logo_url && 'hidden'
                   )}>
                     {getAvatarInitial(company.name)}
@@ -240,7 +243,7 @@ export function CompanyCardWithContext({
                       ) : (
                         <button
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(company); }}
-                          className="flex items-center gap-1 text-primary/60 hover:text-primary italic text-xs transition-colors"
+                          className="flex items-center gap-1 text-primary hover:text-primary/80 text-xs font-medium transition-colors underline underline-offset-2 decoration-primary/30 hover:decoration-primary/60"
                         >
                           <Tag className="w-3 h-3" />
                           Definir segmento
@@ -292,28 +295,10 @@ export function CompanyCardWithContext({
                 )}
               </div>
 
-              {company.financial_health && company.financial_health !== 'unknown' && (
+              {healthConfig && (
                 <div className="mb-4">
-                  <Badge 
-                    variant="outline" 
-                    className={
-                      company.financial_health === 'excellent' || company.financial_health === 'good' || company.financial_health === 'growing'
-                        ? 'border-success/50 text-success bg-success/10'
-                        : company.financial_health === 'average' || company.financial_health === 'stable'
-                        ? 'border-info/50 text-info bg-info/10'
-                        : company.financial_health === 'declining'
-                        ? 'border-warning/50 text-warning bg-warning/10'
-                        : 'border-destructive/50 text-destructive bg-destructive/10'
-                    }
-                  >
-                    {company.financial_health === 'excellent' ? 'Excelente' :
-                     company.financial_health === 'good' ? 'Boa' :
-                     company.financial_health === 'growing' ? 'Crescendo' :
-                     company.financial_health === 'stable' ? 'Estável' :
-                     company.financial_health === 'average' ? 'Regular' :
-                     company.financial_health === 'declining' ? 'Em declínio' :
-                     company.financial_health === 'poor' ? 'Ruim' :
-                     company.financial_health === 'critical' ? 'Crítica' : ''}
+                  <Badge variant="outline" className={healthConfig.className}>
+                    {healthConfig.label}
                   </Badge>
                 </div>
               )}
@@ -334,7 +319,7 @@ export function CompanyCardWithContext({
               )}
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <HealthScoreRing health={company.financial_health} />
+                <ScoreRing score={score10} />
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
                 </span>
