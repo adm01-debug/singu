@@ -232,11 +232,11 @@ const Notificacoes = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="border-green-500/50 bg-green-500/5">
+            <Card className="border-success/50 bg-success/5">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-500/10 rounded-full">
-                    <Check className="w-6 h-6 text-green-500" />
+                  <div className="p-3 bg-success/10 rounded-full">
+                    <Check className="w-6 h-6 text-success" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">App Instalado</h3>
