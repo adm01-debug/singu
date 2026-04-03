@@ -374,7 +374,7 @@ export function ContactCardWithContext({
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <span className="truncate">{contact.role_title || 'Sem cargo'}</span>
+                    <span className="truncate">{contact.role_title || contact.email || ''}</span>
                     {companyName && (
                       <>
                         <span className="hidden sm:inline">•</span>
