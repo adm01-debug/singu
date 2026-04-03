@@ -89,6 +89,7 @@ export function StatCard({
   animate = true,
   sparkline,
   onClick,
+  emptyAction,
 }: StatCardProps) {
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
