@@ -302,8 +302,7 @@ const Dashboard = () => {
       <ScrollProgressBar />
       <Header 
         title="Dashboard" 
-        subtitle="Visão geral do seu relacionamento com clientes"
-        compact
+        hideBack
       />
 
       <div className="p-4 md:p-6 space-y-4 md:space-y-5">
