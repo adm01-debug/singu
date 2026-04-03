@@ -47,6 +47,8 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   animate?: boolean;
   sparkline?: number[];
   onClick?: () => void;
+  /** CTA label shown when value is 0 */
+  emptyAction?: { label: string; href: string };
 }
 
 // Animated number component using framer-motion spring
