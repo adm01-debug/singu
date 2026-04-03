@@ -303,13 +303,13 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
         {/* Stats with MorphingNumber */}
         <div className="grid grid-cols-4 gap-3 mt-4">
           <motion.div 
-            className="p-3 rounded-lg bg-blue-500/10 text-center"
+            className="p-3 rounded-lg bg-info/10 text-center"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <MorphingNumber 
               value={stats.totalNodes} 
-              className="text-2xl font-bold text-blue-600" 
+              className="text-2xl font-bold text-info" 
             />
             <p className="text-xs text-muted-foreground">Nós</p>
           </motion.div>
