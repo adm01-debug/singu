@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform, useMotionValue } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { LucideIcon, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 // ============================================
