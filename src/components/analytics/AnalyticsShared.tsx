@@ -58,8 +58,8 @@ export const PieTooltip = forwardRef<HTMLDivElement, CustomTooltipProps>(
 export const ComparisonBadge = ({ comparison, suffix = '' }: { comparison: PeriodComparison; suffix?: string }) => {
   const Icon = comparison.changeType === 'positive' ? TrendingUp : 
                comparison.changeType === 'negative' ? TrendingDown : Minus;
-  const colorClass = comparison.changeType === 'positive' ? 'text-emerald-500 bg-emerald-500/10' : 
-                     comparison.changeType === 'negative' ? 'text-red-500 bg-red-500/10' : 
+  const colorClass = comparison.changeType === 'positive' ? 'text-success bg-success/10' : 
+                     comparison.changeType === 'negative' ? 'text-destructive bg-destructive/10' : 
                      'text-muted-foreground bg-muted';
   
   return (

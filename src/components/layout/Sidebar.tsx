@@ -293,13 +293,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                         isActive
-                          ? 'bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/10 text-sidebar-primary-foreground shadow-[inset_0_0_0_1px_hsl(var(--sidebar-primary)/0.3)]'
-                          : 'hover:bg-sidebar-accent/50 text-sidebar-foreground hover:text-sidebar-accent-foreground',
+                          ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground'
+                          : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground',
                         collapsed && 'justify-center px-0'
                       )}
                     >
                       <div className="relative">
-                        <item.icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'animate-pulse-soft')} />
+                        <item.icon className={cn('w-5 h-5 flex-shrink-0', !isActive && 'opacity-60')} />
                         {/* Badge indicator for collapsed state */}
                         {collapsed && badgeCount > 0 && (
                           <motion.div

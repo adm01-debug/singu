@@ -136,9 +136,9 @@ const Analytics = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard title="Total de Interações" value={stats.totalInteractions.current} comparison={stats.totalInteractions} icon={MessageSquare} iconColor="bg-primary/10 text-primary" />
-          <StatCard title="Score Médio" value={`${stats.avgScore.current}%`} comparison={stats.avgScore} icon={Heart} iconColor="bg-pink-500/10 text-pink-500" />
-          <StatCard title="Taxa Positiva" value={`${stats.positiveRate.current}%`} comparison={stats.positiveRate} icon={TrendingUp} iconColor="bg-emerald-500/10 text-emerald-500" />
-          <StatCard title="Engajamento" value={`${stats.engagementRate.current}%`} comparison={stats.engagementRate} icon={Zap} iconColor="bg-amber-500/10 text-amber-500" />
+          <StatCard title="Score Médio" value={`${stats.avgScore.current}%`} comparison={stats.avgScore} icon={Heart} iconColor="bg-destructive/10 text-destructive" />
+          <StatCard title="Taxa Positiva" value={`${stats.positiveRate.current}%`} comparison={stats.positiveRate} icon={TrendingUp} iconColor="bg-success/10 text-success" />
+          <StatCard title="Engajamento" value={`${stats.engagementRate.current}%`} comparison={stats.engagementRate} icon={Zap} iconColor="bg-warning/10 text-warning" />
         </div>
 
         {/* Tabs */}

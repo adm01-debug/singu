@@ -86,6 +86,9 @@
 
     --radius: 0.75rem;
 
+    /* Gradient CSS variables (for inline styles) */
+    --gradient-primary: linear-gradient(135deg, hsl(234 72% 58%), hsl(234 72% 48%));
+
     /* Sidebar — Dark slate, always */
     --sidebar-background: 224 30% 8%;
     --sidebar-foreground: 220 15% 75%;
@@ -407,6 +410,40 @@
   @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
+  }
+
+  /* Gradient utilities */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(234 72% 48%));
+  }
+  .dark .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(234 75% 55%));
+  }
+  .bg-gradient-premium {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(270 50% 50%));
+  }
+  .dark .bg-gradient-premium {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(270 55% 62%));
+  }
+  .bg-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)), hsl(152 45% 32%));
+  }
+  .dark .bg-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)), hsl(152 50% 36%));
+  }
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, hsl(var(--warning)), hsl(28 70% 45%));
+  }
+  .dark .bg-gradient-warning {
+    background: linear-gradient(135deg, hsl(var(--warning)), hsl(28 75% 50%));
+  }
+
+  /* Glow shadow */
+  .shadow-glow {
+    box-shadow: 0 4px 16px -2px hsl(var(--primary) / 0.25);
+  }
+  .dark .shadow-glow {
+    box-shadow: 0 4px 16px -2px hsl(var(--primary) / 0.35);
   }
 }
 

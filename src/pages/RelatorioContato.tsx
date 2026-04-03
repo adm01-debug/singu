@@ -106,18 +106,18 @@ const RelatorioContato = () => {
       <div className="max-w-4xl mx-auto p-8 print:p-4 print:max-w-none">
         {/* Cabeçalho */}
         <div className="text-center mb-8 border-b pb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             📊 Relatório de Análise Comportamental
           </h1>
-          <p className="text-xl text-gray-600">{contactName}</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-xl text-muted-foreground">{contactName}</p>
+          <p className="text-sm text-muted-foreground mt-2">
             Gerado em {format(new Date(), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
           </p>
         </div>
 
         {/* Dados do Contato */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             👤 Dados do Contato
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -132,7 +132,7 @@ const RelatorioContato = () => {
 
         {/* Perfil DISC */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             🎯 Perfil DISC
           </h2>
           
@@ -141,29 +141,29 @@ const RelatorioContato = () => {
               <div className="text-2xl font-bold text-red-600">
                 {latestDisc?.dominance_score || behavior.discProfile === 'D' ? '85' : '45'}%
               </div>
-              <div className="text-sm text-gray-600">Dominância (D)</div>
+              <div className="text-sm text-muted-foreground">Dominância (D)</div>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="text-2xl font-bold text-yellow-600">
                 {latestDisc?.influence_score || '65'}%
               </div>
-              <div className="text-sm text-gray-600">Influência (I)</div>
+              <div className="text-sm text-muted-foreground">Influência (I)</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">
                 {latestDisc?.steadiness_score || '75'}%
               </div>
-              <div className="text-sm text-gray-600">Estabilidade (S)</div>
+              <div className="text-sm text-muted-foreground">Estabilidade (S)</div>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
                 {latestDisc?.conscientiousness_score || '30'}%
               </div>
-              <div className="text-sm text-gray-600">Conformidade (C)</div>
+              <div className="text-sm text-muted-foreground">Conformidade (C)</div>
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-muted/40 p-4 rounded-lg">
             <p><strong>Perfil Principal:</strong> {latestDisc?.primary_profile || behavior.discProfile || 'S'} - Estabilidade</p>
             <p><strong>Perfil Secundário:</strong> {latestDisc?.secondary_profile || 'I'} - Influência</p>
             <p><strong>Blend:</strong> {latestDisc?.blend_profile || behavior.discBlend || 'SI'}</p>
@@ -175,7 +175,7 @@ const RelatorioContato = () => {
         {/* Indicadores Comportamentais */}
         {latestDisc?.behavior_indicators && (
           <section className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+            <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
               🔍 Indicadores Comportamentais Detectados
             </h2>
             <ul className="list-disc pl-6 space-y-2">
@@ -183,7 +183,7 @@ const RelatorioContato = () => {
                 ? latestDisc.behavior_indicators 
                 : []
               ).map((indicator: string, i: number) => (
-                <li key={i} className="text-gray-700">{indicator}</li>
+                <li key={i} className="text-foreground">{indicator}</li>
               ))}
             </ul>
           </section>
@@ -191,13 +191,13 @@ const RelatorioContato = () => {
 
         {/* Análise Neuromarketing */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             🧬 Análise Neuromarketing
           </h2>
           
           <table className="w-full border-collapse border border-gray-300 mb-4">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-muted">
                 <th className="border border-gray-300 p-2 text-left">Sistema Cerebral</th>
                 <th className="border border-gray-300 p-2 text-left">Dominância</th>
                 <th className="border border-gray-300 p-2 text-left">Gatilhos Recomendados</th>
@@ -227,13 +227,13 @@ const RelatorioContato = () => {
 
         {/* Gatilhos Mentais */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             💡 Gatilhos Mentais Recomendados
           </h2>
           
           <table className="w-full border-collapse border border-gray-300 mb-4">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-muted">
                 <th className="border border-gray-300 p-2 text-left">Gatilho</th>
                 <th className="border border-gray-300 p-2 text-left">Prioridade</th>
                 <th className="border border-gray-300 p-2 text-left">Como Aplicar</th>
@@ -275,7 +275,7 @@ const RelatorioContato = () => {
 
         {/* Princípios Carnegie */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             🎭 Princípios Dale Carnegie Aplicáveis
           </h2>
           
@@ -290,39 +290,39 @@ const RelatorioContato = () => {
 
         {/* Perfil VAK */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             👁️ Perfil VAK (Sistemas Representacionais)
           </h2>
           
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">45%</div>
-              <div className="text-sm text-gray-600">Visual</div>
-              <div className="text-xs text-gray-500 mt-1">Precisa ver imagens</div>
+              <div className="text-sm text-muted-foreground">Visual</div>
+              <div className="text-xs text-muted-foreground mt-1">Precisa ver imagens</div>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
               <div className="text-2xl font-bold text-orange-600">35%</div>
-              <div className="text-sm text-gray-600">Cinestésico</div>
-              <div className="text-xs text-gray-500 mt-1">Quer sentir segurança</div>
+              <div className="text-sm text-muted-foreground">Cinestésico</div>
+              <div className="text-xs text-muted-foreground mt-1">Quer sentir segurança</div>
             </div>
             <div className="text-center p-4 bg-teal-50 rounded-lg">
               <div className="text-2xl font-bold text-teal-600">20%</div>
-              <div className="text-sm text-gray-600">Auditivo</div>
-              <div className="text-xs text-gray-500 mt-1">Menos foco em texto longo</div>
+              <div className="text-sm text-muted-foreground">Auditivo</div>
+              <div className="text-xs text-muted-foreground mt-1">Menos foco em texto longo</div>
             </div>
           </div>
         </section>
 
         {/* Scripts de Vendas */}
         <section className="mb-8 page-break-before">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             📜 Scripts de Vendas Recomendados
           </h2>
 
           <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-800 mb-2">FASE 1: ABERTURA</h3>
-              <p className="text-gray-700 italic whitespace-pre-line">
+            <div className="bg-muted/40 p-4 rounded-lg">
+              <h3 className="font-bold text-foreground mb-2">FASE 1: ABERTURA</h3>
+              <p className="text-foreground italic whitespace-pre-line">
                 "Oi Beatriz! 😊
 
 Estava pensando na nossa conversa sobre os brindes diferentes pro evento de vocês.
@@ -333,9 +333,9 @@ Posso te mostrar?"
               </p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-800 mb-2">FASE 2: APRESENTAÇÃO</h3>
-              <p className="text-gray-700 italic whitespace-pre-line">
+            <div className="bg-muted/40 p-4 rounded-lg">
+              <h3 className="font-bold text-foreground mb-2">FASE 2: APRESENTAÇÃO</h3>
+              <p className="text-foreground italic whitespace-pre-line">
                 "Olha só o que separei pra você:
 
 [ENVIAR IMAGEM 1]
@@ -350,9 +350,9 @@ O legal é que dá pra personalizar com a logo da DP White em gravação a laser
               </p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-800 mb-2">FASE 3: VALIDAÇÃO + PROVA SOCIAL</h3>
-              <p className="text-gray-700 italic whitespace-pre-line">
+            <div className="bg-muted/40 p-4 rounded-lg">
+              <h3 className="font-bold text-foreground mb-2">FASE 3: VALIDAÇÃO + PROVA SOCIAL</h3>
+              <p className="text-foreground italic whitespace-pre-line">
                 "Você tem toda razão em querer surpreender - quando a gente repete brinde, parece que não teve cuidado na escolha, né?
 
 Uma empresa de tecnologia aqui de SP (do mesmo porte de vocês) escolheu essa linha pro evento de fim de ano e o feedback foi incrível. Os convidados até postaram no LinkedIn!
@@ -361,9 +361,9 @@ Qual dessas opções você acha que combina mais com o perfil dos destinatários
               </p>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-bold text-gray-800 mb-2">FASE 4: FECHAMENTO</h3>
-              <p className="text-gray-700 italic whitespace-pre-line">
+            <div className="bg-muted/40 p-4 rounded-lg">
+              <h3 className="font-bold text-foreground mb-2">FASE 4: FECHAMENTO</h3>
+              <p className="text-foreground italic whitespace-pre-line">
                 "Beatriz, resumindo pra facilitar sua apresentação pro diretor:
 
 📦 Opção A: Maleta Executiva Premium - R$ 135,90/un
@@ -380,32 +380,32 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
 
         {/* Templates Rápidos */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             📱 Templates Rápidos de WhatsApp
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
             <div className="border p-3 rounded-lg">
-              <h4 className="font-bold text-sm text-gray-600 mb-1">Template 1: Follow-up Inicial</h4>
-              <p className="text-sm text-gray-700 bg-green-50 p-2 rounded">
+              <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 1: Follow-up Inicial</h4>
+              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
                 "Oi Beatriz! Tudo bem? Lembrei de você - chegaram umas opções novas que são perfeitas pro que você precisa. Bem diferentes do ano passado! Posso te mandar umas fotos?"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
-              <h4 className="font-bold text-sm text-gray-600 mb-1">Template 2: Envio de Opções</h4>
-              <p className="text-sm text-gray-700 bg-green-50 p-2 rounded">
+              <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 2: Envio de Opções</h4>
+              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
                 "Olha essas opções que separei! 👇 [IMAGEM] Essa linha é novidade 2026, nenhum cliente usou ainda. Perfeita pra causar aquele impacto diferente! O que achou? 😊"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
-              <h4 className="font-bold text-sm text-gray-600 mb-1">Template 3: Pedido de Quantidade</h4>
-              <p className="text-sm text-gray-700 bg-green-50 p-2 rounded">
+              <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 3: Pedido de Quantidade</h4>
+              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
                 "Amei que você gostou! 🎉 Me conta: aproximadamente quantas unidades vocês precisam? Assim já monto a proposta certinha pra você apresentar pro diretor!"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
-              <h4 className="font-bold text-sm text-gray-600 mb-1">Template 4: Follow-up Pós-Proposta</h4>
-              <p className="text-sm text-gray-700 bg-green-50 p-2 rounded">
+              <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 4: Follow-up Pós-Proposta</h4>
+              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
                 "Oi Beatriz! 😊 Conseguiu dar uma olhadinha na proposta? Se precisar de algum ajuste ou quiser que eu explique algo pro diretor, estou à disposição!"
               </p>
             </div>
@@ -414,7 +414,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
 
         {/* Dicas de Timing */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+          <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
             ⏰ Dicas de Timing
           </h2>
           
@@ -442,7 +442,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
 
         {/* Probabilidade de Conversão */}
         <section className="mb-8">
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-lg text-center">
+          <div className="bg-gradient-success text-success-foreground p-6 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-2">Probabilidade de Conversão</h2>
             <div className="text-5xl font-bold">78%</div>
             <p className="text-sm mt-2 opacity-90">Utilizando a abordagem recomendada neste relatório</p>
@@ -452,7 +452,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
         {/* Histórico de Interações */}
         {interactions.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 border-b-2 border-primary pb-2 mb-4">
+            <h2 className="text-xl font-bold text-foreground border-b-2 border-primary pb-2 mb-4">
               📝 Histórico de Interações
             </h2>
             
@@ -461,11 +461,11 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
                 <div key={i} className="border p-3 rounded-lg">
                   <div className="flex justify-between items-start mb-1">
                     <span className="font-medium text-sm">{interaction.title}</span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {format(new Date(interaction.created_at), "dd/MM/yyyy HH:mm")}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2">{interaction.content}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{interaction.content}</p>
                 </div>
               ))}
             </div>
@@ -473,7 +473,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
         )}
 
         {/* Rodapé */}
-        <footer className="mt-12 pt-6 border-t text-center text-sm text-gray-500">
+        <footer className="mt-12 pt-6 border-t text-center text-sm text-muted-foreground">
           <p>Relatório gerado automaticamente pelo Sistema de Inteligência Comportamental</p>
           <p className="mt-1">© {new Date().getFullYear()} - Todos os direitos reservados</p>
         </footer>
