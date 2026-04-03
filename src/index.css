@@ -86,6 +86,9 @@
 
     --radius: 0.75rem;
 
+    /* Gradient CSS variables (for inline styles) */
+    --gradient-primary: linear-gradient(135deg, hsl(234 72% 58%), hsl(234 72% 48%));
+
     /* Sidebar — Dark slate, always */
     --sidebar-background: 224 30% 8%;
     --sidebar-foreground: 220 15% 75%;
