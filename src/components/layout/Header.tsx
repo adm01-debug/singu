@@ -25,6 +25,7 @@ const PARENT_ROUTES: Record<string, string> = {
   '/network': '/',
   '/automacoes': '/',
   '/configuracoes': '/',
+  '/mapa-empresas': '/',
 };
 
 export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({ 
