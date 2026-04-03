@@ -182,7 +182,6 @@ export function CompanyCardWithContext({
   const displayName = toTitleCase(company.name);
   const hasSegment = !!company.industry;
   const healthConfig = healthBadgeConfig[company.financial_health || ''];
-  const healthConfig = healthBadgeConfig[company.financial_health || ''];
 
   return (
     <motion.div
