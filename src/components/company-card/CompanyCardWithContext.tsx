@@ -231,7 +231,7 @@ export function CompanyCardWithContext({
                   ) : null}
                   <div className={cn(
                     'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-white font-bold text-lg shadow-soft',
-                    getAvatarGradient(score10),
+                    getAvatarGradient(company.financial_health, company.status),
                     company.logo_url && 'hidden'
                   )}>
                     {getAvatarInitial(company.name)}
