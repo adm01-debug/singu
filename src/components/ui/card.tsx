@@ -1,24 +1,22 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-
 import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
-  "rounded-lg border text-card-foreground transition-all duration-200",
+  "rounded-xl text-card-foreground transition-all duration-200",
   {
     variants: {
       variant: {
-        default: "bg-card border-border shadow-sm",
-        elevated: "bg-card border-border/50 shadow-lg hover:shadow-xl",
-        outlined: "bg-card border-2 border-primary/20 shadow-none",
+        default: "bg-card border border-border/60 shadow-soft",
+        elevated: "bg-card border border-border/40 shadow-medium",
+        outlined: "bg-card border-2 border-primary/15 shadow-none",
         ghost: "bg-transparent border-transparent shadow-none",
-        glass: "bg-card/80 backdrop-blur-xl border-border/50 shadow-lg",
-        interactive: "bg-card border-border shadow-sm cursor-pointer hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30 active:translate-y-0",
-        gradient: "bg-gradient-to-br from-primary/5 via-primary/10 to-accent/5 border-primary/20 shadow-md",
-        muted: "bg-muted/50 border-muted shadow-none",
-        success: "bg-success/5 border-success/20 shadow-sm",
-        warning: "bg-warning/5 border-warning/20 shadow-sm",
-        destructive: "bg-destructive/5 border-destructive/20 shadow-sm",
+        glass: "glass shadow-medium",
+        interactive: "bg-card border border-border/60 shadow-soft cursor-pointer hover:shadow-medium hover:border-border active:scale-[0.99]",
+        muted: "bg-muted/40 border border-border/30 shadow-none",
+        success: "bg-success/5 border border-success/15 shadow-none",
+        warning: "bg-warning/5 border border-warning/15 shadow-none",
+        destructive: "bg-destructive/5 border border-destructive/15 shadow-none",
       },
       padding: {
         none: "",
@@ -51,14 +49,14 @@ Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("card-header flex flex-col space-y-1.5 p-6", className)} {...props} />
+    <div ref={ref} className={cn("card-header flex flex-col space-y-1.5 p-5", className)} {...props} />
   ),
 );
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-2xl font-semibold leading-none tracking-tight", className)} {...props} />
+    <h3 ref={ref} className={cn("text-base font-semibold leading-none tracking-tight", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";
@@ -71,13 +69,13 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
 CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />,
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("p-5 pt-0", className)} {...props} />,
 );
 CardContent.displayName = "CardContent";
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("card-footer flex items-center p-6 pt-0", className)} {...props} />
+    <div ref={ref} className={cn("card-footer flex items-center p-5 pt-0", className)} {...props} />
   ),
 );
 CardFooter.displayName = "CardFooter";

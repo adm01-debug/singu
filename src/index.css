@@ -2,160 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SINGU Design System - CRM Inteligente */
-
 /* ============================================
-   TYPOGRAPHY SCALE - Pilar 2.1 (Ratio 1.25)
+   SINGU Design System v2 — Glassmorphism Premium
+   Philosophy: Less is more. Clean, breathable, elegant.
    ============================================ */
+
 @layer base {
   :root {
-    /* Modular Type Scale (ratio 1.25) */
-    --text-xs: 0.75rem;      /* 12px - captions */
-    --text-sm: 0.875rem;     /* 14px - body small */
-    --text-base: 1rem;       /* 16px - body */
-    --text-lg: 1.125rem;     /* 18px - lead */
-    --text-xl: 1.25rem;      /* 20px - h4 */
-    --text-2xl: 1.5rem;      /* 24px - h3 */
-    --text-3xl: 1.875rem;    /* 30px - h2 */
-    --text-4xl: 2.25rem;     /* 36px - h1 */
-    --text-5xl: 3rem;        /* 48px - display */
-    --text-6xl: 3.75rem;     /* 60px - hero */
-    
-    /* Line heights otimizados */
-    --leading-none: 1;
+    /* Typography Scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+
     --leading-tight: 1.25;
     --leading-snug: 1.375;
     --leading-normal: 1.5;
     --leading-relaxed: 1.625;
-    --leading-loose: 2;
-    
-    /* Letter spacing */
-    --tracking-tighter: -0.05em;
+
     --tracking-tight: -0.025em;
     --tracking-normal: 0;
     --tracking-wide: 0.025em;
     --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
 
-    /* Core Brand Colors - Modern Indigo-Violet Theme */
-    --background: 225 25% 97%;
-    --foreground: 224 40% 10%;
+    /* ============================================
+       LIGHT MODE — Warm off-white, soft neutrals
+       ============================================ */
+    --background: 220 20% 97%;
+    --foreground: 220 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 40% 10%;
+    --card-foreground: 220 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 40% 10%;
+    --popover-foreground: 220 25% 12%;
 
-    /* Primary - Electric Indigo */
-    --primary: 234 89% 60%;
+    /* Primary — Calm Indigo */
+    --primary: 234 72% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 270 85% 65%;
 
-    /* Secondary - Cool Slate */
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 40% 10%;
+    /* Secondary */
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 220 25% 12%;
 
-    /* Muted - Refined Neutral (WCAG AA) */
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 44%;
+    /* Muted — Soft neutral */
+    --muted: 220 16% 94%;
+    --muted-foreground: 220 10% 46%;
 
-    /* Accent - Vivid Teal */
-    --accent: 168 76% 42%;
+    /* Accent — Soft Teal */
+    --accent: 172 50% 45%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Modern Emerald */
-    --success: 152 69% 40%;
+    /* Semantic — Desaturated pastels */
+    --success: 152 45% 42%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning - Rich Amber */
-    --warning: 36 96% 52%;
+    --warning: 38 70% 52%;
     --warning-foreground: 0 0% 100%;
 
-    /* Destructive - Vibrant Coral */
-    --destructive: 4 76% 58%;
+    --destructive: 4 55% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Info - Sky */
-    --info: 205 90% 52%;
+    --info: 210 60% 52%;
     --info-foreground: 0 0% 100%;
 
-    /* Celebration - Gold for achievements */
-    --celebration: 45 93% 58%;
-    --celebration-foreground: 30 80% 15%;
+    --celebration: 45 70% 55%;
+    --celebration-foreground: 30 60% 15%;
 
-    /* Borders and Inputs */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 234 89% 60%;
-    
-    /* Contextual Focus Rings */
-    --ring-destructive: 4 76% 58%;
-    --ring-success: 152 69% 40%;
-    --ring-warning: 36 96% 52%;
+    /* Borders — Very subtle */
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 234 72% 58%;
+
+    /* Contextual rings */
+    --ring-destructive: 4 55% 55%;
+    --ring-success: 152 45% 42%;
+    --ring-warning: 38 70% 52%;
 
     --radius: 0.75rem;
 
-    /* Sidebar - Deep Slate with subtle warmth */
-    --sidebar-background: 228 35% 10%;
-    --sidebar-background-end: 228 35% 6%;
-    --sidebar-foreground: 220 15% 80%;
-    --sidebar-primary: 234 89% 65%;
+    /* Sidebar — Dark slate, always */
+    --sidebar-background: 224 30% 8%;
+    --sidebar-foreground: 220 15% 75%;
+    --sidebar-primary: 234 72% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 30% 16%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 228 25% 16%;
-    --sidebar-ring: 234 89% 60%;
+    --sidebar-accent: 224 25% 14%;
+    --sidebar-accent-foreground: 220 15% 92%;
+    --sidebar-border: 224 20% 14%;
+    --sidebar-ring: 234 72% 58%;
 
-    /* Gradient endpoints */
-    --warning-glow: 28 95% 55%;
+    /* Shadows — Soft, blue-tinted */
+    --shadow-sm: 0 1px 2px 0 hsl(220 25% 12% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(220 25% 12% / 0.06);
+    --shadow-lg: 0 8px 24px -4px hsl(220 25% 12% / 0.08);
+    --shadow-xl: 0 16px 40px -8px hsl(220 25% 12% / 0.1);
 
-    /* Modern Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(234 89% 60%) 0%, hsl(270 85% 65%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(152 69% 40%) 0%, hsl(168 76% 42%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(36 96% 52%) 0%, hsl(28 95% 55%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(270 85% 65%) 0%, hsl(340 82% 60%) 100%);
-    --gradient-celebration: linear-gradient(135deg, hsl(45 93% 58%) 0%, hsl(36 96% 52%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(225 25% 97%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(228 35% 10%) 0%, hsl(228 35% 6%) 100%);
-    --gradient-heading: linear-gradient(135deg, hsl(224 40% 10%) 0%, hsl(234 89% 60%) 100%);
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.8) 0%, hsl(0 0% 100% / 0.4) 100%);
+    /* Glass */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 100% / 0.2;
+    --glass-blur: 16px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 3px 0 hsl(224 40% 10% / 0.04), 0 1px 2px -1px hsl(224 40% 10% / 0.03);
-    --shadow-md: 0 4px 6px -1px hsl(224 40% 10% / 0.06), 0 2px 4px -2px hsl(224 40% 10% / 0.04);
-    --shadow-lg: 0 10px 20px -3px hsl(224 40% 10% / 0.08), 0 4px 6px -4px hsl(224 40% 10% / 0.04);
-    --shadow-xl: 0 20px 40px -5px hsl(224 40% 10% / 0.1), 0 8px 10px -6px hsl(224 40% 10% / 0.06);
-    --shadow-glow: 0 0 24px hsl(234 89% 60% / 0.25);
-    --shadow-glow-lg: 0 0 48px hsl(234 89% 60% / 0.35);
-
-    /* Role Colors */
-    --role-owner: 270 67% 50%;
-    --role-manager: 234 89% 60%;
-    --role-buyer: 152 69% 40%;
-    --role-contact: 220 10% 50%;
-    
-    /* Surface Levels — Glass-inspired */
+    /* Surfaces */
     --surface-0: 0 0% 100%;
-    --surface-1: 225 25% 99%;
-    --surface-2: 225 20% 97%;
-    --surface-3: 225 18% 95%;
-    --surface-4: 225 16% 93%;
-    
+    --surface-1: 220 20% 98%;
+    --surface-2: 220 18% 96%;
+    --surface-3: 220 16% 94%;
+    --surface-4: 220 14% 92%;
+
+    /* Roles */
+    --role-owner: 270 50% 50%;
+    --role-manager: 234 60% 55%;
+    --role-buyer: 152 45% 42%;
+    --role-contact: 220 10% 50%;
+
     /* Row States */
-    --row-hover: 234 89% 60% / 0.04;
-    --row-selected: 234 89% 60% / 0.08;
-    --row-active: 234 89% 60% / 0.12;
-    
+    --row-hover: 234 72% 58% / 0.04;
+    --row-selected: 234 72% 58% / 0.07;
+    --row-active: 234 72% 58% / 0.10;
+
     /* Entity Colors */
-    --entity-contact: 234 89% 60%;
-    --entity-company: 270 67% 50%;
-    --entity-interaction: 152 69% 40%;
-    --entity-insight: 36 96% 52%;
-    
-    /* ============================================
-       SPACING TOKENS - Pilar 1.1
-       ============================================ */
+    --entity-contact: 234 72% 58%;
+    --entity-company: 270 50% 50%;
+    --entity-interaction: 152 45% 42%;
+    --entity-insight: 38 70% 52%;
+
+    /* Spacing */
     --space-0: 0;
     --space-px: 1px;
     --space-0-5: 0.125rem;
@@ -180,31 +156,20 @@
     --space-24: 6rem;
     --space-section: 4rem;
     --space-page: 6rem;
-    
-    /* ============================================
-       MOTION TOKENS - Pilar 1.2
-       ============================================ */
+
+    /* Motion */
     --duration-instant: 50ms;
     --duration-fast: 100ms;
     --duration-normal: 200ms;
     --duration-moderate: 300ms;
     --duration-slow: 400ms;
-    --duration-slower: 500ms;
-    --duration-slowest: 700ms;
-    
-    /* Easing Functions */
-    --ease-linear: linear;
-    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
     --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-    
-    /* ============================================
-       Z-INDEX SCALE - Pilar 1.3
-       ============================================ */
+
+    /* Z-index */
     --z-base: 0;
     --z-dropdown: 100;
     --z-sticky: 200;
@@ -216,11 +181,8 @@
     --z-tooltip: 800;
     --z-toast: 900;
     --z-max: 9999;
-    
-    /* ============================================
-       BORDER RADIUS TOKENS - Pilar 1.4
-       ============================================ */
-    --radius-none: 0;
+
+    /* Border Radius */
     --radius-sm: 0.25rem;
     --radius-md: 0.375rem;
     --radius-lg: 0.5rem;
@@ -228,138 +190,104 @@
     --radius-2xl: 1rem;
     --radius-3xl: 1.5rem;
     --radius-full: 9999px;
-    --radius-button: 0.5rem;
-    --radius-card: 0.75rem;
-    --radius-modal: 1rem;
-    --radius-input: 0.375rem;
-    --radius-avatar: 50%;
-    --radius-badge: 0.25rem;
-    
-    /* ============================================
-       TOUCH TARGET SIZES - Pilar 5.6
-       ============================================ */
+    --radius-card: 0.875rem;
+
+    /* Touch targets */
     --touch-target-min: 44px;
     --touch-target-comfortable: 48px;
-    --touch-target-spacious: 56px;
   }
 
+  /* ============================================
+     DARK MODE — Deep navy, glass surfaces
+     ============================================ */
   .dark {
-    --background: 228 30% 5%;
-    --foreground: 220 20% 95%;
+    --background: 224 28% 6%;
+    --foreground: 220 15% 92%;
 
-    --card: 228 28% 8%;
-    --card-foreground: 220 20% 95%;
+    --card: 224 24% 10%;
+    --card-foreground: 220 15% 92%;
 
-    --popover: 228 28% 8%;
-    --popover-foreground: 220 20% 95%;
+    --popover: 224 24% 10%;
+    --popover-foreground: 220 15% 92%;
 
-    --primary: 234 85% 65%;
+    --primary: 234 75% 65%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 270 80% 72%;
 
-    --secondary: 225 20% 14%;
-    --secondary-foreground: 220 20% 95%;
+    --secondary: 224 20% 14%;
+    --secondary-foreground: 220 15% 92%;
 
-    --muted: 225 20% 14%;
-    --muted-foreground: 220 15% 60%;
+    --muted: 224 18% 14%;
+    --muted-foreground: 220 12% 55%;
 
-    --accent: 168 70% 48%;
+    --accent: 172 45% 48%;
     --accent-foreground: 0 0% 100%;
 
-    /* Success - Brighter in dark for contrast */
-    --success: 152 69% 46%;
+    --success: 152 50% 46%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning - Slightly brighter in dark */
-    --warning: 36 96% 58%;
-    --warning-foreground: 30 80% 10%;
+    --warning: 38 75% 56%;
+    --warning-foreground: 30 60% 10%;
 
-    --destructive: 4 70% 55%;
+    --destructive: 4 55% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Info - Brighter in dark */
-    --info: 205 90% 58%;
+    --info: 210 65% 56%;
     --info-foreground: 0 0% 100%;
 
-    /* Celebration - Gold Dark */
-    --celebration: 45 90% 65%;
-    --celebration-foreground: 30 80% 10%;
+    --celebration: 45 75% 60%;
+    --celebration-foreground: 30 60% 10%;
 
-    --border: 225 18% 14%;
-    --input: 225 18% 14%;
-    --ring: 234 85% 65%;
-    
-    /* Contextual Focus Rings - Dark */
-    --ring-destructive: 4 70% 55%;
-    --ring-success: 152 69% 46%;
-    --ring-warning: 36 96% 58%;
+    --border: 224 16% 16%;
+    --input: 224 16% 16%;
+    --ring: 234 75% 65%;
 
-    --sidebar-background: 228 35% 4%;
-    --sidebar-background-end: 228 35% 8%;
-    --sidebar-foreground: 220 15% 78%;
-    --sidebar-primary: 234 85% 65%;
+    --ring-destructive: 4 55% 55%;
+    --ring-success: 152 50% 46%;
+    --ring-warning: 38 75% 56%;
+
+    --sidebar-background: 224 30% 5%;
+    --sidebar-foreground: 220 15% 72%;
+    --sidebar-primary: 234 75% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 25% 12%;
-    --sidebar-accent-foreground: 220 15% 95%;
-    --sidebar-border: 228 22% 12%;
-    --sidebar-ring: 234 85% 65%;
-    --warning-glow: 28 95% 60%;
-    
-    /* Dark mode shadows - deeper, more diffused */
-    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.25);
-    --shadow-md: 0 4px 8px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 10px 24px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
-    --shadow-xl: 0 20px 40px -5px hsl(0 0% 0% / 0.45), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
-    --shadow-glow: 0 0 24px hsl(234 85% 65% / 0.2);
-    --shadow-glow-lg: 0 0 48px hsl(234 85% 65% / 0.25);
-    
-    /* Dark mode gradients - adjusted luminosity */
-    --gradient-primary: linear-gradient(135deg, hsl(234 85% 65%) 0%, hsl(270 80% 72%) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(152 69% 46%) 0%, hsl(168 70% 48%) 100%);
-    --gradient-warning: linear-gradient(135deg, hsl(36 96% 58%) 0%, hsl(28 95% 60%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(270 80% 72%) 0%, hsl(340 80% 65%) 100%);
-    --gradient-celebration: linear-gradient(135deg, hsl(45 90% 65%) 0%, hsl(36 96% 58%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(228 28% 8%) 0%, hsl(228 30% 5%) 100%);
-    --gradient-sidebar: linear-gradient(180deg, hsl(228 35% 4%) 0%, hsl(228 35% 8%) 100%);
-    --gradient-heading: linear-gradient(135deg, hsl(220 20% 95%) 0%, hsl(234 85% 65%) 100%);
-    
-    /* Surface Levels - Dark Mode */
-    --surface-0: 228 30% 5%;
-    --surface-1: 228 28% 7%;
-    --surface-2: 228 26% 9%;
-    --surface-3: 228 24% 11%;
-    --surface-4: 228 22% 13%;
-    
-    /* Role Colors - Dark Mode */
-    --role-owner: 270 67% 65%;
-    --role-manager: 234 85% 72%;
-    --role-buyer: 152 69% 52%;
-    --role-contact: 220 15% 62%;
-    
-    /* Row States - Dark Mode */
-    --row-hover: 234 85% 65% / 0.06;
-    --row-selected: 234 85% 65% / 0.10;
-    --row-active: 234 85% 65% / 0.14;
+    --sidebar-accent: 224 22% 12%;
+    --sidebar-accent-foreground: 220 15% 92%;
+    --sidebar-border: 224 18% 12%;
+    --sidebar-ring: 234 75% 65%;
 
-    /* Entity Colors - Dark Mode */
-    --entity-contact: 234 85% 72%;
-    --entity-company: 270 67% 65%;
-    --entity-interaction: 152 69% 52%;
-    --entity-insight: 36 96% 58%;
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.35);
+    --shadow-xl: 0 16px 40px -8px hsl(0 0% 0% / 0.4);
 
-    /* Glass gradient - dark */
-    --gradient-glass: linear-gradient(135deg, hsl(228 28% 10% / 0.9) 0%, hsl(228 28% 8% / 0.6) 100%);
+    --glass-bg: 224 24% 10% / 0.6;
+    --glass-border: 220 15% 92% / 0.06;
+    --glass-blur: 20px;
+
+    --surface-0: 224 28% 6%;
+    --surface-1: 224 24% 8%;
+    --surface-2: 224 22% 10%;
+    --surface-3: 224 20% 13%;
+    --surface-4: 224 18% 15%;
+
+    --role-owner: 270 55% 62%;
+    --role-manager: 234 65% 68%;
+    --role-buyer: 152 50% 50%;
+    --role-contact: 220 12% 58%;
+
+    --row-hover: 234 75% 65% / 0.05;
+    --row-selected: 234 75% 65% / 0.08;
+    --row-active: 234 75% 65% / 0.12;
+
+    --entity-contact: 234 75% 68%;
+    --entity-company: 270 55% 62%;
+    --entity-interaction: 152 50% 50%;
+    --entity-insight: 38 75% 56%;
   }
 }
 
 /* ============================================
-   SMOOTH THEME TRANSITIONS - Pilar 8.1
-   Scoped to direct color properties only, no wildcard !important
+   BASE STYLES
    ============================================ */
-.theme-transitioning {
-  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -367,112 +295,70 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv11", "ss01", "ss03";
+    font-feature-settings: "cv11", "ss01";
   }
 
-  /* Enhanced Focus States for Accessibility */
-  *:focus {
-    @apply outline-none;
-  }
-
+  /* Focus */
+  *:focus { @apply outline-none; }
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary/20;
   }
 
-  /* Skip to content link */
   .skip-to-content {
-    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:shadow-lg;
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg;
   }
 
-  /* Focus styles for interactive elements */
-  button:focus-visible,
-  a:focus-visible,
-  input:focus-visible,
-  select:focus-visible,
-  textarea:focus-visible,
-  [role="button"]:focus-visible,
-  [role="link"]:focus-visible,
-  [tabindex]:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary/20 transition-shadow duration-150;
+  button:focus-visible, a:focus-visible, input:focus-visible,
+  select:focus-visible, textarea:focus-visible,
+  [role="button"]:focus-visible, [tabindex]:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary ring-2 ring-primary/20;
   }
 
-  /* Contextual focus rings */
-  .focus-destructive:focus-visible {
-    outline-color: hsl(var(--ring-destructive));
-    --tw-ring-color: hsl(var(--ring-destructive) / 0.2);
-  }
-
-  .focus-success:focus-visible {
-    outline-color: hsl(var(--ring-success));
-    --tw-ring-color: hsl(var(--ring-success) / 0.2);
-  }
-
-  .focus-warning:focus-visible {
-    outline-color: hsl(var(--ring-warning));
-    --tw-ring-color: hsl(var(--ring-warning) / 0.2);
-  }
-
-  /* High contrast focus for dark backgrounds */
-  .dark button:focus-visible,
-  .dark a:focus-visible,
+  .dark button:focus-visible, .dark a:focus-visible,
   .dark [role="button"]:focus-visible {
-    @apply ring-primary/40;
+    @apply ring-primary/30;
   }
 
-  /* Focus within for container elements */
-  .focus-within-ring:focus-within {
-    @apply ring-2 ring-primary/30 rounded-lg;
-  }
+  /* Scrollbar — minimal */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/35; }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    @apply bg-muted/50 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50 transition-colors;
-  }
-
-  /* Touch Target Accessibility - Minimum 44x44px on touch devices */
+  /* Touch targets on coarse devices */
   @media (pointer: coarse) {
     button:not([class*="w-"]):not([class*="h-"]),
-    [role="button"],
-    a[class*="btn"],
-    .touch-target {
+    [role="button"], a[class*="btn"], .touch-target {
       min-height: 44px;
       min-width: 44px;
-    }
-
-    /* Ensure small icon buttons have adequate touch area via padding */
-    button[class*="h-8"],
-    button[class*="h-6"],
-    button[class*="h-7"],
-    button[class*="w-8"],
-    button[class*="w-6"],
-    button[class*="w-7"] {
-      position: relative;
-    }
-
-    button[class*="h-8"]::after,
-    button[class*="h-6"]::after,
-    button[class*="h-7"]::after {
-      content: '';
-      position: absolute;
-      inset: -6px;
-      /* Expand touch area without changing visual size */
     }
   }
 }
 
+/* ============================================
+   COMPONENT STYLES
+   ============================================ */
 @layer components {
-  /* ============================================
-     STICKY TABLE HEADERS - Pilar 3.2
-     ============================================ */
+  /* Typography Hierarchy */
+  .text-display { @apply text-2xl md:text-3xl font-bold tracking-tight; line-height: var(--leading-tight); }
+  .text-h1 { @apply text-xl md:text-2xl font-bold tracking-tight; line-height: var(--leading-tight); }
+  .text-h2 { @apply text-lg md:text-xl font-semibold; line-height: var(--leading-snug); }
+  .text-h3 { @apply text-base md:text-lg font-semibold; line-height: var(--leading-snug); }
+  .text-h4 { @apply text-sm md:text-base font-medium; line-height: var(--leading-normal); }
+  .text-lead { @apply text-sm text-muted-foreground; line-height: var(--leading-relaxed); }
+  .text-body { @apply text-sm; line-height: var(--leading-normal); }
+  .text-small { @apply text-xs text-muted-foreground; line-height: var(--leading-normal); }
+  .text-caption { @apply text-xs text-muted-foreground uppercase tracking-wide font-medium; }
+  .text-eyebrow { @apply text-xs uppercase tracking-widest font-semibold text-primary; }
+
+  /* Glass Effect */
+  .glass {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+  }
+
+  /* Sticky Table Headers */
   .table-sticky-header thead th {
     position: sticky;
     top: 0;
@@ -486,328 +372,80 @@
     background-color: hsl(var(--card));
   }
 
-  /* Celebration gradient utility */
-  .bg-gradient-celebration {
-    background: var(--gradient-celebration);
-  }
-  /* ============================================
-     TYPOGRAPHY HIERARCHY - Pilar 2.3 (Compact & Elegant)
-     ============================================ */
-  
-  .text-display {
-    @apply text-2xl md:text-3xl font-bold tracking-tight;
-    line-height: var(--leading-tight);
-  }
-  
-  .text-h1 {
-    @apply text-xl md:text-2xl font-bold tracking-tight;
-    line-height: var(--leading-tight);
-  }
-  
-  .text-h2 {
-    @apply text-lg md:text-xl font-semibold tracking-tight;
-    line-height: var(--leading-snug);
-  }
-  
-  .text-h3 {
-    @apply text-base md:text-lg font-semibold;
-    line-height: var(--leading-snug);
-  }
-  
-  .text-h4 {
-    @apply text-sm md:text-base font-medium;
-    line-height: var(--leading-normal);
-  }
-  
-  .text-lead {
-    @apply text-sm text-muted-foreground;
-    line-height: var(--leading-relaxed);
-  }
-  
-  .text-body {
-    @apply text-sm;
-    line-height: var(--leading-normal);
-  }
-  
-  .text-small {
-    @apply text-xs text-muted-foreground;
-    line-height: var(--leading-normal);
-  }
-  
-  .text-caption {
-    @apply text-2xs text-muted-foreground uppercase tracking-wide font-medium;
-  }
-  
-  .text-eyebrow {
-    @apply text-2xs uppercase tracking-widest font-semibold text-primary;
-  }
-  
-  .text-gradient-heading {
-    @apply bg-clip-text text-transparent font-bold;
-    background-image: var(--gradient-heading);
-  }
-
-  /* Glass morphism effect */
-  .glass {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50;
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-primary);
-  }
-
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-0.5;
-  }
-
-  /* ============================================
-     GRADIENT CTA BUTTONS - Pilar 3.3
-     ============================================ */
-  .btn-gradient {
-    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
-    background: var(--gradient-primary);
-    transition: all 0.3s ease;
-  }
-  
-  .btn-gradient::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, hsl(var(--primary-glow)) 0%, hsl(var(--primary)) 100%);
-  }
-  
-  .btn-gradient:hover::before {
-    @apply opacity-100;
-  }
-  
-  .btn-gradient:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-  }
-  
-  .btn-gradient-success {
-    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
-    background: var(--gradient-success);
-  }
-  
-  .btn-gradient-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px hsl(var(--success) / 0.3);
-  }
-  
-  .btn-gradient-premium {
-    @apply relative overflow-hidden text-white font-medium rounded-lg px-6 py-3;
-    background: var(--gradient-premium);
-  }
-  
-  .btn-gradient-premium:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px hsl(var(--warning) / 0.3);
-  }
-
-  /* Role badges - using semantic tokens */
+  /* Role badges */
   .role-owner {
-    background-color: hsl(var(--role-owner) / 0.12);
+    background-color: hsl(var(--role-owner) / 0.1);
     color: hsl(var(--role-owner));
-    border-color: hsl(var(--role-owner) / 0.25);
+    border-color: hsl(var(--role-owner) / 0.2);
   }
-  
   .role-manager {
-    background-color: hsl(var(--role-manager) / 0.12);
+    background-color: hsl(var(--role-manager) / 0.1);
     color: hsl(var(--role-manager));
-    border-color: hsl(var(--role-manager) / 0.25);
+    border-color: hsl(var(--role-manager) / 0.2);
   }
-  
   .role-buyer {
-    background-color: hsl(var(--role-buyer) / 0.12);
+    background-color: hsl(var(--role-buyer) / 0.1);
     color: hsl(var(--role-buyer));
-    border-color: hsl(var(--role-buyer) / 0.25);
+    border-color: hsl(var(--role-buyer) / 0.2);
   }
-  
   .role-contact {
-    background-color: hsl(var(--role-contact) / 0.12);
+    background-color: hsl(var(--role-contact) / 0.1);
     color: hsl(var(--role-contact));
-    border-color: hsl(var(--role-contact) / 0.25);
+    border-color: hsl(var(--role-contact) / 0.2);
   }
 
-  /* Status indicators */
-  .status-online {
-    @apply bg-success;
-  }
-
-  .status-offline {
-    @apply bg-muted-foreground;
-  }
-
-  .status-busy {
-    @apply bg-warning;
-  }
-
-  /* ============================================
-     SKELETON SHIMMER EFFECT - Pilar 4.2
-     ============================================ */
-  @keyframes shimmer {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(100%);
-    }
-  }
-  
+  /* Skeleton shimmer */
   .skeleton-shimmer {
-    @apply relative overflow-hidden bg-muted/70 rounded-md;
+    @apply relative overflow-hidden bg-muted/60 rounded-md;
   }
-  
   .skeleton-shimmer::after {
     content: '';
     @apply absolute inset-0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--primary) / 0.08),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.06), transparent);
     animation: shimmer 2s infinite;
   }
-  
-  .dark .skeleton-shimmer::after {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      hsl(var(--primary) / 0.15),
-      transparent
-    );
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 }
 
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
 @layer utilities {
-  /* Core animation utilities */
+  /* Animations */
   .animate-in-up {
     animation: slideInUp 0.4s ease-out forwards;
   }
-
-  .animate-in-scale {
-    animation: scaleIn 0.3s ease-out forwards;
-  }
-
   .animate-pulse-soft {
     animation: pulseSoft 2s ease-in-out infinite;
-  }
-  
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite;
-  }
-  
-  .animate-bounce-subtle {
-    animation: bounceSubtle 2s ease-in-out infinite;
-  }
-  
-  .animate-gradient {
-    animation: gradientShift 8s ease infinite;
-    background-size: 200% 200%;
-  }
-  
-  .animate-slide-in-right {
-    animation: slideInRight 0.4s ease-out forwards;
-  }
-  
-  .animate-slide-in-left {
-    animation: slideInLeft 0.4s ease-out forwards;
-  }
-  
-  .animate-pop {
-    animation: pop 0.3s ease-out forwards;
-  }
-  
-  .animate-shake {
-    animation: shake 0.5s ease-in-out;
   }
 
   @keyframes slideInUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
-  @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
   @keyframes pulseSoft {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
   }
-  
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-6px); }
   }
-  
-  @keyframes glow {
-    0%, 100% { box-shadow: var(--shadow-glow); }
-    50% { box-shadow: var(--shadow-glow-lg); }
-  }
-  
-  @keyframes bounceSubtle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-  
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  
-  @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-20px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  
-  @keyframes pop {
-    0% { opacity: 0; transform: scale(0.8); }
-    50% { transform: scale(1.05); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-    20%, 40%, 60%, 80% { transform: translateX(4px); }
-  }
+  .animate-float { animation: float 3s ease-in-out infinite; }
 
-  /* Container query utilities */
-  .container-query {
-    container-type: inline-size;
-  }
-
-  .container-query-size {
-    container-type: size;
-  }
-
+  /* Container queries */
+  .container-query { container-type: inline-size; }
   @container (min-width: 320px) {
     .cq-sm\:flex-row { flex-direction: row; }
     .cq-sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
-
   @container (min-width: 480px) {
-    .cq-md\:flex-row { flex-direction: row; }
     .cq-md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cq-md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-
   @container (min-width: 640px) {
     .cq-lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .cq-lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -815,12 +453,10 @@
 }
 
 /* ============================================
-   REDUCED MOTION SUPPORT - Pilar 7.4
+   REDUCED MOTION
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -829,338 +465,79 @@
 }
 
 /* ============================================
-   SAFE AREA INSETS - Mobile Support
+   SAFE AREAS & SCROLLBAR
    ============================================ */
 .safe-area-inset-top { padding-top: env(safe-area-inset-top); }
 .safe-area-inset-bottom { padding-bottom: env(safe-area-inset-bottom); }
-.safe-area-inset-left { padding-left: env(safe-area-inset-left); }
-.safe-area-inset-right { padding-right: env(safe-area-inset-right); }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
-/* ============================================
-   SCROLLBAR HIDDEN UTILITY
-   ============================================ */
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
-/* ============================================
-   SURFACE UTILITIES - Pilar 3.2
-   ============================================ */
+/* Surfaces */
 .surface-0 { background-color: hsl(var(--surface-0)); }
 .surface-1 { background-color: hsl(var(--surface-1)); }
 .surface-2 { background-color: hsl(var(--surface-2)); }
 .surface-3 { background-color: hsl(var(--surface-3)); }
 .surface-4 { background-color: hsl(var(--surface-4)); }
 
-/* ============================================
-   ROW STATE UTILITIES
-   ============================================ */
+/* Row states */
 .row-hover:hover { background-color: hsl(var(--row-hover)); }
 .row-selected { background-color: hsl(var(--row-selected)); }
 .row-active { background-color: hsl(var(--row-active)); }
 
 /* ============================================
-   ACCESSIBILITY UTILITIES - Pilar 4
+   ACCESSIBILITY
    ============================================ */
 .sr-only-focusable:not(:focus):not(:focus-within) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
-
 .live-region {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+.touch-target { min-height: var(--touch-target-min); min-width: var(--touch-target-min); }
 
-.focus-high-contrast:focus-visible {
-  outline: 3px solid hsl(var(--primary));
-  outline-offset: 3px;
-}
-
-.touch-target {
-  min-height: var(--touch-target-min);
-  min-width: var(--touch-target-min);
-}
-
-.touch-target-comfortable {
-  min-height: var(--touch-target-comfortable);
-  min-width: var(--touch-target-comfortable);
-}
-
-/* ============================================
-   MOTION UTILITIES - Pilar 1.2
-   ============================================ */
+/* Motion utilities */
 .duration-instant { transition-duration: var(--duration-instant); }
 .duration-fast { transition-duration: var(--duration-fast); }
 .duration-normal { transition-duration: var(--duration-normal); }
-.duration-moderate { transition-duration: var(--duration-moderate); }
-.duration-slow { transition-duration: var(--duration-slow); }
-
 .ease-smooth { transition-timing-function: var(--ease-smooth); }
-.ease-bounce { transition-timing-function: var(--ease-bounce); }
-.ease-elastic { transition-timing-function: var(--ease-elastic); }
-.ease-spring { transition-timing-function: var(--ease-spring); }
 
-/* ============================================
-   INTERACTIVE STATES - Pilar 3
-   ============================================ */
-.pressable {
-  transition: transform var(--duration-fast) var(--ease-smooth);
-}
+/* Pressable */
+.pressable { transition: transform var(--duration-fast) var(--ease-smooth); }
+.pressable:active { transform: scale(0.97); }
 
-.pressable:active {
-  transform: scale(0.97);
-}
-
-.lift-on-hover {
-  transition: transform var(--duration-normal) var(--ease-smooth), 
-              box-shadow var(--duration-normal) var(--ease-smooth);
-}
-
-.lift-on-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.glow-on-hover {
-  transition: box-shadow var(--duration-normal) var(--ease-smooth);
-}
-
-.glow-on-hover:hover {
-  box-shadow: var(--shadow-glow);
-}
-
-/* ============================================
-   ADVANCED ANIMATION LIBRARY
-   ============================================ */
-
-/* Stagger animation for children */
-.stagger-children > * {
-  --stagger-delay: calc(var(--stagger-index, 0) * 0.05s);
-  animation-delay: var(--stagger-delay);
-}
-
-/* Morphing background */
-@keyframes morphing-bg {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.animate-morphing-bg {
-  background-size: 200% 200%;
-  animation: morphing-bg 3s ease infinite;
-}
-
-/* Success ripple */
-@keyframes success-ripple {
-  0% { transform: scale(0); opacity: 0.8; }
-  100% { transform: scale(4); opacity: 0; }
-}
-
-.animate-success-ripple {
-  animation: success-ripple 0.6s ease-out forwards;
-}
-
-/* Attention pulse */
-@keyframes attention-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
-  50% { box-shadow: 0 0 0 10px hsl(var(--primary) / 0); }
-}
-
-.animate-attention {
-  animation: attention-pulse 2s infinite;
-}
-
-/* Slide animations */
-@keyframes slide-in-left {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slide-in-right {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slide-in-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slide-in-down {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.animate-slide-in-left { animation: slide-in-left 0.3s var(--ease-smooth) forwards; }
-.animate-slide-in-right { animation: slide-in-right 0.3s var(--ease-smooth) forwards; }
-.animate-slide-in-up { animation: slide-in-up 0.3s var(--ease-smooth) forwards; }
-.animate-slide-in-down { animation: slide-in-down 0.3s var(--ease-smooth) forwards; }
-
-/* Scale bounce */
-@keyframes scale-bounce {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.05); opacity: 1; }
-  70% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
-
-.animate-scale-bounce {
-  animation: scale-bounce 0.4s var(--ease-elastic) forwards;
-}
-
-/* Heartbeat */
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  14% { transform: scale(1.1); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.1); }
-  56% { transform: scale(1); }
-}
-
-.animate-heartbeat {
-  animation: heartbeat 1.3s ease-in-out infinite;
-}
-
-/* Typing indicator */
-@keyframes typing-dot {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-8px); opacity: 1; }
-}
-
-.animate-typing-1 { animation: typing-dot 1.4s infinite 0s; }
-.animate-typing-2 { animation: typing-dot 1.4s infinite 0.2s; }
-.animate-typing-3 { animation: typing-dot 1.4s infinite 0.4s; }
-
-/* Confetti */
-@keyframes confetti {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
-}
-
-.animate-confetti {
-  animation: confetti 1s ease-out forwards;
-}
-
-/* Reduced motion - disable custom animations */
-@media (prefers-reduced-motion: reduce) {
-  .animate-morphing-bg,
-  .animate-success-ripple,
-  .animate-attention,
-  .animate-slide-in-left,
-  .animate-slide-in-right,
-  .animate-slide-in-up,
-  .animate-slide-in-down,
-  .animate-scale-bounce,
-  .animate-heartbeat,
-  .animate-typing-1,
-  .animate-typing-2,
-  .animate-typing-3,
-  .animate-confetti,
-  .animate-float,
-  .animate-glow,
-  .animate-bounce-gentle,
-  .animate-gradient,
-  .animate-pop,
-  .animate-shake {
-    animation: none !important;
-  }
-}
-
-/* ============================================
-   ACCESSIBILITY IMPROVEMENTS - WCAG AA
-   ============================================ */
-
-/* Enhanced focus rings for keyboard navigation */
-*:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.5);
-  border-radius: inherit;
-}
-
-/* Ensure minimum 44x44px touch targets on touch devices */
-@media (pointer: coarse) {
-  button,
-  [role="button"],
-  a,
-  input[type="checkbox"],
-  input[type="radio"],
-  select,
-  [role="tab"],
-  [role="menuitem"],
-  [role="option"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Expand tap area for small icons without changing layout */
-  .touch-target-expand {
-    position: relative;
-  }
-
-  .touch-target-expand::after {
-    content: '';
-    position: absolute;
-    inset: -8px;
-    min-width: 44px;
-    min-height: 44px;
-  }
-}
-
-/* Skip to main content link */
-.skip-to-main {
-  position: fixed;
-  top: -100%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  padding: 0.75rem 1.5rem;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-radius: 0 0 0.5rem 0.5rem;
-  font-weight: 600;
-  transition: top 0.2s;
-}
-
-.skip-to-main:focus {
-  top: 0;
-}
-
-/* Global touch-manipulation for interactive elements */
+/* Touch */
 button, a, input, select, textarea, [role="button"] {
   touch-action: manipulation;
 }
 
-/* iOS auto-zoom prevention — ensures inputs don't trigger zoom on focus */
+/* iOS zoom prevention */
 @supports (-webkit-touch-callout: none) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="search"],
-  input[type="number"],
-  select,
-  textarea {
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="tel"], input[type="url"], input[type="search"],
+  input[type="number"], select, textarea {
     font-size: 16px !important;
   }
+}
+
+/* Focus visible — global override */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.4);
+  border-radius: inherit;
+}
+
+/* Skip to main */
+.skip-to-main {
+  position: fixed; top: -100%; left: 50%; transform: translateX(-50%);
+  z-index: 9999; padding: 0.75rem 1.5rem;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+  border-radius: 0 0 0.5rem 0.5rem; font-weight: 600; transition: top 0.2s;
+}
+.skip-to-main:focus { top: 0; }
+
+/* Theme transition (scoped) */
+.theme-transitioning {
+  transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
 }

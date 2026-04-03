@@ -77,7 +77,7 @@ export function CarnegieScorePanel({ score, className }: CarnegieScorePanelProps
   };
 
   return (
-    <Card variant="gradient" className={cn("overflow-hidden", className)}>
+    <Card variant="elevated" className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">

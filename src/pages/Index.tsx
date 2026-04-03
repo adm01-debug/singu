@@ -321,13 +321,9 @@ const Dashboard = () => {
         hideBack
       />
 
-      <div className="p-4 md:p-6 space-y-4 md:space-y-5">
-        {/* Welcome Hero Card — compact version */}
-        <WelcomeHeroCard
-          totalContacts={dashboardStats.totalContacts}
-          weeklyInteractions={dashboardStats.weeklyInteractions}
-          averageScore={dashboardStats.averageScore}
-        />
+      <div className="p-4 md:p-6 space-y-5 md:space-y-6">
+        {/* Welcome — clean greeting only */}
+        <WelcomeHeroCard />
 
         {/* Onboarding Checklist */}
         <OnboardingChecklist
@@ -340,23 +336,22 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS — sticky, immediately after onboarding ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
-              <TabsList className="grid w-full grid-cols-4 bg-muted/60 p-1 rounded-xl">
-                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all">
-                  <LayoutGrid className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span className="hidden xs:inline truncate">Geral</span>
+            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6">
+              <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-xl">
+                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                  <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all">
-                  <BarChart3 className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                  <BarChart3 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all">
-                  <Heart className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                  <Heart className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Relações</span>
                 </TabsTrigger>
-                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all">
-                  <Brain className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                  <Brain className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">IA</span>
                 </TabsTrigger>
               </TabsList>
@@ -383,7 +378,7 @@ const Dashboard = () => {
                     key={stat.title}
                     {...stat}
                     delay={prefersReducedMotion ? 0 : index}
-                    variant={index === 0 ? 'gradient' : 'elevated'}
+                    variant={index === 0 ? 'elevated' : 'default'}
                   />
                 ))}
               </div>
