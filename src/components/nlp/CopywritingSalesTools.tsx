@@ -318,8 +318,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                   {/* Issues & Strengths */}
                   <div className="grid md:grid-cols-2 gap-4">
                     {analysisResult.issues.length > 0 && (
-                      <div className="bg-red-500/10 rounded-lg p-4">
-                        <h4 className="font-medium mb-2 text-red-600 flex items-center gap-2">
+                      <div className="bg-destructive/10 rounded-lg p-4">
+                        <h4 className="font-medium mb-2 text-destructive flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4" />
                           Pontos a Melhorar
                         </h4>
