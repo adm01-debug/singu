@@ -81,29 +81,24 @@ function HealthRing({ health, status }: { health: string | null; status: string 
   if (!derivedConfig) {
     return (
       <div className="flex items-center gap-1.5 text-muted-foreground">
-        <div className="w-7 h-7 rounded-full border-2 border-border flex items-center justify-center">
-          <span className="text-[10px]">–</span>
-        </div>
+        <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
         <span className="text-xs">Sem dados</span>
       </div>
     );
   }
 
-  const size = 28;
-  const stroke = 3;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (derivedConfig.percent / 100) * circumference;
+  // Simple dot indicator instead of SVG ring for cleaner look
+  const dotColorMap: Record<string, string> = {
+    'text-success': 'bg-success',
+    'text-info': 'bg-info',
+    'text-warning': 'bg-warning',
+    'text-destructive': 'bg-destructive',
+  };
+  const dotColor = dotColorMap[derivedConfig.color] || 'bg-primary';
 
   return (
     <div className={cn('flex items-center gap-1.5', derivedConfig.color)}>
-      <svg width={size} height={size} className="rotate-[-90deg]">
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
-          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
-          className="transition-all duration-700"
-        />
-      </svg>
+      <span className={cn('w-2 h-2 rounded-full', dotColor)} />
       <span className="text-xs font-medium">{derivedConfig.label}</span>
     </div>
   );
