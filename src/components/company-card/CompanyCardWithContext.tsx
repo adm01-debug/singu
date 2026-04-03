@@ -342,7 +342,7 @@ export function CompanyCardWithContext({
               )}
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <ScoreRing score={score10} />
+                <HealthRing health={company.financial_health} status={company.status} />
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
                 </span>
