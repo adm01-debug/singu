@@ -135,7 +135,7 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                           </Badge>
                           {interaction.initiated_by && (
                             interaction.initiated_by === 'us' ? (
-                              <ArrowUpRight className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                              <ArrowUpRight className="h-3 w-3 text-info flex-shrink-0" />
                             ) : (
                               <ArrowDownLeft className="h-3 w-3 text-green-500 flex-shrink-0" />
                             )
