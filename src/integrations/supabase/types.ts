@@ -391,6 +391,8 @@ export type Database = {
           is_customer: boolean | null
           is_matriz: boolean | null
           is_supplier: boolean | null
+          lat: number | null
+          lng: number | null
           logo_url: string | null
           matriz_id: string | null
           name: string
@@ -446,6 +448,8 @@ export type Database = {
           is_customer?: boolean | null
           is_matriz?: boolean | null
           is_supplier?: boolean | null
+          lat?: number | null
+          lng?: number | null
           logo_url?: string | null
           matriz_id?: string | null
           name: string
@@ -501,6 +505,8 @@ export type Database = {
           is_customer?: boolean | null
           is_matriz?: boolean | null
           is_supplier?: boolean | null
+          lat?: number | null
+          lng?: number | null
           logo_url?: string | null
           matriz_id?: string | null
           name?: string
