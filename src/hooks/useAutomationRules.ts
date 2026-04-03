@@ -210,9 +210,9 @@ export function useAutomationRules() {
 
       toast.success('Automação removida.');
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setRules(previousRules);
-      toast.error('Erro ao remover: ' + e.message);
+      toast.error('Erro ao remover: ' + (e instanceof Error ? e.message : 'Erro desconhecido'));
       return false;
     }
   }, [user, rules]);
