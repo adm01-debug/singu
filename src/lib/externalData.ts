@@ -3,10 +3,11 @@ import { logger } from "@/lib/logger";
 
 interface ExternalQueryOptions {
   table: string;
+  select?: string;
   filters?: Array<{
     type: 'eq' | 'ilike' | 'in' | 'neq' | 'is';
     column: string;
-    value: any;
+    value: unknown;
   }>;
   search?: {
     term: string;
