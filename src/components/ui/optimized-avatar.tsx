@@ -40,7 +40,7 @@ export function OptimizedAvatar({
 
   // Intersection Observer for true lazy loading
   useEffect(() => {
-    if (loading === 'eager' || !src) {
+    if (loading === 'eager' || !effectiveSrc) {
       setIsInView(true);
       return;
     }
