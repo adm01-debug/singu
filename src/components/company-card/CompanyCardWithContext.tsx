@@ -52,28 +52,51 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
-/* ── Score Ring with semantic colors ── */
-function ScoreRing({ score }: { score: number | null }) {
-  const s = score ?? 0;
-  const size = 32;
+/* ── Health Score Ring with semantic colors ── */
+const healthRingConfig: Record<string, { color: string; label: string; percent: number }> = {
+  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
+  good:      { color: 'text-success', label: 'Boa', percent: 85 },
+  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
+  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
+  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
+  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
+  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
+  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
+};
+
+function HealthRing({ health, status }: { health: string | null; status: string | null }) {
+  const config = healthRingConfig[health || ''];
+  
+  // Derive visual from status if no financial_health
+  const derivedConfig = config || (
+    status === 'active' || status === 'ativo'
+      ? { color: 'text-success', label: 'Ativo', percent: 70 }
+      : status === 'inactive' || status === 'inativo'
+      ? { color: 'text-destructive', label: 'Inativo', percent: 15 }
+      : status === 'prospect' || status === 'prospecto'
+      ? { color: 'text-info', label: 'Prospecto', percent: 50 }
+      : null
+  );
+
+  if (!derivedConfig) {
+    return (
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="w-7 h-7 rounded-full border-2 border-border flex items-center justify-center">
+          <span className="text-[10px]">–</span>
+        </div>
+        <span className="text-xs">Sem dados</span>
+      </div>
+    );
+  }
+
+  const size = 28;
   const stroke = 3;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (s / 10) * circumference;
-
-  // Semantic color based on score value (0-10)
-  const colorClass = s <= 2
-    ? 'text-destructive'
-    : s <= 4
-    ? 'text-warning'
-    : s <= 6
-    ? 'text-info'
-    : 'text-success';
-
-  const label = s === 0 ? '–' : s.toString();
+  const offset = circumference - (derivedConfig.percent / 100) * circumference;
 
   return (
-    <div className={cn('flex items-center gap-1.5', colorClass)}>
+    <div className={cn('flex items-center gap-1.5', derivedConfig.color)}>
       <svg width={size} height={size} className="rotate-[-90deg]">
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke} opacity={0.15} />
         <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="currentColor" strokeWidth={stroke}
@@ -81,7 +104,7 @@ function ScoreRing({ score }: { score: number | null }) {
           className="transition-all duration-700"
         />
       </svg>
-      <span className="text-sm font-bold tabular-nums">{label}</span>
+      <span className="text-xs font-medium">{derivedConfig.label}</span>
     </div>
   );
 }
