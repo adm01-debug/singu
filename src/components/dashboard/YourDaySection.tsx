@@ -260,7 +260,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning">
+              <Card className="border-warning/30 bg-warning/5 h-full border-l-4 border-l-warning hover:shadow-md hover:shadow-warning/15 hover:scale-[1.01] transition-all duration-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-warning">
                     <Cake className="w-4 h-4" />
