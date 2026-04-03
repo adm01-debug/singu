@@ -210,7 +210,7 @@ describe('formatContactName — Contact Name Formatting', () => {
 
   it('handles full email as combined name', () => {
     const result = formatContactName('pedro', 'pedro@test.com');
-    expect(result).toContain('Pedro') || expect(result).toContain('pedro');
+    expect(result.toLowerCase()).toContain('pedro');
   });
 });
 
