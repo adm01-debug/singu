@@ -307,7 +307,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex flex-wrap gap-1">
                         <span className="text-xs text-muted-foreground">Faltando:</span>
                         {analysisResult.triggerDensity.missingTriggers.slice(0, 4).map(t => (
-                          <Badge key={t} variant="outline" className="text-xs border-red-300 text-red-600">
+                          <Badge key={t} variant="outline" className="text-xs border-destructive/30 text-destructive">
                             {t}
                           </Badge>
                         ))}
