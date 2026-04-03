@@ -337,46 +337,7 @@ const Dashboard = () => {
           hasInteractions={hasInteractions}
         />
 
-        {/* Your Day Section — collapsible to save space */}
-        <DashboardErrorBoundary sectionName="Seu Dia">
-          <YourDaySection />
-        </DashboardErrorBoundary>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {stats.map((stat, index) => (
-            <StatCard
-              key={stat.title}
-              {...stat}
-              delay={prefersReducedMotion ? 0 : index}
-              variant={index === 0 ? 'gradient' : 'elevated'}
-            />
-          ))}
-        </div>
-
-        {/* Pre-Contact Briefing — collapsible */}
-        <DashboardErrorBoundary sectionName="Briefing">
-          <Collapsible open={briefingOpen} onOpenChange={setBriefingOpen}>
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
-              >
-                <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
-                  <Brain className="w-3 h-3 text-primary" />
-                </div>
-                <span className="font-medium">Briefing Pré-Contato</span>
-                {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              <PreContactBriefing compact />
-            </CollapsibleContent>
-          </Collapsible>
-        </DashboardErrorBoundary>
-
-        {/* ===== MODULAR DASHBOARD TABS — sticky header ===== */}
+        {/* ===== MODULAR DASHBOARD TABS — sticky, immediately after onboarding ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-border/50">
