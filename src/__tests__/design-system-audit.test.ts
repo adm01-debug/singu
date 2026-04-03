@@ -237,11 +237,12 @@ describe('Design System Audit - Component Semantic Tokens', () => {
     expect(content).not.toMatch(/Check.*text-white/);
   });
 
-  it('stat-card gradient variant uses primary-foreground', () => {
+  it('stat-card uses semantic foreground tokens', () => {
     const content = fs.readFileSync(
       path.resolve(COMPONENTS_DIR, 'ui/stat-card.tsx'), 'utf8'
     );
-    expect(content).toContain('text-primary-foreground');
+    expect(content).toContain('text-foreground');
+    expect(content).toContain('text-muted-foreground');
     expect(content).not.toMatch(/gradient.*text-white/);
   });
 
