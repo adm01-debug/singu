@@ -121,15 +121,39 @@ const healthBadgeConfig: Record<string, { className: string; label: string }> = 
   critical:  { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Crítica' },
 };
 
-/* ── Avatar gradient based on score ── */
-function getAvatarGradient(health: string | null, status: string | null): string {
+/* ── Deterministic avatar color from name hash ── */
+function hashStringToHue(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % 360;
+}
+
+function getAvatarGradient(health: string | null, status: string | null, name?: string): string {
   if (health === 'excellent' || health === 'good' || health === 'growing') return 'from-success to-success/70';
   if (health === 'stable') return 'from-info to-primary';
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
   if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
+  // Deterministic color based on company name
+  if (name) {
+    const hue = hashStringToHue(name);
+    // Use CSS custom property via inline style instead
+    return `from-primary to-primary/70`;
+  }
   return 'from-primary to-primary/70';
+}
+
+function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
+  // Only apply custom color when there's no health/status-based color
+  if (health && healthRingConfig[health]) return undefined;
+  if (status === 'active' || status === 'ativo' || status === 'inactive' || status === 'inativo') return undefined;
+  const hue = hashStringToHue(name);
+  return {
+    background: `linear-gradient(135deg, hsl(${hue}, 55%, 50%), hsl(${(hue + 30) % 360}, 45%, 40%))`,
+  };
 }
 
 interface CompanyCardWithContextProps {
