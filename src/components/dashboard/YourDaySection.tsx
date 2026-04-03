@@ -337,7 +337,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         className="h-9 w-9 border border-warning/20"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-accent transition-colors">
+                        <p className="text-sm font-medium truncate group-hover:text-warning transition-colors">
                           {item.contact.first_name} {item.contact.last_name}
                         </p>
                         <p className="text-xs text-muted-foreground line-clamp-1">
