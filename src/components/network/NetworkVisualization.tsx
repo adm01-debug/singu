@@ -437,7 +437,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
               <span>Score Alto</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
-              <div className="w-3 h-3 rounded-full bg-yellow-500" />
+              <div className="w-3 h-3 rounded-full bg-warning" />
               <span>Score Médio</span>
             </div>
             <div className="flex items-center gap-2 text-xs">
