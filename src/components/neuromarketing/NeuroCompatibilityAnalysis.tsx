@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
+import type { NeuroDecisionProfile, Neurochemical } from '@/types/neuromarketing';
 
 type DISCProfile = 'D' | 'I' | 'S' | 'C';
 
