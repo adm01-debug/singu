@@ -221,7 +221,7 @@ export function ContactCardWithContext({
                     {companyName && (
                       <div className="flex items-center gap-2 mb-3">
                         <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">{companyName}</span>
+                        <span className="text-sm text-muted-foreground">{toTitleCase(companyName)}</span>
                       </div>
                     )}
 
