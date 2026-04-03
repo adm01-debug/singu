@@ -92,14 +92,16 @@ function extractCity(extraDataRf: string | null): string | null {
 }
 
 /* ── Marker Cluster ── */
-function MarkerClusterGroup({ companies }: { companies: MappableCompany[] }) {
+function MarkerClusterLayer({ companies }: { companies: MappableCompany[] }) {
   const map = useMap();
-  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clusterRef = useRef<any>(null);
 
   useEffect(() => {
     if (clusterRef.current) map.removeLayer(clusterRef.current);
 
-    const cluster = L.markerClusterGroup({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cluster = (L as any).markerClusterGroup({
       chunkedLoading: true,
       maxClusterRadius: 50,
       spiderfyOnMaxZoom: true,
