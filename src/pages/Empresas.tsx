@@ -265,7 +265,7 @@ const Empresas = () => {
     <AppLayout>
       <Header 
         title="Empresas" 
-        subtitle={`${filteredAndSortedCompanies.length} de ${companies.length} empresas`}
+        subtitle={filteredAndSortedCompanies.length === companies.length ? `${companies.length} empresas` : `${filteredAndSortedCompanies.length} de ${companies.length} empresas`}
         showAddButton
         addButtonLabel="Nova Empresa"
         onAddClick={() => setIsFormOpen(true)}
