@@ -13,12 +13,37 @@ const UPPERCASE_WORDS = new Set([
   'PAC', 'SICOOB', 'SICREDI', 'CRESOL', 'UNICRED', 'CNPJ', 'CPF', 'LTDA', 'SA', 'ME', 'EPP',
 ]);
 
+/** Normalize to ASCII for comparison (strips accents) */
+const normalizeForCompare = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
 export function toTitleCase(str: string): string {
   if (!str) return str;
   
   // Strip leading numeric prefix like "05 - " for cleaner display
   const stripped = str.replace(/^\d+\s*[-–—]\s*/, '');
-  const input = stripped || str;
+  let input = stripped || str;
+
+  // Remove redundant city/state suffix after " - " (e.g. "PAC IPUA - IPUA/SP" → "PAC IPUA")
+  // Pattern: " - CityName/UF" or " - CityName-UF" where it duplicates info
+  const dashParts = input.split(/\s+[-–—]\s+/);
+  if (dashParts.length >= 2) {
+    // Try to match redundant suffix in the last part
+    const lastPart = dashParts[dashParts.length - 1];
+    const mainParts = dashParts.slice(0, -1).join(' - ');
+    const suffix = normalizeForCompare(lastPart.replace(/[\/\-]\s*[A-Za-z]{2}$/, '').trim());
+    const mainNorm = normalizeForCompare(mainParts);
+    // If the suffix is contained in the main name, it's redundant — strip it but keep the UF
+    if (mainNorm.includes(suffix) && suffix.length >= 3) {
+      const ufMatch = lastPart.match(/[\/\-]\s*([A-Za-z]{2})$/);
+      // Check if UF is already in the mainParts (avoid double " - RJ - RJ")
+      const existingUf = mainParts.match(/\s*[-–—]\s*([A-Z]{2})$/);
+      if (existingUf) {
+        input = mainParts; // UF already present, just drop the redundant suffix
+      } else {
+        input = mainParts + (ufMatch ? ' - ' + ufMatch[1].toUpperCase() : '');
+      }
+    }
+  }
   
   // Skip if string already looks well-formatted
   const words = input.split(/\s+/);
@@ -30,17 +55,17 @@ export function toTitleCase(str: string): string {
 
   return input
     .toLowerCase()
-    .split(/(\s+|-+)/)
+    .split(/(\s+|-+|\/+)/)
     .map((word, index) => {
       const upperWord = word.toUpperCase();
       
       // Keep separators as-is
-      if (/^[\s-]+$/.test(word)) return word;
+      if (/^[\s\-\/]+$/.test(word)) return word;
       
       // Keep known uppercase words
       if (UPPERCASE_WORDS.has(upperWord)) return upperWord;
       
-      // Keep state abbreviations (2-letter uppercase after dash/space)
+      // Keep state abbreviations (2-letter after separator)
       if (word.length === 2 && /^[a-z]{2}$/.test(word)) {
         const upper = word.toUpperCase();
         if (UPPERCASE_WORDS.has(upper)) return upper;
