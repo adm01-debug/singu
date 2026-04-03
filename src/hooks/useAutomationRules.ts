@@ -188,7 +188,7 @@ export function useAutomationRules() {
       return true;
     } catch (e: unknown) {
       setRules(previousRules);
-      toast.error('Erro ao atualizar: ' + e.message);
+      toast.error('Erro ao atualizar: ' + (e instanceof Error ? e.message : 'Erro desconhecido'));
       return false;
     }
   }, [user, rules]);
