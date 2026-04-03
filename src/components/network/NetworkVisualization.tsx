@@ -536,7 +536,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
       {stats.topInfluencers.length > 0 && (
         <div className="p-4 border-t">
           <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-            <Star className="w-4 h-4 text-amber-500" />
+            <Star className="w-4 h-4 text-warning" />
             Principais Influenciadores
           </h4>
           <div className="flex flex-wrap gap-2">
