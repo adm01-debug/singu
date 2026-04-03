@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Sessão expirou, redirecionar para login
             toast.error('Sua sessão expirou. Por favor, faça login novamente.');
           } else if (data.session) {
-            if (import.meta.env.DEV) console.log('✅ Session refreshed successfully');
+            if (import.meta.env.DEV) logger.log('✅ Session refreshed successfully');
             scheduleTokenRefresh(data.session);
           }
         } catch (err) {
