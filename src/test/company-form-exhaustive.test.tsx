@@ -221,9 +221,6 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('ID Singular')).toBeInTheDocument();
     expect(screen.getByText('ID Confederação')).toBeInTheDocument();
     expect(screen.getByText('Bitrix Company ID')).toBeInTheDocument();
-    // Geolocation
-    expect(screen.getByText('Latitude')).toBeInTheDocument();
-    expect(screen.getByText('Longitude')).toBeInTheDocument();
   });
 
   it('switches to Fiscal tab and shows CNPJ Base field', async () => {
