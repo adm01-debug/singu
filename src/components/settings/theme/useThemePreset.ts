@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { PRESETS, type SkinPreset } from './presets';
+import { PRESETS, type SkinPreset, type SkinColors } from './presets';
 
 const STORAGE_KEY = 'singu-skin';
-const RADIUS_KEY = 'singu-border-radius';
 
 interface SkinState {
   presetId: string;
@@ -26,23 +25,41 @@ function resolveMode(): 'light' | 'dark' {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
+/** Apply ALL skin tokens to the DOM */
 function applyPresetToDOM(preset: SkinPreset, radius: number) {
   const root = document.documentElement;
   const mode = resolveMode();
-  const c = preset.colors[mode];
+  const c: SkinColors = preset.colors[mode];
 
+  // Core tokens
   root.style.setProperty('--primary', c.primary);
   root.style.setProperty('--accent', c.accent);
+  root.style.setProperty('--background', c.background);
+  root.style.setProperty('--foreground', c.foreground);
+  root.style.setProperty('--card', c.card);
+  root.style.setProperty('--card-foreground', c['card-foreground']);
+  root.style.setProperty('--popover', c.card);
+  root.style.setProperty('--popover-foreground', c['card-foreground']);
+  root.style.setProperty('--muted', c.muted);
+  root.style.setProperty('--muted-foreground', c['muted-foreground']);
+  root.style.setProperty('--border', c.border);
+  root.style.setProperty('--input', c.border);
   root.style.setProperty('--ring', c.primary);
+
+  // Sidebar tokens
   root.style.setProperty('--sidebar-primary', c.primary);
   root.style.setProperty('--sidebar-ring', c.primary);
 
-  // Parse primary hue for gradient
+  // Gradient
   const h = parseFloat(c.primary.split(' ')[0]);
   const s = parseFloat(c.primary.split(' ')[1]);
   const l = parseFloat(c.primary.split(' ')[2]);
-  root.style.setProperty('--gradient-primary', `linear-gradient(135deg, hsl(${c.primary}), hsl(${h} ${s}% ${Math.max(l - 10, 20)}%))`);
+  root.style.setProperty(
+    '--gradient-primary',
+    `linear-gradient(135deg, hsl(${c.primary}), hsl(${h} ${s}% ${Math.max(l - 10, 20)}%))`
+  );
 
+  // Border radius
   root.style.setProperty('--radius', `${radius}px`);
 }
 
@@ -51,11 +68,9 @@ export function useThemePreset() {
 
   const activePreset = PRESETS.find(p => p.id === state.presetId) || PRESETS[0];
 
-  // Apply on mount and when state/theme changes
   useEffect(() => {
     applyPresetToDOM(activePreset, state.borderRadius);
 
-    // Watch for class changes (light/dark toggle)
     const observer = new MutationObserver(() => {
       applyPresetToDOM(activePreset, state.borderRadius);
     });
