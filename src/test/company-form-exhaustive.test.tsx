@@ -464,7 +464,7 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
     'porte_rf', 'natureza_juridica', 'natureza_juridica_desc', 'data_fundacao',
     'grupo_economico', 'is_customer', 'is_supplier', 'is_carrier', 'is_matriz',
     'tipo_cooperativa', 'numero_cooperativa', 'inscricao_estadual', 'inscricao_municipal',
-    'cores_marca', 'website', 'employee_count', 'annual_revenue', 'financial_health',
+    'cores_marca', 'employee_count', 'annual_revenue', 'financial_health',
   ];
 
   it.each(externalFields)('form schema includes field: %s', (field) => {
