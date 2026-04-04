@@ -25,7 +25,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -235,7 +235,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         </div>
 
         <Tabs defaultValue="basico" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-4">
+          <TabsList className="grid w-full grid-cols-6 mb-4">
             <TabsTrigger value="basico" className="text-xs gap-1">
               <Building2 className="w-3.5 h-3.5" />
               Básico
@@ -251,6 +251,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             <TabsTrigger value="estrutura" className="text-xs gap-1">
               <Landmark className="w-3.5 h-3.5" />
               Estrutura
+            </TabsTrigger>
+            <TabsTrigger value="endereco" className="text-xs gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              Endereços
             </TabsTrigger>
             <TabsTrigger value="redes" className="text-xs gap-1">
               <Share2 className="w-3.5 h-3.5" />
@@ -364,30 +368,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl><Input placeholder="(11) 99999-9999" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="address" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl><Input placeholder="Av. Paulista, 1000" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="city" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cidade</FormLabel>
-                  <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="state" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <FormControl><Input placeholder="SP" maxLength={2} {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -631,7 +611,36 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             </div>
           </TabsContent>
 
-          {/* ═══ ABA 5: REDES SOCIAIS ═══ */}
+          {/* ═══ ABA 5: ENDEREÇOS ═══ */}
+          <TabsContent value="endereco" className="space-y-4 mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="address" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Endereço</FormLabel>
+                  <FormControl><Input placeholder="Av. Paulista, 1000" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="city" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade</FormLabel>
+                  <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="state" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <FormControl><Input placeholder="SP" maxLength={2} {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          </TabsContent>
+
+          {/* ═══ ABA 6: REDES SOCIAIS ═══ */}
           <TabsContent value="redes" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="website" render={({ field }) => (
