@@ -193,6 +193,8 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
         <motion.button
           data-tour="quick-add"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? 'Fechar menu de criação rápida' : 'Abrir menu de criação rápida'}
+          aria-expanded={isOpen}
           className={cn(
             'w-14 h-14 rounded-full shadow-xl flex items-center justify-center',
             'bg-primary text-primary-foreground',
