@@ -26,7 +26,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail, Tag, Globe, MapPinned } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -45,10 +45,16 @@ const companySchema = z.object({
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
   status: z.string().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
+  website: z.string().trim().max(300).optional().or(z.literal('')),
+
+  // Tags & Listas
+  tags_array: z.string().trim().max(500).optional().or(z.literal('')),
+  challenges: z.string().trim().max(500).optional().or(z.literal('')),
+  competitors: z.string().trim().max(500).optional().or(z.literal('')),
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
-  
+  cnpj_base: z.string().trim().max(10).optional().or(z.literal('')),
   capital_social: z.coerce.number().optional().or(z.literal(0)),
   natureza_juridica: z.string().trim().max(10).optional().or(z.literal('')),
   natureza_juridica_desc: z.string().trim().max(200).optional().or(z.literal('')),
@@ -65,14 +71,24 @@ const companySchema = z.object({
   is_carrier: z.boolean().optional(),
   is_matriz: z.boolean().optional(),
   grupo_economico: z.string().trim().max(150).optional().or(z.literal('')),
+  grupo_economico_id: z.string().trim().max(50).optional().or(z.literal('')),
   tipo_cooperativa: z.string().trim().max(100).optional().or(z.literal('')),
   numero_cooperativa: z.string().trim().max(50).optional().or(z.literal('')),
 
-  // Estrutura
+  // Estrutura & IDs Relacionais
   employee_count: z.string().optional(),
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
   cores_marca: z.string().trim().max(100).optional().or(z.literal('')),
+  matriz_id: z.string().trim().max(50).optional().or(z.literal('')),
+  central_id: z.string().trim().max(50).optional().or(z.literal('')),
+  singular_id: z.string().trim().max(50).optional().or(z.literal('')),
+  confederacao_id: z.string().trim().max(50).optional().or(z.literal('')),
+  bitrix_company_id: z.coerce.number().optional().or(z.literal(0)),
+
+  // Geolocalização
+  lat: z.coerce.number().optional(),
+  lng: z.coerce.number().optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -152,7 +168,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
       status: getCompanyField(c, 'status', 'ativo'),
       notes: getCompanyField(c, 'notes'),
+      website: getCompanyField(c, 'website'),
+      tags_array: Array.isArray(c?.tags_array) ? (c.tags_array as string[]).join(', ') : '',
+      challenges: Array.isArray(c?.challenges) ? (c.challenges as string[]).join(', ') : '',
+      competitors: Array.isArray(c?.competitors) ? (c.competitors as string[]).join(', ') : '',
       cnpj: getCompanyField(c, 'cnpj'),
+      cnpj_base: getCompanyField(c, 'cnpj_base'),
       capital_social: (c?.capital_social as number) ?? 0,
       natureza_juridica: getCompanyField(c, 'natureza_juridica'),
       natureza_juridica_desc: getCompanyField(c, 'natureza_juridica_desc'),
@@ -167,32 +188,47 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       is_carrier: (c?.is_carrier as boolean) ?? false,
       is_matriz: (c?.is_matriz as boolean) ?? undefined,
       grupo_economico: getCompanyField(c, 'grupo_economico'),
+      grupo_economico_id: getCompanyField(c, 'grupo_economico_id'),
       tipo_cooperativa: getCompanyField(c, 'tipo_cooperativa'),
       numero_cooperativa: getCompanyField(c, 'numero_cooperativa'),
       employee_count: getCompanyField(c, 'employee_count'),
       annual_revenue: getCompanyField(c, 'annual_revenue'),
       financial_health: getCompanyField(c, 'financial_health', 'unknown'),
       cores_marca: getCompanyField(c, 'cores_marca'),
+      matriz_id: getCompanyField(c, 'matriz_id'),
+      central_id: getCompanyField(c, 'central_id'),
+      singular_id: getCompanyField(c, 'singular_id'),
+      confederacao_id: getCompanyField(c, 'confederacao_id'),
+      bitrix_company_id: (c?.bitrix_company_id as number) ?? 0,
+      lat: (c?.lat as number) ?? undefined,
+      lng: (c?.lng as number) ?? undefined,
     },
   });
 
   const draftKey = company ? `company-edit-${(company as Record<string, unknown>).id}` : 'company-new';
   const { clearDraft } = useFormDraft(form, { key: draftKey, enabled: !company });
 
+  const parseCommaSeparated = (val: string | null | undefined): string[] | null => {
+    if (!val || !val.trim()) return null;
+    return val.split(',').map(s => s.trim()).filter(Boolean);
+  };
+
   const handleSubmit = async (data: CompanyFormData) => {
     const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value === '' || value === undefined) {
         cleaned[key] = null;
-      } else if (key === 'capital_social' && (value === 0 || value === null)) {
+      } else if ((key === 'capital_social' || key === 'bitrix_company_id') && (value === 0 || value === null)) {
         cleaned[key] = null;
       } else {
         cleaned[key] = value;
       }
     }
+    // Convert comma-separated strings to arrays for the DB
+    cleaned.tags_array = parseCommaSeparated(data.tags_array);
+    cleaned.challenges = parseCommaSeparated(data.challenges);
+    cleaned.competitors = parseCommaSeparated(data.competitors);
     cleaned.logo_url = logoUrl;
-    // External DB doesn't have 'name' column — it uses 'nome_crm' as primary name
-    // Remove any fields that don't exist in the external companies table
     delete cleaned.razao_social_fiscal;
     await onSubmit(cleaned);
     clearDraft();
@@ -333,12 +369,45 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="website" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl><Input placeholder="https://www.empresa.com.br" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Observações sobre a empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="tags_array" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl><Input placeholder="Ex: VIP, Cooperativa, Agro (separadas por vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>Separar por vírgula</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="challenges" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Desafios</FormLabel>
+                  <FormControl><Input placeholder="Ex: Logística, Custos (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="competitors" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Concorrentes</FormLabel>
+                  <FormControl><Input placeholder="Ex: Empresa A, Empresa B (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -352,6 +421,15 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>CNPJ</FormLabel>
                   <FormControl><Input placeholder="00.000.000/0000-00" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="cnpj_base" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CNPJ Base</FormLabel>
+                  <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>8 primeiros dígitos do CNPJ</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -556,10 +634,82 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* ─── IDs Relacionais ─── */}
+              <div className="md:col-span-2 pt-2">
+                <p className="text-sm font-medium text-muted-foreground mb-3">IDs Relacionais (Sistema)</p>
+              </div>
+
+              <FormField control={form.control} name="matriz_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID da Matriz</FormLabel>
+                  <FormControl><Input placeholder="UUID da empresa matriz" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Grupo Econômico</FormLabel>
+                  <FormControl><Input placeholder="UUID do grupo" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="central_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Central</FormLabel>
+                  <FormControl><Input placeholder="UUID da central" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="singular_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Singular</FormLabel>
+                  <FormControl><Input placeholder="UUID da singular" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="confederacao_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Confederação</FormLabel>
+                  <FormControl><Input placeholder="UUID da confederação" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bitrix Company ID</FormLabel>
+                  <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* ─── Geolocalização ─── */}
+              <div className="md:col-span-2 pt-2">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Geolocalização</p>
+              </div>
+
+              <FormField control={form.control} name="lat" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude</FormLabel>
+                  <FormControl><Input type="number" step="any" placeholder="-23.5505" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="lng" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude</FormLabel>
+                  <FormControl><Input type="number" step="any" placeholder="-46.6333" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
           </TabsContent>
-
-          {/* ═══ ABA 5: TELEFONES (normalizado) ═══ */}
           <TabsContent value="telefones" className="mt-0">
             {companyId ? (
               <CompanyPhonesForm
