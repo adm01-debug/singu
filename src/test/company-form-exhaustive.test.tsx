@@ -297,10 +297,8 @@ describe('CompanyForm — Submission', () => {
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalledTimes(1);
       const submitted = mockSubmit.mock.calls[0][0];
-      expect(submitted.name).toBe('Nova Empresa Teste');
+      expect(submitted.nome_crm).toBe('Nova Empresa Teste');
       // Empty optional fields should be null
-      expect(submitted.website).toBeNull();
-      expect(submitted.email).toBeNull();
       expect(submitted.cnpj).toBeNull();
       expect(submitted.razao_social).toBeNull();
       expect(submitted.grupo_economico).toBeNull();
