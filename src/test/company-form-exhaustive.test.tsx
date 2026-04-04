@@ -136,6 +136,9 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Fiscal')).toBeInTheDocument();
     expect(screen.getByText('Classif.')).toBeInTheDocument();
     expect(screen.getByText('Estrutura')).toBeInTheDocument();
+    expect(screen.getByText('Telefones')).toBeInTheDocument();
+    expect(screen.getByText('Endereços')).toBeInTheDocument();
+    expect(screen.getByText('Redes')).toBeInTheDocument();
   });
 
   it('renders submit and cancel buttons', () => {
