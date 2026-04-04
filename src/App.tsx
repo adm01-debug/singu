@@ -199,9 +199,7 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/empresas/:id" element={
         <RequireAuth>
-          <Suspense fallback={<CompaniesPageSkeleton />}>
-            <EmpresaDetalhe />
-          </Suspense>
+          <LazyPage fallback={<CompaniesPageSkeleton />}><EmpresaDetalhe /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/contatos" element={
@@ -211,9 +209,7 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/contatos/:id" element={
         <RequireAuth>
-          <Suspense fallback={<ContactsPageSkeleton />}>
-            <ContatoDetalhe />
-          </Suspense>
+          <LazyPage fallback={<ContactsPageSkeleton />}><ContatoDetalhe /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/interacoes" element={
