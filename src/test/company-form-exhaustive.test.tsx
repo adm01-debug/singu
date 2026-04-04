@@ -414,11 +414,12 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(nameInput).toHaveValue('CRM Name');
   });
 
-  it('uses name field when available', () => {
+  it('uses nome_crm when both name and nome_crm are available', () => {
     const ext = { ...minimalCompany, name: 'Direct Name', nome_crm: 'CRM Name' };
     renderForm(ext);
     const nameInput = screen.getByPlaceholderText('Nome usado internamente');
-    expect(nameInput).toHaveValue('Direct Name');
+    // getCompanyField reads nome_crm first, so it wins over name
+    expect(nameInput).toHaveValue('CRM Name');
   });
 
   it('falls back to nome_fantasia when name and nome_crm are empty', () => {
