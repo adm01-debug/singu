@@ -666,7 +666,9 @@ describe('CompanyForm — Stress & Boundary', () => {
   it('handles lat/lng as 0 (valid coordinates)', async () => {
     renderForm({ ...minimalCompany, lat: 0, lng: 0 });
     await userEvent.click(screen.getByText('Estrutura'));
-    expect(screen.getByDisplayValue('0')).toBeInTheDocument();
+    // Multiple fields may show "0" (bitrix, lat, lng) — just verify no crash
+    const zeroInputs = screen.getAllByDisplayValue('0');
+    expect(zeroInputs.length).toBeGreaterThanOrEqual(2);
   });
 
   it('handles negative lat/lng', async () => {
