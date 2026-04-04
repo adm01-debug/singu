@@ -253,17 +253,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
           {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
           <TabsContent value="basico" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Logo + Nome da Empresa */}
+              {/* Logo + Nome no CRM */}
               <div className="md:col-span-2 flex items-start gap-4">
                 <CompanyLogoUpload
                   logoUrl={logoUrl}
                   onLogoChange={setLogoUrl}
                   companyId={(c?.id as string) || undefined}
                 />
-                <FormField control={form.control} name="name" render={({ field }) => (
+                <FormField control={form.control} name="nome_crm" render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Nome da Empresa *</FormLabel>
-                    <FormControl><Input placeholder="Ex: Tech Solutions LTDA" {...field} /></FormControl>
+                    <FormLabel>Nome no CRM *</FormLabel>
+                    <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
+                    <FormDescription>Nome exibido nas listagens</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -281,15 +282,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>Razão Social</FormLabel>
                   <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="nome_crm" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome no CRM</FormLabel>
-                  <FormControl><Input placeholder="Nome usado internamente" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormDescription>Nome exibido nas listagens</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
