@@ -609,7 +609,59 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               )} />
             </div>
           </TabsContent>
-        </Tabs>
+
+          {/* ═══ ABA 5: REDES SOCIAIS ═══ */}
+          <TabsContent value="redes" className="space-y-4 mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="instagram" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instagram</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="linkedin" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn</FormLabel>
+                  <FormControl><Input placeholder="URL da página ou perfil" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="facebook" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Facebook</FormLabel>
+                  <FormControl><Input placeholder="URL da página" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="youtube" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>YouTube</FormLabel>
+                  <FormControl><Input placeholder="URL do canal" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="twitter" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Twitter / X</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="tiktok" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>TikTok</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          </TabsContent>
 
         {/* Footer */}
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
