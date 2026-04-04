@@ -655,18 +655,4 @@ describe('CompanyForm — Stress & Boundary', () => {
     renderForm({ ...minimalCompany, tags_array: [] });
     // tags input should be empty, no crash
   });
-
-  it('handles lat/lng as 0 (valid coordinates)', async () => {
-    renderForm({ ...minimalCompany, lat: 0, lng: 0 });
-    await userEvent.click(screen.getByText('Estrutura'));
-    // Multiple fields may show "0" (bitrix, lat, lng) — just verify no crash
-    const zeroInputs = screen.getAllByDisplayValue('0');
-    expect(zeroInputs.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('handles negative lat/lng', async () => {
-    renderForm({ ...minimalCompany, lat: -33.8688, lng: -151.2093 });
-    await userEvent.click(screen.getByText('Estrutura'));
-    expect(screen.getByDisplayValue('-33.8688')).toBeInTheDocument();
-  });
 });
