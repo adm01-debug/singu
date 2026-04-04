@@ -178,6 +178,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       annual_revenue: getCompanyField(c, 'annual_revenue'),
       financial_health: getCompanyField(c, 'financial_health', 'unknown'),
       cores_marca: getCompanyField(c, 'cores_marca'),
+      instagram: getCompanyField(c, 'instagram'),
+      linkedin: getCompanyField(c, 'linkedin'),
+      facebook: getCompanyField(c, 'facebook'),
+      youtube: getCompanyField(c, 'youtube'),
+      twitter: getCompanyField(c, 'twitter'),
+      tiktok: getCompanyField(c, 'tiktok'),
     },
   });
 
