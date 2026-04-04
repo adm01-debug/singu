@@ -102,7 +102,6 @@ const financialHealthOptions = [
 const statusOptions = [
   { value: 'ativo', label: 'Ativo' },
   { value: 'inativo', label: 'Inativo' },
-  { value: 'prospeccao', label: 'Prospecção' },
   { value: 'suspenso', label: 'Suspenso' },
 ];
 
