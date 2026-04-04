@@ -209,13 +209,29 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('Nº da Cooperativa')).toBeInTheDocument();
   });
 
-  it('switches to Estrutura tab and shows structure fields', async () => {
+  it('switches to Estrutura tab and shows ALL structure fields', async () => {
     renderForm();
     await userEvent.click(screen.getByText('Estrutura'));
     expect(screen.getByText('Nº Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Faturamento Anual')).toBeInTheDocument();
     expect(screen.getByText('Saúde Financeira')).toBeInTheDocument();
     expect(screen.getByText('Cores da Marca')).toBeInTheDocument();
+    // Relational IDs
+    expect(screen.getByText('ID da Matriz')).toBeInTheDocument();
+    expect(screen.getByText('ID Grupo Econômico')).toBeInTheDocument();
+    expect(screen.getByText('ID Central')).toBeInTheDocument();
+    expect(screen.getByText('ID Singular')).toBeInTheDocument();
+    expect(screen.getByText('ID Confederação')).toBeInTheDocument();
+    expect(screen.getByText('Bitrix Company ID')).toBeInTheDocument();
+    // Geolocation
+    expect(screen.getByText('Latitude')).toBeInTheDocument();
+    expect(screen.getByText('Longitude')).toBeInTheDocument();
+  });
+
+  it('switches to Fiscal tab and shows CNPJ Base field', async () => {
+    renderForm();
+    await userEvent.click(screen.getByText('Fiscal'));
+    expect(screen.getByText('CNPJ Base')).toBeInTheDocument();
   });
 });
 
