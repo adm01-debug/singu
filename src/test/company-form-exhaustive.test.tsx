@@ -522,7 +522,7 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
   it.each(externalFields)('form schema includes field: %s', (field) => {
     const company = {
       ...minimalCompany,
-      [field]: ['capital_social', 'bitrix_company_id', 'lat', 'lng'].includes(field) ? 100 : field.includes('is_') ? true : 'test-value',
+      [field]: ['capital_social', 'bitrix_company_id'].includes(field) ? 100 : field.includes('is_') ? true : 'test-value',
     };
     expect(() => renderForm(company)).not.toThrow();
   });
