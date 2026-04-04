@@ -106,6 +106,55 @@ Deno.serve(async (req) => {
       return jsonResponse({ tables: tableNames });
     }
 
+    // ─── FULL SCHEMA INTROSPECTION ───
+    if (operation === 'schema') {
+      const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+      const extKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
+      const resp = await fetch(`${extUrl}/rest/v1/`, {
+        headers: { 'apikey': extKey, 'Authorization': `Bearer ${extKey}` }
+      });
+      const swagger = await resp.json();
+      
+      const tables: Record<string, { columns: { name: string; type: string; format: string; required: boolean; description?: string }[] }> = {};
+      
+      if (swagger?.definitions) {
+        for (const [tableName, def] of Object.entries(swagger.definitions)) {
+          const d = def as Record<string, unknown>;
+          const props = (d.properties || {}) as Record<string, Record<string, unknown>>;
+          const required = (d.required || []) as string[];
+          const columns = Object.entries(props).map(([colName, colDef]) => ({
+            name: colName,
+            type: (colDef.type as string) || (colDef.anyOf ? 'nullable' : 'unknown'),
+            format: (colDef.format as string) || '',
+            required: required.includes(colName),
+            ...(colDef.description ? { description: colDef.description as string } : {}),
+            ...(colDef.default !== undefined ? { default: colDef.default } : {}),
+            ...(colDef.maxLength ? { maxLength: colDef.maxLength } : {}),
+            ...(colDef.enum ? { enum: colDef.enum } : {}),
+          }));
+          tables[tableName] = { columns };
+        }
+      }
+
+      // Also try to get functions via rpc endpoint
+      let functions: string[] = [];
+      try {
+        const rpcResp = await fetch(`${extUrl}/rest/v1/rpc/`, {
+          headers: { 'apikey': extKey, 'Authorization': `Bearer ${extKey}` }
+        });
+        if (rpcResp.ok) {
+          const rpcData = await rpcResp.json();
+          functions = Array.isArray(rpcData) ? rpcData : Object.keys(rpcData || {});
+        }
+      } catch (_) { /* ignore */ }
+
+      return jsonResponse({ 
+        tableCount: Object.keys(tables).length,
+        tables,
+        functions,
+      });
+    }
+
     // ─── DISTINCT VALUES ───
     if (operation === 'distinct') {
       const { column } = body;
