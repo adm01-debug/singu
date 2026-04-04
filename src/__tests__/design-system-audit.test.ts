@@ -229,11 +229,11 @@ describe('Design System Audit - Component Semantic Tokens', () => {
     expect(content).not.toContain('bg-gray-');
   });
 
-  it('ThemeCustomizer check icon uses text-primary-foreground', () => {
+  it('PresetCard check icon uses text-primary', () => {
     const content = fs.readFileSync(
-      path.resolve(COMPONENTS_DIR, 'settings/ThemeCustomizer.tsx'), 'utf8'
+      path.resolve(COMPONENTS_DIR, 'settings/theme/PresetCard.tsx'), 'utf8'
     );
-    expect(content).toContain('text-primary-foreground');
+    expect(content).toContain('text-primary');
     expect(content).not.toMatch(/Check.*text-white/);
   });
 
