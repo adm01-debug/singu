@@ -24,18 +24,6 @@ function getScoreLabel(score: number): string {
 }
 
 export function RelationshipScore({ score, previousScore, size = 'md', showLabel, showMilestone = false, className }: RelationshipScoreProps) {
-  // Use gamified milestone version when enabled
-  if (showMilestone) {
-    return (
-      <ScoreMilestone
-        score={score}
-        previousScore={previousScore}
-        size={size}
-        showProgress={showLabel}
-        className={className}
-      />
-    );
-  }
 
   const getColor = (score: number) => {
     if (score >= 80) return 'text-success';
