@@ -85,10 +85,6 @@ const companySchema = z.object({
   singular_id: z.string().trim().max(50).optional().or(z.literal('')),
   confederacao_id: z.string().trim().max(50).optional().or(z.literal('')),
   bitrix_company_id: z.coerce.number().optional().or(z.literal(0)),
-
-  // Geolocalização
-  lat: z.coerce.number().optional(),
-  lng: z.coerce.number().optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
