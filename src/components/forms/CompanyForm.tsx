@@ -197,6 +197,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       singular_id: getCompanyField(c, 'singular_id'),
       confederacao_id: getCompanyField(c, 'confederacao_id'),
       bitrix_company_id: (c?.bitrix_company_id as number) ?? 0,
+      merge_notes: getCompanyField(c, 'merge_notes'),
     },
   });
 
