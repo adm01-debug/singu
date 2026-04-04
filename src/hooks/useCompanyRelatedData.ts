@@ -1,0 +1,152 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
+import { toast } from 'sonner';
+
+// ─── Types ─────────────────────────────────────────────────────
+
+export interface CompanyPhone {
+  id?: string;
+  company_id: string;
+  phone_type: 'fixo_comercial' | 'celular_corporativo' | 'celular_pessoal';
+  numero: string;
+  numero_normalizado?: string;
+  ramal?: string;
+  is_primary?: boolean;
+  is_whatsapp?: boolean;
+  departamento?: string;
+  observacao?: string;
+}
+
+export interface CompanyEmail {
+  id?: string;
+  company_id: string;
+  email_type: 'corporativo' | 'pessoal' | 'financeiro' | 'nfe' | 'marketing';
+  email: string;
+  email_normalizado?: string;
+  is_primary?: boolean;
+  departamento?: string;
+  observacao?: string;
+  is_verified?: boolean;
+}
+
+export interface CompanyAddress {
+  id?: string;
+  company_id: string;
+  tipo?: string;
+  is_primary?: boolean;
+  cep?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  pais?: string;
+  latitude?: number;
+  longitude?: number;
+  ponto_referencia?: string;
+  instrucoes_entrega?: string;
+  horario_funcionamento?: string;
+  google_maps_url?: string;
+  google_place_id?: string;
+  tipo_logradouro?: string;
+}
+
+export interface CompanySocialMedia {
+  id?: string;
+  company_id: string;
+  plataforma: 'linkedin' | 'instagram' | 'facebook' | 'x' | 'youtube' | 'tiktok' | 'website' | 'whatsapp';
+  handle?: string;
+  url?: string;
+  nome_perfil?: string;
+  is_verified?: boolean;
+  is_active?: boolean;
+  seguidores?: number;
+  observacoes?: string;
+}
+
+// ─── Generic hook factory ──────────────────────────────────────
+
+function useCompanyRelated<T extends { id?: string; company_id: string }>(
+  table: string,
+  companyId: string | undefined,
+  label: string,
+) {
+  const queryClient = useQueryClient();
+  const queryKey = [table, companyId];
+
+  const query = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (!companyId) return [];
+      const { data, error } = await queryExternalData<T>({
+        table,
+        filters: [{ type: 'eq', column: 'company_id', value: companyId }],
+        order: { column: 'created_at', ascending: true },
+        range: { from: 0, to: 99 },
+      });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!companyId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const upsert = useMutation({
+    mutationFn: async (record: T) => {
+      // Normalize: remove empty strings → null
+      const cleaned: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(record)) {
+        cleaned[k] = v === '' ? null : v;
+      }
+
+      if (record.id) {
+        const { id, company_id, ...updates } = cleaned as Record<string, unknown>;
+        const { error } = await updateExternalData(table, record.id, updates);
+        if (error) throw error;
+      } else {
+        const { error } = await insertExternalData(table, cleaned);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast.error(`Erro ao salvar ${label}: ${err.message}`);
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await deleteExternalData(table, id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err: Error) => {
+      toast.error(`Erro ao remover ${label}: ${err.message}`);
+    },
+  });
+
+  return { data: query.data || [], isLoading: query.isLoading, upsert, remove, refetch: query.refetch };
+}
+
+// ─── Exported hooks ────────────────────────────────────────────
+
+export function useCompanyPhones(companyId?: string) {
+  return useCompanyRelated<CompanyPhone>('company_phones', companyId, 'telefone');
+}
+
+export function useCompanyEmails(companyId?: string) {
+  return useCompanyRelated<CompanyEmail>('company_emails', companyId, 'email');
+}
+
+export function useCompanyAddresses(companyId?: string) {
+  return useCompanyRelated<CompanyAddress>('company_addresses', companyId, 'endereço');
+}
+
+export function useCompanySocialMedia(companyId?: string) {
+  return useCompanyRelated<CompanySocialMedia>('company_social_media', companyId, 'rede social');
+}

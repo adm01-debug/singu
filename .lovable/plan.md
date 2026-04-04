@@ -1,82 +1,64 @@
 
-# 🎨 Repaginação Total do Design System — Glassmorphism Premium
+# 🏗️ Plano: Adequar Frontend ao Schema Normalizado do Banco Externo
 
-## Filosofia
-- **Menos é mais**: Remover ruído visual, reduzir cores competindo
-- **Glassmorphism sutil**: Blur de fundo, bordas translúcidas, sem gradientes pesados
-- **Tipografia respirada**: Hierarquia clara com espaçamento generoso
-- **Consistência absoluta**: Um único vocabulário visual em todo o sistema
+## Problema Atual
+O formulário salva `phone`, `email`, `address`, `city`, `state`, `instagram`, `linkedin` etc. **diretamente na tabela `companies`** — mas essas colunas **não existem** no banco externo. O banco usa tabelas normalizadas separadas.
 
----
+## Mapeamento: Atual → Correto
 
-## Fase 1 — Fundação (CSS Variables + Tailwind)
+| Campo no Form | Onde salva hoje ❌ | Onde deveria salvar ✅ | Tabela |
+|---|---|---|---|
+| Fone Fixo 1/2 | `companies.phone` | `company_phones` (phone_type: `fixo_comercial`) | `company_phones` |
+| Celular Corporativo | `companies.phone` | `company_phones` (phone_type: `celular_corporativo`) | `company_phones` |
+| Email | `companies.email` | `company_emails` (email_type: `corporativo`) | `company_emails` |
+| Website | `companies.website` | `company_social_media` (plataforma: `website`) | `company_social_media` |
+| Endereço/Cidade/Estado | `companies.address/city/state` | `company_addresses` (logradouro, cidade, estado, CEP, bairro...) | `company_addresses` |
+| Instagram/LinkedIn/etc | `companies.instagram/linkedin...` | `company_social_media` (plataforma: `instagram`/`linkedin`...) | `company_social_media` |
 
-### `index.css` — Nova paleta para Light e Dark
-- **Light mode**: Fundo off-white (#FAFBFC), cards brancos com bordas sutis, texto grafite
-- **Dark mode**: Fundo deep navy (#0B0F1A), cards com glass effect (white/5%), texto neve
-- **Accent único**: Indigo suave (sem laranja, verde, amarelo gritantes)
-- **Semânticos suaves**: Success/Warning/Destructive em tons pastel, não saturados
-- Remover gradientes pesados (`--gradient-primary`, `--gradient-premium`)
-- Novo sistema de sombras: `--shadow-sm/md/lg` com tom azulado sutil
+## Etapas de Implementação
 
-### `tailwind.config.ts`
-- Atualizar todas as cores para os novos tokens
-- Adicionar `glass` utility class
-- Ajustar `fontSize` base para melhor hierarquia
+### Etapa 1: Hooks CRUD para tabelas normalizadas
+Criar hooks que fazem CRUD via edge function `external-data` para:
+- `useCompanyPhones(companyId)` → lista/cria/edita/deleta em `company_phones`
+- `useCompanyEmails(companyId)` → lista/cria/edita/deleta em `company_emails`  
+- `useCompanyAddresses(companyId)` → lista/cria/edita/deleta em `company_addresses`
+- `useCompanySocialMedia(companyId)` → lista/cria/edita/deleta em `company_social_media`
 
----
+### Etapa 2: Refatorar abas do CompanyForm
+- **Aba Básico**: Remover campos de phone/email (ficam apenas dados da empresa)
+- **Aba Endereços**: Usar `company_addresses` (CEP, logradouro, número, complemento, bairro, cidade, estado, país, ponto de referência)
+- **Aba Redes**: Usar `company_social_media` (com plataforma enum) + `company_emails`
+- **Nova seção Telefones**: Usar `company_phones` com tipo (fixo_comercial, celular_corporativo)
 
-## Fase 2 — Componentes Core
+### Etapa 3: Fluxo de criação em 2 passos
+1. Primeiro salva a empresa (tabela `companies`) 
+2. Depois salva os dados relacionados (phones, emails, addresses, social_media) usando o `company_id` retornado
 
-### Cards (`card.tsx`)
-- Background: `bg-card/80 backdrop-blur-xl border-white/10`
-- Sombra suave ao invés de bordas pesadas
-- Padding mais generoso (p-5 → p-6)
+### Etapa 4: Fluxo de edição
+- Ao abrir edição, carregar dados de todas as tabelas relacionadas
+- Ao salvar, atualizar/criar/deletar registros nas tabelas normalizadas
 
-### Sidebar (`sidebar.tsx`)
-- Glass effect no fundo
-- Active state: pill suave com bg-primary/10 (sem shadow inset pesado)
-- Ícones com opacidade reduzida quando inativos
+## Campos Expandidos (baseados no schema real)
 
-### Buttons
-- Menos variantes visíveis, mais sutileza
-- Primary: sólido mas não gritante
-- Ghost/Outline: bordas mais finas
+### `company_addresses` (24 colunas)
+- tipo, CEP, logradouro, número, complemento, bairro, cidade, estado, país
+- latitude/longitude, ponto de referência, instruções de entrega, horário funcionamento
+- Google Maps URL, Google Place ID
 
-### StatCards
-- Remover sparklines visuais pesados
-- Layout mais limpo: número grande + label + indicador sutil de mudança
-- Sem gradientes de fundo
+### `company_phones` (16 colunas)  
+- phone_type (enum: fixo_comercial, celular_corporativo, celular_pessoal)
+- número, ramal, is_primary, is_whatsapp, departamento, observação
 
----
+### `company_emails` (14 colunas)
+- email_type (enum: corporativo, pessoal, financeiro, nfe, marketing)
+- email, is_primary, departamento, observação, is_verified
 
-## Fase 3 — Dashboard Cleanup
+### `company_social_media` (16 colunas)
+- plataforma (enum: linkedin, instagram, facebook, x, youtube, tiktok, website)
+- handle, URL, nome_perfil, is_verified, is_active, seguidores
 
-### WelcomeHeroCard
-- Simplificar: apenas saudação + data (remover stats duplicados do hero)
-- Fundo glass sutil ao invés de gradientes
-
-### YourDaySection
-- Remover saudação duplicada
-- Cards de urgência com bordas sutis coloridas (não fundo sólido)
-
-### Tabs
-- Mais espaçadas, estilo pill clean
-- Active: bg sutil, sem sombras pesadas
-
----
-
-## Fase 4 — Consistência Global
-
-### Badges/Tags
-- Tons pastel uniformes
-- Sem bordas coloridas duplas (border + bg)
-
-### Scores/Indicators
-- Círculos mais finos, menos "pesados"
-- Cores mais suaves
-
-### Espaçamento
-- Gap base: 6 (24px) entre seções
-- Padding interno: 6 (24px) em cards
-- Tipografia: text-sm base, text-xs para meta, text-lg para títulos
+## Impacto
+- ~4 novos hooks
+- ~4 novos componentes de formulário (sub-formulários por aba)
+- Refatoração do `CompanyForm.tsx`
+- Sem alterações no banco de dados (apenas uso correto das tabelas existentes)
