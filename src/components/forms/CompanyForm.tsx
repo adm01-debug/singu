@@ -681,27 +681,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormMessage />
                 </FormItem>
               )} />
-
-              {/* ─── Geolocalização ─── */}
-              <div className="md:col-span-2 pt-2">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Geolocalização</p>
-              </div>
-
-              <FormField control={form.control} name="lat" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Latitude</FormLabel>
-                  <FormControl><Input type="number" step="any" placeholder="-23.5505" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="lng" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Longitude</FormLabel>
-                  <FormControl><Input type="number" step="any" placeholder="-46.6333" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
             </div>
           </TabsContent>
           <TabsContent value="telefones" className="mt-0">
