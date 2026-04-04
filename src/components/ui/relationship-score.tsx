@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ScoreMilestone } from './score-milestone';
 import {
   Tooltip,
   TooltipContent,
