@@ -160,6 +160,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
       website: getCompanyField(c, 'website'),
       phone: getCompanyField(c, 'phone'),
+      phone_fixed_2: getCompanyField(c, 'phone_fixed_2'),
+      phone_mobile: getCompanyField(c, 'phone_mobile'),
       email: getCompanyField(c, 'email'),
       address: getCompanyField(c, 'address'),
       city: getCompanyField(c, 'city'),
