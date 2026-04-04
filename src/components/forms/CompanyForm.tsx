@@ -369,12 +369,45 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="website" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl><Input placeholder="https://www.empresa.com.br" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Observações sobre a empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="tags_array" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Tags</FormLabel>
+                  <FormControl><Input placeholder="Ex: VIP, Cooperativa, Agro (separadas por vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>Separar por vírgula</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="challenges" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Desafios</FormLabel>
+                  <FormControl><Input placeholder="Ex: Logística, Custos (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="competitors" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Concorrentes</FormLabel>
+                  <FormControl><Input placeholder="Ex: Empresa A, Empresa B (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
