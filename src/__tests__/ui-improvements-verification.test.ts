@@ -951,7 +951,7 @@ describe('Micro-Interactions Implementation', () => {
 // ============================================
 describe('Accessibility Implementation', () => {
   const relScore = readSrc('components/ui/relationship-score.tsx');
-  const sidebar = readSrc('components/ui/sidebar.tsx');
+  const sidebar = readSrc('components/layout/Sidebar.tsx');
 
   it('RelationshipScore has ARIA role', () => {
     expect(relScore).toContain('role="meter"');
@@ -967,8 +967,8 @@ describe('Accessibility Implementation', () => {
     expect(relScore).toContain('aria-label');
   });
 
-  it('Sidebar uses data attributes for state', () => {
-    expect(sidebar).toContain('data-');
+  it('Sidebar uses semantic navigation', () => {
+    expect(sidebar).toContain('nav');
   });
 });
 
