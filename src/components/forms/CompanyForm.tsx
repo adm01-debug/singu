@@ -155,7 +155,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nome_crm: getCompanyField(c, 'nome_crm') || getCompanyField(c, 'name') || getCompanyField(c, 'nome_fantasia'),
       nome_fantasia: getCompanyField(c, 'nome_fantasia'),
       razao_social: getCompanyField(c, 'razao_social'),
-      industry: getCompanyField(c, 'industry'),
+      
       ramo_atividade: getCompanyField(c, 'ramo_atividade'),
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
       website: getCompanyField(c, 'website'),
