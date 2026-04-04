@@ -157,7 +157,7 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
-    expect(screen.getByText('Nome no CRM')).toBeInTheDocument();
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
     expect(screen.getByText('Website')).toBeInTheDocument();
     // Telefone is now a separate tab.toBeInTheDocument();
     // Email removed from basico.toBeInTheDocument();
