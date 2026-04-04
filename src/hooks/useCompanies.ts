@@ -64,10 +64,15 @@ export function useCompanies() {
   const createCompany = async (company: Omit<CompanyInsert, 'user_id'>) => {
     if (!user) return null;
     try {
-      const { data, error } = await insertExternalData<Company>('companies', { ...company, user_id: user.id });
+      // Strip fields that don't exist in the external DB
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...externalFields } = company as any;
+      const record = { ...externalFields, user_id: user.id };
+      if (!record.nome_crm && name) record.nome_crm = name;
+
+      const { data, error } = await insertExternalData<Company>('companies', record);
       if (error) throw error;
       if (data) queryClient.setQueryData(queryKey, (prev: any) => prev ? { ...prev, companies: [mapCompany(data), ...prev.companies] } : { companies: [mapCompany(data)], count: 1 });
-      toast({ title: 'Empresa criada', description: `${data?.name || 'Empresa'} foi adicionada com sucesso.` });
+      toast({ title: 'Empresa criada', description: `${data?.nome_crm || 'Empresa'} foi adicionada com sucesso.` });
       return data;
     } catch (error) {
       logger.error('Error creating company:', error);
