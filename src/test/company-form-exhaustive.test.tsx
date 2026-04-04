@@ -358,10 +358,13 @@ describe('CompanyForm — Submission', () => {
   });
 
   it('disables submit button when isSubmitting is true', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <BrowserRouter>
-        <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
+        </BrowserRouter>
+      </QueryClientProvider>
     );
     const submitBtn = screen.getByText('Criar Empresa');
     expect(submitBtn.closest('button')).toBeDisabled();
