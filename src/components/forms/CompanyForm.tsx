@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { useExternalLookup } from '@/hooks/useExternalLookup';
+import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,10 +26,14 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { CompanyPhonesForm } from '@/components/forms/company/CompanyPhonesForm';
+import { CompanyEmailsForm } from '@/components/forms/company/CompanyEmailsForm';
+import { CompanyAddressesForm } from '@/components/forms/company/CompanyAddressesForm';
+import { CompanySocialMediaForm } from '@/components/forms/company/CompanySocialMediaForm';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
