@@ -270,7 +270,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto" aria-label="Menu principal">
           {menuItems.map((item) => {
             const isExactActive = location.pathname === item.path;
             const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');
