@@ -611,7 +611,36 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             </div>
           </TabsContent>
 
-          {/* ═══ ABA 5: REDES SOCIAIS ═══ */}
+          {/* ═══ ABA 5: ENDEREÇOS ═══ */}
+          <TabsContent value="endereco" className="space-y-4 mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="address" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Endereço</FormLabel>
+                  <FormControl><Input placeholder="Av. Paulista, 1000" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="city" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade</FormLabel>
+                  <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="state" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <FormControl><Input placeholder="SP" maxLength={2} {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          </TabsContent>
+
+          {/* ═══ ABA 6: REDES SOCIAIS ═══ */}
           <TabsContent value="redes" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="website" render={({ field }) => (
