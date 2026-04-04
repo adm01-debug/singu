@@ -41,23 +41,14 @@ const companySchema = z.object({
   nome_crm: z.string().trim().min(1, 'Nome é obrigatório').max(150, 'Máximo 150 caracteres'),
   nome_fantasia: z.string().trim().max(150).optional().or(z.literal('')),
   razao_social: z.string().trim().max(200).optional().or(z.literal('')),
-  
   ramo_atividade: z.string().trim().max(150).optional().or(z.literal('')),
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
-  website: z.string().trim().url('URL inválida').optional().or(z.literal('')),
-  phone: z.string().trim().max(20).optional().or(z.literal('')),
-  phone_fixed_2: z.string().trim().max(20).optional().or(z.literal('')),
-  phone_mobile: z.string().trim().max(20).optional().or(z.literal('')),
-  email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
-  address: z.string().trim().max(200).optional().or(z.literal('')),
-  city: z.string().trim().max(50).optional().or(z.literal('')),
-  state: z.string().trim().max(2).optional().or(z.literal('')),
   status: z.string().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
-  razao_social_fiscal: z.string().optional(), // alias handled in submit
+  razao_social_fiscal: z.string().optional(),
   capital_social: z.coerce.number().optional().or(z.literal(0)),
   natureza_juridica: z.string().trim().max(10).optional().or(z.literal('')),
   natureza_juridica_desc: z.string().trim().max(200).optional().or(z.literal('')),
@@ -82,14 +73,6 @@ const companySchema = z.object({
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
   cores_marca: z.string().trim().max(100).optional().or(z.literal('')),
-
-  // Redes Sociais
-  instagram: z.string().trim().max(200).optional().or(z.literal('')),
-  linkedin: z.string().trim().max(200).optional().or(z.literal('')),
-  facebook: z.string().trim().max(200).optional().or(z.literal('')),
-  youtube: z.string().trim().max(200).optional().or(z.literal('')),
-  twitter: z.string().trim().max(200).optional().or(z.literal('')),
-  tiktok: z.string().trim().max(200).optional().or(z.literal('')),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
