@@ -72,7 +72,13 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
     importantMinScore: 70
   });
 
-  const sellerProfile: Exclude<DISCProfile, null> = 'I'; // TODO: Get from user settings
+  const sellerProfile: Exclude<DISCProfile, null> = (() => {
+    try {
+      const stored = localStorage.getItem('singu-seller-disc-profile');
+      if (stored && ['D', 'I', 'S', 'C'].includes(stored)) return stored as Exclude<DISCProfile, null>;
+    } catch { /* fallback */ }
+    return 'I';
+  })();
 
   const fetchAlerts = useCallback(async () => {
     if (!user) return;
