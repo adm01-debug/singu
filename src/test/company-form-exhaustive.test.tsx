@@ -167,18 +167,14 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
-    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
-    // Website is now in the Redes tab (normalized)
-    // Telefone is now a separate tab.toBeInTheDocument();
-    // Email removed from basico.toBeInTheDocument();
-    // Endereço is now a separate tab.toBeInTheDocument();
-    // Cidade in endereco tab.toBeInTheDocument();
-    // Estado in endereco tab.toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    // Segmento removed.toBeInTheDocument();
+    expect(screen.getByText('Website')).toBeInTheDocument();
+    expect(screen.getByText('Tags')).toBeInTheDocument();
+    expect(screen.getByText('Desafios')).toBeInTheDocument();
+    expect(screen.getByText('Concorrentes')).toBeInTheDocument();
   });
 });
 
