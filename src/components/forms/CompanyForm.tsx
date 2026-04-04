@@ -143,6 +143,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const c = company as Record<string, unknown> | null;
   const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
 
+  const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
+  const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
+  const { data: segmentosOptions = [], isLoading: segmentosLoading } = useExternalLookup('companies', 'industry');
+
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
