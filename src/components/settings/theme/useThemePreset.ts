@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { PRESETS, type SkinPreset, type SkinColors } from './presets';
 
 const STORAGE_KEY = 'singu-skin';
+const STYLE_ID = 'singu-skin-style';
 
 interface SkinState {
   presetId: string;
@@ -21,46 +22,46 @@ function loadState(): SkinState {
   return getDefaults();
 }
 
-function resolveMode(): 'light' | 'dark' {
-  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-}
-
-/** Apply ALL skin tokens to the DOM */
-function applyPresetToDOM(preset: SkinPreset, radius: number) {
-  const root = document.documentElement;
-  const mode = resolveMode();
-  const c: SkinColors = preset.colors[mode];
-
-  // Core tokens
-  root.style.setProperty('--primary', c.primary);
-  root.style.setProperty('--accent', c.accent);
-  root.style.setProperty('--background', c.background);
-  root.style.setProperty('--foreground', c.foreground);
-  root.style.setProperty('--card', c.card);
-  root.style.setProperty('--card-foreground', c['card-foreground']);
-  root.style.setProperty('--popover', c.card);
-  root.style.setProperty('--popover-foreground', c['card-foreground']);
-  root.style.setProperty('--muted', c.muted);
-  root.style.setProperty('--muted-foreground', c['muted-foreground']);
-  root.style.setProperty('--border', c.border);
-  root.style.setProperty('--input', c.border);
-  root.style.setProperty('--ring', c.primary);
-
-  // Sidebar tokens
-  root.style.setProperty('--sidebar-primary', c.primary);
-  root.style.setProperty('--sidebar-ring', c.primary);
-
-  // Gradient
+/** Build CSS text for a color set */
+function buildTokens(c: SkinColors): string {
   const h = parseFloat(c.primary.split(' ')[0]);
   const s = parseFloat(c.primary.split(' ')[1]);
   const l = parseFloat(c.primary.split(' ')[2]);
-  root.style.setProperty(
-    '--gradient-primary',
-    `linear-gradient(135deg, hsl(${c.primary}), hsl(${h} ${s}% ${Math.max(l - 10, 20)}%))`
-  );
+  const gradient = `linear-gradient(135deg, hsl(${c.primary}), hsl(${h} ${s}% ${Math.max(l - 10, 20)}%))`;
 
-  // Border radius
-  root.style.setProperty('--radius', `${radius}px`);
+  return `
+    --primary: ${c.primary};
+    --accent: ${c.accent};
+    --background: ${c.background};
+    --foreground: ${c.foreground};
+    --card: ${c.card};
+    --card-foreground: ${c['card-foreground']};
+    --popover: ${c.card};
+    --popover-foreground: ${c['card-foreground']};
+    --muted: ${c.muted};
+    --muted-foreground: ${c['muted-foreground']};
+    --border: ${c.border};
+    --input: ${c.border};
+    --ring: ${c.primary};
+    --sidebar-primary: ${c.primary};
+    --sidebar-ring: ${c.primary};
+    --gradient-primary: ${gradient};
+  `;
+}
+
+/** Inject a <style> tag with both :root and .dark rules so CSS specificity works correctly */
+function applyPresetToDOM(preset: SkinPreset, radius: number) {
+  let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+  if (!el) {
+    el = document.createElement('style');
+    el.id = STYLE_ID;
+    document.head.appendChild(el);
+  }
+
+  el.textContent = `
+    :root { ${buildTokens(preset.colors.light)} --radius: ${radius}px; }
+    .dark { ${buildTokens(preset.colors.dark)} }
+  `;
 }
 
 export function useThemePreset() {
@@ -70,12 +71,6 @@ export function useThemePreset() {
 
   useEffect(() => {
     applyPresetToDOM(activePreset, state.borderRadius);
-
-    const observer = new MutationObserver(() => {
-      applyPresetToDOM(activePreset, state.borderRadius);
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
   }, [activePreset, state.borderRadius]);
 
   const persist = useCallback((next: SkinState) => {
@@ -99,8 +94,7 @@ export function useThemePreset() {
     const defaults = getDefaults();
     setState(defaults);
     localStorage.removeItem(STORAGE_KEY);
-    const defaultPreset = PRESETS[0];
-    applyPresetToDOM(defaultPreset, defaults.borderRadius);
+    applyPresetToDOM(PRESETS[0], defaults.borderRadius);
     toast.info('Tema restaurado para o padrão');
   }, []);
 
