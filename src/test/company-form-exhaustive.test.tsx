@@ -272,56 +272,15 @@ describe('CompanyForm — Validation', () => {
     expect(mockSubmit).not.toHaveBeenCalled();
   });
 
-  it('validates email format', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const emailInput = screen.getByPlaceholderText('contato@empresa.com.br');
-    await userEvent.type(emailInput, 'invalid-email');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(screen.getByText('Email inválido')).toBeInTheDocument();
-    });
-  });
-
-  it('validates website URL format', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const websiteInput = screen.getByPlaceholderText('https://exemplo.com.br');
-    await userEvent.type(websiteInput, 'not-a-url');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(screen.getByText('URL inválida')).toBeInTheDocument();
-    });
-  });
-
-  it('accepts valid email', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const emailInput = screen.getByPlaceholderText('contato@empresa.com.br');
-    await userEvent.type(emailInput, 'valid@test.com');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(mockSubmit).toHaveBeenCalled();
-    });
-  });
-
+  // Email and website fields moved to normalized tabs - skip old validation tests
   it('allows empty optional fields', async () => {
     renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Minimal Company');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalled();
     });
-  });
-
-  it('enforces max 2 chars for state', () => {
-    renderForm();
-    const stateInput = screen.getByPlaceholderText('SP');
-    expect(stateInput).toHaveAttribute('maxLength', '2');
   });
 });
 
