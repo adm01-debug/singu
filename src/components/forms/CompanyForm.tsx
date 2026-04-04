@@ -434,7 +434,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-
+              <FormField control={form.control} name="situacao_rf" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Situação RF</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
