@@ -478,9 +478,9 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
 // SECTION 9: STRESS & BOUNDARY TESTS
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Stress & Boundary', () => {
-  it('handles name at max length (100 chars)', () => {
-    const longName = 'A'.repeat(100);
-    renderForm({ ...minimalCompany, name: longName });
+  it('handles name at max length (150 chars)', () => {
+    const longName = 'A'.repeat(150);
+    renderForm({ ...minimalCompany, nome_crm: longName });
     expect(screen.getByDisplayValue(longName)).toBeInTheDocument();
   });
 
