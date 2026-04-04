@@ -144,10 +144,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      name: getCompanyField(c, 'name') || getCompanyField(c, 'nome_crm') || getCompanyField(c, 'nome_fantasia'),
+      nome_crm: getCompanyField(c, 'nome_crm') || getCompanyField(c, 'name') || getCompanyField(c, 'nome_fantasia'),
       nome_fantasia: getCompanyField(c, 'nome_fantasia'),
       razao_social: getCompanyField(c, 'razao_social'),
-      nome_crm: getCompanyField(c, 'nome_crm'),
       industry: getCompanyField(c, 'industry'),
       ramo_atividade: getCompanyField(c, 'ramo_atividade'),
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
