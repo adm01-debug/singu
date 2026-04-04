@@ -87,8 +87,6 @@ const fullExternalCompany = {
   singular_id: 'ghi-singular-uuid',
   confederacao_id: 'jkl-confed-uuid',
   bitrix_company_id: 42,
-  lat: -23.3167,
-  lng: -51.9500,
   user_id: 'test-user-id',
   created_at: '2026-02-04T11:22:11.77795+00:00',
   updated_at: '2026-02-11T10:43:13.658791+00:00',
