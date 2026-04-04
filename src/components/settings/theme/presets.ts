@@ -1,30 +1,32 @@
+export interface SkinColors {
+  primary: string;
+  accent: string;
+  background: string;
+  foreground: string;
+  card: string;
+  'card-foreground': string;
+  muted: string;
+  'muted-foreground': string;
+  border: string;
+}
+
 export interface SkinPreset {
   id: string;
   name: string;
   emoji: string;
   description: string;
   colors: {
-    light: {
-      primary: string;
-      accent: string;
-      background: string;
-      card: string;
-      muted: string;
-      border: string;
-    };
-    dark: {
-      primary: string;
-      accent: string;
-      background: string;
-      card: string;
-      muted: string;
-      border: string;
-    };
+    light: SkinColors;
+    dark: SkinColors;
   };
   /** Two gradient stops for the preview swatch */
   preview: [string, string];
 }
 
+/**
+ * All muted-foreground values are WCAG AA compliant (≥4.5:1 contrast ratio)
+ * against their respective background/card colors.
+ */
 export const PRESETS: SkinPreset[] = [
   {
     id: 'default',
@@ -37,16 +39,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '234 72% 58%',
         accent: '172 50% 45%',
         background: '220 20% 97%',
+        foreground: '220 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '220 25% 12%',
         muted: '220 16% 94%',
+        'muted-foreground': '220 10% 40%',
         border: '220 13% 90%',
       },
       dark: {
         primary: '234 75% 65%',
         accent: '172 45% 48%',
         background: '224 28% 6%',
+        foreground: '220 15% 92%',
         card: '224 24% 10%',
+        'card-foreground': '220 15% 92%',
         muted: '224 18% 14%',
+        'muted-foreground': '220 12% 65%',
         border: '224 16% 16%',
       },
     },
@@ -62,16 +70,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '217 71% 53%',
         accent: '210 78% 60%',
         background: '216 20% 97%',
+        foreground: '216 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '216 25% 12%',
         muted: '216 16% 94%',
+        'muted-foreground': '216 10% 40%',
         border: '216 13% 90%',
       },
       dark: {
         primary: '217 71% 60%',
         accent: '210 70% 55%',
         background: '220 28% 6%',
+        foreground: '216 15% 92%',
         card: '220 24% 10%',
+        'card-foreground': '216 15% 92%',
         muted: '220 18% 14%',
+        'muted-foreground': '216 12% 65%',
         border: '220 16% 16%',
       },
     },
@@ -87,16 +101,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '160 84% 39%',
         accent: '152 55% 50%',
         background: '150 20% 97%',
+        foreground: '150 25% 10%',
         card: '0 0% 100%',
+        'card-foreground': '150 25% 10%',
         muted: '150 14% 94%',
+        'muted-foreground': '150 10% 40%',
         border: '150 12% 90%',
       },
       dark: {
         primary: '160 72% 45%',
         accent: '152 50% 52%',
         background: '160 28% 5%',
+        foreground: '150 15% 92%',
         card: '160 22% 9%',
+        'card-foreground': '150 15% 92%',
         muted: '160 18% 13%',
+        'muted-foreground': '150 12% 65%',
         border: '160 14% 15%',
       },
     },
@@ -112,16 +132,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '25 95% 53%',
         accent: '38 92% 50%',
         background: '30 20% 97%',
+        foreground: '20 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '20 25% 12%',
         muted: '30 16% 94%',
+        'muted-foreground': '20 10% 40%',
         border: '30 13% 90%',
       },
       dark: {
         primary: '25 90% 58%',
         accent: '38 85% 55%',
         background: '20 28% 6%',
+        foreground: '20 15% 92%',
         card: '20 24% 10%',
+        'card-foreground': '20 15% 92%',
         muted: '20 18% 14%',
+        'muted-foreground': '20 12% 65%',
         border: '20 16% 16%',
       },
     },
@@ -137,16 +163,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '346 77% 50%',
         accent: '330 65% 60%',
         background: '340 20% 97%',
+        foreground: '340 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '340 25% 12%',
         muted: '340 14% 94%',
+        'muted-foreground': '340 10% 40%',
         border: '340 12% 90%',
       },
       dark: {
         primary: '346 72% 58%',
         accent: '330 60% 62%',
         background: '340 25% 6%',
+        foreground: '340 15% 92%',
         card: '340 20% 10%',
+        'card-foreground': '340 15% 92%',
         muted: '340 16% 14%',
+        'muted-foreground': '340 10% 65%',
         border: '340 14% 16%',
       },
     },
@@ -162,16 +194,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '220 14% 46%',
         accent: '220 10% 55%',
         background: '220 20% 97%',
+        foreground: '220 20% 12%',
         card: '0 0% 100%',
+        'card-foreground': '220 20% 12%',
         muted: '220 12% 94%',
+        'muted-foreground': '220 8% 40%',
         border: '220 10% 90%',
       },
       dark: {
         primary: '220 14% 62%',
         accent: '220 10% 58%',
         background: '220 18% 8%',
+        foreground: '220 10% 92%',
         card: '220 16% 12%',
+        'card-foreground': '220 10% 92%',
         muted: '220 14% 16%',
+        'muted-foreground': '220 8% 65%',
         border: '220 12% 18%',
       },
     },
@@ -187,16 +225,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '199 89% 48%',
         accent: '190 80% 42%',
         background: '200 20% 97%',
+        foreground: '200 25% 10%',
         card: '0 0% 100%',
+        'card-foreground': '200 25% 10%',
         muted: '200 16% 94%',
+        'muted-foreground': '200 10% 40%',
         border: '200 13% 90%',
       },
       dark: {
         primary: '199 80% 55%',
         accent: '190 70% 48%',
         background: '200 30% 5%',
+        foreground: '200 15% 92%',
         card: '200 25% 9%',
+        'card-foreground': '200 15% 92%',
         muted: '200 20% 13%',
+        'muted-foreground': '200 12% 65%',
         border: '200 16% 15%',
       },
     },
@@ -212,16 +256,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '38 90% 50%',
         accent: '45 85% 55%',
         background: '40 20% 97%',
+        foreground: '35 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '35 25% 12%',
         muted: '40 16% 94%',
+        'muted-foreground': '35 10% 40%',
         border: '40 13% 90%',
       },
       dark: {
         primary: '38 85% 55%',
         accent: '45 80% 58%',
         background: '35 25% 6%',
+        foreground: '35 15% 92%',
         card: '35 20% 10%',
+        'card-foreground': '35 15% 92%',
         muted: '35 16% 14%',
+        'muted-foreground': '35 10% 65%',
         border: '35 14% 16%',
       },
     },
@@ -237,16 +287,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '174 80% 40%',
         accent: '290 60% 55%',
         background: '200 20% 97%',
+        foreground: '200 25% 10%',
         card: '0 0% 100%',
+        'card-foreground': '200 25% 10%',
         muted: '200 14% 94%',
+        'muted-foreground': '200 10% 40%',
         border: '200 12% 90%',
       },
       dark: {
         primary: '174 90% 48%',
         accent: '290 70% 62%',
         background: '210 30% 5%',
+        foreground: '200 15% 92%',
         card: '210 25% 9%',
+        'card-foreground': '200 15% 92%',
         muted: '210 20% 13%',
+        'muted-foreground': '200 12% 65%',
         border: '210 16% 15%',
       },
     },
@@ -262,16 +318,22 @@ export const PRESETS: SkinPreset[] = [
         primary: '270 50% 55%',
         accent: '260 45% 62%',
         background: '265 20% 97%',
+        foreground: '265 25% 12%',
         card: '0 0% 100%',
+        'card-foreground': '265 25% 12%',
         muted: '265 14% 94%',
+        'muted-foreground': '265 10% 40%',
         border: '265 12% 90%',
       },
       dark: {
         primary: '270 55% 65%',
         accent: '260 50% 68%',
         background: '265 25% 6%',
+        foreground: '265 15% 92%',
         card: '265 20% 10%',
+        'card-foreground': '265 15% 92%',
         muted: '265 16% 14%',
+        'muted-foreground': '265 10% 65%',
         border: '265 14% 16%',
       },
     },
