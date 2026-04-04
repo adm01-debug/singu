@@ -31,10 +31,9 @@ import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
   // Dados Básicos
-  name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Máximo 100 caracteres'),
+  nome_crm: z.string().trim().min(1, 'Nome é obrigatório').max(150, 'Máximo 150 caracteres'),
   nome_fantasia: z.string().trim().max(150).optional().or(z.literal('')),
   razao_social: z.string().trim().max(200).optional().or(z.literal('')),
-  nome_crm: z.string().trim().max(150).optional().or(z.literal('')),
   industry: z.string().trim().max(50).optional().or(z.literal('')),
   ramo_atividade: z.string().trim().max(150).optional().or(z.literal('')),
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
