@@ -130,12 +130,13 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
-  const c = company as Record<string, unknown> | null;
-  const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
+  const companyId = (c?.id as string) || undefined;
 
-  const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
-  const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
-  
+  // ─── Related data hooks (normalized tables) ───
+  const phones = useCompanyPhones(companyId);
+  const emails = useCompanyEmails(companyId);
+  const addresses = useCompanyAddresses(companyId);
+  const socialMedia = useCompanySocialMedia(companyId);
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -143,17 +144,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nome_crm: getCompanyField(c, 'nome_crm') || getCompanyField(c, 'name') || getCompanyField(c, 'nome_fantasia'),
       nome_fantasia: getCompanyField(c, 'nome_fantasia'),
       razao_social: getCompanyField(c, 'razao_social'),
-      
       ramo_atividade: getCompanyField(c, 'ramo_atividade'),
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
-      website: getCompanyField(c, 'website'),
-      phone: getCompanyField(c, 'phone'),
-      phone_fixed_2: getCompanyField(c, 'phone_fixed_2'),
-      phone_mobile: getCompanyField(c, 'phone_mobile'),
-      email: getCompanyField(c, 'email'),
-      address: getCompanyField(c, 'address'),
-      city: getCompanyField(c, 'city'),
-      state: getCompanyField(c, 'state'),
       status: getCompanyField(c, 'status', 'ativo'),
       notes: getCompanyField(c, 'notes'),
       cnpj: getCompanyField(c, 'cnpj'),
@@ -177,12 +169,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       annual_revenue: getCompanyField(c, 'annual_revenue'),
       financial_health: getCompanyField(c, 'financial_health', 'unknown'),
       cores_marca: getCompanyField(c, 'cores_marca'),
-      instagram: getCompanyField(c, 'instagram'),
-      linkedin: getCompanyField(c, 'linkedin'),
-      facebook: getCompanyField(c, 'facebook'),
-      youtube: getCompanyField(c, 'youtube'),
-      twitter: getCompanyField(c, 'twitter'),
-      tiktok: getCompanyField(c, 'tiktok'),
     },
   });
 
