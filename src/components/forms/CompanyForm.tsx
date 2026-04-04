@@ -85,6 +85,7 @@ const companySchema = z.object({
   singular_id: z.string().trim().max(50).optional().or(z.literal('')),
   confederacao_id: z.string().trim().max(50).optional().or(z.literal('')),
   bitrix_company_id: z.coerce.number().optional().or(z.literal(0)),
+  merge_notes: z.string().trim().max(2000).optional().or(z.literal('')),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -196,6 +197,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       singular_id: getCompanyField(c, 'singular_id'),
       confederacao_id: getCompanyField(c, 'confederacao_id'),
       bitrix_company_id: (c?.bitrix_company_id as number) ?? 0,
+      merge_notes: getCompanyField(c, 'merge_notes'),
     },
   });
 
@@ -678,6 +680,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>Bitrix Company ID</FormLabel>
                   <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* ─── Notas de Merge ─── */}
+              <FormField control={form.control} name="merge_notes" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Notas de Merge</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormDescription>Registro de merges realizados</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />

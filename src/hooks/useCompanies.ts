@@ -65,7 +65,7 @@ export function useCompanies() {
     if (!user) return null;
     try {
       // Strip fields that don't exist in the external DB
-      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, website: _website, ...externalFields } = company as any;
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...externalFields } = company as any;
       const record = { ...externalFields, user_id: user.id };
       if (!record.nome_crm && name) record.nome_crm = name;
 
@@ -87,7 +87,7 @@ export function useCompanies() {
 
     try {
       // Strip fields that don't exist in the external DB
-      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, website: _website, id: _id, ...cleanUpdates } = updates as any;
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, id: _id, ...cleanUpdates } = updates as any;
       const { data, error } = await updateExternalData<Company>('companies', id, cleanUpdates);
       if (error) throw error;
       if (data) queryClient.setQueryData(queryKey, (prev: any) => prev ? { ...prev, companies: prev.companies.map((c: Company) => c.id === id ? mapCompany(data) : c) } : prev);
