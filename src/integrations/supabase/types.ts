@@ -380,6 +380,7 @@ export type Database = {
           email: string | null
           employee_count: string | null
           extra_data_rf: Json | null
+          facebook: string | null
           financial_health: string | null
           grupo_economico: string | null
           grupo_economico_id: string | null
@@ -387,11 +388,13 @@ export type Database = {
           industry: string | null
           inscricao_estadual: string | null
           inscricao_municipal: string | null
+          instagram: string | null
           is_carrier: boolean | null
           is_customer: boolean | null
           is_matriz: boolean | null
           is_supplier: boolean | null
           lat: number | null
+          linkedin: string | null
           lng: number | null
           logo_url: string | null
           matriz_id: string | null
@@ -414,10 +417,13 @@ export type Database = {
           state: string | null
           status: string | null
           tags: string[] | null
+          tiktok: string | null
           tipo_cooperativa: string | null
+          twitter: string | null
           updated_at: string
           user_id: string
           website: string | null
+          youtube: string | null
         }
         Insert: {
           address?: string | null
@@ -437,6 +443,7 @@ export type Database = {
           email?: string | null
           employee_count?: string | null
           extra_data_rf?: Json | null
+          facebook?: string | null
           financial_health?: string | null
           grupo_economico?: string | null
           grupo_economico_id?: string | null
@@ -444,11 +451,13 @@ export type Database = {
           industry?: string | null
           inscricao_estadual?: string | null
           inscricao_municipal?: string | null
+          instagram?: string | null
           is_carrier?: boolean | null
           is_customer?: boolean | null
           is_matriz?: boolean | null
           is_supplier?: boolean | null
           lat?: number | null
+          linkedin?: string | null
           lng?: number | null
           logo_url?: string | null
           matriz_id?: string | null
@@ -471,10 +480,13 @@ export type Database = {
           state?: string | null
           status?: string | null
           tags?: string[] | null
+          tiktok?: string | null
           tipo_cooperativa?: string | null
+          twitter?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
+          youtube?: string | null
         }
         Update: {
           address?: string | null
@@ -494,6 +506,7 @@ export type Database = {
           email?: string | null
           employee_count?: string | null
           extra_data_rf?: Json | null
+          facebook?: string | null
           financial_health?: string | null
           grupo_economico?: string | null
           grupo_economico_id?: string | null
@@ -501,11 +514,13 @@ export type Database = {
           industry?: string | null
           inscricao_estadual?: string | null
           inscricao_municipal?: string | null
+          instagram?: string | null
           is_carrier?: boolean | null
           is_customer?: boolean | null
           is_matriz?: boolean | null
           is_supplier?: boolean | null
           lat?: number | null
+          linkedin?: string | null
           lng?: number | null
           logo_url?: string | null
           matriz_id?: string | null
@@ -528,10 +543,13 @@ export type Database = {
           state?: string | null
           status?: string | null
           tags?: string[] | null
+          tiktok?: string | null
           tipo_cooperativa?: string | null
+          twitter?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
+          youtube?: string | null
         }
         Relationships: []
       }
