@@ -36,7 +36,7 @@ const companySchema = z.object({
   nome_crm: z.string().trim().min(1, 'Nome é obrigatório').max(150, 'Máximo 150 caracteres'),
   nome_fantasia: z.string().trim().max(150).optional().or(z.literal('')),
   razao_social: z.string().trim().max(200).optional().or(z.literal('')),
-  industry: z.string().trim().max(50).optional().or(z.literal('')),
+  
   ramo_atividade: z.string().trim().max(150).optional().or(z.literal('')),
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
   website: z.string().trim().url('URL inválida').optional().or(z.literal('')),
@@ -147,7 +147,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
   const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
   const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
-  const { data: segmentosOptions = [], isLoading: segmentosLoading } = useExternalLookup('companies', 'industry');
+  
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -155,7 +155,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nome_crm: getCompanyField(c, 'nome_crm') || getCompanyField(c, 'name') || getCompanyField(c, 'nome_fantasia'),
       nome_fantasia: getCompanyField(c, 'nome_fantasia'),
       razao_social: getCompanyField(c, 'razao_social'),
-      industry: getCompanyField(c, 'industry'),
+      
       ramo_atividade: getCompanyField(c, 'ramo_atividade'),
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
       website: getCompanyField(c, 'website'),
@@ -351,22 +351,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="industry" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Segmento</FormLabel>
-                  <FormControl>
-                    <SearchableSelect
-                      value={field.value ?? ''}
-                      onValueChange={field.onChange}
-                      options={segmentosOptions}
-                      isLoading={segmentosLoading}
-                      placeholder="Selecione o segmento"
-                      searchPlaceholder="Buscar segmento..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
 
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
