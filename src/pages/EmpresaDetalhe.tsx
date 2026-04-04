@@ -430,7 +430,7 @@ function ContactsTabContent({ contacts }: { contacts: Contact[] }) {
                           <div className="flex items-center gap-3 mt-1">
                             <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                             <SentimentIndicator sentiment={(contact.sentiment as import('@/types').SentimentType) || 'neutral'} />
-                            <RelationshipStageBadge stage={(contact.relationship_stage as import('@/types').RelationshipStage) || 'unknown'} size="sm" />
+                            <RelationshipStageBadge stage={(contact.relationship_stage as import('@/types').RelationshipStage) || 'unknown'} />
                           </div>
                         </div>
                         {contact.tags && contact.tags.length > 0 && (
