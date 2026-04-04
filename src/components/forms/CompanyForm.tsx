@@ -204,6 +204,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       }
     }
     cleaned.logo_url = logoUrl;
+    // Map nome_crm to name (required DB column)
+    cleaned.name = cleaned.nome_crm || cleaned.nome_fantasia || 'Sem nome';
     await onSubmit(cleaned);
     clearDraft();
   };
