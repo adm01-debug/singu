@@ -372,30 +372,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="address" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl><Input placeholder="Av. Paulista, 1000" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="city" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cidade</FormLabel>
-                  <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="state" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <FormControl><Input placeholder="SP" maxLength={2} {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas</FormLabel>
