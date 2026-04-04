@@ -31,10 +31,9 @@ import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
   // Dados Básicos
-  name: z.string().trim().min(1, 'Nome é obrigatório').max(100, 'Máximo 100 caracteres'),
+  nome_crm: z.string().trim().min(1, 'Nome é obrigatório').max(150, 'Máximo 150 caracteres'),
   nome_fantasia: z.string().trim().max(150).optional().or(z.literal('')),
   razao_social: z.string().trim().max(200).optional().or(z.literal('')),
-  nome_crm: z.string().trim().max(150).optional().or(z.literal('')),
   industry: z.string().trim().max(50).optional().or(z.literal('')),
   ramo_atividade: z.string().trim().max(150).optional().or(z.literal('')),
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
@@ -145,10 +144,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      name: getCompanyField(c, 'name') || getCompanyField(c, 'nome_crm') || getCompanyField(c, 'nome_fantasia'),
+      nome_crm: getCompanyField(c, 'nome_crm') || getCompanyField(c, 'name') || getCompanyField(c, 'nome_fantasia'),
       nome_fantasia: getCompanyField(c, 'nome_fantasia'),
       razao_social: getCompanyField(c, 'razao_social'),
-      nome_crm: getCompanyField(c, 'nome_crm'),
       industry: getCompanyField(c, 'industry'),
       ramo_atividade: getCompanyField(c, 'ramo_atividade'),
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
@@ -206,6 +204,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       }
     }
     cleaned.logo_url = logoUrl;
+    // Map nome_crm to name (required DB column)
+    cleaned.name = cleaned.nome_crm || cleaned.nome_fantasia || 'Sem nome';
     await onSubmit(cleaned);
     clearDraft();
   };
@@ -255,17 +255,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
           {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
           <TabsContent value="basico" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Logo + Nome da Empresa */}
+              {/* Logo + Nome no CRM */}
               <div className="md:col-span-2 flex items-start gap-4">
                 <CompanyLogoUpload
                   logoUrl={logoUrl}
                   onLogoChange={setLogoUrl}
                   companyId={(c?.id as string) || undefined}
                 />
-                <FormField control={form.control} name="name" render={({ field }) => (
+                <FormField control={form.control} name="nome_crm" render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Nome da Empresa *</FormLabel>
-                    <FormControl><Input placeholder="Ex: Tech Solutions LTDA" {...field} /></FormControl>
+                    <FormLabel>Nome no CRM *</FormLabel>
+                    <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
+                    <FormDescription>Nome exibido nas listagens</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -283,15 +284,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>Razão Social</FormLabel>
                   <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="nome_crm" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome no CRM</FormLabel>
-                  <FormControl><Input placeholder="Nome usado internamente" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormDescription>Nome exibido nas listagens</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
