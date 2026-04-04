@@ -260,8 +260,8 @@ const AUTH_FALLBACK: AuthContextType = {
   user: null,
   session: null,
   loading: true,
-  signUp: async () => ({ error: new Error('AuthProvider not mounted') as any }),
-  signIn: async () => ({ error: new Error('AuthProvider not mounted') as any }),
+  signUp: async () => ({ error: new Error('AuthProvider not mounted') }),
+  signIn: async () => ({ error: new Error('AuthProvider not mounted') }),
   signOut: async () => {},
   refreshSession: async () => {},
 };
