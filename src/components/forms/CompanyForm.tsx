@@ -683,6 +683,18 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* ─── Notas de Merge ─── */}
+              <FormField control={form.control} name="merge_notes" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Notas de Merge</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormDescription>Registro de merges realizados</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
           </TabsContent>
           <TabsContent value="telefones" className="mt-0">
