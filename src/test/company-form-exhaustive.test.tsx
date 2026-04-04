@@ -371,12 +371,14 @@ describe('CompanyForm — Submission', () => {
   });
 
   it('shows loading spinner when isSubmitting', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <BrowserRouter>
-        <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
+        </BrowserRouter>
+      </QueryClientProvider>
     );
-    // Loader2 icon should be present (svg with animate-spin)
     const spinner = document.querySelector('.animate-spin');
     expect(spinner).toBeInTheDocument();
   });
