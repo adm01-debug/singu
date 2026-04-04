@@ -41,6 +41,8 @@ const companySchema = z.object({
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
   website: z.string().trim().url('URL inválida').optional().or(z.literal('')),
   phone: z.string().trim().max(20).optional().or(z.literal('')),
+  phone_fixed_2: z.string().trim().max(20).optional().or(z.literal('')),
+  phone_mobile: z.string().trim().max(20).optional().or(z.literal('')),
   email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
   address: z.string().trim().max(200).optional().or(z.literal('')),
   city: z.string().trim().max(50).optional().or(z.literal('')),
