@@ -370,7 +370,23 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone</FormLabel>
+                  <FormLabel>Fone Fixo 1</FormLabel>
+                  <FormControl><Input placeholder="(11) 3333-4444" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="phone_fixed_2" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fone Fixo 2</FormLabel>
+                  <FormControl><Input placeholder="(11) 3333-5555" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="phone_mobile" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Celular Corporativo</FormLabel>
                   <FormControl><Input placeholder="(11) 99999-9999" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
