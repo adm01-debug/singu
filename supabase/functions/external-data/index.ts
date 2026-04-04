@@ -19,6 +19,10 @@ const ALLOWED_TABLES = [
   'favorite_templates', 'lux_intelligence', 'metaprogram_analysis',
   'vak_analysis_history', 'rfm_analysis', 'offer_suggestions',
   'trigger_bundles', 'trigger_intensity_history',
+  // Company normalized tables
+  'company_phones', 'company_emails', 'company_addresses',
+  'company_social_media', 'company_cnaes', 'company_rfm_scores',
+  'company_stakeholder_map',
 ] as const;
 
 type AllowedTable = typeof ALLOWED_TABLES[number];

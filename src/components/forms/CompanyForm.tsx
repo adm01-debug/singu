@@ -48,7 +48,7 @@ const companySchema = z.object({
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
-  razao_social_fiscal: z.string().optional(),
+  
   capital_social: z.coerce.number().optional().or(z.literal(0)),
   natureza_juridica: z.string().trim().max(10).optional().or(z.literal('')),
   natureza_juridica_desc: z.string().trim().max(200).optional().or(z.literal('')),
@@ -102,7 +102,6 @@ const financialHealthOptions = [
 const statusOptions = [
   { value: 'ativo', label: 'Ativo' },
   { value: 'inativo', label: 'Inativo' },
-  { value: 'prospeccao', label: 'Prospecção' },
   { value: 'suspenso', label: 'Suspenso' },
 ];
 
@@ -192,7 +191,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       }
     }
     cleaned.logo_url = logoUrl;
-    cleaned.name = cleaned.nome_crm || cleaned.nome_fantasia || 'Sem nome';
+    // External DB doesn't have 'name' column — it uses 'nome_crm' as primary name
+    // Remove any fields that don't exist in the external companies table
+    delete cleaned.razao_social_fiscal;
     await onSubmit(cleaned);
     clearDraft();
   };
