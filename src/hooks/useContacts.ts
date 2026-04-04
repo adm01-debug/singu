@@ -19,21 +19,6 @@ export type ContactListItem = Pick<Contact,
 
 const PAGE_SIZE = 50;
 
-/** Fields that exist in the local Supabase schema but NOT in the external DB */
-const LOCAL_ONLY_FIELDS = new Set([
-  'tags', 'interests', 'hobbies', 'twitter', 'avatar_url', 'family_info',
-]);
-
-function stripLocalFields(input: Record<string, unknown>): Record<string, unknown> {
-  const cleaned: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(input)) {
-    if (!LOCAL_ONLY_FIELDS.has(key)) {
-      cleaned[key] = value;
-    }
-  }
-  return cleaned;
-}
-
 async function fetchContactsPage(companyId?: string) {
   const filters = companyId
     ? [{ type: 'eq' as const, column: 'company_id', value: companyId }]
@@ -77,8 +62,8 @@ export function useContacts(companyId?: string) {
   const createContact = async (contact: Omit<ContactInsert, 'user_id'>) => {
     if (!user) return null;
     try {
-      const input = contact as Record<string, unknown>;
-      const externalFields = stripLocalFields(input);
+      // Strip local-only fields that don't exist in the external DB
+      const { tags, interests, hobbies, twitter, avatar_url, family_info, ...externalFields } = contact as Record<string, unknown>;
       const { data, error } = await insertExternalData<Contact>('contacts', { ...externalFields, user_id: user.id });
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
@@ -98,9 +83,8 @@ export function useContacts(companyId?: string) {
     );
 
     try {
-      const input = updates as Record<string, unknown>;
-      const cleanUpdates = stripLocalFields(input);
-      delete cleanUpdates.id;
+      // Strip local-only fields
+      const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
       const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev =>

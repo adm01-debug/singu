@@ -7,116 +7,59 @@ export type PeriodFilter = '7d' | '30d' | '90d' | '365d';
 
 export interface NLPStats {
   totalAnalyses: number;
-  emotionalStates: {
-    state: string;
-    count: number;
-    avgConfidence: number;
-  }[];
-  vakDistribution: {
-    visual: number;
-    auditory: number;
-    kinesthetic: number;
-    digital: number;
-  };
-  discDistribution: {
-    D: number;
-    I: number;
-    S: number;
-    C: number;
-  };
-  topValues: {
-    name: string;
-    count: number;
-    avgImportance: number;
-  }[];
-  objectionTypes: {
-    type: string;
-    count: number;
-    resolved: number;
-  }[];
-  emotionalTrend: {
-    date: string;
-    positive: number;
-    neutral: number;
-    negative: number;
-  }[];
+  emotionalStates: { state: string; count: number; avgConfidence: number }[];
+  vakDistribution: { visual: number; auditory: number; kinesthetic: number; digital: number };
+  discDistribution: { D: number; I: number; S: number; C: number };
+  topValues: { name: string; count: number; avgImportance: number }[];
+  objectionTypes: { type: string; count: number; resolved: number }[];
+  emotionalTrend: { date: string; positive: number; neutral: number; negative: number }[];
 }
 
-const POSITIVE_EMOTIONS = ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'];
-const NEGATIVE_EMOTIONS = ['Frustração', 'Ansiedade'];
+const POSITIVE = ['Entusiasmo', 'Confiança', 'Interesse', 'Satisfação'];
+const NEGATIVE = ['Frustração', 'Ansiedade'];
 
-const EMPTY_STATS: NLPStats = {
-  totalAnalyses: 0,
-  emotionalStates: [],
-  vakDistribution: { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 },
-  discDistribution: { D: 0, I: 0, S: 0, C: 0 },
-  topValues: [],
-  objectionTypes: [],
-  emotionalTrend: [],
+const EMPTY: NLPStats = {
+  totalAnalyses: 0, emotionalStates: [], vakDistribution: { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 },
+  discDistribution: { D: 0, I: 0, S: 0, C: 0 }, topValues: [], objectionTypes: [], emotionalTrend: [],
 };
 
-const getPeriodDays = (period: PeriodFilter): number => {
-  switch (period) {
-    case '7d': return 7;
-    case '30d': return 30;
-    case '90d': return 90;
-    case '365d': return 365;
-  }
-};
+const getPeriodDays = (p: PeriodFilter) => ({ '7d': 7, '30d': 30, '90d': 90, '365d': 365 })[p];
 
-function classifyEmotions(emotions: { emotional_state: string }[]) {
-  const positive = emotions.filter(e => POSITIVE_EMOTIONS.includes(e.emotional_state)).length;
-  const negative = emotions.filter(e => NEGATIVE_EMOTIONS.includes(e.emotional_state)).length;
-  const neutral = Math.max(0, emotions.length - positive - negative);
-  return { positive, neutral, negative };
+function classify(emotions: { emotional_state: string }[]) {
+  const pos = emotions.filter(e => POSITIVE.includes(e.emotional_state)).length;
+  const neg = emotions.filter(e => NEGATIVE.includes(e.emotional_state)).length;
+  return { positive: pos, neutral: Math.max(0, emotions.length - pos - neg), negative: neg };
 }
 
-function buildTrendData(
-  emotionalData: { created_at: string; emotional_state: string }[] | null,
-  period: PeriodFilter,
-) {
+function buildTrend(data: { created_at: string; emotional_state: string }[] | null, period: PeriodFilter) {
   const days = getPeriodDays(period);
   const now = new Date();
-  const data = emotionalData || [];
+  const items = data || [];
 
   if (days <= 7) {
     return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (6 - i));
-      const dateStr = date.toISOString().split('T')[0];
-      const dayEmotions = data.filter(e => e.created_at.startsWith(dateStr));
-      const { positive, neutral, negative } = classifyEmotions(dayEmotions);
-      return { date: date.toLocaleDateString('pt-BR', { weekday: 'short' }), positive, neutral, negative };
+      const d = new Date(now); d.setDate(d.getDate() - (6 - i));
+      const ds = d.toISOString().split('T')[0];
+      const { positive, neutral, negative } = classify(items.filter(e => e.created_at.startsWith(ds)));
+      return { date: d.toLocaleDateString('pt-BR', { weekday: 'short' }), positive, neutral, negative };
     });
   }
-
   if (days <= 30) {
-    return Array.from({ length: 4 }, (_, week) => {
-      const w = 3 - week;
-      const weekStart = new Date(now);
-      weekStart.setDate(weekStart.getDate() - (w * 7 + 6));
-      const weekEnd = new Date(now);
-      weekEnd.setDate(weekEnd.getDate() - (w * 7));
-      const weekEmotions = data.filter(e => {
-        const d = new Date(e.created_at);
-        return d >= weekStart && d <= weekEnd;
-      });
-      const { positive, neutral, negative } = classifyEmotions(weekEmotions);
-      return { date: `Sem ${week + 1}`, positive, neutral, negative };
+    return Array.from({ length: 4 }, (_, i) => {
+      const w = 3 - i;
+      const s = new Date(now); s.setDate(s.getDate() - (w * 7 + 6));
+      const e = new Date(now); e.setDate(e.getDate() - (w * 7));
+      const { positive, neutral, negative } = classify(items.filter(x => { const d = new Date(x.created_at); return d >= s && d <= e; }));
+      return { date: `Sem ${i + 1}`, positive, neutral, negative };
     });
   }
-
   const months = days <= 90 ? 3 : 12;
   return Array.from({ length: months }, (_, i) => {
     const m = months - 1 - i;
-    const monthStart = new Date(now.getFullYear(), now.getMonth() - m, 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() - m + 1, 0);
-    const monthEmotions = data.filter(e => {
-      const d = new Date(e.created_at);
-      return d >= monthStart && d <= monthEnd;
-    });
-    const { positive, neutral, negative } = classifyEmotions(monthEmotions);
-    return { date: monthStart.toLocaleDateString('pt-BR', { month: 'short' }), positive, neutral, negative };
+    const ms = new Date(now.getFullYear(), now.getMonth() - m, 1);
+    const me = new Date(now.getFullYear(), now.getMonth() - m + 1, 0);
+    const { positive, neutral, negative } = classify(items.filter(x => { const d = new Date(x.created_at); return d >= ms && d <= me; }));
+    return { date: ms.toLocaleDateString('pt-BR', { month: 'short' }), positive, neutral, negative };
   });
 }
 
@@ -124,21 +67,18 @@ export function useNLPAnalyticsData() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodFilter>('30d');
-  const [stats, setStats] = useState<NLPStats>(EMPTY_STATS);
+  const [stats, setStats] = useState<NLPStats>(EMPTY);
 
   const dateFilter = useMemo(() => {
-    const days = getPeriodDays(period);
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return date.toISOString();
+    const d = new Date(); d.setDate(d.getDate() - getPeriodDays(period));
+    return d.toISOString();
   }, [period]);
 
-  const fetchStats = useCallback(async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-
     try {
-      const [emotionalRes, vakRes, contactsRes, valuesRes, objectionsRes] = await Promise.all([
+      const [emRes, vakRes, cRes, vRes, oRes] = await Promise.all([
         supabase.from('emotional_states_history').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
         supabase.from('vak_analysis_history' as 'emotional_states_history').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
         supabase.from('contacts').select('behavior').eq('user_id', user.id),
@@ -146,71 +86,47 @@ export function useNLPAnalyticsData() {
         supabase.from('hidden_objections').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
       ]);
 
-      const emotionalData = emotionalRes.data;
+      const emotionalData = emRes.data;
       const vakData = vakRes.data as { visual_score?: number; auditory_score?: number; kinesthetic_score?: number; digital_score?: number }[] | null;
 
       // Emotional states
-      const emotionalMap = new Map<string, { count: number; totalConfidence: number }>();
+      const emMap = new Map<string, { count: number; tc: number }>();
       emotionalData?.forEach(e => {
-        const cur = emotionalMap.get(e.emotional_state) || { count: 0, totalConfidence: 0 };
-        emotionalMap.set(e.emotional_state, { count: cur.count + 1, totalConfidence: cur.totalConfidence + (e.confidence || 0) });
+        const c = emMap.get(e.emotional_state) || { count: 0, tc: 0 };
+        emMap.set(e.emotional_state, { count: c.count + 1, tc: c.tc + (e.confidence || 0) });
       });
-      const emotionalStates = Array.from(emotionalMap.entries())
-        .map(([state, d]) => ({ state, count: d.count, avgConfidence: Math.round(d.totalConfidence / d.count) }))
+      const emotionalStates = Array.from(emMap.entries())
+        .map(([state, d]) => ({ state, count: d.count, avgConfidence: Math.round(d.tc / d.count) }))
         .sort((a, b) => b.count - a.count);
 
       // VAK
-      const vakTotals = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
-      vakData?.forEach(v => {
-        vakTotals.visual += v.visual_score || 0;
-        vakTotals.auditory += v.auditory_score || 0;
-        vakTotals.kinesthetic += v.kinesthetic_score || 0;
-        vakTotals.digital += v.digital_score || 0;
-      });
-      const vakCount = vakData?.length || 1;
-      const vakDistribution = {
-        visual: Math.round(vakTotals.visual / vakCount),
-        auditory: Math.round(vakTotals.auditory / vakCount),
-        kinesthetic: Math.round(vakTotals.kinesthetic / vakCount),
-        digital: Math.round(vakTotals.digital / vakCount),
-      };
+      const vt = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
+      vakData?.forEach(v => { vt.visual += v.visual_score || 0; vt.auditory += v.auditory_score || 0; vt.kinesthetic += v.kinesthetic_score || 0; vt.digital += v.digital_score || 0; });
+      const vc = vakData?.length || 1;
+      const vakDistribution = { visual: Math.round(vt.visual / vc), auditory: Math.round(vt.auditory / vc), kinesthetic: Math.round(vt.kinesthetic / vc), digital: Math.round(vt.digital / vc) };
 
       // DISC
-      const discCount = { D: 0, I: 0, S: 0, C: 0 };
-      contactsRes.data?.forEach(c => {
-        const behavior = c.behavior as { disc_profile?: string } | null;
-        const disc = behavior?.disc_profile?.toUpperCase();
-        if (disc && disc in discCount) discCount[disc as keyof typeof discCount]++;
+      const disc = { D: 0, I: 0, S: 0, C: 0 };
+      cRes.data?.forEach(c => {
+        const b = c.behavior as { disc_profile?: string } | null;
+        const p = b?.disc_profile?.toUpperCase();
+        if (p && p in disc) disc[p as keyof typeof disc]++;
       });
 
       // Values
-      const valuesMap = new Map<string, { count: number; totalImportance: number }>();
-      valuesRes.data?.forEach(v => {
-        const cur = valuesMap.get(v.value_name) || { count: 0, totalImportance: 0 };
-        valuesMap.set(v.value_name, { count: cur.count + 1, totalImportance: cur.totalImportance + (v.importance || 0) });
-      });
-      const topValues = Array.from(valuesMap.entries())
-        .map(([name, d]) => ({ name, count: d.count, avgImportance: Math.round(d.totalImportance / d.count) }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 8);
+      const vm = new Map<string, { count: number; ti: number }>();
+      vRes.data?.forEach(v => { const c = vm.get(v.value_name) || { count: 0, ti: 0 }; vm.set(v.value_name, { count: c.count + 1, ti: c.ti + (v.importance || 0) }); });
+      const topValues = Array.from(vm.entries()).map(([name, d]) => ({ name, count: d.count, avgImportance: Math.round(d.ti / d.count) })).sort((a, b) => b.count - a.count).slice(0, 8);
 
       // Objections
-      const objectionMap = new Map<string, { count: number; resolved: number }>();
-      objectionsRes.data?.forEach(o => {
-        const cur = objectionMap.get(o.objection_type) || { count: 0, resolved: 0 };
-        objectionMap.set(o.objection_type, { count: cur.count + 1, resolved: cur.resolved + (o.resolved ? 1 : 0) });
-      });
-      const objectionTypes = Array.from(objectionMap.entries())
-        .map(([type, d]) => ({ type, count: d.count, resolved: d.resolved }))
-        .sort((a, b) => b.count - a.count);
+      const om = new Map<string, { count: number; resolved: number }>();
+      oRes.data?.forEach(o => { const c = om.get(o.objection_type) || { count: 0, resolved: 0 }; om.set(o.objection_type, { count: c.count + 1, resolved: c.resolved + (o.resolved ? 1 : 0) }); });
+      const objectionTypes = Array.from(om.entries()).map(([type, d]) => ({ type, ...d })).sort((a, b) => b.count - a.count);
 
-      // Trend
-      const emotionalTrend = buildTrendData(emotionalData, period);
+      const emotionalTrend = buildTrend(emotionalData, period);
+      const totalAnalyses = (emotionalData?.length || 0) + (vakData?.length || 0) + (vRes.data?.length || 0) + (oRes.data?.length || 0);
 
-      const totalAnalyses = (emotionalData?.length || 0) + (vakData?.length || 0) +
-        (valuesRes.data?.length || 0) + (objectionsRes.data?.length || 0);
-
-      setStats({ totalAnalyses, emotionalStates, vakDistribution, discDistribution: discCount, topValues, objectionTypes, emotionalTrend });
+      setStats({ totalAnalyses, emotionalStates, vakDistribution, discDistribution: disc, topValues, objectionTypes, emotionalTrend });
     } catch (error) {
       logger.error('Error fetching NLP stats:', error);
     } finally {
@@ -218,9 +134,7 @@ export function useNLPAnalyticsData() {
     }
   }, [user, dateFilter]);
 
-  useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+  useEffect(() => { refresh(); }, [refresh]);
 
-  return { stats, loading, period, setPeriod, refresh: fetchStats };
+  return { stats, loading, period, setPeriod, refresh };
 }

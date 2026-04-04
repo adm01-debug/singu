@@ -17,15 +17,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNLPAnalyticsData, type PeriodFilter } from '@/hooks/useNLPAnalyticsData';
-import {
-  periodOptions, emotionColors, vakColors, discColors, CHART_COLORS,
-} from '@/data/nlpAnalyticsConstants';
+import { periodOptions, emotionColors, vakColors, discColors, CHART_COLORS } from '@/data/nlpAnalyticsConstants';
 
 // ─── Shared Tooltip ────────────────────────────────────────────
 interface TooltipPayloadItem { color: string; name: string; value: number | string }
-interface CustomTooltipProps { active?: boolean; payload?: TooltipPayloadItem[]; label?: string }
 
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadItem[]; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
@@ -48,9 +45,7 @@ function StatCard({ icon: Icon, iconClass, label, value, delay }: {
       <Card className="border-border/50">
         <CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-xl ${iconClass}`}>
-              <Icon className="w-5 h-5" />
-            </div>
+            <div className={`p-3 rounded-xl ${iconClass}`}><Icon className="w-5 h-5" /></div>
             <div>
               <p className="text-2xl font-bold">{value}</p>
               <p className="text-sm text-muted-foreground">{label}</p>
@@ -81,12 +76,12 @@ export function NLPAnalyticsPanel() {
   ], [stats.discDistribution]);
 
   const radarData = useMemo(() => {
-    const maxVak = Math.max(...Object.values(stats.vakDistribution), 1);
+    const max = Math.max(...Object.values(stats.vakDistribution), 1);
     return [
-      { subject: 'Visual', value: Math.round((stats.vakDistribution.visual / maxVak) * 100) },
-      { subject: 'Auditivo', value: Math.round((stats.vakDistribution.auditory / maxVak) * 100) },
-      { subject: 'Cinestésico', value: Math.round((stats.vakDistribution.kinesthetic / maxVak) * 100) },
-      { subject: 'Digital', value: Math.round((stats.vakDistribution.digital / maxVak) * 100) },
+      { subject: 'Visual', value: Math.round((stats.vakDistribution.visual / max) * 100) },
+      { subject: 'Auditivo', value: Math.round((stats.vakDistribution.auditory / max) * 100) },
+      { subject: 'Cinestésico', value: Math.round((stats.vakDistribution.kinesthetic / max) * 100) },
+      { subject: 'Digital', value: Math.round((stats.vakDistribution.digital / max) * 100) },
     ];
   }, [stats.vakDistribution]);
 
@@ -138,14 +133,12 @@ export function NLPAnalyticsPanel() {
           <TabsTrigger value="values">Valores</TabsTrigger>
         </TabsList>
 
-        {/* ═══ Overview ═══ */}
+        {/* Overview */}
         <TabsContent value="overview" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary" /> Tendência Emocional
-                </CardTitle>
+                <CardTitle className="flex items-center gap-2"><Activity className="w-5 h-5 text-primary" /> Tendência Emocional</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-64">
@@ -194,7 +187,7 @@ export function NLPAnalyticsPanel() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={discChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" nameKey="name" label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}>
-                        {discChartData.map(entry => <Cell key={entry.profile} fill={discColors[entry.profile as keyof typeof discColors]} />)}
+                        {discChartData.map(e => <Cell key={e.profile} fill={discColors[e.profile as keyof typeof discColors]} />)}
                       </Pie>
                       <Tooltip />
                       <Legend />
@@ -205,32 +198,28 @@ export function NLPAnalyticsPanel() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Principais Valores Detectados</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Principais Valores Detectados</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {stats.topValues.length > 0 ? stats.topValues.slice(0, 6).map((value, index) => (
-                    <div key={value.name} className="flex items-center gap-3">
-                      <span className="text-sm font-medium w-6 text-muted-foreground">{index + 1}.</span>
+                  {stats.topValues.length > 0 ? stats.topValues.slice(0, 6).map((v, i) => (
+                    <div key={v.name} className="flex items-center gap-3">
+                      <span className="text-sm font-medium w-6 text-muted-foreground">{i + 1}.</span>
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium">{value.name}</span>
-                          <span className="text-xs text-muted-foreground">{value.count} ocorrências</span>
+                          <span className="text-sm font-medium">{v.name}</span>
+                          <span className="text-xs text-muted-foreground">{v.count} ocorrências</span>
                         </div>
-                        <Progress value={value.avgImportance * 10} className="h-2" />
+                        <Progress value={v.avgImportance * 10} className="h-2" />
                       </div>
                     </div>
-                  )) : (
-                    <p className="text-sm text-muted-foreground text-center py-8">Nenhum valor detectado ainda</p>
-                  )}
+                  )) : <p className="text-sm text-muted-foreground text-center py-8">Nenhum valor detectado ainda</p>}
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        {/* ═══ Emotions ═══ */}
+        {/* Emotions */}
         <TabsContent value="emotions" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -244,7 +233,7 @@ export function NLPAnalyticsPanel() {
                       <YAxis dataKey="state" type="category" width={100} tick={{ fontSize: 12 }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="count" name="Ocorrências" radius={[0, 4, 4, 0]}>
-                        {stats.emotionalStates.map(entry => <Cell key={entry.state} fill={emotionColors[entry.state] || 'hsl(var(--primary))'} />)}
+                        {stats.emotionalStates.map(e => <Cell key={e.state} fill={emotionColors[e.state] || 'hsl(var(--primary))'} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -256,27 +245,25 @@ export function NLPAnalyticsPanel() {
               <CardHeader><CardTitle>Detalhes dos Estados</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {stats.emotionalStates.length > 0 ? stats.emotionalStates.map(emotion => (
-                    <div key={emotion.state} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  {stats.emotionalStates.length > 0 ? stats.emotionalStates.map(em => (
+                    <div key={em.state} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: emotionColors[emotion.state] || 'hsl(var(--primary))' }} />
-                        <span className="font-medium">{emotion.state}</span>
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: emotionColors[em.state] || 'hsl(var(--primary))' }} />
+                        <span className="font-medium">{em.state}</span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
-                        <span className="text-muted-foreground">{emotion.count} vezes</span>
-                        <Badge variant="outline">{emotion.avgConfidence}% confiança</Badge>
+                        <span className="text-muted-foreground">{em.count} vezes</span>
+                        <Badge variant="outline">{em.avgConfidence}% confiança</Badge>
                       </div>
                     </div>
-                  )) : (
-                    <p className="text-sm text-muted-foreground text-center py-8">Nenhum estado emocional registrado</p>
-                  )}
+                  )) : <p className="text-sm text-muted-foreground text-center py-8">Nenhum estado emocional registrado</p>}
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        {/* ═══ Profiles ═══ */}
+        {/* Profiles */}
         <TabsContent value="profiles" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -285,17 +272,14 @@ export function NLPAnalyticsPanel() {
                 <div className="space-y-6">
                   {vakChartData.map(item => {
                     const Icon = item.icon;
-                    const colorKey = item.name.toLowerCase() === 'cinestésico' ? 'kinesthetic' : item.name.toLowerCase() === 'auditivo' ? 'auditory' : item.name.toLowerCase() as keyof typeof vakColors;
+                    const ck = item.name.toLowerCase() === 'cinestésico' ? 'kinesthetic' : item.name.toLowerCase() === 'auditivo' ? 'auditory' : item.name.toLowerCase() as keyof typeof vakColors;
                     return (
                       <div key={item.name} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-medium">{item.name}</span>
-                          </div>
+                          <div className="flex items-center gap-2"><Icon className="w-4 h-4 text-muted-foreground" /><span className="font-medium">{item.name}</span></div>
                           <span className="text-sm font-bold">{item.value}%</span>
                         </div>
-                        <Progress value={item.value} className="h-3" style={{ '--progress-background': vakColors[colorKey] } as React.CSSProperties} />
+                        <Progress value={item.value} className="h-3" style={{ '--progress-background': vakColors[ck] } as React.CSSProperties} />
                       </div>
                     );
                   })}
@@ -325,7 +309,7 @@ export function NLPAnalyticsPanel() {
           </div>
         </TabsContent>
 
-        {/* ═══ Values ═══ */}
+        {/* Values */}
         <TabsContent value="values" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
@@ -350,32 +334,26 @@ export function NLPAnalyticsPanel() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-500" /> Objeções por Tipo
-                </CardTitle>
+                <CardTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-500" /> Objeções por Tipo</CardTitle>
                 <CardDescription>Taxa de resolução por categoria</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {stats.objectionTypes.length > 0 ? stats.objectionTypes.map(objection => {
-                    const resolutionRate = objection.count > 0 ? Math.round((objection.resolved / objection.count) * 100) : 0;
+                  {stats.objectionTypes.length > 0 ? stats.objectionTypes.map(obj => {
+                    const rate = obj.count > 0 ? Math.round((obj.resolved / obj.count) * 100) : 0;
                     return (
-                      <div key={objection.type} className="space-y-2">
+                      <div key={obj.type} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium capitalize">{objection.type.replace(/_/g, ' ')}</span>
+                          <span className="font-medium capitalize">{obj.type.replace(/_/g, ' ')}</span>
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="text-muted-foreground">{objection.count} total</span>
-                            <Badge variant={resolutionRate >= 70 ? 'default' : resolutionRate >= 40 ? 'secondary' : 'destructive'}>
-                              {resolutionRate}% resolvidas
-                            </Badge>
+                            <span className="text-muted-foreground">{obj.count} total</span>
+                            <Badge variant={rate >= 70 ? 'default' : rate >= 40 ? 'secondary' : 'destructive'}>{rate}% resolvidas</Badge>
                           </div>
                         </div>
-                        <Progress value={resolutionRate} className="h-2" />
+                        <Progress value={rate} className="h-2" />
                       </div>
                     );
-                  }) : (
-                    <p className="text-sm text-muted-foreground text-center py-8">Nenhuma objeção registrada</p>
-                  )}
+                  }) : <p className="text-sm text-muted-foreground text-center py-8">Nenhuma objeção registrada</p>}
                 </div>
               </CardContent>
             </Card>

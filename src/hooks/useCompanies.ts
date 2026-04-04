@@ -10,14 +10,14 @@ export type Company = Tables<'companies'>;
 export type CompanyInsert = TablesInsert<'companies'>;
 export type CompanyUpdate = TablesUpdate<'companies'>;
 
-/** Fields that exist in the local Supabase schema but NOT in the external DB */
-const LOCAL_ONLY_FIELDS = new Set([
+/** Fields from the local Supabase schema that do NOT exist in the external DB */
+const LOCAL_ONLY = new Set([
   'name', 'industry', 'tags', 'phone', 'email', 'address',
   'city', 'state', 'instagram', 'linkedin', 'facebook',
   'youtube', 'twitter', 'tiktok',
 ]);
 
-interface ExternalCompanyRow extends Record<string, unknown> {
+interface ExternalRow extends Record<string, unknown> {
   nome_crm?: string;
   nome_fantasia?: string;
   razao_social?: string;
@@ -25,12 +25,9 @@ interface ExternalCompanyRow extends Record<string, unknown> {
   tags_array?: string[];
 }
 
-interface CompaniesPage {
-  companies: Company[];
-  count: number;
-}
+interface CompaniesPage { companies: Company[]; count: number }
 
-function mapCompany(ext: ExternalCompanyRow): Company {
+function mapCompany(ext: ExternalRow): Company {
   return {
     ...ext,
     name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
@@ -39,14 +36,12 @@ function mapCompany(ext: ExternalCompanyRow): Company {
   } as Company;
 }
 
-function stripLocalFields(input: Record<string, unknown>): Record<string, unknown> {
-  const cleaned: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(input)) {
-    if (!LOCAL_ONLY_FIELDS.has(key)) {
-      cleaned[key] = value;
-    }
+function stripLocal(input: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(input)) {
+    if (!LOCAL_ONLY.has(k)) out[k] = v;
   }
-  return cleaned;
+  return out;
 }
 
 async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
@@ -55,15 +50,10 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
     order: { column: 'updated_at', ascending: false },
     range: { from: 0, to: 99 },
   };
-
   if (search && search.trim().length >= 2) {
-    options.search = {
-      term: search.trim(),
-      columns: ['nome_crm', 'nome_fantasia', 'razao_social', 'ramo_atividade'],
-    };
+    options.search = { term: search.trim(), columns: ['nome_crm', 'nome_fantasia', 'razao_social', 'ramo_atividade'] };
   }
-
-  const { data, count, error } = await queryExternalData<ExternalCompanyRow>(options);
+  const { data, count, error } = await queryExternalData<ExternalRow>(options);
   if (error) throw error;
   return { companies: (data || []).map(mapCompany), count: count || 0 };
 }
@@ -95,15 +85,15 @@ export function useCompanies() {
     if (!user) return null;
     try {
       const input = company as Record<string, unknown>;
-      const externalFields = stripLocalFields(input);
-      const record = { ...externalFields, user_id: user.id } as Record<string, unknown>;
+      const ext = stripLocal(input);
+      const record = { ...ext, user_id: user.id } as Record<string, unknown>;
       if (!record.nome_crm && input.name) record.nome_crm = input.name;
 
       const { data, error } = await insertExternalData<Company>('companies', record);
       if (error) throw error;
       if (data) {
         queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
-          prev ? { ...prev, companies: [mapCompany(data as unknown as ExternalCompanyRow), ...prev.companies] } : { companies: [mapCompany(data as unknown as ExternalCompanyRow)], count: 1 }
+          prev ? { ...prev, companies: [mapCompany(data as unknown as ExternalRow), ...prev.companies] } : { companies: [mapCompany(data as unknown as ExternalRow)], count: 1 }
         );
       }
       toast({ title: 'Empresa criada', description: `${(data as Record<string, unknown>)?.nome_crm || 'Empresa'} foi adicionada com sucesso.` });
@@ -120,16 +110,15 @@ export function useCompanies() {
     queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
       prev ? { ...prev, companies: prev.companies.map(c => c.id === id ? { ...c, ...updates } as Company : c) } : prev
     );
-
     try {
       const input = updates as Record<string, unknown>;
-      const cleanUpdates = stripLocalFields(input);
-      delete cleanUpdates.id;
-      const { data, error } = await updateExternalData<Company>('companies', id, cleanUpdates);
+      const clean = stripLocal(input);
+      delete clean.id;
+      const { data, error } = await updateExternalData<Company>('companies', id, clean);
       if (error) throw error;
       if (data) {
         queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
-          prev ? { ...prev, companies: prev.companies.map(c => c.id === id ? mapCompany(data as unknown as ExternalCompanyRow) : c) } : prev
+          prev ? { ...prev, companies: prev.companies.map(c => c.id === id ? mapCompany(data as unknown as ExternalRow) : c) } : prev
         );
       }
       toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
@@ -147,7 +136,6 @@ export function useCompanies() {
     queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
       prev ? { ...prev, companies: prev.companies.filter(c => c.id !== id) } : prev
     );
-
     try {
       const { success, error } = await deleteExternalData('companies', id);
       if (error || !success) throw error || new Error('Delete failed');
