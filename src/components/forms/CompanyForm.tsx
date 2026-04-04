@@ -360,26 +360,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="website" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Website</FormLabel>
-                  <FormControl><Input placeholder="https://exemplo.com.br" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl><Input placeholder="(11) 99999-9999" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl><Input placeholder="contato@empresa.com.br" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
