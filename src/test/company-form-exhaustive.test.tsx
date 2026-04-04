@@ -552,17 +552,20 @@ describe('CompanyForm — Stress & Boundary', () => {
   });
 
   it('renders 10 forms concurrently without error', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { unmount } = render(
-      <BrowserRouter>
-        {Array.from({ length: 10 }, (_, i) => (
-          <CompanyForm
-            key={i}
-            company={{ ...fullExternalCompany, id: `id-${i}` } as any}
-            onSubmit={mockSubmit}
-            onCancel={mockCancel}
-          />
-        ))}
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          {Array.from({ length: 10 }, (_, i) => (
+            <CompanyForm
+              key={i}
+              company={{ ...fullExternalCompany, id: `id-${i}` } as any}
+              onSubmit={mockSubmit}
+              onCancel={mockCancel}
+            />
+          ))}
+        </BrowserRouter>
+      </QueryClientProvider>
     );
     expect(screen.getAllByText('Editar Empresa')).toHaveLength(10);
     unmount();
