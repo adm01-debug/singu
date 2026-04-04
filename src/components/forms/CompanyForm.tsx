@@ -662,6 +662,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               )} />
             </div>
           </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
