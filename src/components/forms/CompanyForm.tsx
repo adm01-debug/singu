@@ -235,7 +235,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         </div>
 
         <Tabs defaultValue="basico" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-4">
+          <TabsList className="grid w-full grid-cols-6 mb-4">
             <TabsTrigger value="basico" className="text-xs gap-1">
               <Building2 className="w-3.5 h-3.5" />
               Básico
@@ -251,6 +251,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             <TabsTrigger value="estrutura" className="text-xs gap-1">
               <Landmark className="w-3.5 h-3.5" />
               Estrutura
+            </TabsTrigger>
+            <TabsTrigger value="endereco" className="text-xs gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              Endereços
             </TabsTrigger>
             <TabsTrigger value="redes" className="text-xs gap-1">
               <Share2 className="w-3.5 h-3.5" />
