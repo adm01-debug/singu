@@ -191,7 +191,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       }
     }
     cleaned.logo_url = logoUrl;
-    cleaned.name = cleaned.nome_crm || cleaned.nome_fantasia || 'Sem nome';
+    // External DB doesn't have 'name' column — it uses 'nome_crm' as primary name
+    // Remove any fields that don't exist in the external companies table
+    delete cleaned.razao_social_fiscal;
     await onSubmit(cleaned);
     clearDraft();
   };
