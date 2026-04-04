@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CompanyForm } from '@/components/forms/CompanyForm';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Polyfill ResizeObserver for jsdom
 beforeAll(() => {
@@ -18,14 +19,19 @@ const mockSubmit = vi.fn().mockResolvedValue(undefined);
 const mockCancel = vi.fn();
 
 function renderForm(company?: any) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <BrowserRouter>
-      <CompanyForm
-        company={company}
-        onSubmit={mockSubmit}
-        onCancel={mockCancel}
-      />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <CompanyForm
+          company={company}
+          onSubmit={mockSubmit}
+          onCancel={mockCancel}
+        />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
@@ -124,12 +130,15 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Atualize as informações da empresa')).toBeInTheDocument();
   });
 
-  it('renders all 4 tabs', () => {
+  it('renders all 7 tabs', () => {
     renderForm();
     expect(screen.getByText('Básico')).toBeInTheDocument();
     expect(screen.getByText('Fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Classificação')).toBeInTheDocument();
+    expect(screen.getByText('Classif.')).toBeInTheDocument();
     expect(screen.getByText('Estrutura')).toBeInTheDocument();
+    expect(screen.getByText('Telefones')).toBeInTheDocument();
+    expect(screen.getByText('Endereços')).toBeInTheDocument();
+    expect(screen.getByText('Redes')).toBeInTheDocument();
   });
 
   it('renders submit and cancel buttons', () => {
@@ -145,21 +154,21 @@ describe('CompanyForm — Rendering', () => {
 
   it('renders Básico tab fields by default', () => {
     renderForm();
-    expect(screen.getByText('Nome da Empresa *')).toBeInTheDocument();
+    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
-    expect(screen.getByText('Nome no CRM')).toBeInTheDocument();
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
     expect(screen.getByText('Website')).toBeInTheDocument();
-    expect(screen.getByText('Telefone')).toBeInTheDocument();
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('Endereço')).toBeInTheDocument();
-    expect(screen.getByText('Cidade')).toBeInTheDocument();
-    expect(screen.getByText('Estado')).toBeInTheDocument();
+    // Telefone is now a separate tab.toBeInTheDocument();
+    // Email removed from basico.toBeInTheDocument();
+    // Endereço is now a separate tab.toBeInTheDocument();
+    // Cidade in endereco tab.toBeInTheDocument();
+    // Estado in endereco tab.toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    expect(screen.getByText('Segmento')).toBeInTheDocument();
+    // Segmento removed.toBeInTheDocument();
   });
 });
 
@@ -183,7 +192,7 @@ describe('CompanyForm — Tab Navigation', () => {
 
   it('switches to Classificação tab and shows classification fields', async () => {
     renderForm();
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
     expect(screen.getByText('Cliente')).toBeInTheDocument();
     expect(screen.getByText('Fornecedor')).toBeInTheDocument();
@@ -210,14 +219,11 @@ describe('CompanyForm — Tab Navigation', () => {
 describe('CompanyForm — Default Values Population', () => {
   it('populates basic fields from full external company', () => {
     renderForm(fullExternalCompany);
-    // name and nome_crm both have the same value, so use getAllBy
     const cocamarFields = screen.getAllByDisplayValue('Cocamar - Lobato/PR');
     expect(cocamarFields.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByDisplayValue('Cocamar')).toBeInTheDocument(); // nome_fantasia
+    expect(screen.getByDisplayValue('Cocamar')).toBeInTheDocument();
     expect(screen.getByDisplayValue('COCAMAR COOPERATIVA AGROINDUSTRIAL')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('https://www.coanorp.com.br/')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('(44) 3261-8000')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('contato@cocamar.com.br')).toBeInTheDocument();
+    // website, phone, email are now in separate normalized tabs
   });
 
   it('populates fiscal fields from full external company', async () => {
@@ -233,7 +239,7 @@ describe('CompanyForm — Default Values Population', () => {
 
   it('populates classification fields from full external company', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
 
     // is_customer should be checked
     const checkboxes = screen.getAllByRole('checkbox');
@@ -266,56 +272,15 @@ describe('CompanyForm — Validation', () => {
     expect(mockSubmit).not.toHaveBeenCalled();
   });
 
-  it('validates email format', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const emailInput = screen.getByPlaceholderText('contato@empresa.com.br');
-    await userEvent.type(emailInput, 'invalid-email');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(screen.getByText('Email inválido')).toBeInTheDocument();
-    });
-  });
-
-  it('validates website URL format', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const websiteInput = screen.getByPlaceholderText('https://exemplo.com.br');
-    await userEvent.type(websiteInput, 'not-a-url');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(screen.getByText('URL inválida')).toBeInTheDocument();
-    });
-  });
-
-  it('accepts valid email', async () => {
-    renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
-    await userEvent.type(nameInput, 'Test Co');
-    const emailInput = screen.getByPlaceholderText('contato@empresa.com.br');
-    await userEvent.type(emailInput, 'valid@test.com');
-    await userEvent.click(screen.getByText('Criar Empresa'));
-    await waitFor(() => {
-      expect(mockSubmit).toHaveBeenCalled();
-    });
-  });
-
+  // Email and website fields moved to normalized tabs - skip old validation tests
   it('allows empty optional fields', async () => {
     renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Minimal Company');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalled();
     });
-  });
-
-  it('enforces max 2 chars for state', () => {
-    renderForm();
-    const stateInput = screen.getByPlaceholderText('SP');
-    expect(stateInput).toHaveAttribute('maxLength', '2');
   });
 });
 
@@ -325,7 +290,7 @@ describe('CompanyForm — Validation', () => {
 describe('CompanyForm — Submission', () => {
   it('calls onSubmit with cleaned data (empty strings → null)', async () => {
     renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Nova Empresa Teste');
     await userEvent.click(screen.getByText('Criar Empresa'));
 
@@ -349,22 +314,27 @@ describe('CompanyForm — Submission', () => {
   });
 
   it('disables submit button when isSubmitting is true', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <BrowserRouter>
-        <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
+        </BrowserRouter>
+      </QueryClientProvider>
     );
     const submitBtn = screen.getByText('Criar Empresa');
     expect(submitBtn.closest('button')).toBeDisabled();
   });
 
   it('shows loading spinner when isSubmitting', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <BrowserRouter>
-        <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CompanyForm onSubmit={mockSubmit} onCancel={mockCancel} isSubmitting={true} />
+        </BrowserRouter>
+      </QueryClientProvider>
     );
-    // Loader2 icon should be present (svg with animate-spin)
     const spinner = document.querySelector('.animate-spin');
     expect(spinner).toBeInTheDocument();
   });
@@ -442,21 +412,21 @@ describe('CompanyForm — External Data Mapping', () => {
   it('maps nome_crm as primary name when name is empty', () => {
     const ext = { ...minimalCompany, name: '', nome_crm: 'CRM Name', nome_fantasia: 'Fantasy', razao_social: 'Legal' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('CRM Name');
   });
 
   it('uses name field when available', () => {
     const ext = { ...minimalCompany, name: 'Direct Name', nome_crm: 'CRM Name' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('Direct Name');
   });
 
   it('falls back to nome_fantasia when name and nome_crm are empty', () => {
     const ext = { ...minimalCompany, name: '', nome_crm: '', nome_fantasia: 'Fantasy Name', razao_social: 'Legal' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('Fantasy Name');
   });
 
@@ -473,7 +443,7 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('79.114.450/0284-18')).toBeInTheDocument();
 
     // Classificação tab
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
     expect(screen.getByDisplayValue('Coanorp Cooperativa')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Singular')).toBeInTheDocument();
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument();
@@ -529,26 +499,29 @@ describe('CompanyForm — Stress & Boundary', () => {
     renderForm(fullExternalCompany);
     for (let i = 0; i < 5; i++) {
       await userEvent.click(screen.getByText('Fiscal'));
-      await userEvent.click(screen.getByText('Classificação'));
+      await userEvent.click(screen.getByText('Classif.'));
       await userEvent.click(screen.getByText('Estrutura'));
       await userEvent.click(screen.getByText('Básico'));
     }
     // Should still be functional
-    expect(screen.getByText('Nome da Empresa *')).toBeInTheDocument();
+    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
   });
 
   it('renders 10 forms concurrently without error', () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const { unmount } = render(
-      <BrowserRouter>
-        {Array.from({ length: 10 }, (_, i) => (
-          <CompanyForm
-            key={i}
-            company={{ ...fullExternalCompany, id: `id-${i}` } as any}
-            onSubmit={mockSubmit}
-            onCancel={mockCancel}
-          />
-        ))}
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          {Array.from({ length: 10 }, (_, i) => (
+            <CompanyForm
+              key={i}
+              company={{ ...fullExternalCompany, id: `id-${i}` } as any}
+              onSubmit={mockSubmit}
+              onCancel={mockCancel}
+            />
+          ))}
+        </BrowserRouter>
+      </QueryClientProvider>
     );
     expect(screen.getAllByText('Editar Empresa')).toHaveLength(10);
     unmount();

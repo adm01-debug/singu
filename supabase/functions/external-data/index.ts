@@ -167,13 +167,14 @@ Deno.serve(async (req) => {
 
       const client = getExternalClient();
       // Fetch up to 1000 rows of just that column, then dedupe client-side
-      const { data, error } = await client
+      let query = client
         .from(table)
         .select(column)
         .not(column, 'is', null)
-        .neq(column, '')
         .order(column, { ascending: true })
         .limit(5000);
+
+      const { data, error } = await query;
 
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
