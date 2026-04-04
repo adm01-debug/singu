@@ -106,6 +106,28 @@ Deno.serve(async (req) => {
       return jsonResponse({ tables: tableNames });
     }
 
+    // ─── DISTINCT VALUES ───
+    if (operation === 'distinct') {
+      const { column } = body;
+      if (!table || !isAllowedTable(table)) return errorResponse('Invalid table');
+      if (!column || typeof column !== 'string') return errorResponse('Missing "column" for distinct');
+
+      const client = getExternalClient();
+      // Fetch up to 1000 rows of just that column, then dedupe client-side
+      const { data, error } = await client
+        .from(table)
+        .select(column)
+        .not(column, 'is', null)
+        .neq(column, '')
+        .order(column, { ascending: true })
+        .limit(5000);
+
+      if (error) throw new Error(`Distinct failed: ${error.message}`);
+
+      const unique = [...new Set((data || []).map((r: Record<string, string>) => r[column]).filter(Boolean))].sort();
+      return jsonResponse({ values: unique, count: unique.length });
+    }
+
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
       return errorResponse(`Invalid table "${table}". Only allowed tables are permitted.`);
     }

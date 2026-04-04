@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFormDraft } from '@/hooks/useFormDraft';
+import { useExternalLookup } from '@/hooks/useExternalLookup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
@@ -140,6 +142,10 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
   const c = company as Record<string, unknown> | null;
   const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
+
+  const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
+  const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
+  const { data: segmentosOptions = [], isLoading: segmentosLoading } = useExternalLookup('companies', 'industry');
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -306,7 +312,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="ramo_atividade" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ramo de Atividade</FormLabel>
-                  <FormControl><Input placeholder="Ex: Cooperativas Agroindustrial" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={ramosOptions}
+                      isLoading={ramosLoading}
+                      placeholder="Selecione o ramo"
+                      searchPlaceholder="Buscar ramo..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -314,7 +329,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="nicho_cliente" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nicho do Cliente</FormLabel>
-                  <FormControl><Input placeholder="Ex: Agro, Farmacêutica..." {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={nichosOptions}
+                      isLoading={nichosLoading}
+                      placeholder="Selecione o nicho"
+                      searchPlaceholder="Buscar nicho..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -322,7 +346,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="industry" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Segmento</FormLabel>
-                  <FormControl><Input placeholder="Ex: Tecnologia" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={segmentosOptions}
+                      isLoading={segmentosLoading}
+                      placeholder="Selecione o segmento"
+                      searchPlaceholder="Buscar segmento..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
