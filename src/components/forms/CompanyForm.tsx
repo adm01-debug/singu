@@ -634,6 +634,22 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
           {/* ═══ ABA 5: REDES SOCIAIS ═══ */}
           <TabsContent value="redes" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="website" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl><Input placeholder="https://exemplo.com.br" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl><Input placeholder="contato@empresa.com.br" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="instagram" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Instagram</FormLabel>
