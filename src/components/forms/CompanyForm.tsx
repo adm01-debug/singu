@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
+import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
@@ -137,7 +139,8 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
-  const c = company as Record<string, unknown> | null; // external data may have extra fields
+  const c = company as Record<string, unknown> | null;
+  const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -202,6 +205,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         cleaned[key] = value;
       }
     }
+    cleaned.logo_url = logoUrl;
     await onSubmit(cleaned);
     clearDraft();
   };
@@ -251,13 +255,21 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
           {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
           <TabsContent value="basico" className="space-y-4 mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Nome da Empresa *</FormLabel>
-                  <FormControl><Input placeholder="Ex: Tech Solutions LTDA" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              {/* Logo + Nome da Empresa */}
+              <div className="md:col-span-2 flex items-start gap-4">
+                <CompanyLogoUpload
+                  logoUrl={logoUrl}
+                  onLogoChange={setLogoUrl}
+                  companyId={(c?.id as string) || undefined}
+                />
+                <FormField control={form.control} name="name" render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel>Nome da Empresa *</FormLabel>
+                    <FormControl><Input placeholder="Ex: Tech Solutions LTDA" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
 
               <FormField control={form.control} name="nome_fantasia" render={({ field }) => (
                 <FormItem>
