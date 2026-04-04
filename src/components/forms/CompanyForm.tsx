@@ -634,10 +634,82 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormMessage />
                 </FormItem>
               )} />
+
+              {/* ─── IDs Relacionais ─── */}
+              <div className="md:col-span-2 pt-2">
+                <p className="text-sm font-medium text-muted-foreground mb-3">IDs Relacionais (Sistema)</p>
+              </div>
+
+              <FormField control={form.control} name="matriz_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID da Matriz</FormLabel>
+                  <FormControl><Input placeholder="UUID da empresa matriz" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Grupo Econômico</FormLabel>
+                  <FormControl><Input placeholder="UUID do grupo" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="central_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Central</FormLabel>
+                  <FormControl><Input placeholder="UUID da central" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="singular_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Singular</FormLabel>
+                  <FormControl><Input placeholder="UUID da singular" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="confederacao_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ID Confederação</FormLabel>
+                  <FormControl><Input placeholder="UUID da confederação" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bitrix Company ID</FormLabel>
+                  <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              {/* ─── Geolocalização ─── */}
+              <div className="md:col-span-2 pt-2">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Geolocalização</p>
+              </div>
+
+              <FormField control={form.control} name="lat" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude</FormLabel>
+                  <FormControl><Input type="number" step="any" placeholder="-23.5505" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="lng" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude</FormLabel>
+                  <FormControl><Input type="number" step="any" placeholder="-46.6333" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
           </TabsContent>
-
-          {/* ═══ ABA 5: TELEFONES (normalizado) ═══ */}
           <TabsContent value="telefones" className="mt-0">
             {companyId ? (
               <CompanyPhonesForm
