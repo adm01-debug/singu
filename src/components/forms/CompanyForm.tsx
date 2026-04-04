@@ -72,6 +72,14 @@ const companySchema = z.object({
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
   cores_marca: z.string().trim().max(100).optional().or(z.literal('')),
+
+  // Redes Sociais
+  instagram: z.string().trim().max(200).optional().or(z.literal('')),
+  linkedin: z.string().trim().max(200).optional().or(z.literal('')),
+  facebook: z.string().trim().max(200).optional().or(z.literal('')),
+  youtube: z.string().trim().max(200).optional().or(z.literal('')),
+  twitter: z.string().trim().max(200).optional().or(z.literal('')),
+  tiktok: z.string().trim().max(200).optional().or(z.literal('')),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
