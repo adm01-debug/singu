@@ -65,7 +65,7 @@ export function useCompanies() {
     if (!user) return null;
     try {
       // Strip fields that don't exist in the external DB
-      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...externalFields } = company as any;
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, website: _website, ...externalFields } = company as any;
       const record = { ...externalFields, user_id: user.id };
       if (!record.nome_crm && name) record.nome_crm = name;
 
