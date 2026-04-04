@@ -208,20 +208,27 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const draftKey = company ? `company-edit-${(company as Record<string, unknown>).id}` : 'company-new';
   const { clearDraft } = useFormDraft(form, { key: draftKey, enabled: !company });
 
+  const parseCommaSeparated = (val: string | null | undefined): string[] | null => {
+    if (!val || !val.trim()) return null;
+    return val.split(',').map(s => s.trim()).filter(Boolean);
+  };
+
   const handleSubmit = async (data: CompanyFormData) => {
     const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       if (value === '' || value === undefined) {
         cleaned[key] = null;
-      } else if (key === 'capital_social' && (value === 0 || value === null)) {
+      } else if ((key === 'capital_social' || key === 'bitrix_company_id') && (value === 0 || value === null)) {
         cleaned[key] = null;
       } else {
         cleaned[key] = value;
       }
     }
+    // Convert comma-separated strings to arrays for the DB
+    cleaned.tags_array = parseCommaSeparated(data.tags_array);
+    cleaned.challenges = parseCommaSeparated(data.challenges);
+    cleaned.competitors = parseCommaSeparated(data.competitors);
     cleaned.logo_url = logoUrl;
-    // External DB doesn't have 'name' column — it uses 'nome_crm' as primary name
-    // Remove any fields that don't exist in the external companies table
     delete cleaned.razao_social_fiscal;
     await onSubmit(cleaned);
     clearDraft();
