@@ -48,7 +48,7 @@ const companySchema = z.object({
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
-  razao_social_fiscal: z.string().optional(),
+  
   capital_social: z.coerce.number().optional().or(z.literal(0)),
   natureza_juridica: z.string().trim().max(10).optional().or(z.literal('')),
   natureza_juridica_desc: z.string().trim().max(200).optional().or(z.literal('')),
