@@ -425,7 +425,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="situacao_rf" render={({ field }) => (
+              <FormField control={form.control} name="cnpj_base" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CNPJ Base</FormLabel>
+                  <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>8 primeiros dígitos do CNPJ</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+
                 <FormItem>
                   <FormLabel>Situação RF</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
