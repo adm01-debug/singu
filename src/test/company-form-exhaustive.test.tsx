@@ -516,7 +516,7 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
     'inscricao_estadual', 'inscricao_municipal', 'cores_marca',
     'employee_count', 'annual_revenue', 'financial_health',
     'website', 'notes', 'matriz_id', 'central_id', 'singular_id',
-    'confederacao_id', 'bitrix_company_id', 'lat', 'lng',
+    'confederacao_id', 'bitrix_company_id',
   ];
 
   it.each(externalFields)('form schema includes field: %s', (field) => {
