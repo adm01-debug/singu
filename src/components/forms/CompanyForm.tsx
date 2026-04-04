@@ -23,7 +23,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Settings2 } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 
 // ─── Schema ────────────────────────────────────────────────────────
@@ -72,6 +72,14 @@ const companySchema = z.object({
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
   cores_marca: z.string().trim().max(100).optional().or(z.literal('')),
+
+  // Redes Sociais
+  instagram: z.string().trim().max(200).optional().or(z.literal('')),
+  linkedin: z.string().trim().max(200).optional().or(z.literal('')),
+  facebook: z.string().trim().max(200).optional().or(z.literal('')),
+  youtube: z.string().trim().max(200).optional().or(z.literal('')),
+  twitter: z.string().trim().max(200).optional().or(z.literal('')),
+  tiktok: z.string().trim().max(200).optional().or(z.literal('')),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -170,6 +178,12 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       annual_revenue: getCompanyField(c, 'annual_revenue'),
       financial_health: getCompanyField(c, 'financial_health', 'unknown'),
       cores_marca: getCompanyField(c, 'cores_marca'),
+      instagram: getCompanyField(c, 'instagram'),
+      linkedin: getCompanyField(c, 'linkedin'),
+      facebook: getCompanyField(c, 'facebook'),
+      youtube: getCompanyField(c, 'youtube'),
+      twitter: getCompanyField(c, 'twitter'),
+      tiktok: getCompanyField(c, 'tiktok'),
     },
   });
 
@@ -211,7 +225,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         </div>
 
         <Tabs defaultValue="basico" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
+          <TabsList className="grid w-full grid-cols-5 mb-4">
             <TabsTrigger value="basico" className="text-xs gap-1">
               <Building2 className="w-3.5 h-3.5" />
               Básico
@@ -227,6 +241,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             <TabsTrigger value="estrutura" className="text-xs gap-1">
               <Landmark className="w-3.5 h-3.5" />
               Estrutura
+            </TabsTrigger>
+            <TabsTrigger value="redes" className="text-xs gap-1">
+              <Share2 className="w-3.5 h-3.5" />
+              Redes
             </TabsTrigger>
           </TabsList>
 
@@ -586,6 +604,59 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormLabel>Cores da Marca</FormLabel>
                   <FormControl><Input placeholder="Ex: #0066CC, #FF6600" {...field} value={field.value ?? ''} /></FormControl>
                   <FormDescription>Cores principais da identidade visual</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+          </TabsContent>
+
+          {/* ═══ ABA 5: REDES SOCIAIS ═══ */}
+          <TabsContent value="redes" className="space-y-4 mt-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField control={form.control} name="instagram" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instagram</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="linkedin" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>LinkedIn</FormLabel>
+                  <FormControl><Input placeholder="URL da página ou perfil" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="facebook" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Facebook</FormLabel>
+                  <FormControl><Input placeholder="URL da página" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="youtube" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>YouTube</FormLabel>
+                  <FormControl><Input placeholder="URL do canal" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="twitter" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Twitter / X</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="tiktok" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>TikTok</FormLabel>
+                  <FormControl><Input placeholder="@empresa ou URL" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
