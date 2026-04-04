@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ImagePlus, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface CompanyLogoUploadProps {
   logoUrl?: string | null;
@@ -45,8 +46,8 @@ export function CompanyLogoUpload({ logoUrl, onLogoChange, companyId }: CompanyL
 
       onLogoChange(data.publicUrl);
       toast.success('Logo atualizado!');
-    } catch (err: any) {
-      console.error('Upload error:', err);
+    } catch (err: unknown) {
+      logger.error('Upload error:', err);
       toast.error('Erro ao enviar logo');
     } finally {
       setUploading(false);

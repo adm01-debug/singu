@@ -62,7 +62,9 @@ export function useContacts(companyId?: string) {
   const createContact = async (contact: Omit<ContactInsert, 'user_id'>) => {
     if (!user) return null;
     try {
-      const { data, error } = await insertExternalData<Contact>('contacts', { ...contact, user_id: user.id });
+      // Strip local-only fields that don't exist in the external DB
+      const { tags, interests, hobbies, twitter, avatar_url, family_info, ...externalFields } = contact as Record<string, unknown>;
+      const { data, error } = await insertExternalData<Contact>('contacts', { ...externalFields, user_id: user.id });
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
       toast({ title: 'Contato criado', description: `${data?.first_name} ${data?.last_name} foi adicionado com sucesso.` });
@@ -81,7 +83,9 @@ export function useContacts(companyId?: string) {
     );
 
     try {
-      const { data, error } = await updateExternalData<Contact>('contacts', id, updates);
+      // Strip local-only fields
+      const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
+      const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev =>
         prev?.map(c => c.id === id ? data : c) ?? []

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 async function fetchDistinctValues(table: string, column: string): Promise<string[]> {
   const { data, error } = await supabase.functions.invoke('external-data', {
@@ -7,7 +8,7 @@ async function fetchDistinctValues(table: string, column: string): Promise<strin
   });
 
   if (error) {
-    console.error(`Failed to fetch distinct ${column}:`, error);
+    logger.error(`Failed to fetch distinct ${column}:`, error);
     return [];
   }
 
