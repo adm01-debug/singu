@@ -85,10 +85,6 @@ const companySchema = z.object({
   singular_id: z.string().trim().max(50).optional().or(z.literal('')),
   confederacao_id: z.string().trim().max(50).optional().or(z.literal('')),
   bitrix_company_id: z.coerce.number().optional().or(z.literal(0)),
-
-  // Geolocalização
-  lat: z.coerce.number().optional(),
-  lng: z.coerce.number().optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -200,8 +196,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       singular_id: getCompanyField(c, 'singular_id'),
       confederacao_id: getCompanyField(c, 'confederacao_id'),
       bitrix_company_id: (c?.bitrix_company_id as number) ?? 0,
-      lat: (c?.lat as number) ?? undefined,
-      lng: (c?.lng as number) ?? undefined,
     },
   });
 
@@ -684,27 +678,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormItem>
                   <FormLabel>Bitrix Company ID</FormLabel>
                   <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              {/* ─── Geolocalização ─── */}
-              <div className="md:col-span-2 pt-2">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Geolocalização</p>
-              </div>
-
-              <FormField control={form.control} name="lat" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Latitude</FormLabel>
-                  <FormControl><Input type="number" step="any" placeholder="-23.5505" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="lng" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Longitude</FormLabel>
-                  <FormControl><Input type="number" step="any" placeholder="-46.6333" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

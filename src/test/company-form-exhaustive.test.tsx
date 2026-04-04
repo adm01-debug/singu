@@ -77,8 +77,16 @@ const fullExternalCompany = {
   financial_health: 'growing',
   notes: 'Maior cooperativa agroindustrial do Paraná',
   tags: ['agro', 'cooperativa'],
+  tags_array: ['agro', 'cooperativa', 'VIP'],
+  challenges: ['Logística', 'Custos'],
+  competitors: ['Coamo', 'C.Vale'],
   extra_data_rf: { enriched_at: '2026-03-01', source: 'BigQuery_RFB_n8n' },
   logo_url: 'https://example.com/logo.png',
+  matriz_id: 'abc-matriz-uuid',
+  central_id: 'def-central-uuid',
+  singular_id: 'ghi-singular-uuid',
+  confederacao_id: 'jkl-confed-uuid',
+  bitrix_company_id: 42,
   user_id: 'test-user-id',
   created_at: '2026-02-04T11:22:11.77795+00:00',
   updated_at: '2026-02-11T10:43:13.658791+00:00',
@@ -157,18 +165,14 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
-    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
-    // Website is now in the Redes tab (normalized)
-    // Telefone is now a separate tab.toBeInTheDocument();
-    // Email removed from basico.toBeInTheDocument();
-    // Endereço is now a separate tab.toBeInTheDocument();
-    // Cidade in endereco tab.toBeInTheDocument();
-    // Estado in endereco tab.toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    // Segmento removed.toBeInTheDocument();
+    expect(screen.getByText('Website')).toBeInTheDocument();
+    expect(screen.getByText('Tags')).toBeInTheDocument();
+    expect(screen.getByText('Desafios')).toBeInTheDocument();
+    expect(screen.getByText('Concorrentes')).toBeInTheDocument();
   });
 });
 
@@ -203,13 +207,26 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('Nº da Cooperativa')).toBeInTheDocument();
   });
 
-  it('switches to Estrutura tab and shows structure fields', async () => {
+  it('switches to Estrutura tab and shows ALL structure fields', async () => {
     renderForm();
     await userEvent.click(screen.getByText('Estrutura'));
     expect(screen.getByText('Nº Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Faturamento Anual')).toBeInTheDocument();
     expect(screen.getByText('Saúde Financeira')).toBeInTheDocument();
     expect(screen.getByText('Cores da Marca')).toBeInTheDocument();
+    // Relational IDs
+    expect(screen.getByText('ID da Matriz')).toBeInTheDocument();
+    expect(screen.getByText('ID Grupo Econômico')).toBeInTheDocument();
+    expect(screen.getByText('ID Central')).toBeInTheDocument();
+    expect(screen.getByText('ID Singular')).toBeInTheDocument();
+    expect(screen.getByText('ID Confederação')).toBeInTheDocument();
+    expect(screen.getByText('Bitrix Company ID')).toBeInTheDocument();
+  });
+
+  it('switches to Fiscal tab and shows CNPJ Base field', async () => {
+    renderForm();
+    await userEvent.click(screen.getByText('Fiscal'));
+    expect(screen.getByText('CNPJ Base')).toBeInTheDocument();
   });
 });
 
@@ -440,6 +457,7 @@ describe('CompanyForm — External Data Mapping', () => {
     // Fiscal tab
     await userEvent.click(screen.getByText('Fiscal'));
     expect(screen.getByDisplayValue('79.114.450/0284-18')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('79114450')).toBeInTheDocument(); // cnpj_base
 
     // Classificação tab
     await userEvent.click(screen.getByText('Classif.'));
@@ -450,6 +468,37 @@ describe('CompanyForm — External Data Mapping', () => {
     // Estrutura tab
     await userEvent.click(screen.getByText('Estrutura'));
     expect(screen.getByDisplayValue('#009639, #FFFFFF')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('abc-matriz-uuid')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('def-central-uuid')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('ghi-singular-uuid')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('jkl-confed-uuid')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('42')).toBeInTheDocument(); // bitrix_company_id
+  });
+
+  it('populates tags_array as comma-separated string', () => {
+    renderForm(fullExternalCompany);
+    expect(screen.getByDisplayValue('agro, cooperativa, VIP')).toBeInTheDocument();
+  });
+
+  it('populates challenges as comma-separated string', () => {
+    renderForm(fullExternalCompany);
+    expect(screen.getByDisplayValue('Logística, Custos')).toBeInTheDocument();
+  });
+
+  it('populates competitors as comma-separated string', () => {
+    renderForm(fullExternalCompany);
+    expect(screen.getByDisplayValue('Coamo, C.Vale')).toBeInTheDocument();
+  });
+
+  it('populates website field', () => {
+    renderForm(fullExternalCompany);
+    expect(screen.getByDisplayValue('https://www.coanorp.com.br/')).toBeInTheDocument();
+  });
+
+  it('populates grupo_economico_id in Classificação', async () => {
+    renderForm(fullExternalCompany);
+    await userEvent.click(screen.getByText('Estrutura'));
+    expect(screen.getByDisplayValue('9338a177-8645-4600-9817-cb0f6bf1069b')).toBeInTheDocument();
   });
 });
 
@@ -458,23 +507,101 @@ describe('CompanyForm — External Data Mapping', () => {
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Schema Alignment with External DB', () => {
   const externalFields = [
-    'nome_crm', 'nome_fantasia', 'razao_social', 'cnpj', 'ramo_atividade',
-    'nicho_cliente', 'capital_social', 'status', 'situacao_rf', 'situacao_rf_data',
-    'porte_rf', 'natureza_juridica', 'natureza_juridica_desc', 'data_fundacao',
-    'grupo_economico', 'is_customer', 'is_supplier', 'is_carrier', 'is_matriz',
-    'tipo_cooperativa', 'numero_cooperativa', 'inscricao_estadual', 'inscricao_municipal',
-    'cores_marca', 'employee_count', 'annual_revenue', 'financial_health',
+    'nome_crm', 'nome_fantasia', 'razao_social', 'cnpj', 'cnpj_base',
+    'ramo_atividade', 'nicho_cliente', 'capital_social', 'status',
+    'situacao_rf', 'situacao_rf_data', 'porte_rf', 'natureza_juridica',
+    'natureza_juridica_desc', 'data_fundacao', 'grupo_economico',
+    'grupo_economico_id', 'is_customer', 'is_supplier', 'is_carrier',
+    'is_matriz', 'tipo_cooperativa', 'numero_cooperativa',
+    'inscricao_estadual', 'inscricao_municipal', 'cores_marca',
+    'employee_count', 'annual_revenue', 'financial_health',
+    'website', 'notes', 'matriz_id', 'central_id', 'singular_id',
+    'confederacao_id', 'bitrix_company_id',
   ];
 
   it.each(externalFields)('form schema includes field: %s', (field) => {
-    // Verify the form renders without error when the field is set
-    const company = { ...minimalCompany, [field]: field === 'capital_social' ? 100 : field.includes('is_') ? true : 'test-value' };
+    const company = {
+      ...minimalCompany,
+      [field]: ['capital_social', 'bitrix_company_id'].includes(field) ? 100 : field.includes('is_') ? true : 'test-value',
+    };
     expect(() => renderForm(company)).not.toThrow();
   });
 });
 
 // ═══════════════════════════════════════════════════════════════
-// SECTION 9: STRESS & BOUNDARY TESTS
+// SECTION 9: SUBMISSION — ARRAY CONVERSION
+// ═══════════════════════════════════════════════════════════════
+describe('CompanyForm — Array Field Submission', () => {
+  it('converts tags_array comma string to array on submit', async () => {
+    renderForm();
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
+    await userEvent.type(nameInput, 'Test Company');
+    const tagsInput = screen.getByPlaceholderText('Ex: VIP, Cooperativa, Agro (separadas por vírgula)');
+    await userEvent.type(tagsInput, 'Tag1, Tag2, Tag3');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      expect(mockSubmit).toHaveBeenCalledTimes(1);
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.tags_array).toEqual(['Tag1', 'Tag2', 'Tag3']);
+    });
+  });
+
+  it('converts empty tags_array to null', async () => {
+    renderForm();
+    await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.tags_array).toBeNull();
+    });
+  });
+
+  it('converts challenges comma string to array on submit', async () => {
+    renderForm();
+    await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
+    await userEvent.type(screen.getByPlaceholderText('Ex: Logística, Custos (vírgula)'), 'A, B');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.challenges).toEqual(['A', 'B']);
+    });
+  });
+
+  it('converts competitors comma string to array on submit', async () => {
+    renderForm();
+    await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
+    await userEvent.type(screen.getByPlaceholderText('Ex: Empresa A, Empresa B (vírgula)'), 'X, Y');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.competitors).toEqual(['X', 'Y']);
+    });
+  });
+
+  it('submits website field correctly', async () => {
+    renderForm();
+    await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
+    await userEvent.type(screen.getByPlaceholderText('https://www.empresa.com.br'), 'https://example.com');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.website).toBe('https://example.com');
+    });
+  });
+
+  it('submits bitrix_company_id as null when 0', async () => {
+    renderForm();
+    await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
+    await userEvent.click(screen.getByText('Criar Empresa'));
+    await waitFor(() => {
+      const submitted = mockSubmit.mock.calls[0][0];
+      expect(submitted.bitrix_company_id).toBeNull();
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 10: STRESS & BOUNDARY TESTS
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Stress & Boundary', () => {
   it('handles name at max length (150 chars)', () => {
@@ -491,7 +618,6 @@ describe('CompanyForm — Stress & Boundary', () => {
 
   it('handles CNPJ with special characters', () => {
     renderForm({ ...minimalCompany, cnpj: '79.114.450/0284-18' });
-    // Should not crash
   });
 
   it('handles rapid tab switching', async () => {
@@ -502,7 +628,6 @@ describe('CompanyForm — Stress & Boundary', () => {
       await userEvent.click(screen.getByText('Estrutura'));
       await userEvent.click(screen.getByText('Básico'));
     }
-    // Should still be functional
     expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
   });
 
@@ -524,5 +649,10 @@ describe('CompanyForm — Stress & Boundary', () => {
     );
     expect(screen.getAllByText('Editar Empresa')).toHaveLength(10);
     unmount();
+  });
+
+  it('handles tags_array as empty array', () => {
+    renderForm({ ...minimalCompany, tags_array: [] });
+    // tags input should be empty, no crash
   });
 });
