@@ -204,6 +204,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         cleaned[key] = value;
       }
     }
+    cleaned.logo_url = logoUrl;
     await onSubmit(cleaned);
     clearDraft();
   };
