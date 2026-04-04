@@ -31,8 +31,10 @@ export function CompanyLogoUpload({ logoUrl, onLogoChange, companyId }: CompanyL
 
     setUploading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error('Usuário não autenticado'); return; }
       const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const path = `${companyId || crypto.randomUUID()}/logo.${ext}`;
+      const path = `${user.id}/${companyId || crypto.randomUUID()}/logo.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from('company-logos')
