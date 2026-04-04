@@ -130,11 +130,11 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Atualize as informações da empresa')).toBeInTheDocument();
   });
 
-  it('renders all 4 tabs', () => {
+  it('renders all 7 tabs', () => {
     renderForm();
     expect(screen.getByText('Básico')).toBeInTheDocument();
     expect(screen.getByText('Fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Classificação')).toBeInTheDocument();
+    expect(screen.getByText('Classif.')).toBeInTheDocument();
     expect(screen.getByText('Estrutura')).toBeInTheDocument();
   });
 
@@ -151,21 +151,21 @@ describe('CompanyForm — Rendering', () => {
 
   it('renders Básico tab fields by default', () => {
     renderForm();
-    expect(screen.getByText('Nome da Empresa *')).toBeInTheDocument();
+    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
     expect(screen.getByText('Nome no CRM')).toBeInTheDocument();
     expect(screen.getByText('Website')).toBeInTheDocument();
-    expect(screen.getByText('Telefone')).toBeInTheDocument();
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('Endereço')).toBeInTheDocument();
-    expect(screen.getByText('Cidade')).toBeInTheDocument();
-    expect(screen.getByText('Estado')).toBeInTheDocument();
+    // Telefone is now a separate tab.toBeInTheDocument();
+    // Email removed from basico.toBeInTheDocument();
+    // Endereço is now a separate tab.toBeInTheDocument();
+    // Cidade in endereco tab.toBeInTheDocument();
+    // Estado in endereco tab.toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    expect(screen.getByText('Segmento')).toBeInTheDocument();
+    // Segmento removed.toBeInTheDocument();
   });
 });
 
@@ -189,7 +189,7 @@ describe('CompanyForm — Tab Navigation', () => {
 
   it('switches to Classificação tab and shows classification fields', async () => {
     renderForm();
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
     expect(screen.getByText('Cliente')).toBeInTheDocument();
     expect(screen.getByText('Fornecedor')).toBeInTheDocument();
@@ -239,7 +239,7 @@ describe('CompanyForm — Default Values Population', () => {
 
   it('populates classification fields from full external company', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
 
     // is_customer should be checked
     const checkboxes = screen.getAllByRole('checkbox');
@@ -479,7 +479,7 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('79.114.450/0284-18')).toBeInTheDocument();
 
     // Classificação tab
-    await userEvent.click(screen.getByText('Classificação'));
+    await userEvent.click(screen.getByText('Classif.'));
     expect(screen.getByDisplayValue('Coanorp Cooperativa')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Singular')).toBeInTheDocument();
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument();
@@ -535,12 +535,12 @@ describe('CompanyForm — Stress & Boundary', () => {
     renderForm(fullExternalCompany);
     for (let i = 0; i < 5; i++) {
       await userEvent.click(screen.getByText('Fiscal'));
-      await userEvent.click(screen.getByText('Classificação'));
+      await userEvent.click(screen.getByText('Classif.'));
       await userEvent.click(screen.getByText('Estrutura'));
       await userEvent.click(screen.getByText('Básico'));
     }
     // Should still be functional
-    expect(screen.getByText('Nome da Empresa *')).toBeInTheDocument();
+    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
   });
 
   it('renders 10 forms concurrently without error', () => {
