@@ -23,7 +23,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Settings2 } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 
 // ─── Schema ────────────────────────────────────────────────────────
