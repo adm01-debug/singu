@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/navigation/PageHeader';
-import { queryExternalData } from '@/lib/externalData';
+import { queryExternalData, updateExternalData } from '@/lib/externalData';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
+import type { CompanyPhone, CompanyEmail, CompanyAddress, CompanySocialMedia } from '@/hooks/useCompanyRelatedData';
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
@@ -16,13 +18,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CompanyForm } from '@/components/forms/CompanyForm';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { Badge } from '@/components/ui/badge';
-import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RelationshipScore } from '@/components/ui/relationship-score';
-import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
-import { RoleBadge } from '@/components/ui/role-badge';
-import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
-import { DISCBadge } from '@/components/ui/disc-badge';
 import { CompanyHealthScore } from '@/components/ui/company-health-score';
 import { StakeholderMap } from '@/components/stakeholders/StakeholderMap';
 import { LuxButton } from '@/components/lux/LuxButton';
@@ -32,11 +28,16 @@ import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsT
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
-import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from '@/types';
+import type { DISCProfile } from '@/types';
 import { logger } from "@/lib/logger";
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
+import { RelationshipScore } from '@/components/ui/relationship-score';
+import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { RoleBadge } from '@/components/ui/role-badge';
+import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
+import { DISCBadge } from '@/components/ui/disc-badge';
+import { useToast } from '@/hooks/use-toast';
 
 type Company = Tables<'companies'>;
 type Contact = Tables<'contacts'>;
@@ -48,6 +49,7 @@ const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback
 const EmpresaDetalhe = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { trackView } = useRecentlyViewed();
   const { records: luxRecords, latestRecord: luxRecord, loading: luxLoading, triggering: luxTriggering, triggerLux } = useLuxIntelligence('company', id);
   const [company, setCompany] = useState<Company | null>(null);
@@ -56,12 +58,18 @@ const EmpresaDetalhe = () => {
   const [loading, setLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  // ─── Normalized data hooks ───
+  const phonesHook = useCompanyPhones(id);
+  const emailsHook = useCompanyEmails(id);
+  const addressesHook = useCompanyAddresses(id);
+  const socialMediaHook = useCompanySocialMedia(id);
 
   const fetchCompanyData = useCallback(async () => {
     setLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: companyResult, error: companyError } = await queryExternalData<any>({
+      const { data: companyResult, error: companyError } = await queryExternalData<Record<string, unknown>>({
         table: 'companies',
         filters: [{ type: 'eq', column: 'id', value: id }],
       });
@@ -70,15 +78,11 @@ const EmpresaDetalhe = () => {
       const raw = Array.isArray(companyResult) ? (companyResult.at(0) ?? null) : null;
       const companyData = raw ? {
         ...raw,
-        name: raw.nome_crm || raw.nome_fantasia || raw.razao_social || raw.name || 'Sem nome',
-        industry: raw.ramo_atividade || raw.industry || null,
-        city: raw.city || null,
-        state: raw.state || null,
-        phone: raw.phone || null,
-        email: raw.email || null,
-        tags: raw.tags_array || raw.tags || [],
-        challenges: raw.challenges || [],
-        competitors: raw.competitors || [],
+        name: (raw.nome_crm || raw.nome_fantasia || raw.razao_social || 'Sem nome') as string,
+        industry: (raw.ramo_atividade || null) as string | null,
+        tags: (raw.tags_array || []) as string[],
+        challenges: (raw.challenges || []) as string[],
+        competitors: (raw.competitors || []) as string[],
       } as Company : null;
       setCompany(companyData);
 
@@ -100,8 +104,7 @@ const EmpresaDetalhe = () => {
         });
 
         if (contactsError) throw contactsError;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const normalizedContacts = (contactsResult || []).map((c: any) => ({
+        const normalizedContacts = (contactsResult || []).map((c: Record<string, unknown>) => ({
           ...c,
           first_name: c.first_name || c.nome || 'Sem',
           last_name: c.last_name || c.sobrenome || 'nome',
@@ -132,7 +135,6 @@ const EmpresaDetalhe = () => {
     if (id && user) fetchCompanyData();
   }, [id, user, fetchCompanyData]);
 
-  // Memoized aggregated stats
   const stats = useMemo(() => {
     const avgScore = contacts.length > 0
       ? Math.round(contacts.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / contacts.length)
@@ -144,9 +146,27 @@ const EmpresaDetalhe = () => {
     const daysSince = lastDate
       ? Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
       : undefined;
-
     return { avgScore, total, positive, positiveRatio: total > 0 ? positive / total : 0, pending, daysSince };
   }, [contacts, interactions]);
+
+  // ─── Edit handler: uses external data API ───
+  const handleEditSubmit = async (data: Record<string, unknown>) => {
+    if (!id) return;
+    setEditSubmitting(true);
+    try {
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...cleanData } = data as Record<string, unknown>;
+      const { error } = await updateExternalData('companies', id, cleanData);
+      if (error) throw error;
+      toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
+      setIsEditOpen(false);
+      fetchCompanyData();
+    } catch (error) {
+      logger.error('Error updating company:', error);
+      toast({ title: 'Erro ao atualizar', description: 'Verifique os dados e tente novamente.', variant: 'destructive' });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -190,8 +210,6 @@ const EmpresaDetalhe = () => {
                 cnpj: company.cnpj,
                 website: company.website,
                 industry: company.industry,
-                city: company.city,
-                state: company.state,
               })}
               loading={luxTriggering}
               processing={luxRecord?.status === 'processing'}
@@ -222,6 +240,10 @@ const EmpresaDetalhe = () => {
               contactCount={contacts.length}
               totalInteractions={stats.total}
               avgRelationshipScore={stats.avgScore}
+              phones={phonesHook.data}
+              emails={emailsHook.data}
+              addresses={addressesHook.data}
+              socialMedia={socialMediaHook.data}
             />
 
             {/* Right column: Tabs */}
@@ -268,24 +290,20 @@ const EmpresaDetalhe = () => {
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Contacts Tab */}
                 <TabsContent value="contacts" className="mt-4">
                   <ContactsTabContent contacts={contacts} />
                 </TabsContent>
 
-                {/* Stakeholders Tab */}
                 <TabsContent value="stakeholders" className="mt-4">
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <StakeholderMap contacts={contacts} interactions={interactions} companyId={id} />
                   </motion.div>
                 </TabsContent>
 
-                {/* Interactions Tab */}
                 <TabsContent value="interactions" className="mt-4">
                   <CompanyInteractionsTab interactions={interactions} />
                 </TabsContent>
 
-                {/* Insights Tab */}
                 <TabsContent value="insights" className="mt-4">
                   <CompanyInsightsTab
                     companyId={company.id}
@@ -297,7 +315,6 @@ const EmpresaDetalhe = () => {
                   />
                 </TabsContent>
 
-                {/* Lux Intelligence Tab */}
                 <TabsContent value="lux" className="mt-4">
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <Card>
@@ -312,8 +329,6 @@ const EmpresaDetalhe = () => {
                             cnpj: company.cnpj,
                             website: company.website,
                             industry: company.industry,
-                            city: company.city,
-                            state: company.state,
                           })}
                           triggering={luxTriggering}
                         />
@@ -323,7 +338,6 @@ const EmpresaDetalhe = () => {
                 </TabsContent>
               </Tabs>
 
-              {/* Notes */}
               {company.notes && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}>
                   <Card>
@@ -348,18 +362,9 @@ const EmpresaDetalhe = () => {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <CompanyForm
           company={company}
-          onSubmit={async (data) => {
-            try {
-              const { error } = await supabase.from('companies').update(data).eq('id', id!);
-              if (error) throw error;
-              setIsEditOpen(false);
-              fetchCompanyData();
-            } catch (error) {
-              logger.error('Error updating company:', error);
-            }
-          }}
+          onSubmit={handleEditSubmit}
           onCancel={() => setIsEditOpen(false)}
-          isSubmitting={false}
+          isSubmitting={editSubmitting}
         />
       </DialogContent>
     </Dialog>
@@ -412,32 +417,29 @@ function ContactsTabContent({ contacts }: { contacts: Contact[] }) {
                         <OptimizedAvatar 
                           src={contact.avatar_url || undefined}
                           alt={`${contact.first_name} ${contact.last_name}`}
-                          fallback={`${safeInitial(contact.first_name)}${safeInitial(contact.last_name)}`}
+                          fallback={safeInitial(contact.first_name)}
                           size="md"
-                          className="w-12 h-12"
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-foreground">
-                              {contact.first_name} {contact.last_name}
-                            </h3>
-                            <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-medium truncate">{contact.first_name} {contact.last_name}</h3>
+                            <RoleBadge role={contact.role as import('@/types').ContactRole || 'contact'} />
+                            {behavior?.discProfile && <DISCBadge profile={behavior.discProfile} size="sm" />}
                           </div>
-                          <p className="text-sm text-muted-foreground">{contact.role_title}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                            {behavior?.discProfile && (
-                              <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
-                            )}
-                            <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                          <p className="text-sm text-muted-foreground truncate">{contact.role_title || 'Sem cargo'}</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <RelationshipScore score={contact.relationship_score || 0} size="sm" />
+                            <SentimentIndicator sentiment={(contact.sentiment as import('@/types').SentimentType) || 'neutral'} />
+                            <RelationshipStageBadge stage={(contact.relationship_stage as import('@/types').RelationshipStage) || 'unknown'} size="sm" />
                           </div>
                         </div>
-                        <div className="text-right">
-                          <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {contact.updated_at && formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
-                          </p>
-                        </div>
+                        {contact.tags && contact.tags.length > 0 && (
+                          <div className="hidden md:flex flex-wrap gap-1 max-w-[200px]">
+                            {contact.tags.slice(0, 3).map(tag => (
+                              <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -449,12 +451,9 @@ function ContactsTabContent({ contacts }: { contacts: Contact[] }) {
       ) : (
         <Card>
           <CardContent className="p-8 text-center">
-            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhum contato cadastrado</h3>
-            <p className="text-muted-foreground mb-4">
-              Adicione contatos para gerenciar seus relacionamentos com esta empresa.
-            </p>
-            <Button><Plus className="w-4 h-4 mr-2" />Adicionar Contato</Button>
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-medium mb-1">Nenhum contato vinculado</h3>
+            <p className="text-sm text-muted-foreground">Adicione contatos para esta empresa</p>
           </CardContent>
         </Card>
       )}
