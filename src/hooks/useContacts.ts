@@ -83,7 +83,9 @@ export function useContacts(companyId?: string) {
     );
 
     try {
-      const { data, error } = await updateExternalData<Contact>('contacts', id, updates);
+      // Strip local-only fields
+      const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
+      const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev =>
         prev?.map(c => c.id === id ? data : c) ?? []
