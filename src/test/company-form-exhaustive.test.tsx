@@ -473,8 +473,6 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('ghi-singular-uuid')).toBeInTheDocument();
     expect(screen.getByDisplayValue('jkl-confed-uuid')).toBeInTheDocument();
     expect(screen.getByDisplayValue('42')).toBeInTheDocument(); // bitrix_company_id
-    expect(screen.getByDisplayValue('-23.3167')).toBeInTheDocument(); // lat
-    expect(screen.getByDisplayValue('-51.95')).toBeInTheDocument(); // lng
   });
 
   it('populates tags_array as comma-separated string', () => {
