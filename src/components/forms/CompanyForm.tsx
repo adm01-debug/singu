@@ -312,7 +312,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="ramo_atividade" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ramo de Atividade</FormLabel>
-                  <FormControl><Input placeholder="Ex: Cooperativas Agroindustrial" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={ramosOptions}
+                      isLoading={ramosLoading}
+                      placeholder="Selecione o ramo"
+                      searchPlaceholder="Buscar ramo..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -320,7 +329,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="nicho_cliente" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nicho do Cliente</FormLabel>
-                  <FormControl><Input placeholder="Ex: Agro, Farmacêutica..." {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={nichosOptions}
+                      isLoading={nichosLoading}
+                      placeholder="Selecione o nicho"
+                      searchPlaceholder="Buscar nicho..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -328,7 +346,16 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="industry" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Segmento</FormLabel>
-                  <FormControl><Input placeholder="Ex: Tecnologia" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl>
+                    <SearchableSelect
+                      value={field.value ?? ''}
+                      onValueChange={field.onChange}
+                      options={segmentosOptions}
+                      isLoading={segmentosLoading}
+                      placeholder="Selecione o segmento"
+                      searchPlaceholder="Buscar segmento..."
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
