@@ -290,7 +290,7 @@ describe('CompanyForm — Validation', () => {
 describe('CompanyForm — Submission', () => {
   it('calls onSubmit with cleaned data (empty strings → null)', async () => {
     renderForm();
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Nova Empresa Teste');
     await userEvent.click(screen.getByText('Criar Empresa'));
 
@@ -412,21 +412,21 @@ describe('CompanyForm — External Data Mapping', () => {
   it('maps nome_crm as primary name when name is empty', () => {
     const ext = { ...minimalCompany, name: '', nome_crm: 'CRM Name', nome_fantasia: 'Fantasy', razao_social: 'Legal' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('CRM Name');
   });
 
   it('uses name field when available', () => {
     const ext = { ...minimalCompany, name: 'Direct Name', nome_crm: 'CRM Name' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('Direct Name');
   });
 
   it('falls back to nome_fantasia when name and nome_crm are empty', () => {
     const ext = { ...minimalCompany, name: '', nome_crm: '', nome_fantasia: 'Fantasy Name', razao_social: 'Legal' };
     renderForm(ext);
-    const nameInput = screen.getByPlaceholderText('Ex: Tech Solutions LTDA');
+    const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     expect(nameInput).toHaveValue('Fantasy Name');
   });
 
