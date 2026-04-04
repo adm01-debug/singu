@@ -318,60 +318,6 @@ const Configuracoes = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <Card className="border-border/50 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-primary" />
-                    Aparência
-                  </CardTitle>
-                  <CardDescription>
-                    Personalize a aparência do sistema
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <Label>Tema</Label>
-                    <div className="grid grid-cols-3 gap-4">
-                      {themeOptions.map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => setTheme(option.value)}
-                          className={cn(
-                            'flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all duration-200',
-                            theme === option.value
-                              ? 'border-primary bg-primary/10 shadow-lg'
-                              : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                          )}
-                        >
-                          <div className={cn(
-                            'p-4 rounded-full',
-                            theme === option.value 
-                              ? 'bg-primary text-primary-foreground' 
-                              : 'bg-muted text-muted-foreground'
-                          )}>
-                            <option.icon className="w-6 h-6" />
-                          </div>
-                          <span className={cn(
-                            'font-medium',
-                            theme === option.value ? 'text-primary' : 'text-foreground'
-                          )}>
-                            {option.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {theme === 'system' 
-                        ? 'O tema será ajustado automaticamente de acordo com as preferências do seu sistema.'
-                        : theme === 'dark'
-                        ? 'Tema escuro ativado. Ideal para ambientes com pouca luz.'
-                        : 'Tema claro ativado. Ideal para ambientes bem iluminados.'}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-              
-              {/* Theme Customizer */}
               <ThemeCustomizer />
             </motion.div>
           </TabsContent>
