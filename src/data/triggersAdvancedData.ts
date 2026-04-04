@@ -1,19 +1,24 @@
 // ==============================================
 // ADVANCED TRIGGERS DATA - Enterprise Mental Trigger System
-// Complete definitions for advanced persuasion techniques
+// Trigger definitions only. For chains, conflicts, synergies,
+// timing, fallbacks and intensity levels see triggersAdvancedRelations.ts
 // ==============================================
 
-import { 
+import type { 
   AdvancedMentalTrigger, 
   AdvancedTriggerType,
-  TriggerChain,
-  TriggerCombo,
-  TriggerConflict,
-  TriggerSynergy,
-  NeurochemicalTiming,
-  TriggerFallback,
-  IntensityLevel
 } from '@/types/triggers-advanced';
+
+// Re-export relations for backward compatibility
+export {
+  VALIDATED_TRIGGER_CHAINS,
+  TRIGGER_CONFLICTS,
+  TRIGGER_SYNERGIES,
+  NEUROCHEMICAL_TIMING,
+  TRIGGER_FALLBACKS,
+  INTENSITY_LEVELS,
+  ALL_TRIGGER_IDS,
+} from './triggersAdvancedRelations';
 
 // ============================================
 // ADVANCED MENTAL TRIGGERS DEFINITIONS
