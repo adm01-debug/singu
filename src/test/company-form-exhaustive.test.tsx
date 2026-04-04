@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CompanyForm } from '@/components/forms/CompanyForm';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Polyfill ResizeObserver for jsdom
 beforeAll(() => {
@@ -18,14 +19,19 @@ const mockSubmit = vi.fn().mockResolvedValue(undefined);
 const mockCancel = vi.fn();
 
 function renderForm(company?: any) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
-    <BrowserRouter>
-      <CompanyForm
-        company={company}
-        onSubmit={mockSubmit}
-        onCancel={mockCancel}
-      />
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <CompanyForm
+          company={company}
+          onSubmit={mockSubmit}
+          onCancel={mockCancel}
+        />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
