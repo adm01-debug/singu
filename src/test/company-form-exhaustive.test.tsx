@@ -219,14 +219,11 @@ describe('CompanyForm — Tab Navigation', () => {
 describe('CompanyForm — Default Values Population', () => {
   it('populates basic fields from full external company', () => {
     renderForm(fullExternalCompany);
-    // name and nome_crm both have the same value, so use getAllBy
     const cocamarFields = screen.getAllByDisplayValue('Cocamar - Lobato/PR');
     expect(cocamarFields.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByDisplayValue('Cocamar')).toBeInTheDocument(); // nome_fantasia
+    expect(screen.getByDisplayValue('Cocamar')).toBeInTheDocument();
     expect(screen.getByDisplayValue('COCAMAR COOPERATIVA AGROINDUSTRIAL')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('https://www.coanorp.com.br/')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('(44) 3261-8000')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('contato@cocamar.com.br')).toBeInTheDocument();
+    // website, phone, email are now in separate normalized tabs
   });
 
   it('populates fiscal fields from full external company', async () => {
