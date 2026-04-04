@@ -86,7 +86,9 @@ export function useCompanies() {
     queryClient.setQueryData(queryKey, (prev: any) => prev ? { ...prev, companies: prev.companies.map((c: Company) => c.id === id ? { ...c, ...updates } as Company : c) } : prev);
 
     try {
-      const { data, error } = await updateExternalData<Company>('companies', id, updates);
+      // Strip fields that don't exist in the external DB
+      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, id: _id, ...cleanUpdates } = updates as any;
+      const { data, error } = await updateExternalData<Company>('companies', id, cleanUpdates);
       if (error) throw error;
       if (data) queryClient.setQueryData(queryKey, (prev: any) => prev ? { ...prev, companies: prev.companies.map((c: Company) => c.id === id ? mapCompany(data) : c) } : prev);
       toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
