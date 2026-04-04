@@ -351,22 +351,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="industry" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Segmento</FormLabel>
-                  <FormControl>
-                    <SearchableSelect
-                      value={field.value ?? ''}
-                      onValueChange={field.onChange}
-                      options={segmentosOptions}
-                      isLoading={segmentosLoading}
-                      placeholder="Selecione o segmento"
-                      searchPlaceholder="Buscar segmento..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
 
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
