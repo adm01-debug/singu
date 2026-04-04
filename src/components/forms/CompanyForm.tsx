@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Loader2, FileText, Users, Landmark, Share2 } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
+import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
