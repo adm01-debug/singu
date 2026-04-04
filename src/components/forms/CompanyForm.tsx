@@ -41,6 +41,8 @@ const companySchema = z.object({
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
   website: z.string().trim().url('URL inválida').optional().or(z.literal('')),
   phone: z.string().trim().max(20).optional().or(z.literal('')),
+  phone_fixed_2: z.string().trim().max(20).optional().or(z.literal('')),
+  phone_mobile: z.string().trim().max(20).optional().or(z.literal('')),
   email: z.string().trim().email('Email inválido').optional().or(z.literal('')),
   address: z.string().trim().max(200).optional().or(z.literal('')),
   city: z.string().trim().max(50).optional().or(z.literal('')),
@@ -158,6 +160,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       nicho_cliente: getCompanyField(c, 'nicho_cliente'),
       website: getCompanyField(c, 'website'),
       phone: getCompanyField(c, 'phone'),
+      phone_fixed_2: getCompanyField(c, 'phone_fixed_2'),
+      phone_mobile: getCompanyField(c, 'phone_mobile'),
       email: getCompanyField(c, 'email'),
       address: getCompanyField(c, 'address'),
       city: getCompanyField(c, 'city'),
@@ -366,7 +370,23 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Telefone</FormLabel>
+                  <FormLabel>Fone Fixo 1</FormLabel>
+                  <FormControl><Input placeholder="(11) 3333-4444" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="phone_fixed_2" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fone Fixo 2</FormLabel>
+                  <FormControl><Input placeholder="(11) 3333-5555" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="phone_mobile" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Celular Corporativo</FormLabel>
                   <FormControl><Input placeholder="(11) 99999-9999" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
