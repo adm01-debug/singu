@@ -138,7 +138,8 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
 }
 
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
-  const c = company as Record<string, unknown> | null; // external data may have extra fields
+  const c = company as Record<string, unknown> | null;
+  const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
