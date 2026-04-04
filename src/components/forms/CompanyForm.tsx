@@ -45,10 +45,16 @@ const companySchema = z.object({
   nicho_cliente: z.string().trim().max(100).optional().or(z.literal('')),
   status: z.string().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
+  website: z.string().trim().max(300).optional().or(z.literal('')),
+
+  // Tags & Listas
+  tags_array: z.string().trim().max(500).optional().or(z.literal('')),
+  challenges: z.string().trim().max(500).optional().or(z.literal('')),
+  competitors: z.string().trim().max(500).optional().or(z.literal('')),
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
-  
+  cnpj_base: z.string().trim().max(10).optional().or(z.literal('')),
   capital_social: z.coerce.number().optional().or(z.literal(0)),
   natureza_juridica: z.string().trim().max(10).optional().or(z.literal('')),
   natureza_juridica_desc: z.string().trim().max(200).optional().or(z.literal('')),
@@ -65,14 +71,24 @@ const companySchema = z.object({
   is_carrier: z.boolean().optional(),
   is_matriz: z.boolean().optional(),
   grupo_economico: z.string().trim().max(150).optional().or(z.literal('')),
+  grupo_economico_id: z.string().trim().max(50).optional().or(z.literal('')),
   tipo_cooperativa: z.string().trim().max(100).optional().or(z.literal('')),
   numero_cooperativa: z.string().trim().max(50).optional().or(z.literal('')),
 
-  // Estrutura
+  // Estrutura & IDs Relacionais
   employee_count: z.string().optional(),
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
   cores_marca: z.string().trim().max(100).optional().or(z.literal('')),
+  matriz_id: z.string().trim().max(50).optional().or(z.literal('')),
+  central_id: z.string().trim().max(50).optional().or(z.literal('')),
+  singular_id: z.string().trim().max(50).optional().or(z.literal('')),
+  confederacao_id: z.string().trim().max(50).optional().or(z.literal('')),
+  bitrix_company_id: z.coerce.number().optional().or(z.literal(0)),
+
+  // Geolocalização
+  lat: z.coerce.number().optional(),
+  lng: z.coerce.number().optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
