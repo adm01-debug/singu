@@ -147,7 +147,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
   const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
   const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
-  const { data: segmentosOptions = [], isLoading: segmentosLoading } = useExternalLookup('companies', 'industry');
+  
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
