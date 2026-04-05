@@ -180,7 +180,9 @@ const Empresas = () => {
         if (values.length === 0) continue;
         
         const companyValue = company[key as keyof Company];
-        if (!companyValue || !values.includes(String(companyValue))) {
+        // Handle boolean fields like is_customer (null/false → "false")
+        const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
+        if (!values.includes(strValue)) {
           return false;
         }
       }
