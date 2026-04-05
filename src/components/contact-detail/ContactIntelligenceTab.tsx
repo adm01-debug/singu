@@ -200,6 +200,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
