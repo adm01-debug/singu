@@ -19,7 +19,7 @@ import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useYourDay } from '@/hooks/useYourDay';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -223,9 +223,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                             <MessageSquare className="w-3.5 h-3.5 text-success" />
                           </Button>
                         )}
-                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0">
+                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0" title={item.interaction.follow_up_date ? format(parseISO(item.interaction.follow_up_date), 'dd/MM/yyyy') : ''}>
                           {item.interaction.follow_up_date && 
-                            format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
+                            formatDistanceToNow(parseISO(item.interaction.follow_up_date), { addSuffix: true, locale: ptBR })}
                         </Badge>
                       </div>
                     </Link>
