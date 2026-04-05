@@ -371,74 +371,34 @@ const Contatos = () => {
         onAddClick={() => setIsFormOpen(true)}
       />
 
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Search and View Toggle */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
             <Input
-              placeholder="Buscar por nome, cargo ou email (aceita erros de digitação)..."
+              placeholder="Buscar por nome, cargo ou email..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
               aria-label="Buscar contatos"
-              aria-describedby="search-hint"
             />
-            <span id="search-hint" className="sr-only">
-              A busca é inteligente e aceita erros de digitação
-            </span>
           </div>
           <div className="flex items-center gap-2">
-            <ContextualHelpTooltip
-              title="Busca Inteligente"
-              description="A busca usa Fuzzy Search para encontrar resultados mesmo com erros de digitação."
-              tips={[
-                '"joao" encontra "João Silva"',
-                'Busca por nome, email e cargo',
-                'Resultados ordenados por relevância',
-              ]}
+            {/* Primary actions always visible */}
+            <SearchPresetsMenu
+              context="contacts"
+              currentFilters={activeFilters}
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              currentSearchTerm={searchTerm}
+              onApplyPreset={(preset: SearchPreset) => {
+                setActiveFilters(preset.filters);
+                setSortBy(preset.sortBy);
+                setSortOrder(preset.sortOrder);
+                if (preset.searchTerm) handleSearchChange(preset.searchTerm);
+              }}
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEnrichContacts}
-              disabled={isEnriching}
-              className="gap-2"
-              title="Enriquecer contatos com dados do banco externo"
-            >
-              {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-              {isEnriching ? 'Enriquecendo...' : 'Enriquecer'}
-            </Button>
-            <FeatureSpotlight
-              featureId="search-presets"
-              title="Novo: Presets de Busca"
-              description="Salve combinações de filtros para reutilizar rapidamente. Ideal para buscas que você faz com frequência!"
-              position="bottom"
-            >
-              <SearchPresetsMenu
-                context="contacts"
-                currentFilters={activeFilters}
-                currentSortBy={sortBy}
-                currentSortOrder={sortOrder}
-                currentSearchTerm={searchTerm}
-                onApplyPreset={(preset: SearchPreset) => {
-                  setActiveFilters(preset.filters);
-                  setSortBy(preset.sortBy);
-                  setSortOrder(preset.sortOrder);
-                  if (preset.searchTerm) handleSearchChange(preset.searchTerm);
-                }}
-              />
-            </FeatureSpotlight>
-            <AdvancedDataExporter entityType="contacts" />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowShortcuts(true)}
-              className="text-muted-foreground"
-              aria-label="Ver atalhos de teclado"
-            >
-              <Keyboard className="w-4 h-4" />
-            </Button>
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
@@ -446,9 +406,8 @@ const Contatos = () => {
               className="gap-2"
             >
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
-              {selectionMode ? 'Cancelar' : 'Selecionar'}
+              <span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
             </Button>
-            <DensityToggle density={density} onToggle={toggleDensity} />
             <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
               <Button
                 variant={viewMode === 'grid' ? 'default' : 'ghost'}
@@ -471,6 +430,35 @@ const Contatos = () => {
                 <List className="w-4 h-4" aria-hidden="true" />
               </Button>
             </div>
+
+            {/* Secondary actions in overflow menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="h-9 w-9" aria-label="Mais ações">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={handleEnrichContacts} disabled={isEnriching} className="gap-2">
+                  {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
+                  {isEnriching ? 'Enriquecendo...' : 'Enriquecer dados'}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 p-0">
+                  <div className="w-full">
+                    <AdvancedDataExporter entityType="contacts" />
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={toggleDensity} className="gap-2">
+                  <Rows3 className="w-4 h-4" />
+                  Densidade: {density === 'comfortable' ? 'Confortável' : density === 'compact' ? 'Compacta' : 'Normal'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowShortcuts(true)} className="gap-2">
+                  <Keyboard className="w-4 h-4" />
+                  Atalhos de teclado
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
