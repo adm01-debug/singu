@@ -452,9 +452,15 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                          className={cn(
+                            'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center',
+                            item.badgeColor === 'info' ? 'bg-info' : 'bg-destructive'
+                          )}
                         >
-                          <span className="text-[9px] font-bold text-destructive-foreground">
+                          <span className={cn(
+                            'text-[9px] font-bold',
+                            item.badgeColor === 'info' ? 'text-info-foreground' : 'text-destructive-foreground'
+                          )}>
                             {badgeCount > 9 ? '9+' : badgeCount}
                           </span>
                         </motion.div>
@@ -472,8 +478,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           <div className="flex items-center gap-1.5">
                             {badgeCount > 0 && (
                               <Badge 
-                                variant="destructive" 
-                                className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold animate-pulse"
+                                variant={item.badgeColor === 'info' ? 'secondary' : 'destructive'}
+                                className={cn(
+                                  'h-5 min-w-[20px] px-1.5 text-[10px] font-bold',
+                                  item.badgeColor === 'destructive' && 'animate-pulse',
+                                  item.badgeColor === 'info' && 'bg-info/15 text-info border-info/30'
+                                )}
+                                aria-label={`${badgeCount} ${item.label.toLowerCase()} pendente(s)`}
                               >
                                 {badgeCount > 99 ? '99+' : badgeCount}
                               </Badge>
