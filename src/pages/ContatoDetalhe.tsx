@@ -113,7 +113,7 @@ const ContatoDetalhe = () => {
         <PageHeader
           backTo="/contatos"
           backLabel="Contatos"
-          title={`${contact.first_name} ${contact.last_name}`}
+          title={formatContactName(contact.first_name, contact.last_name)}
           actions={
             <LuxButton
               onClick={handleTriggerLux}
@@ -134,7 +134,7 @@ const ContatoDetalhe = () => {
         {/* Proactive Intelligence Panel */}
         <ProactiveIntelligencePanel
           data={proactiveIntelligence}
-          contactName={`${contact.first_name} ${contact.last_name}`}
+          contactName={formatContactName(contact.first_name, contact.last_name)}
         />
 
         {/* Tab Navigation */}
@@ -142,7 +142,7 @@ const ContatoDetalhe = () => {
           <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
             <TabsTrigger value="resumo" className="text-xs sm:text-sm">Resumo</TabsTrigger>
             <TabsTrigger value="interacoes" className="text-xs sm:text-sm">
-              Interações ({interactions.length})
+              {pluralize(interactions.length, 'Interação', 'Interações')}
             </TabsTrigger>
             <TabsTrigger value="comportamental" className="text-xs sm:text-sm">Comportamental</TabsTrigger>
             <TabsTrigger value="inteligencia" className="text-xs sm:text-sm">Inteligência</TabsTrigger>
