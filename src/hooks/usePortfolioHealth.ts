@@ -161,7 +161,7 @@ export function usePortfolioHealth(contacts: Contact[], interactions: Interactio
     const sortedByHealth = [...clientHealths].sort((a, b) => a.healthScore - b.healthScore);
     
     // Overall metrics
-    const totalClients = contacts.length;
+    const totalClients = validContacts.length;
     const healthyClients = clientHealths.filter(c => c.status === 'healthy');
     const warningClients = clientHealths.filter(c => c.status === 'warning');
     const criticalClients = clientHealths.filter(c => c.status === 'critical');
