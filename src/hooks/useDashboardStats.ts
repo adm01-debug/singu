@@ -153,12 +153,15 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         const contactName = contact
           ? `${contact.first_name} ${contact.last_name}`.trim()
           : null;
-        // Extract name from title if contact not found (e.g. "Mensagem de João Silva (WhatsApp)")
-        const fallbackName = interaction.title?.match(/de\s+(.+?)(?:\s*\(|$)/)?.[1]?.trim();
+        // Extract name from title patterns like "Mensagem de João (WhatsApp)" or "Mensagem Enviada"
+        const titleMatch = interaction.title?.match(/de\s+(.+?)(?:\s*\(|$)/)?.[1]?.trim();
+        // For "Mensagem Enviada" type titles, try to use a cleaner description
+        const isGenericTitle = /^Mensagem\s+Enviada/i.test(interaction.title || '');
+        const displayName = contactName || titleMatch || (isGenericTitle ? 'Mensagem' : 'Contato');
         return {
           id: interaction.id,
           contactId: interaction.contact_id,
-          entityName: contactName || fallbackName || 'Contato',
+          entityName: displayName,
           description: interaction.title,
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
