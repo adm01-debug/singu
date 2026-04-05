@@ -173,6 +173,8 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
+      const deleted = previous?.find(i => i.id === id);
+      logActivity({ type: 'deleted', entityType: 'interaction', entityId: id, entityName: deleted?.title, description: 'Interação excluída' });
       toast({
         title: 'Interação removida',
         description: 'A interação foi excluída com sucesso.',
