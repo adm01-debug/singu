@@ -158,11 +158,17 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         // For "Mensagem Enviada" type titles, try to use a cleaner description
         const isGenericTitle = /^Mensagem\s+Enviada/i.test(interaction.title || '');
         const displayName = contactName || titleMatch || (isGenericTitle ? 'Mensagem' : 'Contato');
+        // Clean description: extract channel/type instead of repeating name
+        const title = interaction.title || '';
+        const channelMatch = title.match(/\(([^)]+)\)/)?.[1]; // e.g. "WhatsApp", "Email"
+        const cleanDesc = channelMatch 
+          ? `${interaction.type === 'message' ? 'Mensagem' : interaction.type === 'call' ? 'Ligação' : interaction.type === 'meeting' ? 'Reunião' : 'Interação'} via ${channelMatch}`
+          : title.replace(new RegExp(`de\\s+${displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`, 'i'), '').trim() || title;
         return {
           id: interaction.id,
           contactId: interaction.contact_id,
           entityName: displayName,
-          description: interaction.title,
+          description: cleanDesc,
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
         };
