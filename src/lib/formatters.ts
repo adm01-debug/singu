@@ -141,7 +141,7 @@ function formatPhoneDisplay(phone: string): string {
 export function getContactInitials(firstName?: string | null, lastName?: string | null): string {
   const full = `${firstName || ''} ${lastName || ''}`.trim();
   
-  if (!full || full === 'Sem nome') return '?';
+  if (!full || /^sem\s+nome$/i.test(full)) return '?';
   
   // WhatsApp or phone number → use phone icon-like initials
   if (/^whatsapp\s+\d{8,}/i.test(full) || /^\+?\d{10,}$/.test(full.replace(/\s/g, ''))) {
@@ -160,6 +160,15 @@ export function getContactInitials(firstName?: string | null, lastName?: string 
   const f = firstName?.[0]?.toUpperCase() || '';
   const l = lastName?.[0]?.toUpperCase() || '';
   return `${f}${l}` || '?';
+}
+
+/**
+ * Pluralize a word based on count (Portuguese-friendly).
+ * pluralize(1, 'interação', 'interações') → '1 interação'
+ * pluralize(5, 'interação', 'interações') → '5 interações'
+ */
+export function pluralize(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 /**
