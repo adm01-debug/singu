@@ -17,13 +17,27 @@ const statCardVariants = cva(
       },
       size: {
         sm: 'p-3',
-        default: 'p-4',
-        lg: 'p-5',
+        default: 'p-5',
+        lg: 'p-6',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },
   }
 );
+
+const gradientToneMap = {
+  primary: 'from-primary/80 to-primary/40',
+  success: 'from-success/80 to-success/40',
+  warning: 'from-warning/80 to-warning/40',
+  premium: 'from-primary/80 to-accent/40',
+};
+
+const iconBgMap = {
+  primary: 'bg-primary/12 text-primary ring-1 ring-primary/20',
+  success: 'bg-success/12 text-success ring-1 ring-success/20',
+  warning: 'bg-warning/12 text-warning ring-1 ring-warning/20',
+  premium: 'bg-accent/12 text-accent ring-1 ring-accent/20',
+};
 
 interface StatCardProps extends VariantProps<typeof statCardVariants> {
   title: string;
@@ -58,13 +72,15 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
 
 export function StatCard({
   title, value, change, changeType = 'neutral', icon: Icon,
-  iconColor = 'bg-primary/8 text-primary', className, delay = 0,
+  iconColor, className, delay = 0,
   variant, size, animate = true, sparkline, onClick, emptyAction,
+  gradientTone = 'primary',
 }: StatCardProps) {
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
 
   const ChangeIcon = changeType === 'positive' ? TrendingUp : changeType === 'negative' ? TrendingDown : Minus;
+  const resolvedIconBg = iconBgMap[gradientTone] || iconColor || 'bg-primary/12 text-primary';
 
   return (
     <motion.div
@@ -75,22 +91,28 @@ export function StatCard({
       onClick={onClick}
       className={cn(statCardVariants({ variant, size }), 'group', className)}
     >
+      {/* Gradient top border */}
+      <div className={cn(
+        'absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r rounded-t-xl',
+        gradientToneMap[gradientTone]
+      )} />
+      
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1.5 min-w-0">
-          <p className="text-xs font-medium text-muted-foreground tracking-wide">
+        <div className="space-y-2 min-w-0">
+          <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
             {title}
           </p>
-          <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+          <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
             {isNumeric && animate ? <AnimatedNumber value={numericValue} /> : value}
           </p>
           
           {change && (
-            <div className="flex items-center gap-1 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-1">
               <span className={cn(
-                'flex items-center gap-0.5 text-xs font-medium',
-                changeType === 'positive' && 'text-success',
-                changeType === 'negative' && 'text-destructive',
-                changeType === 'neutral' && 'text-muted-foreground'
+                'flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
+                changeType === 'positive' && 'text-success bg-success/10',
+                changeType === 'negative' && 'text-destructive bg-destructive/10',
+                changeType === 'neutral' && 'text-muted-foreground bg-muted'
               )}>
                 <ChangeIcon className="w-3 h-3" aria-hidden="true" />
                 {change}
@@ -109,8 +131,8 @@ export function StatCard({
           )}
         </div>
 
-        <div className={cn('p-2.5 rounded-xl shrink-0', iconColor)}>
-          <Icon className="w-4 h-4" aria-hidden="true" />
+        <div className={cn('p-3 rounded-xl shrink-0', resolvedIconBg)}>
+          <Icon className="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
     </motion.div>
