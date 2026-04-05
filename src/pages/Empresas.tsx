@@ -367,6 +367,8 @@ const Empresas = () => {
                   isSelected={selectedIds.has(company.id)}
                   isHighlighted={selectedIndex === index}
                   selectionMode={selectionMode}
+                  contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
+                  lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
                   onSelect={handleSelect}
                   onEdit={setEditingCompany}
                   onDelete={setDeletingCompany}
