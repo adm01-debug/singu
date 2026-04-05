@@ -92,7 +92,10 @@ export function CompanyProfileCard({
                     {String(c.status).charAt(0).toUpperCase() + String(c.status).slice(1)}
                   </Badge>
                 )}
-                {c.is_customer && <Badge variant="outline" className="text-xs">Cliente</Badge>}
+                {c.is_customer 
+                  ? <Badge variant="outline" className="text-xs border-success/40 text-success bg-success/10">Cliente</Badge>
+                  : <Badge variant="outline" className="text-xs border-primary/40 text-primary bg-primary/10">Prospect</Badge>
+                }
                 {c.is_supplier && <Badge variant="outline" className="text-xs">Fornecedor</Badge>}
                 {c.is_carrier && <Badge variant="outline" className="text-xs">Transportadora</Badge>}
               </div>
