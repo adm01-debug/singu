@@ -98,7 +98,9 @@ export function useCompanies() {
           prev ? { ...prev, companies: [mapCompany(data as unknown as ExternalRow), ...prev.companies] } : { companies: [mapCompany(data as unknown as ExternalRow)], count: 1 }
         );
       }
-      toast({ title: 'Empresa criada', description: `${(data as Record<string, unknown>)?.nome_crm || 'Empresa'} foi adicionada com sucesso.` });
+      const companyName = (data as Record<string, unknown>)?.nome_crm || 'Empresa';
+      toast({ title: 'Empresa criada', description: `${companyName} foi adicionada com sucesso.` });
+      if (data) logActivity({ type: 'created', entityType: 'company', entityId: (data as Record<string, unknown>).id as string, entityName: String(companyName), description: 'Empresa criada' });
       return data;
     } catch (error) {
       logger.error('Error creating company:', error);
