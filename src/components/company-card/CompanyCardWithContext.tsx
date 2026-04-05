@@ -159,6 +159,8 @@ interface CompanyCardWithContextProps {
   isSelected: boolean;
   isHighlighted: boolean;
   selectionMode: boolean;
+  contactCount?: number;
+  lastInteractionDays?: number | null;
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (company: Company) => void;
   onDelete: (company: Company) => void;
@@ -171,6 +173,8 @@ export function CompanyCardWithContext({
   isSelected,
   isHighlighted,
   selectionMode,
+  contactCount = 0,
+  lastInteractionDays,
   onSelect,
   onEdit,
   onDelete,
@@ -355,6 +359,19 @@ export function CompanyCardWithContext({
                   )}
                 </div>
               )}
+
+              {/* Inline Metrics */}
+              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                <span className="flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" />
+                  {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
+                </span>
+                {lastInteractionDays !== null && lastInteractionDays !== undefined && (
+                  <span className={lastInteractionDays > 14 ? 'text-warning' : lastInteractionDays > 30 ? 'text-destructive' : ''}>
+                    {lastInteractionDays === 0 ? 'Interação hoje' : `${lastInteractionDays}d sem interação`}
+                  </span>
+                )}
+              </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <HealthRing health={company.financial_health} status={company.status} />

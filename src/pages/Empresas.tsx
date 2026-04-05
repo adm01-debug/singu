@@ -45,8 +45,9 @@ import { CompanyForm } from '@/components/forms/CompanyForm';
 import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWithContext';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
+import { useContacts } from '@/hooks/useContacts';
+import { useInteractions } from '@/hooks/useInteractions';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-// Server-side search is now used instead of client-side fuzzy search
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -103,6 +104,33 @@ const Empresas = () => {
   usePageTitle('Empresas');
   const navigate = useNavigate();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const { contacts } = useContacts();
+  const { interactions } = useInteractions();
+
+  // Pre-compute contact counts and last interaction per company
+  const companyMetrics = useMemo(() => {
+    const contactCountMap = new Map<string, number>();
+    const lastInteractionMap = new Map<string, number>();
+    
+    for (const c of contacts) {
+      if (c.company_id) {
+        contactCountMap.set(c.company_id, (contactCountMap.get(c.company_id) || 0) + 1);
+      }
+    }
+    
+    const now = Date.now();
+    for (const i of interactions) {
+      if (i.company_id) {
+        const days = Math.floor((now - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24));
+        const current = lastInteractionMap.get(i.company_id);
+        if (current === undefined || days < current) {
+          lastInteractionMap.set(i.company_id, days);
+        }
+      }
+    }
+    
+    return { contactCountMap, lastInteractionMap };
+  }, [contacts, interactions]);
   const [localSearch, setLocalSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -339,6 +367,8 @@ const Empresas = () => {
                   isSelected={selectedIds.has(company.id)}
                   isHighlighted={selectedIndex === index}
                   selectionMode={selectionMode}
+                  contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
+                  lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
                   onSelect={handleSelect}
                   onEdit={setEditingCompany}
                   onDelete={setDeletingCompany}
