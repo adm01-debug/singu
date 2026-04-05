@@ -356,6 +356,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       {item.daysUntil === 0 ? 'Hoje!' : `${item.daysUntil}d`}
                     </span>
                   </Link>
+                  </motion.div>
                 ))}
                 {upcomingBirthdays.length > 3 && (
                   <Link to="/contatos" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -398,6 +399,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       item.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground/40'
                     )} />
                   </Link>
+                  </motion.div>
                 ))}
                 {needsAttention.length > 3 && (
                   <Link to="/contatos" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
