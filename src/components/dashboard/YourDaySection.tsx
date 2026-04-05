@@ -109,13 +109,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       className={className}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4" role="status" aria-live="polite">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold text-foreground">
             Seu dia
           </h2>
           {totalTasks > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground" aria-label={`${totalTasks} tarefa${totalTasks !== 1 ? 's' : ''} pendente${totalTasks !== 1 ? 's' : ''}`}>
               · {totalTasks} tarefa{totalTasks !== 1 ? 's' : ''}
             </span>
           )}
