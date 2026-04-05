@@ -173,7 +173,6 @@ export function useContactDetail(contactId: string | undefined) {
           table: 'alerts',
           filters: [
             { type: 'eq', column: 'contact_id', value: contactId },
-            { type: 'eq', column: 'dismissed', value: false },
           ],
           order: { column: 'created_at', ascending: false },
           range: { from: 0, to: 9 },
