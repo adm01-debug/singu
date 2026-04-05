@@ -33,71 +33,71 @@
     /* ============================================
        LIGHT MODE — Warm off-white, soft neutrals
        ============================================ */
-    --background: 220 20% 97%;
-    --foreground: 220 25% 12%;
+    --background: 230 30% 98%;
+    --foreground: 230 50% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 25% 12%;
+    --card-foreground: 230 50% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 25% 12%;
+    --popover-foreground: 230 50% 8%;
 
-    /* Primary — Calm Indigo */
-    --primary: 234 72% 58%;
+    /* Primary — Vivid Indigo */
+    --primary: 234 80% 58%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary */
-    --secondary: 220 16% 95%;
-    --secondary-foreground: 220 25% 12%;
+    --secondary: 230 25% 94%;
+    --secondary-foreground: 230 50% 8%;
 
-    /* Muted — Soft neutral */
-    --muted: 220 16% 94%;
-    --muted-foreground: 220 10% 46%;
+    /* Muted — Tinted, not gray */
+    --muted: 230 25% 94%;
+    --muted-foreground: 230 30% 35%;
 
-    /* Accent — Soft Teal */
-    --accent: 172 50% 45%;
+    /* Accent — Vivid Teal */
+    --accent: 172 60% 42%;
     --accent-foreground: 0 0% 100%;
 
-    /* Semantic — Desaturated pastels */
-    --success: 152 45% 42%;
+    /* Semantic — Saturated */
+    --success: 152 55% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 70% 52%;
+    --warning: 38 80% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --destructive: 4 55% 55%;
+    --destructive: 4 65% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --info: 210 60% 52%;
+    --info: 210 70% 50%;
     --info-foreground: 0 0% 100%;
 
-    --celebration: 45 70% 55%;
-    --celebration-foreground: 30 60% 15%;
+    --celebration: 45 80% 52%;
+    --celebration-foreground: 30 60% 12%;
 
-    /* Borders — Very subtle */
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
-    --ring: 234 72% 58%;
+    /* Borders — Tinted, not gray */
+    --border: 230 30% 88%;
+    --input: 230 30% 88%;
+    --ring: 234 80% 58%;
 
     /* Contextual rings */
-    --ring-destructive: 4 55% 55%;
-    --ring-success: 152 45% 42%;
-    --ring-warning: 38 70% 52%;
+    --ring-destructive: 4 65% 52%;
+    --ring-success: 152 55% 40%;
+    --ring-warning: 38 80% 50%;
 
     --radius: 0.75rem;
 
-    /* Gradient CSS variables (for inline styles) */
-    --gradient-primary: linear-gradient(135deg, hsl(234 72% 58%), hsl(234 72% 48%));
+    /* Gradient CSS variables */
+    --gradient-primary: linear-gradient(135deg, hsl(234 80% 58%), hsl(234 80% 46%));
 
-    /* Sidebar — Dark slate, always */
-    --sidebar-background: 224 30% 8%;
-    --sidebar-foreground: 220 15% 75%;
-    --sidebar-primary: 234 72% 62%;
+    /* Sidebar — Deep indigo, not gray */
+    --sidebar-background: 232 45% 8%;
+    --sidebar-foreground: 230 30% 75%;
+    --sidebar-primary: 234 80% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 25% 14%;
-    --sidebar-accent-foreground: 220 15% 92%;
-    --sidebar-border: 224 20% 14%;
-    --sidebar-ring: 234 72% 58%;
+    --sidebar-accent: 232 35% 14%;
+    --sidebar-accent-foreground: 230 30% 92%;
+    --sidebar-border: 232 30% 14%;
+    --sidebar-ring: 234 80% 58%;
 
     /* Shadows — Soft, blue-tinted */
     --shadow-sm: 0 1px 2px 0 hsl(220 25% 12% / 0.04);
@@ -105,17 +105,17 @@
     --shadow-lg: 0 8px 24px -4px hsl(220 25% 12% / 0.08);
     --shadow-xl: 0 16px 40px -8px hsl(220 25% 12% / 0.1);
 
-    /* Glass */
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 0 0% 100% / 0.2;
-    --glass-blur: 16px;
+    /* Glass — crisp */
+    --glass-bg: 0 0% 100% / 0.8;
+    --glass-border: 230 40% 80% / 0.4;
+    --glass-blur: 8px;
 
-    /* Surfaces */
+    /* Surfaces — tinted */
     --surface-0: 0 0% 100%;
-    --surface-1: 220 20% 98%;
-    --surface-2: 220 18% 96%;
-    --surface-3: 220 16% 94%;
-    --surface-4: 220 14% 92%;
+    --surface-1: 230 28% 98%;
+    --surface-2: 230 26% 96%;
+    --surface-3: 230 24% 94%;
+    --surface-4: 230 22% 92%;
 
     /* Roles */
     --role-owner: 270 50% 50%;
@@ -204,97 +204,97 @@
      DARK MODE — Rich navy with premium contrast
      ============================================ */
   .dark {
-    /* Background — warmer navy, breathable */
-    --background: 225 25% 10%;
-    --foreground: 210 20% 96%;
+    /* Background — deep, saturated, ZERO gray */
+    --background: 230 40% 7%;
+    --foreground: 220 40% 97%;
 
-    /* Cards — strong lift from background */
-    --card: 224 22% 15%;
-    --card-foreground: 210 20% 96%;
+    /* Cards — rich indigo-tinted */
+    --card: 230 35% 12%;
+    --card-foreground: 220 40% 97%;
 
-    --popover: 224 22% 15%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 230 35% 12%;
+    --popover-foreground: 220 40% 97%;
 
-    /* Primary — vivid electric indigo */
-    --primary: 234 85% 65%;
+    /* Primary — electric vivid */
+    --primary: 234 90% 67%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 224 20% 19%;
-    --secondary-foreground: 210 20% 96%;
+    --secondary: 230 30% 16%;
+    --secondary-foreground: 220 40% 97%;
 
-    /* Muted — clearly readable */
-    --muted: 224 18% 18%;
-    --muted-foreground: 215 16% 65%;
+    /* Muted — tinted, NOT gray */
+    --muted: 230 30% 16%;
+    --muted-foreground: 225 35% 62%;
 
     /* Accent — vivid teal */
-    --accent: 172 55% 48%;
+    --accent: 172 65% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 152 60% 48%;
+    --success: 152 65% 48%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 85% 55%;
-    --warning-foreground: 30 60% 10%;
+    --warning: 38 88% 55%;
+    --warning-foreground: 30 60% 8%;
 
-    --destructive: 4 65% 56%;
+    --destructive: 4 72% 56%;
     --destructive-foreground: 0 0% 100%;
 
-    --info: 210 75% 58%;
+    --info: 210 80% 58%;
     --info-foreground: 0 0% 100%;
 
-    --celebration: 45 85% 60%;
-    --celebration-foreground: 30 60% 10%;
+    --celebration: 45 88% 58%;
+    --celebration-foreground: 30 60% 8%;
 
-    /* Borders — MUCH more visible */
-    --border: 224 16% 24%;
-    --input: 224 16% 24%;
-    --ring: 234 85% 65%;
+    /* Borders — visible, tinted */
+    --border: 230 30% 22%;
+    --input: 230 30% 22%;
+    --ring: 234 90% 67%;
 
-    --ring-destructive: 4 65% 56%;
-    --ring-success: 152 60% 48%;
-    --ring-warning: 38 85% 55%;
+    --ring-destructive: 4 72% 56%;
+    --ring-success: 152 65% 48%;
+    --ring-warning: 38 88% 55%;
 
-    /* Sidebar — rich dark, distinct */
-    --sidebar-background: 228 28% 7%;
-    --sidebar-foreground: 215 20% 72%;
-    --sidebar-primary: 234 85% 65%;
+    /* Sidebar — deep indigo */
+    --sidebar-background: 234 45% 6%;
+    --sidebar-foreground: 230 35% 72%;
+    --sidebar-primary: 234 90% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 226 22% 13%;
-    --sidebar-accent-foreground: 215 20% 95%;
-    --sidebar-border: 226 18% 16%;
-    --sidebar-ring: 234 85% 65%;
+    --sidebar-accent: 232 38% 12%;
+    --sidebar-accent-foreground: 230 35% 95%;
+    --sidebar-border: 232 30% 16%;
+    --sidebar-ring: 234 90% 67%;
 
-    /* Shadows — richer depth */
-    --shadow-sm: 0 1px 3px 0 hsl(230 50% 4% / 0.35);
-    --shadow-md: 0 4px 14px -2px hsl(230 50% 4% / 0.45);
-    --shadow-lg: 0 10px 28px -4px hsl(230 50% 4% / 0.5);
-    --shadow-xl: 0 20px 44px -8px hsl(230 50% 4% / 0.55);
+    /* Shadows — deep, colored */
+    --shadow-sm: 0 1px 3px 0 hsl(234 50% 4% / 0.4);
+    --shadow-md: 0 4px 14px -2px hsl(234 50% 4% / 0.5);
+    --shadow-lg: 0 10px 28px -4px hsl(234 50% 4% / 0.55);
+    --shadow-xl: 0 20px 44px -8px hsl(234 50% 4% / 0.6);
 
-    /* Glass — visible contrast */
-    --glass-bg: 224 22% 15% / 0.75;
-    --glass-border: 210 20% 96% / 0.1;
-    --glass-blur: 20px;
+    /* Glass — crisp, no cloud */
+    --glass-bg: 230 35% 12% / 0.85;
+    --glass-border: 230 40% 30% / 0.3;
+    --glass-blur: 8px;
 
-    /* Surfaces — clear elevation ladder */
-    --surface-0: 225 25% 10%;
-    --surface-1: 224 23% 13%;
-    --surface-2: 224 21% 16%;
-    --surface-3: 224 19% 19%;
-    --surface-4: 224 17% 22%;
+    /* Surfaces — saturated ladder */
+    --surface-0: 230 40% 7%;
+    --surface-1: 230 37% 10%;
+    --surface-2: 230 34% 14%;
+    --surface-3: 230 31% 18%;
+    --surface-4: 230 28% 22%;
 
-    --role-owner: 270 65% 68%;
-    --role-manager: 234 75% 72%;
-    --role-buyer: 152 60% 55%;
-    --role-contact: 215 16% 65%;
+    --role-owner: 270 70% 68%;
+    --role-manager: 234 80% 72%;
+    --role-buyer: 152 65% 55%;
+    --role-contact: 225 35% 62%;
 
-    --row-hover: 234 85% 65% / 0.08;
-    --row-selected: 234 85% 65% / 0.12;
-    --row-active: 234 85% 65% / 0.16;
+    --row-hover: 234 90% 67% / 0.1;
+    --row-selected: 234 90% 67% / 0.15;
+    --row-active: 234 90% 67% / 0.2;
 
-    --entity-contact: 234 85% 72%;
-    --entity-company: 270 65% 68%;
-    --entity-interaction: 152 60% 55%;
-    --entity-insight: 38 85% 58%;
+    --entity-contact: 234 90% 72%;
+    --entity-company: 270 70% 68%;
+    --entity-interaction: 152 65% 55%;
+    --entity-insight: 38 88% 58%;
   }
 }
 
