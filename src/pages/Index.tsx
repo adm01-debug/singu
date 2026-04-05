@@ -468,7 +468,15 @@ const Dashboard = () => {
                                       to={`/contatos/${activity.contactId}`}
                                       className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-2 transition-colors group cursor-pointer"
                                     >
-                                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                      {(() => {
+                                        const iconClass = "w-3.5 h-3.5 flex-shrink-0";
+                                        switch (activity.type) {
+                                          case 'call': return <Phone className={`${iconClass} text-green-500`} />;
+                                          case 'email': return <Mail className={`${iconClass} text-blue-500`} />;
+                                          case 'meeting': return <Video className={`${iconClass} text-purple-500`} />;
+                                          default: return <MessageSquare className={`${iconClass} text-primary`} />;
+                                        }
+                                      })()}
                                       <div className="flex-1 min-w-0">
                                         <p className="text-sm truncate">
                                           <span className="font-medium text-foreground group-hover:text-primary transition-colors">{activity.entityName}</span>
