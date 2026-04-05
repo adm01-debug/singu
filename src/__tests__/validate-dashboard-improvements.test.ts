@@ -117,12 +117,12 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(scrollToTopBtn).toContain('removeEventListener');
     });
 
-    it('should be imported in Dashboard', () => {
-      expect(indexContent).toContain('ScrollToTopButton');
+    it('should be imported in AppLayout', () => {
+      expect(appContent).toContain('ScrollToTopButton');
     });
 
-    it('should be rendered in Dashboard JSX', () => {
-      expect(indexContent).toContain('<ScrollToTopButton');
+    it('should be rendered in AppLayout JSX', () => {
+      expect(appContent).toContain('<ScrollToTopButton');
     });
   });
 
@@ -335,8 +335,8 @@ describe('Dashboard Layout Improvements Validation', () => {
       expect(indexContent).toContain("from '@/components/ui/scroll-area'");
     });
 
-    it('should import ScrollToTopButton in Index', () => {
-      expect(indexContent).toContain("from '@/components/navigation/ScrollToTopButton'");
+    it('should import ScrollToTopButton in AppLayout', () => {
+      expect(appContent).toContain("from '@/components/navigation/ScrollToTopButton'");
     });
 
     it('should import Collapsible components in Index', () => {
