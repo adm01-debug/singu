@@ -260,7 +260,7 @@ export function EmptyState({
           transition={{ delay: 0.4 }}
           className="bg-muted/30 rounded-lg p-4 mb-6 max-w-md w-full"
         >
-          <p className="text-sm font-medium text-foreground mb-2">💡 Dicas para começar:</p>
+          <p className="text-sm font-medium text-foreground mb-2"><span role="img" aria-hidden="true">💡</span> Dicas para começar:</p>
           <ul className="text-sm text-muted-foreground space-y-1.5">
             {tips.map((tip, index) => (
               <li key={index} className="flex items-start gap-2">

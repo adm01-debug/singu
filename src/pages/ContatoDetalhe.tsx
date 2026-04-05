@@ -139,7 +139,7 @@ const ContatoDetalhe = () => {
 
         {/* Tab Navigation */}
         <Tabs defaultValue="resumo" className="space-y-4">
-          <TabsList className="flex-wrap h-auto gap-1 bg-muted/50 p-1">
+          <TabsList className="w-full overflow-x-auto scrollbar-hide flex h-auto gap-1 bg-muted/50 p-1 md:flex-wrap">
             <TabsTrigger value="resumo" className="text-xs sm:text-sm">Resumo</TabsTrigger>
             <TabsTrigger value="interacoes" className="text-xs sm:text-sm">
               {pluralize(interactions.length, 'Interação', 'Interações')}
