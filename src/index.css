@@ -985,6 +985,15 @@ button, a, input, select, textarea, [role="button"] {
 }
 .skip-to-main:focus { top: 0; }
 
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Theme transition */
 .theme-transitioning {
   transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
