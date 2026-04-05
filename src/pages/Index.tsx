@@ -59,7 +59,7 @@ import type { ContactRole, SentimentType, Contact, Interaction, InteractionType,
 import { getBehavior } from '@/types/behavior';
 
 // Lazy-loaded heavy components
-const FloatingQuickActions = lazy(() => import('@/components/quick-actions/FloatingQuickActions').then(m => ({ default: m.FloatingQuickActions })));
+
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
 
@@ -729,7 +729,6 @@ const Dashboard = () => {
       
       {/* Floating Components */}
       <ScrollToTopButton />
-      <FloatingQuickActions />
     </AppLayout>
   );
 };
