@@ -109,28 +109,35 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
         {/* Expandable steps */}
         <CollapsibleContent>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
-            {steps.map((step) => {
+            {steps.map((step, idx) => {
               const Icon = step.completed ? CheckCircle2 : step.icon;
               return (
-                <Link key={step.id} to={step.path}>
-                  <div className={cn(
-                    'flex items-center gap-2.5 p-2.5 rounded-lg border border-border/30 transition-all hover:bg-muted/50 hover:border-border',
-                    step.completed && 'opacity-50'
-                  )}>
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                >
+                  <Link to={step.path}>
                     <div className={cn(
-                      'p-1.5 rounded-md shrink-0',
-                      step.completed ? 'text-success' : 'text-muted-foreground bg-muted'
+                      'flex items-center gap-2.5 p-2.5 rounded-lg border border-border/30 transition-all hover:bg-muted/50 hover:border-border hover:shadow-soft',
+                      step.completed && 'opacity-50'
                     )}>
-                      <Icon className="w-3.5 h-3.5" />
+                      <div className={cn(
+                        'p-1.5 rounded-md shrink-0',
+                        step.completed ? 'text-success' : 'text-muted-foreground bg-muted'
+                      )}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={cn('text-xs font-medium truncate', step.completed && 'line-through')}>
+                          {step.label}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">{step.description}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className={cn('text-xs font-medium truncate', step.completed && 'line-through')}>
-                        {step.label}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground truncate">{step.description}</p>
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               );
             })}
           </div>

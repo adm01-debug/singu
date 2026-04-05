@@ -111,7 +111,17 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
     }
 
     const topContacts = [...contacts]
-      .filter(c => c.relationship_score !== null)
+      .filter(c => {
+        if (c.relationship_score === null) return false;
+        // Filter out contacts with empty or missing names
+        if (!c.first_name?.trim() || !c.last_name?.trim()) return false;
+        // Filter out test contacts
+        const name = `${c.first_name} ${c.last_name}`.trim().toLowerCase();
+        if (/^test/i.test(name)) return false;
+        // Filter out contacts with only phone numbers as names
+        if (/^\(\d+\)\s*\d+/.test(c.first_name)) return false;
+        return true;
+      })
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
       .slice(0, 4)
       .map(contact => {

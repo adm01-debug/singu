@@ -109,13 +109,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       className={className}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4" role="status" aria-live="polite">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-semibold text-foreground">
             Seu dia
           </h2>
           {totalTasks > 0 && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground" aria-label={`${totalTasks} tarefa${totalTasks !== 1 ? 's' : ''} pendente${totalTasks !== 1 ? 's' : ''}`}>
               · {totalTasks} tarefa{totalTasks !== 1 ? 's' : ''}
             </span>
           )}
@@ -393,11 +393,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         {item.reason}
                       </p>
                     </div>
-                    <div className={cn(
-                      'w-1.5 h-1.5 rounded-full shrink-0',
-                      item.priority === 'high' ? 'bg-destructive' :
-                      item.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground/40'
-                    )} />
+                    <span className={cn(
+                      'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0',
+                      item.priority === 'high' ? 'bg-destructive/15 text-destructive' :
+                      item.priority === 'medium' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground'
+                    )}>
+                      {item.priority === 'high' ? 'Alto' : item.priority === 'medium' ? 'Médio' : 'Baixo'}
+                    </span>
                   </Link>
                   </motion.div>
                 ))}
