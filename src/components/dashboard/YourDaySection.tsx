@@ -393,11 +393,13 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         {item.reason}
                       </p>
                     </div>
-                    <div className={cn(
-                      'w-1.5 h-1.5 rounded-full shrink-0',
-                      item.priority === 'high' ? 'bg-destructive' :
-                      item.priority === 'medium' ? 'bg-warning' : 'bg-muted-foreground/40'
-                    )} />
+                    <span className={cn(
+                      'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0',
+                      item.priority === 'high' ? 'bg-destructive/15 text-destructive' :
+                      item.priority === 'medium' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground'
+                    )}>
+                      {item.priority === 'high' ? 'Alto' : item.priority === 'medium' ? 'Médio' : 'Baixo'}
+                    </span>
                   </Link>
                   </motion.div>
                 ))}
