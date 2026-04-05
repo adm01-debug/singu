@@ -202,7 +202,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
 
   const userName = user?.user_metadata?.first_name && user?.user_metadata?.last_name
     ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-    : user?.email || 'Usuário';
+    : user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
