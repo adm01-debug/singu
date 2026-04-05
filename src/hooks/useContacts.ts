@@ -39,6 +39,7 @@ async function fetchContactsPage(companyId?: string) {
 export function useContacts(companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const queryClient = useQueryClient();
 
   const queryKey = ['contacts', companyId ?? '__all__'];
