@@ -117,14 +117,17 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         const lastName = (c.last_name || '').trim();
         if (!firstName || !lastName) return false;
         // Filter out placeholder/technical names
-        const nameLower = `${firstName} ${lastName}`.toLowerCase();
-        if (/^(sem nome|null|undefined|test|whatsapp|contato|unknown)/i.test(firstName)) return false;
+        const fullNameLower = `${firstName} ${lastName}`.toLowerCase();
+        if (/sem\s*nome|null|undefined/i.test(fullNameLower)) return false;
+        if (/^(test|whatsapp|contato|unknown|compras|posto|cliente|fornecedor)/i.test(firstName)) return false;
         if (/^(null|undefined|test|\d{10,})$/i.test(lastName)) return false;
-        if (firstName.includes('@')) return false;
+        if (firstName.includes('@') || lastName.includes('@')) return false;
         if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
         if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
+        // Filter company-like names (contain " - " pattern typical of branch names)
+        if (/\s-\s/.test(fullNameLower) && fullNameLower.length > 30) return false;
         // Must have at least 2 vowels to be a real name
-        const vowels = (nameLower.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
+        const vowels = (fullNameLower.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
         if (vowels < 2) return false;
         return true;
       })
