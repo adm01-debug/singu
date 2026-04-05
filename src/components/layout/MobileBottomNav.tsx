@@ -140,7 +140,7 @@ export function MobileBottomNav() {
 
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden" role="navigation" aria-label="Menu principal">
-        <div className="bg-card/95 backdrop-blur-xl border-t border-border">
+        <div className="bg-card/95 backdrop-blur-xl border-t border-border shadow-[0_-4px_20px_-4px_hsl(var(--background)/0.8)]">
           <div className="flex items-center justify-around px-2 py-2 safe-area-inset-bottom">
             {mainNavItems.map((item) => {
               const Icon = item.icon;
