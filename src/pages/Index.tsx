@@ -578,17 +578,12 @@ const Dashboard = () => {
                 </DashboardErrorBoundary>
               </div>
 
-              {/* Smart Reminders + Health Alerts */}
+               {/* Smart Reminders + Compatibility */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <DashboardErrorBoundary sectionName="Alertas e Lembretes">
-                  <div className="space-y-5">
-                    <LazySection fallbackVariant="list">
-                      <SmartRemindersPanel compact />
-                    </LazySection>
-                    <LazySection fallbackVariant="card">
-                      <HealthAlertsPanel />
-                    </LazySection>
-                  </div>
+                <DashboardErrorBoundary sectionName="Lembretes">
+                  <LazySection fallbackVariant="list">
+                    <SmartRemindersPanel compact />
+                  </LazySection>
                 </DashboardErrorBoundary>
                 <DashboardErrorBoundary sectionName="Compatibilidade">
                   <LazySection fallbackVariant="list">
@@ -596,6 +591,13 @@ const Dashboard = () => {
                   </LazySection>
                 </DashboardErrorBoundary>
               </div>
+
+              {/* Health Alerts - Full Width */}
+              <DashboardErrorBoundary sectionName="Saúde do Cliente">
+                <LazySection fallbackVariant="card">
+                  <HealthAlertsPanel />
+                </LazySection>
+              </DashboardErrorBoundary>
               </motion.div>
             </TabsContent>
 
