@@ -6,14 +6,14 @@ import { LucideIcon, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const statCardVariants = cva(
-  'relative overflow-hidden rounded-xl border transition-all duration-200',
+  'relative overflow-hidden rounded-[24px] border transition-all duration-300',
   {
     variants: {
       variant: {
-        default: 'bg-card border-border shadow-soft hover:shadow-medium hover:border-primary/20',
-        elevated: 'bg-card border-border shadow-medium hover:shadow-strong hover:border-primary/25',
+        default: 'bg-card/92 border-border/70 shadow-[0_20px_48px_-30px_hsl(var(--foreground)/0.5)] hover:border-primary/25 hover:shadow-[0_28px_64px_-30px_hsl(var(--nexus-glow)/0.45)]',
+        elevated: 'bg-card/95 border-border/75 shadow-[0_24px_56px_-30px_hsl(var(--foreground)/0.55)] hover:border-primary/30 hover:shadow-[0_32px_70px_-32px_hsl(var(--nexus-glow)/0.5)]',
         glass: 'glass',
-        interactive: 'bg-card border-border shadow-soft cursor-pointer hover:shadow-medium hover:border-primary/20 active:scale-[0.99]',
+        interactive: 'bg-card/92 border-border/70 shadow-[0_20px_48px_-30px_hsl(var(--foreground)/0.5)] cursor-pointer hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_28px_64px_-30px_hsl(var(--nexus-glow)/0.45)] active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',
@@ -26,10 +26,10 @@ const statCardVariants = cva(
 );
 
 const gradientToneMap = {
-  primary: 'from-primary to-primary/50',
-  success: 'from-success to-success/50',
-  warning: 'from-warning to-warning/50',
-  premium: 'from-primary via-accent to-accent/50',
+  primary: 'from-primary via-nexus-cyan to-accent',
+  success: 'from-success via-nexus-teal to-accent',
+  warning: 'from-warning via-nexus-amber to-warning/55',
+  premium: 'from-primary via-nexus-cyan to-nexus-purple',
 };
 
 const iconBgMap = {
@@ -116,7 +116,7 @@ export function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ scale: 1.01, y: -4 }}
       transition={{ duration: 0.3, delay: delay * 0.04 }}
       onClick={onClick}
       className={cn(statCardVariants({ variant, size }), 'group', className)}

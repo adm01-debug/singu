@@ -324,8 +324,8 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
-              <TabsList className="grid w-full grid-cols-4 bg-card/80 border border-border/60 p-1.5 rounded-xl shadow-soft relative">
+            <div className="sticky top-[57px] md:top-0 z-10 -mx-4 border-b border-border/20 bg-background/70 px-4 pb-3 pt-2 shadow-[0_16px_40px_-34px_hsl(var(--foreground)/0.7)] backdrop-blur-md md:-mx-6 md:px-6">
+              <TabsList className="grid w-full grid-cols-4 relative">
                 {[
                   { value: 'overview', icon: LayoutGrid, label: 'Geral' },
                   { value: 'analytics', icon: BarChart3, label: 'Analytics' },
@@ -335,7 +335,7 @@ const Dashboard = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="relative gap-1 text-[10px] sm:text-sm rounded-lg transition-colors font-medium z-[1] data-[state=active]:text-primary-foreground data-[state=active]:shadow-none active:scale-[0.97]"
+                    className="relative z-[1] gap-1 rounded-xl text-[10px] font-medium transition-colors active:scale-[0.97] data-[state=active]:text-primary-foreground sm:text-sm"
                   >
                     {activeTab === tab.value && (
                       <motion.div

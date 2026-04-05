@@ -46,7 +46,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
   const resolvedBackTo = backTo || PARENT_ROUTES[location.pathname] || '/';
 
   return (
-    <header ref={ref} className="bg-card/80 backdrop-blur-lg border-b border-border/50 px-4 md:px-6 py-2.5 sticky top-0 z-30">
+    <header ref={ref} className="sticky top-0 z-30 border-b border-border/40 bg-[linear-gradient(180deg,hsl(var(--surface-1))/0.94_0%,hsl(var(--card))/0.88_100%)] backdrop-blur-md px-4 md:px-6 py-3 shadow-[0_18px_44px_-38px_hsl(var(--foreground)/0.7)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {showBack && (
@@ -62,7 +62,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="p-1.5 rounded-lg bg-primary/8 shrink-0 hidden md:flex"
+                className="hidden shrink-0 rounded-xl border border-primary/15 bg-primary/10 p-2 md:flex"
               >
                 <PageIcon className="w-4 h-4 text-primary" aria-hidden="true" />
               </motion.div>
