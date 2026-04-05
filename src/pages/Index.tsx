@@ -434,7 +434,7 @@ const Dashboard = () => {
 
               {/* Recent Activity + Top Contacts */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Recent Activity */}
+                {/* Recent Activity — 1 col */}
                 <DashboardErrorBoundary sectionName="Atividade Recente">
                   <motion.div
                     initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
