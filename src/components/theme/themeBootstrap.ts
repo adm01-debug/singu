@@ -1,9 +1,6 @@
 export type Theme = "dark" | "light" | "system";
 
-export const ACTIVE_THEME_STORAGE_KEY = "singu-theme-mode-v2";
-
-const LEGACY_THEME_STORAGE_KEYS = ["singu-skin", "relateiq-theme"] as const;
-const LEGACY_THEME_STYLE_IDS = ["singu-skin-style"] as const;
+export const ACTIVE_THEME_STORAGE_KEY = "nexus-theme-mode";
 
 function isThemeValue(value: string | null): value is Theme {
   return value === "dark" || value === "light" || value === "system";
@@ -33,17 +30,6 @@ export function resolveTheme(theme: Theme): "dark" | "light" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-export function cleanupLegacyTheme(): void {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
-
-  try {
-    LEGACY_THEME_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
-    LEGACY_THEME_STYLE_IDS.forEach((id) => document.getElementById(id)?.remove());
-  } catch {
-    // noop: limpeza legada não deve bloquear o app
-  }
-}
-
 export function applyThemeToDocument(theme: Theme): "dark" | "light" {
   if (typeof document === "undefined") {
     return theme === "light" ? "light" : "dark";
@@ -63,7 +49,14 @@ export function bootstrapTheme(
   storageKey = ACTIVE_THEME_STORAGE_KEY,
   fallback: Theme = "dark",
 ): Theme {
-  cleanupLegacyTheme();
+  // Clean up all legacy theme keys
+  if (typeof window !== "undefined") {
+    try {
+      ["singu-skin", "relateiq-theme", "singu-theme-mode-v2", "singu-theme-v3"].forEach(
+        (key) => window.localStorage.removeItem(key),
+      );
+    } catch { /* noop */ }
+  }
 
   const theme = getStoredTheme(storageKey, fallback);
   applyThemeToDocument(theme);
