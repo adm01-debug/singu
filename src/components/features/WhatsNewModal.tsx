@@ -88,42 +88,37 @@ export function WhatsNewModal({
     const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
     if (seenVersion === version) return;
 
-    // Only check for our specific tour dialog marker
     const isTourActive = () => !!document.querySelector('[data-tour-dialog]');
+    let pollId: ReturnType<typeof setInterval> | null = null;
+    let showTimerId: ReturnType<typeof setTimeout> | null = null;
+    let giveUpId: ReturnType<typeof setTimeout> | null = null;
 
-    // Wait 6s before even starting to check — gives tour time to initialize and run
+    // Wait 6s before checking — gives tour time to initialize
     const initialDelay = setTimeout(() => {
       const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
       
       if (tourCompleted && !isTourActive()) {
-        // Tour was completed in a previous session, show after brief delay
-        setTimeout(() => setIsVisible(true), 1500);
+        showTimerId = setTimeout(() => setIsVisible(true), 1500);
         return;
       }
 
-      // Tour is either active or not yet started — poll until it's done AND gone from DOM
-      const poll = setInterval(() => {
+      // Poll until tour is done AND gone from DOM
+      pollId = setInterval(() => {
         const completed = localStorage.getItem('tour-completed-main') === 'true';
-        const active = isTourActive();
-        if (completed && !active) {
-          clearInterval(poll);
-          // Wait 5s after tour closes so user can settle in
-          setTimeout(() => setIsVisible(true), 5000);
+        if (completed && !isTourActive()) {
+          if (pollId) clearInterval(pollId);
+          showTimerId = setTimeout(() => setIsVisible(true), 5000);
         }
       }, 2000);
 
-      // Give up after 120s
-      const giveUp = setTimeout(() => clearInterval(poll), 120000);
-      
-      // Store cleanup refs
-      (initialDelay as any).__poll = poll;
-      (initialDelay as any).__giveUp = giveUp;
+      giveUpId = setTimeout(() => { if (pollId) clearInterval(pollId); }, 120000);
     }, 6000);
 
     return () => { 
       clearTimeout(initialDelay);
-      if ((initialDelay as any).__poll) clearInterval((initialDelay as any).__poll);
-      if ((initialDelay as any).__giveUp) clearTimeout((initialDelay as any).__giveUp);
+      if (pollId) clearInterval(pollId);
+      if (showTimerId) clearTimeout(showTimerId);
+      if (giveUpId) clearTimeout(giveUpId);
     };
   }, [version]);
 
