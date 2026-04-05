@@ -443,6 +443,7 @@ const Dashboard = () => {
                   >
                     <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
                       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-accent/60 rounded-t-xl" />
+                      <CardHeader className="pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
                           <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-accent/10 ring-1 ring-primary/20">
                             <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
