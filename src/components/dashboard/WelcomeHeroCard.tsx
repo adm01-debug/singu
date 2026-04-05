@@ -1,15 +1,12 @@
 import { motion } from 'framer-motion';
-import { Calendar, Sun, Moon, Sunset } from 'lucide-react';
+import { Calendar, Sun, Moon, Sunset, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 function formatDisplayName(raw: string): string {
-  // Remove numbers, underscores, dots, hyphens
   const cleaned = raw.replace(/[0-9_\-.]+/g, ' ').trim();
   if (!cleaned || cleaned.length < 3) return '';
-  // Reject names that look like technical IDs (e.g. "adm", "usr", "test")
   const techPatterns = /^(adm|usr|admin|test|user|dev|root|sys|tmp)$/i;
   if (techPatterns.test(cleaned)) return '';
-  // Capitalize each word
   return cleaned
     .split(/\s+/)
     .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -36,29 +33,49 @@ export function WelcomeHeroCard() {
   const today = new Intl.DateTimeFormat('pt-BR', { 
     weekday: 'long', day: 'numeric', month: 'long' 
   }).format(new Date());
-  // Capitalize only the first letter of the string (Portuguese convention)
   const formattedDate = today.charAt(0).toUpperCase() + today.slice(1);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -6 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      className="flex items-center justify-between"
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-accent/10 border border-primary/20 p-6 md:p-8"
     >
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-          <GreetingIcon className="w-5 h-5 text-primary" />
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-accent/10 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+      
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.3 }}
+            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/25"
+          >
+            <GreetingIcon className="w-7 h-7 text-primary-foreground" />
+          </motion.div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+              {firstName ? `${greeting}, ${firstName}` : `${greeting}! ✨`}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{formattedDate}</span>
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
-            {firstName ? `${greeting}, ${firstName}` : 'Olá! 👋'}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>{formattedDate}</span>
-          </p>
-        </div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+          className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20"
+        >
+          <Sparkles className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium text-primary">SINGU AI</span>
+        </motion.div>
       </div>
     </motion.div>
   );

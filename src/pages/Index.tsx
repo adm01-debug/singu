@@ -152,7 +152,6 @@ const Dashboard = () => {
       change: dashboardStats.companyChange,
       changeType: companyChangeType,
       icon: Building2,
-      iconColor: 'bg-primary/10 text-primary',
       gradientTone: 'primary' as const,
       sparkline: generateSparkline(dashboardStats.totalCompanies, 1),
     },
@@ -162,7 +161,6 @@ const Dashboard = () => {
       change: dashboardStats.contactChange,
       changeType: contactChangeType,
       icon: Users,
-      iconColor: 'bg-success/10 text-success',
       gradientTone: 'success' as const,
       sparkline: generateSparkline(dashboardStats.totalContacts, 2),
     },
@@ -172,8 +170,7 @@ const Dashboard = () => {
       change: dashboardStats.interactionChange,
       changeType: interactionChangeType,
       icon: MessageSquare,
-      iconColor: 'bg-info/10 text-info',
-      gradientTone: 'primary' as const,
+      gradientTone: 'premium' as const,
       sparkline: generateSparkline(dashboardStats.weeklyInteractions || 1, 3),
       emptyAction: { label: 'Registrar interação', href: '/interacoes' },
     },
@@ -183,7 +180,6 @@ const Dashboard = () => {
       change: dashboardStats.scoreChange,
       changeType: scoreChangeType,
       icon: TrendingUp,
-      iconColor: 'bg-warning/10 text-warning',
       gradientTone: 'warning' as const,
       sparkline: generateSparkline(dashboardStats.averageScore || 1, 4),
     },
@@ -341,20 +337,20 @@ const Dashboard = () => {
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent [&:has(~div:first-child)]:border-border/30 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
-              <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-xl">
-                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+              <TabsList className="grid w-full grid-cols-4 bg-card/80 border border-border/60 p-1.5 rounded-xl shadow-soft">
+                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Visão Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <BarChart3 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <Heart className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">Relações</span>
                 </TabsTrigger>
-                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
+                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <Brain className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="hidden sm:inline truncate">IA</span>
                 </TabsTrigger>
@@ -466,15 +462,16 @@ const Dashboard = () => {
                                   >
                                     <Link
                                       to={`/contatos/${activity.contactId}`}
-                                      className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-2 transition-colors group cursor-pointer"
+                                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
                                     >
                                       {(() => {
-                                        const iconClass = "w-3.5 h-3.5 flex-shrink-0";
+                                        const iconWrapClass = "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0";
+                                        const iconClass = "w-3.5 h-3.5";
                                         switch (activity.type) {
-                                          case 'call': return <Phone className={`${iconClass} text-green-500`} />;
-                                          case 'email': return <Mail className={`${iconClass} text-blue-500`} />;
-                                          case 'meeting': return <Video className={`${iconClass} text-purple-500`} />;
-                                          default: return <MessageSquare className={`${iconClass} text-primary`} />;
+                                          case 'call': return <div className={`${iconWrapClass} bg-success/10`}><Phone className={`${iconClass} text-success`} /></div>;
+                                          case 'email': return <div className={`${iconWrapClass} bg-info/10`}><Mail className={`${iconClass} text-info`} /></div>;
+                                          case 'meeting': return <div className={`${iconWrapClass} bg-accent/10`}><Video className={`${iconClass} text-accent`} /></div>;
+                                          default: return <div className={`${iconWrapClass} bg-primary/10`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
                                         }
                                       })()}
                                       <div className="flex-1 min-w-0">

@@ -204,87 +204,97 @@
      DARK MODE — Deep navy, glass surfaces
      ============================================ */
   .dark {
-    --background: 224 28% 6%;
-    --foreground: 220 15% 92%;
+    /* Background — slightly lighter for breathability */
+    --background: 228 22% 8%;
+    --foreground: 220 20% 95%;
 
-    --card: 224 24% 10%;
-    --card-foreground: 220 15% 92%;
+    /* Cards — more lift from background */
+    --card: 226 20% 13%;
+    --card-foreground: 220 20% 95%;
 
-    --popover: 224 24% 10%;
-    --popover-foreground: 220 15% 92%;
+    --popover: 226 20% 13%;
+    --popover-foreground: 220 20% 95%;
 
-    --primary: 234 75% 65%;
+    /* Primary — vibrant electric indigo */
+    --primary: 234 80% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 224 20% 14%;
-    --secondary-foreground: 220 15% 92%;
+    --secondary: 226 18% 17%;
+    --secondary-foreground: 220 20% 95%;
 
-    --muted: 224 18% 14%;
-    --muted-foreground: 220 12% 55%;
+    /* Muted — more readable */
+    --muted: 226 16% 16%;
+    --muted-foreground: 220 14% 62%;
 
-    --accent: 172 45% 48%;
+    /* Accent — vivid teal */
+    --accent: 172 50% 52%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 152 50% 46%;
+    --success: 152 55% 50%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 75% 56%;
+    --warning: 38 80% 58%;
     --warning-foreground: 30 60% 10%;
 
-    --destructive: 4 55% 55%;
+    --destructive: 4 60% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --info: 210 65% 56%;
+    --info: 210 70% 60%;
     --info-foreground: 0 0% 100%;
 
-    --celebration: 45 75% 60%;
+    --celebration: 45 80% 62%;
     --celebration-foreground: 30 60% 10%;
 
-    --border: 224 16% 16%;
-    --input: 224 16% 16%;
-    --ring: 234 75% 65%;
+    /* Borders — more visible */
+    --border: 226 14% 20%;
+    --input: 226 14% 20%;
+    --ring: 234 80% 68%;
 
-    --ring-destructive: 4 55% 55%;
-    --ring-success: 152 50% 46%;
-    --ring-warning: 38 75% 56%;
+    --ring-destructive: 4 60% 58%;
+    --ring-success: 152 55% 50%;
+    --ring-warning: 38 80% 58%;
 
-    --sidebar-background: 224 30% 5%;
-    --sidebar-foreground: 220 15% 72%;
-    --sidebar-primary: 234 75% 65%;
+    /* Sidebar — distinct from content */
+    --sidebar-background: 230 25% 6%;
+    --sidebar-foreground: 220 18% 75%;
+    --sidebar-primary: 234 80% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 22% 12%;
-    --sidebar-accent-foreground: 220 15% 92%;
-    --sidebar-border: 224 18% 12%;
-    --sidebar-ring: 234 75% 65%;
+    --sidebar-accent: 228 20% 14%;
+    --sidebar-accent-foreground: 220 18% 95%;
+    --sidebar-border: 228 16% 14%;
+    --sidebar-ring: 234 80% 68%;
 
-    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.35);
-    --shadow-xl: 0 16px 40px -8px hsl(0 0% 0% / 0.4);
+    /* Shadows — colored for depth */
+    --shadow-sm: 0 1px 3px 0 hsl(234 50% 5% / 0.3);
+    --shadow-md: 0 4px 12px -2px hsl(234 50% 5% / 0.4);
+    --shadow-lg: 0 8px 24px -4px hsl(234 50% 5% / 0.45);
+    --shadow-xl: 0 16px 40px -8px hsl(234 50% 5% / 0.5);
 
-    --glass-bg: 224 24% 10% / 0.6;
-    --glass-border: 220 15% 92% / 0.06;
+    /* Glass — more contrast */
+    --glass-bg: 226 20% 13% / 0.7;
+    --glass-border: 220 20% 95% / 0.08;
     --glass-blur: 20px;
 
-    --surface-0: 224 28% 6%;
-    --surface-1: 224 24% 8%;
-    --surface-2: 224 22% 10%;
-    --surface-3: 224 20% 13%;
-    --surface-4: 224 18% 15%;
+    /* Surfaces — clear elevation ladder */
+    --surface-0: 228 22% 8%;
+    --surface-1: 226 20% 11%;
+    --surface-2: 226 18% 14%;
+    --surface-3: 226 16% 17%;
+    --surface-4: 226 14% 20%;
 
-    --role-owner: 270 55% 62%;
-    --role-manager: 234 65% 68%;
-    --role-buyer: 152 50% 50%;
-    --role-contact: 220 12% 58%;
+    --role-owner: 270 60% 65%;
+    --role-manager: 234 70% 70%;
+    --role-buyer: 152 55% 54%;
+    --role-contact: 220 14% 62%;
 
-    --row-hover: 234 75% 65% / 0.05;
-    --row-selected: 234 75% 65% / 0.08;
-    --row-active: 234 75% 65% / 0.12;
+    --row-hover: 234 80% 68% / 0.06;
+    --row-selected: 234 80% 68% / 0.10;
+    --row-active: 234 80% 68% / 0.14;
 
-    --entity-contact: 234 75% 68%;
-    --entity-company: 270 55% 62%;
-    --entity-interaction: 152 50% 50%;
-    --entity-insight: 38 75% 56%;
+    --entity-contact: 234 80% 70%;
+    --entity-company: 270 60% 65%;
+    --entity-interaction: 152 55% 54%;
+    --entity-insight: 38 80% 58%;
   }
 }
 
@@ -417,7 +427,7 @@
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(234 72% 48%));
   }
   .dark .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(234 75% 55%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(234 80% 55%));
   }
   .bg-gradient-premium {
     background: linear-gradient(135deg, hsl(var(--primary)), hsl(270 50% 50%));
@@ -443,7 +453,21 @@
     box-shadow: 0 4px 16px -2px hsl(var(--primary) / 0.25);
   }
   .dark .shadow-glow {
-    box-shadow: 0 4px 16px -2px hsl(var(--primary) / 0.35);
+    box-shadow: 0 4px 20px -2px hsl(var(--primary) / 0.3);
+  }
+  
+  /* Soft shadow */
+  .shadow-soft {
+    box-shadow: var(--shadow-sm);
+  }
+  .shadow-medium {
+    box-shadow: var(--shadow-md);
+  }
+  .shadow-strong {
+    box-shadow: var(--shadow-lg);
+  }
+  .shadow-intense {
+    box-shadow: var(--shadow-xl);
   }
 }
 

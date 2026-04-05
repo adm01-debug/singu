@@ -208,10 +208,10 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         className="h-screen bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border/50 fixed left-0 top-0 z-40"
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
+        <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border/70">
           <Link to="/" className="flex items-center gap-3 min-w-0 group">
             <motion.div 
-              className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0"
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20"
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
@@ -226,8 +226,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col overflow-hidden"
                 >
-                  <span className="font-bold text-lg text-sidebar-primary-foreground whitespace-nowrap">SINGU</span>
-                  <span className="text-xs text-sidebar-foreground/60 whitespace-nowrap">Inteligência Relacional</span>
+                  <span className="font-bold text-lg text-sidebar-primary-foreground whitespace-nowrap tracking-tight">SINGU</span>
+                  <span className="text-[10px] text-sidebar-foreground/50 whitespace-nowrap font-medium tracking-wider uppercase">Inteligência Relacional</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -334,8 +334,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                             isActive
-                              ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground border-l-[3px] border-sidebar-primary'
-                              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground border-l-[3px] border-transparent',
+                              ? 'bg-gradient-to-r from-sidebar-primary/20 to-sidebar-primary/5 text-sidebar-primary-foreground border-l-[3px] border-sidebar-primary shadow-sm'
+                              : 'hover:bg-sidebar-accent/60 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground border-l-[3px] border-transparent',
                             collapsed && 'justify-center px-0 border-l-0'
                           )}
                         >
