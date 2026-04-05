@@ -167,27 +167,25 @@ export function ContactCardWithContext({
             
             <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Header with gradient */}
-                <div className="h-16 bg-gradient-to-r from-primary/15 via-primary/10 to-accent/10 relative mt-1">
+                {/* Header with gradient by relationship stage */}
+                <div className={cn(
+                  "h-16 relative mt-1 bg-gradient-to-r",
+                  contact.relationship_stage === 'customer' || contact.relationship_stage === 'loyal_customer' || contact.relationship_stage === 'advocate'
+                    ? 'from-success/15 via-success/8 to-accent/10'
+                    : contact.relationship_stage === 'at_risk' || contact.relationship_stage === 'lost'
+                    ? 'from-destructive/15 via-destructive/8 to-warning/10'
+                    : contact.relationship_stage === 'negotiation' || contact.relationship_stage === 'opportunity'
+                    ? 'from-warning/15 via-warning/8 to-accent/10'
+                    : 'from-primary/15 via-primary/10 to-accent/10'
+                )}>
                   <div className="absolute -bottom-8 left-5">
-                    <div className="relative">
-                      <OptimizedAvatar 
-                        src={contact.avatar_url || undefined}
-                        alt={`${contact.first_name} ${contact.last_name}`}
-                        fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
-                        size="lg"
-                        className="w-16 h-16 border-4 border-card shadow-medium"
-                      />
-                      <div className="absolute -top-1 -right-1">
-                        <PriorityIndicator 
-                          relationshipScore={contact.relationship_score || 0}
-                          lastInteractionDate={lastInteraction}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute top-3 right-10">
-                    <RelationshipScore score={contact.relationship_score || 0} size="sm" />
+                    <OptimizedAvatar 
+                      src={contact.avatar_url || undefined}
+                      alt={`${contact.first_name} ${contact.last_name}`}
+                      fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
+                      size="lg"
+                      className="w-16 h-16 border-4 border-card shadow-medium"
+                    />
                   </div>
                 </div>
 
@@ -297,6 +295,7 @@ export function ContactCardWithContext({
                   </div>
 
                   <div className="flex items-center gap-2 pt-4 border-t border-border">
+                    <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                     <div className="ml-auto text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
                     </div>

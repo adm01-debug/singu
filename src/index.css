@@ -564,9 +564,17 @@
 .duration-normal { transition-duration: var(--duration-normal); }
 .ease-smooth { transition-timing-function: var(--ease-smooth); }
 
-/* Pressable */
+/* Pressable — tactile feedback */
 .pressable { transition: transform var(--duration-fast) var(--ease-smooth); }
 .pressable:active { transform: scale(0.97); }
+
+/* Auto-apply tactile feedback to common interactive elements */
+button:not([disabled]):active,
+[role="button"]:not([disabled]):active,
+.card-hover:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease-out;
+}
 
 /* Touch */
 button, a, input, select, textarea, [role="button"] {
@@ -582,11 +590,14 @@ button, a, input, select, textarea, [role="button"] {
   }
 }
 
-/* Focus visible — global override */
+/* Focus visible — global override for accessibility */
 *:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.4);
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.5);
   border-radius: inherit;
+}
+.dark *:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.6);
 }
 
 /* Skip to main */
