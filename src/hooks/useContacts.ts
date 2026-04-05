@@ -111,7 +111,8 @@ export function useContacts(companyId?: string) {
 
     try {
       const { success, error } = await deleteExternalData('contacts', id);
-      if (error || !success) throw error || new Error('Delete failed');
+      const deleted = previous?.find(c => c.id === id);
+      logActivity({ type: 'deleted', entityType: 'contact', entityId: id, entityName: deleted ? `${deleted.first_name} ${deleted.last_name}`.trim() : undefined, description: 'Contato excluído' });
       return true;
     } catch (error) {
       logger.error('Error deleting contact:', error);
