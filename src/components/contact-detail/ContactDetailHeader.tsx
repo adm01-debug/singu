@@ -57,7 +57,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [extraPhones, setExtraPhones] = useState<string[]>([]);
   const [extraEmails, setExtraEmails] = useState<string[]>([]);
-  const fullName = `${contact.first_name} ${contact.last_name}`.trim();
+  const fullName = formatContactName(contact.first_name, contact.last_name);
   const stage = STAGE_CONFIG[contact.relationship_stage || 'unknown'] || STAGE_CONFIG.unknown;
   const behavior = contact.behavior as Record<string, unknown> | null;
   const discProfile = behavior?.discProfile as string | null;
