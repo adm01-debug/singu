@@ -86,10 +86,35 @@ export function WhatsNewModal({
 
   useEffect(() => {
     const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
-    if (seenVersion !== version) {
-      const timer = setTimeout(() => setIsVisible(true), 2000);
-      return () => clearTimeout(timer);
-    }
+    if (seenVersion === version) return;
+
+    // Wait for onboarding tour to finish before showing WhatsNew
+    const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
+    const delay = tourCompleted ? 2000 : 8000; // longer delay if tour may be active
+
+    const timer = setTimeout(() => {
+      // Re-check tour state at show time
+      const tourDone = localStorage.getItem('tour-completed-main') === 'true';
+      if (tourDone) {
+        setIsVisible(true);
+      } else {
+        // Tour still active — wait for it to complete
+        const onTourComplete = () => {
+          setTimeout(() => setIsVisible(true), 1000);
+          window.removeEventListener('storage', onTourComplete);
+        };
+        window.addEventListener('storage', onTourComplete);
+        // Also listen for completion within same tab
+        const poll = setInterval(() => {
+          if (localStorage.getItem('tour-completed-main') === 'true') {
+            clearInterval(poll);
+            setTimeout(() => setIsVisible(true), 1000);
+          }
+        }, 1000);
+        return () => { clearInterval(poll); window.removeEventListener('storage', onTourComplete); };
+      }
+    }, delay);
+    return () => clearTimeout(timer);
   }, [version]);
 
   const handleDismiss = () => {
