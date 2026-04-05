@@ -14,14 +14,14 @@ export async function trackScoreChange(params: {
   factors?: Record<string, unknown>;
 }): Promise<void> {
   try {
-    await supabase.from('score_history').insert({
+    await supabase.from('score_history').insert([{
       user_id: params.userId,
       contact_id: params.contactId,
       score_type: params.scoreType,
       score_value: params.newValue,
       previous_value: params.previousValue ?? null,
-      factors: params.factors ?? null,
-    });
+      factors: (params.factors as Record<string, unknown>) ?? null,
+    }]);
   } catch (error) {
     logger.warn('Failed to track score change', error);
   }
