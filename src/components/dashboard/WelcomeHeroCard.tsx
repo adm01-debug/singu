@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Sun, Moon, Sunset, Sparkles, ArrowRight, UserCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Validates whether a name is "real" enough to display.
@@ -22,15 +24,33 @@ function formatDisplayName(raw: string): string {
 
 export function WelcomeHeroCard() {
   const { user } = useAuth();
+  const [profileName, setProfileName] = useState<string>('');
   
+  // Fetch name from profiles table as primary source
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.first_name) {
+          const name = formatDisplayName(data.first_name);
+          if (name) setProfileName(name);
+        }
+      });
+  }, [user?.id]);
+
   const hour = new Date().getHours();
   const rawName = user?.user_metadata?.first_name 
     || user?.user_metadata?.full_name?.split(' ')[0]
     || user?.user_metadata?.display_name?.split(' ')[0]
     || user?.email?.split('@')[0] 
     || '';
-  const firstName = formatDisplayName(rawName);
-  const hasProfile = !!user?.user_metadata?.first_name;
+  const metadataName = formatDisplayName(rawName);
+  const firstName = profileName || metadataName;
+  const hasProfile = !!profileName || !!user?.user_metadata?.first_name;
   
   let greeting: string;
   let GreetingIcon: typeof Sun;
