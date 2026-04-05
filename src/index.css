@@ -233,7 +233,122 @@
      DARK MODE — Rich navy with premium contrast
      ============================================ */
   .dark {
+    color-scheme: dark;
+
     /* Background — Nexus navy identity */
+    --background: 232 30% 6%;
+    --foreground: 220 20% 96%;
+
+    --card: 232 25% 10%;
+    --card-foreground: 220 20% 96%;
+
+    --popover: 232 25% 9%;
+    --popover-foreground: 220 20% 96%;
+
+    --primary: 214 100% 65%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 232 20% 14%;
+    --secondary-foreground: 220 20% 96%;
+
+    --muted: 232 18% 15%;
+    --muted-foreground: 220 12% 65%;
+
+    --accent: 185 80% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 142 50% 48%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 48 95% 55%;
+    --warning-foreground: 30 48% 12%;
+
+    --destructive: 0 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --info: 214 100% 65%;
+    --info-foreground: 0 0% 100%;
+
+    --celebration: 48 95% 58%;
+    --celebration-foreground: 30 48% 12%;
+
+    --border: 232 20% 18%;
+    --input: 232 20% 18%;
+    --ring: 214 100% 65%;
+
+    --ring-destructive: 0 75% 58%;
+    --ring-success: 142 50% 48%;
+    --ring-warning: 48 95% 55%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(var(--nexus-gradient-start)), hsl(var(--nexus-gradient-end)));
+
+    --sidebar-background: 232 30% 5%;
+    --sidebar-foreground: 220 16% 72%;
+    --sidebar-primary: 214 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 232 22% 10%;
+    --sidebar-accent-foreground: 220 20% 96%;
+    --sidebar-border: 232 22% 14%;
+    --sidebar-ring: 214 100% 65%;
+
+    --shadow-sm: 0 1px 3px 0 hsl(232 40% 2% / 0.42);
+    --shadow-md: 0 8px 22px -8px hsl(232 40% 2% / 0.5);
+    --shadow-lg: 0 20px 44px -18px hsl(232 40% 2% / 0.58);
+    --shadow-xl: 0 34px 70px -28px hsl(232 40% 2% / 0.68);
+
+    --glass-bg: 232 25% 10% / 0.8;
+    --glass-border: 214 100% 65% / 0.16;
+    --glass-blur: 8px;
+
+    --surface-0: 232 30% 6%;
+    --surface-1: 232 25% 8%;
+    --surface-2: 232 22% 11%;
+    --surface-3: 232 20% 14%;
+    --surface-4: 232 18% 17%;
+
+    --role-owner: 270 70% 68%;
+    --role-manager: 234 80% 72%;
+    --role-buyer: 152 60% 55%;
+    --role-contact: 220 35% 62%;
+
+    --row-hover: 214 100% 65% / 0.08;
+    --row-selected: 214 100% 65% / 0.12;
+    --row-active: 214 100% 65% / 0.18;
+
+    --entity-contact: 214 100% 65%;
+    --entity-company: 185 80% 55%;
+    --entity-interaction: 142 50% 48%;
+    --entity-insight: 48 95% 55%;
+
+    --nexus-glow: 214 100% 65%;
+    --nexus-cyan: 185 80% 60%;
+    --nexus-emerald: 142 50% 56%;
+    --nexus-amber: 48 95% 55%;
+    --nexus-rose: 0 75% 55%;
+    --nexus-surface-1: 232 25% 8%;
+    --nexus-surface-2: 232 22% 11%;
+    --nexus-surface-3: 232 20% 14%;
+    --nexus-gradient-start: 214 100% 65%;
+    --nexus-gradient-end: 142 50% 56%;
+    --nexus-blue: 214 100% 65%;
+    --nexus-green: 142 50% 56%;
+    --nexus-yellow: 48 95% 55%;
+    --nexus-red: 0 75% 55%;
+    --nexus-purple: 280 55% 55%;
+    --nexus-orange: 28 80% 52%;
+    --nexus-gold: 28 50% 65%;
+    --nexus-teal: 170 65% 50%;
+    --nexus-muted: 220 10% 53%;
+    --nexus-border: 235 30% 17%;
+  }
+
+  .light {
+    color-scheme: light;
+  }
+
+  html:not(.light) {
+    color-scheme: dark;
+
     --background: 232 30% 6%;
     --foreground: 220 20% 96%;
 
@@ -347,6 +462,10 @@
 @layer base {
   * {
     @apply border-border;
+  }
+
+  html {
+    background-color: hsl(var(--background));
   }
 
   body {

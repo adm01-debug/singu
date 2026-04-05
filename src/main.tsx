@@ -1,25 +1,13 @@
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { ACTIVE_THEME_STORAGE_KEY, bootstrapTheme } from "@/components/theme/themeBootstrap";
 import { initGlobalErrorHandlers } from "@/lib/errorReporting";
 import App from "./App.tsx";
 import "./index.css";
 
-const LEGACY_THEME_STORAGE_KEYS = ["singu-skin", "relateiq-theme"];
-const LEGACY_THEME_STYLE_IDS = ["singu-skin-style"];
-const ACTIVE_THEME_STORAGE_KEY = "singu-theme-mode-v2";
-
-function cleanupLegacyTheme() {
-  try {
-    LEGACY_THEME_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
-    LEGACY_THEME_STYLE_IDS.forEach((id) => document.getElementById(id)?.remove());
-  } catch {
-    // noop: limpeza legada não deve bloquear o app
-  }
-}
-
 // Inicializar sistemas globais
 initGlobalErrorHandlers();
-cleanupLegacyTheme();
+bootstrapTheme(ACTIVE_THEME_STORAGE_KEY, "dark");
 
 // Evita limpeza agressiva de cache em desenvolvimento para não atrasar o bootstrap.
 if (import.meta.env.PROD) {
