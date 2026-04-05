@@ -107,7 +107,7 @@ export function WhatsNewModal({
         const poll = setInterval(() => {
           if (localStorage.getItem('tour-completed-main') === 'true') {
             clearInterval(poll);
-            setTimeout(() => setIsVisible(true), 1500);
+            setTimeout(() => setIsVisible(true), 4000);
           }
         }, 1000);
         // Give up after 60s
