@@ -199,10 +199,10 @@ export function usePortfolioHealth(contacts: Contact[], interactions: Interactio
     const avgInteractionsPerMonth = totalClients > 0 ? (totalInteractions / 3) / totalClients : 0;
     
     const avgRelationshipScore = totalClients > 0
-      ? Math.round(contacts.reduce((acc, c) => acc + c.relationshipScore, 0) / totalClients)
+      ? Math.round(validContacts.reduce((acc, c) => acc + c.relationshipScore, 0) / totalClients)
       : 0;
     
-    const positiveContacts = contacts.filter(c => c.sentiment === 'positive').length;
+    const positiveContacts = validContacts.filter(c => c.sentiment === 'positive').length;
     const positiveRate = totalClients > 0 ? Math.round((positiveContacts / totalClients) * 100) : 0;
     
     // Top performers (top 5 by health)
