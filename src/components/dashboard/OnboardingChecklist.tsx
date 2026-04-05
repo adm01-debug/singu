@@ -63,8 +63,8 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
     >
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         {/* Compact header — always visible */}
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-card hover:bg-muted/30 transition-colors">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border/60 bg-card/85 shadow-[0_18px_44px_-32px_hsl(var(--foreground)/0.45)] hover:border-primary/25 transition-colors">
+          <div className="w-8 h-8 rounded-xl bg-primary/12 ring-1 ring-primary/20 flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4 text-primary" />
           </div>
           
@@ -83,7 +83,7 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
           {/* Next step hint (when collapsed) */}
           {!isOpen && nextStep && (
             <Link to={nextStep.path} className="hidden sm:block">
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:text-primary">
+               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:text-primary">
                 {nextStep.label}
                 <span className="text-muted-foreground">→</span>
               </Button>
@@ -120,7 +120,7 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
                 >
                   <Link to={step.path}>
                     <div className={cn(
-                      'flex items-center gap-2.5 p-2.5 rounded-lg border border-border/30 transition-all hover:bg-muted/50 hover:border-border hover:shadow-soft',
+                      'flex items-center gap-2.5 p-2.5 rounded-xl border border-border/40 bg-surface-1/55 transition-all hover:bg-primary/6 hover:border-primary/20 hover:shadow-[0_16px_36px_-28px_hsl(var(--nexus-glow)/0.35)]',
                       step.completed && 'opacity-50'
                     )}>
                       <div className={cn(

@@ -97,12 +97,12 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed left-0 top-0 bottom-0 w-[280px] bg-sidebar z-50 md:hidden flex flex-col shadow-2xl"
+            className="fixed left-0 top-0 bottom-0 z-50 flex w-[280px] flex-col bg-[linear-gradient(180deg,hsl(var(--sidebar-background))_0%,hsl(var(--surface-0))_100%)] shadow-[20px_0_60px_-28px_hsl(var(--foreground)/0.85)] md:hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-nexus-cyan to-accent shadow-[0_18px_32px_-16px_hsl(var(--nexus-glow)/0.85)]">
                   <Zap className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="font-bold text-lg text-sidebar-foreground">SINGU</span>
@@ -147,8 +147,8 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all",
                           active 
-                            ? "bg-primary text-primary-foreground shadow-md" 
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                            ? "bg-primary/16 border border-primary/22 text-sidebar-primary-foreground shadow-[0_18px_40px_-24px_hsl(var(--nexus-glow)/0.7)]" 
+                            : "border border-transparent text-sidebar-foreground/76 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:border-primary/15"
                         )}
                       >
                         <Icon className="w-5 h-5" />

@@ -88,7 +88,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-20 md:hidden bg-background/95 backdrop-blur-xl border-b border-border safe-area-inset-top">
+      <header className="sticky top-0 z-20 md:hidden border-b border-border/40 bg-[linear-gradient(180deg,hsl(var(--surface-1))/0.96_0%,hsl(var(--card))/0.9_100%)] backdrop-blur-md safe-area-inset-top">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left: Menu or Back */}
           <motion.button
@@ -129,7 +129,7 @@ export function MobileHeader({ onSearchClick, title }: MobileHeaderProps) {
                 <h1 className="text-base font-semibold text-foreground truncate">{resolvedTitle}</h1>
               ) : (
                 <>
-                  <div className="w-7 h-7 rounded-lg bg-gradient-primary flex items-center justify-center">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-nexus-cyan to-accent shadow-[0_14px_28px_-18px_hsl(var(--nexus-glow)/0.8)]">
                     <Zap className="w-4 h-4 text-primary-foreground" />
                   </div>
                   <span className="font-bold text-base text-foreground">SINGU</span>

@@ -75,18 +75,18 @@ export function WelcomeHeroCard() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-accent/10 border border-border/60 p-4 md:p-8 group hover:border-primary/20 transition-colors duration-300"
+      className="relative overflow-hidden rounded-[28px] border border-primary/20 bg-[linear-gradient(135deg,hsl(var(--surface-1))_0%,hsl(var(--card))_45%,hsl(var(--surface-2))_100%)] p-5 md:p-8 group shadow-[0_28px_80px_-44px_hsl(var(--nexus-glow)/0.5)] hover:border-primary/35 transition-colors duration-300"
     >
       {/* Animated decorative orbs */}
       <motion.div 
         animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.22, 0.12] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
+        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/25 via-accent/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
       />
       <motion.div 
         animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.16, 0.08] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-accent/12 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
+        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-nexus-cyan/15 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
       />
       
       <div className="relative flex items-center justify-between gap-4">
@@ -95,7 +95,7 @@ export function WelcomeHeroCard() {
             initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
-            className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-glow shrink-0 ring-2 ring-primary/20"
+            className="w-12 h-12 md:w-16 md:h-16 rounded-[22px] bg-gradient-to-br from-primary via-nexus-cyan to-accent flex items-center justify-center shrink-0 ring-1 ring-primary/35 shadow-[0_20px_40px_-18px_hsl(var(--nexus-glow)/0.7)]"
           >
             <GreetingIcon className="w-6 h-6 md:w-8 md:h-8 text-primary-foreground" />
           </motion.div>
@@ -136,11 +136,11 @@ export function WelcomeHeroCard() {
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
-          className="hidden md:flex items-center gap-3"
+            className="hidden md:flex items-center gap-3"
         >
           <Link 
             to="/contatos"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 hover:border-primary/40 hover:shadow-glow transition-all duration-300 group/ai"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-card/70 border border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 group/ai shadow-[0_18px_44px_-30px_hsl(var(--nexus-glow)/0.45)]"
           >
             <Sparkles className="w-4 h-4 text-primary group-hover/ai:animate-pulse" />
             <span className="text-sm font-semibold text-primary">SINGU AI</span>
