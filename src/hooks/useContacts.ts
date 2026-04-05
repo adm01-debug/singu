@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
+import { trackScoreChange } from '@/lib/trackScoreChange';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
@@ -38,6 +40,7 @@ async function fetchContactsPage(companyId?: string) {
 export function useContacts(companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const queryClient = useQueryClient();
 
   const queryKey = ['contacts', companyId ?? '__all__'];
@@ -68,6 +71,7 @@ export function useContacts(companyId?: string) {
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
       toast({ title: 'Contato criado', description: `${data?.first_name} ${data?.last_name} foi adicionado com sucesso.` });
+      if (data) logActivity({ type: 'created', entityType: 'contact', entityId: data.id, entityName: `${data.first_name} ${data.last_name}`.trim(), description: 'Contato criado' });
       return data;
     } catch (error) {
       logger.error('Error creating contact:', error);
@@ -87,9 +91,17 @@ export function useContacts(companyId?: string) {
       const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
       const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
-      if (data) queryClient.setQueryData<Contact[]>(queryKey, prev =>
-        prev?.map(c => c.id === id ? data : c) ?? []
-      );
+      if (data) {
+        queryClient.setQueryData<Contact[]>(queryKey, prev =>
+          prev?.map(c => c.id === id ? data : c) ?? []
+        );
+        logActivity({ type: 'updated', entityType: 'contact', entityId: id, entityName: `${data.first_name} ${data.last_name}`.trim(), description: 'Contato atualizado' });
+        // Track score changes
+        if (updates.relationship_score !== undefined && user) {
+          const prev = previous?.find(c => c.id === id);
+          trackScoreChange({ userId: user.id, contactId: id, scoreType: 'relationship', newValue: updates.relationship_score ?? 0, previousValue: prev?.relationship_score });
+        }
+      }
       return data;
     } catch (error) {
       logger.error('Error updating contact:', error);
@@ -105,7 +117,8 @@ export function useContacts(companyId?: string) {
 
     try {
       const { success, error } = await deleteExternalData('contacts', id);
-      if (error || !success) throw error || new Error('Delete failed');
+      const deleted = previous?.find(c => c.id === id);
+      logActivity({ type: 'deleted', entityType: 'contact', entityId: id, entityName: deleted ? `${deleted.first_name} ${deleted.last_name}`.trim() : undefined, description: 'Contato excluído' });
       return true;
     } catch (error) {
       logger.error('Error deleting contact:', error);

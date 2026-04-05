@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
@@ -61,6 +62,7 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
 export function useCompanies() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -96,7 +98,9 @@ export function useCompanies() {
           prev ? { ...prev, companies: [mapCompany(data as unknown as ExternalRow), ...prev.companies] } : { companies: [mapCompany(data as unknown as ExternalRow)], count: 1 }
         );
       }
-      toast({ title: 'Empresa criada', description: `${(data as Record<string, unknown>)?.nome_crm || 'Empresa'} foi adicionada com sucesso.` });
+      const companyName = (data as Record<string, unknown>)?.nome_crm || 'Empresa';
+      toast({ title: 'Empresa criada', description: `${companyName} foi adicionada com sucesso.` });
+      if (data) logActivity({ type: 'created', entityType: 'company', entityId: (data as Record<string, unknown>).id as string, entityName: String(companyName), description: 'Empresa criada' });
       return data;
     } catch (error) {
       logger.error('Error creating company:', error);
@@ -122,6 +126,7 @@ export function useCompanies() {
         );
       }
       toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
+      if (data) logActivity({ type: 'updated', entityType: 'company', entityId: id, entityName: (data as Record<string, unknown>).nome_crm as string || 'Empresa', description: 'Empresa atualizada' });
       return data;
     } catch (error) {
       if (previous) queryClient.setQueryData<CompaniesPage>(queryKey, previous);
@@ -139,6 +144,8 @@ export function useCompanies() {
     try {
       const { success, error } = await deleteExternalData('companies', id);
       if (error || !success) throw error || new Error('Delete failed');
+      const deleted = previous?.companies.find(c => c.id === id);
+      logActivity({ type: 'deleted', entityType: 'company', entityId: id, entityName: deleted?.name || undefined, description: 'Empresa excluída' });
       toast({ title: 'Empresa removida', description: 'A empresa foi excluída com sucesso.' });
       return true;
     } catch (error) {

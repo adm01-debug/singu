@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
@@ -31,6 +32,7 @@ async function fetchInteractionsPage(contactId?: string, companyId?: string) {
 export function useInteractions(contactId?: string, companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const { triggerAnalysis } = useNLPAutoAnalysis();
   const queryClient = useQueryClient();
 
@@ -70,6 +72,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
         title: 'Interação registrada',
         description: 'A interação foi salva com sucesso.',
       });
+      logActivity({ type: 'created', entityType: 'interaction', entityId: data.id, entityName: data.title, description: `Interação: ${data.type}` });
 
       // Trigger DISC auto-analysis if enabled and has content
       if (options?.triggerDISCAnalysis !== false && data.contact_id) {
@@ -170,6 +173,8 @@ export function useInteractions(contactId?: string, companyId?: string) {
 
       if (error) throw error;
 
+      const deleted = previous?.find(i => i.id === id);
+      logActivity({ type: 'deleted', entityType: 'interaction', entityId: id, entityName: deleted?.title, description: 'Interação excluída' });
       toast({
         title: 'Interação removida',
         description: 'A interação foi excluída com sucesso.',

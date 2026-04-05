@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
 import {
   Book, Copy, Star, Search, MessageSquare,
   PhoneCall, Mail, Video, Send, CheckCircle,
@@ -225,9 +226,11 @@ interface DISCTemplateLibraryProps {
 
 const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile }) => {
   const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavoriteTemplates();
   const [activeProfile, setActiveProfile] = useState<string>(filterProfile || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const filteredTemplates = useMemo(() => {
     return DISC_TEMPLATES.filter(template => {
@@ -236,9 +239,10 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
         template.template.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.context.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesProfile && matchesSearch;
+      const matchesFav = !showFavoritesOnly || isFavorite(template.id);
+      return matchesProfile && matchesSearch && matchesFav;
     });
-  }, [activeProfile, searchQuery]);
+  }, [activeProfile, searchQuery, showFavoritesOnly, isFavorite]);
 
   const categories = useMemo(() => {
     const cats = [...new Set(filteredTemplates.map(t => t.category))];
@@ -269,14 +273,25 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
 
       <CardContent className="space-y-4">
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar templates..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar templates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className="gap-1.5 shrink-0"
+          >
+            <Star className={`w-3.5 h-3.5 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+            Favoritos
+          </Button>
         </div>
 
         {/* Profile Tabs */}
@@ -343,6 +358,14 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0"
+                                onClick={() => toggleFavorite(template.id)}
+                              >
+                                <Star className={`w-3.5 h-3.5 ${isFavorite(template.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                              </Button>
                               <Badge variant="secondary" className="text-xs">
                                 {template.effectiveness}% eficaz
                               </Badge>
