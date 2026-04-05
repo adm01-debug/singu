@@ -70,6 +70,35 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <span ref={ref} className={className}>0</span>;
 }
 
+function MiniSparkline({ data, color }: { data: number[]; color: string }) {
+  if (!data || data.length < 2) return null;
+  const max = Math.max(...data, 1);
+  const min = Math.min(...data, 0);
+  const range = max - min || 1;
+  const w = 64;
+  const h = 24;
+  const points = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    return `${x},${y}`;
+  });
+  const pathD = `M${points.join(' L')}`;
+  const areaD = `${pathD} L${w},${h} L0,${h} Z`;
+  
+  return (
+    <svg width={w} height={h} className="opacity-60 group-hover:opacity-100 transition-opacity" aria-hidden="true">
+      <defs>
+        <linearGradient id={`spark-${color}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={`hsl(var(--${color}))`} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={`hsl(var(--${color}))`} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#spark-${color})`} />
+      <path d={pathD} fill="none" stroke={`hsl(var(--${color}))`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function StatCard({
   title, value, change, changeType = 'neutral', icon: Icon,
   iconColor, className, delay = 0,
@@ -81,6 +110,7 @@ export function StatCard({
 
   const ChangeIcon = changeType === 'positive' ? TrendingUp : changeType === 'negative' ? TrendingDown : Minus;
   const resolvedIconBg = iconBgMap[gradientTone] || iconColor || 'bg-primary/15 text-primary';
+  const sparkColor = gradientTone === 'success' ? 'success' : gradientTone === 'warning' ? 'warning' : gradientTone === 'premium' ? 'accent' : 'primary';
 
   return (
     <motion.div
@@ -91,15 +121,15 @@ export function StatCard({
       onClick={onClick}
       className={cn(statCardVariants({ variant, size }), 'group', className)}
     >
-      {/* Gradient top border — thicker and more vivid */}
+      {/* Gradient top border */}
       <div className={cn(
         'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r rounded-t-xl',
         gradientToneMap[gradientTone]
       )} />
 
-      {/* Subtle background glow */}
+      {/* Subtle background glow on hover */}
       <div className={cn(
-        'absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-10',
+        'absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-0 group-hover:opacity-15 transition-opacity duration-500',
         gradientTone === 'primary' && 'bg-primary',
         gradientTone === 'success' && 'bg-success',
         gradientTone === 'warning' && 'bg-warning',
@@ -107,13 +137,19 @@ export function StatCard({
       )} />
       
       <div className="relative flex items-start justify-between gap-3">
-        <div className="space-y-2 min-w-0">
+        <div className="space-y-2 min-w-0 flex-1">
           <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
             {title}
           </p>
-          <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
-            {isNumeric && animate ? <AnimatedNumber value={numericValue} /> : value}
-          </p>
+          <div className="flex items-end gap-3">
+            <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
+              {isNumeric && animate ? <AnimatedNumber value={numericValue} /> : value}
+            </p>
+            {/* Inline sparkline */}
+            {sparkline && sparkline.length > 1 && (
+              <MiniSparkline data={sparkline} color={sparkColor} />
+            )}
+          </div>
           
           {change && (
             <div className="flex items-center gap-1.5 mt-1">
@@ -140,7 +176,7 @@ export function StatCard({
           )}
         </div>
 
-        <div className={cn('p-3.5 rounded-xl shrink-0 transition-transform group-hover:scale-110', resolvedIconBg)}>
+        <div className={cn('p-3.5 rounded-xl shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-glow', resolvedIconBg)}>
           <Icon className="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
