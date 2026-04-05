@@ -441,10 +441,12 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
                   >
-                    <Card className="h-full">
+                    <Card className="h-full border-border/60 hover:border-border transition-colors">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                          <div className="p-1.5 rounded-lg bg-muted/60">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                          </div>
                           Atividade Recente
                         </CardTitle>
                       </CardHeader>
@@ -473,13 +475,13 @@ const Dashboard = () => {
                                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
                                     >
                                       {(() => {
-                                        const iconWrapClass = "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0";
-                                        const iconClass = "w-3.5 h-3.5";
+                                        const iconWrapClass = "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ring-1";
+                                        const iconClass = "w-4 h-4";
                                         switch (activity.type) {
-                                          case 'call': return <div className={`${iconWrapClass} bg-success/10`}><Phone className={`${iconClass} text-success`} /></div>;
-                                          case 'email': return <div className={`${iconWrapClass} bg-info/10`}><Mail className={`${iconClass} text-info`} /></div>;
-                                          case 'meeting': return <div className={`${iconWrapClass} bg-accent/10`}><Video className={`${iconClass} text-accent`} /></div>;
-                                          default: return <div className={`${iconWrapClass} bg-primary/10`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
+                                          case 'call': return <div className={`${iconWrapClass} bg-success/10 ring-success/20`}><Phone className={`${iconClass} text-success`} /></div>;
+                                          case 'email': return <div className={`${iconWrapClass} bg-info/10 ring-info/20`}><Mail className={`${iconClass} text-info`} /></div>;
+                                          case 'meeting': return <div className={`${iconWrapClass} bg-accent/10 ring-accent/20`}><Video className={`${iconClass} text-accent`} /></div>;
+                                          default: return <div className={`${iconWrapClass} bg-primary/10 ring-primary/20`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
                                         }
                                       })()}
                                       <div className="flex-1 min-w-0">
@@ -511,10 +513,12 @@ const Dashboard = () => {
                     transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
                     className="lg:col-span-2"
                   >
-                    <Card className="h-full">
+                    <Card className="h-full border-border/60 hover:border-border transition-colors">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <Users className="w-4 h-4 text-primary" aria-hidden="true" />
+                          <div className="p-1.5 rounded-lg bg-primary/10">
+                            <Users className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                          </div>
                           Melhores Relacionamentos
                         </CardTitle>
                         <Link to="/contatos">
@@ -546,48 +550,50 @@ const Dashboard = () => {
                                     transition={animation?.transition}
                                     style={animation?.style}
                                   >
-                                    <Surface
-                                      level={1}
-                                      hoverable
-                                      rounded="lg"
-                                      className="flex items-center justify-between p-3 group"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <OptimizedAvatar
-                                          src={contact.avatar || undefined}
-                                          alt={`${contact.firstName} ${contact.lastName}`}
-                                          fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
-                                          size="md"
-                                          className="w-10 h-10 border-2 border-primary/20"
-                                        />
-                                         <div>
-                                          <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                                            {contact.firstName} {contact.lastName}
-                                          </p>
-                                          {contact.companyName && (
-                                            <Typography variant="small" as="p">
-                                              {contact.companyName}
-                                            </Typography>
-                                          )}
-                                          <div className="flex items-center gap-2 mt-0.5">
-                                            <RoleBadge role={contact.role as ContactRole} />
-                                            <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                    <Link to={`/contatos/${contact.id}`} className="block">
+                                      <Surface
+                                        level={1}
+                                        hoverable
+                                        rounded="lg"
+                                        className="flex items-center justify-between p-3 group cursor-pointer hover:border-primary/15"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <OptimizedAvatar
+                                            src={contact.avatar || undefined}
+                                            alt={`${contact.firstName} ${contact.lastName}`}
+                                            fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                                            size="md"
+                                            className="w-10 h-10 border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
+                                          />
+                                          <div>
+                                            <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                                              {contact.firstName} {contact.lastName}
+                                            </p>
+                                            {contact.companyName && (
+                                              <Typography variant="small" as="p">
+                                                {contact.companyName}
+                                              </Typography>
+                                            )}
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                              <RoleBadge role={contact.role as ContactRole} />
+                                              <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="text-right hidden sm:block">
-                                          <Typography variant="small" as="p">
-                                            {contact.interactionCount > 0 
-                                              ? `${contact.interactionCount} interações` 
-                                              : contact.lastInteraction 
-                                                ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
-                                                : 'Novo contato'}
-                                          </Typography>
+                                        <div className="flex items-center gap-3">
+                                          <div className="text-right hidden sm:block">
+                                            <Typography variant="small" as="p">
+                                              {contact.interactionCount > 0 
+                                                ? `${contact.interactionCount} interações` 
+                                                : contact.lastInteraction 
+                                                  ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
+                                                  : 'Novo contato'}
+                                            </Typography>
+                                          </div>
+                                          <RelationshipScore score={contact.relationshipScore} size="sm" />
                                         </div>
-                                        <RelationshipScore score={contact.relationshipScore} size="sm" />
-                                      </div>
-                                    </Surface>
+                                      </Surface>
+                                    </Link>
                                   </motion.div>
                                 );
                               })
