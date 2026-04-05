@@ -57,11 +57,22 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
               className="shrink-0 -ml-1 hidden md:inline-flex"
             />
           )}
-          <div className="min-w-0">
-            <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
-            {subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+          <div className="min-w-0 flex items-center gap-2">
+            {PageIcon && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="p-1.5 rounded-lg bg-primary/8 shrink-0 hidden md:flex"
+              >
+                <PageIcon className="w-4 h-4 text-primary" aria-hidden="true" />
+              </motion.div>
             )}
+            <div className="min-w-0">
+              <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
+              {subtitle && (
+                <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+              )}
+            </div>
           </div>
         </div>
 
