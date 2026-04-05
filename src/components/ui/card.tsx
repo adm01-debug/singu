@@ -7,16 +7,16 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-card border border-border/60 shadow-soft",
-        elevated: "bg-card border border-border/40 shadow-medium",
-        outlined: "bg-card border-2 border-primary/15 shadow-none",
+        default: "bg-card border border-border/60 shadow-soft hover:border-border/80 hover:shadow-medium",
+        elevated: "bg-card border border-border/40 shadow-medium hover:shadow-lg",
+        outlined: "bg-card border-2 border-primary/15 shadow-none hover:border-primary/30",
         ghost: "bg-transparent border-transparent shadow-none",
-        glass: "glass shadow-medium",
-        interactive: "bg-card border border-border/60 shadow-soft cursor-pointer hover:shadow-medium hover:border-border active:scale-[0.99]",
+        glass: "glass shadow-medium hover:shadow-lg",
+        interactive: "bg-card border border-border/60 shadow-soft cursor-pointer hover:shadow-medium hover:border-primary/30 active:scale-[0.99]",
         muted: "bg-muted/40 border border-border/30 shadow-none",
-        success: "bg-success/5 border border-success/15 shadow-none",
-        warning: "bg-warning/5 border border-warning/15 shadow-none",
-        destructive: "bg-destructive/5 border border-destructive/15 shadow-none",
+        success: "bg-success/5 border border-success/20 shadow-none hover:border-success/35",
+        warning: "bg-warning/5 border border-warning/20 shadow-none hover:border-warning/35",
+        destructive: "bg-destructive/5 border border-destructive/20 shadow-none hover:border-destructive/35",
       },
       padding: {
         none: "",
