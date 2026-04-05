@@ -313,8 +313,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     {group.label}
                   </motion.p>
                 </AnimatePresence>
-              )}
-              </AnimatePresence>
+              )
               {group.items.map((item) => {
                 const isExactActive = location.pathname === item.path;
                 const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');
