@@ -535,9 +535,9 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
             )}
           </AnimatePresence>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenu>
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost"
@@ -568,31 +568,33 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     </AnimatePresence>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "top"} className="w-56">
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
-                    <User className="w-4 h-4 mr-2" />
-                    Meu Perfil
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Configurações
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sair
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="text-xs">
-              <p className="font-medium">{userName}</p>
-              <p className="text-muted-foreground">{user?.email}</p>
-            </TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right" className="text-xs">
+                  <p className="font-medium">{userName}</p>
+                  <p className="text-muted-foreground">{user?.email}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+            <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "top"} className="w-56">
+              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
+                <User className="w-4 h-4 mr-2" />
+                Meu Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
+                <Settings className="w-4 h-4 mr-2" />
+                Configurações
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="cursor-pointer text-destructive focus:text-destructive"
+                onClick={handleSignOut}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </motion.aside>
     </TooltipProvider>
