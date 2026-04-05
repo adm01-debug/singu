@@ -46,6 +46,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
