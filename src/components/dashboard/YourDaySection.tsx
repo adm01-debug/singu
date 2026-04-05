@@ -326,9 +326,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
             <div>
               <SectionHeader icon={Cake} label="Aniversários" count={upcomingBirthdays.length} colorClass="bg-warning" />
               <div className="space-y-1">
-                {upcomingBirthdays.slice(0, 3).map((item) => (
+                {upcomingBirthdays.slice(0, 3).map((item, idx) => (
+                  <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                   <Link
-                    key={item.contact.id}
                     to={`/contatos/${item.contact.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
                   >
@@ -371,9 +371,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
             <div>
               <SectionHeader icon={AlertTriangle} label="Precisam de atenção" count={needsAttention.length} colorClass="bg-warning" />
               <div className="space-y-1">
-                {needsAttention.slice(0, 3).map((item) => (
+                {needsAttention.slice(0, 3).map((item, idx) => (
+                  <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                   <Link
-                    key={item.contact.id}
                     to={`/contatos/${item.contact.id}`}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
                   >
