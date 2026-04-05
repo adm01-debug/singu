@@ -120,8 +120,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border/50" aria-label="Navegação principal">
       <SidebarHeader className="p-3">
         <Link to="/" className="flex items-center gap-2 min-w-0">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg nexus-gradient-bg shadow-sm">
-            <Zap className="w-4 h-4 text-primary-foreground" />
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg nexus-gradient-bg shadow-sm shadow-primary/30">
+            <Zap className="w-4 h-4 text-primary-foreground drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
           </div>
           {!collapsed && (
             <span className="font-heading text-base font-extrabold tracking-tight" aria-label="SINGU">
@@ -179,15 +179,18 @@ export function AppSidebar() {
                           className={cn(
                             "rounded-lg transition-all duration-200",
                             isActive
-                              ? "text-primary font-medium bg-primary/10 shadow-[inset_3px_0_0_hsl(var(--primary))]"
+                              ? "text-primary font-semibold bg-gradient-to-r from-primary/15 via-primary/10 to-accent/5 shadow-[inset_3px_0_0_hsl(var(--primary))] ring-1 ring-primary/15"
                               : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                           )}
                         >
                           <Link to={item.url} aria-current={isActive ? "page" : undefined}>
-                            <item.icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
+                            <item.icon className={cn(
+                              "h-4 w-4 shrink-0 transition-colors",
+                              isActive ? "text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]" : ""
+                            )} />
                             <span>{item.title}</span>
                             {isActive && (
-                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary animate-glow-pulse" />
+                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)] animate-glow-pulse" />
                             )}
                           </Link>
                         </SidebarMenuButton>
