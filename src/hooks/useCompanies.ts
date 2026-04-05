@@ -126,6 +126,7 @@ export function useCompanies() {
         );
       }
       toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
+      if (data) logActivity({ type: 'updated', entityType: 'company', entityId: id, entityName: (data as Record<string, unknown>).nome_crm as string || 'Empresa', description: 'Empresa atualizada' });
       return data;
     } catch (error) {
       if (previous) queryClient.setQueryData<CompaniesPage>(queryKey, previous);
@@ -143,6 +144,8 @@ export function useCompanies() {
     try {
       const { success, error } = await deleteExternalData('companies', id);
       if (error || !success) throw error || new Error('Delete failed');
+      const deleted = previous?.companies.find(c => c.id === id);
+      logActivity({ type: 'deleted', entityType: 'company', entityId: id, entityName: deleted?.name || undefined, description: 'Empresa excluída' });
       toast({ title: 'Empresa removida', description: 'A empresa foi excluída com sucesso.' });
       return true;
     } catch (error) {
