@@ -72,6 +72,7 @@ export function useInteractions(contactId?: string, companyId?: string) {
         title: 'Interação registrada',
         description: 'A interação foi salva com sucesso.',
       });
+      logActivity({ type: 'created', entityType: 'interaction', entityId: data.id, entityName: data.title, description: `Interação: ${data.type}` });
 
       // Trigger DISC auto-analysis if enabled and has content
       if (options?.triggerDISCAnalysis !== false && data.contact_id) {
