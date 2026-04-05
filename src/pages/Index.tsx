@@ -516,6 +516,7 @@ const Dashboard = () => {
                   >
                     <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
                       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-success to-primary/60 rounded-t-xl" />
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
                           <div className="p-1.5 rounded-lg bg-gradient-to-br from-success/15 to-primary/10 ring-1 ring-success/20">
                             <Users className="w-3.5 h-3.5 text-success" aria-hidden="true" />
