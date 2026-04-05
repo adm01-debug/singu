@@ -162,11 +162,16 @@ export function YourDaySection({ className }: YourDaySectionProps) {
             <div>
               <SectionHeader icon={AlertCircle} label="Atrasados" count={overdueFollowUps.length} colorClass="bg-destructive" />
               <div className="space-y-1">
-                {overdueFollowUps.slice(0, 3).map((item) => {
+                {overdueFollowUps.slice(0, 3).map((item, idx) => {
                   const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
                   return (
-                     <Link
+                    <motion.div
                       key={item.interaction.id}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.05 }}
+                    >
+                     <Link
                       to={`/contatos/${item.interaction.contact_id}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
                     >
