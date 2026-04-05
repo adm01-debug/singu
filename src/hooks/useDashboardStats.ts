@@ -116,12 +116,16 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         const firstName = (c.first_name || '').trim();
         const lastName = (c.last_name || '').trim();
         if (!firstName || !lastName) return false;
+        // Filter out placeholder/technical names
+        const nameLower = `${firstName} ${lastName}`.toLowerCase();
+        if (/^(sem nome|null|undefined|test|whatsapp|contato|unknown)/i.test(firstName)) return false;
+        if (/^(null|undefined|test|\d{10,})$/i.test(lastName)) return false;
         if (firstName.includes('@')) return false;
-        const name = `${firstName} ${lastName}`.toLowerCase();
-        if (/^test/i.test(name)) return false;
         if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
         if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
-        if (/^\d{10,}$/.test(lastName)) return false;
+        // Must have at least 2 vowels to be a real name
+        const vowels = (nameLower.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
+        if (vowels < 2) return false;
         return true;
       })
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
@@ -145,19 +149,32 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
       });
 
     const contactMap = new Map(contacts.map(c => [c.id, c]));
+
+    // Helper: check if a name is a real human name (not technical/generic)
+    const isRealName = (name: string): boolean => {
+      if (!name || name.length < 3) return false;
+      if (/^\(\d+\)/.test(name) || /^\d{6,}/.test(name)) return false;
+      if (/^(whatsapp|mensagem|teste|contato|unknown|admin|user)$/i.test(name.split(' ')[0])) return false;
+      if (name.includes('@')) return false;
+      const vowels = (name.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
+      return vowels >= 2;
+    };
+
     const recentActivities = interactions
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 5)
+      .slice(0, 8) // fetch more, then filter
       .map(interaction => {
         const contact = contactMap.get(interaction.contact_id);
-        const contactName = contact
+        const rawName = contact
           ? `${contact.first_name} ${contact.last_name}`.trim()
           : null;
+        const contactName = rawName && isRealName(rawName) ? rawName : null;
         // Extract name from title patterns like "Mensagem de João (WhatsApp)" or "Mensagem Enviada"
         const titleMatch = interaction.title?.match(/de\s+(.+?)(?:\s*\(|$)/)?.[1]?.trim();
+        const cleanTitleMatch = titleMatch && isRealName(titleMatch) ? titleMatch : null;
         // For "Mensagem Enviada" type titles, try to use a cleaner description
         const isGenericTitle = /^Mensagem\s+Enviada/i.test(interaction.title || '');
-        const displayName = contactName || titleMatch || (isGenericTitle ? 'Mensagem' : 'Contato');
+        const displayName = contactName || cleanTitleMatch || (isGenericTitle ? 'Mensagem' : 'Contato');
         // Clean description: extract channel/type instead of repeating name
         const title = interaction.title || '';
         const channelMatch = title.match(/\(([^)]+)\)/)?.[1]; // e.g. "WhatsApp", "Email"
@@ -172,7 +189,9 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
         };
-      });
+      })
+      .filter(a => a.entityName !== 'Contato') // Remove unresolved generic entries
+      .slice(0, 5);
 
     return {
       totalCompanies: companies.length,

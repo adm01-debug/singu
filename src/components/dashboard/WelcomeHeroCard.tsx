@@ -55,7 +55,7 @@ export function WelcomeHeroCard() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-accent/10 border border-border/60 p-4 md:p-8"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-accent/10 border border-border/60 p-4 md:p-8 group hover:border-primary/20 transition-colors duration-300"
     >
       {/* Animated decorative orbs */}
       <motion.div 
@@ -120,11 +120,11 @@ export function WelcomeHeroCard() {
         >
           <Link 
             to="/contatos"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 hover:border-primary/40 hover:shadow-glow transition-all group"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 hover:border-primary/40 hover:shadow-glow transition-all duration-300 group/ai"
           >
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Sparkles className="w-4 h-4 text-primary group-hover/ai:animate-pulse" />
             <span className="text-sm font-semibold text-primary">SINGU AI</span>
-            <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 -ml-1 group-hover:ml-0 transition-all" />
+            <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover/ai:opacity-100 -ml-1 group-hover/ai:ml-0 transition-all duration-300" />
           </Link>
         </motion.div>
       </div>

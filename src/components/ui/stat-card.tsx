@@ -157,7 +157,7 @@ export function StatCard({
                 'flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
                 changeType === 'positive' && 'text-success bg-success/12',
                 changeType === 'negative' && 'text-destructive bg-destructive/12',
-                changeType === 'neutral' && 'text-muted-foreground bg-muted'
+                changeType === 'neutral' && 'text-muted-foreground bg-muted/80'
               )}>
                 <ChangeIcon className="w-3 h-3" aria-hidden="true" />
                 {change}
