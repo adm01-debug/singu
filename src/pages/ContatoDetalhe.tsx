@@ -221,7 +221,17 @@ const ContatoDetalhe = () => {
         </Tabs>
       </div>
     </AppLayout>
+
+    {/* Meeting Mode Overlay */}
+    <MeetingMode
+      contact={contact}
+      interactions={interactions}
+      open={meetingMode}
+      onClose={() => setMeetingMode(false)}
+    />
+    </>
   );
+};
 };
 
 export default ContatoDetalhe;
