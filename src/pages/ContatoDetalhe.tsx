@@ -134,6 +134,19 @@ const ContatoDetalhe = () => {
           interactionCount={interactions.length}
         />
 
+        {/* Meeting Mode Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMeetingMode(true)}
+            className="gap-2"
+          >
+            <Video className="w-4 h-4" />
+            Modo Reunião
+          </Button>
+        </div>
+
         {/* Proactive Intelligence Panel */}
         <ProactiveIntelligencePanel
           data={proactiveIntelligence}
@@ -154,14 +167,20 @@ const ContatoDetalhe = () => {
           </TabsList>
 
           <TabsContent value="resumo">
-            <ContactOverviewTab
-              contact={contact}
-              company={company}
-              insights={insights}
-              alerts={alerts}
-              onDismissAlert={dismissAlert}
-              onDismissInsight={dismissInsight}
-            />
+            <div className="space-y-4">
+              <ContactOverviewTab
+                contact={contact}
+                company={company}
+                insights={insights}
+                alerts={alerts}
+                onDismissAlert={dismissAlert}
+                onDismissInsight={dismissInsight}
+              />
+              <RelationshipTimeline
+                interactions={interactions}
+                contact={contact}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="interacoes">
