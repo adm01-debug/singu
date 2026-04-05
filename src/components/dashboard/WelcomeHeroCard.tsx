@@ -36,6 +36,8 @@ export function WelcomeHeroCard() {
   const today = new Intl.DateTimeFormat('pt-BR', { 
     weekday: 'long', day: 'numeric', month: 'long' 
   }).format(new Date());
+  // Capitalize only the first letter of the string (Portuguese convention)
+  const formattedDate = today.charAt(0).toUpperCase() + today.slice(1);
 
   return (
     <motion.div
@@ -54,7 +56,7 @@ export function WelcomeHeroCard() {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" />
-            <span className="capitalize">{today}</span>
+            <span>{formattedDate}</span>
           </p>
         </div>
       </div>
