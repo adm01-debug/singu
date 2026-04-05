@@ -170,13 +170,7 @@ export function ContactCardWithContext({
                 {/* Header with gradient by relationship stage */}
                 <div className={cn(
                   "h-16 relative mt-1 bg-gradient-to-r",
-                  contact.relationship_stage === 'customer' || contact.relationship_stage === 'loyal_customer' || contact.relationship_stage === 'advocate'
-                    ? 'from-success/15 via-success/8 to-accent/10'
-                    : contact.relationship_stage === 'at_risk' || contact.relationship_stage === 'lost'
-                    ? 'from-destructive/15 via-destructive/8 to-warning/10'
-                    : contact.relationship_stage === 'negotiation' || contact.relationship_stage === 'opportunity'
-                    ? 'from-warning/15 via-warning/8 to-accent/10'
-                    : 'from-primary/15 via-primary/10 to-accent/10'
+                  getStageGradient(contact.relationship_stage)
                 )}>
                   <div className="absolute -bottom-8 left-5">
                     <OptimizedAvatar 
