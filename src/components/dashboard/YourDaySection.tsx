@@ -404,7 +404,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                   </motion.div>
                 ))}
                 {needsAttention.length > 3 && (
-                  <Link to="/contatos" className="flex items-center justify-center gap-1 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <Link to="/contatos" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
                     +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3" />
                   </Link>
                 )}
