@@ -205,9 +205,9 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should have clean labels for tabs', () => {
-      expect(indexContent).toContain('>Geral<');
-      expect(indexContent).toContain('>Relações<');
-      expect(indexContent).toContain('>IA<');
+      expect(indexContent).toContain("label: 'Geral'");
+      expect(indexContent).toContain("label: 'Relações'");
+      expect(indexContent).toContain("label: 'IA'");
     });
   });
 
