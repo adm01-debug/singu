@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
