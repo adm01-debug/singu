@@ -218,7 +218,7 @@ const Auth = () => {
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.12)' }}
                 transition={{ duration: 0.2 }}
               >
-                <span className="text-xl">{feature.icon}</span>
+                <span className="text-xl" role="img" aria-hidden="true">{feature.icon}</span>
                 <span className="text-sm font-medium text-primary-foreground/90">{feature.text}</span>
               </motion.div>
             ))}
