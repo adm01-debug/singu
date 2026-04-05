@@ -88,32 +88,34 @@ export function WhatsNewModal({
     const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
     if (seenVersion === version) return;
 
-    // Wait for onboarding tour to finish before showing WhatsNew
-    const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
-    const delay = tourCompleted ? 2000 : 8000; // longer delay if tour may be active
-
-    const timer = setTimeout(() => {
-      // Re-check tour state at show time
-      const tourDone = localStorage.getItem('tour-completed-main') === 'true';
-      if (tourDone) {
+    // CRITICAL: Suppress WhatsNew entirely while onboarding tour is active
+    // Only show AFTER the tour is completed
+    const checkAndShow = () => {
+      const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
+      if (tourCompleted) {
         setIsVisible(true);
+      }
+    };
+
+    // Wait a generous delay to let the tour finish first
+    const timer = setTimeout(() => {
+      const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
+      if (tourCompleted) {
+        checkAndShow();
       } else {
-        // Tour still active — wait for it to complete
-        const onTourComplete = () => {
-          setTimeout(() => setIsVisible(true), 1000);
-          window.removeEventListener('storage', onTourComplete);
-        };
-        window.addEventListener('storage', onTourComplete);
-        // Also listen for completion within same tab
+        // Tour not done — poll until it completes, then show with delay
         const poll = setInterval(() => {
           if (localStorage.getItem('tour-completed-main') === 'true') {
             clearInterval(poll);
-            setTimeout(() => setIsVisible(true), 1000);
+            setTimeout(() => setIsVisible(true), 1500);
           }
         }, 1000);
-        return () => { clearInterval(poll); window.removeEventListener('storage', onTourComplete); };
+        // Give up after 60s
+        const giveUp = setTimeout(() => clearInterval(poll), 60000);
+        return () => { clearInterval(poll); clearTimeout(giveUp); };
       }
-    }, delay);
+    }, 3000);
+
     return () => clearTimeout(timer);
   }, [version]);
 
