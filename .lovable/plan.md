@@ -1,64 +1,69 @@
+## Análise de Problemas Identificados
 
-# 🏗️ Plano: Adequar Frontend ao Schema Normalizado do Banco Externo
+### 1. Paleta Dark Mode — Monotonia Sufocante
+- Background `224 28% 6%` é escuro demais, sem respiração
+- Cards `224 24% 10%` quase não contrastam com o fundo
+- Tudo parece uma massa cinza-escura uniforme
 
-## Problema Atual
-O formulário salva `phone`, `email`, `address`, `city`, `state`, `instagram`, `linkedin` etc. **diretamente na tabela `companies`** — mas essas colunas **não existem** no banco externo. O banco usa tabelas normalizadas separadas.
+### 2. Welcome Hero — Invisível
+- Apenas texto plano "Olá! 👋" com ícone minúsculo
+- Zero impacto visual, zero personalidade
 
-## Mapeamento: Atual → Correto
+### 3. Stats Cards — Sem Presença
+- Cards genéricos, sem gradientes, sem cor
+- Perdidos no final da página
 
-| Campo no Form | Onde salva hoje ❌ | Onde deveria salvar ✅ | Tabela |
-|---|---|---|---|
-| Fone Fixo 1/2 | `companies.phone` | `company_phones` (phone_type: `fixo_comercial`) | `company_phones` |
-| Celular Corporativo | `companies.phone` | `company_phones` (phone_type: `celular_corporativo`) | `company_phones` |
-| Email | `companies.email` | `company_emails` (email_type: `corporativo`) | `company_emails` |
-| Website | `companies.website` | `company_social_media` (plataforma: `website`) | `company_social_media` |
-| Endereço/Cidade/Estado | `companies.address/city/state` | `company_addresses` (logradouro, cidade, estado, CEP, bairro...) | `company_addresses` |
-| Instagram/LinkedIn/etc | `companies.instagram/linkedin...` | `company_social_media` (plataforma: `instagram`/`linkedin`...) | `company_social_media` |
+### 4. Cards de Conteúdo — Todos Iguais
+- Sem hierarquia visual entre seções
+- Bordas quase invisíveis, sem sombras efetivas
 
-## Etapas de Implementação
+### 5. Tab Bar — Sem Personalidade
+- Fundo cinza genérico, sem destaque no estado ativo
 
-### Etapa 1: Hooks CRUD para tabelas normalizadas
-Criar hooks que fazem CRUD via edge function `external-data` para:
-- `useCompanyPhones(companyId)` → lista/cria/edita/deleta em `company_phones`
-- `useCompanyEmails(companyId)` → lista/cria/edita/deleta em `company_emails`  
-- `useCompanyAddresses(companyId)` → lista/cria/edita/deleta em `company_addresses`
-- `useCompanySocialMedia(companyId)` → lista/cria/edita/deleta em `company_social_media`
+### 6. Sidebar — Escura demais
+- Blends com o background, sem separação clara
 
-### Etapa 2: Refatorar abas do CompanyForm
-- **Aba Básico**: Remover campos de phone/email (ficam apenas dados da empresa)
-- **Aba Endereços**: Usar `company_addresses` (CEP, logradouro, número, complemento, bairro, cidade, estado, país, ponto de referência)
-- **Aba Redes**: Usar `company_social_media` (com plataforma enum) + `company_emails`
-- **Nova seção Telefones**: Usar `company_phones` com tipo (fixo_comercial, celular_corporativo)
+---
 
-### Etapa 3: Fluxo de criação em 2 passos
-1. Primeiro salva a empresa (tabela `companies`) 
-2. Depois salva os dados relacionados (phones, emails, addresses, social_media) usando o `company_id` retornado
+## Plano de Execução (8 melhorias)
 
-### Etapa 4: Fluxo de edição
-- Ao abrir edição, carregar dados de todas as tabelas relacionadas
-- Ao salvar, atualizar/criar/deletar registros nas tabelas normalizadas
+### M1: Refresh da Paleta Dark Mode
+- Aumentar luminosidade do background de 6% → 8%
+- Cards de 10% → 12% para melhor contraste
+- Bordas mais visíveis (16% → 18%)
+- Muted foreground mais legível (55% → 60%)
 
-## Campos Expandidos (baseados no schema real)
+### M2: Welcome Hero Premium
+- Gradient background com primary → accent
+- Texto maior, ícone maior, layout mais impactante
+- Glow sutil animado
 
-### `company_addresses` (24 colunas)
-- tipo, CEP, logradouro, número, complemento, bairro, cidade, estado, país
-- latitude/longitude, ponto de referência, instruções de entrega, horário funcionamento
-- Google Maps URL, Google Place ID
+### M3: Stats Cards com Gradient Top Border
+- Adicionar borda superior colorida por categoria
+- Ícones maiores com fundo gradient
+- Layout mais espaçoso
 
-### `company_phones` (16 colunas)  
-- phone_type (enum: fixo_comercial, celular_corporativo, celular_pessoal)
-- número, ramal, is_primary, is_whatsapp, departamento, observação
+### M4: Card Design System Upgrade
+- Bordas mais visíveis no dark mode
+- Hover com glow sutil na cor primária
+- Header com fundo sutil para separação visual
 
-### `company_emails` (14 colunas)
-- email_type (enum: corporativo, pessoal, financeiro, nfe, marketing)
-- email, is_primary, departamento, observação, is_verified
+### M5: Tab Bar Premium
+- Tab ativa com gradient underline
+- Fundo mais contrastante
+- Transição mais suave
 
-### `company_social_media` (16 colunas)
-- plataforma (enum: linkedin, instagram, facebook, x, youtube, tiktok, website)
-- handle, URL, nome_perfil, is_verified, is_active, seguidores
+### M6: Activity Feed Visual Refresh
+- Ícones coloridos com background pill
+- Separadores visuais entre items
+- Timestamp com melhor formatação
 
-## Impacto
-- ~4 novos hooks
-- ~4 novos componentes de formulário (sub-formulários por aba)
-- Refatoração do `CompanyForm.tsx`
-- Sem alterações no banco de dados (apenas uso correto das tabelas existentes)
+### M7: Sidebar Visual Upgrade
+- Logo com glow accent
+- Separadores de seção mais visíveis
+- Hover state mais pronunciado
+
+### M8: Gradient Accents Globais
+- Adicionar gradientes sutis em headers de seção
+- Decoradores visuais em empty states
+- Micro-animações em elementos interativos
