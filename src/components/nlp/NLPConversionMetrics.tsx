@@ -290,7 +290,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   {getTrendIcon(metric.trend)}
-                  <span>{metric.interactionCount} interações</span>
+                  <span>{metric.interactionCount === 1 ? '1 interação' : `${metric.interactionCount} interações`}</span>
                 </div>
                 {metric.conversionRate > 0 && (
                   <div className="text-xs text-primary mt-1">

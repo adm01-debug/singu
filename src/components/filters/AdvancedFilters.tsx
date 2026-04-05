@@ -111,7 +111,7 @@ export function AdvancedFilters({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1 md:flex-wrap md:overflow-visible md:pb-0">
         {/* Filter Dropdowns */}
         {filters.map(filter => {
           const selectedValues = activeFilters[filter.key] || [];
@@ -128,7 +128,7 @@ export function AdvancedFilters({
                   variant={hasSelection ? 'default' : 'outline'}
                   size="sm"
                   className={cn(
-                    "gap-1.5 h-9",
+                    "gap-1.5 h-9 shrink-0 whitespace-nowrap",
                     hasSelection && "pr-1.5"
                   )}
                 >
@@ -198,7 +198,7 @@ export function AdvancedFilters({
         {/* Sort Dropdown */}
         <Popover open={sortOpen} onOpenChange={setSortOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9">
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 shrink-0 whitespace-nowrap">
               <ArrowUpDown className="w-3.5 h-3.5" />
               Ordenar
               <ChevronDown className="w-3.5 h-3.5 ml-0.5" />

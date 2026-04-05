@@ -514,7 +514,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
                 {selectedNode.interactionCount !== undefined && (
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <MessageSquare className="w-4 h-4" />
-                    {selectedNode.interactionCount} interações
+                    {selectedNode.interactionCount === 1 ? '1 interação' : `${selectedNode.interactionCount} interações`}
                   </p>
                 )}
               </div>
