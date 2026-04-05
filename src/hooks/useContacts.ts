@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
