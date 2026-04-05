@@ -83,13 +83,16 @@ export function CompanyLogoUpload({ logoUrl, onLogoChange, companyId }: CompanyL
               alt="Logo da empresa"
               className="w-full h-full object-contain p-1"
             />
-            <button
-              type="button"
+            <span
+              role="button"
+              tabIndex={0}
+              aria-label="Remover logo"
               onClick={(e) => { e.stopPropagation(); handleRemove(); }}
-              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:scale-110 transition-transform"
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); handleRemove(); } }}
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:scale-110 transition-transform cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="w-3 h-3" />
-            </button>
+            </span>
           </>
         ) : (
           <ImagePlus className="w-5 h-5 text-muted-foreground" />
