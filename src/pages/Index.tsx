@@ -550,48 +550,50 @@ const Dashboard = () => {
                                     transition={animation?.transition}
                                     style={animation?.style}
                                   >
-                                    <Surface
-                                      level={1}
-                                      hoverable
-                                      rounded="lg"
-                                      className="flex items-center justify-between p-3 group"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <OptimizedAvatar
-                                          src={contact.avatar || undefined}
-                                          alt={`${contact.firstName} ${contact.lastName}`}
-                                          fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
-                                          size="md"
-                                          className="w-10 h-10 border-2 border-primary/20"
-                                        />
-                                         <div>
-                                          <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                                            {contact.firstName} {contact.lastName}
-                                          </p>
-                                          {contact.companyName && (
-                                            <Typography variant="small" as="p">
-                                              {contact.companyName}
-                                            </Typography>
-                                          )}
-                                          <div className="flex items-center gap-2 mt-0.5">
-                                            <RoleBadge role={contact.role as ContactRole} />
-                                            <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                    <Link to={`/contatos/${contact.id}`} className="block">
+                                      <Surface
+                                        level={1}
+                                        hoverable
+                                        rounded="lg"
+                                        className="flex items-center justify-between p-3 group cursor-pointer hover:border-primary/15"
+                                      >
+                                        <div className="flex items-center gap-3">
+                                          <OptimizedAvatar
+                                            src={contact.avatar || undefined}
+                                            alt={`${contact.firstName} ${contact.lastName}`}
+                                            fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                                            size="md"
+                                            className="w-10 h-10 border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
+                                          />
+                                          <div>
+                                            <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                                              {contact.firstName} {contact.lastName}
+                                            </p>
+                                            {contact.companyName && (
+                                              <Typography variant="small" as="p">
+                                                {contact.companyName}
+                                              </Typography>
+                                            )}
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                              <RoleBadge role={contact.role as ContactRole} />
+                                              <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                      <div className="flex items-center gap-3">
-                                        <div className="text-right hidden sm:block">
-                                          <Typography variant="small" as="p">
-                                            {contact.interactionCount > 0 
-                                              ? `${contact.interactionCount} interações` 
-                                              : contact.lastInteraction 
-                                                ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
-                                                : 'Novo contato'}
-                                          </Typography>
+                                        <div className="flex items-center gap-3">
+                                          <div className="text-right hidden sm:block">
+                                            <Typography variant="small" as="p">
+                                              {contact.interactionCount > 0 
+                                                ? `${contact.interactionCount} interações` 
+                                                : contact.lastInteraction 
+                                                  ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
+                                                  : 'Novo contato'}
+                                            </Typography>
+                                          </div>
+                                          <RelationshipScore score={contact.relationshipScore} size="sm" />
                                         </div>
-                                        <RelationshipScore score={contact.relationshipScore} size="sm" />
-                                      </div>
-                                    </Surface>
+                                      </Surface>
+                                    </Link>
                                   </motion.div>
                                 );
                               })
