@@ -156,261 +156,217 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* Unified list layout */}
       {hasAnyData && (
-        <div className="space-y-5">
-          {/* Overdue Follow-ups */}
-          {overdueFollowUps.length > 0 && (
-            <div>
-              <SectionHeader icon={AlertCircle} label="Atrasados" count={overdueFollowUps.length} colorClass="bg-destructive" />
-              <div className="space-y-1">
-                {overdueFollowUps.slice(0, 3).map((item, idx) => {
-                  const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
-                  return (
-                    <motion.div
-                      key={item.interaction.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.05 }}
-                    >
-                     <Link
-                      to={`/contatos/${item.interaction.contact_id}`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
-                    >
-                      <OptimizedAvatar 
-                        src={item.contact?.avatar_url || undefined}
-                        alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                        fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
-                        size="sm"
-                        className="h-8 w-8"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-foreground">
-                          {formatContactName(item.contact?.first_name, item.contact?.last_name)}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Icon className="w-3 h-3" />
-                          {item.interaction.title}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {item.contact?.phone && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              window.open(`tel:${item.contact!.phone}`, '_blank');
-                            }}
-                            aria-label="Ligar"
-                          >
-                            <Phone className="w-3.5 h-3.5 text-primary" />
-                          </Button>
-                        )}
-                        {item.contact?.whatsapp && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const num = item.contact!.whatsapp!.replace(/\D/g, '');
-                              window.open(`https://wa.me/${num}`, '_blank');
-                            }}
-                            aria-label="WhatsApp"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 text-success" />
-                          </Button>
-                        )}
-                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0" title={item.interaction.follow_up_date ? format(parseISO(item.interaction.follow_up_date), 'dd/MM/yyyy') : ''}>
-                          {item.interaction.follow_up_date && 
-                            formatDistanceToNow(parseISO(item.interaction.follow_up_date), { addSuffix: true, locale: ptBR })}
-                        </Badge>
-                      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Left Column */}
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+            {/* Overdue Follow-ups */}
+            {overdueFollowUps.length > 0 && (
+              <div>
+                <SectionHeader icon={AlertCircle} label="Atrasados" count={overdueFollowUps.length} colorClass="bg-destructive" />
+                <div className="space-y-1">
+                  {overdueFollowUps.slice(0, 4).map((item, idx) => {
+                    const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
+                    return (
+                      <motion.div
+                        key={item.interaction.id}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: idx * 0.05 }}
+                      >
+                        <Link
+                          to={`/contatos/${item.interaction.contact_id}`}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        >
+                          <OptimizedAvatar 
+                            src={item.contact?.avatar_url || undefined}
+                            alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                            fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
+                            size="sm"
+                            className="h-8 w-8"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate text-foreground">
+                              {formatContactName(item.contact?.first_name, item.contact?.last_name)}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                              <Icon className="w-3 h-3 shrink-0" />
+                              {item.interaction.title}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0" title={item.interaction.follow_up_date ? format(parseISO(item.interaction.follow_up_date), 'dd/MM/yyyy') : ''}>
+                            {item.interaction.follow_up_date && 
+                              formatDistanceToNow(parseISO(item.interaction.follow_up_date), { addSuffix: true, locale: ptBR })}
+                          </Badge>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                  {overdueFollowUps.length > 4 && (
+                    <Link to="/calendario" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
+                      +{overdueFollowUps.length - 4} mais <ArrowRight className="w-3 h-3" />
                     </Link>
-                    </motion.div>
-                  );
-                })}
-                {overdueFollowUps.length > 3 && (
-                  <Link to="/calendario" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
-                    +{overdueFollowUps.length - 3} mais <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Today's Follow-ups */}
-          {todayFollowUps.length > 0 && (
-            <div>
-              <SectionHeader icon={Clock} label="Hoje" count={todayFollowUps.length} colorClass="bg-primary" />
-              <div className="space-y-1">
-                {todayFollowUps.slice(0, 3).map((item, idx) => {
-                  const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
-                  return (
-                    <motion.div
-                      key={item.interaction.id}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: idx * 0.05 }}
-                    >
-                     <Link
-                      to={`/contatos/${item.interaction.contact_id}`}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
-                    >
-                      <OptimizedAvatar 
-                        src={item.contact?.avatar_url || undefined}
-                        alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
-                        fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
-                        size="sm"
-                        className="h-8 w-8"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate text-foreground">
-                          {formatContactName(item.contact?.first_name, item.contact?.last_name)}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Icon className="w-3 h-3" />
-                          {item.interaction.title}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {item.contact?.phone && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              window.open(`tel:${item.contact!.phone}`, '_blank');
-                            }}
-                            aria-label="Ligar"
-                          >
-                            <Phone className="w-3.5 h-3.5 text-primary" />
-                          </Button>
-                        )}
-                        {item.contact?.whatsapp && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const num = item.contact!.whatsapp!.replace(/\D/g, '');
-                              window.open(`https://wa.me/${num}`, '_blank');
-                            }}
-                            aria-label="WhatsApp"
-                          >
-                            <MessageSquare className="w-3.5 h-3.5 text-success" />
-                          </Button>
-                        )}
-                      </div>
+            {/* Today's Follow-ups */}
+            {todayFollowUps.length > 0 && (
+              <div>
+                <SectionHeader icon={Clock} label="Hoje" count={todayFollowUps.length} colorClass="bg-primary" />
+                <div className="space-y-1">
+                  {todayFollowUps.slice(0, 4).map((item, idx) => {
+                    const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
+                    return (
+                      <motion.div
+                        key={item.interaction.id}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: idx * 0.05 }}
+                      >
+                        <Link
+                          to={`/contatos/${item.interaction.contact_id}`}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        >
+                          <OptimizedAvatar 
+                            src={item.contact?.avatar_url || undefined}
+                            alt={`${item.contact?.first_name} ${item.contact?.last_name}`}
+                            fallback={getContactInitials(item.contact?.first_name, item.contact?.last_name)}
+                            size="sm"
+                            className="h-8 w-8"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate text-foreground">
+                              {formatContactName(item.contact?.first_name, item.contact?.last_name)}
+                            </p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                              <Icon className="w-3 h-3 shrink-0" />
+                              {item.interaction.title}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                  {todayFollowUps.length > 4 && (
+                    <Link to="/calendario" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
+                      +{todayFollowUps.length - 4} mais <ArrowRight className="w-3 h-3" />
                     </Link>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Empty state for left column */}
+            {overdueFollowUps.length === 0 && todayFollowUps.length === 0 && (
+              <div className="text-center py-6">
+                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
+                <p className="text-xs text-muted-foreground">Nenhum follow-up pendente</p>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+            {/* Birthdays */}
+            {upcomingBirthdays.length > 0 && (
+              <div>
+                <SectionHeader icon={Cake} label="Aniversários" count={upcomingBirthdays.length} colorClass="bg-warning" />
+                <div className="space-y-1">
+                  {upcomingBirthdays.slice(0, 3).map((item, idx) => (
+                    <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
+                      <Link
+                        to={`/contatos/${item.contact.id}`}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                      >
+                        <OptimizedAvatar 
+                          src={item.contact.avatar_url || undefined}
+                          alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                          fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
+                          size="sm"
+                          className="h-8 w-8"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate text-foreground">
+                            {formatContactName(item.contact.first_name, item.contact.last_name)}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {toTitleCase(item.company?.name || '') || 'Sem empresa'}
+                          </p>
+                        </div>
+                        <span className={cn(
+                          'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0',
+                          item.daysUntil === 0 
+                            ? 'bg-warning/15 text-warning' 
+                            : 'bg-muted text-muted-foreground'
+                        )}>
+                          {item.daysUntil === 0 ? 'Hoje!' : `${item.daysUntil}d`}
+                        </span>
+                      </Link>
                     </motion.div>
-                  );
-                })}
-                {todayFollowUps.length > 3 && (
-                  <Link to="/calendario" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
-                    +{todayFollowUps.length - 3} mais <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
+                  ))}
+                  {upcomingBirthdays.length > 3 && (
+                    <Link to="/contatos" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
+                      +{upcomingBirthdays.length - 3} mais <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Birthdays */}
-          {upcomingBirthdays.length > 0 && (
-            <div>
-              <SectionHeader icon={Cake} label="Aniversários" count={upcomingBirthdays.length} colorClass="bg-warning" />
-              <div className="space-y-1">
-                {upcomingBirthdays.slice(0, 3).map((item, idx) => (
-                  <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
-                  <Link
-                    to={`/contatos/${item.contact.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
-                  >
-                    <OptimizedAvatar 
-                      src={item.contact.avatar_url || undefined}
-                      alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                      fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
-                      size="sm"
-                      className="h-8 w-8"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate text-foreground">
-                        {formatContactName(item.contact.first_name, item.contact.last_name)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {toTitleCase(item.company?.name || '') || 'Sem empresa'}
-                      </p>
-                    </div>
-                    <span className={cn(
-                      'text-[10px] font-semibold px-2 py-0.5 rounded-full',
-                      item.daysUntil === 0 
-                        ? 'bg-warning/15 text-warning' 
-                        : 'bg-muted text-muted-foreground'
-                    )}>
-                      {item.daysUntil === 0 ? 'Hoje!' : `${item.daysUntil}d`}
-                    </span>
-                  </Link>
-                  </motion.div>
-                ))}
-                {upcomingBirthdays.length > 3 && (
-                  <Link to="/contatos" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
-                    +{upcomingBirthdays.length - 3} mais <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
+            {/* Needs Attention */}
+            {needsAttention.length > 0 && (
+              <div>
+                <SectionHeader icon={AlertTriangle} label="Precisam de atenção" count={needsAttention.length} colorClass="bg-warning" />
+                <div className="space-y-1">
+                  {needsAttention.slice(0, 4).map((item, idx) => (
+                    <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
+                      <Link
+                        to={`/contatos/${item.contact.id}`}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                      >
+                        <OptimizedAvatar 
+                          src={item.contact.avatar_url || undefined}
+                          alt={`${item.contact.first_name} ${item.contact.last_name}`}
+                          fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
+                          size="sm"
+                          className="h-8 w-8"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate text-foreground">
+                            {formatContactName(item.contact.first_name, item.contact.last_name)}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {item.reason}
+                          </p>
+                        </div>
+                        <span className={cn(
+                          'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0',
+                          item.priority === 'high' ? 'bg-destructive/15 text-destructive' :
+                          item.priority === 'medium' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground'
+                        )}>
+                          {item.priority === 'high' ? 'Alto' : item.priority === 'medium' ? 'Médio' : 'Baixo'}
+                        </span>
+                      </Link>
+                    </motion.div>
+                  ))}
+                  {needsAttention.length > 4 && (
+                    <Link to="/contatos" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
+                      +{needsAttention.length - 4} mais <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Needs Attention */}
-          {needsAttention.length > 0 && (
-            <div>
-              <SectionHeader icon={AlertTriangle} label="Precisam de atenção" count={needsAttention.length} colorClass="bg-warning" />
-              <div className="space-y-1">
-                {needsAttention.slice(0, 3).map((item, idx) => (
-                  <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
-                  <Link
-                    to={`/contatos/${item.contact.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
-                  >
-                    <OptimizedAvatar 
-                      src={item.contact.avatar_url || undefined}
-                      alt={`${item.contact.first_name} ${item.contact.last_name}`}
-                      fallback={getContactInitials(item.contact.first_name, item.contact.last_name)}
-                      size="sm"
-                      className="h-8 w-8"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate text-foreground">
-                        {formatContactName(item.contact.first_name, item.contact.last_name)}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {item.reason}
-                      </p>
-                    </div>
-                    <span className={cn(
-                      'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0',
-                      item.priority === 'high' ? 'bg-destructive/15 text-destructive' :
-                      item.priority === 'medium' ? 'bg-warning/15 text-warning' : 'bg-muted text-muted-foreground'
-                    )}>
-                      {item.priority === 'high' ? 'Alto' : item.priority === 'medium' ? 'Médio' : 'Baixo'}
-                    </span>
-                  </Link>
-                  </motion.div>
-                ))}
-                {needsAttention.length > 3 && (
-                  <Link to="/contatos" className="flex items-center justify-center gap-1.5 py-2 mt-1 text-xs font-medium text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg transition-all cursor-pointer">
-                    +{needsAttention.length - 3} mais <ArrowRight className="w-3 h-3" />
-                  </Link>
-                )}
+            {/* Empty state for right column */}
+            {upcomingBirthdays.length === 0 && needsAttention.length === 0 && (
+              <div className="text-center py-6">
+                <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
+                <p className="text-xs text-muted-foreground">Tudo tranquilo por aqui</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
