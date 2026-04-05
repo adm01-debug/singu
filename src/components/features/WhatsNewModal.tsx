@@ -1,16 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, X, ArrowRight, Check, Rocket, Zap, Brain, Shield } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Sparkles, X, ArrowRight, Zap, Brain, Rocket, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Feature {
   id: string;
@@ -34,7 +27,7 @@ const defaultFeatures: Feature[] = [
   {
     id: '1',
     title: 'Busca Inteligente com Fuzzy Search',
-    description: 'Encontre contatos mesmo com erros de digitação. "joao" agora encontra "João".',
+    description: 'Encontre contatos mesmo com erros de digitação.',
     icon: Zap,
     category: 'improvement',
     isHighlight: true,
@@ -42,7 +35,7 @@ const defaultFeatures: Feature[] = [
   {
     id: '2',
     title: 'Análise de Inteligência Emocional',
-    description: 'Identifique automaticamente os 5 pilares de EQ de Daniel Goleman nos seus contatos.',
+    description: 'Identifique os 5 pilares de EQ de Daniel Goleman.',
     icon: Brain,
     category: 'ai',
     isHighlight: true,
@@ -50,38 +43,38 @@ const defaultFeatures: Feature[] = [
   {
     id: '3',
     title: 'Detecção de Vieses Cognitivos',
-    description: 'Entenda os padrões de pensamento dos seus contatos para comunicação mais efetiva.',
+    description: 'Entenda padrões de pensamento dos seus contatos.',
     icon: Brain,
     category: 'ai',
   },
   {
     id: '4',
     title: 'Performance Otimizada',
-    description: 'Listas virtualizadas para navegação suave mesmo com milhares de contatos.',
+    description: 'Listas virtualizadas para navegação suave.',
     icon: Rocket,
     category: 'improvement',
   },
   {
     id: '5',
     title: 'Modo Offline Aprimorado',
-    description: 'Continue trabalhando sem conexão. Suas alterações sincronizam automaticamente.',
+    description: 'Continue trabalhando sem conexão.',
     icon: Shield,
     category: 'security',
   },
   {
     id: '6',
     title: 'Ajuda Contextual',
-    description: 'Tooltips explicativos em todas as métricas e funcionalidades complexas.',
+    description: 'Tooltips em todas as métricas e funcionalidades.',
     icon: Sparkles,
     category: 'new',
   },
 ];
 
-const categoryConfig = {
-  new: { label: 'Novo', color: 'bg-primary text-primary-foreground' },
-  improvement: { label: 'Melhoria', color: 'bg-info text-info-foreground' },
-  ai: { label: 'IA', color: 'bg-accent text-accent-foreground' },
-  security: { label: 'Segurança', color: 'bg-success text-success-foreground' },
+const categoryColors: Record<string, string> = {
+  new: 'bg-primary/15 text-primary',
+  improvement: 'bg-info/15 text-info',
+  ai: 'bg-accent/15 text-accent-foreground',
+  security: 'bg-success/15 text-success',
 };
 
 export function WhatsNewModal({
@@ -89,175 +82,101 @@ export function WhatsNewModal({
   features = defaultFeatures,
   onClose,
 }: WhatsNewModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const prefersReducedMotion = useReducedMotion();
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Check if user has seen this version
   useEffect(() => {
     const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
     if (seenVersion !== version) {
-      // Delay showing to let page load
-      const timer = setTimeout(() => setIsOpen(true), 1500);
+      const timer = setTimeout(() => setIsVisible(true), 2000);
       return () => clearTimeout(timer);
     }
   }, [version]);
 
-  const handleClose = () => {
+  const handleDismiss = () => {
     localStorage.setItem(WHATS_NEW_KEY, version);
-    setIsOpen(false);
+    setIsVisible(false);
     onClose?.();
   };
 
-  const handleNext = () => {
-    if (currentIndex < features.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-    } else {
-      handleClose();
-    }
-  };
-
-  const handleSkip = () => {
-    handleClose();
-  };
-
-  const currentFeature = features[currentIndex];
-  const isLast = currentIndex === features.length - 1;
+  const highlightCount = features.filter(f => f.isHighlight).length;
+  const totalCount = features.length;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        {/* Header with gradient */}
-        <div className="bg-gradient-primary p-6 text-primary-foreground relative overflow-hidden">
-          <motion.div
-            className="absolute inset-0 opacity-20"
-            animate={{
-              backgroundPosition: ['0% 0%', '100% 100%'],
-            }}
-            transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-            style={{
-              backgroundImage: 'radial-gradient(circle at center, white 0%, transparent 50%)',
-              backgroundSize: '100% 100%',
-            }}
-          />
-          
-          <DialogHeader className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5" aria-hidden="true" />
-              <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-0">
-                v{version}
-              </Badge>
-            </div>
-            <DialogTitle className="text-xl font-bold text-primary-foreground">
-              Novidades do SINGU
-            </DialogTitle>
-            <p className="text-primary-foreground/80 text-sm mt-1">
-              Confira as últimas melhorias e funcionalidades
-            </p>
-          </DialogHeader>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
-            onClick={handleClose}
-            aria-label="Fechar"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Feature content */}
-        <div className="p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentFeature.id}
-              initial={prefersReducedMotion ? {} : { opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={prefersReducedMotion ? {} : { opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-4"
-            >
-              <div className="flex items-start gap-4">
-                <div className={cn(
-                  'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-                  categoryConfig[currentFeature.category].color
-                )}>
-                  <currentFeature.icon className="w-6 h-6" aria-hidden="true" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-lg">{currentFeature.title}</h3>
-                    {currentFeature.isHighlight && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px]">
-                        Destaque
-                      </Badge>
-                    )}
-                  </div>
-                  <Badge 
-                    variant="secondary" 
-                    className={cn('text-[10px] mb-2', categoryConfig[currentFeature.category].color)}
-                  >
-                    {categoryConfig[currentFeature.category].label}
-                  </Badge>
-                  <p className="text-muted-foreground text-sm">
-                    {currentFeature.description}
-                  </p>
-                </div>
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 60, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 40, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm"
+        >
+          <div className="rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+            {/* Compact gradient header */}
+            <div className="bg-gradient-primary px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
+                <span className="text-sm font-semibold text-primary-foreground">
+                  Novidades v{version}
+                </span>
+                <Badge variant="secondary" className="bg-primary-foreground/20 text-primary-foreground border-0 text-[10px]">
+                  {totalCount} updates
+                </Badge>
               </div>
-            </motion.div>
-          </AnimatePresence>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                onClick={handleDismiss}
+                aria-label="Fechar"
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
 
-          {/* Progress dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-6">
-            {features.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={cn(
-                  'w-2 h-2 rounded-full transition-all',
-                  index === currentIndex
-                    ? 'bg-primary w-6'
-                    : 'bg-muted hover:bg-muted-foreground/30'
-                )}
-                aria-label={`Ir para item ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between mt-6 pt-4 border-t">
-            <Button variant="ghost" size="sm" onClick={handleSkip}>
-              Pular tudo
-            </Button>
-            <Button size="sm" onClick={handleNext} className="gap-2">
-              {isLast ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Começar
-                </>
-              ) : (
-                <>
-                  Próximo
-                  <ArrowRight className="w-4 h-4" />
-                </>
+            {/* Compact feature list — show highlights only */}
+            <div className="px-4 py-3 space-y-2">
+              {features.filter(f => f.isHighlight).slice(0, 3).map((feature) => (
+                <div key={feature.id} className="flex items-center gap-3">
+                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', categoryColors[feature.category])}>
+                    <feature.icon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{feature.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+              {totalCount > highlightCount && (
+                <p className="text-xs text-muted-foreground pt-1">
+                  +{totalCount - highlightCount} outras melhorias
+                </p>
               )}
-            </Button>
+            </div>
+
+            {/* Action */}
+            <div className="px-4 pb-3">
+              <Button 
+                size="sm" 
+                className="w-full gap-2 h-8 text-xs"
+                onClick={handleDismiss}
+              >
+                Entendi
+                <ArrowRight className="w-3 h-3" />
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
-// Hook to manually trigger the modal
 export function useWhatsNew() {
   const show = () => {
     localStorage.removeItem(WHATS_NEW_KEY);
-    // Trigger re-render by dispatching custom event
     window.dispatchEvent(new CustomEvent('show-whats-new'));
   };
-
   return { show };
 }
 

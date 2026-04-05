@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, User, Users, MessageSquare, Building2, X, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { CheckCircle2, User, Users, MessageSquare, Building2, X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Surface } from '@/components/ui/surface';
 import { Typography } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
 interface ChecklistStep {
@@ -26,18 +26,18 @@ interface OnboardingChecklistProps {
 
 export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, hasInteractions }: OnboardingChecklistProps) {
   const [dismissed, setDismissed] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Check localStorage for dismiss state
   useEffect(() => {
     const isDismissed = localStorage.getItem('singu_onboarding_dismissed');
     if (isDismissed === 'true') setDismissed(true);
   }, []);
 
   const steps: ChecklistStep[] = [
-    { id: 'profile', label: 'Complete seu perfil', description: 'Adicione seu nome e empresa', icon: User, path: '/configuracoes', completed: hasProfile },
-    { id: 'company', label: 'Adicione uma empresa', description: 'Cadastre sua primeira empresa', icon: Building2, path: '/empresas', completed: hasCompanies },
-    { id: 'contact', label: 'Adicione um contato', description: 'Registre seu primeiro contato', icon: Users, path: '/contatos', completed: hasContacts },
-    { id: 'interaction', label: 'Registre uma interação', description: 'Documente uma conversa', icon: MessageSquare, path: '/interacoes', completed: hasInteractions },
+    { id: 'profile', label: 'Complete seu perfil', description: 'Nome e empresa', icon: User, path: '/configuracoes', completed: hasProfile },
+    { id: 'company', label: 'Adicione empresa', description: 'Primeira empresa', icon: Building2, path: '/empresas', completed: hasCompanies },
+    { id: 'contact', label: 'Adicione contato', description: 'Primeiro contato', icon: Users, path: '/contatos', completed: hasContacts },
+    { id: 'interaction', label: 'Registre interação', description: 'Primeira conversa', icon: MessageSquare, path: '/interacoes', completed: hasInteractions },
   ];
 
   const completedCount = steps.filter(s => s.completed).length;
@@ -51,6 +51,9 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
     localStorage.setItem('singu_onboarding_dismissed', 'true');
   };
 
+  // Find the next incomplete step
+  const nextStep = steps.find(s => !s.completed);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -58,55 +61,81 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
     >
-      <Surface level={2} rounded="xl" className="p-5 relative">
-        <button
-          onClick={handleDismiss}
-          className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted transition-colors"
-          aria-label="Fechar checklist"
-        >
-          <X className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-        </button>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        {/* Compact header — always visible */}
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/50 bg-card hover:bg-muted/30 transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-primary" />
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Typography variant="small" className="font-semibold text-foreground">
+                Primeiros passos
+              </Typography>
+              <span className="text-xs text-muted-foreground">
+                {completedCount}/{steps.length}
+              </span>
+            </div>
+            <Progress value={progress} className="h-1 mt-1.5" />
+          </div>
 
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-5 h-5 text-primary" aria-hidden="true" />
-          <Typography variant="h4">Primeiros passos</Typography>
-          <span className="text-sm text-muted-foreground ml-auto mr-6">
-            {completedCount}/{steps.length}
-          </span>
+          {/* Next step hint (when collapsed) */}
+          {!isOpen && nextStep && (
+            <Link to={nextStep.path} className="hidden sm:block">
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary hover:text-primary">
+                {nextStep.label}
+                <span className="text-muted-foreground">→</span>
+              </Button>
+            </Link>
+          )}
+
+          <div className="flex items-center gap-1">
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={isOpen ? 'Recolher' : 'Expandir'}>
+                {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+            </CollapsibleTrigger>
+            <button
+              onClick={handleDismiss}
+              className="p-1 rounded-full hover:bg-muted transition-colors"
+              aria-label="Fechar checklist"
+            >
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          </div>
         </div>
 
-        <Progress value={progress} className="h-2 mb-4" />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {steps.map((step) => {
-            const Icon = step.completed ? CheckCircle2 : step.icon;
-            return (
-              <Link key={step.id} to={step.path}>
-                <div className={cn(
-                  'flex items-start gap-3 p-3 rounded-lg transition-all hover:bg-muted/50',
-                  step.completed && 'opacity-60'
-                )}>
+        {/* Expandable steps */}
+        <CollapsibleContent>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
+            {steps.map((step) => {
+              const Icon = step.completed ? CheckCircle2 : step.icon;
+              return (
+                <Link key={step.id} to={step.path}>
                   <div className={cn(
-                    'p-1.5 rounded-md flex-shrink-0',
-                    step.completed ? 'text-success' : 'text-muted-foreground bg-muted'
+                    'flex items-center gap-2.5 p-2.5 rounded-lg border border-border/30 transition-all hover:bg-muted/50 hover:border-border',
+                    step.completed && 'opacity-50'
                   )}>
-                    <Icon className="w-4 h-4" aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className={cn(
-                      'text-sm font-medium',
-                      step.completed && 'line-through'
+                    <div className={cn(
+                      'p-1.5 rounded-md shrink-0',
+                      step.completed ? 'text-success' : 'text-muted-foreground bg-muted'
                     )}>
-                      {step.label}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">{step.description}</p>
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={cn('text-xs font-medium truncate', step.completed && 'line-through')}>
+                        {step.label}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">{step.description}</p>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </Surface>
+                </Link>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </motion.div>
   );
 }
