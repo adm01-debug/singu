@@ -176,10 +176,16 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
       const needsAttention: NeedsAttention[] = [];
       
       const isValidContactName = (c: Contact) => {
-        const name = `${c.first_name} ${c.last_name}`.trim();
-        if (!name || /^\(\d+\)\s*\d+/.test(c.first_name)) return false;
-        if (c.first_name.includes('@')) return false;
+        const firstName = (c.first_name || '').trim();
+        const lastName = (c.last_name || '').trim();
+        const name = `${firstName} ${lastName}`.trim();
+        if (!name) return false;
+        // Filter phone-formatted names, emails, test data, WhatsApp auto-contacts
+        if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
+        if (firstName.includes('@')) return false;
         if (/^test/i.test(name)) return false;
+        if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
+        if (/^\d{10,}$/.test(lastName)) return false;
         return true;
       };
 
