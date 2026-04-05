@@ -24,6 +24,7 @@ import {
   SettingsPageSkeleton,
   NetworkPageSkeleton,
 } from "@/components/skeletons/PageSkeletons";
+import Index from "./pages/Index";
 
 // Non-critical shell components — lazy loaded
 const PWAShell = lazy(() =>
@@ -50,7 +51,6 @@ const WhatsNewModal = lazy(() =>
 );
 
 // Lazy-loaded pages — code splitting per route
-const Index = lazy(() => import("./pages/Index"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Empresas = lazy(() => import("./pages/Empresas"));
 const EmpresaDetalhe = lazy(() => import("./pages/EmpresaDetalhe"));

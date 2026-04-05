@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
+import { PageLoadingFallback } from '@/components/feedback/PageLoadingFallback';
 
 interface AuthContextType {
   user: User | null;
@@ -298,18 +299,7 @@ export const RequireAuth = forwardRef<HTMLDivElement, RequireAuthProps>(
     }, [user, loading, navigate, location.pathname, location.search, location.hash]);
 
     if (loading) {
-      return (
-        <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow animate-pulse">
-              <svg className="w-6 h-6 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <p className="text-muted-foreground">Carregando...</p>
-          </div>
-        </div>
-      );
+      return <div ref={ref}><PageLoadingFallback /></div>;
     }
 
     if (!user) {
