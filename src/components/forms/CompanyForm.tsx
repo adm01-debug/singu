@@ -527,7 +527,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormField control={form.control} name="is_customer" render={({ field }) => (
                     <FormItem className="flex items-center gap-2 space-y-0">
                       <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Cliente</FormLabel>
+                      <FormLabel className="font-normal cursor-pointer">Cliente Ativo</FormLabel>
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="is_supplier" render={({ field }) => (
