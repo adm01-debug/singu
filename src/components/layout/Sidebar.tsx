@@ -221,13 +221,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.16),transparent_24%),linear-gradient(180deg,hsl(var(--sidebar-background))_0%,hsl(var(--surface-0))_100%)] text-sidebar-foreground shadow-[20px_0_72px_-42px_hsl(var(--foreground)/0.92)]"
+        className="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_60%),linear-gradient(180deg,hsl(var(--sidebar-background))_0%,hsl(240_50%_3%)_100%)] text-sidebar-foreground shadow-[4px_0_24px_-8px_hsl(240_50%_2%/0.6)]"
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-3 min-w-0 group">
             <motion.div 
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-nexus-cyan to-accent shadow-[0_18px_40px_-20px_hsl(var(--nexus-glow)/0.8)]"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-[0_12px_32px_-12px_hsl(var(--primary)/0.6)]"
               whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ duration: 0.2, type: 'spring' }}
             >
@@ -279,8 +279,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                 aria-label="Buscar contatos, empresas e interações"
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200',
-                    'bg-[linear-gradient(135deg,hsl(var(--sidebar-accent))_0%,hsl(var(--sidebar-background))_100%)] hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
-                    'border border-sidebar-border/70 shadow-[0_16px_36px_-28px_hsl(var(--foreground)/0.78)]',
+                    'bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
+                    'border border-sidebar-border/50',
                     collapsed && 'justify-center px-0'
                   )}
               >
@@ -350,8 +350,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                             isActive
-                              ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.4),hsl(var(--accent)/0.22))] text-sidebar-primary-foreground border border-primary/40 shadow-[0_24px_52px_-28px_hsl(var(--primary)/0.58)]'
-                              : 'border border-transparent text-sidebar-foreground/72 hover:bg-sidebar-accent/78 hover:text-sidebar-accent-foreground hover:border-primary/12',
+                              ? 'bg-primary/15 text-sidebar-primary-foreground border border-primary/30 shadow-[0_0_20px_-8px_hsl(var(--primary)/0.4)]'
+                              : 'border border-transparent text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
                             collapsed && 'justify-center px-0 border-l-0'
                           )}
                         >
@@ -455,9 +455,9 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     data-tour={item.tourId}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
-                      isActive
-                        ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.4),hsl(var(--accent)/0.22))] text-sidebar-primary-foreground border border-primary/40 shadow-[0_24px_52px_-28px_hsl(var(--primary)/0.58)]'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground hover:border-primary/12 border border-transparent',
+                    isActive
+                        ? 'bg-primary/15 text-sidebar-primary-foreground border border-primary/30 shadow-[0_0_20px_-8px_hsl(var(--primary)/0.4)]'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground border border-transparent',
                       collapsed && 'justify-center px-0'
                     )}
                   >
