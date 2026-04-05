@@ -128,7 +128,7 @@ export function AdvancedFilters({
                   variant={hasSelection ? 'default' : 'outline'}
                   size="sm"
                   className={cn(
-                    "gap-1.5 h-9",
+                    "gap-1.5 h-9 shrink-0 whitespace-nowrap",
                     hasSelection && "pr-1.5"
                   )}
                 >
