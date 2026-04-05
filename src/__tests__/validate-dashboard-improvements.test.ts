@@ -119,11 +119,11 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should be imported in AppLayout', () => {
-      expect(appContent).toContain('ScrollToTopButton');
+      expect(appLayoutContent).toContain('ScrollToTopButton');
     });
 
     it('should be rendered in AppLayout JSX', () => {
-      expect(appContent).toContain('<ScrollToTopButton');
+      expect(appLayoutContent).toContain('<ScrollToTopButton');
     });
   });
 
@@ -337,7 +337,7 @@ describe('Dashboard Layout Improvements Validation', () => {
     });
 
     it('should import ScrollToTopButton in AppLayout', () => {
-      expect(appContent).toContain("from '@/components/navigation/ScrollToTopButton'");
+      expect(appLayoutContent).toContain("from '@/components/navigation/ScrollToTopButton'");
     });
 
     it('should import Collapsible components in Index', () => {
