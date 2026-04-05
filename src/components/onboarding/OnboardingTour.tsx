@@ -294,12 +294,13 @@ export function OnboardingTour({
 // Hook for managing tour state
 export function useOnboardingTour(tourId: string = 'main') {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasCompleted, setHasCompleted] = useState(false);
-
-  useEffect(() => {
-    const completed = localStorage.getItem(`tour-completed-${tourId}`);
-    setHasCompleted(completed === 'true');
-  }, [tourId]);
+  const [hasCompleted, setHasCompleted] = useState(() => {
+    try {
+      return localStorage.getItem(`tour-completed-${tourId}`) === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const startTour = () => setIsOpen(true);
   

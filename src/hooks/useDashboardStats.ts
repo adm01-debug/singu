@@ -135,7 +135,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
           firstName: contact.first_name,
           lastName: contact.last_name,
           avatar: contact.avatar_url,
-          companyName: company?.name || 'Sem empresa',
+          companyName: company?.name || contact.role_title || 'Contato',
           role: contact.role || 'contact',
           relationshipScore: contact.relationship_score || 0,
           sentiment: contact.sentiment || 'neutral',
@@ -158,11 +158,17 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         // For "Mensagem Enviada" type titles, try to use a cleaner description
         const isGenericTitle = /^Mensagem\s+Enviada/i.test(interaction.title || '');
         const displayName = contactName || titleMatch || (isGenericTitle ? 'Mensagem' : 'Contato');
+        // Clean description: extract channel/type instead of repeating name
+        const title = interaction.title || '';
+        const channelMatch = title.match(/\(([^)]+)\)/)?.[1]; // e.g. "WhatsApp", "Email"
+        const cleanDesc = channelMatch 
+          ? `${interaction.type === 'message' ? 'Mensagem' : interaction.type === 'call' ? 'Ligação' : interaction.type === 'meeting' ? 'Reunião' : 'Interação'} via ${channelMatch}`
+          : title.replace(new RegExp(`de\\s+${displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*`, 'i'), '').trim() || title;
         return {
           id: interaction.id,
           contactId: interaction.contact_id,
           entityName: displayName,
-          description: interaction.title,
+          description: cleanDesc,
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
         };
@@ -173,8 +179,8 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
       totalContacts: contacts.length,
       weeklyInteractions: thisWeekInteractions,
       averageScore: avgScore,
-      companyChange: companiesThisMonth > 0 ? `+${companiesThisMonth} este mês` : 'Nenhuma nova',
-      contactChange: contactsThisMonth > 0 ? `+${contactsThisMonth} este mês` : 'Nenhum novo',
+      companyChange: companiesThisMonth > 0 ? `+${companiesThisMonth} este mês` : '~ Estável',
+      contactChange: contactsThisMonth > 0 ? `+${contactsThisMonth} este mês` : '~ Estável',
       interactionChange: interactionDiff >= 0 
         ? `+${interactionDiff} vs semana anterior` 
         : `${interactionDiff} vs semana anterior`,
