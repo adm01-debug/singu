@@ -324,7 +324,7 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-[57px] md:top-0 z-10 -mx-4 border-b border-border/20 bg-background/70 px-4 pb-3 pt-2 shadow-[0_16px_40px_-34px_hsl(var(--foreground)/0.7)] backdrop-blur-md md:-mx-6 md:px-6">
+            <div className="sticky top-[57px] md:top-0 z-10 -mx-4 border-b border-border/30 bg-background/80 px-4 pb-3 pt-2 shadow-[0_16px_40px_-34px_hsl(var(--foreground)/0.7)] backdrop-blur-lg md:-mx-6 md:px-6">
               <TabsList className="grid w-full grid-cols-4 relative">
                 {[
                   { value: 'overview', icon: LayoutGrid, label: 'Geral' },
@@ -423,7 +423,7 @@ const Dashboard = () => {
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <ScrollArea className="max-h-[280px]">
+                          <ScrollArea className="max-h-[320px]">
                             <div className="space-y-2 pr-2">
                               {recentActivities.length === 0 ? (
                                 <EmptyState
@@ -501,7 +501,7 @@ const Dashboard = () => {
                           </Link>
                         </CardHeader>
                         <CardContent>
-                          <ScrollArea className="max-h-[280px]">
+                          <ScrollArea className="max-h-[320px]">
                             <div className="space-y-2 pr-2">
                               {topContacts.length === 0 ? (
                                 <EmptyState

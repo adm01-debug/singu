@@ -242,7 +242,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                   transition={{ duration: 0.2 }}
                   className="flex flex-col overflow-hidden"
                 >
-                  <span className="font-bold text-lg text-sidebar-primary-foreground whitespace-nowrap tracking-tight">SINGU</span>
+                  <span className="font-bold text-lg text-sidebar-accent-foreground whitespace-nowrap tracking-tight">SINGU</span>
                   <span className="text-[10px] text-primary/70 whitespace-nowrap font-semibold tracking-wider uppercase">Inteligência Relacional</span>
                 </motion.div>
               )}
@@ -350,7 +350,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                             isActive
-                              ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.26),hsl(var(--accent)/0.16))] text-sidebar-primary-foreground border border-primary/28 shadow-[0_22px_48px_-28px_hsl(var(--primary)/0.55)]'
+                              ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.4),hsl(var(--accent)/0.22))] text-sidebar-primary-foreground border border-primary/40 shadow-[0_24px_52px_-28px_hsl(var(--primary)/0.58)]'
                               : 'border border-transparent text-sidebar-foreground/72 hover:bg-sidebar-accent/78 hover:text-sidebar-accent-foreground hover:border-primary/12',
                             collapsed && 'justify-center px-0 border-l-0'
                           )}
@@ -456,7 +456,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
                       isActive
-                        ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.26),hsl(var(--accent)/0.16))] text-sidebar-primary-foreground border border-primary/28 shadow-[0_22px_48px_-28px_hsl(var(--primary)/0.55)]'
+                        ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.4),hsl(var(--accent)/0.22))] text-sidebar-primary-foreground border border-primary/40 shadow-[0_24px_52px_-28px_hsl(var(--primary)/0.58)]'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground hover:border-primary/12 border border-transparent',
                       collapsed && 'justify-center px-0'
                     )}

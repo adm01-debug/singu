@@ -53,7 +53,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       <main 
         id="main-content"
         className={cn(
-          'pb-20 md:pb-0 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
+          'pb-20 md:pb-24 md:pr-24 lg:pr-28 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
           collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'
         )}
         tabIndex={-1}
