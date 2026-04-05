@@ -276,11 +276,11 @@
     --glass-blur: 8px;
 
     /* Surfaces — saturated ladder */
-    --surface-0: 230 40% 7%;
-    --surface-1: 230 37% 10%;
-    --surface-2: 230 34% 14%;
-    --surface-3: 230 31% 18%;
-    --surface-4: 230 28% 22%;
+    --surface-0: 230 40% 8%;
+    --surface-1: 230 37% 11%;
+    --surface-2: 230 34% 15%;
+    --surface-3: 230 31% 19%;
+    --surface-4: 230 28% 23%;
 
     --role-owner: 270 70% 68%;
     --role-manager: 234 80% 72%;
