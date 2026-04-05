@@ -11,6 +11,7 @@ describe('Dashboard Layout Improvements Validation', () => {
   const scrollToTopBtn = readFile('src/components/navigation/ScrollToTopButton.tsx');
   const scrollToTopComponent = readFile('src/components/ScrollToTop.tsx');
   const appContent = readFile('src/App.tsx');
+  const appLayoutContent = readFile('src/components/layout/AppLayout.tsx');
 
   // === STICKY TABS ===
   describe('Sticky Tabs Implementation', () => {
