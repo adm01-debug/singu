@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { ReactNode, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Search, Command, Settings, LogOut } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -11,54 +12,150 @@ import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
-import { DynamicBreadcrumbs } from '@/components/navigation/DynamicBreadcrumbs';
 import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
-import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface AppLayoutProps {
   children: ReactNode;
   title?: string;
 }
 
+const PAGE_TITLES: Record<string, string> = {
+  '/': 'Dashboard',
+  '/empresas': 'Empresas',
+  '/contatos': 'Contatos',
+  '/interacoes': 'Conversas',
+  '/calendario': 'Calendário',
+  '/network': 'Network',
+  '/insights': 'Insights',
+  '/analytics': 'Analytics',
+  '/mapa-empresas': 'Mapa',
+  '/automacoes': 'Automações',
+  '/notificacoes': 'Notificações',
+  '/configuracoes': 'Configurações',
+};
+
+function getPageTitle(pathname: string): string {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  for (const [route, title] of Object.entries(PAGE_TITLES)) {
+    if (pathname.startsWith(route + '/')) return title;
+  }
+  return 'Página';
+}
+
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { state } = useSidebar();
-  const collapsed = state === 'collapsed';
+  const location = useLocation();
+  const { user, signOut } = useAuth();
 
-  // Keyboard shortcuts
   useKeyboardShortcutsEnhanced();
 
+  const pageTitle = useMemo(() => title || getPageTitle(location.pathname), [title, location.pathname]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Até logo!');
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex w-full bg-background">
       <SkipToContent />
       <RouteProgressBar />
       <SwipeBackIndicator />
 
-      {/* Mobile Header */}
-      <MobileHeader onSearchClick={() => setIsOpen(true)} title={title} />
+      {/* Screen reader route announcer */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        Navegou para {pageTitle}
+      </div>
 
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <AppSidebar />
       </div>
 
-      {/* Main Content */}
-      <main
-        id="main-content"
-        className={cn(
-          'pb-24 md:pb-32 md:pr-32 lg:pr-36 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
-          collapsed ? 'md:ml-[3rem]' : 'md:ml-[16rem]'
-        )}
-        tabIndex={-1}
-      >
-        <DynamicBreadcrumbs className="hidden md:flex px-6 pt-4 pb-0" />
-        <PageTransition>
-          {children}
-        </PageTransition>
-      </main>
+      {/* Mobile Header */}
+      <MobileHeader onSearchClick={() => setIsOpen(true)} title={title} />
+
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Desktop Header Bar */}
+        <header className="hidden md:flex h-14 items-center justify-between border-b border-border/50 px-3 sm:px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-30" role="banner">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-lg transition-colors shrink-0" aria-label="Alternar sidebar" />
+            
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
+              <span className="text-foreground/50">•</span>
+              <span className="font-medium text-foreground">{pageTitle}</span>
+            </nav>
+
+            {/* Desktop search bar */}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="hidden md:flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground cursor-pointer hover:bg-secondary hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ml-auto"
+              aria-label="Abrir busca rápida (⌘K)"
+            >
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>Buscar...</span>
+              <kbd className="ml-4 inline-flex h-5 items-center gap-0.5 rounded border border-border bg-background px-1.5 text-[11px] font-mono text-muted-foreground" aria-hidden="true">
+                <Command className="h-2.5 w-2.5" />K
+              </kbd>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* User dropdown */}
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="relative h-8 w-8 rounded-full nexus-gradient-bg flex items-center justify-center text-xs font-semibold text-primary-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label="Menu do usuário"
+                  >
+                    {(user.email?.[0] || 'U').toUpperCase()}
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-nexus-emerald border-2 border-background" aria-label="Online" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium text-foreground">Minha conta</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                    <a href="/configuracoes">
+                      <Settings className="h-3.5 w-3.5" /> Configurações
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-3.5 w-3.5" /> Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main id="main-content" className="flex-1 overflow-auto pb-24 md:pb-8" tabIndex={-1} aria-label={pageTitle}>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </main>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
@@ -80,9 +177,25 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
   );
 }
 
+const SIDEBAR_KEY = "nexus-sidebar-state";
+
+function getDefaultOpen() {
+  try {
+    const stored = localStorage.getItem(SIDEBAR_KEY);
+    return stored !== "false";
+  } catch {
+    return true;
+  }
+}
+
 export function AppLayout({ children, title }: AppLayoutProps) {
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider
+      defaultOpen={getDefaultOpen()}
+      onOpenChange={(open) => {
+        try { localStorage.setItem(SIDEBAR_KEY, String(open)); } catch { /* noop */ }
+      }}
+    >
       <AppLayoutInner title={title}>
         {children}
       </AppLayoutInner>
