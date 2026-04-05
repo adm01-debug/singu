@@ -231,111 +231,111 @@
      DARK MODE — Rich navy with premium contrast
      ============================================ */
   .dark {
-    /* Background — espresso + copper identity */
-    --background: 24 22% 6%;
-    --foreground: 36 30% 96%;
+    /* Background — Nexus navy identity */
+    --background: 232 30% 6%;
+    --foreground: 220 20% 96%;
 
-    --card: 24 18% 10%;
-    --card-foreground: 36 30% 96%;
+    --card: 232 25% 10%;
+    --card-foreground: 220 20% 96%;
 
-    --popover: 24 18% 9%;
-    --popover-foreground: 36 30% 96%;
+    --popover: 232 25% 9%;
+    --popover-foreground: 220 20% 96%;
 
-    --primary: 24 95% 60%;
-    --primary-foreground: 24 28% 10%;
+    --primary: 214 100% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 24 14% 14%;
-    --secondary-foreground: 36 30% 96%;
+    --secondary: 232 20% 14%;
+    --secondary-foreground: 220 20% 96%;
 
-    --muted: 24 12% 15%;
-    --muted-foreground: 34 12% 70%;
+    --muted: 232 18% 15%;
+    --muted-foreground: 220 12% 65%;
 
-    --accent: 168 62% 42%;
+    --accent: 185 80% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 55% 45%;
+    --success: 142 50% 48%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 42 95% 58%;
-    --warning-foreground: 28 48% 12%;
+    --warning: 48 95% 55%;
+    --warning-foreground: 30 48% 12%;
 
-    --destructive: 0 84% 62%;
+    --destructive: 0 75% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --info: 188 88% 48%;
+    --info: 214 100% 65%;
     --info-foreground: 0 0% 100%;
 
-    --celebration: 48 96% 58%;
-    --celebration-foreground: 28 48% 12%;
+    --celebration: 48 95% 58%;
+    --celebration-foreground: 30 48% 12%;
 
-    --border: 24 14% 18%;
-    --input: 24 14% 18%;
-    --ring: 24 95% 60%;
+    --border: 232 20% 18%;
+    --input: 232 20% 18%;
+    --ring: 214 100% 65%;
 
-    --ring-destructive: 0 84% 62%;
-    --ring-success: 142 55% 45%;
-    --ring-warning: 42 95% 58%;
+    --ring-destructive: 0 75% 58%;
+    --ring-success: 142 50% 48%;
+    --ring-warning: 48 95% 55%;
 
     --gradient-primary: linear-gradient(135deg, hsl(var(--nexus-gradient-start)), hsl(var(--nexus-gradient-end)));
 
-    --sidebar-background: 24 24% 5%;
-    --sidebar-foreground: 36 16% 78%;
-    --sidebar-primary: 24 95% 60%;
-    --sidebar-primary-foreground: 36 30% 96%;
-    --sidebar-accent: 24 16% 10%;
-    --sidebar-accent-foreground: 36 30% 96%;
-    --sidebar-border: 24 16% 13%;
-    --sidebar-ring: 24 95% 60%;
+    --sidebar-background: 232 30% 5%;
+    --sidebar-foreground: 220 16% 72%;
+    --sidebar-primary: 214 100% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 232 22% 10%;
+    --sidebar-accent-foreground: 220 20% 96%;
+    --sidebar-border: 232 22% 14%;
+    --sidebar-ring: 214 100% 65%;
 
-    --shadow-sm: 0 1px 3px 0 hsl(24 45% 2% / 0.42);
-    --shadow-md: 0 8px 22px -8px hsl(24 45% 2% / 0.5);
-    --shadow-lg: 0 20px 44px -18px hsl(24 45% 2% / 0.58);
-    --shadow-xl: 0 34px 70px -28px hsl(24 45% 2% / 0.68);
+    --shadow-sm: 0 1px 3px 0 hsl(232 40% 2% / 0.42);
+    --shadow-md: 0 8px 22px -8px hsl(232 40% 2% / 0.5);
+    --shadow-lg: 0 20px 44px -18px hsl(232 40% 2% / 0.58);
+    --shadow-xl: 0 34px 70px -28px hsl(232 40% 2% / 0.68);
 
-    --glass-bg: 24 18% 10% / 0.8;
-    --glass-border: 24 95% 60% / 0.16;
+    --glass-bg: 232 25% 10% / 0.8;
+    --glass-border: 214 100% 65% / 0.16;
     --glass-blur: 8px;
 
-    --surface-0: 24 22% 6%;
-    --surface-1: 24 20% 8%;
-    --surface-2: 24 18% 10%;
-    --surface-3: 24 16% 13%;
-    --surface-4: 24 14% 17%;
+    --surface-0: 232 30% 6%;
+    --surface-1: 232 25% 8%;
+    --surface-2: 232 22% 11%;
+    --surface-3: 232 20% 14%;
+    --surface-4: 232 18% 17%;
 
     --role-owner: 270 70% 68%;
     --role-manager: 234 80% 72%;
-    --role-buyer: 152 65% 55%;
-    --role-contact: 225 35% 62%;
+    --role-buyer: 152 60% 55%;
+    --role-contact: 220 35% 62%;
 
-    --row-hover: 24 95% 60% / 0.08;
-    --row-selected: 24 95% 60% / 0.12;
-    --row-active: 24 95% 60% / 0.18;
+    --row-hover: 214 100% 65% / 0.08;
+    --row-selected: 214 100% 65% / 0.12;
+    --row-active: 214 100% 65% / 0.18;
 
-    --entity-contact: 24 95% 60%;
-    --entity-company: 188 88% 48%;
-    --entity-interaction: 142 55% 45%;
-    --entity-insight: 42 95% 58%;
+    --entity-contact: 214 100% 65%;
+    --entity-company: 185 80% 55%;
+    --entity-interaction: 142 50% 48%;
+    --entity-insight: 48 95% 55%;
 
-    --nexus-glow: 24 95% 60%;
-    --nexus-cyan: 168 62% 42%;
-    --nexus-emerald: 142 55% 45%;
-    --nexus-amber: 42 95% 58%;
-    --nexus-rose: 0 84% 62%;
-    --nexus-surface-1: 24 20% 8%;
-    --nexus-surface-2: 24 18% 10%;
-    --nexus-surface-3: 24 16% 13%;
-    --nexus-gradient-start: 24 95% 60%;
-    --nexus-gradient-end: 168 62% 42%;
-    --nexus-blue: 188 88% 48%;
-    --nexus-green: 142 55% 45%;
-    --nexus-yellow: 42 95% 58%;
-    --nexus-red: 0 84% 62%;
-    --nexus-purple: 14 72% 56%;
-    --nexus-orange: 24 95% 60%;
-    --nexus-gold: 36 72% 62%;
-    --nexus-teal: 168 62% 42%;
-    --nexus-muted: 34 12% 70%;
-    --nexus-border: 24 14% 18%;
+    --nexus-glow: 214 100% 65%;
+    --nexus-cyan: 185 80% 60%;
+    --nexus-emerald: 142 50% 56%;
+    --nexus-amber: 48 95% 55%;
+    --nexus-rose: 0 75% 55%;
+    --nexus-surface-1: 232 25% 8%;
+    --nexus-surface-2: 232 22% 11%;
+    --nexus-surface-3: 232 20% 14%;
+    --nexus-gradient-start: 214 100% 65%;
+    --nexus-gradient-end: 142 50% 56%;
+    --nexus-blue: 214 100% 65%;
+    --nexus-green: 142 50% 56%;
+    --nexus-yellow: 48 95% 55%;
+    --nexus-red: 0 75% 55%;
+    --nexus-purple: 280 55% 55%;
+    --nexus-orange: 28 80% 52%;
+    --nexus-gold: 28 50% 65%;
+    --nexus-teal: 170 65% 50%;
+    --nexus-muted: 220 10% 53%;
+    --nexus-border: 235 30% 17%;
   }
 }
 
@@ -349,12 +349,6 @@
 
   body {
     @apply bg-background text-foreground subpixel-antialiased;
-    background-image:
-      radial-gradient(circle at 10% 0%, hsl(var(--primary) / 0.18), transparent 28%),
-      radial-gradient(circle at 86% 12%, hsl(var(--accent) / 0.16), transparent 24%),
-      radial-gradient(circle at 50% 100%, hsl(var(--warning) / 0.1), transparent 34%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--surface-1)) 50%, hsl(var(--surface-2)) 100%);
-    background-attachment: fixed;
     font-family: var(--font-body);
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv11", "ss01";
@@ -423,11 +417,10 @@
 
   /* Glass Effect */
   .glass {
-    background: linear-gradient(145deg, hsl(var(--glass-bg)) 0%, hsl(var(--surface-2) / 0.88) 100%);
+    background: hsl(var(--glass-bg));
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border: 1px solid hsl(var(--glass-border));
-    box-shadow: 0 28px 60px -36px hsl(var(--foreground) / 0.9);
   }
 
   /* Sticky Table Headers */
@@ -593,9 +586,8 @@
 
   .nexus-glass {
     @apply border;
-    background: linear-gradient(145deg, hsl(var(--card) / 0.96) 0%, hsl(var(--surface-2) / 0.94) 100%);
-    border-color: hsl(var(--border) / 0.95);
-    box-shadow: 0 28px 60px -36px hsl(var(--foreground) / 0.92);
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
   }
 
   .nexus-glow-sm {
@@ -606,16 +598,14 @@
   }
 
   .nexus-card {
-    @apply rounded-xl border p-5;
-    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--surface-2)) 100%);
-    border-color: hsl(var(--border) / 0.9);
-    box-shadow: 0 24px 54px -34px hsl(var(--foreground) / 0.82);
+    @apply rounded-xl border bg-card p-5;
+    box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04);
     transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .nexus-card:hover {
     @apply border-primary/30;
-    box-shadow: 0 30px 70px -34px hsl(var(--primary) / 0.28);
-    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--surface-3)) 100%);
+    box-shadow: 0 4px 20px -6px hsl(var(--nexus-glow) / 0.15);
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--primary) / 0.02) 100%);
   }
 
   .nexus-card-elevated {
@@ -700,7 +690,7 @@
 .stagger-children > * { opacity: 0; animation: card-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
 .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 50ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 100ms; }
 .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
 .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
 .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
