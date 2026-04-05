@@ -59,7 +59,6 @@ import type { ContactRole, SentimentType, Contact, Interaction, InteractionType,
 import { getBehavior } from '@/types/behavior';
 
 // Lazy-loaded heavy components
-
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
 
@@ -105,11 +104,11 @@ const Dashboard = () => {
   usePageTitle('Dashboard');
   const [period, setPeriod] = useState<PeriodFilter>('7d');
   const [activeTab, setActiveTab] = useState('overview');
-  const [tabDirection, setTabDirection] = useState(0); // -1 left, 1 right
+  const [tabDirection, setTabDirection] = useState(0);
   const [briefingOpen, setBriefingOpen] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
   
-  // Real data hooks — single instance, shared with useDashboardStats
+  // Real data hooks
   const { contacts, loading: contactsLoading } = useContacts();
   const { companies, loading: companiesLoading } = useCompanies();
   const { interactions, loading: interactionsLoading } = useInteractions();
@@ -120,7 +119,6 @@ const Dashboard = () => {
     loading: contactsLoading || companiesLoading || interactionsLoading,
   });
   
-  // Check for compatibility alerts
   useCompatibilityAlerts();
   const prefersReducedMotion = useReducedMotion();
 
@@ -128,13 +126,11 @@ const Dashboard = () => {
   const recentActivityAnimations = useStaggerAnimation(recentActivities.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
   const topContactAnimations = useStaggerAnimation(topContacts.length, { baseDelay: 0.025, maxDelay: 0.3, duration: 0.2 });
 
-  // Build stats from real data with visual enhancements
   const companyChangeType = dashboardStats.companyChange?.startsWith('+') && dashboardStats.companyChange !== '+0' ? 'positive' as const : 'neutral' as const;
   const contactChangeType = dashboardStats.contactChange?.startsWith('+') && dashboardStats.contactChange !== '+0' ? 'positive' as const : 'neutral' as const;
   const interactionChangeType = dashboardStats.weeklyInteractions > 0 ? 'positive' as const : 'neutral' as const;
   const scoreChangeType = dashboardStats.averageScore > 50 ? 'positive' as const : dashboardStats.averageScore > 25 ? 'neutral' as const : 'negative' as const;
 
-  // Generate simple sparkline data from real counts (simulated weekly trend)
   const generateSparkline = (current: number, seed: number): number[] => {
     const points: number[] = [];
     for (let i = 0; i < 7; i++) {
@@ -185,7 +181,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Memoized O(1) lookup maps — only recomputed when source data changes
   const companyMap = useMemo(() => new Map(companies.map(c => [c.id, c])), [companies]);
   const interactionsByContact = useMemo(() => {
     const map = new Map<string, typeof interactions>();
@@ -197,9 +192,11 @@ const Dashboard = () => {
     return map;
   }, [interactions]);
 
-  // Only compute heavy mappings when overview tab is active
+  // Compute heavy mappings for overview and relationships tabs
+  const needsMappedData = activeTab === 'overview' || activeTab === 'relationships';
+  
   const mappedContacts = useMemo(() => {
-    if (activeTab !== 'overview') return [] as Contact[];
+    if (!needsMappedData) return [] as Contact[];
     return contacts.map(c => {
       const company = c.company_id ? companyMap.get(c.company_id) : undefined;
       const contactInteractions = interactionsByContact.get(c.id) || [];
@@ -255,10 +252,10 @@ const Dashboard = () => {
         birthday: c.birthday ? new Date(c.birthday) : undefined,
       };
     }) as Contact[];
-  }, [contacts, companyMap, interactionsByContact, activeTab]);
+  }, [contacts, companyMap, interactionsByContact, needsMappedData]);
 
   const mappedInteractions = useMemo(() => {
-    if (activeTab !== 'overview') return [] as Interaction[];
+    if (!needsMappedData) return [] as Interaction[];
     return interactions.map(i => ({
       id: i.id,
       contactId: i.contact_id,
@@ -277,21 +274,17 @@ const Dashboard = () => {
       attachments: i.attachments || [],
       createdAt: new Date(i.created_at),
     })) as Interaction[];
-  }, [interactions, activeTab]);
+  }, [interactions, needsMappedData]);
 
   if (loading) {
     return (
       <AppLayout>
-        <Header 
-          title="Dashboard" 
-          hideBack
-        />
+        <Header title="Dashboard" hideBack />
         <DashboardSkeleton />
       </AppLayout>
     );
   }
 
-  // Check if user has data for onboarding
   const hasProfile = !!dashboardStats.totalContacts || !!dashboardStats.totalCompanies;
   const hasContacts = dashboardStats.totalContacts > 0;
   const hasCompanies = dashboardStats.totalCompanies > 0;
@@ -302,7 +295,6 @@ const Dashboard = () => {
     const newIndex = TAB_ORDER.indexOf(value);
     setTabDirection(newIndex > oldIndex ? 1 : -1);
     setActiveTab(value);
-    // Scroll to tabs area when switching
     tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -315,14 +307,10 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <ScrollProgressBar />
-      <Header 
-        title="Dashboard" 
-        icon={LayoutGrid}
-        hideBack
-      />
+      <Header title="Dashboard" icon={LayoutGrid} hideBack />
 
       <div className="p-4 md:p-6 space-y-5 md:space-y-6">
-        {/* Welcome — clean greeting only */}
+        {/* Welcome */}
         <WelcomeHeroCard />
 
         {/* Onboarding Checklist */}
@@ -333,10 +321,10 @@ const Dashboard = () => {
           hasInteractions={hasInteractions}
         />
 
-        {/* ===== MODULAR DASHBOARD TABS — sticky, immediately after onboarding ===== */}
+        {/* ===== MODULAR DASHBOARD TABS ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent [&:has(~div:first-child)]:border-border/30 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
+            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
               <TabsList className="grid w-full grid-cols-4 bg-card/80 border border-border/60 p-1.5 rounded-xl shadow-soft relative">
                 {[
                   { value: 'overview', icon: LayoutGrid, label: 'Geral' },
@@ -365,7 +353,9 @@ const Dashboard = () => {
               </TabsList>
             </div>
 
-            {/* Tab: Overview */}
+            {/* ═══════════════════════════════════════════════
+                TAB: GERAL (Overview) — Focused, ~1.5 screens max
+                ═══════════════════════════════════════════════ */}
             <TabsContent value="overview" className="space-y-5 mt-4">
               <motion.div
                 key={`overview-${tabDirection}`}
@@ -374,382 +364,383 @@ const Dashboard = () => {
                 transition={tabAnimationVariants.transition}
                 className="space-y-5"
               >
-              {/* Your Day Section */}
-              <DashboardErrorBoundary sectionName="Seu Dia">
-                <YourDaySection />
-              </DashboardErrorBoundary>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                {stats.map((stat, index) => (
-                  <StatCard
-                    key={stat.title}
-                    {...stat}
-                    delay={prefersReducedMotion ? 0 : index}
-                    variant={index === 0 ? 'elevated' : 'default'}
-                  />
-                ))}
-              </div>
-
-              {/* Pre-Contact Briefing — collapsible */}
-              <DashboardErrorBoundary sectionName="Briefing">
-                <Collapsible open={briefingOpen} onOpenChange={setBriefingOpen}>
-                  <CollapsibleTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
-                    >
-                      <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
-                        <Brain className="w-3 h-3 text-primary" />
-                      </div>
-                      <span className="font-medium">Briefing Pré-Contato</span>
-                      {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-3">
-                    <PreContactBriefing compact />
-                  </CollapsibleContent>
-                </Collapsible>
-              </DashboardErrorBoundary>
-              {/* Portfolio Health — contained height */}
-              <DashboardErrorBoundary sectionName="Saúde do Portfólio">
-                <LazySection fallbackVariant="card" fallbackHeight="h-48">
-                  <PortfolioHealthDashboard 
-                    contacts={mappedContacts}
-                    interactions={mappedInteractions}
-                  />
-                </LazySection>
-              </DashboardErrorBoundary>
-
-              {/* Important Dates */}
-              <DashboardErrorBoundary sectionName="Datas Importantes">
-                <LazySection fallbackVariant="list" fallbackHeight="h-48">
-                  <ImportantDatesCalendar 
-                    contacts={mappedContacts}
-                    interactions={mappedInteractions}
-                  />
-                </LazySection>
-              </DashboardErrorBoundary>
-
-              {/* Recent Activity + Top Contacts */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Recent Activity — 1 col */}
-                <DashboardErrorBoundary sectionName="Atividade Recente">
-                  <motion.div
-                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
-                  >
-                    <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
-                      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-accent/60 rounded-t-xl" />
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-accent/10 ring-1 ring-primary/20">
-                            <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
-                          </div>
-                          Atividade Recente
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ScrollArea className="max-h-[320px]">
-                          <div className="space-y-2 pr-2">
-                            {recentActivities.length === 0 ? (
-                              <EmptyState
-                                illustration="interactions"
-                                title="Nenhuma atividade"
-                                description="Suas atividades recentes aparecerão aqui."
-                              />
-                            ) : (
-                              recentActivities.map((activity, index) => {
-                                const animation = recentActivityAnimations[index];
-                                return (
-                                  <motion.div
-                                    key={activity.id}
-                                    initial={animation?.initial}
-                                    animate={animation?.animate}
-                                    transition={animation?.transition}
-                                    style={animation?.style}
-                                  >
-                                    <Link
-                                      to={`/contatos/${activity.contactId}`}
-                                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
-                                    >
-                                      {(() => {
-                                        const iconWrapClass = "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ring-1";
-                                        const iconClass = "w-4 h-4";
-                                        switch (activity.type) {
-                                          case 'call': return <div className={`${iconWrapClass} bg-success/10 ring-success/20`}><Phone className={`${iconClass} text-success`} /></div>;
-                                          case 'email': return <div className={`${iconWrapClass} bg-info/10 ring-info/20`}><Mail className={`${iconClass} text-info`} /></div>;
-                                          case 'meeting': return <div className={`${iconWrapClass} bg-accent/10 ring-accent/20`}><Video className={`${iconClass} text-accent`} /></div>;
-                                          default: return <div className={`${iconWrapClass} bg-primary/10 ring-primary/20`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
-                                        }
-                                      })()}
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm truncate">
-                                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">{activity.entityName}</span>
-                                          <span className="text-muted-foreground"> — {activity.description}</span>
-                                        </p>
-                                      </div>
-                                      <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 ml-2">
-                                        {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
-                                      </span>
-                                    </Link>
-                                  </motion.div>
-                                );
-                              })
-                            )}
-                          </div>
-                        </ScrollArea>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                {/* 1. Your Day — Actionable tasks */}
+                <DashboardErrorBoundary sectionName="Seu Dia">
+                  <YourDaySection />
                 </DashboardErrorBoundary>
 
-                {/* Top Contacts */}
-                <DashboardErrorBoundary sectionName="Melhores Relacionamentos">
-                  <motion.div
-                    initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
-                    className="lg:col-span-2"
-                  >
-                    <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
-                      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-success to-primary/60 rounded-t-xl" />
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-gradient-to-br from-success/15 to-primary/10 ring-1 ring-success/20">
-                            <Users className="w-3.5 h-3.5 text-success" aria-hidden="true" />
-                          </div>
-                          Melhores Relacionamentos
-                        </CardTitle>
-                        <Link to="/contatos">
-                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
-                            Ver todos <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
-                          </Button>
-                        </Link>
-                      </CardHeader>
-                      <CardContent>
-                        <ScrollArea className="max-h-[320px]">
-                          <div className="space-y-2 pr-2">
-                            {topContacts.length === 0 ? (
-                              <EmptyState
-                                illustration="contacts"
-                                title="Nenhum contato"
-                                description="Adicione contatos para ver seus melhores relacionamentos."
-                                actions={[
-                                  { label: 'Adicionar contato', onClick: () => {}, variant: 'default' }
-                                ]}
-                              />
-                            ) : (
-                              topContacts.map((contact, index) => {
-                                const animation = topContactAnimations[index];
-                                return (
-                                  <motion.div
-                                    key={contact.id}
-                                    initial={animation?.initial}
-                                    animate={animation?.animate}
-                                    transition={animation?.transition}
-                                    style={animation?.style}
-                                  >
-                                    <Link to={`/contatos/${contact.id}`} className="block">
-                                      <Surface
-                                        level={1}
-                                        hoverable
-                                        rounded="lg"
-                                        className="flex items-center justify-between p-3 group cursor-pointer hover:border-primary/15"
-                                      >
-                                        <div className="flex items-center gap-3">
-                                          <OptimizedAvatar
-                                            src={contact.avatar || undefined}
-                                            alt={`${contact.firstName} ${contact.lastName}`}
-                                            fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
-                                            size="md"
-                                            className="w-10 h-10 border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
-                                          />
-                                          <div>
-                                            <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                                              {contact.firstName} {contact.lastName}
-                                            </p>
-                                            {contact.companyName && (
-                                              <Typography variant="small" as="p">
-                                                {contact.companyName}
-                                              </Typography>
-                                            )}
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                              <RoleBadge role={contact.role as ContactRole} />
-                                              <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                          <div className="text-right hidden sm:block">
-                                            <Typography variant="small" as="p">
-                                              {contact.interactionCount > 0 
-                                                ? `${contact.interactionCount} interações` 
-                                                : contact.lastInteraction 
-                                                  ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
-                                                  : 'Novo contato'}
-                                            </Typography>
-                                          </div>
-                                          <RelationshipScore score={contact.relationshipScore} size="sm" />
-                                        </div>
-                                      </Surface>
-                                    </Link>
-                                  </motion.div>
-                                );
-                              })
-                            )}
-                          </div>
-                        </ScrollArea>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </DashboardErrorBoundary>
-              </div>
-
-               {/* Smart Reminders + Compatibility */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <DashboardErrorBoundary sectionName="Lembretes">
-                  <LazySection fallbackVariant="list">
-                    <SmartRemindersPanel compact />
-                  </LazySection>
-                </DashboardErrorBoundary>
-                <DashboardErrorBoundary sectionName="Compatibilidade">
-                  <LazySection fallbackVariant="list">
-                    <CompatibilityAlertsList maxItems={3} />
-                  </LazySection>
-                </DashboardErrorBoundary>
-              </div>
-
-              {/* Health Alerts - Full Width */}
-              <DashboardErrorBoundary sectionName="Saúde do Cliente">
-                <LazySection fallbackVariant="card">
-                  <HealthAlertsPanel />
-                </LazySection>
-              </DashboardErrorBoundary>
-              </motion.div>
-            </TabsContent>
-
-            {/* Tab: Analytics */}
-            <TabsContent value="analytics" className="mt-4">
-              <motion.div key={`analytics-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
-              {/* Period Filter */}
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-5 h-5" aria-hidden="true" />
-                  <Typography variant="body" className="font-medium">Período dos Gráficos</Typography>
-                </div>
-                <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg">
-                  {periodOptions.map((option) => (
-                    <Button
-                      key={option.value}
-                      variant={period === option.value ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setPeriod(option.value)}
-                      className={`text-xs sm:text-sm transition-all ${
-                        period === option.value 
-                          ? 'shadow-sm' 
-                          : 'hover:bg-secondary'
-                      }`}
-                    >
-                      {option.label}
-                    </Button>
+                {/* 2. Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                  {stats.map((stat, index) => (
+                    <StatCard
+                      key={stat.title}
+                      {...stat}
+                      delay={prefersReducedMotion ? 0 : index}
+                      variant={index === 0 ? 'elevated' : 'default'}
+                    />
                   ))}
                 </div>
-              </div>
 
-              {/* Charts Row 1 */}
-              <DashboardErrorBoundary sectionName="Gráficos de Atividade">
+                {/* 3. Pre-Contact Briefing — collapsible */}
+                <DashboardErrorBoundary sectionName="Briefing">
+                  <Collapsible open={briefingOpen} onOpenChange={setBriefingOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
+                      >
+                        <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
+                          <Brain className="w-3 h-3 text-primary" />
+                        </div>
+                        <span className="font-medium">Briefing Pré-Contato</span>
+                        {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-3">
+                      <PreContactBriefing compact />
+                    </CollapsibleContent>
+                  </Collapsible>
+                </DashboardErrorBoundary>
+
+                {/* 4. Recent Activity + Top Contacts */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                  {/* Recent Activity — 1 col */}
+                  <DashboardErrorBoundary sectionName="Atividade Recente">
+                    <motion.div
+                      initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
+                    >
+                      <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
+                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-accent/60 rounded-t-xl" />
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base font-semibold flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-accent/10 ring-1 ring-primary/20">
+                              <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                            </div>
+                            Atividade Recente
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="max-h-[280px]">
+                            <div className="space-y-2 pr-2">
+                              {recentActivities.length === 0 ? (
+                                <EmptyState
+                                  illustration="interactions"
+                                  title="Nenhuma atividade"
+                                  description="Suas atividades recentes aparecerão aqui."
+                                />
+                              ) : (
+                                recentActivities.map((activity, index) => {
+                                  const animation = recentActivityAnimations[index];
+                                  return (
+                                    <motion.div
+                                      key={activity.id}
+                                      initial={animation?.initial}
+                                      animate={animation?.animate}
+                                      transition={animation?.transition}
+                                      style={animation?.style}
+                                    >
+                                      <Link
+                                        to={`/contatos/${activity.contactId}`}
+                                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
+                                      >
+                                        {(() => {
+                                          const iconWrapClass = "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ring-1";
+                                          const iconClass = "w-4 h-4";
+                                          switch (activity.type) {
+                                            case 'call': return <div className={`${iconWrapClass} bg-success/10 ring-success/20`}><Phone className={`${iconClass} text-success`} /></div>;
+                                            case 'email': return <div className={`${iconWrapClass} bg-info/10 ring-info/20`}><Mail className={`${iconClass} text-info`} /></div>;
+                                            case 'meeting': return <div className={`${iconWrapClass} bg-accent/10 ring-accent/20`}><Video className={`${iconClass} text-accent`} /></div>;
+                                            default: return <div className={`${iconWrapClass} bg-primary/10 ring-primary/20`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
+                                          }
+                                        })()}
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm truncate">
+                                            <span className="font-medium text-foreground group-hover:text-primary transition-colors">{activity.entityName}</span>
+                                            <span className="text-muted-foreground"> — {activity.description}</span>
+                                          </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 ml-2">
+                                          {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
+                                        </span>
+                                      </Link>
+                                    </motion.div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </DashboardErrorBoundary>
+
+                  {/* Top Contacts — 2 cols */}
+                  <DashboardErrorBoundary sectionName="Melhores Relacionamentos">
+                    <motion.div
+                      initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
+                      className="lg:col-span-2"
+                    >
+                      <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
+                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-success to-primary/60 rounded-t-xl" />
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                          <CardTitle className="text-base font-semibold flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gradient-to-br from-success/15 to-primary/10 ring-1 ring-success/20">
+                              <Users className="w-3.5 h-3.5 text-success" aria-hidden="true" />
+                            </div>
+                            Melhores Relacionamentos
+                          </CardTitle>
+                          <Link to="/contatos">
+                            <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                              Ver todos <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
+                            </Button>
+                          </Link>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="max-h-[280px]">
+                            <div className="space-y-2 pr-2">
+                              {topContacts.length === 0 ? (
+                                <EmptyState
+                                  illustration="contacts"
+                                  title="Nenhum contato"
+                                  description="Adicione contatos para ver seus melhores relacionamentos."
+                                  actions={[
+                                    { label: 'Adicionar contato', onClick: () => {}, variant: 'default' }
+                                  ]}
+                                />
+                              ) : (
+                                topContacts.map((contact, index) => {
+                                  const animation = topContactAnimations[index];
+                                  return (
+                                    <motion.div
+                                      key={contact.id}
+                                      initial={animation?.initial}
+                                      animate={animation?.animate}
+                                      transition={animation?.transition}
+                                      style={animation?.style}
+                                    >
+                                      <Link to={`/contatos/${contact.id}`} className="block">
+                                        <Surface
+                                          level={1}
+                                          hoverable
+                                          rounded="lg"
+                                          className="flex items-center justify-between p-3 group cursor-pointer hover:border-primary/15"
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <OptimizedAvatar
+                                              src={contact.avatar || undefined}
+                                              alt={`${contact.firstName} ${contact.lastName}`}
+                                              fallback={`${contact.firstName?.[0] || 'C'}${contact.lastName?.[0] || 'N'}`}
+                                              size="md"
+                                              className="w-10 h-10 border-2 border-primary/20 group-hover:border-primary/40 transition-colors"
+                                            />
+                                            <div>
+                                              <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
+                                                {contact.firstName} {contact.lastName}
+                                              </p>
+                                              {contact.companyName && (
+                                                <Typography variant="small" as="p">
+                                                  {contact.companyName}
+                                                </Typography>
+                                              )}
+                                              <div className="flex items-center gap-2 mt-0.5">
+                                                <RoleBadge role={contact.role as ContactRole} />
+                                                <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-3">
+                                            <div className="text-right hidden sm:block">
+                                              <Typography variant="small" as="p">
+                                                {contact.interactionCount > 0 
+                                                  ? `${contact.interactionCount} interações` 
+                                                  : contact.lastInteraction 
+                                                    ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
+                                                    : 'Novo contato'}
+                                              </Typography>
+                                            </div>
+                                            <RelationshipScore score={contact.relationshipScore} size="sm" />
+                                          </div>
+                                        </Surface>
+                                      </Link>
+                                    </motion.div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </DashboardErrorBoundary>
+                </div>
+
+                {/* 5. Smart Reminders + Compatibility — compact row */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <ActivityChart period={period} />
-                  <RelationshipEvolutionChart period={period} />
+                  <DashboardErrorBoundary sectionName="Lembretes">
+                    <LazySection fallbackVariant="list">
+                      <SmartRemindersPanel compact />
+                    </LazySection>
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Compatibilidade">
+                    <LazySection fallbackVariant="list">
+                      <CompatibilityAlertsList maxItems={3} />
+                    </LazySection>
+                  </DashboardErrorBoundary>
                 </div>
-              </DashboardErrorBoundary>
-
-              {/* Charts Row 2 */}
-              <DashboardErrorBoundary sectionName="Distribuição e Scores">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  <ContactDistributionChart />
-                  <RelationshipScoreChart period={period} />
-                  <SentimentChart period={period} />
-                </div>
-              </DashboardErrorBoundary>
               </motion.div>
             </TabsContent>
 
-            {/* Tab: Relationships */}
+            {/* ═══════════════════════════════════════════════
+                TAB: ANALYTICS
+                ═══════════════════════════════════════════════ */}
+            <TabsContent value="analytics" className="mt-4">
+              <motion.div key={`analytics-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
+                {/* Period Filter */}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Calendar className="w-5 h-5" aria-hidden="true" />
+                    <Typography variant="body" className="font-medium">Período dos Gráficos</Typography>
+                  </div>
+                  <div className="flex items-center gap-1 bg-secondary/50 p-1 rounded-lg">
+                    {periodOptions.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={period === option.value ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setPeriod(option.value)}
+                        className={`text-xs sm:text-sm transition-all ${
+                          period === option.value ? 'shadow-sm' : 'hover:bg-secondary'
+                        }`}
+                      >
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <DashboardErrorBoundary sectionName="Gráficos de Atividade">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <ActivityChart period={period} />
+                    <RelationshipEvolutionChart period={period} />
+                  </div>
+                </DashboardErrorBoundary>
+
+                <DashboardErrorBoundary sectionName="Distribuição e Scores">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <ContactDistributionChart />
+                    <RelationshipScoreChart period={period} />
+                    <SentimentChart period={period} />
+                  </div>
+                </DashboardErrorBoundary>
+              </motion.div>
+            </TabsContent>
+
+            {/* ═══════════════════════════════════════════════
+                TAB: RELAÇÕES — Portfolio Health, Calendar, Health Alerts
+                ═══════════════════════════════════════════════ */}
             <TabsContent value="relationships" className="mt-4">
               <motion.div key={`relationships-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
-              <DashboardErrorBoundary sectionName="Estatísticas de Relacionamento">
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
-                  <Typography variant="h4" gradient>Estatísticas de Relacionamento</Typography>
-                </div>
-                <LazySection fallbackVariant="chart" fallbackHeight="h-64">
-                  <RelationshipStatsPanel />
-                </LazySection>
-              </DashboardErrorBoundary>
+                
+                {/* Portfolio Health — the main relationship overview */}
+                <DashboardErrorBoundary sectionName="Saúde do Portfólio">
+                  <LazySection fallbackVariant="card" fallbackHeight="h-48">
+                    <PortfolioHealthDashboard 
+                      contacts={mappedContacts}
+                      interactions={mappedInteractions}
+                    />
+                  </LazySection>
+                </DashboardErrorBoundary>
 
-              <DashboardErrorBoundary sectionName="Score de Fechamento">
-                <LazySection fallbackVariant="list">
-                  <ClosingScoreRanking maxItems={5} showStats={false} compact />
-                </LazySection>
-                <LazySection fallbackVariant="list" className="mt-5">
-                  <ClosingScoreAlertsList maxItems={3} compact />
-                </LazySection>
-              </DashboardErrorBoundary>
+                {/* Relationship Stats */}
+                <DashboardErrorBoundary sectionName="Estatísticas de Relacionamento">
+                  <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+                    <RelationshipStatsPanel />
+                  </LazySection>
+                </DashboardErrorBoundary>
+
+                {/* Closing Score */}
+                <DashboardErrorBoundary sectionName="Score de Fechamento">
+                  <LazySection fallbackVariant="list">
+                    <ClosingScoreRanking maxItems={5} showStats={false} compact />
+                  </LazySection>
+                  <LazySection fallbackVariant="list" className="mt-5">
+                    <ClosingScoreAlertsList maxItems={3} compact />
+                  </LazySection>
+                </DashboardErrorBoundary>
+
+                {/* Important Dates Calendar */}
+                <DashboardErrorBoundary sectionName="Datas Importantes">
+                  <LazySection fallbackVariant="list" fallbackHeight="h-48">
+                    <ImportantDatesCalendar 
+                      contacts={mappedContacts}
+                      interactions={mappedInteractions}
+                    />
+                  </LazySection>
+                </DashboardErrorBoundary>
+
+                {/* Health Alerts */}
+                <DashboardErrorBoundary sectionName="Saúde do Cliente">
+                  <LazySection fallbackVariant="card">
+                    <HealthAlertsPanel />
+                  </LazySection>
+                </DashboardErrorBoundary>
               </motion.div>
             </TabsContent>
 
-            {/* Tab: Intelligence */}
+            {/* ═══════════════════════════════════════════════
+                TAB: IA (Intelligence)
+                ═══════════════════════════════════════════════ */}
             <TabsContent value="intelligence" className="mt-4">
               <motion.div key={`intelligence-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
-              <DashboardErrorBoundary sectionName="Padrões de Compra">
-                <div className="flex items-center gap-2 mb-4">
-                  <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
-                  <Typography variant="h4" gradient>Padrões de Compra e Comportamento</Typography>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <LazySection fallbackVariant="chart">
-                    <PurchasePatternsPanel compact />
-                  </LazySection>
-                  <LazySection fallbackVariant="card">
-                    <BehaviorAlertsPanel compact />
-                  </LazySection>
-                </div>
-              </DashboardErrorBoundary>
+                <DashboardErrorBoundary sectionName="Padrões de Compra">
+                  <div className="flex items-center gap-2 mb-4">
+                    <ShoppingBag className="w-5 h-5 text-primary" aria-hidden="true" />
+                    <Typography variant="h4" gradient>Padrões de Compra e Comportamento</Typography>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <LazySection fallbackVariant="chart">
+                      <PurchasePatternsPanel compact />
+                    </LazySection>
+                    <LazySection fallbackVariant="card">
+                      <BehaviorAlertsPanel compact />
+                    </LazySection>
+                  </div>
+                </DashboardErrorBoundary>
 
-              <DashboardErrorBoundary sectionName="Inteligência de Negócios">
-                <div className="flex items-center gap-2 mb-4">
-                  <Target className="w-5 h-5 text-primary" aria-hidden="true" />
-                  <Typography variant="h4" gradient>Inteligência de Negócios</Typography>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  <LazySection fallbackVariant="chart">
-                    <ChurnPredictionPanel compact />
-                  </LazySection>
-                  <LazySection fallbackVariant="chart">
-                    <BestTimeToContactPanel compact />
-                  </LazySection>
-                  <LazySection fallbackVariant="chart">
-                    <DealVelocityPanel compact />
-                  </LazySection>
-                </div>
-                
-                <div className="mt-5">
-                  <LazySection fallbackVariant="chart" fallbackHeight="h-64">
-                    <RFMAnalysisPanel compact />
-                  </LazySection>
-                </div>
-              </DashboardErrorBoundary>
+                <DashboardErrorBoundary sectionName="Inteligência de Negócios">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-5 h-5 text-primary" aria-hidden="true" />
+                    <Typography variant="h4" gradient>Inteligência de Negócios</Typography>
+                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <LazySection fallbackVariant="chart">
+                      <ChurnPredictionPanel compact />
+                    </LazySection>
+                    <LazySection fallbackVariant="chart">
+                      <BestTimeToContactPanel compact />
+                    </LazySection>
+                    <LazySection fallbackVariant="chart">
+                      <DealVelocityPanel compact />
+                    </LazySection>
+                  </div>
+                  
+                  <div className="mt-5">
+                    <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+                      <RFMAnalysisPanel compact />
+                    </LazySection>
+                  </div>
+                </DashboardErrorBoundary>
               </motion.div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
       
-      {/* Floating Components */}
       <ScrollToTopButton />
     </AppLayout>
   );
