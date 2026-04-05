@@ -564,9 +564,11 @@ const Dashboard = () => {
                                           <p className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
                                             {contact.firstName} {contact.lastName}
                                           </p>
-                                          <Typography variant="small" as="p">
-                                            {contact.companyName || contact.role || 'Contato'}
-                                          </Typography>
+                                          {contact.companyName && (
+                                            <Typography variant="small" as="p">
+                                              {contact.companyName}
+                                            </Typography>
+                                          )}
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <RoleBadge role={contact.role as ContactRole} />
                                             <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
