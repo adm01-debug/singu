@@ -113,15 +113,15 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
     const topContacts = [...contacts]
       .filter(c => {
         if (c.relationship_score === null) return false;
-        // Filter out contacts with empty or missing names
-        if (!c.first_name?.trim() || !c.last_name?.trim()) return false;
-        // Filter out email-as-name contacts
-        if (c.first_name.includes('@')) return false;
-        // Filter out test contacts
-        const name = `${c.first_name} ${c.last_name}`.trim().toLowerCase();
+        const firstName = (c.first_name || '').trim();
+        const lastName = (c.last_name || '').trim();
+        if (!firstName || !lastName) return false;
+        if (firstName.includes('@')) return false;
+        const name = `${firstName} ${lastName}`.toLowerCase();
         if (/^test/i.test(name)) return false;
-        // Filter out contacts with only phone numbers as names
-        if (/^\(\d+\)\s*\d+/.test(c.first_name)) return false;
+        if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
+        if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
+        if (/^\d{10,}$/.test(lastName)) return false;
         return true;
       })
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
