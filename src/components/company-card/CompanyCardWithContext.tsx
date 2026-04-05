@@ -232,8 +232,8 @@ export function CompanyCardWithContext({
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-4">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-start justify-between gap-2 mb-4">
               <div className="flex items-center gap-3">
                 {selectionMode && (
                   <Checkbox
@@ -243,7 +243,7 @@ export function CompanyCardWithContext({
                   />
                 )}
                 
-                <Link to={`/empresas/${company.id}`} className="flex items-center gap-3">
+                <Link to={`/empresas/${company.id}`} className="flex items-center gap-3 min-w-0">
                   {company.logo_url ? (
                     <img 
                       src={company.logo_url} 
@@ -267,7 +267,7 @@ export function CompanyCardWithContext({
                   >
                     {getAvatarInitial(company.name)}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     {isInlineEditing ? (
                       <InlineEdit
                         value={company.name}
@@ -288,8 +288,8 @@ export function CompanyCardWithContext({
                     )}
                     {hasSegment && (
                       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <IndustryIcon className="w-3.5 h-3.5" />
-                        <span>{company.industry}</span>
+                        <IndustryIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{company.industry}</span>
                       </div>
                     )}
                     <Badge 
@@ -331,13 +331,13 @@ export function CompanyCardWithContext({
                 {(company.city || company.state) && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span>{[company.city, company.state].filter(Boolean).join(', ')}</span>
+                    <span className="truncate">{[company.city, company.state].filter(Boolean).join(', ')}</span>
                   </div>
                 )}
                 {company.phone && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4 flex-shrink-0" />
-                    <span>{company.phone}</span>
+                    <span className="truncate">{company.phone}</span>
                   </div>
                 )}
                 {company.email && (
