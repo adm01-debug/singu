@@ -2,12 +2,17 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+interface ScrollToTopButtonProps {
+  className?: string;
+}
 
 /**
  * Floating scroll-to-top button.
  * Hides when overlays (e.g., MobileBottomNav "More") are open.
  */
-export function ScrollToTopButton() {
+export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
   const [visible, setVisible] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
 
@@ -44,7 +49,7 @@ export function ScrollToTopButton() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.8, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-40"
+          className={cn('z-40', className ?? 'fixed bottom-24 md:bottom-8 right-4 md:right-8')}
         >
           <Button
             onClick={scrollToTop}

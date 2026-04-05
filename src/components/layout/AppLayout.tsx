@@ -53,7 +53,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       <main 
         id="main-content"
         className={cn(
-          'pb-20 md:pb-24 md:pr-24 lg:pr-28 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
+          'pb-24 md:pb-32 md:pr-32 lg:pr-36 focus:outline-none transition-[margin] duration-200 ease-out will-change-[margin-left]',
           collapsed ? 'md:ml-[72px]' : 'md:ml-[280px]'
         )}
         tabIndex={-1}
@@ -69,8 +69,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       
       {/* Global Components */}
       <GlobalSearch open={isOpen} onOpenChange={setIsOpen} />
-      <div className="hidden md:block">
-        <QuickAddButton />
+      <div className="hidden md:flex fixed bottom-8 right-8 lg:bottom-10 lg:right-10 z-50 flex-col items-end gap-3">
+        <ScrollToTopButton className="relative" />
+        <QuickAddButton className="relative z-10" />
       </div>
       
       {/* Notification Center */}
@@ -83,7 +84,9 @@ export function AppLayout({ children, title }: AppLayoutProps) {
       <KeyboardShortcutsCheatsheet />
       
       {/* Global scroll-to-top button */}
-      <ScrollToTopButton />
+      <div className="md:hidden">
+        <ScrollToTopButton />
+      </div>
     </div>
   );
 }
