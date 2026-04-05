@@ -162,7 +162,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
 
     const recentActivities = interactions
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 8) // fetch more, then filter
+      .slice(0, 15) // fetch more, then filter
       .map(interaction => {
         const contact = contactMap.get(interaction.contact_id);
         const rawName = contact
@@ -190,7 +190,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
           type: interaction.type,
         };
       })
-      .filter(a => a.entityName !== 'Contato') // Remove unresolved generic entries
+      .filter(a => a.entityName !== 'Contato' && a.entityName !== 'Mensagem') // Remove unresolved generic entries
       .slice(0, 5);
 
     return {

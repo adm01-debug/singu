@@ -79,17 +79,27 @@ function useCompanyRelated<T extends { id?: string; company_id: string }>(
     queryKey,
     queryFn: async () => {
       if (!companyId) return [];
-      const { data, error } = await queryExternalData<T>({
-        table,
-        filters: [{ type: 'eq', column: 'company_id', value: companyId }],
-        order: { column: 'created_at', ascending: true },
-        range: { from: 0, to: 99 },
-      });
-      if (error) throw error;
-      return data || [];
+      try {
+        const { data, error } = await queryExternalData<T>({
+          table,
+          filters: [{ type: 'eq', column: 'company_id', value: companyId }],
+          order: { column: 'created_at', ascending: true },
+          range: { from: 0, to: 99 },
+        });
+        if (error) {
+          // Gracefully handle missing tables in external DB (404/406)
+          console.warn(`[useCompanyRelated] Table "${table}" not available:`, error.message);
+          return [];
+        }
+        return data || [];
+      } catch (err) {
+        console.warn(`[useCompanyRelated] Failed to fetch "${table}":`, err);
+        return [];
+      }
     },
     enabled: !!companyId,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 
   const upsert = useMutation({
