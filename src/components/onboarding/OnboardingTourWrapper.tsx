@@ -7,24 +7,16 @@ import { OnboardingTour, useOnboardingTour } from './OnboardingTour';
  */
 export function OnboardingTourWrapper() {
   const { isOpen, hasCompleted, startTour, completeTour, skipTour } = useOnboardingTour('main');
-  const [shouldAutoStart, setShouldAutoStart] = useState(false);
-
-  // Auto-start tour for new users after a short delay
+  // Auto-start tour for new users after page fully loads
   useEffect(() => {
-    if (!hasCompleted) {
+    if (!hasCompleted && !isOpen) {
       const timer = setTimeout(() => {
-        setShouldAutoStart(true);
-      }, 2000); // 2 second delay for page to load
+        startTour();
+      }, 3500); // Wait for dashboard to fully render
 
       return () => clearTimeout(timer);
     }
-  }, [hasCompleted]);
-
-  useEffect(() => {
-    if (shouldAutoStart && !hasCompleted && !isOpen) {
-      startTour();
-    }
-  }, [shouldAutoStart, hasCompleted, isOpen, startTour]);
+  }, [hasCompleted, isOpen, startTour]);
 
   return (
     <OnboardingTour
