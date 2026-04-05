@@ -460,18 +460,22 @@ const Dashboard = () => {
                                     animate={animation?.animate}
                                     transition={animation?.transition}
                                     style={animation?.style}
-                                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-2 transition-colors"
                                   >
-                                    <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm truncate">
-                                        <span className="font-medium text-foreground">{activity.entityName}</span>
-                                        <span className="text-muted-foreground"> — {activity.description}</span>
-                                      </p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                      {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
-                                    </span>
+                                    <Link
+                                      to={`/contatos/${activity.contactId}`}
+                                      className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-surface-2 transition-colors group cursor-pointer"
+                                    >
+                                      <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm truncate">
+                                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">{activity.entityName}</span>
+                                          <span className="text-muted-foreground"> — {activity.description}</span>
+                                        </p>
+                                      </div>
+                                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                        {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
+                                      </span>
+                                    </Link>
                                   </motion.div>
                                 );
                               })
