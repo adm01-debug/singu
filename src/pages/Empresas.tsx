@@ -45,8 +45,9 @@ import { CompanyForm } from '@/components/forms/CompanyForm';
 import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWithContext';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
+import { useContacts } from '@/hooks/useContacts';
+import { useInteractions } from '@/hooks/useInteractions';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-// Server-side search is now used instead of client-side fuzzy search
 
 const filterConfigs: FilterConfig[] = [
   {
