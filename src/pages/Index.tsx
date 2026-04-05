@@ -41,6 +41,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { pluralize } from '@/lib/formatters';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
@@ -556,7 +557,7 @@ const Dashboard = () => {
                                             <div className="text-right hidden sm:block">
                                               <Typography variant="small" as="p">
                                                 {contact.interactionCount > 0 
-                                                  ? `${contact.interactionCount} interações` 
+                                                  ? pluralize(contact.interactionCount, 'interação', 'interações')
                                                   : contact.lastInteraction 
                                                     ? formatDistanceToNow(contact.lastInteraction, { locale: ptBR, addSuffix: true })
                                                     : 'Novo contato'}
