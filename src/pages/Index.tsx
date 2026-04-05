@@ -483,7 +483,7 @@ const Dashboard = () => {
                                           <span className="text-muted-foreground"> — {activity.description}</span>
                                         </p>
                                       </div>
-                                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                      <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 ml-2">
                                         {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
                                       </span>
                                     </Link>
