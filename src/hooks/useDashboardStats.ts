@@ -115,6 +115,8 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         if (c.relationship_score === null) return false;
         // Filter out contacts with empty or missing names
         if (!c.first_name?.trim() || !c.last_name?.trim()) return false;
+        // Filter out email-as-name contacts
+        if (c.first_name.includes('@')) return false;
         // Filter out test contacts
         const name = `${c.first_name} ${c.last_name}`.trim().toLowerCase();
         if (/^test/i.test(name)) return false;
@@ -148,10 +150,15 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
       .slice(0, 5)
       .map(interaction => {
         const contact = contactMap.get(interaction.contact_id);
+        const contactName = contact
+          ? `${contact.first_name} ${contact.last_name}`.trim()
+          : null;
+        // Extract name from title if contact not found (e.g. "Mensagem de João Silva (WhatsApp)")
+        const fallbackName = interaction.title?.match(/de\s+(.+?)(?:\s*\(|$)/)?.[1]?.trim();
         return {
           id: interaction.id,
           contactId: interaction.contact_id,
-          entityName: contact ? `${contact.first_name} ${contact.last_name}` : 'Contato',
+          entityName: contactName || fallbackName || 'Contato',
           description: interaction.title,
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
