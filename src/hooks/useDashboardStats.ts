@@ -179,8 +179,8 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
       totalContacts: contacts.length,
       weeklyInteractions: thisWeekInteractions,
       averageScore: avgScore,
-      companyChange: companiesThisMonth > 0 ? `+${companiesThisMonth} este mês` : 'Nenhuma nova',
-      contactChange: contactsThisMonth > 0 ? `+${contactsThisMonth} este mês` : 'Nenhum novo',
+      companyChange: companiesThisMonth > 0 ? `+${companiesThisMonth} este mês` : '~ Estável',
+      contactChange: contactsThisMonth > 0 ? `+${contactsThisMonth} este mês` : '~ Estável',
       interactionChange: interactionDiff >= 0 
         ? `+${interactionDiff} vs semana anterior` 
         : `${interactionDiff} vs semana anterior`,
