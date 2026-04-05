@@ -51,6 +51,15 @@ import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyb
 
 const filterConfigs: FilterConfig[] = [
   {
+    key: 'is_customer',
+    label: 'Tipo',
+    multiple: false,
+    options: [
+      { value: 'true', label: 'Clientes' },
+      { value: 'false', label: 'Prospects' },
+    ],
+  },
+  {
     key: 'industry',
     label: 'Segmento',
     multiple: true,
@@ -171,7 +180,9 @@ const Empresas = () => {
         if (values.length === 0) continue;
         
         const companyValue = company[key as keyof Company];
-        if (!companyValue || !values.includes(String(companyValue))) {
+        // Handle boolean fields like is_customer (null/false → "false")
+        const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
+        if (!values.includes(strValue)) {
           return false;
         }
       }
