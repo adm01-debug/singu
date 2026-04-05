@@ -126,7 +126,7 @@ export function FloatingQuickActions({
   };
 
   return (
-    <div className={cn('fixed bottom-6 right-6 z-50', className)}>
+    <div className={cn('fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50', className)}>
       {/* Backdrop */}
       <AnimatePresence>
         {isOpen && (
@@ -187,6 +187,7 @@ export function FloatingQuickActions({
         <Button
           size="icon"
           onClick={toggleMenu}
+          aria-label={isOpen ? 'Fechar ações rápidas' : 'Abrir ações rápidas'}
           className={cn(
             'h-14 w-14 rounded-full shadow-lg transition-all',
             isOpen
@@ -201,20 +202,6 @@ export function FloatingQuickActions({
           )}
         </Button>
       </motion.div>
-
-      {/* Tooltip on closed state */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute -top-2 right-0 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full shadow-lg pointer-events-none"
-          >
-            <span className="whitespace-nowrap">Ação Rápida</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
