@@ -175,7 +175,21 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
       // Process contacts needing attention
       const needsAttention: NeedsAttention[] = [];
       
-      attentionContacts.forEach(contact => {
+      const isValidContactName = (c: Contact) => {
+        const firstName = (c.first_name || '').trim();
+        const lastName = (c.last_name || '').trim();
+        const name = `${firstName} ${lastName}`.trim();
+        if (!name) return false;
+        // Filter phone-formatted names, emails, test data, WhatsApp auto-contacts
+        if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
+        if (firstName.includes('@')) return false;
+        if (/^test/i.test(name)) return false;
+        if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
+        if (/^\d{10,}$/.test(lastName)) return false;
+        return true;
+      };
+
+      attentionContacts.filter(isValidContactName).forEach(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
         const lastUpdate = contact.updated_at ? new Date(contact.updated_at) : new Date(contact.created_at);
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
