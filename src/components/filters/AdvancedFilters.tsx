@@ -111,7 +111,7 @@ export function AdvancedFilters({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1 md:flex-wrap md:overflow-visible md:pb-0">
         {/* Filter Dropdowns */}
         {filters.map(filter => {
           const selectedValues = activeFilters[filter.key] || [];
