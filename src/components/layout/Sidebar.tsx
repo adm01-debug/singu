@@ -126,8 +126,16 @@ const KeyboardShortcutsDialog = forwardRef<HTMLDivElement>((_, ref) => {
     <div ref={ref} className="contents">
       <Dialog>
         <DialogTrigger asChild>
-          <button type="button" className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground">
-            <Keyboard className="w-4 h-4" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button type="button" className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground" aria-label="Atalhos de teclado">
+                <Keyboard className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p>Atalhos de teclado</p>
+            </TooltipContent>
+          </Tooltip>
           </button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
