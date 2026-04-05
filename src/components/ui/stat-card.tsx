@@ -10,10 +10,10 @@ const statCardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-card/92 border-border/70 shadow-[0_20px_48px_-30px_hsl(var(--foreground)/0.5)] hover:border-primary/25 hover:shadow-[0_28px_64px_-30px_hsl(var(--nexus-glow)/0.45)]',
-        elevated: 'bg-card/95 border-border/75 shadow-[0_24px_56px_-30px_hsl(var(--foreground)/0.55)] hover:border-primary/30 hover:shadow-[0_32px_70px_-32px_hsl(var(--nexus-glow)/0.5)]',
+        default: 'bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-2))_100%)] border-border/80 shadow-[0_24px_56px_-30px_hsl(var(--foreground)/0.68)] hover:border-primary/35 hover:shadow-[0_32px_72px_-32px_hsl(var(--primary)/0.34)]',
+        elevated: 'bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-3))_100%)] border-border/85 shadow-[0_28px_64px_-32px_hsl(var(--foreground)/0.72)] hover:border-primary/40 hover:shadow-[0_38px_82px_-34px_hsl(var(--primary)/0.38)]',
         glass: 'glass',
-        interactive: 'bg-card/92 border-border/70 shadow-[0_20px_48px_-30px_hsl(var(--foreground)/0.5)] cursor-pointer hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_28px_64px_-30px_hsl(var(--nexus-glow)/0.45)] active:scale-[0.99]',
+        interactive: 'bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-2))_100%)] border-border/80 shadow-[0_24px_56px_-30px_hsl(var(--foreground)/0.68)] cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_32px_72px_-32px_hsl(var(--primary)/0.34)] active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',

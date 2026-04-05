@@ -4,8 +4,9 @@ import { initGlobalErrorHandlers } from "@/lib/errorReporting";
 import App from "./App.tsx";
 import "./index.css";
 
-const LEGACY_THEME_STORAGE_KEYS = ["singu-skin"];
+const LEGACY_THEME_STORAGE_KEYS = ["singu-skin", "relateiq-theme"];
 const LEGACY_THEME_STYLE_IDS = ["singu-skin-style"];
+const ACTIVE_THEME_STORAGE_KEY = "singu-theme-mode-v2";
 
 function cleanupLegacyTheme() {
   try {
@@ -54,7 +55,7 @@ if (import.meta.env.PROD) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider defaultTheme="dark" storageKey="relateiq-theme">
+  <ThemeProvider defaultTheme="dark" storageKey={ACTIVE_THEME_STORAGE_KEY}>
     <App />
   </ThemeProvider>
 );

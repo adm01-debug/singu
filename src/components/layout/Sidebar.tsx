@@ -221,7 +221,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-[linear-gradient(180deg,hsl(var(--sidebar-background))_0%,hsl(var(--surface-0))_100%)] text-sidebar-foreground shadow-[20px_0_60px_-42px_hsl(var(--foreground)/0.85)]"
+        className="fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-sidebar-border bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.16),transparent_24%),linear-gradient(180deg,hsl(var(--sidebar-background))_0%,hsl(var(--surface-0))_100%)] text-sidebar-foreground shadow-[20px_0_72px_-42px_hsl(var(--foreground)/0.92)]"
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-3 border-b border-sidebar-border">
@@ -277,12 +277,12 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
               <button
                 onClick={onSearchClick}
                 aria-label="Buscar contatos, empresas e interações"
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
-                  'bg-sidebar-accent/50 hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
-                  'border border-sidebar-border/50',
-                  collapsed && 'justify-center px-0'
-                )}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200',
+                    'bg-[linear-gradient(135deg,hsl(var(--sidebar-accent))_0%,hsl(var(--sidebar-background))_100%)] hover:bg-sidebar-accent text-sidebar-foreground hover:text-sidebar-accent-foreground',
+                    'border border-sidebar-border/70 shadow-[0_16px_36px_-28px_hsl(var(--foreground)/0.78)]',
+                    collapsed && 'justify-center px-0'
+                  )}
               >
                 <Search className="w-4 h-4 flex-shrink-0" />
                 <AnimatePresence>
@@ -350,7 +350,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                             isActive
-                              ? 'bg-primary/16 text-sidebar-primary-foreground border border-primary/22 shadow-[0_18px_40px_-28px_hsl(var(--nexus-glow)/0.65)]'
+                              ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.26),hsl(var(--accent)/0.16))] text-sidebar-primary-foreground border border-primary/28 shadow-[0_22px_48px_-28px_hsl(var(--primary)/0.55)]'
                               : 'border border-transparent text-sidebar-foreground/72 hover:bg-sidebar-accent/78 hover:text-sidebar-accent-foreground hover:border-primary/12',
                             collapsed && 'justify-center px-0 border-l-0'
                           )}
@@ -456,7 +456,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
                       isActive
-                        ? 'bg-primary/16 text-sidebar-primary-foreground border border-primary/22 shadow-[0_18px_40px_-28px_hsl(var(--nexus-glow)/0.65)]'
+                        ? 'bg-[linear-gradient(135deg,hsl(var(--primary)/0.26),hsl(var(--accent)/0.16))] text-sidebar-primary-foreground border border-primary/28 shadow-[0_22px_48px_-28px_hsl(var(--primary)/0.55)]'
                         : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground hover:border-primary/12 border border-transparent',
                       collapsed && 'justify-center px-0'
                     )}

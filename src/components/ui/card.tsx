@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
-  "nexus-card rounded-2xl text-card-foreground transition-all duration-300",
+  "nexus-card rounded-[28px] text-card-foreground transition-all duration-300",
   {
     variants: {
       variant: {
-        default: "bg-card/88 border-border/70 shadow-[0_18px_40px_-28px_hsl(var(--foreground)/0.45)] hover:border-primary/30 hover:shadow-[0_24px_55px_-28px_hsl(var(--nexus-glow)/0.35)]",
-        elevated: "bg-card/94 border-border/80 shadow-[0_24px_60px_-30px_hsl(var(--foreground)/0.5)] hover:border-primary/35 hover:shadow-[0_28px_70px_-32px_hsl(var(--nexus-glow)/0.4)]",
-        outlined: "bg-card/88 border border-primary/25 shadow-[0_16px_36px_-28px_hsl(var(--foreground)/0.35)] hover:border-primary/45",
+        default: "bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-2))_100%)] border-border/80 shadow-[0_24px_60px_-32px_hsl(var(--foreground)/0.65)] hover:border-primary/40 hover:shadow-[0_30px_72px_-32px_hsl(var(--primary)/0.32)]",
+        elevated: "bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-3))_100%)] border-border/85 shadow-[0_30px_70px_-34px_hsl(var(--foreground)/0.72)] hover:border-primary/45 hover:shadow-[0_38px_88px_-38px_hsl(var(--primary)/0.36)]",
+        outlined: "bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--primary)/0.06)_100%)] border border-primary/30 shadow-[0_20px_48px_-30px_hsl(var(--foreground)/0.52)] hover:border-primary/55",
         ghost: "bg-transparent border-transparent shadow-none",
-        glass: "nexus-glass shadow-[0_24px_60px_-34px_hsl(var(--nexus-glow)/0.25)] hover:border-primary/30",
-        interactive: "bg-card/90 border border-border/70 shadow-[0_18px_40px_-28px_hsl(var(--foreground)/0.42)] cursor-pointer hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-[0_24px_55px_-30px_hsl(var(--nexus-glow)/0.35)] active:scale-[0.99]",
+        glass: "nexus-glass shadow-[0_30px_72px_-36px_hsl(var(--foreground)/0.75)] hover:border-primary/35",
+        interactive: "bg-[linear-gradient(145deg,hsl(var(--card))_0%,hsl(var(--surface-2))_100%)] border border-border/80 shadow-[0_24px_60px_-32px_hsl(var(--foreground)/0.62)] cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_30px_72px_-32px_hsl(var(--primary)/0.34)] active:scale-[0.99]",
         muted: "bg-muted/30 border border-border/60 shadow-none",
         success: "bg-success/8 border border-success/25 shadow-[0_18px_36px_-30px_hsl(var(--success)/0.25)] hover:border-success/45",
         warning: "bg-warning/8 border border-warning/25 shadow-[0_18px_36px_-30px_hsl(var(--warning)/0.25)] hover:border-warning/45",

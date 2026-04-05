@@ -25,9 +25,12 @@ export function ThemeProvider({
   defaultTheme = "system",
   storageKey = "relateiq-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const savedTheme = localStorage.getItem(storageKey);
+    return savedTheme === "light" || savedTheme === "dark" || savedTheme === "system"
+      ? savedTheme
+      : defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

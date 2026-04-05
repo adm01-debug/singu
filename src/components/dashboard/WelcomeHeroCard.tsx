@@ -75,18 +75,18 @@ export function WelcomeHeroCard() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="relative overflow-hidden rounded-[28px] border border-primary/20 bg-[linear-gradient(135deg,hsl(var(--surface-1))_0%,hsl(var(--card))_45%,hsl(var(--surface-2))_100%)] p-5 md:p-8 group shadow-[0_28px_80px_-44px_hsl(var(--nexus-glow)/0.5)] hover:border-primary/35 transition-colors duration-300"
+      className="relative overflow-hidden rounded-[32px] border border-primary/25 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/0.18),transparent_20%),radial-gradient(circle_at_88%_0%,hsl(var(--accent)/0.18),transparent_28%),linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--surface-2))_55%,hsl(var(--surface-3))_100%)] p-5 md:p-8 group shadow-[0_36px_96px_-48px_hsl(var(--primary)/0.42)] hover:border-primary/45 transition-colors duration-300"
     >
       {/* Animated decorative orbs */}
       <motion.div 
         animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.22, 0.12] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/25 via-accent/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
+        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/28 via-warning/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
       />
       <motion.div 
         animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.16, 0.08] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-nexus-cyan/15 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
+        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-accent/18 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
       />
       
       <div className="relative flex items-center justify-between gap-4">
