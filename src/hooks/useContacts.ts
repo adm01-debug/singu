@@ -70,6 +70,7 @@ export function useContacts(companyId?: string) {
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
       toast({ title: 'Contato criado', description: `${data?.first_name} ${data?.last_name} foi adicionado com sucesso.` });
+      if (data) logActivity({ type: 'created', entityType: 'contact', entityId: data.id, entityName: `${data.first_name} ${data.last_name}`.trim(), description: 'Contato criado' });
       return data;
     } catch (error) {
       logger.error('Error creating contact:', error);
