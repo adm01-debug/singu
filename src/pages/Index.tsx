@@ -579,19 +579,7 @@ const Dashboard = () => {
                   </DashboardErrorBoundary>
                 </div>
 
-                {/* 5. Smart Reminders + Compatibility — compact row */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  <DashboardErrorBoundary sectionName="Lembretes">
-                    <LazySection fallbackVariant="list">
-                      <SmartRemindersPanel compact />
-                    </LazySection>
-                  </DashboardErrorBoundary>
-                  <DashboardErrorBoundary sectionName="Compatibilidade">
-                    <LazySection fallbackVariant="list">
-                      <CompatibilityAlertsList maxItems={3} />
-                    </LazySection>
-                  </DashboardErrorBoundary>
-                </div>
+                {/* Tab Geral now ends here — SmartReminders and Compatibility moved to Relações */}
               </motion.div>
             </TabsContent>
 
@@ -646,6 +634,20 @@ const Dashboard = () => {
             <TabsContent value="relationships" className="mt-4">
               <motion.div key={`relationships-${tabDirection}`} initial={tabAnimationVariants.initial} animate={tabAnimationVariants.animate} transition={tabAnimationVariants.transition} className="space-y-5">
                 
+                {/* Smart Reminders + Compatibility (moved from Geral) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  <DashboardErrorBoundary sectionName="Lembretes">
+                    <LazySection fallbackVariant="list">
+                      <SmartRemindersPanel compact />
+                    </LazySection>
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Compatibilidade">
+                    <LazySection fallbackVariant="list">
+                      <CompatibilityAlertsList maxItems={3} />
+                    </LazySection>
+                  </DashboardErrorBoundary>
+                </div>
+
                 {/* Portfolio Health — the main relationship overview */}
                 <DashboardErrorBoundary sectionName="Saúde do Portfólio">
                   <LazySection fallbackVariant="card" fallbackHeight="h-48">
