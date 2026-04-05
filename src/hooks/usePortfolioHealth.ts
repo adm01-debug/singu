@@ -59,13 +59,31 @@ export interface PortfolioAlert {
   contactIds: string[];
 }
 
+/** Filter out contacts whose names look like phone numbers, emails, or test data */
+function isValidContactName(contact: Contact): boolean {
+  const firstName = (contact.firstName || '').trim();
+  const lastName = (contact.lastName || '').trim();
+  const name = `${firstName} ${lastName}`.trim();
+  if (!name || name.length < 2) return false;
+  if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
+  if (firstName.includes('@')) return false;
+  if (/^test/i.test(name)) return false;
+  if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
+  if (/^\d{10,}$/.test(lastName)) return false;
+  if (/^\d+$/.test(name.replace(/\s/g, ''))) return false;
+  return true;
+}
+
 export function usePortfolioHealth(contacts: Contact[], interactions: Interaction[]) {
   const metrics = useMemo<PortfolioHealthMetrics>(() => {
     const now = new Date();
     const threeMonthsAgo = subDays(now, 90);
+
+    // Filter out technical/test contacts
+    const validContacts = contacts.filter(isValidContactName);
     
     // Calculate health for each client
-    const clientHealths: ClientHealthSummary[] = contacts.map(contact => {
+    const clientHealths: ClientHealthSummary[] = validContacts.map(contact => {
       const contactInteractions = interactions.filter(i => i.contactId === contact.id);
       const contactName = `${contact.firstName} ${contact.lastName}`;
       
