@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { queryExternalData } from '@/lib/externalData';
+import { formatContactName, pluralize } from '@/lib/formatters';
 import type { Contact, Company } from '@/hooks/useContactDetail';
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
