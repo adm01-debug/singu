@@ -226,9 +226,11 @@ interface DISCTemplateLibraryProps {
 
 const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile }) => {
   const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavoriteTemplates();
   const [activeProfile, setActiveProfile] = useState<string>(filterProfile || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const filteredTemplates = useMemo(() => {
     return DISC_TEMPLATES.filter(template => {
