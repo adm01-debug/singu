@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 
 interface Props {
   contactId: string;
