@@ -175,7 +175,7 @@ export function BestTimeToContactPanel({ contactId, compact = false }: BestTimeT
                       </div>
                     </div>
                     <Badge variant="secondary" className="text-xs">
-                      {slot.interactionCount} interações
+                      {slot.interactionCount === 1 ? '1 interação' : `${slot.interactionCount} interações`}
                     </Badge>
                   </div>
                   <div className="mt-2 flex items-center gap-2">

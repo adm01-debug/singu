@@ -300,7 +300,7 @@ export function ClosingScoreRanking({
                           <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <MessageSquare className="h-3 w-3" />
-                              {item.interactionCount} interações
+                              {item.interactionCount === 1 ? '1 interação' : `${item.interactionCount} interações`}
                             </span>
                             {item.lastInteractionDays !== null && (
                               <span className="flex items-center gap-1">
