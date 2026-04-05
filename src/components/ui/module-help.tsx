@@ -14,8 +14,8 @@ import { cn } from '@/lib/utils';
 interface ModuleHelpProps {
   title: string;
   description: string;
-  benefits?: string[];
-  howToUse?: string[];
+  benefits?: readonly string[];
+  howToUse?: readonly string[];
   className?: string;
 }
 
