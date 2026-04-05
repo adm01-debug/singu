@@ -338,21 +338,21 @@ const Dashboard = () => {
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent [&:has(~div:first-child)]:border-border/30 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
               <TabsList className="grid w-full grid-cols-4 bg-card/80 border border-border/60 p-1.5 rounded-xl shadow-soft">
-                <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
+                <TabsTrigger value="overview" className="gap-1 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  <span className="hidden sm:inline truncate">Visão Geral</span>
+                  <span className="truncate">Geral</span>
                 </TabsTrigger>
-                <TabsTrigger value="analytics" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
+                <TabsTrigger value="analytics" className="gap-1 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <BarChart3 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  <span className="hidden sm:inline truncate">Analytics</span>
+                  <span className="truncate">Analytics</span>
                 </TabsTrigger>
-                <TabsTrigger value="relationships" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
+                <TabsTrigger value="relationships" className="gap-1 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <Heart className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  <span className="hidden sm:inline truncate">Relações</span>
+                  <span className="truncate">Relações</span>
                 </TabsTrigger>
-                <TabsTrigger value="intelligence" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
+                <TabsTrigger value="intelligence" className="gap-1 text-[10px] sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md rounded-lg transition-all font-medium">
                   <Brain className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                  <span className="hidden sm:inline truncate">IA</span>
+                  <span className="truncate">IA</span>
                 </TabsTrigger>
               </TabsList>
             </div>
