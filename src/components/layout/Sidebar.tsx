@@ -531,7 +531,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                       className="flex-1 text-left min-w-0 overflow-hidden"
                     >
                       <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
-                      <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+                      <p className="text-xs text-sidebar-foreground/60 truncate" title={user?.email || ''}>{user?.email}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

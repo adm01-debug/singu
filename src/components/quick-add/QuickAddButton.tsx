@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, User, Building2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -190,28 +191,37 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement>((_, ref) => {
           ))}
         </AnimatePresence>
 
-        <motion.button
-          data-tour="quick-add"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label={isOpen ? 'Fechar menu de criação rápida' : 'Abrir menu de criação rápida'}
-          aria-expanded={isOpen}
-          className={cn(
-            'w-14 h-14 rounded-full shadow-xl flex items-center justify-center',
-            'bg-primary text-primary-foreground',
-            'hover:bg-primary/90 active:scale-95 transition-all',
-            'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
-            isOpen && 'bg-destructive hover:bg-destructive/90'
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <motion.button
+              data-tour="quick-add"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? 'Fechar menu de criação rápida' : 'Abrir menu de criação rápida'}
+              aria-expanded={isOpen}
+              className={cn(
+                'w-14 h-14 rounded-full shadow-xl flex items-center justify-center',
+                'bg-primary text-primary-foreground',
+                'hover:bg-primary/90 active:scale-95 transition-all',
+                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
+                isOpen && 'bg-destructive hover:bg-destructive/90'
+              )}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.div
+                animate={{ rotate: isOpen ? 45 : 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              >
+                {isOpen ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+              </motion.div>
+            </motion.button>
+          </TooltipTrigger>
+          {!isOpen && (
+            <TooltipContent side="left" className="font-medium">
+              Criação rápida (⌘+N)
+            </TooltipContent>
           )}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <motion.div
-            animate={{ rotate: isOpen ? 45 : 0 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-          </motion.div>
-        </motion.button>
+        </Tooltip>
       </div>
 
       {isMobile ? (

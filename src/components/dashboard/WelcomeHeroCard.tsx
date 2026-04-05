@@ -3,9 +3,12 @@ import { Calendar, Sun, Moon, Sunset } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 function formatDisplayName(raw: string): string {
-  // Remove numbers and common email prefixes
+  // Remove numbers, underscores, dots, hyphens
   const cleaned = raw.replace(/[0-9_\-.]+/g, ' ').trim();
-  if (!cleaned) return '';
+  if (!cleaned || cleaned.length < 3) return '';
+  // Reject names that look like technical IDs (e.g. "adm", "usr", "test")
+  const techPatterns = /^(adm|usr|admin|test|user|dev|root|sys|tmp)$/i;
+  if (techPatterns.test(cleaned)) return '';
   // Capitalize each word
   return cleaned
     .split(/\s+/)
@@ -22,7 +25,7 @@ export function WelcomeHeroCard() {
     || user?.user_metadata?.display_name?.split(' ')[0]
     || user?.email?.split('@')[0] 
     || '';
-  const firstName = formatDisplayName(rawName) || 'usuário';
+  const firstName = formatDisplayName(rawName);
   
   let greeting: string;
   let GreetingIcon: typeof Sun;
@@ -47,7 +50,7 @@ export function WelcomeHeroCard() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-foreground">
-            {greeting}, {firstName}
+            {firstName ? `${greeting}, ${firstName}` : 'Olá! 👋'}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" />
