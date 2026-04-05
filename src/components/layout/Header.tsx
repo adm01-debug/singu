@@ -8,6 +8,7 @@ import { BackButton } from '@/components/navigation/BackButton';
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  icon?: React.ElementType;
   showAddButton?: boolean;
   addButtonLabel?: string;
   onAddClick?: () => void;
