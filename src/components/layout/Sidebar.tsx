@@ -295,10 +295,15 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto" aria-label="Menu principal">
-          {menuGroups.map((group) => (
+          {menuGroups.map((group, groupIndex) => (
             <div key={group.label} className="space-y-1">
-              <AnimatePresence>
-                {!collapsed && (
+              {/* Group label or separator */}
+              {collapsed ? (
+                groupIndex > 0 && (
+                  <div className="mx-auto w-6 border-t border-sidebar-border/50 my-1" />
+                )
+              ) : (
+                <AnimatePresence>
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -307,8 +312,8 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                   >
                     {group.label}
                   </motion.p>
-                )}
-              </AnimatePresence>
+                </AnimatePresence>
+              )}
               {group.items.map((item) => {
                 const isExactActive = location.pathname === item.path;
                 const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');

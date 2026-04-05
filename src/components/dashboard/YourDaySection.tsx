@@ -130,13 +130,28 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* No data state */}
       {!hasAnyData && (
-        <div className="rounded-xl border border-dashed border-border/50 bg-muted/10 py-8 text-center">
-          <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/40" />
-          <h3 className="text-sm font-semibold text-foreground mb-0.5">Tudo em dia!</h3>
-          <p className="text-xs text-muted-foreground">
-            Nenhuma tarefa urgente ou follow-up pendente.
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="rounded-xl border border-dashed border-success/20 bg-success/5 py-10 text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+          >
+            <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-success/60" />
+          </motion.div>
+          <h3 className="text-sm font-semibold text-foreground mb-1">Tudo em dia! 🎉</h3>
+          <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
+            Nenhuma tarefa urgente ou follow-up pendente. Aproveite para fortalecer seus relacionamentos.
           </p>
-        </div>
+          <Link to="/contatos" className="inline-flex items-center gap-1.5 mt-4 text-xs font-medium text-primary hover:underline">
+            Ver contatos
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </motion.div>
       )}
 
       {/* Unified list layout */}

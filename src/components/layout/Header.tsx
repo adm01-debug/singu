@@ -1,12 +1,14 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Bell, Plus } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  icon?: React.ElementType;
   showAddButton?: boolean;
   addButtonLabel?: string;
   onAddClick?: () => void;
@@ -30,7 +32,8 @@ const PARENT_ROUTES: Record<string, string> = {
 
 export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({ 
   title, 
-  subtitle, 
+  subtitle,
+  icon: PageIcon,
   showAddButton, 
   addButtonLabel, 
   onAddClick,
@@ -54,11 +57,22 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
               className="shrink-0 -ml-1 hidden md:inline-flex"
             />
           )}
-          <div className="min-w-0">
-            <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
-            {subtitle && (
-              <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+          <div className="min-w-0 flex items-center gap-2">
+            {PageIcon && (
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="p-1.5 rounded-lg bg-primary/8 shrink-0 hidden md:flex"
+              >
+                <PageIcon className="w-4 h-4 text-primary" aria-hidden="true" />
+              </motion.div>
             )}
+            <div className="min-w-0">
+              <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
+              {subtitle && (
+                <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+              )}
+            </div>
           </div>
         </div>
 

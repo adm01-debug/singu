@@ -318,6 +318,7 @@ const Dashboard = () => {
       <ScrollProgressBar />
       <Header 
         title="Dashboard" 
+        icon={LayoutGrid}
         hideBack
       />
 
