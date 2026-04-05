@@ -233,6 +233,5 @@ const ContatoDetalhe = () => {
     </>
   );
 };
-};
 
 export default ContatoDetalhe;
