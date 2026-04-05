@@ -17,6 +17,9 @@ import {
   Heart,
   ChevronDown,
   ChevronUp,
+  Phone,
+  Mail,
+  Video,
 } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
