@@ -200,9 +200,17 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
     ? `${(user.user_metadata.first_name as string)[0]}${(user.user_metadata.last_name as string)[0]}`
     : user?.email?.[0]?.toUpperCase() || 'U';
 
-  const userName = user?.user_metadata?.first_name && user?.user_metadata?.last_name
-    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
-    : user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  // Format a clean display name, filtering technical IDs
+  const userName = (() => {
+    if (user?.user_metadata?.first_name && user?.user_metadata?.last_name) {
+      return `${user.user_metadata.first_name} ${user.user_metadata.last_name}`;
+    }
+    if (user?.user_metadata?.full_name) return user.user_metadata.full_name as string;
+    const emailPrefix = user?.email?.split('@')[0] || 'Usuário';
+    const cleaned = emailPrefix.replace(/[0-9_\-.]+/g, ' ').trim();
+    if (!cleaned || cleaned.length < 4) return 'Minha Conta';
+    return cleaned.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  })();
 
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
@@ -562,7 +570,7 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className="flex-1 text-left min-w-0 overflow-hidden"
                         >
                           <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
-                          <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+                          <p className="text-xs text-sidebar-foreground/60 truncate" title={user?.email || ''}>{user?.email}</p>
                         </motion.div>
                       )}
                     </AnimatePresence>
