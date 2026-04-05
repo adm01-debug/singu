@@ -25,6 +25,7 @@ interface RecentActivity {
   description: string;
   createdAt: Date;
   type: string;
+  contactId: string;
 }
 
 export interface DashboardStats {
@@ -139,6 +140,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         const contact = contactMap.get(interaction.contact_id);
         return {
           id: interaction.id,
+          contactId: interaction.contact_id,
           entityName: contact ? `${contact.first_name} ${contact.last_name}` : 'Contato',
           description: interaction.title,
           createdAt: new Date(interaction.created_at),
