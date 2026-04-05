@@ -180,17 +180,16 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         const lastName = (c.last_name || '').trim();
         const name = `${firstName} ${lastName}`.trim();
         if (!name) return false;
+        // Require both first and last name for quality
+        if (!firstName || !lastName) return false;
         // Filter phone-formatted names, emails, test data, WhatsApp auto-contacts
         if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
         if (firstName.includes('@')) return false;
         if (/^test/i.test(name)) return false;
         if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
         if (/^\d{10,}$/.test(lastName)) return false;
-        // Filter contacts whose name matches a company name (likely auto-imported)
-        if (companyMap.size > 0) {
-          const companyNames = new Set([...companyMap.values()].map(c => c.name?.toLowerCase().trim()).filter(Boolean));
-          if (companyNames.has(name.toLowerCase())) return false;
-        }
+        // Filter names that look like company names (multi-word first name with no last name already caught above)
+        if (firstName.split(/\s+/).length >= 2 && !lastName) return false;
         return true;
       };
 
