@@ -186,6 +186,11 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         if (/^test/i.test(name)) return false;
         if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
         if (/^\d{10,}$/.test(lastName)) return false;
+        // Filter contacts whose name matches a company name (likely auto-imported)
+        if (companyMap.size > 0) {
+          const companyNames = new Set([...companyMap.values()].map(c => c.name?.toLowerCase().trim()).filter(Boolean));
+          if (companyNames.has(name.toLowerCase())) return false;
+        }
         return true;
       };
 
