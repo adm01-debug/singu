@@ -159,6 +159,8 @@ interface CompanyCardWithContextProps {
   isSelected: boolean;
   isHighlighted: boolean;
   selectionMode: boolean;
+  contactCount?: number;
+  lastInteractionDays?: number | null;
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (company: Company) => void;
   onDelete: (company: Company) => void;
