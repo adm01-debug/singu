@@ -69,7 +69,7 @@ const CompletionStep = ({ data, onComplete, onBack, isLoading }: CompletionStepP
           transition={{ delay: 0.3, type: 'spring' }}
           className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-warning flex items-center justify-center"
         >
-          <span className="text-lg">🎉</span>
+          <span className="text-lg" role="img" aria-hidden="true">🎉</span>
         </motion.div>
       </motion.div>
 
