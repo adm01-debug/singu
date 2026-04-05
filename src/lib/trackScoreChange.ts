@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 
 /**
@@ -20,7 +21,7 @@ export async function trackScoreChange(params: {
       score_type: params.scoreType,
       score_value: params.newValue,
       previous_value: params.previousValue ?? null,
-      factors: (params.factors as Record<string, unknown>) ?? null,
+      factors: (params.factors ?? null) as Json,
     }]);
   } catch (error) {
     logger.warn('Failed to track score change', error);
