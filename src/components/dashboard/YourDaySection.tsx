@@ -31,13 +31,15 @@ const interactionTypeIcons: Record<string, React.ElementType> = {
   note: MessageSquare,
 };
 
+const skeletonLabels = ['Carregando follow-ups...', 'Carregando aniversários...', 'Carregando alertas...'];
+
 const YourDaySkeleton = () => (
-  <div className="space-y-3">
-    {[...Array(3)].map((_, i) => (
+  <div className="space-y-3" role="status" aria-label="Carregando seu dia">
+    {skeletonLabels.map((label, i) => (
       <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border/50">
         <Skeleton className="h-9 w-9 rounded-full" />
         <div className="flex-1 space-y-1.5">
-          <Skeleton className="h-4 w-32" />
+          <span className="text-xs text-muted-foreground font-medium">{label}</span>
           <Skeleton className="h-3 w-48" />
         </div>
         <Skeleton className="h-5 w-12 rounded-full" />
