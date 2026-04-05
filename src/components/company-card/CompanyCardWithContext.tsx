@@ -173,6 +173,8 @@ export function CompanyCardWithContext({
   isSelected,
   isHighlighted,
   selectionMode,
+  contactCount = 0,
+  lastInteractionDays,
   onSelect,
   onEdit,
   onDelete,
