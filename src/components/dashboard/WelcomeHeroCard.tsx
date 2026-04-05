@@ -120,11 +120,11 @@ export function WelcomeHeroCard() {
         >
           <Link 
             to="/contatos"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 hover:border-primary/40 hover:shadow-glow transition-all group"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/25 hover:bg-primary/20 hover:border-primary/40 hover:shadow-glow transition-all duration-300 group/ai"
           >
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Sparkles className="w-4 h-4 text-primary group-hover/ai:animate-pulse" />
             <span className="text-sm font-semibold text-primary">SINGU AI</span>
-            <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 -ml-1 group-hover:ml-0 transition-all" />
+            <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover/ai:opacity-100 -ml-1 group-hover/ai:ml-0 transition-all duration-300" />
           </Link>
         </motion.div>
       </div>
