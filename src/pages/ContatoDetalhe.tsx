@@ -110,6 +110,7 @@ const ContatoDetalhe = () => {
   const isProcessing = latestRecord?.status === 'processing';
 
   return (
+    <>
     <AppLayout>
       <div className="min-h-screen p-4 md:p-6 space-y-4">
         {/* Breadcrumb + Lux */}
