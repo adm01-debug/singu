@@ -1,6 +1,7 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Bell, Plus } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
 
