@@ -195,6 +195,7 @@ export function OnboardingTour({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50"
+        data-tour-dialog="true"
       >
         {/* Dark overlay with cutout for target */}
         <div className="absolute inset-0 bg-black/60" />
