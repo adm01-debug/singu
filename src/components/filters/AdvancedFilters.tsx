@@ -198,7 +198,7 @@ export function AdvancedFilters({
         {/* Sort Dropdown */}
         <Popover open={sortOpen} onOpenChange={setSortOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1.5 h-9">
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 shrink-0 whitespace-nowrap">
               <ArrowUpDown className="w-3.5 h-3.5" />
               Ordenar
               <ChevronDown className="w-3.5 h-3.5 ml-0.5" />
