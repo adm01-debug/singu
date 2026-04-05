@@ -55,7 +55,7 @@ export function WelcomeHeroCard() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-accent/10 border border-border/60 p-4 md:p-8"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-card to-accent/10 border border-border/60 p-4 md:p-8 group hover:border-primary/20 transition-colors duration-300"
     >
       {/* Animated decorative orbs */}
       <motion.div 
