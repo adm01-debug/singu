@@ -535,37 +535,39 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
             )}
           </AnimatePresence>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost"
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 h-auto hover:bg-sidebar-accent',
-                  collapsed && 'justify-center px-0'
-                )}
-              >
-                <OptimizedAvatar 
-                  src={user?.user_metadata?.avatar_url}
-                  alt="User avatar"
-                  fallback={userInitials}
-                  size="sm"
-                  className="w-8 h-8 border-2 border-sidebar-primary/30 flex-shrink-0"
-                />
-                <AnimatePresence>
-                  {!collapsed && (
-                    <motion.div
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="flex-1 text-left min-w-0 overflow-hidden"
-                    >
-                      <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
-                      <p className="text-xs text-sidebar-foreground/60 truncate" title={user?.email || ''}>{user?.email}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
-            </DropdownMenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost"
+                    className={cn(
+                      'w-full flex items-center gap-3 px-3 py-2.5 h-auto hover:bg-sidebar-accent',
+                      collapsed && 'justify-center px-0'
+                    )}
+                  >
+                    <OptimizedAvatar 
+                      src={user?.user_metadata?.avatar_url}
+                      alt="User avatar"
+                      fallback={userInitials}
+                      size="sm"
+                      className="w-8 h-8 border-2 border-sidebar-primary/30 flex-shrink-0"
+                    />
+                    <AnimatePresence>
+                      {!collapsed && (
+                        <motion.div
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          className="flex-1 text-left min-w-0 overflow-hidden"
+                        >
+                          <p className="text-sm font-medium text-sidebar-foreground truncate">{userName}</p>
+                          <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </Button>
+                </DropdownMenuTrigger>
             <DropdownMenuContent align={collapsed ? "center" : "end"} side={collapsed ? "right" : "top"} className="w-56">
               <DropdownMenuItem className="cursor-pointer" onClick={() => navigate('/configuracoes')}>
                 <User className="w-4 h-4 mr-2" />
