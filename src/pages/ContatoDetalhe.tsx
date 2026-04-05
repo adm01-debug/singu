@@ -60,6 +60,7 @@ const ContatoDetalhe = () => {
   const { trackView } = useRecentlyViewed();
   const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
   const proactiveIntelligence = useProactiveIntelligence(contact, interactions);
+  const [meetingMode, setMeetingMode] = useState(false);
 
   useEffect(() => {
     if (contact && id) {
