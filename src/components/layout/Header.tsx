@@ -32,7 +32,8 @@ const PARENT_ROUTES: Record<string, string> = {
 
 export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({ 
   title, 
-  subtitle, 
+  subtitle,
+  icon: PageIcon,
   showAddButton, 
   addButtonLabel, 
   onAddClick,
