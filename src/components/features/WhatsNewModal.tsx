@@ -85,41 +85,9 @@ export function WhatsNewModal({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
-    if (seenVersion === version) return;
-
-    const isTourActive = () => !!document.querySelector('[data-tour-dialog]');
-    let pollId: ReturnType<typeof setInterval> | null = null;
-    let showTimerId: ReturnType<typeof setTimeout> | null = null;
-    let giveUpId: ReturnType<typeof setTimeout> | null = null;
-
-    // Wait 6s before checking — gives tour time to initialize
-    const initialDelay = setTimeout(() => {
-      const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
-      
-      if (tourCompleted && !isTourActive()) {
-        showTimerId = setTimeout(() => setIsVisible(true), 1500);
-        return;
-      }
-
-      // Poll until tour is done AND gone from DOM
-      pollId = setInterval(() => {
-        const completed = localStorage.getItem('tour-completed-main') === 'true';
-        if (completed && !isTourActive()) {
-          if (pollId) clearInterval(pollId);
-          showTimerId = setTimeout(() => setIsVisible(true), 5000);
-        }
-      }, 2000);
-
-      giveUpId = setTimeout(() => { if (pollId) clearInterval(pollId); }, 120000);
-    }, 6000);
-
-    return () => { 
-      clearTimeout(initialDelay);
-      if (pollId) clearInterval(pollId);
-      if (showTimerId) clearTimeout(showTimerId);
-      if (giveUpId) clearTimeout(giveUpId);
-    };
+    localStorage.setItem(WHATS_NEW_KEY, version);
+    setIsVisible(false);
+    return undefined;
   }, [version]);
 
   const handleDismiss = () => {

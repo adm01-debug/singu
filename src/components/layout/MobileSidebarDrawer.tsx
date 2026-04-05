@@ -105,7 +105,7 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
                 <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-nexus-cyan to-accent shadow-[0_18px_32px_-16px_hsl(var(--nexus-glow)/0.85)]">
                   <Zap className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-bold text-lg text-sidebar-foreground">SINGU</span>
+                <span className="font-bold text-lg text-sidebar-accent-foreground">SINGU</span>
               </div>
               <button
                 onClick={onClose}
@@ -119,7 +119,7 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
             <div className="p-4">
               <button
                 onClick={handleSearch}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-sidebar-accent/50 text-sidebar-foreground/70 hover:bg-sidebar-accent transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-sidebar-border/70 bg-[linear-gradient(135deg,hsl(var(--sidebar-accent))_0%,hsl(var(--sidebar-background))_100%)] text-sidebar-foreground/76 hover:bg-sidebar-accent transition-colors"
               >
                 <Search className="w-4 h-4" />
                 <span className="text-sm">Buscar...</span>
@@ -147,7 +147,7 @@ export function MobileSidebarDrawer({ open, onClose, onSearchClick }: MobileSide
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-all",
                           active 
-                            ? "bg-primary/16 border border-primary/22 text-sidebar-primary-foreground shadow-[0_18px_40px_-24px_hsl(var(--nexus-glow)/0.7)]" 
+                            ? "bg-[linear-gradient(135deg,hsl(var(--primary)/0.4),hsl(var(--accent)/0.22))] border border-primary/40 text-sidebar-primary-foreground shadow-[0_22px_44px_-24px_hsl(var(--primary)/0.62)]" 
                             : "border border-transparent text-sidebar-foreground/76 hover:bg-sidebar-accent hover:text-sidebar-foreground hover:border-primary/15"
                         )}
                       >
