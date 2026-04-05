@@ -469,12 +469,13 @@ const Dashboard = () => {
                                       className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
                                     >
                                       {(() => {
-                                        const iconClass = "w-3.5 h-3.5 flex-shrink-0";
+                                        const iconWrapClass = "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0";
+                                        const iconClass = "w-3.5 h-3.5";
                                         switch (activity.type) {
-                                          case 'call': return <Phone className={`${iconClass} text-green-500`} />;
-                                          case 'email': return <Mail className={`${iconClass} text-blue-500`} />;
-                                          case 'meeting': return <Video className={`${iconClass} text-purple-500`} />;
-                                          default: return <MessageSquare className={`${iconClass} text-primary`} />;
+                                          case 'call': return <div className={`${iconWrapClass} bg-success/10`}><Phone className={`${iconClass} text-success`} /></div>;
+                                          case 'email': return <div className={`${iconWrapClass} bg-info/10`}><Mail className={`${iconClass} text-info`} /></div>;
+                                          case 'meeting': return <div className={`${iconWrapClass} bg-accent/10`}><Video className={`${iconClass} text-accent`} /></div>;
+                                          default: return <div className={`${iconWrapClass} bg-primary/10`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
                                         }
                                       })()}
                                       <div className="flex-1 min-w-0">
