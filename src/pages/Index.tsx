@@ -591,14 +591,9 @@ const Dashboard = () => {
                   </div>
                 </DashboardErrorBoundary>
                 <DashboardErrorBoundary sectionName="Compatibilidade">
-                  <div className="space-y-5">
-                    <LazySection fallbackVariant="list">
-                      <DISCCompatibilityAlerts compact maxItems={3} />
-                    </LazySection>
-                    <LazySection fallbackVariant="list">
-                      <CompatibilityAlertsList maxItems={3} />
-                    </LazySection>
-                  </div>
+                  <LazySection fallbackVariant="list">
+                    <CompatibilityAlertsList maxItems={3} />
+                  </LazySection>
                 </DashboardErrorBoundary>
               </div>
               </motion.div>
