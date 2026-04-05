@@ -74,6 +74,11 @@ export const useSmartReminders = (autoFetch = true) => {
     setIsLoading(true);
     setError(null);
 
+    // Timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 10000);
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -106,15 +111,12 @@ export const useSmartReminders = (autoFetch = true) => {
     } catch (err) {
       logger.error('Error fetching smart reminders:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      toast({
-        title: 'Erro ao carregar lembretes',
-        description: 'Não foi possível obter os lembretes inteligentes.',
-        variant: 'destructive'
-      });
+      // Silent fail on dashboard — don't show toast for expected edge function errors
     } finally {
+      clearTimeout(timeout);
       setIsLoading(false);
     }
-  }, [dismissedIds, toast]);
+  }, [dismissedIds]);
 
   const dismissReminder = useCallback((id: string) => {
     setDismissedIds(prev => {
