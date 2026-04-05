@@ -239,9 +239,10 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
         template.template.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         template.context.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesProfile && matchesSearch;
+      const matchesFav = !showFavoritesOnly || isFavorite(template.id);
+      return matchesProfile && matchesSearch && matchesFav;
     });
-  }, [activeProfile, searchQuery]);
+  }, [activeProfile, searchQuery, showFavoritesOnly, isFavorite]);
 
   const categories = useMemo(() => {
     const cats = [...new Set(filteredTemplates.map(t => t.category))];
