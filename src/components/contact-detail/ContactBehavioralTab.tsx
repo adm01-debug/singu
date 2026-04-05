@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
+import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import type { Contact } from '@/hooks/useContactDetail';
 
 const DISC_LABELS: Record<string, { name: string; color: string }> = {
@@ -89,14 +90,17 @@ export function ContactBehavioralTab({ contact }: Props) {
 
   return (
     <Tabs defaultValue="disc" className="space-y-4">
-      <TabsList className="flex-wrap h-auto gap-1">
-        <TabsTrigger value="disc" className="text-xs">DISC</TabsTrigger>
-        <TabsTrigger value="vak" className="text-xs">VAK</TabsTrigger>
-        <TabsTrigger value="eq" className="text-xs">Inteligência Emocional</TabsTrigger>
-        <TabsTrigger value="biases" className="text-xs">Vieses Cognitivos</TabsTrigger>
-        <TabsTrigger value="metaprograms" className="text-xs">Metaprogramas</TabsTrigger>
-        <TabsTrigger value="personality" className="text-xs">Personalidade</TabsTrigger>
-      </TabsList>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="disc" className="text-xs">DISC</TabsTrigger>
+          <TabsTrigger value="vak" className="text-xs">VAK</TabsTrigger>
+          <TabsTrigger value="eq" className="text-xs">Inteligência Emocional</TabsTrigger>
+          <TabsTrigger value="biases" className="text-xs">Vieses Cognitivos</TabsTrigger>
+          <TabsTrigger value="metaprograms" className="text-xs">Metaprogramas</TabsTrigger>
+          <TabsTrigger value="personality" className="text-xs">Personalidade</TabsTrigger>
+        </TabsList>
+        <ModuleHelp {...moduleHelpContent.disc} />
+      </div>
 
       {/* DISC Tab */}
       <TabsContent value="disc" className="space-y-4">
