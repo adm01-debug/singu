@@ -120,8 +120,8 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border/50" aria-label="Navegação principal">
       <SidebarHeader className="p-3">
         <Link to="/" className="flex items-center gap-2 min-w-0">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg nexus-gradient-bg shadow-sm">
-            <Zap className="w-4 h-4 text-primary-foreground" />
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg nexus-gradient-bg shadow-sm shadow-primary/30">
+            <Zap className="w-4 h-4 text-primary-foreground drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
           </div>
           {!collapsed && (
             <span className="font-heading text-base font-extrabold tracking-tight" aria-label="SINGU">
