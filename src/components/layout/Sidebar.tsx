@@ -334,9 +334,9 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
                             isActive
-                              ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground'
-                              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground',
-                            collapsed && 'justify-center px-0'
+                              ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground border-l-[3px] border-sidebar-primary'
+                              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground border-l-[3px] border-transparent',
+                            collapsed && 'justify-center px-0 border-l-0'
                           )}
                         >
                           <div className="relative">
