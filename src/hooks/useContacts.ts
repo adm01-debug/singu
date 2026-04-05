@@ -90,9 +90,12 @@ export function useContacts(companyId?: string) {
       const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
       const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
-      if (data) queryClient.setQueryData<Contact[]>(queryKey, prev =>
-        prev?.map(c => c.id === id ? data : c) ?? []
-      );
+      if (data) {
+        queryClient.setQueryData<Contact[]>(queryKey, prev =>
+          prev?.map(c => c.id === id ? data : c) ?? []
+        );
+        logActivity({ type: 'updated', entityType: 'contact', entityId: id, entityName: `${data.first_name} ${data.last_name}`.trim(), description: 'Contato atualizado' });
+      }
       return data;
     } catch (error) {
       logger.error('Error updating contact:', error);
