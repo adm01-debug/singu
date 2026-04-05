@@ -1,13 +1,24 @@
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { initGlobalErrorHandlers } from "@/lib/errorReporting";
-import { initializeSkin } from "@/components/settings/theme/useThemePreset";
 import App from "./App.tsx";
 import "./index.css";
 
+const LEGACY_THEME_STORAGE_KEYS = ["singu-skin"];
+const LEGACY_THEME_STYLE_IDS = ["singu-skin-style"];
+
+function cleanupLegacyTheme() {
+  try {
+    LEGACY_THEME_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    LEGACY_THEME_STYLE_IDS.forEach((id) => document.getElementById(id)?.remove());
+  } catch {
+    // noop: limpeza legada não deve bloquear o app
+  }
+}
+
 // Inicializar sistemas globais
 initGlobalErrorHandlers();
-initializeSkin();
+cleanupLegacyTheme();
 
 // Evita limpeza agressiva de cache em desenvolvimento para não atrasar o bootstrap.
 if (import.meta.env.PROD) {
