@@ -51,6 +51,15 @@ import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyb
 
 const filterConfigs: FilterConfig[] = [
   {
+    key: 'is_customer',
+    label: 'Tipo',
+    multiple: false,
+    options: [
+      { value: 'true', label: 'Clientes' },
+      { value: 'false', label: 'Prospects' },
+    ],
+  },
+  {
     key: 'industry',
     label: 'Segmento',
     multiple: true,

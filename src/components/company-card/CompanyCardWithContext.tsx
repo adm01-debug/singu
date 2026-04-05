@@ -292,6 +292,17 @@ export function CompanyCardWithContext({
                         <span>{company.industry}</span>
                       </div>
                     )}
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        'text-[10px] font-semibold mt-1 w-fit',
+                        company.is_customer 
+                          ? 'border-success/40 text-success bg-success/10' 
+                          : 'border-primary/40 text-primary bg-primary/10'
+                      )}
+                    >
+                      {company.is_customer ? 'Cliente' : 'Prospect'}
+                    </Badge>
                   </div>
                 </Link>
               </div>
