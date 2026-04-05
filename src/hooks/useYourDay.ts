@@ -175,7 +175,15 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
       // Process contacts needing attention
       const needsAttention: NeedsAttention[] = [];
       
-      attentionContacts.forEach(contact => {
+      const isValidContactName = (c: Contact) => {
+        const name = `${c.first_name} ${c.last_name}`.trim();
+        if (!name || /^\(\d+\)\s*\d+/.test(c.first_name)) return false;
+        if (c.first_name.includes('@')) return false;
+        if (/^test/i.test(name)) return false;
+        return true;
+      };
+
+      attentionContacts.filter(isValidContactName).forEach(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
         const lastUpdate = contact.updated_at ? new Date(contact.updated_at) : new Date(contact.created_at);
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
