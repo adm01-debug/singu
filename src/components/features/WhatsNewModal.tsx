@@ -88,42 +88,42 @@ export function WhatsNewModal({
     const seenVersion = localStorage.getItem(WHATS_NEW_KEY);
     if (seenVersion === version) return;
 
-    // Check if the onboarding tour dialog is currently visible in the DOM
-    const isTourDialogVisible = () => {
-      // The tour renders a dialog/modal — check for its presence
-      const tourEl = document.querySelector('[data-tour-dialog]') || 
-                     document.querySelector('.tour-dialog') ||
-                     document.querySelector('[role="dialog"]');
-      return !!tourEl;
-    };
+    // Only check for our specific tour dialog marker
+    const isTourActive = () => !!document.querySelector('[data-tour-dialog]');
 
-    // Poll until: tour is completed AND tour dialog is not visible on screen
-    const poll = setInterval(() => {
+    // Wait 6s before even starting to check — gives tour time to initialize and run
+    const initialDelay = setTimeout(() => {
       const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
-      if (tourCompleted && !isTourDialogVisible()) {
-        clearInterval(poll);
-        // Extra delay after tour closes for smooth UX
-        setTimeout(() => setIsVisible(true), 2000);
+      
+      if (tourCompleted && !isTourActive()) {
+        // Tour was completed in a previous session, show after brief delay
+        setTimeout(() => setIsVisible(true), 1500);
+        return;
       }
-    }, 1500);
 
-    // Don't start polling until 5s after mount (let tour initialize first)
-    const startTimer = setTimeout(() => {
-      // If tour was already completed in a previous session and no dialog is open, show after delay
-      const tourCompleted = localStorage.getItem('tour-completed-main') === 'true';
-      if (tourCompleted && !isTourDialogVisible()) {
-        clearInterval(poll);
-        setTimeout(() => setIsVisible(true), 1000);
-      }
-    }, 5000);
+      // Tour is either active or not yet started — poll until it's done AND gone from DOM
+      const poll = setInterval(() => {
+        const completed = localStorage.getItem('tour-completed-main') === 'true';
+        const active = isTourActive();
+        if (completed && !active) {
+          clearInterval(poll);
+          // Wait 5s after tour closes so user can settle in
+          setTimeout(() => setIsVisible(true), 5000);
+        }
+      }, 2000);
 
-    // Give up after 90s
-    const giveUp = setTimeout(() => clearInterval(poll), 90000);
+      // Give up after 120s
+      const giveUp = setTimeout(() => clearInterval(poll), 120000);
+      
+      // Store cleanup refs
+      (initialDelay as any).__poll = poll;
+      (initialDelay as any).__giveUp = giveUp;
+    }, 6000);
 
     return () => { 
-      clearInterval(poll); 
-      clearTimeout(startTimer);
-      clearTimeout(giveUp); 
+      clearTimeout(initialDelay);
+      if ((initialDelay as any).__poll) clearInterval((initialDelay as any).__poll);
+      if ((initialDelay as any).__giveUp) clearTimeout((initialDelay as any).__giveUp);
     };
   }, [version]);
 
