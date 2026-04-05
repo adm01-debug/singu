@@ -741,8 +741,9 @@ describe('Dashboard Index Layout', () => {
     expect(content).toContain('ScrollProgressBar');
   });
 
-  it('has ScrollToTopButton', () => {
-    expect(content).toContain('ScrollToTopButton');
+  it('has ScrollToTopButton in AppLayout', () => {
+    const appLayout = readSrc('components/layout/AppLayout.tsx');
+    expect(appLayout).toContain('ScrollToTopButton');
   });
 
   it('uses AppLayout wrapper', () => {
