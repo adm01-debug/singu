@@ -10,10 +10,10 @@ const statCardVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-card border-border/50 shadow-soft hover:shadow-medium hover:border-border',
-        elevated: 'bg-card border-border/40 shadow-medium',
+        default: 'bg-card border-border shadow-soft hover:shadow-medium hover:border-primary/20',
+        elevated: 'bg-card border-border shadow-medium hover:shadow-strong hover:border-primary/25',
         glass: 'glass',
-        interactive: 'bg-card border-border/50 shadow-soft cursor-pointer hover:shadow-medium hover:border-border active:scale-[0.99]',
+        interactive: 'bg-card border-border shadow-soft cursor-pointer hover:shadow-medium hover:border-primary/20 active:scale-[0.99]',
       },
       size: {
         sm: 'p-3',
@@ -26,17 +26,17 @@ const statCardVariants = cva(
 );
 
 const gradientToneMap = {
-  primary: 'from-primary/80 to-primary/40',
-  success: 'from-success/80 to-success/40',
-  warning: 'from-warning/80 to-warning/40',
-  premium: 'from-primary/80 to-accent/40',
+  primary: 'from-primary to-primary/50',
+  success: 'from-success to-success/50',
+  warning: 'from-warning to-warning/50',
+  premium: 'from-primary via-accent to-accent/50',
 };
 
 const iconBgMap = {
-  primary: 'bg-primary/12 text-primary ring-1 ring-primary/20',
-  success: 'bg-success/12 text-success ring-1 ring-success/20',
-  warning: 'bg-warning/12 text-warning ring-1 ring-warning/20',
-  premium: 'bg-accent/12 text-accent ring-1 ring-accent/20',
+  primary: 'bg-primary/15 text-primary ring-1 ring-primary/25',
+  success: 'bg-success/15 text-success ring-1 ring-success/25',
+  warning: 'bg-warning/15 text-warning ring-1 ring-warning/25',
+  premium: 'bg-accent/15 text-accent ring-1 ring-accent/25',
 };
 
 interface StatCardProps extends VariantProps<typeof statCardVariants> {
@@ -80,7 +80,7 @@ export function StatCard({
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
 
   const ChangeIcon = changeType === 'positive' ? TrendingUp : changeType === 'negative' ? TrendingDown : Minus;
-  const resolvedIconBg = iconBgMap[gradientTone] || iconColor || 'bg-primary/12 text-primary';
+  const resolvedIconBg = iconBgMap[gradientTone] || iconColor || 'bg-primary/15 text-primary';
 
   return (
     <motion.div
@@ -91,13 +91,22 @@ export function StatCard({
       onClick={onClick}
       className={cn(statCardVariants({ variant, size }), 'group', className)}
     >
-      {/* Gradient top border */}
+      {/* Gradient top border — thicker and more vivid */}
       <div className={cn(
-        'absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r rounded-t-xl',
+        'absolute top-0 left-0 right-0 h-1 bg-gradient-to-r rounded-t-xl',
         gradientToneMap[gradientTone]
       )} />
+
+      {/* Subtle background glow */}
+      <div className={cn(
+        'absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-10',
+        gradientTone === 'primary' && 'bg-primary',
+        gradientTone === 'success' && 'bg-success',
+        gradientTone === 'warning' && 'bg-warning',
+        gradientTone === 'premium' && 'bg-accent',
+      )} />
       
-      <div className="flex items-start justify-between gap-3">
+      <div className="relative flex items-start justify-between gap-3">
         <div className="space-y-2 min-w-0">
           <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
             {title}
@@ -110,8 +119,8 @@ export function StatCard({
             <div className="flex items-center gap-1.5 mt-1">
               <span className={cn(
                 'flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full',
-                changeType === 'positive' && 'text-success bg-success/10',
-                changeType === 'negative' && 'text-destructive bg-destructive/10',
+                changeType === 'positive' && 'text-success bg-success/12',
+                changeType === 'negative' && 'text-destructive bg-destructive/12',
                 changeType === 'neutral' && 'text-muted-foreground bg-muted'
               )}>
                 <ChangeIcon className="w-3 h-3" aria-hidden="true" />
@@ -131,7 +140,7 @@ export function StatCard({
           )}
         </div>
 
-        <div className={cn('p-3 rounded-xl shrink-0', resolvedIconBg)}>
+        <div className={cn('p-3.5 rounded-xl shrink-0 transition-transform group-hover:scale-110', resolvedIconBg)}>
           <Icon className="w-5 h-5" aria-hidden="true" />
         </div>
       </div>
@@ -181,10 +190,10 @@ export function HeroStat({ title, value, subtitle, icon: Icon, className }: {
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn('relative overflow-hidden rounded-2xl p-8 text-center bg-card border border-border/50', className)}
+      className={cn('relative overflow-hidden rounded-2xl p-8 text-center bg-card border border-border', className)}
     >
       {Icon && (
-        <div className="inline-flex p-4 rounded-2xl bg-primary/8 mb-4">
+        <div className="inline-flex p-4 rounded-2xl bg-primary/12 mb-4">
           <Icon className="w-8 h-8 text-primary" aria-hidden="true" />
         </div>
       )}
