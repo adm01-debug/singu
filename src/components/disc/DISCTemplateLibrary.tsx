@@ -273,14 +273,25 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
 
       <CardContent className="space-y-4">
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar templates..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar templates..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className="gap-1.5 shrink-0"
+          >
+            <Star className={`w-3.5 h-3.5 ${showFavoritesOnly ? 'fill-current' : ''}`} />
+            Favoritos
+          </Button>
         </div>
 
         {/* Profile Tabs */}
