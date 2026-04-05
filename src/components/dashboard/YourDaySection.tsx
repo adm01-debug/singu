@@ -309,6 +309,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         )}
                       </div>
                     </Link>
+                    </motion.div>
                   );
                 })}
                 {todayFollowUps.length > 3 && (
