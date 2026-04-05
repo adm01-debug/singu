@@ -73,7 +73,7 @@ export function CompanyProfileCard({
           <div className="flex flex-col items-center -mt-8">
             <div className="w-24 h-24 rounded-2xl bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold text-3xl shadow-strong border-4 border-card">
               {company.logo_url ? (
-                <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" />
+                <img src={company.logo_url} alt={company.name} className="w-full h-full object-cover rounded-xl" loading="lazy" decoding="async" />
               ) : (
                 safeInitial(company.name, 'E')
               )}

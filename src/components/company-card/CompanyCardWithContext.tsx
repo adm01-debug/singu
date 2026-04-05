@@ -245,6 +245,8 @@ export function CompanyCardWithContext({
                       src={company.logo_url} 
                       alt={displayName} 
                       className="w-12 h-12 rounded-xl object-cover shadow-soft"
+                      loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');

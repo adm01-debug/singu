@@ -150,7 +150,7 @@ export function ContactRFMCard({ summary }: { summary: any }) {
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               {summary.avatarUrl ? (
-                <img src={summary.avatarUrl} alt={summary.contactName} className="w-10 h-10 rounded-full object-cover" />
+                <img src={summary.avatarUrl} alt={summary.contactName} className="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" />
               ) : (
                 <span className="text-lg font-medium">{summary.contactName.charAt(0)}</span>
               )}
