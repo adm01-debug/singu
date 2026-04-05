@@ -441,11 +441,11 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
                   >
-                    <Card className="h-full border-border/60 hover:border-border transition-colors">
+                    <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-muted/60">
-                            <Clock className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                          <div className="p-1.5 rounded-lg bg-gradient-to-br from-primary/15 to-accent/10 ring-1 ring-primary/20">
+                            <Clock className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
                           </div>
                           Atividade Recente
                         </CardTitle>
@@ -513,11 +513,11 @@ const Dashboard = () => {
                     transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
                     className="lg:col-span-2"
                   >
-                    <Card className="h-full border-border/60 hover:border-border transition-colors">
+                    <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden">
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-base font-semibold flex items-center gap-2">
-                          <div className="p-1.5 rounded-lg bg-primary/10">
-                            <Users className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                          <div className="p-1.5 rounded-lg bg-gradient-to-br from-success/15 to-primary/10 ring-1 ring-success/20">
+                            <Users className="w-3.5 h-3.5 text-success" aria-hidden="true" />
                           </div>
                           Melhores Relacionamentos
                         </CardTitle>
