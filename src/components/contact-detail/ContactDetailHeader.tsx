@@ -174,7 +174,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
             </div>
             <SentimentIndicator sentiment={(contact.sentiment as 'positive' | 'neutral' | 'negative') || 'neutral'} size="sm" />
             <span className="text-xs text-muted-foreground">
-              {interactionCount} interações
+              {pluralize(interactionCount, 'interação', 'interações')}
             </span>
             {contact.birthday && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
