@@ -337,7 +337,7 @@ const Dashboard = () => {
         {/* ===== MODULAR DASHBOARD TABS — sticky, immediately after onboarding ===== */}
         <div ref={tabsRef}>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6">
+            <div className="sticky top-[57px] md:top-0 z-10 bg-background/80 backdrop-blur-lg pb-3 pt-2 -mx-4 md:-mx-6 px-4 md:px-6 border-b border-transparent [&:has(~div:first-child)]:border-border/30 shadow-[0_1px_3px_0_rgba(0,0,0,0.05)]">
               <TabsList className="grid w-full grid-cols-4 bg-muted/40 p-1 rounded-xl">
                 <TabsTrigger value="overview" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-soft rounded-lg transition-all">
                   <LayoutGrid className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
