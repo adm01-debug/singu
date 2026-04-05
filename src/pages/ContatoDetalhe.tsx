@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -23,6 +23,8 @@ import {
   ContactIntelligenceTab,
   ContactCommercialTab,
 } from '@/components/contact-detail';
+import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
+import { MeetingMode } from '@/components/contact-detail/MeetingMode';
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
@@ -58,6 +60,7 @@ const ContatoDetalhe = () => {
   const { trackView } = useRecentlyViewed();
   const { records: luxRecords, latestRecord, loading: luxLoading, triggering, triggerLux } = useLuxIntelligence('contact', id);
   const proactiveIntelligence = useProactiveIntelligence(contact, interactions);
+  const [meetingMode, setMeetingMode] = useState(false);
 
   useEffect(() => {
     if (contact && id) {
@@ -107,6 +110,7 @@ const ContatoDetalhe = () => {
   const isProcessing = latestRecord?.status === 'processing';
 
   return (
+    <>
     <AppLayout>
       <div className="min-h-screen p-4 md:p-6 space-y-4">
         {/* Breadcrumb + Lux */}
@@ -131,6 +135,19 @@ const ContatoDetalhe = () => {
           interactionCount={interactions.length}
         />
 
+        {/* Meeting Mode Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMeetingMode(true)}
+            className="gap-2"
+          >
+            <Video className="w-4 h-4" />
+            Modo Reunião
+          </Button>
+        </div>
+
         {/* Proactive Intelligence Panel */}
         <ProactiveIntelligencePanel
           data={proactiveIntelligence}
@@ -151,14 +168,20 @@ const ContatoDetalhe = () => {
           </TabsList>
 
           <TabsContent value="resumo">
-            <ContactOverviewTab
-              contact={contact}
-              company={company}
-              insights={insights}
-              alerts={alerts}
-              onDismissAlert={dismissAlert}
-              onDismissInsight={dismissInsight}
-            />
+            <div className="space-y-4">
+              <ContactOverviewTab
+                contact={contact}
+                company={company}
+                insights={insights}
+                alerts={alerts}
+                onDismissAlert={dismissAlert}
+                onDismissInsight={dismissInsight}
+              />
+              <RelationshipTimeline
+                interactions={interactions}
+                contact={contact}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="interacoes">
@@ -199,6 +222,15 @@ const ContatoDetalhe = () => {
         </Tabs>
       </div>
     </AppLayout>
+
+    {/* Meeting Mode Overlay */}
+    <MeetingMode
+      contact={contact}
+      interactions={interactions}
+      open={meetingMode}
+      onClose={() => setMeetingMode(false)}
+    />
+    </>
   );
 };
 
