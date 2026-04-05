@@ -229,12 +229,26 @@ describe('Design System Audit - Component Semantic Tokens', () => {
     expect(content).not.toContain('bg-gray-');
   });
 
-  it('PresetCard check icon uses text-primary', () => {
+  it('legacy skin theme files are hard deleted', () => {
+    const legacyThemeFiles = [
+      path.resolve(COMPONENTS_DIR, 'settings/theme/PresetCard.tsx'),
+      path.resolve(COMPONENTS_DIR, 'settings/theme/BorderRadiusControl.tsx'),
+      path.resolve(COMPONENTS_DIR, 'settings/theme/useThemePreset.ts'),
+      path.resolve(COMPONENTS_DIR, 'settings/theme/presets.ts'),
+    ];
+
+    legacyThemeFiles.forEach((filePath) => {
+      expect(fs.existsSync(filePath)).toBe(false);
+    });
+  });
+
+  it('ThemeProvider uses Nexus bootstrap and no legacy storage key', () => {
     const content = fs.readFileSync(
-      path.resolve(COMPONENTS_DIR, 'settings/theme/PresetCard.tsx'), 'utf8'
+      path.resolve(COMPONENTS_DIR, 'theme/ThemeProvider.tsx'), 'utf8'
     );
-    expect(content).toContain('text-primary');
-    expect(content).not.toMatch(/Check.*text-white/);
+    expect(content).toContain('ACTIVE_THEME_STORAGE_KEY');
+    expect(content).toContain('applyThemeToDocument');
+    expect(content).not.toContain('storageKey = "relateiq-theme"');
   });
 
   it('stat-card uses semantic foreground tokens', () => {

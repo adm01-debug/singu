@@ -1,6 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
-
-type Theme = "dark" | "light" | "system";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ACTIVE_THEME_STORAGE_KEY,
+  applyThemeToDocument,
+  getStoredTheme,
+  type Theme,
+} from "./themeBootstrap";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -14,7 +18,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "dark",
   setTheme: () => null,
 };
 
@@ -22,50 +26,63 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  storageKey = "relateiq-theme",
+  defaultTheme = "dark",
+  storageKey = ACTIVE_THEME_STORAGE_KEY,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem(storageKey);
-    return savedTheme === "light" || savedTheme === "dark" || savedTheme === "system"
-      ? savedTheme
-      : defaultTheme;
-  });
+  const [theme, setThemeState] = useState<Theme>(() => getStoredTheme(storageKey, defaultTheme));
+  const hasMountedRef = useRef(false);
 
   useEffect(() => {
     const root = window.document.documentElement;
+    const shouldAnimate = hasMountedRef.current;
 
-    // Add transitioning class for smooth theme switch
-    root.classList.add('theme-transitioning');
-
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
+    if (shouldAnimate) {
+      root.classList.add("theme-transitioning");
     }
 
-    // Remove transitioning class after animation completes
-    const timer = setTimeout(() => {
-      root.classList.remove('theme-transitioning');
+    applyThemeToDocument(theme);
+
+    if (!shouldAnimate) {
+      hasMountedRef.current = true;
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      root.classList.remove("theme-transitioning");
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => window.clearTimeout(timer);
   }, [theme]);
 
-  const value = {
+  useEffect(() => {
+    if (theme !== "system" || typeof window.matchMedia !== "function") return undefined;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      applyThemeToDocument("system");
+    };
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, [theme]);
+
+  const value = useMemo<ThemeProviderState>(() => ({
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (nextTheme: Theme) => {
+      try {
+        window.localStorage.setItem(storageKey, nextTheme);
+      } catch {
+        // noop: persistência não deve quebrar a troca visual
+      }
+
+      setThemeState(nextTheme);
     },
-  };
+  }), [storageKey, theme]);
 
   return (
     <ThemeProviderContext.Provider value={value}>
