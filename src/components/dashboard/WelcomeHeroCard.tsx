@@ -1,6 +1,17 @@
 import { motion } from 'framer-motion';
-import { Calendar } from 'lucide-react';
+import { Calendar, Sun, Moon, Sunset } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+
+function formatDisplayName(raw: string): string {
+  // Remove numbers and common email prefixes
+  const cleaned = raw.replace(/[0-9_\-.]+/g, ' ').trim();
+  if (!cleaned) return '';
+  // Capitalize each word
+  return cleaned
+    .split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export function WelcomeHeroCard() {
   const { user } = useAuth();
@@ -11,12 +22,13 @@ export function WelcomeHeroCard() {
     || user?.user_metadata?.display_name?.split(' ')[0]
     || user?.email?.split('@')[0] 
     || '';
-  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
+  const firstName = formatDisplayName(rawName) || 'usuário';
   
   let greeting: string;
-  if (hour < 12) greeting = 'Bom dia';
-  else if (hour < 18) greeting = 'Boa tarde';
-  else greeting = 'Boa noite';
+  let GreetingIcon: typeof Sun;
+  if (hour < 12) { greeting = 'Bom dia'; GreetingIcon = Sun; }
+  else if (hour < 18) { greeting = 'Boa tarde'; GreetingIcon = Sunset; }
+  else { greeting = 'Boa noite'; GreetingIcon = Moon; }
 
   const today = new Intl.DateTimeFormat('pt-BR', { 
     weekday: 'long', day: 'numeric', month: 'long' 
@@ -29,14 +41,19 @@ export function WelcomeHeroCard() {
       transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       className="flex items-center justify-between"
     >
-      <div>
-        <h1 className="text-xl font-bold text-foreground">
-          {greeting}, {firstName}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5" />
-          <span className="capitalize">{today}</span>
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+          <GreetingIcon className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">
+            {greeting}, {firstName}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="capitalize">{today}</span>
+          </p>
+        </div>
       </div>
     </motion.div>
   );
