@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
+import { trackScoreChange } from '@/lib/trackScoreChange';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
@@ -95,6 +96,11 @@ export function useContacts(companyId?: string) {
           prev?.map(c => c.id === id ? data : c) ?? []
         );
         logActivity({ type: 'updated', entityType: 'contact', entityId: id, entityName: `${data.first_name} ${data.last_name}`.trim(), description: 'Contato atualizado' });
+        // Track score changes
+        if (updates.relationship_score !== undefined && user) {
+          const prev = previous?.find(c => c.id === id);
+          trackScoreChange({ userId: user.id, contactId: id, scoreType: 'relationship', newValue: updates.relationship_score ?? 0, previousValue: prev?.relationship_score });
+        }
       }
       return data;
     } catch (error) {
