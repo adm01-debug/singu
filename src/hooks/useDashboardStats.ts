@@ -185,7 +185,9 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
           createdAt: new Date(interaction.created_at),
           type: interaction.type,
         };
-      });
+      })
+      .filter(a => a.entityName !== 'Contato') // Remove unresolved generic entries
+      .slice(0, 5);
 
     return {
       totalCompanies: companies.length,
