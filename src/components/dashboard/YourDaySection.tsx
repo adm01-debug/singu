@@ -229,6 +229,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                         </Badge>
                       </div>
                     </Link>
+                    </motion.div>
                   );
                 })}
                 {overdueFollowUps.length > 3 && (
