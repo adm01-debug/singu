@@ -74,10 +74,10 @@ export const useSmartReminders = (autoFetch = true) => {
     setIsLoading(true);
     setError(null);
 
-    // Timeout to prevent infinite loading
+    // Timeout to prevent infinite loading — 5s for dashboard UX
     const timeout = setTimeout(() => {
       setIsLoading(false);
-    }, 10000);
+    }, 5000);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
