@@ -70,9 +70,10 @@ export function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.3, delay: delay * 0.04 }}
       onClick={onClick}
-      className={cn(statCardVariants({ variant, size }), className)}
+      className={cn(statCardVariants({ variant, size }), 'group', className)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5 min-w-0">
