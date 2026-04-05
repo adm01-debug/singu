@@ -61,6 +61,7 @@ interface MenuItemConfig {
   shortcut: string;
   tourId: string;
   badgeKey?: keyof ReturnType<typeof useNotificationCounts>['counts'];
+  badgeColor?: 'destructive' | 'info';
   hasMegaMenu?: boolean;
 }
 
@@ -76,7 +77,7 @@ const menuGroups: MenuGroup[] = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
       { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
       { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
-      { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
+      { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions', badgeColor: 'info' },
       { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
     ],
   },
@@ -84,7 +85,7 @@ const menuGroups: MenuGroup[] = [
     label: 'Análise',
     items: [
       { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
-      { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
+      { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights', badgeColor: 'info' },
       { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
     ],
   },
@@ -101,7 +102,7 @@ const menuGroups: MenuGroup[] = [
 const menuItems: MenuItemConfig[] = menuGroups.flatMap(g => g.items);
 
 const bottomMenuItems: MenuItemConfig[] = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total', badgeColor: 'destructive' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '-', tourId: 'settings' },
 ];
 
@@ -124,11 +125,18 @@ const KeyboardShortcutsDialog = forwardRef<HTMLDivElement>((_, ref) => {
   return (
     <div ref={ref} className="contents">
       <Dialog>
-        <DialogTrigger asChild>
-          <button type="button" className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground">
-            <Keyboard className="w-4 h-4" />
-          </button>
-        </DialogTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <button type="button" className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground/60 hover:text-sidebar-foreground" aria-label="Atalhos de teclado">
+                <Keyboard className="w-4 h-4" />
+              </button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p>Atalhos de teclado</p>
+          </TooltipContent>
+        </Tooltip>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -345,9 +353,15 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                                className={cn(
+                                  'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center',
+                                  item.badgeColor === 'info' ? 'bg-info' : 'bg-destructive'
+                                )}
                               >
-                                <span className="text-[9px] font-bold text-destructive-foreground">
+                                <span className={cn(
+                                  'text-[9px] font-bold',
+                                  item.badgeColor === 'info' ? 'text-info-foreground' : 'text-destructive-foreground'
+                                )}>
                                   {badgeCount > 9 ? '9+' : badgeCount}
                                 </span>
                               </motion.div>
@@ -370,8 +384,12 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                                 <div className="flex items-center gap-1.5">
                                   {badgeCount > 0 && (
                                     <Badge 
-                                      variant="destructive" 
-                                      className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold"
+                                      variant={item.badgeColor === 'info' ? 'secondary' : 'destructive'}
+                                      className={cn(
+                                        'h-5 min-w-[20px] px-1.5 text-[10px] font-bold',
+                                        item.badgeColor === 'info' && 'bg-info/15 text-info border-info/30'
+                                      )}
+                                      aria-label={`${badgeCount} ${item.badgeColor === 'info' ? 'novo(s)' : 'pendente(s)'}`}
                                     >
                                       {badgeCount > 99 ? '99+' : badgeCount}
                                     </Badge>
@@ -441,9 +459,15 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                          className={cn(
+                            'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center',
+                            item.badgeColor === 'info' ? 'bg-info' : 'bg-destructive'
+                          )}
                         >
-                          <span className="text-[9px] font-bold text-destructive-foreground">
+                          <span className={cn(
+                            'text-[9px] font-bold',
+                            item.badgeColor === 'info' ? 'text-info-foreground' : 'text-destructive-foreground'
+                          )}>
                             {badgeCount > 9 ? '9+' : badgeCount}
                           </span>
                         </motion.div>
@@ -461,8 +485,13 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
                           <div className="flex items-center gap-1.5">
                             {badgeCount > 0 && (
                               <Badge 
-                                variant="destructive" 
-                                className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold animate-pulse"
+                                variant={item.badgeColor === 'info' ? 'secondary' : 'destructive'}
+                                className={cn(
+                                  'h-5 min-w-[20px] px-1.5 text-[10px] font-bold',
+                                  item.badgeColor === 'destructive' && 'animate-pulse',
+                                  item.badgeColor === 'info' && 'bg-info/15 text-info border-info/30'
+                                )}
+                                aria-label={`${badgeCount} ${item.label.toLowerCase()} pendente(s)`}
                               >
                                 {badgeCount > 99 ? '99+' : badgeCount}
                               </Badge>

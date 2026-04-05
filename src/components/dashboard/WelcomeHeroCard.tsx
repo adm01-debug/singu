@@ -49,7 +49,8 @@ export function WelcomeHeroCard() {
   const today = new Intl.DateTimeFormat('pt-BR', { 
     weekday: 'long', day: 'numeric', month: 'long' 
   }).format(new Date());
-  const formattedDate = today.charAt(0).toUpperCase() + today.slice(1);
+  // Capitalize only first letter, keep rest lowercase ("domingo, 5 de abril")
+  const formattedDate = today.charAt(0).toUpperCase() + today.slice(1).toLowerCase();
 
   return (
     <motion.div
