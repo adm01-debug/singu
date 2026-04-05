@@ -198,7 +198,7 @@ describe('CompanyForm — Tab Navigation', () => {
     renderForm();
     await userEvent.click(screen.getByText('Classif.'));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
-    expect(screen.getByText('Cliente')).toBeInTheDocument();
+    expect(screen.getByText('Cliente Ativo')).toBeInTheDocument();
     expect(screen.getByText('Fornecedor')).toBeInTheDocument();
     expect(screen.getByText('Transportadora')).toBeInTheDocument();
     expect(screen.getByText('É Matriz')).toBeInTheDocument();
