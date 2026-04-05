@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
@@ -31,6 +32,7 @@ async function fetchInteractionsPage(contactId?: string, companyId?: string) {
 export function useInteractions(contactId?: string, companyId?: string) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const { triggerAnalysis } = useNLPAutoAnalysis();
   const queryClient = useQueryClient();
 
