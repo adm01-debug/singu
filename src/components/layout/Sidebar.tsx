@@ -64,18 +64,41 @@ interface MenuItemConfig {
   hasMegaMenu?: boolean;
 }
 
-const menuItems: MenuItemConfig[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
-  { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
-  { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
-  { icon: MapPin, label: 'Mapa', path: '/mapa-empresas', shortcut: 'M', tourId: 'map' },
-  { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
-  { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
-  { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
-  { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
-  { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
-  { icon: Workflow, label: 'Automações', path: '/automacoes', shortcut: '9', tourId: 'automations' },
+interface MenuGroup {
+  label: string;
+  items: MenuItemConfig[];
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    label: 'Principal',
+    items: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
+      { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
+      { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
+      { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
+      { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
+    ],
+  },
+  {
+    label: 'Análise',
+    items: [
+      { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
+      { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
+      { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
+    ],
+  },
+  {
+    label: 'Operacional',
+    items: [
+      { icon: MapPin, label: 'Mapa', path: '/mapa-empresas', shortcut: 'M', tourId: 'map' },
+      { icon: Workflow, label: 'Automações', path: '/automacoes', shortcut: '9', tourId: 'automations' },
+    ],
+  },
 ];
+
+// Flat list for keyboard navigation compatibility
+const menuItems: MenuItemConfig[] = menuGroups.flatMap(g => g.items);
 
 const bottomMenuItems: MenuItemConfig[] = [
   { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total' },
@@ -271,108 +294,120 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto" aria-label="Menu principal">
-          {menuItems.map((item) => {
-            const isExactActive = location.pathname === item.path;
-            const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');
-            const isActive = isExactActive || isDetailActive;
-            const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
-            
-            // Detail page sublabel (e.g., "Detalhe" when on /contatos/:id)
-            const detailHint = isDetailActive ? '· Detalhe' : null;
-            
-            return (
-              <Tooltip key={item.path}>
-                <TooltipTrigger asChild>
-                  <div className="relative group">
-                    <Link
-                      to={item.path}
-                      onMouseEnter={() => preload(item.path)}
-                      onFocus={() => preload(item.path)}
-                      onMouseLeave={cancelPreload}
-                      data-tour={item.tourId}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
-                        isActive
-                          ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground'
-                          : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground',
-                        collapsed && 'justify-center px-0'
-                      )}
-                    >
-                      <div className="relative">
-                        <item.icon className={cn('w-5 h-5 flex-shrink-0', !isActive && 'opacity-60')} />
-                        {/* Badge indicator for collapsed state */}
-                        {collapsed && badgeCount > 0 && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
-                          >
-                            <span className="text-[9px] font-bold text-destructive-foreground">
-                              {badgeCount > 9 ? '9+' : badgeCount}
-                            </span>
-                          </motion.div>
-                        )}
-                      </div>
-                      <AnimatePresence>
-                        {!collapsed && (
-                          <motion.div
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            className="flex items-center justify-between flex-1 overflow-hidden"
-                          >
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-medium whitespace-nowrap">{item.label}</span>
-                              {detailHint && (
-                                <span className="text-[10px] text-sidebar-foreground/50 whitespace-nowrap leading-tight">{detailHint}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              {badgeCount > 0 && (
-                                <Badge 
-                                  variant="destructive" 
-                                  className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold"
-                                >
-                                  {badgeCount > 99 ? '99+' : badgeCount}
-                                </Badge>
-                              )}
-                              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                {item.shortcut}
-                              </kbd>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Link>
-                    
-                    {/* Mega Menu for Contacts and Companies */}
-                    {item.hasMegaMenu && !collapsed && (
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <RecentFavoritesMenu 
-                          type={item.path === '/contatos' ? 'contact' : 'company'}
-                          trigger={
-                            <button className="p-1 rounded hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground">
-                              <ChevronRight className="w-3 h-3" />
-                            </button>
-                          }
-                        />
-                      </div>
-                    )}
-                  </div>
-                </TooltipTrigger>
-                {collapsed && (
-                  <TooltipContent side="right" sideOffset={10}>
-                    <p>{item.label}</p>
-                    {badgeCount > 0 && (
-                      <p className="text-xs text-destructive">{badgeCount} pendente(s)</p>
-                    )}
-                    <p className="text-xs text-muted-foreground">Alt+{item.shortcut}</p>
-                  </TooltipContent>
+        <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto" aria-label="Menu principal">
+          {menuGroups.map((group) => (
+            <div key={group.label} className="space-y-1">
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40"
+                  >
+                    {group.label}
+                  </motion.p>
                 )}
-              </Tooltip>
-            );
-          })}
+              </AnimatePresence>
+              {group.items.map((item) => {
+                const isExactActive = location.pathname === item.path;
+                const isDetailActive = !isExactActive && item.path !== '/' && location.pathname.startsWith(item.path + '/');
+                const isActive = isExactActive || isDetailActive;
+                const badgeCount = item.badgeKey ? counts[item.badgeKey] : 0;
+                const detailHint = isDetailActive ? '· Detalhe' : null;
+                
+                return (
+                  <Tooltip key={item.path}>
+                    <TooltipTrigger asChild>
+                      <div className="relative group">
+                        <Link
+                          to={item.path}
+                          onMouseEnter={() => preload(item.path)}
+                          onFocus={() => preload(item.path)}
+                          onMouseLeave={cancelPreload}
+                          data-tour={item.tourId}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative',
+                            isActive
+                              ? 'bg-sidebar-primary/15 text-sidebar-primary-foreground'
+                              : 'hover:bg-sidebar-accent/50 text-sidebar-foreground/70 hover:text-sidebar-accent-foreground',
+                            collapsed && 'justify-center px-0'
+                          )}
+                        >
+                          <div className="relative">
+                            <item.icon className={cn('w-5 h-5 flex-shrink-0', !isActive && 'opacity-60')} />
+                            {collapsed && badgeCount > 0 && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center"
+                              >
+                                <span className="text-[9px] font-bold text-destructive-foreground">
+                                  {badgeCount > 9 ? '9+' : badgeCount}
+                                </span>
+                              </motion.div>
+                            )}
+                          </div>
+                          <AnimatePresence>
+                            {!collapsed && (
+                              <motion.div
+                                initial={{ opacity: 0, width: 0 }}
+                                animate={{ opacity: 1, width: 'auto' }}
+                                exit={{ opacity: 0, width: 0 }}
+                                className="flex items-center justify-between flex-1 overflow-hidden"
+                              >
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-medium whitespace-nowrap">{item.label}</span>
+                                  {detailHint && (
+                                    <span className="text-[10px] text-sidebar-foreground/50 whitespace-nowrap leading-tight">{detailHint}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  {badgeCount > 0 && (
+                                    <Badge 
+                                      variant="destructive" 
+                                      className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold"
+                                    >
+                                      {badgeCount > 99 ? '99+' : badgeCount}
+                                    </Badge>
+                                  )}
+                                  <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-sidebar-border/30 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {item.shortcut}
+                                  </kbd>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </Link>
+                        
+                        {item.hasMegaMenu && !collapsed && (
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <RecentFavoritesMenu 
+                              type={item.path === '/contatos' ? 'contact' : 'company'}
+                              trigger={
+                                <button className="p-1 rounded hover:bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground">
+                                  <ChevronRight className="w-3 h-3" />
+                                </button>
+                              }
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {collapsed && (
+                      <TooltipContent side="right" sideOffset={10}>
+                        <p>{item.label}</p>
+                        {badgeCount > 0 && (
+                          <p className="text-xs text-destructive">{badgeCount} pendente(s)</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">Alt+{item.shortcut}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom Navigation */}

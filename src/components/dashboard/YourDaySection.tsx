@@ -150,7 +150,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                 {overdueFollowUps.slice(0, 3).map((item) => {
                   const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
                   return (
-                    <Link
+                     <Link
                       key={item.interaction.id}
                       to={`/contatos/${item.interaction.contact_id}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
@@ -171,10 +171,43 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                           {item.interaction.title}
                         </p>
                       </div>
-                      <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0">
-                        {item.interaction.follow_up_date && 
-                          format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        {item.contact?.phone && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(`tel:${item.contact!.phone}`, '_blank');
+                            }}
+                            aria-label="Ligar"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-primary" />
+                          </Button>
+                        )}
+                        {item.contact?.whatsapp && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const num = item.contact!.whatsapp!.replace(/\D/g, '');
+                              window.open(`https://wa.me/${num}`, '_blank');
+                            }}
+                            aria-label="WhatsApp"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-success" />
+                          </Button>
+                        )}
+                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0">
+                          {item.interaction.follow_up_date && 
+                            format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
+                        </Badge>
+                      </div>
                     </Link>
                   );
                 })}
@@ -195,7 +228,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                 {todayFollowUps.slice(0, 3).map((item) => {
                   const Icon = interactionTypeIcons[item.interaction.type] || MessageSquare;
                   return (
-                    <Link
+                     <Link
                       key={item.interaction.id}
                       to={`/contatos/${item.interaction.contact_id}`}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors group"
@@ -215,6 +248,39 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                           <Icon className="w-3 h-3" />
                           {item.interaction.title}
                         </p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {item.contact?.phone && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              window.open(`tel:${item.contact!.phone}`, '_blank');
+                            }}
+                            aria-label="Ligar"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-primary" />
+                          </Button>
+                        )}
+                        {item.contact?.whatsapp && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const num = item.contact!.whatsapp!.replace(/\D/g, '');
+                              window.open(`https://wa.me/${num}`, '_blank');
+                            }}
+                            aria-label="WhatsApp"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-success" />
+                          </Button>
+                        )}
                       </div>
                     </Link>
                   );

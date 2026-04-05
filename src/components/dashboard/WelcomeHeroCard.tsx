@@ -6,7 +6,12 @@ export function WelcomeHeroCard() {
   const { user } = useAuth();
   
   const hour = new Date().getHours();
-  const firstName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || '';
+  const rawName = user?.user_metadata?.first_name 
+    || user?.user_metadata?.full_name?.split(' ')[0]
+    || user?.user_metadata?.display_name?.split(' ')[0]
+    || user?.email?.split('@')[0] 
+    || '';
+  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
   
   let greeting: string;
   if (hour < 12) greeting = 'Bom dia';
