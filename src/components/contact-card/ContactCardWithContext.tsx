@@ -32,6 +32,29 @@ import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from 
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
+function getStageGradient(stage?: string | null): string {
+  switch (stage) {
+    case 'advocate':
+    case 'loyal_customer':
+      return 'from-success/20 via-success/10 to-accent/10';
+    case 'customer':
+      return 'from-success/15 via-success/8 to-accent/10';
+    case 'negotiation':
+    case 'opportunity':
+      return 'from-warning/15 via-warning/8 to-accent/10';
+    case 'qualified_lead':
+      return 'from-accent/15 via-accent/8 to-primary/10';
+    case 'prospect':
+      return 'from-primary/10 via-primary/5 to-accent/5';
+    case 'at_risk':
+      return 'from-warning/20 via-destructive/10 to-warning/10';
+    case 'lost':
+      return 'from-destructive/15 via-destructive/8 to-muted/10';
+    default:
+      return 'from-primary/15 via-primary/10 to-accent/10';
+  }
+}
+
 interface ContactCardWithContextProps {
   contact: Contact;
   companyName: string | null;
