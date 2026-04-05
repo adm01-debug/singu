@@ -223,9 +223,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                             <MessageSquare className="w-3.5 h-3.5 text-success" />
                           </Button>
                         )}
-                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0">
+                        <Badge variant="outline" className="text-[10px] font-medium border-destructive/30 text-destructive shrink-0" title={item.interaction.follow_up_date ? format(parseISO(item.interaction.follow_up_date), 'dd/MM/yyyy') : ''}>
                           {item.interaction.follow_up_date && 
-                            format(parseISO(item.interaction.follow_up_date), 'dd/MM')}
+                            formatDistanceToNow(parseISO(item.interaction.follow_up_date), { addSuffix: true, locale: ptBR })}
                         </Badge>
                       </div>
                     </Link>
