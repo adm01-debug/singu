@@ -42,7 +42,11 @@ export function ContactIntelligenceTab({ contactId }: Props) {
   const unresolvedObjections = objections.filter(o => !o.resolved);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ModuleHelp {...moduleHelpContent.neuromarketing} />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
       {/* Hidden Objections */}
       <Card className={cn(unresolvedObjections.length > 0 && 'border-orange-200 dark:border-orange-800')}>
         <CardHeader className="pb-3">
