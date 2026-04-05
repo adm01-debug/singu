@@ -116,12 +116,16 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         const firstName = (c.first_name || '').trim();
         const lastName = (c.last_name || '').trim();
         if (!firstName || !lastName) return false;
+        // Filter out placeholder/technical names
+        const nameLower = `${firstName} ${lastName}`.toLowerCase();
+        if (/^(sem nome|null|undefined|test|whatsapp|contato|unknown)/i.test(firstName)) return false;
+        if (/^(null|undefined|test|\d{10,})$/i.test(lastName)) return false;
         if (firstName.includes('@')) return false;
-        const name = `${firstName} ${lastName}`.toLowerCase();
-        if (/^test/i.test(name)) return false;
         if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
         if (firstName.toLowerCase() === 'whatsapp' && /^\d+$/.test(lastName)) return false;
-        if (/^\d{10,}$/.test(lastName)) return false;
+        // Must have at least 2 vowels to be a real name
+        const vowels = (nameLower.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
+        if (vowels < 2) return false;
         return true;
       })
       .sort((a, b) => (b.relationship_score || 0) - (a.relationship_score || 0))
