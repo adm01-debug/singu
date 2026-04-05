@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useFavoriteTemplates } from '@/hooks/useFavoriteTemplates';
 import {
   Book, Copy, Star, Search, MessageSquare,
   PhoneCall, Mail, Video, Send, CheckCircle,
