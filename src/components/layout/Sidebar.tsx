@@ -61,6 +61,7 @@ interface MenuItemConfig {
   shortcut: string;
   tourId: string;
   badgeKey?: keyof ReturnType<typeof useNotificationCounts>['counts'];
+  badgeColor?: 'destructive' | 'info';
   hasMegaMenu?: boolean;
 }
 
@@ -76,7 +77,7 @@ const menuGroups: MenuGroup[] = [
       { icon: LayoutDashboard, label: 'Dashboard', path: '/', shortcut: '1', tourId: 'dashboard' },
       { icon: Building2, label: 'Empresas', path: '/empresas', shortcut: '2', tourId: 'companies', hasMegaMenu: true },
       { icon: Users, label: 'Contatos', path: '/contatos', shortcut: '3', tourId: 'contacts', hasMegaMenu: true },
-      { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions' },
+      { icon: MessageSquare, label: 'Conversas', path: '/interacoes', shortcut: '4', tourId: 'interactions', badgeKey: 'interactions', badgeColor: 'info' },
       { icon: CalendarDays, label: 'Calendário', path: '/calendario', shortcut: '5', tourId: 'calendar' },
     ],
   },
@@ -84,7 +85,7 @@ const menuGroups: MenuGroup[] = [
     label: 'Análise',
     items: [
       { icon: Share2, label: 'Network', path: '/network', shortcut: '6', tourId: 'network' },
-      { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights' },
+      { icon: Lightbulb, label: 'Insights', path: '/insights', shortcut: '7', tourId: 'insights', badgeKey: 'insights', badgeColor: 'info' },
       { icon: BarChart3, label: 'Analytics', path: '/analytics', shortcut: '8', tourId: 'analytics' },
     ],
   },
@@ -101,7 +102,7 @@ const menuGroups: MenuGroup[] = [
 const menuItems: MenuItemConfig[] = menuGroups.flatMap(g => g.items);
 
 const bottomMenuItems: MenuItemConfig[] = [
-  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total' },
+  { icon: Bell, label: 'Notificações', path: '/notificacoes', shortcut: '0', tourId: 'notifications', badgeKey: 'total', badgeColor: 'destructive' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes', shortcut: '-', tourId: 'settings' },
 ];
 
