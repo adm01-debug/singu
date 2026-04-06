@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
   contactId: string;
@@ -20,8 +21,8 @@ const TREND_ICONS: Record<string, typeof TrendingUp> = {
 
 export function ContactCommercialTab({ contactId }: Props) {
   const { user } = useAuth();
-  const [rfm, setRfm] = useState<any>(null);
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [rfm, setRfm] = useState<Tables<'rfm_analysis'> | null>(null);
+  const [purchases, setPurchases] = useState<Tables<'purchase_history'>[]>([]);
 
   useEffect(() => {
     if (!user || !contactId) return;
