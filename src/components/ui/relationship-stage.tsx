@@ -3,16 +3,16 @@ import { RelationshipStage, RELATIONSHIP_STAGE_LABELS } from '@/types';
 import { motion } from 'framer-motion';
 
 const stageColors: Record<RelationshipStage, string> = {
-  unknown: 'bg-muted text-muted-foreground border-border',
-  prospect: 'bg-slate-100 text-slate-600 border-slate-200',
-  qualified_lead: 'bg-blue-100 text-blue-600 border-blue-200',
-  opportunity: 'bg-indigo-100 text-indigo-600 border-indigo-200',
-  negotiation: 'bg-purple-100 text-purple-600 border-purple-200',
-  customer: 'bg-green-100 text-green-600 border-green-200',
-  loyal_customer: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  advocate: 'bg-teal-100 text-teal-700 border-teal-200',
-  at_risk: 'bg-orange-100 text-orange-600 border-orange-200',
-  lost: 'bg-red-100 text-red-600 border-red-200',
+  unknown: 'bg-muted/60 text-muted-foreground border-border/50',
+  prospect: 'bg-muted/50 text-muted-foreground border-border/40',
+  qualified_lead: 'bg-primary/12 text-primary border-primary/20',
+  opportunity: 'bg-accent/12 text-accent border-accent/20',
+  negotiation: 'bg-secondary/12 text-secondary border-secondary/20',
+  customer: 'bg-success/12 text-success border-success/20',
+  loyal_customer: 'bg-success/18 text-success border-success/30',
+  advocate: 'bg-success/22 text-success border-success/35',
+  at_risk: 'bg-warning/12 text-warning border-warning/20',
+  lost: 'bg-destructive/12 text-destructive border-destructive/20',
 };
 
 const stageOrder: RelationshipStage[] = [
