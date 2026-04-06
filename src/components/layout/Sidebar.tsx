@@ -316,18 +316,24 @@ export function Sidebar({ onSearchClick }: SidebarProps) {
               {/* Group label or separator */}
               {collapsed ? (
                 groupIndex > 0 && (
-                  <div className="mx-auto w-6 border-t border-sidebar-border/50 my-1" />
+                  <div className="mx-auto w-6 border-t border-sidebar-border/50 my-2" />
                 )
               ) : (
                 <AnimatePresence>
-                  <motion.p
+                  <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40"
+                    className="flex items-center gap-2 px-3 pb-1 pt-1"
                   >
-                    {group.label}
-                  </motion.p>
+                    {groupIndex > 0 && (
+                      <div className="flex-1 h-px bg-gradient-to-r from-sidebar-border/60 to-transparent" />
+                    )}
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50 shrink-0">
+                      {group.label}
+                    </p>
+                    <div className="flex-1 h-px bg-gradient-to-l from-sidebar-border/60 to-transparent" />
+                  </motion.div>
                 </AnimatePresence>
               )}
               {group.items.map((item) => {

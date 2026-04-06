@@ -160,7 +160,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       {hasAnyData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Left Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40">
             {/* Overdue Follow-ups */}
             {overdueFollowUps.length > 0 && (
               <div>
@@ -177,7 +177,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       >
                         <Link
                           to={`/contatos/${item.interaction.contact_id}`}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                         >
                           <OptimizedAvatar 
                             src={item.contact?.avatar_url || undefined}
@@ -236,7 +236,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       >
                         <Link
                           to={`/contatos/${item.interaction.contact_id}`}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                         >
                           <OptimizedAvatar 
                             src={item.contact?.avatar_url || undefined}
@@ -277,7 +277,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
           </div>
 
           {/* Right Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40">
             {/* Birthdays */}
             {upcomingBirthdays.length > 0 && (
               <div>
@@ -287,7 +287,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                       <Link
                         to={`/contatos/${item.contact.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact.avatar_url || undefined}
@@ -333,7 +333,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                       <Link
                         to={`/contatos/${item.contact.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact.avatar_url || undefined}
