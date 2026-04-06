@@ -81,12 +81,12 @@ export function WelcomeHeroCard() {
       <motion.div 
         animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.22, 0.12] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/28 via-warning/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
+        className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/20 via-warning/8 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
       />
       <motion.div 
         animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.16, 0.08] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-accent/18 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
+        className="absolute bottom-0 left-0 w-36 h-36 bg-gradient-to-tr from-accent/14 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
       />
       
       <div className="relative flex items-center justify-between gap-4">
