@@ -14,7 +14,7 @@ import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
-import { PriorityIndicator, PriorityBar } from '@/components/ui/priority-indicator';
+import { PriorityIndicator } from '@/components/ui/priority-indicator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
@@ -255,11 +255,9 @@ export function ContactCardWithContext({
                   {/* Row 2: Badges — compact, single line */}
                   <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
                     <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {behavior?.discProfile && (
                       <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
                     )}
-                    <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
                     {/* Timestamp pushed to right */}
                     {(() => {
                       const daysSince = Math.floor((Date.now() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
