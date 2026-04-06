@@ -36,7 +36,7 @@ export function useTemplateNotifications() {
         .from('profiles')
         .select('preferences')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -66,7 +66,7 @@ export function useTemplateNotifications() {
         .from('profiles')
         .select('preferences')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
 

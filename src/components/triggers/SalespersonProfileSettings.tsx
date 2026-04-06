@@ -76,7 +76,7 @@ export function SalespersonProfileSettings() {
         .from('profiles')
         .select('nlp_profile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!error && data?.nlp_profile) {
         setProfile(data.nlp_profile as unknown as SalespersonNLPProfile);

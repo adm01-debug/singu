@@ -249,7 +249,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormField control={form.control} name="first_name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nome *</FormLabel>
-                  <FormControl><Input placeholder="João" {...field} /></FormControl>
+                  <FormControl><Input placeholder="João" autoComplete="given-name" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -257,7 +257,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormField control={form.control} name="last_name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Sobrenome *</FormLabel>
-                  <FormControl><Input placeholder="Silva" {...field} /></FormControl>
+                  <FormControl><Input placeholder="Silva" autoComplete="family-name" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -421,7 +421,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormControl><Input placeholder="joao@empresa.com.br" {...field} /></FormControl>
+                  <FormControl><Input placeholder="joao@empresa.com.br" type="email" inputMode="email" autoComplete="email" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -465,7 +465,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
               <FormField control={form.control} name="linkedin" render={({ field }) => (
                 <FormItem>
                   <FormLabel>LinkedIn</FormLabel>
-                  <FormControl><Input placeholder="linkedin.com/in/joaosilva" {...field} /></FormControl>
+                  <FormControl><Input placeholder="linkedin.com/in/joaosilva" type="url" inputMode="url" autoComplete="url" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -368,7 +368,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
               <FormField control={form.control} name="website" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Website</FormLabel>
-                  <FormControl><Input placeholder="https://www.empresa.com.br" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

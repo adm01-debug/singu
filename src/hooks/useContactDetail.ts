@@ -79,7 +79,7 @@ export function useContactDetail(contactId: string | undefined) {
           .from('companies')
           .select('*')
           .eq('id', contactData.company_id)
-          .single();
+          .maybeSingle();
 
         if (localCompany) {
           companyData = localCompany;

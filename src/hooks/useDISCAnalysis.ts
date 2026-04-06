@@ -193,7 +193,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
         .from('contacts')
         .select('behavior')
         .eq('id', contactId)
-        .single();
+        .maybeSingle();
 
       const currentBehavior = (contactData?.behavior as Record<string, unknown>) || {};
       await supabase

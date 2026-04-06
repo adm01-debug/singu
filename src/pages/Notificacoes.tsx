@@ -170,7 +170,7 @@ const Notificacoes = () => {
             .from('profiles')
             .select('preferences')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
           
           if (profile?.preferences) {
             const prefs = profile.preferences as { notifications?: typeof notificationSettings };
