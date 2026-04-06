@@ -46,7 +46,7 @@ export function OverviewTab({
       initial={animVariants.initial}
       animate={animVariants.animate}
       transition={animVariants.transition}
-      className="space-y-5"
+      className="space-y-6"
     >
       {/* 1. Your Day */}
       <DashboardErrorBoundary sectionName="Seu Dia">
@@ -83,7 +83,7 @@ export function OverviewTab({
       </DashboardErrorBoundary>
 
       {/* 4. Recent Activity + Top Contacts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}

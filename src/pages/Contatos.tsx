@@ -371,16 +371,16 @@ const Contatos = () => {
         onAddClick={() => setIsFormOpen(true)}
       />
 
-      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="p-4 md:p-6 space-y-5">
         {/* Search and View Toggle */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+          <div className="relative flex-1 max-w-md group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
             <Input
               placeholder="Buscar por nome, cargo ou email..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 transition-shadow focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]"
               aria-label="Buscar contatos"
             />
           </div>
@@ -487,7 +487,7 @@ const Contatos = () => {
           <>
             {/* Contacts Grid/List */}
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
                     key={contact.id}
