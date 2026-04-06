@@ -83,6 +83,12 @@ export function formatContactName(firstName?: string | null, lastName?: string |
   
   if (!full || /^sem\s+nome$/i.test(full)) return 'Contato';
   
+  // Placeholder names from CRM import (e.g., "Contato — editar", "Posto — editar")
+  if (/[—–-]\s*editar$/i.test(full)) return 'Contato';
+  
+  // Generic placeholder patterns
+  if (/^(contato|posto|cargo|teste?)\b/i.test(full) && full.length < 20) return 'Contato';
+  
   // WhatsApp + phone number
   if (/^whatsapp\s+\d{8,}/i.test(full)) {
     const phone = full.replace(/^whatsapp\s+/i, '');
