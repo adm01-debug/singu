@@ -190,28 +190,28 @@ export function ContactCardWithContext({
             
               <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Compact header — avatar inline with name */}
+                {/* Stage gradient bar */}
                 <div className={cn(
-                  "h-1.5 rounded-t-lg bg-gradient-to-r",
+                  "h-1 rounded-t-lg bg-gradient-to-r",
                   getStageGradient(contact.relationship_stage)
                 )} />
 
-                <div className="px-5 py-4">
-                  {/* Avatar + Name row */}
-                  <div className="flex items-start gap-3 mb-3">
+                <div className="px-4 pt-3 pb-3">
+                  {/* Row 1: Avatar + Name + Score */}
+                  <div className="flex items-start gap-2.5">
                     <OptimizedAvatar 
                       src={contact.avatar_url || undefined}
                       alt={`${contact.first_name} ${contact.last_name}`}
                       fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                       size="md"
-                      className="w-11 h-11 border-2 border-primary/15 shrink-0 mt-0.5"
+                      className="w-10 h-10 border-2 border-primary/15 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       {isInlineEditing ? (
                         <InlineEdit
                           value={`${contact.first_name} ${contact.last_name}`}
                           onSave={(v) => handleInlineSave('name', v)}
-                          className="font-semibold text-foreground"
+                          className="font-semibold text-foreground text-sm"
                         />
                       ) : (() => {
                         const displayName = formatContactName(contact.first_name, contact.last_name);
@@ -219,7 +219,7 @@ export function ContactCardWithContext({
                         return (
                           <h3 
                             className={cn(
-                              "font-semibold transition-colors cursor-pointer leading-tight",
+                              "font-semibold text-sm leading-tight transition-colors cursor-pointer",
                               isGenericName 
                                 ? "text-muted-foreground italic" 
                                 : "text-foreground group-hover:text-primary"
@@ -234,38 +234,43 @@ export function ContactCardWithContext({
                           </h3>
                         );
                       })()}
-                      {contact.role_title && (
-                        <p className="text-sm text-muted-foreground truncate">{contact.role_title}</p>
+                      {/* Subtitle: role_title or company */}
+                      {(contact.role_title || companyName) && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                          {contact.role_title && companyName 
+                            ? `${contact.role_title} · ${toTitleCase(companyName)}`
+                            : contact.role_title || (companyName ? toTitleCase(companyName) : '')
+                          }
+                        </p>
                       )}
-                      {companyName && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                      {/* Company row (only if role_title was shown and we also have company) */}
+                      {!contact.role_title && companyName && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Building2 className="w-3 h-3 text-muted-foreground shrink-0" aria-hidden="true" />
                           <span className="text-xs text-muted-foreground truncate">{toTitleCase(companyName)}</span>
                         </div>
                       )}
                     </div>
+                    {/* Compact score */}
+                    <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                   </div>
 
-                  {/* Badges row */}
-                  <div className="flex items-center gap-2 flex-wrap mb-3">
-                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
+                  {/* Row 2: Badges — compact, single line */}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
                     <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {behavior?.discProfile && (
                       <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
                     )}
                     <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
-                  </div>
-
-                  {/* Footer: score + timestamp */}
-                  <div className="flex items-center gap-3 pt-3 border-t border-border/60">
-                    <RelationshipScore score={contact.relationship_score || 0} size="sm" />
+                    {/* Timestamp pushed to right */}
                     {(() => {
                       const daysSince = Math.floor((Date.now() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
-                      const urgencyColor = daysSince <= 3 ? 'text-muted-foreground' : daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
+                      const urgencyColor = daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
                       return (
-                        <div className={`ml-auto text-[11px] tabular-nums ${urgencyColor}`}>
+                        <span className={`ml-auto text-[10px] tabular-nums ${urgencyColor}`}>
                           {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
-                        </div>
+                        </span>
                       );
                     })()}
                   </div>
