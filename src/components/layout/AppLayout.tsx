@@ -52,6 +52,23 @@ function getPageTitle(pathname: string): string {
   return 'Página';
 }
 
+/** Returns breadcrumb segments for detail pages e.g. /contatos/123 → [{label:"Contatos", path:"/contatos"}, {label:"Detalhe"}] */
+function getBreadcrumbs(pathname: string, pageTitle: string): { label: string; path?: string }[] {
+  const PARENT_ROUTES: Record<string, { label: string; path: string }> = {
+    '/contatos': { label: 'Contatos', path: '/contatos' },
+    '/empresas': { label: 'Empresas', path: '/empresas' },
+    '/interacoes': { label: 'Conversas', path: '/interacoes' },
+  };
+
+  for (const [prefix, parent] of Object.entries(PARENT_ROUTES)) {
+    if (pathname.startsWith(prefix + '/') && pathname !== prefix) {
+      return [parent, { label: 'Detalhe' }];
+    }
+  }
+
+  return [{ label: pageTitle }];
+}
+
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { state } = useSidebar();
