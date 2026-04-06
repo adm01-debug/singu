@@ -246,6 +246,17 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
+      // Also deduplicate by display name — keep highest priority/score to avoid visual repetition
+      const byName = new Map<string, NeedsAttention>();
+      deduped.forEach((item) => {
+        const displayName = `${item.contact.first_name} ${item.contact.last_name}`.trim().toLowerCase();
+        const existing = byName.get(displayName);
+        const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+        if (!existing || priorityOrder[item.priority] < priorityOrder[existing.priority]) {
+          byName.set(displayName, item);
+        }
+      });
+
       const dedupedAttention = Array.from(deduped.values());
       dedupedAttention.sort((a, b) => {
         const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
