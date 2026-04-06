@@ -193,7 +193,15 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         return true;
       };
 
-      attentionContacts.filter(isValidContactName).forEach(contact => {
+      // Deduplicate attentionContacts (OR query can return same contact for multiple conditions)
+      const seenContactIds = new Set<string>();
+      const uniqueAttentionContacts = attentionContacts.filter(isValidContactName).filter(c => {
+        if (seenContactIds.has(c.id)) return false;
+        seenContactIds.add(c.id);
+        return true;
+      });
+
+      uniqueAttentionContacts.forEach(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
         const lastUpdate = contact.updated_at ? new Date(contact.updated_at) : new Date(contact.created_at);
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
