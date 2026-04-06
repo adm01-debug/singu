@@ -139,22 +139,22 @@ const getEvolutionStats = (period: PeriodFilter): { score: PeriodComparison; con
 const getRelationshipData = (period: PeriodFilter) => {
   const dataByPeriod = {
     '7d': [
-      { name: 'Excelente', value: 8, prevValue: 7, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Bom', value: 15, prevValue: 14, color: 'hsl(221, 83%, 53%)' },
-      { name: 'Regular', value: 12, prevValue: 13, color: 'hsl(38, 92%, 50%)' },
-      { name: 'Fraco', value: 5, prevValue: 6, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Excelente', value: 8, prevValue: 7, color: 'hsl(var(--success))' },
+      { name: 'Bom', value: 15, prevValue: 14, color: 'hsl(var(--primary))' },
+      { name: 'Regular', value: 12, prevValue: 13, color: 'hsl(var(--warning))' },
+      { name: 'Fraco', value: 5, prevValue: 6, color: 'hsl(var(--destructive))' },
     ],
     '30d': [
-      { name: 'Excelente', value: 10, prevValue: 8, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Bom', value: 18, prevValue: 15, color: 'hsl(221, 83%, 53%)' },
-      { name: 'Regular', value: 14, prevValue: 16, color: 'hsl(38, 92%, 50%)' },
-      { name: 'Fraco', value: 6, prevValue: 8, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Excelente', value: 10, prevValue: 8, color: 'hsl(var(--success))' },
+      { name: 'Bom', value: 18, prevValue: 15, color: 'hsl(var(--primary))' },
+      { name: 'Regular', value: 14, prevValue: 16, color: 'hsl(var(--warning))' },
+      { name: 'Fraco', value: 6, prevValue: 8, color: 'hsl(var(--destructive))' },
     ],
     '90d': [
-      { name: 'Excelente', value: 12, prevValue: 9, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Bom', value: 22, prevValue: 18, color: 'hsl(221, 83%, 53%)' },
-      { name: 'Regular', value: 16, prevValue: 20, color: 'hsl(38, 92%, 50%)' },
-      { name: 'Fraco', value: 8, prevValue: 11, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Excelente', value: 12, prevValue: 9, color: 'hsl(var(--success))' },
+      { name: 'Bom', value: 22, prevValue: 18, color: 'hsl(var(--primary))' },
+      { name: 'Regular', value: 16, prevValue: 20, color: 'hsl(var(--warning))' },
+      { name: 'Fraco', value: 8, prevValue: 11, color: 'hsl(var(--destructive))' },
     ],
   };
   return dataByPeriod[period];
@@ -162,29 +162,29 @@ const getRelationshipData = (period: PeriodFilter) => {
 
 // Contact distribution by role (same for all periods)
 const contactsByRole = [
-  { name: 'Proprietário', value: 12, color: 'hsl(280, 67%, 45%)' },
-  { name: 'Gerente', value: 18, color: 'hsl(221, 83%, 53%)' },
-  { name: 'Comprador', value: 15, color: 'hsl(142, 76%, 36%)' },
-  { name: 'Contato', value: 25, color: 'hsl(215, 16%, 47%)' },
+  { name: 'Proprietário', value: 12, color: 'hsl(var(--secondary))' },
+  { name: 'Gerente', value: 18, color: 'hsl(var(--primary))' },
+  { name: 'Comprador', value: 15, color: 'hsl(var(--success))' },
+  { name: 'Contato', value: 25, color: 'hsl(var(--muted-foreground))' },
 ];
 
 // Sentiment distribution by period with comparison
 const getSentimentData = (period: PeriodFilter) => {
   const dataByPeriod = {
     '7d': [
-      { name: 'Positivo', value: 45, prevValue: 42, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Neutro', value: 35, prevValue: 38, color: 'hsl(215, 16%, 47%)' },
-      { name: 'Negativo', value: 8, prevValue: 10, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Positivo', value: 45, prevValue: 42, color: 'hsl(var(--success))' },
+      { name: 'Neutro', value: 35, prevValue: 38, color: 'hsl(var(--muted-foreground))' },
+      { name: 'Negativo', value: 8, prevValue: 10, color: 'hsl(var(--destructive))' },
     ],
     '30d': [
-      { name: 'Positivo', value: 52, prevValue: 45, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Neutro', value: 42, prevValue: 45, color: 'hsl(215, 16%, 47%)' },
-      { name: 'Negativo', value: 12, prevValue: 16, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Positivo', value: 52, prevValue: 45, color: 'hsl(var(--success))' },
+      { name: 'Neutro', value: 42, prevValue: 45, color: 'hsl(var(--muted-foreground))' },
+      { name: 'Negativo', value: 12, prevValue: 16, color: 'hsl(var(--destructive))' },
     ],
     '90d': [
-      { name: 'Positivo', value: 68, prevValue: 55, color: 'hsl(142, 76%, 36%)' },
-      { name: 'Neutro', value: 55, prevValue: 60, color: 'hsl(215, 16%, 47%)' },
-      { name: 'Negativo', value: 18, prevValue: 25, color: 'hsl(0, 84%, 60%)' },
+      { name: 'Positivo', value: 68, prevValue: 55, color: 'hsl(var(--success))' },
+      { name: 'Neutro', value: 55, prevValue: 60, color: 'hsl(var(--muted-foreground))' },
+      { name: 'Negativo', value: 18, prevValue: 25, color: 'hsl(var(--destructive))' },
     ],
   };
   return dataByPeriod[period];
@@ -307,9 +307,9 @@ export const ActivityChart = ({ period }: ChartProps) => {
                     wrapperStyle={{ paddingTop: '10px' }}
                     formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
                   />
-                  <Bar dataKey="emails" name="E-mails" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="reunioes" name="Reuniões" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="ligacoes" name="Ligações" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="emails" name="E-mails" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="reunioes" name="Reuniões" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="ligacoes" name="Ligações" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -349,12 +349,12 @@ export const RelationshipEvolutionChart = ({ period }: ChartProps) => {
               <ComposedChart data={evolutionData}>
                 <defs>
                   <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(221, 83%, 53%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorContatos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -376,7 +376,7 @@ export const RelationshipEvolutionChart = ({ period }: ChartProps) => {
                   type="monotone"
                   dataKey="score"
                   name="Score Atual"
-                  stroke="hsl(221, 83%, 53%)"
+                  stroke="hsl(var(--primary))"
                   fillOpacity={1}
                   fill="url(#colorScore)"
                   strokeWidth={2}
@@ -385,7 +385,7 @@ export const RelationshipEvolutionChart = ({ period }: ChartProps) => {
                   type="monotone"
                   dataKey="prevScore"
                   name="Score Anterior"
-                  stroke="hsl(221, 83%, 53%)"
+                  stroke="hsl(var(--primary))"
                   strokeDasharray="5 5"
                   strokeWidth={2}
                   dot={false}
@@ -395,7 +395,7 @@ export const RelationshipEvolutionChart = ({ period }: ChartProps) => {
                   type="monotone"
                   dataKey="contatos"
                   name="Total Contatos"
-                  stroke="hsl(142, 76%, 36%)"
+                  stroke="hsl(var(--success))"
                   fillOpacity={1}
                   fill="url(#colorContatos)"
                   strokeWidth={2}
