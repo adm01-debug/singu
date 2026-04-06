@@ -177,7 +177,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       >
                         <Link
                           to={`/contatos/${item.interaction.contact_id}`}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                         >
                           <OptimizedAvatar 
                             src={item.contact?.avatar_url || undefined}
@@ -236,7 +236,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                       >
                         <Link
                           to={`/contatos/${item.interaction.contact_id}`}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                         >
                           <OptimizedAvatar 
                             src={item.contact?.avatar_url || undefined}
@@ -287,7 +287,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                       <Link
                         to={`/contatos/${item.contact.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact.avatar_url || undefined}
@@ -333,7 +333,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                     <motion.div key={item.contact.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: idx * 0.05 }}>
                       <Link
                         to={`/contatos/${item.contact.id}`}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/50 hover:translate-x-0.5 transition-all duration-200 group"
                       >
                         <OptimizedAvatar 
                           src={item.contact.avatar_url || undefined}
