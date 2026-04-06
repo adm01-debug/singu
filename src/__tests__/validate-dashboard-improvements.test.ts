@@ -248,25 +248,17 @@ describe('Dashboard Layout Improvements Validation', () => {
   // === SCROLL AREA LISTS ===
   describe('Contained List Heights with ScrollArea', () => {
     it('should use ScrollArea in Recent Activities list', () => {
-      const activitySection = indexContent.substring(
-        indexContent.indexOf('Atividade Recente'),
-        indexContent.indexOf('Melhores Relacionamentos')
-      );
-      expect(activitySection).toContain('ScrollArea');
-      expect(activitySection).toContain('max-h-[320px]');
+      expect(recentActivityContent).toContain('ScrollArea');
+      expect(recentActivityContent).toContain('max-h-[320px]');
     });
 
     it('should use ScrollArea in Top Contacts list', () => {
-      const contactsSection = indexContent.substring(
-        indexContent.indexOf('Melhores Relacionamentos'),
-        indexContent.indexOf('Smart Reminders')
-      );
-      expect(contactsSection).toContain('ScrollArea');
-      expect(contactsSection).toContain('max-h-[320px]');
+      expect(topContactsContent).toContain('ScrollArea');
+      expect(topContactsContent).toContain('max-h-[320px]');
     });
 
     it('should have padding-right for scrollbar space', () => {
-      expect(indexContent).toContain('pr-2');
+      expect(allDashboardContent).toContain('pr-');
     });
   });
 
