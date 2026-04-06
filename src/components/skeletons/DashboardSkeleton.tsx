@@ -3,10 +3,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 /**
- * Progressive Dashboard Skeleton — reveals sections in phases
- * Phase 0: instant → stats grid
- * Phase 1: 120ms → charts row 1
- * Phase 2: 250ms → charts row 2 + bottom
+ * Progressive Dashboard Skeleton — mirrors real layout:
+ * Phase 0: Welcome Hero + Stats Grid (instant)
+ * Phase 1: Your Day section (120ms)
+ * Phase 2: Activity + Top Contacts (250ms)
  */
 const DashboardSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => {
   const [phase, setPhase] = useState(0);
@@ -18,56 +18,87 @@ const DashboardSkeleton = React.forwardRef<HTMLDivElement>((_, ref) => {
   }, []);
 
   return (
-    <div ref={ref} className="p-6 space-y-6">
-      {/* Phase 0 — Stats Grid (instant) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+    <div ref={ref} className="p-4 md:p-6 space-y-5 md:space-y-6">
+      {/* Phase 0 — Welcome Hero (compact) */}
+      <div className="animate-fade-in rounded-2xl border border-primary/15 bg-card/60 px-4 py-3 md:px-6 md:py-4">
+        <div className="flex items-center gap-3 md:gap-5">
+          <Skeleton className="w-10 h-10 md:w-12 md:h-12 rounded-xl shrink-0" />
+          <div className="space-y-1.5 flex-1">
+            <Skeleton className="h-6 md:h-7 w-56" />
+            <Skeleton className="h-3.5 w-40" />
+          </div>
+          <Skeleton className="hidden md:block h-10 w-28 rounded-2xl" />
+        </div>
+      </div>
+
+      {/* Phase 0 — Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-fade-in">
         {['Empresas', 'Contatos', 'Interações', 'Score'].map((label, i) => (
           <Card key={`stats-${i}`} className="overflow-hidden relative">
-            <div className="absolute top-0 left-0 right-0 h-1 skeleton-progressive rounded-t-xl" />
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between gap-3">
+            <div className="absolute top-0 left-0 right-0 h-[3px] skeleton-progressive rounded-t-[inherit]" />
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-start justify-between gap-2">
                 <div className="space-y-2 flex-1">
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</span>
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{label}</span>
+                  <Skeleton className="h-7 w-16" />
+                  <Skeleton className="h-4 w-20" />
                 </div>
-                <Skeleton className="h-12 w-12 rounded-xl" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Phase 1 — Charts (120ms) */}
+      {/* Phase 1 — Your Day (120ms) */}
       {phase >= 1 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
-          {[0, 1].map((i) => (
-            <Card key={`chart-${i}`}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-5 w-40" />
-                  <Skeleton className="h-4 w-20" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in">
+          {/* Overdue */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-2 w-2 rounded-full" />
+                <Skeleton className="h-4 w-28" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 py-2">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-56 flex items-end justify-around gap-2 pt-4">
-                  {[...Array(7)].map((_, j) => (
-                    <div key={j} className="flex-1 flex flex-col items-center gap-2">
-                      <Skeleton
-                        className="w-full rounded-t-md skeleton-progressive"
-                        style={{ height: `${30 + (j * 10)}%` }}
-                      />
-                      <Skeleton className="h-3 w-8" />
-                    </div>
-                  ))}
+              ))}
+            </CardContent>
+          </Card>
+          {/* Needs Attention */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-2 w-2 rounded-full" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 py-2">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-52" />
+                  </div>
+                  <Skeleton className="h-5 w-14 rounded-full" />
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              ))}
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Phase 2 — Bottom Section (250ms) */}
+      {/* Phase 2 — Activity + Top Contacts (250ms) */}
       {phase >= 2 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
           <Card>

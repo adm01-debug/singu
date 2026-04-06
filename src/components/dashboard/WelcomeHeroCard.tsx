@@ -75,18 +75,18 @@ export function WelcomeHeroCard() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      className="relative overflow-hidden rounded-[32px] border border-primary/25 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/0.18),transparent_20%),radial-gradient(circle_at_88%_0%,hsl(var(--accent)/0.18),transparent_28%),linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--surface-2))_55%,hsl(var(--surface-3))_100%)] p-5 md:p-8 group shadow-[0_36px_96px_-48px_hsl(var(--primary)/0.42)] hover:border-primary/45 transition-colors duration-300"
+      className="relative overflow-hidden rounded-2xl border border-primary/20 bg-[radial-gradient(circle_at_12%_18%,hsl(var(--primary)/0.14),transparent_20%),radial-gradient(circle_at_88%_0%,hsl(var(--accent)/0.14),transparent_28%),linear-gradient(135deg,hsl(var(--card))_0%,hsl(var(--surface-2))_55%,hsl(var(--surface-3))_100%)] px-4 py-3 md:px-6 md:py-4 group shadow-[0_24px_64px_-32px_hsl(var(--primary)/0.32)] hover:border-primary/35 transition-colors duration-300"
     >
       {/* Animated decorative orbs */}
       <motion.div 
         animate={{ scale: [1, 1.1, 1], opacity: [0.12, 0.22, 0.12] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-primary/28 via-warning/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
+        className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary/20 via-warning/8 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" 
       />
       <motion.div 
         animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.16, 0.08] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        className="absolute bottom-0 left-0 w-56 h-56 bg-gradient-to-tr from-accent/18 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
+        className="absolute bottom-0 left-0 w-36 h-36 bg-gradient-to-tr from-accent/14 to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" 
       />
       
       <div className="relative flex items-center justify-between gap-4">
@@ -95,16 +95,16 @@ export function WelcomeHeroCard() {
             initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             transition={{ delay: 0.2, duration: 0.5, type: 'spring', stiffness: 200 }}
-            className="w-12 h-12 md:w-16 md:h-16 rounded-[22px] bg-gradient-to-br from-primary via-nexus-cyan to-accent flex items-center justify-center shrink-0 ring-1 ring-primary/35 shadow-[0_20px_40px_-18px_hsl(var(--nexus-glow)/0.7)]"
+            className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary via-nexus-cyan to-accent flex items-center justify-center shrink-0 ring-1 ring-primary/35 shadow-[0_12px_28px_-12px_hsl(var(--nexus-glow)/0.6)]"
           >
-            <GreetingIcon className="w-6 h-6 md:w-8 md:h-8 text-primary-foreground" />
+            <GreetingIcon className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground" />
           </motion.div>
           <div>
             <motion.h1 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.4 }}
-              className="text-xl md:text-3xl font-bold text-foreground tracking-tight"
+              className="text-lg md:text-2xl font-bold text-foreground tracking-tight"
             >
               {firstName ? `${greeting}, ${firstName}` : `${greeting}! ✨`}
             </motion.h1>
