@@ -284,30 +284,36 @@ export const ActivityChart = ({ period }: ChartProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="h-[260px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={activityData} barGap={2}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
-                />
-                <YAxis 
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  wrapperStyle={{ paddingTop: '10px' }}
-                  formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
-                />
-                <Bar dataKey="emails" name="E-mails" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="reunioes" name="Reuniões" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="ligacoes" name="Ligações" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <AccessibleChart
+            summary="Atividades por período — emails, reuniões e ligações"
+            data={activityData.map(d => ({ label: d.name, value: `${d.emails}e / ${d.reunioes}r / ${d.ligacoes}l` }))}
+            columns={['Período', 'E-mails / Reuniões / Ligações']}
+          >
+            <div className="h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={activityData} barGap={2}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                  />
+                  <YAxis 
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    wrapperStyle={{ paddingTop: '10px' }}
+                    formatter={(value) => <span className="text-sm text-muted-foreground">{value}</span>}
+                  />
+                  <Bar dataKey="emails" name="E-mails" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="reunioes" name="Reuniões" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="ligacoes" name="Ligações" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </AccessibleChart>
         </CardContent>
       </Card>
     </motion.div>
