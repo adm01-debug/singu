@@ -169,8 +169,8 @@ export function MobileBottomNav() {
                     />
                   )}
                   
-                  <div className="relative z-10">
-                    <Icon className={cn("w-5 h-5 transition-transform", active && "scale-110")} aria-hidden="true" />
+                  <div className="relative z-10 transition-transform duration-200" style={active ? { transform: 'scale(1.15)' } : undefined}>
+                    <Icon className="w-5 h-5" aria-hidden="true" />
                     {/* Top indicator dot */}
                     {active && (
                       <motion.div
