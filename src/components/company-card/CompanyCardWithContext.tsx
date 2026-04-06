@@ -222,11 +222,16 @@ export function CompanyCardWithContext({
         onDelete={() => onDelete(company)}
       >
         <Card className={cn(
-          "h-full card-hover group cursor-pointer transition-all duration-200",
+          "h-full card-hover group cursor-pointer transition-all duration-200 overflow-hidden",
           "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
+          {/* Status color bar */}
+          <div className={cn(
+            "h-1.5 w-full",
+            company.is_customer ? "bg-gradient-to-r from-success to-success/60" : "bg-gradient-to-r from-primary to-primary/60"
+          )} />
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2 mb-4">
               <div className="flex items-center gap-3">
