@@ -83,6 +83,7 @@ export function InteractionForm({
 }: InteractionFormProps) {
   const form = useForm<InteractionFormData>({
     resolver: zodResolver(interactionSchema),
+    mode: 'onBlur',
     defaultValues: {
       contact_id: interaction?.contact_id || defaultContactId || '',
       company_id: interaction?.company_id || defaultCompanyId || null,

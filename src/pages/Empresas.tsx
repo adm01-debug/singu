@@ -3,7 +3,7 @@ import { hapticSuccess, hapticHeavy } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Search,
   TrendingUp,
@@ -112,6 +112,7 @@ const sortOptions: SortOption[] = [
 const Empresas = () => {
   usePageTitle('Empresas');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
   const { contacts } = useContacts();
   const { interactions } = useInteractions();
@@ -140,7 +141,8 @@ const Empresas = () => {
     
     return { contactCountMap, lastInteractionMap };
   }, [contacts, interactions]);
-  const [localSearch, setLocalSearch] = useState('');
+
+  const [localSearch, setLocalSearch] = useState(() => searchParams.get('q') || '');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -150,10 +152,27 @@ const Empresas = () => {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   
-  // Advanced filters state
-  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
-  const [sortBy, setSortBy] = useState('updated_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Advanced filters state — restore from URL
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>(() => {
+    try {
+      const f = searchParams.get('filters');
+      return f ? JSON.parse(decodeURIComponent(f)) : {};
+    } catch { return {}; }
+  });
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'updated_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => (searchParams.get('order') as 'asc' | 'desc') || 'desc');
+
+  // Sync state to URL params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (localSearch) params.set('q', localSearch);
+    if (Object.keys(activeFilters).length > 0) {
+      params.set('filters', encodeURIComponent(JSON.stringify(activeFilters)));
+    }
+    if (sortBy !== 'updated_at') params.set('sort', sortBy);
+    if (sortOrder !== 'desc') params.set('order', sortOrder);
+    setSearchParams(params, { replace: true });
+  }, [localSearch, activeFilters, sortBy, sortOrder, setSearchParams]);
 
   // Debounced server-side search
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
