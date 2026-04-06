@@ -32,26 +32,28 @@ import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from 
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
-function getStageGradient(stage?: string | null): string {
+/** Solid semantic color for stage bar — clear visual differentiation */
+function getStageBarColor(stage?: string | null): string {
   switch (stage) {
     case 'advocate':
     case 'loyal_customer':
-      return 'from-success/20 via-success/10 to-accent/10';
+      return 'from-emerald-500 to-emerald-400';
     case 'customer':
-      return 'from-success/15 via-success/8 to-accent/10';
+      return 'from-success to-emerald-500';
     case 'negotiation':
+      return 'from-violet-500 to-purple-400';
     case 'opportunity':
-      return 'from-warning/15 via-warning/8 to-accent/10';
+      return 'from-amber-500 to-orange-400';
     case 'qualified_lead':
-      return 'from-accent/15 via-accent/8 to-primary/10';
+      return 'from-blue-500 to-sky-400';
     case 'prospect':
-      return 'from-primary/10 via-primary/5 to-accent/5';
+      return 'from-slate-400 to-slate-300';
     case 'at_risk':
-      return 'from-warning/20 via-destructive/10 to-warning/10';
+      return 'from-destructive to-orange-500';
     case 'lost':
-      return 'from-destructive/15 via-destructive/8 to-muted/10';
+      return 'from-muted-foreground to-muted-foreground/60';
     default:
-      return 'from-primary/15 via-primary/10 to-accent/10';
+      return 'from-muted-foreground/50 to-muted-foreground/30';
   }
 }
 
