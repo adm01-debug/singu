@@ -78,6 +78,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
   useKeyboardShortcutsEnhanced();
 
   const pageTitle = useMemo(() => title || getPageTitle(location.pathname), [title, location.pathname]);
+  const breadcrumbs = useMemo(() => getBreadcrumbs(location.pathname, pageTitle), [location.pathname, pageTitle]);
 
   const handleSignOut = async () => {
     await signOut();
