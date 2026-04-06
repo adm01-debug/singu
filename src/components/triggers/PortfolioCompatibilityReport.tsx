@@ -391,7 +391,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
         .from('profiles')
         .select('nlp_profile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       const spProfile = profileData?.nlp_profile as unknown as SalespersonProfile | null;
       setSalespersonProfile(spProfile);

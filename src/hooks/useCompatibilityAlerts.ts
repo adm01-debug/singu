@@ -65,7 +65,7 @@ export function useCompatibilityAlerts() {
         .from('profiles')
         .select('nlp_profile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       const salespersonProfile = profileData?.nlp_profile as unknown as SalespersonProfile | null;
       

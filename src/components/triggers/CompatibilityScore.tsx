@@ -104,7 +104,7 @@ export function CompatibilityScore({
         .from('profiles')
         .select('nlp_profile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!error && data?.nlp_profile) {
         const profile = data.nlp_profile as unknown as SalespersonProfile;

@@ -88,7 +88,7 @@ const Configuracoes = () => {
         .from('profiles')
         .select('first_name, last_name, avatar_url')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (data && !error) {
         setProfile({

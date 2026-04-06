@@ -48,7 +48,7 @@ export function CommunicationTrainingMode() {
         .from('profiles')
         .select('nlp_profile')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       if (!error && data?.nlp_profile) {
         setSalespersonProfile(data.nlp_profile as unknown as SalespersonProfile);
       }

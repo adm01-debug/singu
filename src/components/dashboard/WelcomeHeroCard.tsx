@@ -33,7 +33,7 @@ export function WelcomeHeroCard() {
       .from('profiles')
       .select('first_name, last_name')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
       .then(({ data }) => {
         if (data?.first_name) {
           const name = formatDisplayName(data.first_name);
