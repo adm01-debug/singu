@@ -193,7 +193,15 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         return true;
       };
 
-      attentionContacts.filter(isValidContactName).forEach(contact => {
+      // Deduplicate attentionContacts (OR query can return same contact for multiple conditions)
+      const seenContactIds = new Set<string>();
+      const uniqueAttentionContacts = attentionContacts.filter(isValidContactName).filter(c => {
+        if (seenContactIds.has(c.id)) return false;
+        seenContactIds.add(c.id);
+        return true;
+      });
+
+      uniqueAttentionContacts.forEach(contact => {
         const company = contact.company_id ? companyMap.get(contact.company_id) || null : null;
         const lastUpdate = contact.updated_at ? new Date(contact.updated_at) : new Date(contact.created_at);
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
@@ -225,8 +233,19 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
-      needsAttention.sort((a, b) => {
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
+      // Deduplicate by contact id — keep highest priority entry
+      const deduped = new Map<string, NeedsAttention>();
+      needsAttention.forEach(item => {
+        const existing = deduped.get(item.contact.id);
+        const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+        if (!existing || priorityOrder[item.priority] < priorityOrder[existing.priority]) {
+          deduped.set(item.contact.id, item);
+        }
+      });
+
+      const dedupedAttention = Array.from(deduped.values());
+      dedupedAttention.sort((a, b) => {
+        const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
           return priorityOrder[a.priority] - priorityOrder[b.priority];
         }
@@ -237,7 +256,7 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         todayFollowUps,
         overdueFollowUps,
         upcomingBirthdays: upcomingBirthdays.slice(0, 5),
-        needsAttention: needsAttention.slice(0, 5),
+        needsAttention: dedupedAttention.slice(0, 5),
         newInsights: insights,
         loading: false,
       });

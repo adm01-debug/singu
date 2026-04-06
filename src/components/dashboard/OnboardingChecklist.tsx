@@ -33,6 +33,14 @@ export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, has
     if (isDismissed === 'true') setDismissed(true);
   }, []);
 
+  // Auto-collapse when 3+ steps completed (most work done)
+  const completedStepsCount = [hasProfile, hasContacts, hasCompanies, hasInteractions].filter(Boolean).length;
+  useEffect(() => {
+    if (completedStepsCount >= 3) {
+      setIsOpen(false);
+    }
+  }, [completedStepsCount]);
+
   const steps: ChecklistStep[] = [
     { id: 'profile', label: 'Complete seu perfil', description: 'Nome e empresa', icon: User, path: '/configuracoes', completed: hasProfile },
     { id: 'company', label: 'Adicione empresa', description: 'Primeira empresa', icon: Building2, path: '/empresas', completed: hasCompanies },

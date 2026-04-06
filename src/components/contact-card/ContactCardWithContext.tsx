@@ -259,9 +259,15 @@ export function ContactCardWithContext({
                   {/* Footer: score + timestamp */}
                   <div className="flex items-center gap-3 pt-3 border-t border-border/60">
                     <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-                    <div className="ml-auto text-[11px] tabular-nums text-muted-foreground">
-                      {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
-                    </div>
+                    {(() => {
+                      const daysSince = Math.floor((Date.now() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
+                      const urgencyColor = daysSince <= 3 ? 'text-muted-foreground' : daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
+                      return (
+                        <div className={`ml-auto text-[11px] tabular-nums ${urgencyColor}`}>
+                          {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </CardContent>
