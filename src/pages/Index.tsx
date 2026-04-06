@@ -111,7 +111,7 @@ const Dashboard = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="relative z-[1] gap-1 rounded-xl text-[11px] font-medium transition-colors active:scale-[0.97] data-[state=active]:text-primary-foreground sm:text-sm"
+                    className="relative z-[1] gap-1 rounded-xl text-[11px] font-medium transition-colors active:scale-[0.97] data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground/80 data-[state=inactive]:hover:text-foreground sm:text-sm"
                   >
                     {activeTab === tab.value && (
                       <motion.div
