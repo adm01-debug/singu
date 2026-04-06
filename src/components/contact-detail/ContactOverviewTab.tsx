@@ -280,7 +280,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       >
         {relatives.length > 0 ? (
           <div className="space-y-2">
-            {relatives.map((rel: any) => (
+            {relatives.map((rel) => (
               <div key={rel.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
                 <div>
                   <p className="font-medium text-foreground">{rel.name}</p>
@@ -311,7 +311,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       >
         {lifeEvents.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {lifeEvents.map((event: any) => (
+            {lifeEvents.map((event) => (
               <div key={event.id} className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
