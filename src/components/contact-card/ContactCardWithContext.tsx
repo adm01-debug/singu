@@ -303,14 +303,11 @@ export function ContactCardWithContext({
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
-          {/* Priority Bar on left side */}
-          <div className="absolute left-0 top-0 bottom-0 w-1">
-            <PriorityBar 
-              relationshipScore={contact.relationship_score || 0} 
-              lastInteractionDate={lastInteraction}
-              className="h-full w-full rounded-none"
-            />
-          </div>
+          {/* Stage color bar on left side */}
+          <div className={cn(
+            "absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[inherit] bg-gradient-to-b",
+            getStageBarColor(contact.relationship_stage)
+          )} />
           <CardContent className="p-4 pl-5">
             <div className="flex items-center gap-4">
               {/* Selection Checkbox */}
