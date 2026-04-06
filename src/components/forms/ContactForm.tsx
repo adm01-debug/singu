@@ -118,6 +118,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
+    mode: 'onBlur',
     defaultValues: {
       first_name: getField(c, 'first_name'),
       last_name: getField(c, 'last_name'),
