@@ -14,7 +14,7 @@ import { RelationshipScore } from '@/components/ui/relationship-score';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
-import { PriorityIndicator, PriorityBar } from '@/components/ui/priority-indicator';
+import { PriorityIndicator } from '@/components/ui/priority-indicator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
@@ -32,26 +32,28 @@ import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from 
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
-function getStageGradient(stage?: string | null): string {
+/** Solid semantic color for stage bar — clear visual differentiation */
+function getStageBarColor(stage?: string | null): string {
   switch (stage) {
     case 'advocate':
     case 'loyal_customer':
-      return 'from-success/20 via-success/10 to-accent/10';
+      return 'from-emerald-500 to-emerald-400';
     case 'customer':
-      return 'from-success/15 via-success/8 to-accent/10';
+      return 'from-success to-emerald-500';
     case 'negotiation':
+      return 'from-violet-500 to-purple-400';
     case 'opportunity':
-      return 'from-warning/15 via-warning/8 to-accent/10';
+      return 'from-amber-500 to-orange-400';
     case 'qualified_lead':
-      return 'from-accent/15 via-accent/8 to-primary/10';
+      return 'from-blue-500 to-sky-400';
     case 'prospect':
-      return 'from-primary/10 via-primary/5 to-accent/5';
+      return 'from-slate-400 to-slate-300';
     case 'at_risk':
-      return 'from-warning/20 via-destructive/10 to-warning/10';
+      return 'from-destructive to-orange-500';
     case 'lost':
-      return 'from-destructive/15 via-destructive/8 to-muted/10';
+      return 'from-muted-foreground to-muted-foreground/60';
     default:
-      return 'from-primary/15 via-primary/10 to-accent/10';
+      return 'from-muted-foreground/50 to-muted-foreground/30';
   }
 }
 
@@ -157,12 +159,7 @@ export function ContactCardWithContext({
               </div>
             )}
 
-            {/* Priority Bar at the top */}
-            <PriorityBar 
-              relationshipScore={contact.relationship_score || 0} 
-              lastInteractionDate={lastInteraction}
-              className="absolute top-0 left-0 right-0 z-10"
-            />
+            {/* Priority indicator — subtle dot, not bar */}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -190,10 +187,10 @@ export function ContactCardWithContext({
             
               <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Stage gradient bar */}
+                {/* Stage color bar — primary visual differentiator */}
                 <div className={cn(
-                  "h-1 rounded-t-lg bg-gradient-to-r",
-                  getStageGradient(contact.relationship_stage)
+                  "h-[3px] rounded-t-[inherit] bg-gradient-to-r",
+                  getStageBarColor(contact.relationship_stage)
                 )} />
 
                 <div className="px-4 pt-3 pb-3">
@@ -258,11 +255,9 @@ export function ContactCardWithContext({
                   {/* Row 2: Badges — compact, single line */}
                   <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
                     <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {behavior?.discProfile && (
                       <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
                     )}
-                    <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
                     {/* Timestamp pushed to right */}
                     {(() => {
                       const daysSince = Math.floor((Date.now() - new Date(contact.updated_at).getTime()) / (1000 * 60 * 60 * 24));
@@ -308,14 +303,11 @@ export function ContactCardWithContext({
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
-          {/* Priority Bar on left side */}
-          <div className="absolute left-0 top-0 bottom-0 w-1">
-            <PriorityBar 
-              relationshipScore={contact.relationship_score || 0} 
-              lastInteractionDate={lastInteraction}
-              className="h-full w-full rounded-none"
-            />
-          </div>
+          {/* Stage color bar on left side */}
+          <div className={cn(
+            "absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[inherit] bg-gradient-to-b",
+            getStageBarColor(contact.relationship_stage)
+          )} />
           <CardContent className="p-4 pl-5">
             <div className="flex items-center gap-4">
               {/* Selection Checkbox */}

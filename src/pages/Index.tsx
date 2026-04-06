@@ -6,7 +6,6 @@ import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Header } from '@/components/layout/Header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
@@ -71,7 +70,6 @@ const Dashboard = () => {
   if (loading) {
     return (
       <AppLayout>
-        <Header title="Dashboard" hideBack />
         <DashboardSkeleton />
       </AppLayout>
     );
@@ -94,7 +92,6 @@ const Dashboard = () => {
     <AppLayout>
       <CRMJsonLd />
       <ScrollProgressBar />
-      <Header title="Dashboard" icon={LayoutGrid} hideBack />
 
       <div className="p-4 md:p-6 space-y-5 md:space-y-6">
         <WelcomeHeroCard />
