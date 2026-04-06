@@ -114,7 +114,7 @@ const Dashboard = () => {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="relative z-[1] gap-1 rounded-xl text-[10px] font-medium transition-colors active:scale-[0.97] data-[state=active]:text-primary-foreground sm:text-sm"
+                    className="relative z-[1] gap-1 rounded-xl text-[11px] font-medium transition-colors active:scale-[0.97] data-[state=active]:text-primary-foreground sm:text-sm"
                   >
                     {activeTab === tab.value && (
                       <motion.div
@@ -125,7 +125,7 @@ const Dashboard = () => {
                     )}
                     <span className="relative z-[1] flex items-center gap-1">
                       <tab.icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-                      <span className="truncate text-[10px] sm:text-sm">{tab.label}</span>
+                      <span className="truncate text-[11px] sm:text-sm">{tab.label}</span>
                     </span>
                   </TabsTrigger>
                 ))}

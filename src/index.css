@@ -546,6 +546,11 @@
   .text-caption { @apply text-xs text-muted-foreground uppercase tracking-wide font-medium; }
   .text-eyebrow { @apply text-xs uppercase tracking-widest font-semibold text-primary; }
 
+  /* Tabular nums for metrics — ensures aligned columns */
+  .tabular-nums, [data-metric], .stat-value, .metric-value {
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Glass Effect */
   .glass {
     background: hsl(var(--glass-bg));

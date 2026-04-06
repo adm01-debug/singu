@@ -68,7 +68,7 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
                           <span className="text-muted-foreground"> — {activity.description}</span>
                         </p>
                       </div>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0 ml-2">
+                      <span className="text-xs text-muted-foreground/80 whitespace-nowrap flex-shrink-0 ml-2 tabular-nums">
                         {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
                       </span>
                     </Link>

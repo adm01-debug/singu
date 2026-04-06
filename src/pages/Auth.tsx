@@ -156,14 +156,26 @@ const Auth = () => {
         {/* Modern geometric decorative elements */}
         <div className="absolute top-16 left-16 w-72 h-72 bg-white/8 rounded-3xl blur-3xl rotate-12" />
         <div className="absolute bottom-16 right-16 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 right-1/4 w-32 h-32 border border-white/10 rounded-2xl rotate-45" />
-        <div className="absolute bottom-1/3 left-1/4 w-24 h-24 border border-white/10 rounded-full" />
         
-        {/* Dot grid pattern */}
-        <div className="absolute inset-0 opacity-[0.07]" style={{
-          backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-          backgroundSize: '32px 32px'
-        }} />
+        {/* Animated network lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="networkGrid" width="64" height="64" patternUnits="userSpaceOnUse">
+              <circle cx="32" cy="32" r="1.5" fill="white" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#networkGrid)" />
+          <line x1="10%" y1="20%" x2="40%" y2="45%" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <line x1="40%" y1="45%" x2="75%" y2="30%" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <line x1="75%" y1="30%" x2="60%" y2="70%" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <line x1="60%" y1="70%" x2="25%" y2="80%" stroke="white" strokeWidth="0.5" opacity="0.3" />
+          <line x1="25%" y1="80%" x2="10%" y2="20%" stroke="white" strokeWidth="0.5" opacity="0.2" />
+          <circle cx="10%" cy="20%" r="4" fill="white" opacity="0.15" />
+          <circle cx="40%" cy="45%" r="5" fill="white" opacity="0.2" />
+          <circle cx="75%" cy="30%" r="3.5" fill="white" opacity="0.15" />
+          <circle cx="60%" cy="70%" r="4.5" fill="white" opacity="0.18" />
+          <circle cx="25%" cy="80%" r="3" fill="white" opacity="0.12" />
+        </svg>
         
         <div className="relative z-10 flex flex-col justify-center items-start p-16 text-primary-foreground">
           <motion.div
@@ -204,7 +216,7 @@ const Auth = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-14 grid grid-cols-2 gap-3"
+            className="mt-12 grid grid-cols-2 gap-3"
           >
             {[
               { icon: '🎯', text: 'Perfil DISC automático' },
@@ -214,14 +226,33 @@ const Auth = () => {
             ].map((feature, index) => (
               <motion.div 
                 key={index} 
-                className="flex items-center gap-3 bg-white/8 backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/10"
-                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.12)' }}
+                className="flex items-center gap-3 bg-white/12 backdrop-blur-sm rounded-xl px-4 py-3.5 ring-1 ring-white/15"
+                whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.16)' }}
                 transition={{ duration: 0.2 }}
               >
                 <span className="text-xl" role="img" aria-hidden="true">{feature.icon}</span>
-                <span className="text-sm font-medium text-primary-foreground/90">{feature.text}</span>
+                <span className="text-sm font-medium text-primary-foreground">{feature.text}</span>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Social proof */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="mt-10 flex items-center gap-3"
+          >
+            <div className="flex -space-x-2">
+              {['bg-primary', 'bg-accent', 'bg-success', 'bg-secondary'].map((bg, i) => (
+                <div key={i} className={`w-8 h-8 rounded-full ${bg} ring-2 ring-white/20 flex items-center justify-center text-[10px] font-bold text-primary-foreground`}>
+                  {['MS', 'JR', 'AL', 'PK'][i]}
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-primary-foreground/70">
+              <span className="font-semibold text-primary-foreground/90">+500 profissionais</span> já usam o SINGU
+            </p>
           </motion.div>
         </div>
       </div>
@@ -252,7 +283,7 @@ const Auth = () => {
               </CardTitle>
               <CardDescription>
                 {mode === 'login' 
-                  ? 'Digite suas credenciais para acessar' 
+                  ? 'Acesse sua conta para continuar' 
                   : 'Preencha os dados para começar'}
               </CardDescription>
             </CardHeader>
@@ -276,6 +307,7 @@ const Auth = () => {
                             placeholder="João"
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
+                            autoComplete="given-name"
                             className={`pl-10 ${errors.firstName ? 'border-destructive' : ''}`}
                           />
                         </div>
@@ -290,6 +322,7 @@ const Auth = () => {
                           placeholder="Silva"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
+                          autoComplete="family-name"
                           className={errors.lastName ? 'border-destructive' : ''}
                         />
                         {errors.lastName && (
@@ -310,6 +343,7 @@ const Auth = () => {
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="email"
                       className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
                     />
                   </div>
@@ -328,12 +362,14 @@ const Auth = () => {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       className={`pl-10 pr-10 ${errors.password ? 'border-destructive' : ''}`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -368,10 +404,10 @@ const Auth = () => {
               {/* Divider */}
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
+                  <span className="w-full border-t border-border/60" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">ou continue com</span>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-3 text-muted-foreground">ou</span>
                 </div>
               </div>
 
@@ -430,8 +466,8 @@ const Auth = () => {
             transition={{ delay: 0.5 }}
             className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground"
           >
-            <Sparkles className="w-4 h-4 text-warning" />
-            <span>Powered by AI para análise comportamental</span>
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span>Análise comportamental com IA integrada</span>
           </motion.div>
         </motion.div>
       </div>

@@ -169,8 +169,8 @@ export function MobileBottomNav() {
                     />
                   )}
                   
-                  <div className="relative z-10">
-                    <Icon className={cn("w-5 h-5 transition-transform", active && "scale-110")} aria-hidden="true" />
+                  <div className="relative z-10 transition-transform duration-200" style={active ? { transform: 'scale(1.15)' } : undefined}>
+                    <Icon className="w-5 h-5" aria-hidden="true" />
                     {/* Top indicator dot */}
                     {active && (
                       <motion.div
@@ -183,7 +183,7 @@ export function MobileBottomNav() {
                     )}
                   </div>
                   <span className={cn(
-                    "relative z-10 text-[10px] font-medium transition-all",
+                    "relative z-10 text-[11px] font-medium transition-all",
                     active ? "opacity-100 font-semibold" : "opacity-70"
                   )}>
                     {item.label}
@@ -211,7 +211,7 @@ export function MobileBottomNav() {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium transition-all",
+                "text-[11px] font-medium transition-all",
                 (showMore || activeInMore) ? "opacity-100" : "opacity-70"
               )}>
                 Mais
