@@ -227,13 +227,14 @@ export function CompanyCardWithContext({
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
-          {/* Status color bar — uses deterministic color for visual variety */}
+          {/* Status color bar — semantic: green=customer, blue=prospect, muted=unknown */}
           {(() => {
-            const hue = hashStringToHue(company.name);
-            const barStyle = company.is_customer 
-              ? { background: `linear-gradient(90deg, hsl(var(--success)), hsl(var(--success) / 0.5))` }
-              : { background: `linear-gradient(90deg, hsl(${hue}, 50%, 45%), hsl(${(hue + 60) % 360}, 45%, 40%))` };
-            return <div className="h-1.5 w-full" style={barStyle} />;
+            const barClass = company.is_customer 
+              ? 'bg-gradient-to-r from-success to-emerald-500'
+              : company.status === 'prospect' || company.status === 'prospecto'
+              ? 'bg-gradient-to-r from-primary to-sky-400'
+              : 'bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/20';
+            return <div className={cn("h-[3px] w-full rounded-t-[inherit]", barClass)} />;
           })()}
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2 mb-4">
