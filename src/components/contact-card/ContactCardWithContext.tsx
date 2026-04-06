@@ -192,16 +192,21 @@ export function ContactCardWithContext({
               <CardContent className="p-0">
                 {/* Header with gradient by relationship stage */}
                 <div className={cn(
-                  "h-16 relative mt-1 bg-gradient-to-r",
+                  "h-20 relative mt-1 bg-gradient-to-br overflow-hidden",
                   getStageGradient(contact.relationship_stage)
                 )}>
+                  {/* Subtle mesh pattern */}
+                  <div className="absolute inset-0 opacity-[0.04]" style={{
+                    backgroundImage: 'radial-gradient(circle at 25% 25%, hsl(var(--primary)) 1px, transparent 1px), radial-gradient(circle at 75% 75%, hsl(var(--primary)) 1px, transparent 1px)',
+                    backgroundSize: '24px 24px',
+                  }} />
                   <div className="absolute -bottom-8 left-5">
                     <OptimizedAvatar 
                       src={contact.avatar_url || undefined}
                       alt={`${contact.first_name} ${contact.last_name}`}
                       fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                       size="lg"
-                      className="w-16 h-16 border-4 border-card shadow-medium"
+                      className="w-16 h-16 border-4 border-card shadow-medium ring-2 ring-primary/10"
                     />
                   </div>
                 </div>
@@ -311,9 +316,9 @@ export function ContactCardWithContext({
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-4 border-t border-border">
+                  <div className="flex items-center gap-3 pt-4 border-t border-border/60">
                     <RelationshipScore score={contact.relationship_score || 0} size="sm" />
-                    <div className="ml-auto text-xs text-muted-foreground">
+                    <div className="ml-auto text-[11px] tabular-nums text-muted-foreground">
                       {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
                     </div>
                   </div>
