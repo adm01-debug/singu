@@ -277,7 +277,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
           </div>
 
           {/* Right Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40">
             {/* Birthdays */}
             {upcomingBirthdays.length > 0 && (
               <div>
