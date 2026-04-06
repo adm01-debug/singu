@@ -18,6 +18,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, TrendingDown, Activity, PieChart as PieChartIcon, BarChart3, Minus } from 'lucide-react';
+import { AccessibleChart } from '@/components/ui/accessible-chart';
 
 export type PeriodFilter = '7d' | '30d' | '90d';
 
