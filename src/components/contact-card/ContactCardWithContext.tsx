@@ -157,12 +157,7 @@ export function ContactCardWithContext({
               </div>
             )}
 
-            {/* Priority Bar at the top */}
-            <PriorityBar 
-              relationshipScore={contact.relationship_score || 0} 
-              lastInteractionDate={lastInteraction}
-              className="absolute top-0 left-0 right-0 z-10"
-            />
+            {/* Priority indicator — subtle dot, not bar */}
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -190,10 +185,10 @@ export function ContactCardWithContext({
             
               <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Stage gradient bar */}
+                {/* Stage color bar — primary visual differentiator */}
                 <div className={cn(
-                  "h-1 rounded-t-lg bg-gradient-to-r",
-                  getStageGradient(contact.relationship_stage)
+                  "h-[3px] rounded-t-[inherit] bg-gradient-to-r",
+                  getStageBarColor(contact.relationship_stage)
                 )} />
 
                 <div className="px-4 pt-3 pb-3">
