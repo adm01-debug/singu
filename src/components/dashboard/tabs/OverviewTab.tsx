@@ -48,15 +48,15 @@ export function OverviewTab({
       transition={animVariants.transition}
       className="space-y-6"
     >
-      {/* 1. Your Day */}
+      {/* 1. Stats Grid — most important at-a-glance info */}
+      <DashboardStatsGrid stats={stats} prefersReducedMotion={prefersReducedMotion} />
+
+      {/* 2. Your Day */}
       <DashboardErrorBoundary sectionName="Seu Dia">
         <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
           <YourDaySection />
         </Suspense>
       </DashboardErrorBoundary>
-
-      {/* 2. Stats Grid */}
-      <DashboardStatsGrid stats={stats} prefersReducedMotion={prefersReducedMotion} />
 
       {/* 3. Pre-Contact Briefing */}
       <DashboardErrorBoundary sectionName="Briefing">
