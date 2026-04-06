@@ -6,7 +6,7 @@ import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Header } from '@/components/layout/Header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
