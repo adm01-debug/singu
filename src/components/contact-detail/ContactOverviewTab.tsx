@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
+import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 
 interface Props {
@@ -27,10 +28,10 @@ interface Props {
 
 export function ContactOverviewTab({ contact, company, insights, alerts, onDismissAlert, onDismissInsight }: Props) {
   const { user } = useAuth();
-  const [relatives, setRelatives] = useState<any[]>([]);
-  const [lifeEvents, setLifeEvents] = useState<any[]>([]);
-  const [cadence, setCadence] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>(null);
+  const [relatives, setRelatives] = useState<Tables<'contact_relatives'>[]>([]);
+  const [lifeEvents, setLifeEvents] = useState<Tables<'life_events'>[]>([]);
+  const [cadence, setCadence] = useState<Tables<'contact_cadence'> | null>(null);
+  const [preferences, setPreferences] = useState<Tables<'contact_preferences'> | null>(null);
 
   useEffect(() => {
     if (!user || !contact.id) return;
@@ -279,7 +280,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       >
         {relatives.length > 0 ? (
           <div className="space-y-2">
-            {relatives.map((rel: any) => (
+            {relatives.map((rel) => (
               <div key={rel.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
                 <div>
                   <p className="font-medium text-foreground">{rel.name}</p>
@@ -310,7 +311,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       >
         {lifeEvents.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {lifeEvents.map((event: any) => (
+            {lifeEvents.map((event) => (
               <div key={event.id} className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
