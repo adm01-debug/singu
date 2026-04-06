@@ -45,7 +45,6 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
                 illustration="interactions"
                 title="Sem atividade recente"
                 description="Registre interações com seus contatos para acompanhar o progresso."
-                actions={[{ label: 'Ver contatos', href: '/contatos' }]}
               />
             ) : (
               activities.map((activity, index) => {
