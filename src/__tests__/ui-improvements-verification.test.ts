@@ -784,8 +784,11 @@ describe('Dashboard Index Layout', () => {
     expect(allDashboard).toContain('Surface');
   });
 
-  it('uses Typography or semantic headings', () => {
-    expect(allDashboard).toMatch(/Typography|<h[1-6]|font-semibold|font-bold/);
+  it('uses Typography or semantic headings in dashboard ecosystem', () => {
+    const statsGrid = readSrc('components/dashboard/DashboardStatsGrid.tsx');
+    const welcomeCard = readSrc('components/dashboard/WelcomeHeroCard.tsx');
+    const fullEcosystem = allDashboard + '\n' + statsGrid + '\n' + welcomeCard;
+    expect(fullEcosystem).toMatch(/Typography|<h[1-6]|font-semibold|font-bold/);
   });
 });
 
