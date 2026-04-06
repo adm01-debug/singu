@@ -113,8 +113,18 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
             
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
-              <span className="text-foreground/50">•</span>
-              <span className="font-medium text-foreground">{pageTitle}</span>
+              {breadcrumbs.map((crumb, idx) => (
+                <span key={idx} className="flex items-center gap-1">
+                  {idx > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/50" aria-hidden="true" />}
+                  {crumb.path ? (
+                    <Link to={crumb.path} className="hover:text-foreground transition-colors">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-foreground">{crumb.label}</span>
+                  )}
+                </span>
+              ))}
             </nav>
 
             {/* Desktop search bar */}
