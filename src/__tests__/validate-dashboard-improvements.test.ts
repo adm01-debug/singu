@@ -333,16 +333,18 @@ describe('Dashboard Layout Improvements Validation', () => {
 
   // === IMPORT INTEGRITY ===
   describe('Import Integrity', () => {
-    it('should import ScrollArea in Index', () => {
-      expect(indexContent).toContain("from '@/components/ui/scroll-area'");
+    it('should import ScrollArea in dashboard components', () => {
+      expect(recentActivityContent).toContain("from '@/components/ui/scroll-area'");
     });
 
     it('should import ScrollToTopButton in AppLayout', () => {
       expect(appLayoutContent).toContain("from '@/components/navigation/ScrollToTopButton'");
     });
 
-    it('should import Collapsible components in Index', () => {
-      expect(indexContent).toContain("Collapsible, CollapsibleContent, CollapsibleTrigger");
+    it('should import Collapsible components in OverviewTab', () => {
+      expect(overviewTabContent).toContain("Collapsible");
+      expect(overviewTabContent).toContain("CollapsibleContent");
+      expect(overviewTabContent).toContain("CollapsibleTrigger");
     });
 
     it('should import ScrollArea in PortfolioHealthDashboard', () => {
