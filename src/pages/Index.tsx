@@ -92,6 +92,7 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
+      <CRMJsonLd />
       <ScrollProgressBar />
       <Header title="Dashboard" icon={LayoutGrid} hideBack />
 
