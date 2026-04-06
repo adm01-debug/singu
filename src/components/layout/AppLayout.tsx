@@ -178,7 +178,11 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main id="main-content" className="flex-1 overflow-auto pb-24 md:pb-8" tabIndex={-1} aria-label={pageTitle}>
+        <main id="main-content" className="flex-1 overflow-auto pb-24 md:pb-8 relative" tabIndex={-1} aria-label={pageTitle}>
+          {/* Subtle radial depth */}
+          <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.015]" style={{
+            backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% 0%, hsl(var(--primary)), transparent)',
+          }} aria-hidden="true" />
           <PageTransition>
             {children}
           </PageTransition>
