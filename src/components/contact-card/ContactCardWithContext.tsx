@@ -196,7 +196,17 @@ export function ContactCardWithContext({
                   getStageGradient(contact.relationship_stage)
                 )} />
 
-                <div className="pt-10 px-5 pb-5">
+                <div className="px-5 py-4">
+                  {/* Avatar + Name row */}
+                  <div className="flex items-start gap-3 mb-3">
+                    <OptimizedAvatar 
+                      src={contact.avatar_url || undefined}
+                      alt={`${contact.first_name} ${contact.last_name}`}
+                      fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
+                      size="md"
+                      className="w-11 h-11 border-2 border-primary/15 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
                   {/* Essential info — always visible */}
                   <div className="mb-3">
                     {isInlineEditing ? (
