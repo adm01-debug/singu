@@ -67,6 +67,7 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       icon: TrendingUp,
       gradientTone: 'warning' as const,
       sparkline: generateSparkline(stats.averageScore || 1, 4),
+      subtitle: getScoreLabel(stats.averageScore),
     },
   ];
 
