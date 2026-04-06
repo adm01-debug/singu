@@ -43,8 +43,10 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
             {activities.length === 0 ? (
               <EmptyState
                 illustration="interactions"
-                title="Nenhuma atividade"
-                description="Suas atividades recentes aparecerão aqui."
+                title="Sem atividade recente"
+                description="Registre interações com seus contatos para acompanhar o progresso."
+                actionLabel="Registrar interação"
+                actionHref="/contatos"
               />
             ) : (
               activities.map((activity, index) => {
