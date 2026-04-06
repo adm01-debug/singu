@@ -17,6 +17,13 @@ function generateSparkline(current: number, seed: number): number[] {
   return points;
 }
 
+function getScoreLabel(score: number): string {
+  if (score >= 80) return 'Meta: 80% · Excelente';
+  if (score >= 60) return 'Meta: 80% · Bom';
+  if (score >= 40) return 'Meta: 80% · Regular';
+  return 'Meta: 80% · Precisa melhorar';
+}
+
 export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardStatsGridProps) {
   const companyChangeType = stats.companyChange?.startsWith('+') && stats.companyChange !== '+0' ? 'positive' as const : 'neutral' as const;
   const contactChangeType = stats.contactChange?.startsWith('+') && stats.contactChange !== '+0' ? 'positive' as const : 'neutral' as const;
