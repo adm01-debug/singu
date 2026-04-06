@@ -257,7 +257,7 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
-      const dedupedAttention = Array.from(deduped.values());
+      const dedupedAttention = Array.from(byName.values());
       dedupedAttention.sort((a, b) => {
         const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
