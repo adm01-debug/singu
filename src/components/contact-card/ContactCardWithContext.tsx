@@ -212,13 +212,13 @@ export function ContactCardWithContext({
                         />
                       ) : (() => {
                         const displayName = formatContactName(contact.first_name, contact.last_name);
-                        const isGenericName = !contact.first_name || /^(contato|sem nome|posto|cliente|fornecedor)$/i.test(displayName);
+                        const isGenericName = displayName === 'Contato';
                         return (
                           <h3 
                             className={cn(
                               "font-semibold text-sm leading-tight transition-colors cursor-pointer",
                               isGenericName 
-                                ? "text-muted-foreground italic" 
+                                ? "text-muted-foreground/70" 
                                 : "text-foreground group-hover:text-primary"
                             )}
                             onDoubleClick={(e) => {
@@ -227,7 +227,7 @@ export function ContactCardWithContext({
                               setIsInlineEditing(true);
                             }}
                           >
-                            {isGenericName ? `${displayName} — editar` : displayName}
+                            {isGenericName ? 'Sem nome ✎' : displayName}
                           </h3>
                         );
                       })()}
