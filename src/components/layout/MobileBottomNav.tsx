@@ -183,7 +183,7 @@ export function MobileBottomNav() {
                     )}
                   </div>
                   <span className={cn(
-                    "relative z-10 text-[10px] font-medium transition-all",
+                    "relative z-10 text-[11px] font-medium transition-all",
                     active ? "opacity-100 font-semibold" : "opacity-70"
                   )}>
                     {item.label}
@@ -211,7 +211,7 @@ export function MobileBottomNav() {
                 )}
               </div>
               <span className={cn(
-                "text-[10px] font-medium transition-all",
+                "text-[11px] font-medium transition-all",
                 (showMore || activeInMore) ? "opacity-100" : "opacity-70"
               )}>
                 Mais
