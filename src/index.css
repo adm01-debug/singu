@@ -302,16 +302,16 @@
     --shadow-xl: 0 34px 70px -28px hsl(240 50% 2% / 0.68);
 
     /* Glass */
-    --glass-bg: 240 33% 10% / 0.8;
-    --glass-border: 214 100% 65% / 0.16;
+    --glass-bg: 240 30% 12% / 0.8;
+    --glass-border: 214 100% 65% / 0.18;
     --glass-blur: 8px;
 
     /* Surfaces — Deep navy steps */
-    --surface-0: 240 50% 4%;
-    --surface-1: 240 33% 7%;
-    --surface-2: 240 33% 10%;
-    --surface-3: 240 33% 14%;
-    --surface-4: 240 33% 17%;
+    --surface-0: 240 45% 6%;
+    --surface-1: 240 30% 9%;
+    --surface-2: 240 30% 12%;
+    --surface-3: 240 28% 16%;
+    --surface-4: 240 25% 19%;
 
     /* Roles */
     --role-owner: 270 70% 68%;
@@ -336,9 +336,9 @@
     --nexus-emerald: 142 50% 56%;
     --nexus-amber: 48 95% 55%;
     --nexus-rose: 0 75% 55%;
-    --nexus-surface-1: 240 33% 7%;
-    --nexus-surface-2: 240 33% 10%;
-    --nexus-surface-3: 240 33% 14%;
+    --nexus-surface-1: 240 30% 9%;
+    --nexus-surface-2: 240 30% 12%;
+    --nexus-surface-3: 240 28% 16%;
     --nexus-gradient-start: 214 100% 65%;
     --nexus-gradient-end: 283 40% 53%;
     --nexus-blue: 214 100% 65%;
@@ -349,8 +349,8 @@
     --nexus-orange: 28 80% 52%;
     --nexus-gold: 28 50% 65%;
     --nexus-teal: 170 65% 50%;
-    --nexus-muted: 0 0% 53%;
-    --nexus-border: 240 33% 20%;
+    --nexus-muted: 0 0% 60%;
+    --nexus-border: 240 28% 22%;
   }
 
   .light {
