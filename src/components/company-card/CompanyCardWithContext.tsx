@@ -332,12 +332,28 @@ export function CompanyCardWithContext({
 
             <Link to={`/empresas/${company.id}`}>
               <div className="space-y-2 mb-4">
-                {(company.city || company.state) && (
+                {(company.city || company.state) ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate">{[company.city, company.state].filter(Boolean).join(', ')}</span>
                   </div>
-                )}
+                ) : (() => {
+                  // Extract location from name pattern "Company - City/UF" or "Company - UF"
+                  const nameMatch = company.name.match(/[-–—]\s*([^-–—]+?)\s*[-–—]\s*([A-Z]{2})\s*$/i) 
+                    || company.name.match(/[-–—]\s*([A-Z]{2})\s*$/i);
+                  if (nameMatch) {
+                    const location = nameMatch.length === 3 
+                      ? `${nameMatch[1].trim()}, ${nameMatch[2].toUpperCase()}`
+                      : nameMatch[1].toUpperCase();
+                    return (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{location}</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
                 {company.phone && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4 flex-shrink-0" />
