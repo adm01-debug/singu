@@ -132,24 +132,19 @@ function getAvatarGradient(health: string | null, status: string | null, name?: 
   if (health === 'stable') return 'from-info to-primary';
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
-  if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
-  // Deterministic color based on company name
-  if (name) {
-    const hue = hashStringToHue(name);
-    // Use CSS custom property via inline style instead
-    return `from-primary to-primary/70`;
-  }
+  // For active/prospect/unknown — use deterministic color from name
   return 'from-primary to-primary/70';
 }
 
 function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
-  // Only apply custom color when there's no health/status-based color
+  // Only apply custom color when there's no health-based color or inactive status
   if (health && healthRingConfig[health]) return undefined;
-  if (status === 'active' || status === 'ativo' || status === 'inactive' || status === 'inativo') return undefined;
+  if (status === 'inactive' || status === 'inativo') return undefined;
+  // Deterministic color from company name for visual variety
   const hue = hashStringToHue(name);
   return {
-    background: `linear-gradient(135deg, hsl(${hue}, 55%, 50%), hsl(${(hue + 30) % 360}, 45%, 40%))`,
+    background: `linear-gradient(135deg, hsl(${hue}, 55%, 45%), hsl(${(hue + 40) % 360}, 50%, 35%))`,
   };
 }
 
