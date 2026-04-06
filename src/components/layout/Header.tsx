@@ -68,9 +68,9 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
               </motion.div>
             )}
             <div className="min-w-0">
-              <h1 className="text-sm md:text-base font-semibold text-foreground truncate">{title}</h1>
+              <h1 className="text-sm md:text-base font-semibold text-foreground truncate leading-tight">{title}</h1>
               {subtitle && (
-                <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>
+                <p className="text-[11px] text-muted-foreground/80 truncate tabular-nums mt-0.5">{subtitle}</p>
               )}
             </div>
           </div>
