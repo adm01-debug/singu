@@ -13,6 +13,14 @@ describe('Dashboard Layout Improvements Validation', () => {
   const appContent = readFile('src/App.tsx');
   const appLayoutContent = readFile('src/components/layout/AppLayout.tsx');
 
+  // After refactor, many dashboard features moved to sub-components
+  const overviewTabContent = readFile('src/components/dashboard/tabs/OverviewTab.tsx');
+  const statsGridContent = readFile('src/components/dashboard/DashboardStatsGrid.tsx');
+  const recentActivityContent = readFile('src/components/dashboard/RecentActivityCard.tsx');
+  const topContactsContent = readFile('src/components/dashboard/TopContactsCard.tsx');
+  // Aggregate all dashboard-related content for cross-cutting checks
+  const allDashboardContent = [indexContent, overviewTabContent, statsGridContent, recentActivityContent, topContactsContent].join('\n');
+
   // === STICKY TABS ===
   describe('Sticky Tabs Implementation', () => {
     it('should have sticky positioning on tabs container', () => {
