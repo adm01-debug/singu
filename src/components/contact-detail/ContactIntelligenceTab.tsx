@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
   contactId: string;
@@ -14,10 +15,10 @@ interface Props {
 
 export function ContactIntelligenceTab({ contactId }: Props) {
   const { user } = useAuth();
-  const [objections, setObjections] = useState<any[]>([]);
-  const [criteria, setCriteria] = useState<any[]>([]);
-  const [values, setValues] = useState<any[]>([]);
-  const [offers, setOffers] = useState<any[]>([]);
+  const [objections, setObjections] = useState<Tables<'hidden_objections'>[]>([]);
+  const [criteria, setCriteria] = useState<Tables<'decision_criteria'>[]>([]);
+  const [values, setValues] = useState<Tables<'client_values'>[]>([]);
+  const [offers, setOffers] = useState<Tables<'offer_suggestions'>[]>([]);
 
   useEffect(() => {
     if (!user || !contactId) return;

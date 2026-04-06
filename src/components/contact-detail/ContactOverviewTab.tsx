@@ -14,6 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
+import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 
 interface Props {
@@ -27,10 +28,10 @@ interface Props {
 
 export function ContactOverviewTab({ contact, company, insights, alerts, onDismissAlert, onDismissInsight }: Props) {
   const { user } = useAuth();
-  const [relatives, setRelatives] = useState<any[]>([]);
-  const [lifeEvents, setLifeEvents] = useState<any[]>([]);
-  const [cadence, setCadence] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>(null);
+  const [relatives, setRelatives] = useState<Tables<'contact_relatives'>[]>([]);
+  const [lifeEvents, setLifeEvents] = useState<Tables<'life_events'>[]>([]);
+  const [cadence, setCadence] = useState<Tables<'contact_cadence'> | null>(null);
+  const [preferences, setPreferences] = useState<Tables<'contact_preferences'> | null>(null);
 
   useEffect(() => {
     if (!user || !contact.id) return;
