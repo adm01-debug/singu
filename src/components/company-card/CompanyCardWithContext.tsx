@@ -133,8 +133,8 @@ function getAvatarGradient(health: string | null, status: string | null, name?: 
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
-  // For active/prospect/unknown — use deterministic color from name
-  return 'from-primary to-primary/70';
+  // For active/prospect/unknown — always use deterministic color from name for visual variety
+  return '';
 }
 
 function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
