@@ -1,6 +1,6 @@
 import { ReactNode, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Search, Command, Settings, LogOut } from 'lucide-react';
+import { useLocation, Link } from 'react-router-dom';
+import { Search, Command, Settings, LogOut, ChevronRight } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -52,6 +52,23 @@ function getPageTitle(pathname: string): string {
   return 'Página';
 }
 
+/** Returns breadcrumb segments for detail pages e.g. /contatos/123 → [{label:"Contatos", path:"/contatos"}, {label:"Detalhe"}] */
+function getBreadcrumbs(pathname: string, pageTitle: string): { label: string; path?: string }[] {
+  const PARENT_ROUTES: Record<string, { label: string; path: string }> = {
+    '/contatos': { label: 'Contatos', path: '/contatos' },
+    '/empresas': { label: 'Empresas', path: '/empresas' },
+    '/interacoes': { label: 'Conversas', path: '/interacoes' },
+  };
+
+  for (const [prefix, parent] of Object.entries(PARENT_ROUTES)) {
+    if (pathname.startsWith(prefix + '/') && pathname !== prefix) {
+      return [parent, { label: 'Detalhe' }];
+    }
+  }
+
+  return [{ label: pageTitle }];
+}
+
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const { state } = useSidebar();
@@ -61,6 +78,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
   useKeyboardShortcutsEnhanced();
 
   const pageTitle = useMemo(() => title || getPageTitle(location.pathname), [title, location.pathname]);
+  const breadcrumbs = useMemo(() => getBreadcrumbs(location.pathname, pageTitle), [location.pathname, pageTitle]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -95,8 +113,18 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
             
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
-              <span className="text-foreground/50">•</span>
-              <span className="font-medium text-foreground">{pageTitle}</span>
+              {breadcrumbs.map((crumb, idx) => (
+                <span key={idx} className="flex items-center gap-1">
+                  {idx > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/50" aria-hidden="true" />}
+                  {crumb.path ? (
+                    <Link to={crumb.path} className="hover:text-foreground transition-colors">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-foreground">{crumb.label}</span>
+                  )}
+                </span>
+              ))}
             </nav>
 
             {/* Desktop search bar */}

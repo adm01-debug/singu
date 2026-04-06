@@ -26,6 +26,7 @@ import { OverviewTab } from '@/components/dashboard/tabs/OverviewTab';
 import { AnalyticsTab } from '@/components/dashboard/tabs/AnalyticsTab';
 import { RelationshipsTab } from '@/components/dashboard/tabs/RelationshipsTab';
 import { IntelligenceTab } from '@/components/dashboard/tabs/IntelligenceTab';
+import { CRMJsonLd } from '@/components/seo/JsonLd';
 
 const TAB_ORDER = ['overview', 'analytics', 'relationships', 'intelligence'];
 
@@ -91,6 +92,7 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
+      <CRMJsonLd />
       <ScrollProgressBar />
       <Header title="Dashboard" icon={LayoutGrid} hideBack />
 
