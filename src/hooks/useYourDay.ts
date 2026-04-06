@@ -182,6 +182,9 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         if (!name) return false;
         // Require both first and last name for quality
         if (!firstName || !lastName) return false;
+        // Filter placeholder names from CRM import ("Contato — editar", "Posto — editar")
+        if (/[—–-]\s*editar$/i.test(name)) return false;
+        if (/^(contato|posto|cargo|teste?)\b/i.test(firstName) && firstName.length < 20) return false;
         // Filter phone-formatted names, emails, test data, WhatsApp auto-contacts
         if (/^\(\d+\)\s*\d+/.test(firstName)) return false;
         if (firstName.includes('@')) return false;

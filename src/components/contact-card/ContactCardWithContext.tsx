@@ -212,13 +212,13 @@ export function ContactCardWithContext({
                         />
                       ) : (() => {
                         const displayName = formatContactName(contact.first_name, contact.last_name);
-                        const isGenericName = !contact.first_name || /^(contato|sem nome|posto|cliente|fornecedor)$/i.test(displayName);
+                        const isGenericName = displayName === 'Contato';
                         return (
                           <h3 
                             className={cn(
                               "font-semibold text-sm leading-tight transition-colors cursor-pointer",
                               isGenericName 
-                                ? "text-muted-foreground italic" 
+                                ? "text-muted-foreground/70" 
                                 : "text-foreground group-hover:text-primary"
                             )}
                             onDoubleClick={(e) => {
@@ -227,7 +227,7 @@ export function ContactCardWithContext({
                               setIsInlineEditing(true);
                             }}
                           >
-                            {isGenericName ? `${displayName} — editar` : displayName}
+                            {isGenericName ? 'Sem nome ✎' : displayName}
                           </h3>
                         );
                       })()}
@@ -338,9 +338,18 @@ export function ContactCardWithContext({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-foreground truncate">
-                      {formatContactName(contact.first_name, contact.last_name)}
-                    </h3>
+                    {(() => {
+                      const displayName = formatContactName(contact.first_name, contact.last_name);
+                      const isGenericName = displayName === 'Contato';
+                      return (
+                        <h3 className={cn(
+                          "font-semibold truncate",
+                          isGenericName ? "text-muted-foreground/70" : "text-foreground"
+                        )}>
+                          {isGenericName ? 'Sem nome ✎' : displayName}
+                        </h3>
+                      );
+                    })()}
                     <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
                     {/* Desktop: show all badges inline */}
                     <span className="hidden sm:contents">

@@ -133,15 +133,15 @@ function getAvatarGradient(health: string | null, status: string | null, name?: 
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
-  // For active/prospect/unknown — use deterministic color from name
-  return 'from-primary to-primary/70';
+  // For active/prospect/unknown — always use deterministic color from name for visual variety
+  return '';
 }
 
 function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
-  // Only apply custom color when there's no health-based color or inactive status
+  // Only apply custom color when there's no health-based or status-based gradient
   if (health && healthRingConfig[health]) return undefined;
   if (status === 'inactive' || status === 'inativo') return undefined;
-  // Deterministic color from company name for visual variety
+  // Deterministic color from company name — ensures visual variety in grids
   const hue = hashStringToHue(name);
   return {
     background: `linear-gradient(135deg, hsl(${hue}, 55%, 45%), hsl(${(hue + 40) % 360}, 50%, 35%))`,
@@ -332,12 +332,28 @@ export function CompanyCardWithContext({
 
             <Link to={`/empresas/${company.id}`}>
               <div className="space-y-2 mb-4">
-                {(company.city || company.state) && (
+                {(company.city || company.state) ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate">{[company.city, company.state].filter(Boolean).join(', ')}</span>
                   </div>
-                )}
+                ) : (() => {
+                  // Extract location from name pattern "Company - City/UF" or "Company - UF"
+                  const nameMatch = company.name.match(/[-–—]\s*([^-–—]+?)\s*[-–—]\s*([A-Z]{2})\s*$/i) 
+                    || company.name.match(/[-–—]\s*([A-Z]{2})\s*$/i);
+                  if (nameMatch) {
+                    const location = nameMatch.length === 3 
+                      ? `${nameMatch[1].trim()}, ${nameMatch[2].toUpperCase()}`
+                      : nameMatch[1].toUpperCase();
+                    return (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="truncate">{location}</span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
                 {company.phone && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4 flex-shrink-0" />

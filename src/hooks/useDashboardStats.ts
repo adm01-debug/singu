@@ -157,7 +157,8 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
     const isRealName = (name: string): boolean => {
       if (!name || name.length < 3) return false;
       if (/^\(\d+\)/.test(name) || /^\d{6,}/.test(name)) return false;
-      if (/^(whatsapp|mensagem|teste|contato|unknown|admin|user)$/i.test(name.split(' ')[0])) return false;
+      if (/^(whatsapp|mensagem|teste|contato|posto|cargo|unknown|admin|user)$/i.test(name.split(' ')[0])) return false;
+      if (/[—–-]\s*editar$/i.test(name)) return false;
       if (name.includes('@')) return false;
       const vowels = (name.match(/[aeiouáéíóúâêîôûãõ]/gi) || []).length;
       return vowels >= 2;
