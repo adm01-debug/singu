@@ -53,6 +53,7 @@ interface StatCardProps extends VariantProps<typeof statCardVariants> {
   sparkline?: number[];
   onClick?: () => void;
   emptyAction?: { label: string; href: string };
+  subtitle?: string;
 }
 
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
@@ -103,7 +104,7 @@ export function StatCard({
   title, value, change, changeType = 'neutral', icon: Icon,
   iconColor, className, delay = 0,
   variant, size, animate = true, sparkline, onClick, emptyAction,
-  gradientTone = 'primary',
+  gradientTone = 'primary', subtitle,
 }: StatCardProps) {
   const numericValue = typeof value === 'number' ? value : parseInt(value.toString().replace(/\D/g, ''));
   const isNumeric = typeof value === 'number' && !isNaN(numericValue);
@@ -173,6 +174,10 @@ export function StatCard({
               {emptyAction.label}
               <ArrowRight className="w-3 h-3" />
             </Link>
+          )}
+          
+          {subtitle && (
+            <p className="text-[10px] text-muted-foreground mt-1">{subtitle}</p>
           )}
         </div>
 

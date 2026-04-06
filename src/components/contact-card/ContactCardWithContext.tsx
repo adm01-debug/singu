@@ -188,135 +188,76 @@ export function ContactCardWithContext({
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <Link to={`/contatos/${contact.id}`}>
+              <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Header with gradient by relationship stage */}
+                {/* Compact header — avatar inline with name */}
                 <div className={cn(
-                  "h-20 relative mt-1 bg-gradient-to-br overflow-hidden",
+                  "h-1.5 rounded-t-lg bg-gradient-to-r",
                   getStageGradient(contact.relationship_stage)
-                )}>
-                  {/* Subtle mesh pattern */}
-                  <div className="absolute inset-0 opacity-[0.04]" style={{
-                    backgroundImage: 'radial-gradient(circle at 25% 25%, hsl(var(--primary)) 1px, transparent 1px), radial-gradient(circle at 75% 75%, hsl(var(--primary)) 1px, transparent 1px)',
-                    backgroundSize: '24px 24px',
-                  }} />
-                  <div className="absolute -bottom-8 left-5">
+                )} />
+
+                <div className="px-5 py-4">
+                  {/* Avatar + Name row */}
+                  <div className="flex items-start gap-3 mb-3">
                     <OptimizedAvatar 
                       src={contact.avatar_url || undefined}
                       alt={`${contact.first_name} ${contact.last_name}`}
                       fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
-                      size="lg"
-                      className="w-16 h-16 border-4 border-card shadow-medium ring-2 ring-primary/10"
+                      size="md"
+                      className="w-11 h-11 border-2 border-primary/15 shrink-0 mt-0.5"
                     />
-                  </div>
-                </div>
-
-                <div className="pt-10 px-5 pb-5">
-                  {/* Essential info — always visible */}
-                  <div className="mb-3">
-                    {isInlineEditing ? (
-                      <InlineEdit
-                        value={`${contact.first_name} ${contact.last_name}`}
-                        onSave={(v) => handleInlineSave('name', v)}
-                        className="font-semibold text-foreground"
-                      />
-                    ) : (() => {
-                      const displayName = formatContactName(contact.first_name, contact.last_name);
-                      const isGenericName = !contact.first_name || /^(contato|sem nome|posto|cliente|fornecedor)$/i.test(displayName);
-                      return (
-                        <h3 
-                          className={cn(
-                            "font-semibold transition-colors cursor-pointer",
-                            isGenericName 
-                              ? "text-muted-foreground italic" 
-                              : "text-foreground group-hover:text-primary"
-                          )}
-                          onDoubleClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsInlineEditing(true);
-                          }}
-                        >
-                          {isGenericName ? `${displayName} — editar` : displayName}
-                        </h3>
-                      );
-                    })()}
-                    {contact.role_title && (
-                      <p className="text-sm text-muted-foreground">{contact.role_title}</p>
-                    )}
-                  </div>
-
-                  {/* Desktop: always show details / Mobile: progressive disclosure */}
-                  <div className="hidden sm:block">
-                    {companyName && (
-                      <div className="flex items-center gap-2 mb-3">
-                        <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                        <span className="text-sm text-muted-foreground">{toTitleCase(companyName)}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mb-3 flex-wrap">
-                      <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                      {behavior?.discProfile && (
-                        <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
-                      )}
-                      <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
-                    </div>
-
-                    <div className="mb-4">
-                      <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                    </div>
-                  </div>
-
-                  {/* Mobile: expand/collapse toggle */}
-                  <div className="sm:hidden">
-                    <div className="flex items-center gap-2 mb-2">
-                      <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
-                      <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
-                    </div>
-
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          {companyName && (
-                            <div className="flex items-center gap-2 mb-2">
-                              <Building2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                              <span className="text-sm text-muted-foreground">{toTitleCase(companyName)}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            {behavior?.discProfile && (
-                              <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                    <div className="min-w-0 flex-1">
+                      {isInlineEditing ? (
+                        <InlineEdit
+                          value={`${contact.first_name} ${contact.last_name}`}
+                          onSave={(v) => handleInlineSave('name', v)}
+                          className="font-semibold text-foreground"
+                        />
+                      ) : (() => {
+                        const displayName = formatContactName(contact.first_name, contact.last_name);
+                        const isGenericName = !contact.first_name || /^(contato|sem nome|posto|cliente|fornecedor)$/i.test(displayName);
+                        return (
+                          <h3 
+                            className={cn(
+                              "font-semibold transition-colors cursor-pointer leading-tight",
+                              isGenericName 
+                                ? "text-muted-foreground italic" 
+                                : "text-foreground group-hover:text-primary"
                             )}
-                            <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
-                          </div>
-                        </motion.div>
+                            onDoubleClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsInlineEditing(true);
+                            }}
+                          >
+                            {isGenericName ? `${displayName} — editar` : displayName}
+                          </h3>
+                        );
+                      })()}
+                      {contact.role_title && (
+                        <p className="text-sm text-muted-foreground truncate">{contact.role_title}</p>
                       )}
-                    </AnimatePresence>
-
-                    <button
-                      onClick={toggleExpand}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors w-full justify-center py-1 min-h-[var(--touch-target-min)]"
-                      aria-expanded={isExpanded}
-                      aria-label={isExpanded ? 'Recolher detalhes' : 'Ver mais detalhes'}
-                    >
-                      <motion.span
-                        animate={{ rotate: isExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown className="w-4 h-4" />
-                      </motion.span>
-                      {isExpanded ? 'Menos' : 'Mais'}
-                    </button>
+                      {companyName && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
+                          <span className="text-xs text-muted-foreground truncate">{toTitleCase(companyName)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3 pt-4 border-t border-border/60">
+                  {/* Badges row */}
+                  <div className="flex items-center gap-2 flex-wrap mb-3">
+                    <RoleBadge role={(contact.role as ContactRole) || 'contact'} />
+                    <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
+                    {behavior?.discProfile && (
+                      <DISCBadge profile={behavior.discProfile} size="sm" showLabel={false} />
+                    )}
+                    <SentimentIndicator sentiment={(contact.sentiment as SentimentType) || 'neutral'} size="sm" />
+                  </div>
+
+                  {/* Footer: score + timestamp */}
+                  <div className="flex items-center gap-3 pt-3 border-t border-border/60">
                     <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                     <div className="ml-auto text-[11px] tabular-nums text-muted-foreground">
                       {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}

@@ -132,24 +132,19 @@ function getAvatarGradient(health: string | null, status: string | null, name?: 
   if (health === 'stable') return 'from-info to-primary';
   if (health === 'average') return 'from-warning to-warning/70';
   if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
-  if (status === 'active' || status === 'ativo') return 'from-success/80 to-info';
   if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
-  // Deterministic color based on company name
-  if (name) {
-    const hue = hashStringToHue(name);
-    // Use CSS custom property via inline style instead
-    return `from-primary to-primary/70`;
-  }
+  // For active/prospect/unknown — use deterministic color from name
   return 'from-primary to-primary/70';
 }
 
 function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
-  // Only apply custom color when there's no health/status-based color
+  // Only apply custom color when there's no health-based color or inactive status
   if (health && healthRingConfig[health]) return undefined;
-  if (status === 'active' || status === 'ativo' || status === 'inactive' || status === 'inativo') return undefined;
+  if (status === 'inactive' || status === 'inativo') return undefined;
+  // Deterministic color from company name for visual variety
   const hue = hashStringToHue(name);
   return {
-    background: `linear-gradient(135deg, hsl(${hue}, 55%, 50%), hsl(${(hue + 30) % 360}, 45%, 40%))`,
+    background: `linear-gradient(135deg, hsl(${hue}, 55%, 45%), hsl(${(hue + 40) % 360}, 50%, 35%))`,
   };
 }
 
@@ -227,11 +222,16 @@ export function CompanyCardWithContext({
         onDelete={() => onDelete(company)}
       >
         <Card className={cn(
-          "h-full card-hover group cursor-pointer transition-all duration-200",
+          "h-full card-hover group cursor-pointer transition-all duration-200 overflow-hidden",
           "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
           isHighlighted && "ring-2 ring-primary",
           isSelected && "bg-primary/5"
         )}>
+          {/* Status color bar */}
+          <div className={cn(
+            "h-1.5 w-full",
+            company.is_customer ? "bg-gradient-to-r from-success to-success/60" : "bg-gradient-to-r from-primary to-primary/60"
+          )} />
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-start justify-between gap-2 mb-4">
               <div className="flex items-center gap-3">
