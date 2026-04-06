@@ -225,8 +225,19 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         }
       });
 
-      needsAttention.sort((a, b) => {
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
+      // Deduplicate by contact id — keep highest priority entry
+      const deduped = new Map<string, NeedsAttention>();
+      needsAttention.forEach(item => {
+        const existing = deduped.get(item.contact.id);
+        const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+        if (!existing || priorityOrder[item.priority] < priorityOrder[existing.priority]) {
+          deduped.set(item.contact.id, item);
+        }
+      });
+
+      const dedupedAttention = Array.from(deduped.values());
+      dedupedAttention.sort((a, b) => {
+        const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
           return priorityOrder[a.priority] - priorityOrder[b.priority];
         }
@@ -237,7 +248,7 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         todayFollowUps,
         overdueFollowUps,
         upcomingBirthdays: upcomingBirthdays.slice(0, 5),
-        needsAttention: needsAttention.slice(0, 5),
+        needsAttention: dedupedAttention.slice(0, 5),
         newInsights: insights,
         loading: false,
       });
