@@ -10,12 +10,8 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 
 interface RecentActivityCardProps {
   activities: DashboardStats['recentActivities'];
-  animations: Array<{
-    initial: Record<string, unknown>;
-    animate: Record<string, unknown>;
-    transition: Record<string, unknown>;
-    style: Record<string, unknown>;
-  }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
 }
 
 function ActivityIcon({ type }: { type: string }) {

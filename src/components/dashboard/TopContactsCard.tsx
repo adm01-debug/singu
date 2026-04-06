@@ -19,12 +19,8 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 
 interface TopContactsCardProps {
   contacts: DashboardStats['topContacts'];
-  animations: Array<{
-    initial: Record<string, unknown>;
-    animate: Record<string, unknown>;
-    transition: Record<string, unknown>;
-    style: Record<string, unknown>;
-  }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
 }
 
 export function TopContactsCard({ contacts, animations }: TopContactsCardProps) {

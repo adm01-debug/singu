@@ -18,8 +18,10 @@ interface OverviewTabProps {
   briefingOpen: boolean;
   setBriefingOpen: (open: boolean) => void;
   prefersReducedMotion: boolean;
-  recentActivityAnimations: Array<{ initial: Record<string, unknown>; animate: Record<string, unknown>; transition: Record<string, unknown>; style: Record<string, unknown> }>;
-  topContactAnimations: Array<{ initial: Record<string, unknown>; animate: Record<string, unknown>; transition: Record<string, unknown>; style: Record<string, unknown> }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  recentActivityAnimations: Array<{ initial: any; animate: any; transition: any; style: any }>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  topContactAnimations: Array<{ initial: any; animate: any; transition: any; style: any }>;
   tabDirection: number;
 }
 
