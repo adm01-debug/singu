@@ -160,7 +160,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
       {hasAnyData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Left Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40">
             {/* Overdue Follow-ups */}
             {overdueFollowUps.length > 0 && (
               <div>
