@@ -138,10 +138,10 @@ function getAvatarGradient(health: string | null, status: string | null, name?: 
 }
 
 function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
-  // Only apply custom color when there's no health-based color or inactive status
+  // Only apply custom color when there's no health-based or status-based gradient
   if (health && healthRingConfig[health]) return undefined;
   if (status === 'inactive' || status === 'inativo') return undefined;
-  // Deterministic color from company name for visual variety
+  // Deterministic color from company name — ensures visual variety in grids
   const hue = hashStringToHue(name);
   return {
     background: `linear-gradient(135deg, hsl(${hue}, 55%, 45%), hsl(${(hue + 40) % 360}, 50%, 35%))`,
