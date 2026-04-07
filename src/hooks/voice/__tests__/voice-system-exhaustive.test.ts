@@ -430,8 +430,9 @@ describe("Edge Function Shared Auth — Contract validation", () => {
   });
 
   it("handleCorsAndMethod allows POST", () => {
-    expect("POST" !== "OPTIONS").toBe(true);
-    expect("POST" === "POST").toBe(true);
+    const method: string = "POST";
+    expect(method !== "OPTIONS").toBe(true);
+    expect(method === "POST").toBe(true);
   });
 
   it("jsonError produces correct structure", () => {
