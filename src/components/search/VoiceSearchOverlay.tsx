@@ -59,13 +59,20 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
       }
     }, [isOpen]);
 
+    // Keyboard: ESC to close, Space/Enter delegated to orb via tabIndex
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape" && isOpen) onClose();
+        if (!isOpen) return;
+        if (e.key === "Escape") {
+          e.preventDefault();
+          onClose();
+        }
       };
       document.addEventListener("keydown", handleKeyDown);
       return () => document.removeEventListener("keydown", handleKeyDown);
     }, [isOpen, onClose]);
+
+    const orbRef = useRef<HTMLDivElement>(null);
 
     const prevPhaseRef = useRef<VoiceAgentPhase>("idle");
     const hasAutoStarted = useRef(false);
@@ -128,6 +135,14 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
     const showTranscript = partialTranscript || finalTranscript;
     const colors = usePhaseColors(phase, showBooting);
     const isWaveformActive = phase === "listening" || phase === "speaking" || showBooting;
+
+    // Focus trap: auto-focus the orb when overlay opens and booting finishes
+    useEffect(() => {
+      if (isOpen && !showBooting) {
+        const timer = setTimeout(() => orbRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+      }
+    }, [isOpen, showBooting]);
 
     const borderGlow = useMemo(() => {
       const match = colors.primary.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
@@ -229,7 +244,8 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                 </motion.div>
 
                 <motion.div
-                  className="cursor-pointer select-none"
+                  ref={orbRef}
+                  className="cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
                   onClick={handleOrbClick}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
