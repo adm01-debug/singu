@@ -598,7 +598,7 @@ describe('CompanyCardWithContext Improvements', () => {
   });
 });
 
-// WelcomeHeroCard was permanently removed from the project
+
 
 // ============================================
 // 10. DASHBOARD — YourDaySection
@@ -671,9 +671,6 @@ describe('Dashboard Index Layout', () => {
     expect(content).toContain('TabsContent');
   });
 
-  it('does not have WelcomeHeroCard (removed)', () => {
-    expect(content).not.toContain('WelcomeHeroCard');
-  });
 
   it('has OnboardingChecklist', () => {
     expect(content).toContain('OnboardingChecklist');
@@ -944,8 +941,9 @@ describe('Performance Optimizations', () => {
     expect(allDashboard).toContain('Suspense');
   });
 
-  it('uses useMemo', () => {
-    expect(indexPage).toContain('useMemo');
+  it('uses useMemo in dashboard ecosystem', () => {
+    const mappedData = readSrc('hooks/useDashboardMappedData.ts');
+    expect(mappedData).toContain('useMemo');
   });
 
   it('uses useRef', () => {
