@@ -1,6 +1,5 @@
-import { Grid3X3, List, Table2, LayoutGrid } from 'lucide-react';
+import { Grid3X3, List, Table2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 export type ViewMode = 'grid' | 'list' | 'table';
@@ -40,75 +39,53 @@ function ColumnIcon({ cols, active }: { cols: number; active: boolean }) {
 
 export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColumnsChange, className }: ViewModeSwitcherProps) {
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn('gap-2 text-xs font-medium', className)}
-        >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          Layout
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-3 space-y-3">
-        {/* View Mode */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Visualização
-          </span>
-          <div className="flex items-center gap-0.5 bg-secondary/60 rounded-lg p-1">
-            {modes.map((mode) => {
-              const Icon = mode.icon;
-              const isActive = value === mode.value;
-              return (
-                <Button
-                  key={mode.value}
-                  variant={isActive ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onChange(mode.value)}
-                  className={cn(
-                    'h-7 px-2.5 gap-1.5 text-xs font-medium transition-colors flex-1',
-                    !isActive && 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {mode.label}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
+    <div className={cn('flex items-center gap-2', className)}>
+      {/* View Mode Buttons */}
+      <div className="flex items-center gap-0.5 bg-secondary/60 rounded-lg p-1">
+        {modes.map((mode) => {
+          const Icon = mode.icon;
+          const isActive = value === mode.value;
+          return (
+            <Button
+              key={mode.value}
+              variant={isActive ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onChange(mode.value)}
+              className={cn(
+                'h-7 px-2.5 gap-1.5 text-xs font-medium transition-colors',
+                !isActive && 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {mode.label}
+            </Button>
+          );
+        })}
+      </div>
 
-        {/* Grid Columns - only show when grid mode */}
-        {value === 'grid' && onGridColumnsChange && (
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Colunas
-            </span>
-            <div className="flex items-center gap-1">
-              {columnOptions.map((cols) => {
-                const isActive = gridColumns === cols;
-                return (
-                  <button
-                    key={cols}
-                    onClick={() => onGridColumnsChange(cols)}
-                    className={cn(
-                      'flex items-center justify-center w-9 h-9 rounded-md transition-colors',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    )}
-                    title={`${cols} colunas`}
-                  >
-                    <ColumnIcon cols={cols} active={isActive} />
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+      {/* Grid Columns - inline, only when grid mode */}
+      {value === 'grid' && onGridColumnsChange && (
+        <div className="flex items-center gap-1 bg-secondary/60 rounded-lg p-1">
+          {columnOptions.map((cols) => {
+            const isActive = gridColumns === cols;
+            return (
+              <button
+                key={cols}
+                onClick={() => onGridColumnsChange(cols)}
+                className={cn(
+                  'flex items-center justify-center w-7 h-7 rounded-md transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                )}
+                title={`${cols} colunas`}
+              >
+                <ColumnIcon cols={cols} active={isActive} />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
