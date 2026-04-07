@@ -894,8 +894,7 @@
 .group:hover .icon-hover-bounce { transform: scale(1.15) rotate(-5deg); }
 
 .sidebar-active-glow {
-  box-shadow: inset 3px 0 0 hsl(var(--primary));
-  background: hsl(var(--primary) / 0.12) !important;
+  background: hsl(var(--muted)) !important;
 }
 
 @keyframes pulse-ring {
