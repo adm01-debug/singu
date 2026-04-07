@@ -5,6 +5,12 @@ import { ptBR } from 'date-fns/locale';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { useRecentlyViewed, type RecentlyViewedItem } from '@/hooks/useRecentlyViewed';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { toTitleCase } from '@/lib/formatters';
+
+/** Strip leading numeric prefix like "05 - " from names */
+function cleanName(name: string): string {
+  return name.replace(/^\d+\s*[-–—]\s*/, '');
+}
 
 interface RecentlyViewedSectionProps {
   type: 'contact' | 'company';
