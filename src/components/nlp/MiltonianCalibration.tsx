@@ -272,7 +272,7 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
   };
 
   return (
-    <Card className={cn("border-indigo-500/30 bg-card", className)}>
+    <Card className={cn("border-primary/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">

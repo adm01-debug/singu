@@ -104,7 +104,7 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
   const getEventColor = (type: ImportantDate['type']) => {
     switch (type) {
       case 'birthday':
-        return 'bg-pink-500';
+        return 'bg-primary';
       case 'contract_renewal':
         return 'bg-info';
       case 'anniversary':
@@ -286,7 +286,7 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
             {/* Legend */}
             <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-pink-500" />
+                <div className="w-2 h-2 rounded-full bg-primary" />
                 Aniversário
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -395,7 +395,7 @@ function EventCard({ event, showDate = false, onNavigate }: EventCardProps) {
   const getEventColor = (type: ImportantDate['type']) => {
     switch (type) {
       case 'birthday':
-        return 'border-pink-500/30 bg-primary/5';
+        return 'border-primary/30 bg-primary/5';
       case 'contract_renewal':
         return 'border-info/30 bg-info/5';
       case 'anniversary':

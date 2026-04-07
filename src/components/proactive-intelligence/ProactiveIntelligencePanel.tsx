@@ -26,17 +26,17 @@ interface ProactiveIntelligencePanelProps {
 }
 
 const priorityConfig: Record<ActionPriority, { color: string; bg: string; label: string }> = {
-  critical: { color: 'text-red-500', bg: 'bg-red-500/10 border-red-500/30', label: 'Crítico' },
-  high: { color: 'text-amber-500', bg: 'bg-amber-500/10 border-amber-500/30', label: 'Alto' },
-  medium: { color: 'text-blue-500', bg: 'bg-blue-500/10 border-blue-500/30', label: 'Médio' },
-  low: { color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/30', label: 'Baixo' },
+  critical: { color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/30', label: 'Crítico' },
+  high: { color: 'text-warning', bg: 'bg-warning/10 border-warning/30', label: 'Alto' },
+  medium: { color: 'text-info', bg: 'bg-info/10 border-info/30', label: 'Médio' },
+  low: { color: 'text-success', bg: 'bg-success/10 border-success/30', label: 'Baixo' },
 };
 
 const trendIcons: Record<string, { icon: typeof TrendingUp; color: string }> = {
-  up: { icon: TrendingUp, color: 'text-emerald-500' },
-  down: { icon: TrendingUp, color: 'text-red-500 rotate-180' },
+  up: { icon: TrendingUp, color: 'text-success' },
+  down: { icon: TrendingUp, color: 'text-destructive rotate-180' },
   stable: { icon: Target, color: 'text-muted-foreground' },
-  warning: { icon: AlertTriangle, color: 'text-amber-500' },
+  warning: { icon: AlertTriangle, color: 'text-warning' },
 };
 
 // ============================================
@@ -114,7 +114,7 @@ function ActionCard({ action }: { action: NextBestAction }) {
                     className="absolute top-1.5 right-1.5 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={copyScript}
                   >
-                    {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
                   </Button>
                 </div>
               )}
@@ -168,7 +168,7 @@ function ScriptCard({ script }: { script: ApproachScript }) {
       <div className="flex items-center justify-between">
         <h4 className="font-semibold text-sm text-foreground">{script.title}</h4>
         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={copyFullScript}>
-          {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+          {copied ? <Check className="w-3 h-3 text-success" /> : <Copy className="w-3 h-3" />}
           {copied ? 'Copiado!' : 'Copiar'}
         </Button>
       </div>
@@ -308,7 +308,7 @@ export function ProactiveIntelligencePanel({ data, contactName }: ProactiveIntel
           <TabsContent value="actions" className="space-y-2 mt-0">
             {actions.length === 0 ? (
               <div className="text-center py-6">
-                <Shield className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <Shield className="w-8 h-8 text-success mx-auto mb-2" />
                 <p className="text-xs text-muted-foreground">Tudo em ordem! Nenhuma ação urgente.</p>
               </div>
             ) : (

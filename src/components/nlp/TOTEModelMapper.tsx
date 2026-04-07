@@ -199,7 +199,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
   };
 
   return (
-    <Card className={cn("border-cyan-500/30 bg-card", className)}>
+    <Card className={cn("border-accent/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -242,7 +242,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
                 className={cn(
                   "p-2 rounded-lg border text-center transition-all relative",
                   currentPhase === phase 
-                    ? 'bg-accent/20 border-cyan-500/50' 
+                    ? 'bg-accent/20 border-accent/50' 
                     : 'bg-muted/30 border-transparent hover:bg-muted/50'
                 )}
               >

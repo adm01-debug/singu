@@ -235,7 +235,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                                     className={cn(
                                       'text-xs',
                                       brain === 'reptilian' && 'bg-destructive text-destructive dark:bg-destructive/30',
-                                      brain === 'limbic' && 'bg-pink-100 text-primary dark:bg-primary/30',
+                                      brain === 'limbic' && 'bg-primary text-primary dark:bg-primary/30',
                                       brain === 'neocortex' && 'bg-info text-info dark:bg-info/30'
                                     )}
                                   >
@@ -457,7 +457,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                             variant="secondary"
                             className={cn(
                               trigger.neuralTarget === 'reptilian' && 'bg-destructive text-destructive',
-                              trigger.neuralTarget === 'limbic' && 'bg-pink-100 text-primary',
+                              trigger.neuralTarget === 'limbic' && 'bg-primary text-primary',
                               trigger.neuralTarget === 'neocortex' && 'bg-info text-info',
                             )}
                           >

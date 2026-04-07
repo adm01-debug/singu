@@ -194,7 +194,7 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
   return (
     <TooltipProvider>
       <Card className={cn("overflow-hidden", className)}>
-        <CardHeader className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-pink-500/10 border-b">
+        <CardHeader className="bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-xl bg-primary/20">
@@ -504,7 +504,7 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {trustBuilders.map((builder, idx) => (
-                      <Badge key={idx} variant="outline" className="bg-primary/5 border-pink-500/30">
+                      <Badge key={idx} variant="outline" className="bg-primary/5 border-primary/30">
                         {builder}
                       </Badge>
                     ))}
@@ -622,7 +622,7 @@ function PhaseCard({
     'bg-secondary',
     'bg-success',
     'bg-accent',
-    'bg-pink-500',
+    'bg-primary',
   ];
 
   return (

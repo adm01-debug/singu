@@ -405,8 +405,8 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                             className={cn(
                               'p-3 rounded-lg border',
                               config.bgColor,
-                              isBest && 'ring-2 ring-green-500',
-                              isWorst && data.usages > 0 && 'ring-2 ring-red-300'
+                              isBest && 'ring-2 ring-success',
+                              isWorst && data.usages > 0 && 'ring-2 ring-destructive'
                             )}
                           >
                             <div className="flex items-center justify-between mb-2">

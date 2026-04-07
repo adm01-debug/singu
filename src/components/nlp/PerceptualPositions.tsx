@@ -201,7 +201,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                 className={cn(
                   "p-3 rounded-lg border transition-all text-center",
                   currentPosition === pos ? `${info.bgColor} ${info.borderColor}` : 'bg-muted/30 border-transparent',
-                  hasAnalysis && currentPosition !== pos && 'ring-2 ring-green-500/50'
+                  hasAnalysis && currentPosition !== pos && 'ring-2 ring-success/50'
                 )}
               >
                 <div className={cn("flex justify-center mb-1", info.color)}>
@@ -317,7 +317,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg p-4 border border-violet-500/30"
+            className="bg-gradient-to-r from-secondary/20 to-secondary/20 rounded-lg p-4 border border-violet-500/30"
           >
             <h4 className="font-medium text-sm flex items-center gap-2 mb-3">
               <RefreshCw className="h-4 w-4 text-secondary" />

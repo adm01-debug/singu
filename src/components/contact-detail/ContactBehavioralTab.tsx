@@ -12,10 +12,10 @@ import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import type { Contact } from '@/hooks/useContactDetail';
 
 const DISC_LABELS: Record<string, { name: string; color: string }> = {
-  D: { name: 'Dominante', color: 'text-red-600 bg-red-100 dark:bg-red-900/30' },
-  I: { name: 'Influente', color: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30' },
-  S: { name: 'Estável', color: 'text-green-600 bg-green-100 dark:bg-green-900/30' },
-  C: { name: 'Conforme', color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30' },
+  D: { name: 'Dominante', color: 'text-destructive bg-destructive dark:bg-destructive/30' },
+  I: { name: 'Influente', color: 'text-warning bg-warning dark:bg-warning/30' },
+  S: { name: 'Estável', color: 'text-success bg-success dark:bg-success/30' },
+  C: { name: 'Conforme', color: 'text-info bg-info dark:bg-info/30' },
 };
 
 interface Props {
@@ -189,7 +189,7 @@ export function ContactBehavioralTab({ contact }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Eye className="h-4 w-4 text-purple-500" />
+              <Eye className="h-4 w-4 text-secondary" />
               Perfil VAK (Visual-Auditivo-Cinestésico)
             </CardTitle>
           </CardHeader>
@@ -197,9 +197,9 @@ export function ContactBehavioralTab({ contact }: Props) {
             {vakProfile ? (
               <div className="space-y-3">
                 {[
-                  { key: 'visual', label: 'Visual', color: 'bg-blue-500' },
-                  { key: 'auditory', label: 'Auditivo', color: 'bg-green-500' },
-                  { key: 'kinesthetic', label: 'Cinestésico', color: 'bg-orange-500' },
+                  { key: 'visual', label: 'Visual', color: 'bg-info' },
+                  { key: 'auditory', label: 'Auditivo', color: 'bg-success' },
+                  { key: 'kinesthetic', label: 'Cinestésico', color: 'bg-accent' },
                 ].map(({ key, label, color }) => (
                   <div key={key} className="flex items-center gap-3">
                     <span className="w-24 text-sm text-muted-foreground">{label}</span>
@@ -225,7 +225,7 @@ export function ContactBehavioralTab({ contact }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Activity className="h-4 w-4 text-pink-500" />
+              <Activity className="h-4 w-4 text-primary" />
               Inteligência Emocional
             </CardTitle>
           </CardHeader>
@@ -277,7 +277,7 @@ export function ContactBehavioralTab({ contact }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-warning" />
               Vieses Cognitivos
             </CardTitle>
           </CardHeader>
@@ -299,7 +299,7 @@ export function ContactBehavioralTab({ contact }: Props) {
                     <span className="text-xs font-medium text-muted-foreground">Vulnerabilidades</span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {biases.vulnerabilities.map((v: string) => (
-                        <Badge key={v} variant="outline" className="text-xs text-orange-600">{v}</Badge>
+                        <Badge key={v} variant="outline" className="text-xs text-accent">{v}</Badge>
                       ))}
                     </div>
                   </div>
@@ -309,7 +309,7 @@ export function ContactBehavioralTab({ contact }: Props) {
                     <span className="text-xs font-medium text-muted-foreground">Resistências</span>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {biases.resistances.map((r: string) => (
-                        <Badge key={r} variant="outline" className="text-xs text-green-600">{r}</Badge>
+                        <Badge key={r} variant="outline" className="text-xs text-success">{r}</Badge>
                       ))}
                     </div>
                   </div>
@@ -330,7 +330,7 @@ export function ContactBehavioralTab({ contact }: Props) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Target className="h-4 w-4 text-indigo-500" />
+              <Target className="h-4 w-4 text-primary" />
               Metaprogramas NLP
             </CardTitle>
           </CardHeader>
@@ -453,7 +453,7 @@ export function ContactBehavioralTab({ contact }: Props) {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <Shield className="h-4 w-4 text-teal-500" />
+                <Shield className="h-4 w-4 text-accent" />
                 Estilo de Comunicação
               </CardTitle>
             </CardHeader>

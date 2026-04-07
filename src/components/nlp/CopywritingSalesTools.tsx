@@ -828,7 +828,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           cta.type === 'urgent' && 'bg-destructive',
                           cta.type === 'soft' && 'bg-info',
                           cta.type === 'exclusive' && 'bg-secondary',
-                          cta.type === 'social' && 'bg-pink-500',
+                          cta.type === 'social' && 'bg-primary',
                           cta.type === 'guarantee' && 'bg-success'
                         )}>
                           {cta.type.toUpperCase()}

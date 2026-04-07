@@ -267,7 +267,7 @@ export function AdvancedDataExporter({ entityType, className }: AdvancedDataExpo
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', delay: 0.1 }}
               >
-                <CheckCircle className="w-16 h-16 text-green-500" />
+                <CheckCircle className="w-16 h-16 text-success" />
               </motion.div>
               <p className="text-lg font-medium">Exportação concluída!</p>
             </motion.div>

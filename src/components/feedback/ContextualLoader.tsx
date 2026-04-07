@@ -28,11 +28,11 @@ const contextIcons: Record<LoaderContext, typeof Loader2> = {
 const contextColors: Record<LoaderContext, string> = {
   dashboard: 'text-primary',
   contacts: 'text-primary',
-  companies: 'text-purple-500',
-  interactions: 'text-green-500',
-  analytics: 'text-blue-500',
-  calendar: 'text-orange-500',
-  network: 'text-cyan-500',
+  companies: 'text-secondary',
+  interactions: 'text-success',
+  analytics: 'text-info',
+  calendar: 'text-accent',
+  network: 'text-accent',
   general: 'text-muted-foreground',
 };
 
@@ -105,11 +105,11 @@ export function ContextualLoader({
             'absolute inset-0 rounded-full blur-xl',
             context === 'dashboard' && 'bg-primary/20',
             context === 'contacts' && 'bg-primary/20',
-            context === 'companies' && 'bg-purple-500/20',
-            context === 'interactions' && 'bg-green-500/20',
-            context === 'analytics' && 'bg-blue-500/20',
-            context === 'calendar' && 'bg-orange-500/20',
-            context === 'network' && 'bg-cyan-500/20',
+            context === 'companies' && 'bg-secondary/20',
+            context === 'interactions' && 'bg-success/20',
+            context === 'analytics' && 'bg-info/20',
+            context === 'calendar' && 'bg-accent/20',
+            context === 'network' && 'bg-accent/20',
             context === 'general' && 'bg-muted-foreground/20',
           )}
         />

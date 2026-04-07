@@ -78,8 +78,8 @@ export function ContactCommercialTab({ contactId }: Props) {
                       <div className="flex items-center justify-center gap-1 mt-1">
                         <span className="text-2xl font-bold text-foreground">{score}</span>
                         <TrendIcon className={cn('h-4 w-4',
-                          trend === 'up' ? 'text-green-500' :
-                          trend === 'down' ? 'text-red-500' :
+                          trend === 'up' ? 'text-success' :
+                          trend === 'down' ? 'text-destructive' :
                           'text-muted-foreground'
                         )} />
                       </div>
@@ -129,9 +129,9 @@ export function ContactCommercialTab({ contactId }: Props) {
                       Probabilidade de Churn
                     </span>
                     <span className={cn('text-xs font-medium',
-                      Number(rfm.churn_probability) > 70 ? 'text-red-600' :
-                      Number(rfm.churn_probability) > 40 ? 'text-orange-600' :
-                      'text-green-600'
+                      Number(rfm.churn_probability) > 70 ? 'text-destructive' :
+                      Number(rfm.churn_probability) > 40 ? 'text-accent' :
+                      'text-success'
                     )}>
                       {Number(rfm.churn_probability)}%
                     </span>
@@ -157,7 +157,7 @@ export function ContactCommercialTab({ contactId }: Props) {
       <Card className="md:col-span-2">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <ShoppingBag className="h-4 w-4 text-emerald-500" />
+            <ShoppingBag className="h-4 w-4 text-success" />
             Histórico de Compras ({purchases.length})
           </CardTitle>
         </CardHeader>

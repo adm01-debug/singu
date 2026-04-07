@@ -288,7 +288,7 @@ const NeuroPortfolioDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="p-4 rounded-lg bg-pink-50 dark:bg-primary/20 border border-pink-200 dark:border-pink-800"
+                className="p-4 rounded-lg bg-primary dark:bg-primary/20 border border-pink-200 dark:border-pink-800"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Heart className="h-5 w-5 text-primary" />

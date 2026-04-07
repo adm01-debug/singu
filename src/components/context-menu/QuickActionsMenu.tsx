@@ -190,14 +190,14 @@ export function QuickActionsMenu({
             )}
             
             {whatsapp && (
-              <ContextMenuItem onClick={handleWhatsApp} className="text-green-600">
+              <ContextMenuItem onClick={handleWhatsApp} className="text-success">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 WhatsApp
               </ContextMenuItem>
             )}
             
             {linkedin && (
-              <ContextMenuItem onClick={handleLinkedIn} className="text-blue-600">
+              <ContextMenuItem onClick={handleLinkedIn} className="text-info">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 LinkedIn
               </ContextMenuItem>
