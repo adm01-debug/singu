@@ -136,6 +136,14 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
     const colors = usePhaseColors(phase, showBooting);
     const isWaveformActive = phase === "listening" || phase === "speaking" || showBooting;
 
+    // Focus trap: auto-focus the orb when overlay opens and booting finishes
+    useEffect(() => {
+      if (isOpen && !showBooting) {
+        const timer = setTimeout(() => orbRef.current?.focus(), 300);
+        return () => clearTimeout(timer);
+      }
+    }, [isOpen, showBooting]);
+
     const borderGlow = useMemo(() => {
       const match = colors.primary.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
       const [h, s, l] = match ? [match[1], match[2], match[3]] : ["263", "70", "50"];
