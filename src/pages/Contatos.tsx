@@ -78,7 +78,8 @@ import { KeyboardHint } from '@/components/ui/keyboard-hint';
 import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
-type ViewMode = 'grid' | 'list';
+import { ViewModeSwitcher, type ViewMode } from '@/components/ui/view-mode-switcher';
+import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -411,28 +412,7 @@ const Contatos = () => {
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
             </Button>
-            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="h-8 w-8"
-                aria-label="Visualização em grade"
-                aria-pressed={viewMode === 'grid'}
-              >
-                <Grid3X3 className="w-4 h-4" aria-hidden="true" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8"
-                aria-label="Visualização em lista"
-                aria-pressed={viewMode === 'list'}
-              >
-                <List className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </div>
+            <ViewModeSwitcher value={viewMode} onChange={setViewMode} />
 
             {/* Secondary actions in overflow menu */}
             <DropdownMenu>
@@ -488,8 +468,8 @@ const Contatos = () => {
           viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
         ) : (
           <>
-            {/* Contacts Grid/List */}
-            {viewMode === 'grid' ? (
+            {/* Contacts Grid */}
+            {viewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
@@ -509,7 +489,10 @@ const Contatos = () => {
                   />
                 ))}
               </div>
-            ) : (
+            )}
+
+            {/* Contacts List */}
+            {viewMode === 'list' && (
               filteredAndSortedContacts.length > 50 ? (
                 <VirtualList
                   rowCount={filteredAndSortedContacts.length}
@@ -576,6 +559,27 @@ const Contatos = () => {
                   ))}
                 </div>
               )
+            )}
+
+            {/* Contacts Table */}
+            {viewMode === 'table' && (
+              <ContactsTableView
+                contacts={filteredAndSortedContacts}
+                selectionMode={selectionMode}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                getCompanyName={getCompanyName}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(field) => {
+                  if (sortBy === field) {
+                    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setSortBy(field);
+                    setSortOrder('asc');
+                  }
+                }}
+              />
             )}
 
             {filteredAndSortedContacts.length === 0 && !loading && (

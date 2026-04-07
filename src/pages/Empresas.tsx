@@ -43,6 +43,9 @@ import {
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { CompanyForm } from '@/components/forms/CompanyForm';
 import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWithContext';
+import { CompanyListItem } from '@/components/companies/CompanyListItem';
+import { CompaniesTableView } from '@/components/companies/CompaniesTableView';
+import { ViewModeSwitcher, type ViewMode } from '@/components/ui/view-mode-switcher';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useContacts } from '@/hooks/useContacts';
@@ -143,6 +146,7 @@ const Empresas = () => {
   }, [contacts, interactions]);
 
   const [localSearch, setLocalSearch] = useState(() => searchParams.get('q') || '');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -166,13 +170,14 @@ const Empresas = () => {
   useEffect(() => {
     const params = new URLSearchParams();
     if (localSearch) params.set('q', localSearch);
+    if (viewMode !== 'grid') params.set('view', viewMode);
     if (Object.keys(activeFilters).length > 0) {
       params.set('filters', encodeURIComponent(JSON.stringify(activeFilters)));
     }
     if (sortBy !== 'updated_at') params.set('sort', sortBy);
     if (sortOrder !== 'desc') params.set('order', sortOrder);
     setSearchParams(params, { replace: true });
-  }, [localSearch, activeFilters, sortBy, sortOrder, setSearchParams]);
+  }, [localSearch, viewMode, activeFilters, sortBy, sortOrder, setSearchParams]);
 
   // Debounced server-side search
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -192,36 +197,27 @@ const Empresas = () => {
   }, [triggerSearch]);
 
   const filteredAndSortedCompanies = useMemo(() => {
-    // Start with server-side search results
     let result = companies.filter(company => {
-      // Advanced filters
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
-        
         const companyValue = company[key as keyof Company];
-        // Handle boolean fields like is_customer (null/false → "false")
         const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
         if (!values.includes(strValue)) {
           return false;
         }
       }
-
       return true;
     });
 
-    // Sort
     result.sort((a, b) => {
       let aVal = a[sortBy as keyof Company];
       let bVal = b[sortBy as keyof Company];
-
       if (aVal === null || aVal === undefined) aVal = '';
       if (bVal === null || bVal === undefined) bVal = '';
-
       if (typeof aVal === 'string' && typeof bVal === 'string') {
         const comparison = aVal.localeCompare(bVal, 'pt-BR');
         return sortOrder === 'asc' ? comparison : -comparison;
       }
-
       return 0;
     });
 
@@ -272,11 +268,7 @@ const Empresas = () => {
   const handleSelect = (id: string, selected: boolean) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
-      if (selected) {
-        next.add(id);
-      } else {
-        next.delete(id);
-      }
+      if (selected) next.add(id); else next.delete(id);
       return next;
     });
   };
@@ -319,6 +311,15 @@ const Empresas = () => {
     }
   };
 
+  const handleTableSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
   return (
     <AppLayout>
       <Header 
@@ -330,7 +331,7 @@ const Empresas = () => {
       />
 
       <div className="p-4 md:p-6 space-y-4 md:space-y-6">
-        {/* Search and Selection Toggle */}
+        {/* Search, View Mode and Selection Toggle */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -352,6 +353,7 @@ const Empresas = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <ViewModeSwitcher value={viewMode} onChange={setViewMode} />
             <AdvancedDataExporter entityType="companies" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
@@ -388,24 +390,57 @@ const Empresas = () => {
         ) : (
           <>
             {/* Companies Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredAndSortedCompanies.map((company, index) => (
-                <CompanyCardWithContext
-                  key={company.id}
-                  company={company}
-                  index={index}
-                  isSelected={selectedIds.has(company.id)}
-                  isHighlighted={selectedIndex === index}
-                  selectionMode={selectionMode}
-                  contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
-                  lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
-                  onSelect={handleSelect}
-                  onEdit={setEditingCompany}
-                  onDelete={setDeletingCompany}
-                  onUpdate={updateCompany}
-                />
-              ))}
-            </div>
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredAndSortedCompanies.map((company, index) => (
+                  <CompanyCardWithContext
+                    key={company.id}
+                    company={company}
+                    index={index}
+                    isSelected={selectedIds.has(company.id)}
+                    isHighlighted={selectedIndex === index}
+                    selectionMode={selectionMode}
+                    contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
+                    lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
+                    onSelect={handleSelect}
+                    onEdit={setEditingCompany}
+                    onDelete={setDeletingCompany}
+                    onUpdate={updateCompany}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Companies List */}
+            {viewMode === 'list' && (
+              <div className="space-y-2">
+                {filteredAndSortedCompanies.map((company) => (
+                  <CompanyListItem
+                    key={company.id}
+                    company={company}
+                    contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
+                    lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
+                    isSelected={selectedIds.has(company.id)}
+                    selectionMode={selectionMode}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Companies Table */}
+            {viewMode === 'table' && (
+              <CompaniesTableView
+                companies={filteredAndSortedCompanies}
+                selectionMode={selectionMode}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                contactCountMap={companyMetrics.contactCountMap}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={handleTableSort}
+              />
+            )}
 
             {filteredAndSortedCompanies.length === 0 && !loading && (
               isSearching || Object.keys(activeFilters).length > 0 ? (
