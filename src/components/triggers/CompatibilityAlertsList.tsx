@@ -122,9 +122,9 @@ export function CompatibilityAlertsList({
 
   const getSeverityColor = (score: number, threshold: number) => {
     const diff = threshold - score;
-    if (diff >= 30) return 'border-red-500 bg-red-50 dark:bg-red-950/30';
-    if (diff >= 15) return 'border-amber-500 bg-amber-50 dark:bg-amber-950/30';
-    return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30';
+    if (diff >= 30) return 'border-destructive bg-destructive dark:bg-destructive/30';
+    if (diff >= 15) return 'border-warning/30 bg-warning dark:bg-warning/30';
+    return 'border-warning bg-warning dark:bg-warning/30';
   };
 
   if (loading) {
@@ -148,7 +148,7 @@ export function CompatibilityAlertsList({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Bell className="w-5 h-5 text-amber-500" />
+                <Bell className="w-5 h-5 text-warning" />
                 Alertas de Compatibilidade
                 {alerts.length > 0 && (
                   <Badge variant="destructive" className="ml-1">
@@ -177,8 +177,8 @@ export function CompatibilityAlertsList({
       <CardContent className={cn(!showHeader && 'pt-6')}>
         {alerts.length === 0 ? (
           <div className="text-center py-8">
-            <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-3" />
-            <p className="text-sm font-medium text-emerald-600">
+            <CheckCircle2 className="w-10 h-10 mx-auto text-success mb-3" />
+            <p className="text-sm font-medium text-success">
               Nenhum alerta ativo
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -202,14 +202,14 @@ export function CompatibilityAlertsList({
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-3 min-w-0">
-                      <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                      <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
                       <div className="min-w-0">
                         <p className="text-sm font-medium truncate">
                           {alert.contact?.first_name} {alert.contact?.last_name}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Compatibilidade em{' '}
-                          <span className="font-semibold text-red-600">
+                          <span className="font-semibold text-destructive">
                             {alert.compatibility_score}%
                           </span>
                           {' '}(limite: {alert.threshold}%)

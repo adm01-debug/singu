@@ -46,11 +46,11 @@ interface InteractionCardMemoProps {
 }
 
 const TYPE_CONFIG = {
-  call: { icon: Phone, label: 'Ligação', color: 'text-blue-500 bg-blue-500/10' },
-  email: { icon: Mail, label: 'Email', color: 'text-purple-500 bg-purple-500/10' },
-  meeting: { icon: Users, label: 'Reunião', color: 'text-green-500 bg-green-500/10' },
-  video_call: { icon: Video, label: 'Videochamada', color: 'text-orange-500 bg-orange-500/10' },
-  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-emerald-500 bg-emerald-500/10' },
+  call: { icon: Phone, label: 'Ligação', color: 'text-info bg-info/10' },
+  email: { icon: Mail, label: 'Email', color: 'text-secondary bg-secondary/10' },
+  meeting: { icon: Users, label: 'Reunião', color: 'text-success bg-success/10' },
+  video_call: { icon: Video, label: 'Videochamada', color: 'text-accent bg-accent/10' },
+  whatsapp: { icon: MessageSquare, label: 'WhatsApp', color: 'text-success bg-success/10' },
   other: { icon: Calendar, label: 'Outro', color: 'text-muted-foreground bg-muted' },
 } as const;
 

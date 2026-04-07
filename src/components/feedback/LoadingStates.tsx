@@ -241,7 +241,7 @@ export function AIProcessingLoader({ message = 'Processando com IA...' }: { mess
     <div className="flex flex-col items-center gap-3 p-6">
       <motion.div className="relative">
         <motion.div
-          className="w-16 h-16 rounded-full bg-gradient-to-r from-primary via-purple-500 to-primary"
+          className="w-16 h-16 rounded-full bg-gradient-to-r from-primary via-secondary to-primary"
           animate={{ rotate: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
         />

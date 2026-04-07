@@ -86,7 +86,7 @@ export function MobileBottomNav() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-20 left-4 right-4 bg-card border border-border rounded-2xl p-4 z-50 md:hidden shadow-2xl"
+              className="fixed bottom-20 left-4 right-4 bg-card border border-border rounded-2xl p-4 z-50 md:hidden shadow-medium"
               drag="y"
               dragConstraints={{ top: 0 }}
               dragElastic={0.2}

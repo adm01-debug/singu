@@ -180,33 +180,33 @@ const RapportRealtimeCoach: React.FC<RapportRealtimeCoachProps> = ({
   }, [currentMessage, vakType, discProfile, contact.firstName, discPace]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-500';
-    if (score >= 60) return 'text-yellow-500';
-    if (score >= 40) return 'text-orange-500';
-    return 'text-red-500';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    if (score >= 40) return 'text-accent';
+    return 'text-destructive';
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'high': return 'bg-destructive/15 text-destructive border-destructive/20';
+      case 'medium': return 'bg-warning/15 text-warning border-warning/20';
+      default: return 'bg-info/15 text-info border-info/20';
     }
   };
 
   return (
-    <Card className={cn("border-purple-500/30 bg-gradient-to-br from-purple-950/20 to-background", className)}>
+    <Card className={cn("border-secondary/20 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Users className="h-5 w-5 text-purple-400" />
+            <Users className="h-5 w-5 text-secondary" />
             Rapport Real-Time Coach
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-purple-500/20">
+            <Badge variant="outline" className="bg-secondary/10 text-secondary">
               VAK: {vakType}
             </Badge>
-            <Badge variant="outline" className="bg-blue-500/20">
+            <Badge variant="outline" className="bg-info/10 text-info">
               DISC: {discProfile}
             </Badge>
           </div>
@@ -234,7 +234,7 @@ const RapportRealtimeCoach: React.FC<RapportRealtimeCoachProps> = ({
         {rapportAnalysis.issues.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               Pontos de Atenção
             </h4>
             <div className="space-y-1">
@@ -243,7 +243,7 @@ const RapportRealtimeCoach: React.FC<RapportRealtimeCoachProps> = ({
                   key={idx}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="text-sm text-yellow-400 bg-yellow-500/10 px-3 py-2 rounded-md"
+                  className="text-sm text-warning bg-warning/10 px-3 py-2 rounded-md"
                 >
                   {issue}
                 </motion.div>
@@ -255,7 +255,7 @@ const RapportRealtimeCoach: React.FC<RapportRealtimeCoachProps> = ({
         {/* Suggestions */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium flex items-center gap-2">
-            <Lightbulb className="h-4 w-4 text-purple-400" />
+            <Lightbulb className="h-4 w-4 text-secondary" />
             Sugestões de Ajuste
           </h4>
           <AnimatePresence mode="popLayout">

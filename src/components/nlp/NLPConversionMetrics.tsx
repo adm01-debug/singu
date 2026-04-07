@@ -197,8 +197,8 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
+      case 'up': return <TrendingUp className="w-4 h-4 text-success" />;
+      case 'down': return <TrendingDown className="w-4 h-4 text-destructive" />;
       default: return <Minus className="w-4 h-4 text-muted-foreground" />;
     }
   };
@@ -283,7 +283,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
               >
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="outline">{metric.profile}</Badge>
-                  {isBest && <Award className="w-4 h-4 text-yellow-500" />}
+                  {isBest && <Award className="w-4 h-4 text-warning" />}
                 </div>
                 <div className="text-2xl font-bold mb-1">
                   {metric.totalContacts}

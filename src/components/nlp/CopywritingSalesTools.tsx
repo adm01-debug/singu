@@ -115,11 +115,11 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-emerald-500';
-    if (score >= 40) return 'bg-yellow-500';
-    if (score >= 20) return 'bg-orange-500';
-    return 'bg-red-500';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-success';
+    if (score >= 40) return 'bg-warning';
+    if (score >= 20) return 'bg-accent';
+    return 'bg-destructive';
   };
 
   return (
@@ -244,10 +244,10 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       </div>
                       <div>
                         <Badge className={cn(
-                          analysisResult.readability.level === 'muito_facil' ? 'bg-green-500' :
-                          analysisResult.readability.level === 'facil' ? 'bg-emerald-500' :
-                          analysisResult.readability.level === 'medio' ? 'bg-yellow-500' :
-                          analysisResult.readability.level === 'dificil' ? 'bg-orange-500' : 'bg-red-500'
+                          analysisResult.readability.level === 'muito_facil' ? 'bg-success' :
+                          analysisResult.readability.level === 'facil' ? 'bg-success' :
+                          analysisResult.readability.level === 'medio' ? 'bg-warning' :
+                          analysisResult.readability.level === 'dificil' ? 'bg-accent' : 'bg-destructive'
                         )}>
                           {analysisResult.readability.level.replace('_', ' ').toUpperCase()}
                         </Badge>
@@ -280,8 +280,8 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                     </h4>
                     <div className="flex items-center gap-4 mb-3">
                       <Badge className={cn(
-                        analysisResult.triggerDensity.saturationLevel === 'optimal' ? 'bg-green-500' :
-                        analysisResult.triggerDensity.saturationLevel === 'low' ? 'bg-yellow-500' : 'bg-red-500'
+                        analysisResult.triggerDensity.saturationLevel === 'optimal' ? 'bg-success' :
+                        analysisResult.triggerDensity.saturationLevel === 'low' ? 'bg-warning' : 'bg-destructive'
                       )}>
                         {analysisResult.triggerDensity.saturationLevel === 'optimal' ? 'ÓTIMO' :
                          analysisResult.triggerDensity.saturationLevel === 'low' ? 'BAIXO' : 'ALTO'}
@@ -348,7 +348,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                         <ul className="space-y-1">
                           {analysisResult.strengths.map((strength, idx) => (
                             <li key={idx} className="text-sm flex items-center gap-2">
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-success" />
                               {strength}
                             </li>
                           ))}
@@ -391,9 +391,9 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           key={section.stage}
                           className={cn(
                             "rounded p-3 border-l-4",
-                            section.stage === 'problem' ? 'bg-red-500/10 border-red-500' :
-                            section.stage === 'agitate' ? 'bg-orange-500/10 border-orange-500' :
-                            'bg-green-500/10 border-green-500'
+                            section.stage === 'problem' ? 'bg-destructive/10 border-destructive' :
+                            section.stage === 'agitate' ? 'bg-accent/10 border-accent/30' :
+                            'bg-success/10 border-success'
                           )}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -403,7 +403,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                             </span>
                             <div className="flex gap-1">
                               {Array.from({ length: section.emotionalIntensity }).map((_, i) => (
-                                <span key={i} className="text-orange-500 text-xs">●</span>
+                                <span key={i} className="text-accent text-xs">●</span>
                               ))}
                             </div>
                           </div>
@@ -463,10 +463,10 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           key={section.stage}
                           className={cn(
                             "rounded p-3 border-l-4",
-                            section.stage === 'promise' ? 'bg-purple-500/10 border-purple-500' :
-                            section.stage === 'picture' ? 'bg-blue-500/10 border-blue-500' :
-                            section.stage === 'proof' ? 'bg-emerald-500/10 border-emerald-500' :
-                            'bg-red-500/10 border-red-500'
+                            section.stage === 'promise' ? 'bg-secondary/10 border-secondary' :
+                            section.stage === 'picture' ? 'bg-info/10 border-info' :
+                            section.stage === 'proof' ? 'bg-success/10 border-success/30' :
+                            'bg-destructive/10 border-destructive'
                           )}
                         >
                           <span className="text-xs font-medium uppercase block mb-1">
@@ -606,7 +606,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       >
                         {preview.channel === 'whatsapp' ? (
                           <div className="bg-white rounded-lg p-3 shadow-sm max-w-[250px] ml-auto">
-                            <p className="text-sm text-gray-800 whitespace-pre-wrap">
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                               {preview.formattedText.substring(0, 200)}
                               {preview.formattedText.length > 200 && '...'}
                             </p>
@@ -660,7 +660,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium capitalize">{context.category}</span>
                         {isRecommended && (
-                          <Badge className="bg-green-500 text-xs">Recomendado</Badge>
+                          <Badge className="bg-success text-xs">Recomendado</Badge>
                         )}
                       </div>
                       <div className="text-2xl mb-2 flex gap-1 flex-wrap">
@@ -676,7 +676,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       </div>
                       <p className="text-xs text-muted-foreground">{context.usage}</p>
                       <div className="mt-2 flex gap-2 text-xs">
-                        <span className={discScore >= 70 ? 'text-green-600' : 'text-muted-foreground'}>
+                        <span className={discScore >= 70 ? 'text-success' : 'text-muted-foreground'}>
                           DISC: {discScore}%
                         </span>
                         <span className="text-muted-foreground">
@@ -698,7 +698,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                         variant="secondary"
                         className={cn(
                           "cursor-pointer",
-                          suggestion.impact === 'high' && 'bg-green-500/20'
+                          suggestion.impact === 'high' && 'bg-success/20'
                         )}
                         onClick={() => copyToClipboard(suggestion.emoji, `sugg-${idx}`)}
                       >
@@ -728,25 +728,25 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                     </div>
                     
                     <div className="space-y-3">
-                      <div className="bg-blue-500/10 rounded p-3">
-                        <span className="text-xs font-medium text-blue-600">FEATURE</span>
+                      <div className="bg-info/10 rounded p-3">
+                        <span className="text-xs font-medium text-info">FEATURE</span>
                         <p className="text-sm mt-1">{template.example.feature}</p>
                       </div>
                       <div className="flex justify-center">
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <div className="bg-amber-500/10 rounded p-3">
-                        <span className="text-xs font-medium text-amber-600">ADVANTAGE</span>
+                      <div className="bg-warning/10 rounded p-3">
+                        <span className="text-xs font-medium text-warning">ADVANTAGE</span>
                         <p className="text-sm mt-1">{template.example.advantage}</p>
                       </div>
                       <div className="flex justify-center">
                         <ArrowRight className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <div className="bg-green-500/10 rounded p-3">
-                        <span className="text-xs font-medium text-green-600">BENEFIT</span>
+                      <div className="bg-success/10 rounded p-3">
+                        <span className="text-xs font-medium text-success">BENEFIT</span>
                         <p className="text-sm mt-1">{template.example.benefit}</p>
                         {template.example.emotionalHook && (
-                          <Badge className="mt-2 bg-green-600">{template.example.emotionalHook}</Badge>
+                          <Badge className="mt-2 bg-success">{template.example.emotionalHook}</Badge>
                         )}
                       </div>
                     </div>
@@ -778,10 +778,10 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           key={section.stage}
                           className={cn(
                             "rounded p-3 border-l-4",
-                            section.stage === 'attention' ? 'bg-red-500/10 border-red-500' :
-                            section.stage === 'interest' ? 'bg-amber-500/10 border-amber-500' :
-                            section.stage === 'desire' ? 'bg-blue-500/10 border-blue-500' :
-                            'bg-green-500/10 border-green-500'
+                            section.stage === 'attention' ? 'bg-destructive/10 border-destructive' :
+                            section.stage === 'interest' ? 'bg-warning/10 border-warning/30' :
+                            section.stage === 'desire' ? 'bg-info/10 border-info' :
+                            'bg-success/10 border-success'
                           )}
                         >
                           <span className="text-xs font-medium uppercase">
@@ -825,17 +825,17 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <div className="flex items-center justify-between mb-2">
                         <Badge className={cn(
                           cta.type === 'primary' && 'bg-primary',
-                          cta.type === 'urgent' && 'bg-red-500',
-                          cta.type === 'soft' && 'bg-blue-500',
-                          cta.type === 'exclusive' && 'bg-purple-500',
-                          cta.type === 'social' && 'bg-pink-500',
-                          cta.type === 'guarantee' && 'bg-green-500'
+                          cta.type === 'urgent' && 'bg-destructive',
+                          cta.type === 'soft' && 'bg-info',
+                          cta.type === 'exclusive' && 'bg-secondary',
+                          cta.type === 'social' && 'bg-primary',
+                          cta.type === 'guarantee' && 'bg-success'
                         )}>
                           {cta.type.toUpperCase()}
                         </Badge>
                         <div className="flex gap-1">
                           {Array.from({ length: cta.urgencyLevel }).map((_, i) => (
-                            <Zap key={i} className="h-3 w-3 text-amber-500 fill-amber-500" />
+                            <Zap key={i} className="h-3 w-3 text-warning fill-warning" />
                           ))}
                         </div>
                       </div>
@@ -873,7 +873,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                       <Badge variant="outline">{formula.type.replace('_', ' ').toUpperCase()}</Badge>
                       <div className="flex items-center gap-1">
                         {Array.from({ length: formula.effectiveness }).map((_, i) => (
-                          <span key={i} className="text-amber-500 text-xs">★</span>
+                          <span key={i} className="text-warning text-xs">★</span>
                         ))}
                       </div>
                     </div>

@@ -110,7 +110,7 @@ function getHealthGrade(score: number): { grade: string; color: string; label: s
   if (score >= 80) return { grade: 'A', color: 'text-success', label: 'Excelente' };
   if (score >= 60) return { grade: 'B', color: 'text-info', label: 'Bom' };
   if (score >= 40) return { grade: 'C', color: 'text-warning', label: 'Regular' };
-  if (score >= 20) return { grade: 'D', color: 'text-orange-500', label: 'Atenção' };
+  if (score >= 20) return { grade: 'D', color: 'text-accent', label: 'Atenção' };
   return { grade: 'F', color: 'text-destructive', label: 'Crítico' };
 }
 

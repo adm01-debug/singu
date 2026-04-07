@@ -78,7 +78,7 @@ export function FaceSavingPanel({ contact = null, className }: FaceSavingPanelPr
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Shield className="h-5 w-5 text-blue-500" />
+            <Shield className="h-5 w-5 text-info" />
             Técnicas de Salvar a Face
           </CardTitle>
           <Badge variant="outline">Perfil {discProfile}</Badge>
@@ -116,8 +116,8 @@ export function FaceSavingPanel({ contact = null, className }: FaceSavingPanelPr
                 <div className="border rounded-lg overflow-hidden">
                   <CollapsibleTrigger asChild>
                     <button className="w-full p-3 flex items-start gap-3 hover:bg-muted/50 transition-colors text-left">
-                      <div className="p-2 rounded-full bg-blue-500/10 shrink-0">
-                        <Shield className="h-4 w-4 text-blue-500" />
+                      <div className="p-2 rounded-full bg-info/10 shrink-0">
+                        <Shield className="h-4 w-4 text-info" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">

@@ -24,22 +24,22 @@ interface MeetingModeProps {
 const DISC_CONFIG: Record<string, { label: string; color: string; tips: string[] }> = {
   D: {
     label: 'Dominante',
-    color: 'bg-red-500/15 text-red-600 border-red-500/20',
+    color: 'bg-destructive/15 text-destructive border-destructive/20',
     tips: ['Seja direto e objetivo', 'Foque em resultados', 'Evite detalhes excessivos', 'Dê opções de escolha'],
   },
   I: {
     label: 'Influente',
-    color: 'bg-amber-500/15 text-amber-600 border-amber-500/20',
+    color: 'bg-warning/15 text-warning border-warning/20',
     tips: ['Seja entusiasmado', 'Use histórias e exemplos', 'Dê reconhecimento', 'Evite ser muito formal'],
   },
   S: {
     label: 'Estável',
-    color: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/20',
+    color: 'bg-success/15 text-success border-success/20',
     tips: ['Seja paciente e calmo', 'Dê tempo para pensar', 'Evite pressão', 'Mostre estabilidade'],
   },
   C: {
     label: 'Conforme',
-    color: 'bg-blue-500/15 text-blue-600 border-blue-500/20',
+    color: 'bg-info/15 text-info border-info/20',
     tips: ['Apresente dados e fatos', 'Seja preciso', 'Dê tempo para análise', 'Evite ambiguidade'],
   },
 };
@@ -188,7 +188,7 @@ export function MeetingMode({ contact, interactions, open, onClose }: MeetingMod
 
             {/* DISC Communication Tips */}
             {discConfig && (
-              <Card className={cn('border-l-4', discProfile === 'D' ? 'border-l-red-500' : discProfile === 'I' ? 'border-l-amber-500' : discProfile === 'S' ? 'border-l-emerald-500' : 'border-l-blue-500')}>
+              <Card className={cn('border-l-4', discProfile === 'D' ? 'border-l-destructive' : discProfile === 'I' ? 'border-l-warning' : discProfile === 'S' ? 'border-l-success' : 'border-l-info')}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Brain className="w-4 h-4 text-primary" />

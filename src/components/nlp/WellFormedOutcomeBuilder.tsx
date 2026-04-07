@@ -131,14 +131,14 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
   };
 
   return (
-    <Card className={cn("border-emerald-500/30 bg-gradient-to-br from-emerald-950/20 to-background", className)}>
+    <Card className={cn("border-success/20 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="h-5 w-5 text-emerald-400" />
+            <Target className="h-5 w-5 text-success" />
             Well-Formed Outcome Builder
           </CardTitle>
-          <Badge variant="outline" className="bg-emerald-500/20">
+          <Badge variant="outline" className="bg-success/10 text-success">
             {completedCount}/{criteria.length} critérios
           </Badge>
         </div>
@@ -204,7 +204,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
               <div className="bg-muted/30 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
                   {currentCriterion.isComplete ? (
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                    <CheckCircle2 className="h-5 w-5 text-success" />
                   ) : (
                     <Circle className="h-5 w-5 text-muted-foreground" />
                   )}
@@ -214,8 +214,8 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
                   </Badge>
                 </div>
 
-                <div className="bg-emerald-500/10 rounded p-3 mb-3">
-                  <div className="text-sm font-medium text-emerald-400 mb-1">
+                <div className="bg-success/10 rounded p-3 mb-3">
+                  <div className="text-sm font-medium text-success mb-1">
                     Pergunta Chave:
                   </div>
                   <p className="text-sm">{currentCriterion.question}</p>
@@ -265,9 +265,9 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
               className="space-y-4"
             >
               {/* Summary */}
-              <div className="bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 rounded-lg p-4 border border-emerald-500/30">
+              <div className="bg-success/10 rounded-lg p-4 border border-success/20">
                 <h4 className="font-medium flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-emerald-400" />
+                  <Sparkles className="h-4 w-4 text-success" />
                   Objetivo Bem Formado de {activeContact.firstName}
                 </h4>
 
@@ -284,7 +284,7 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
                     <div className="space-y-2">
                       {criteria.filter(c => c.isComplete).map(c => (
                         <div key={c.id} className="bg-muted/30 rounded p-2">
-                          <div className="text-xs font-medium text-emerald-400">{c.name}</div>
+                          <div className="text-xs font-medium text-success">{c.name}</div>
                           <p className="text-xs text-muted-foreground">{c.answer}</p>
                         </div>
                       ))}
@@ -295,8 +295,8 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
 
               {/* Incomplete Criteria Warning */}
               {completedCount < criteria.length && (
-                <div className="bg-yellow-500/10 rounded-lg p-3 border border-yellow-500/30">
-                  <div className="text-xs text-yellow-400 font-medium mb-2">
+                <div className="bg-warning/10 rounded-lg p-3 border border-warning/20">
+                  <div className="text-xs text-warning font-medium mb-2">
                     Critérios Pendentes:
                   </div>
                   <div className="flex flex-wrap gap-1">

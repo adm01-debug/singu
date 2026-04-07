@@ -107,7 +107,7 @@ function ActivityHeatmap() {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <Flame className="w-4 h-4 text-amber-500" />
+          <Flame className="w-4 h-4 text-warning" />
           Heatmap de Atividade
         </CardTitle>
         <CardDescription className="text-xs">Horários com mais interações</CardDescription>
@@ -182,13 +182,13 @@ function ContactRanking() {
 
   if (loading) return <Skeleton className="h-96" />;
 
-  const medalColors = ['text-amber-500', 'text-slate-400', 'text-amber-700'];
+  const medalColors = ['text-warning', 'text-muted-foreground', 'text-warning'];
 
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-amber-500" />
+          <Trophy className="w-4 h-4 text-warning" />
           Top Contatos por Score
         </CardTitle>
         <CardDescription className="text-xs">Ranking de relacionamento</CardDescription>
@@ -311,7 +311,7 @@ function SentimentEvolutionChart() {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-500" />
+          <TrendingUp className="w-4 h-4 text-success" />
           Sentimento do Portfólio
         </CardTitle>
         <CardDescription className="text-xs">Distribuição atual dos contatos</CardDescription>

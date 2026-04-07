@@ -49,10 +49,10 @@ export function ContactIntelligenceTab({ contactId }: Props) {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
       {/* Hidden Objections */}
-      <Card className={cn(unresolvedObjections.length > 0 && 'border-orange-200 dark:border-orange-800')}>
+      <Card className={cn(unresolvedObjections.length > 0 && 'border-accent/30 dark:border-accent/30')}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 text-orange-500" />
+            <AlertTriangle className="h-4 w-4 text-accent" />
             Objeções Ocultas ({unresolvedObjections.length} ativas)
           </CardTitle>
         </CardHeader>
@@ -66,8 +66,8 @@ export function ContactIntelligenceTab({ contactId }: Props) {
                     <Badge
                       variant="outline"
                       className={cn('text-xs',
-                        obj.severity === 'high' ? 'text-red-600 border-red-300' :
-                        obj.severity === 'medium' ? 'text-orange-600 border-orange-300' :
+                        obj.severity === 'high' ? 'text-destructive border-destructive' :
+                        obj.severity === 'medium' ? 'text-accent border-accent/30' :
                         'text-muted-foreground'
                       )}
                     >
@@ -101,7 +101,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Target className="h-4 w-4 text-indigo-500" />
+            <Target className="h-4 w-4 text-primary" />
             Critérios de Decisão ({criteria.length})
           </CardTitle>
         </CardHeader>
@@ -131,7 +131,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Heart className="h-4 w-4 text-pink-500" />
+            <Heart className="h-4 w-4 text-primary" />
             Valores do Cliente ({values.length})
           </CardTitle>
         </CardHeader>
@@ -163,7 +163,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Gift className="h-4 w-4 text-green-500" />
+            <Gift className="h-4 w-4 text-success" />
             Sugestões de Oferta ({offers.length})
           </CardTitle>
         </CardHeader>
@@ -172,10 +172,10 @@ export function ContactIntelligenceTab({ contactId }: Props) {
             <div className="space-y-2">
               {offers.map((o: any) => {
                 const statusConfig: Record<string, string> = {
-                  pending: 'bg-yellow-100 text-yellow-700',
-                  presented: 'bg-blue-100 text-blue-700',
-                  accepted: 'bg-green-100 text-green-700',
-                  rejected: 'bg-red-100 text-red-700',
+                  pending: 'bg-warning text-warning',
+                  presented: 'bg-info text-info',
+                  accepted: 'bg-success text-success',
+                  rejected: 'bg-destructive text-destructive',
                 };
                 return (
                   <div key={o.id} className="rounded-lg border p-2.5 text-sm">

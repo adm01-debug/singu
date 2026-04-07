@@ -143,7 +143,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
   ];
 
   return (
-    <Card className={cn("border-lime-500/30 bg-gradient-to-br from-lime-950/20 to-background", className)}>
+    <Card className={cn("border-lime-500/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -264,7 +264,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
         {patterns.length > 0 && (
           <div className="space-y-3">
             <div className="text-sm font-medium flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-400" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
               Padrões Gerados ({patterns.length})
             </div>
 
@@ -279,11 +279,11 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="bg-red-500/20 text-red-400">
+                      <Badge variant="outline" className="bg-destructive/20 text-destructive">
                         {pattern.currentState}
                       </Badge>
                       <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      <Badge variant="outline" className="bg-green-500/20 text-green-400">
+                      <Badge variant="outline" className="bg-success/20 text-success">
                         {pattern.desiredState}
                       </Badge>
                     </div>
@@ -294,7 +294,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
                       onClick={() => copyScript(pattern.script)}
                     >
                       {copiedScript === pattern.script ? (
-                        <Check className="h-3 w-3 text-green-500" />
+                        <Check className="h-3 w-3 text-success" />
                       ) : (
                         <Copy className="h-3 w-3" />
                       )}

@@ -91,9 +91,9 @@ export function CognitiveBiasesPanel({
   const getTrendIcon = (trend: 'increasing' | 'stable' | 'decreasing') => {
     switch (trend) {
       case 'increasing':
-        return <TrendingUp className="w-4 h-4 text-orange-500" />;
+        return <TrendingUp className="w-4 h-4 text-accent" />;
       case 'decreasing':
-        return <TrendingDown className="w-4 h-4 text-green-500" />;
+        return <TrendingDown className="w-4 h-4 text-success" />;
       default:
         return <Minus className="w-4 h-4 text-muted-foreground" />;
     }
@@ -102,9 +102,9 @@ export function CognitiveBiasesPanel({
   const getPolarityColor = (polarity: DetectedBias['polarity']) => {
     switch (polarity) {
       case 'exploitable':
-        return 'text-green-600 bg-green-100';
+        return 'text-success bg-success';
       case 'obstacle':
-        return 'text-red-600 bg-red-100';
+        return 'text-destructive bg-destructive';
       default:
         return 'text-muted-foreground bg-muted';
     }
@@ -181,32 +181,32 @@ export function CognitiveBiasesPanel({
                   </div>
 
                   <div className="space-y-3">
-                    <div className="p-3 rounded bg-green-50 dark:bg-green-950/20">
-                      <h5 className="text-sm font-medium text-green-700 dark:text-green-300 mb-1 flex items-center gap-1">
+                    <div className="p-3 rounded bg-success dark:bg-success/20">
+                      <h5 className="text-sm font-medium text-success dark:text-success mb-1 flex items-center gap-1">
                         <Zap className="w-4 h-4" />
                         Como Usar a Favor
                       </h5>
-                      <p className="text-sm text-green-600 dark:text-green-400">
+                      <p className="text-sm text-success dark:text-success">
                         {info.salesApplication.howToLeverage}
                       </p>
                     </div>
 
-                    <div className="p-3 rounded bg-amber-50 dark:bg-amber-950/20">
-                      <h5 className="text-sm font-medium text-amber-700 dark:text-amber-300 mb-1 flex items-center gap-1">
+                    <div className="p-3 rounded bg-warning dark:bg-warning/20">
+                      <h5 className="text-sm font-medium text-warning dark:text-warning mb-1 flex items-center gap-1">
                         <Shield className="w-4 h-4" />
                         Como Contornar
                       </h5>
-                      <p className="text-sm text-amber-600 dark:text-amber-400">
+                      <p className="text-sm text-warning dark:text-warning">
                         {info.salesApplication.howToCounter}
                       </p>
                     </div>
 
-                    <div className="p-3 rounded bg-blue-50 dark:bg-blue-950/20">
-                      <h5 className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1 flex items-center gap-1">
+                    <div className="p-3 rounded bg-info dark:bg-info/20">
+                      <h5 className="text-sm font-medium text-info dark:text-info mb-1 flex items-center gap-1">
                         <AlertTriangle className="w-4 h-4" />
                         Nota Ética
                       </h5>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">
+                      <p className="text-sm text-info dark:text-info">
                         {info.salesApplication.ethicalNote}
                       </p>
                     </div>
@@ -255,7 +255,7 @@ export function CognitiveBiasesPanel({
               <Brain className="w-5 h-5" />
               Vieses Cognitivos
               {autoSaved && (
-                <Badge variant="outline" className="text-xs gap-1 text-green-600 border-green-300">
+                <Badge variant="outline" className="text-xs gap-1 text-success border-success">
                   <CheckCircle2 className="w-3 h-3" />
                   Salvo
                 </Badge>
@@ -325,10 +325,10 @@ export function CognitiveBiasesPanel({
           <TabsContent value="overview" className="space-y-4 mt-4">
             {/* Evolution Summary */}
             {evolutionData && evolutionData.mostFrequentBiases.length > 0 && (
-              <div className="p-3 rounded-lg border bg-purple-50 dark:bg-purple-950/20">
+              <div className="p-3 rounded-lg border bg-secondary dark:bg-secondary/20">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-purple-600" />
-                  <h4 className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                  <TrendingUp className="w-4 h-4 text-secondary" />
+                  <h4 className="text-sm font-medium text-secondary dark:text-secondary">
                     Vieses Mais Frequentes (Histórico)
                   </h4>
                 </div>
@@ -399,8 +399,8 @@ export function CognitiveBiasesPanel({
 
             {/* Quick Insights */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 rounded-lg border bg-green-50 dark:bg-green-950/20">
-                <h4 className="text-sm font-medium text-green-700 dark:text-green-300 mb-2">
+              <div className="p-3 rounded-lg border bg-success dark:bg-success/20">
+                <h4 className="text-sm font-medium text-success dark:text-success mb-2">
                   ⚡ Oportunidades
                 </h4>
                 <ul className="text-xs space-y-1">
@@ -413,8 +413,8 @@ export function CognitiveBiasesPanel({
                 </ul>
               </div>
 
-              <div className="p-3 rounded-lg border bg-red-50 dark:bg-red-950/20">
-                <h4 className="text-sm font-medium text-red-700 dark:text-red-300 mb-2">
+              <div className="p-3 rounded-lg border bg-destructive dark:bg-destructive/20">
+                <h4 className="text-sm font-medium text-destructive dark:text-destructive mb-2">
                   🛡️ Resistências
                 </h4>
                 <ul className="text-xs space-y-1">
@@ -459,13 +459,13 @@ export function CognitiveBiasesPanel({
             {/* Leverage Strategies */}
             <div className="p-4 rounded-lg border">
               <h4 className="font-medium mb-3 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-green-500" />
+                <Zap className="w-5 h-5 text-success" />
                 Estratégias para Usar a Favor
               </h4>
               <ul className="space-y-3">
                 {analysisResult.salesStrategies.leverage.map((strategy, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-green-500 mt-0.5">→</span>
+                    <span className="text-success mt-0.5">→</span>
                     {strategy}
                   </li>
                 ))}
@@ -475,13 +475,13 @@ export function CognitiveBiasesPanel({
             {/* Counter Strategies */}
             <div className="p-4 rounded-lg border">
               <h4 className="font-medium mb-3 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-amber-500" />
+                <Shield className="w-5 h-5 text-warning" />
                 Estratégias para Contornar
               </h4>
               <ul className="space-y-3">
                 {analysisResult.salesStrategies.avoid.map((strategy, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-amber-500 mt-0.5">→</span>
+                    <span className="text-warning mt-0.5">→</span>
                     {strategy}
                   </li>
                 ))}
@@ -489,12 +489,12 @@ export function CognitiveBiasesPanel({
             </div>
 
             {/* Ethical Note */}
-            <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-              <h4 className="font-medium mb-2 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+            <div className="p-4 rounded-lg bg-info dark:bg-info/20 border border-info dark:border-info">
+              <h4 className="font-medium mb-2 flex items-center gap-2 text-info dark:text-info">
                 <AlertTriangle className="w-5 h-5" />
                 Abordagem Ética
               </h4>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
+              <p className="text-sm text-info dark:text-info">
                 {analysisResult.salesStrategies.ethical_approach || 
                   'Use o conhecimento de vieses para ajudar o cliente a tomar melhores decisões, não para manipulá-lo.'}
               </p>

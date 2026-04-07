@@ -19,15 +19,15 @@ import type { Contact, Company } from '@/hooks/useContactDetail';
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
   unknown: { label: 'Desconhecido', color: 'bg-muted text-muted-foreground' },
-  prospect: { label: 'Prospect', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  qualified_lead: { label: 'Lead Qualificado', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
-  opportunity: { label: 'Oportunidade', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400' },
-  negotiation: { label: 'Negociação', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  customer: { label: 'Cliente', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
-  loyal_customer: { label: 'Cliente Fiel', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  advocate: { label: 'Advogado', color: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400' },
-  at_risk: { label: 'Em Risco', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-  lost: { label: 'Perdido', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  prospect: { label: 'Prospect', color: 'bg-info text-info dark:bg-info/30 dark:text-info' },
+  qualified_lead: { label: 'Lead Qualificado', color: 'bg-primary text-primary dark:bg-primary/30 dark:text-primary' },
+  opportunity: { label: 'Oportunidade', color: 'bg-secondary text-secondary dark:bg-secondary/30 dark:text-secondary' },
+  negotiation: { label: 'Negociação', color: 'bg-warning text-warning dark:bg-warning/30 dark:text-warning' },
+  customer: { label: 'Cliente', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
+  loyal_customer: { label: 'Cliente Fiel', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
+  advocate: { label: 'Advogado', color: 'bg-accent/10 text-accent dark:bg-accent/30 dark:text-accent' },
+  at_risk: { label: 'Em Risco', color: 'bg-accent text-accent dark:bg-accent/30 dark:text-accent' },
+  lost: { label: 'Perdido', color: 'bg-destructive text-destructive dark:bg-destructive/30 dark:text-destructive' },
 };
 
 const ROLE_CONFIG: Record<string, string> = {
@@ -40,10 +40,10 @@ const ROLE_CONFIG: Record<string, string> = {
 };
 
 const DISC_COLORS: Record<string, string> = {
-  D: 'bg-red-500',
-  I: 'bg-yellow-500',
-  S: 'bg-green-500',
-  C: 'bg-blue-500',
+  D: 'bg-destructive',
+  I: 'bg-warning',
+  S: 'bg-success',
+  C: 'bg-info',
 };
 
 interface Props {
@@ -207,7 +207,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                           className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                         >
                           {copiedField === label ? (
-                            <Check className="h-3 w-3 text-green-500" />
+                            <Check className="h-3 w-3 text-success" />
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}

@@ -33,10 +33,10 @@ interface WarmthAnalyzerPanelProps {
 }
 
 const WARMTH_LEVELS = {
-  cold: { icon: Snowflake, label: 'Frio', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+  cold: { icon: Snowflake, label: 'Frio', color: 'text-info', bg: 'bg-info/10' },
   neutral: { icon: Thermometer, label: 'Neutro', color: 'text-muted-foreground', bg: 'bg-muted' },
   warm: { icon: Sun, label: 'Caloroso', color: 'text-warning', bg: 'bg-warning/10' },
-  very_warm: { icon: Flame, label: 'Muito Caloroso', color: 'text-orange-500', bg: 'bg-orange-500/10' },
+  very_warm: { icon: Flame, label: 'Muito Caloroso', color: 'text-accent', bg: 'bg-accent/10' },
   exceptional: { icon: Flame, label: 'Excepcional', color: 'text-success', bg: 'bg-success/10' }
 };
 
@@ -80,7 +80,7 @@ export function WarmthAnalyzerPanel({
     <Card variant="elevated" className={cn("overflow-hidden", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Thermometer className="h-5 w-5 text-orange-500" />
+          <Thermometer className="h-5 w-5 text-accent" />
           Analisador de Calor Humano
         </CardTitle>
       </CardHeader>

@@ -241,7 +241,7 @@ const UnifiedScriptGenerator: React.FC<UnifiedScriptGeneratorProps> = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-green-500" />
+                  <Sparkles className="w-3 h-3 text-success" />
                   Use estas palavras:
                 </h5>
                 <div className="flex flex-wrap gap-1">
@@ -254,7 +254,7 @@ const UnifiedScriptGenerator: React.FC<UnifiedScriptGeneratorProps> = ({
               </div>
               <div>
                 <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  <AlertTriangle className="w-3 h-3 text-warning" />
                   Evite:
                 </h5>
                 <div className="flex flex-wrap gap-1">

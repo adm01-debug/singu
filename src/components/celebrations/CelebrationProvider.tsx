@@ -40,43 +40,43 @@ const celebrationStyles: Record<CelebrationType, {
 }> = {
   'follow-up-complete': {
     icon: CheckCircle2,
-    gradient: 'from-emerald-500 to-teal-400',
+    gradient: 'from-success to-accent',
     confettiColors: ['#10B981', '#14B8A6', '#34D399', '#2DD4BF', '#6EE7B7'],
     emoji: '✅',
   },
   'deal-closed': {
     icon: Trophy,
-    gradient: 'from-amber-500 to-yellow-400',
+    gradient: 'from-warning to-warning',
     confettiColors: ['#F59E0B', '#FBBF24', '#FCD34D', '#FDE68A', '#D97706'],
     emoji: '🏆',
   },
   'relationship-milestone': {
     icon: Heart,
-    gradient: 'from-rose-500 to-pink-400',
+    gradient: 'from-primary to-primary',
     confettiColors: ['#F43F5E', '#EC4899', '#F472B6', '#FB7185', '#FDA4AF'],
     emoji: '💝',
   },
   'goal-achieved': {
     icon: Target,
-    gradient: 'from-violet-500 to-purple-400',
+    gradient: 'from-secondary to-secondary',
     confettiColors: ['#8B5CF6', '#A78BFA', '#C4B5FD', '#7C3AED', '#6D28D9'],
     emoji: '🎯',
   },
   'birthday-wished': {
     icon: PartyPopper,
-    gradient: 'from-pink-500 to-rose-400',
+    gradient: 'from-primary to-primary',
     confettiColors: ['#EC4899', '#F472B6', '#FBCFE8', '#DB2777', '#BE185D'],
     emoji: '🎂',
   },
   'task-complete': {
     icon: Sparkles,
-    gradient: 'from-blue-500 to-cyan-400',
+    gradient: 'from-info to-accent',
     confettiColors: ['#3B82F6', '#06B6D4', '#22D3EE', '#60A5FA', '#0EA5E9'],
     emoji: '⭐',
   },
   'streak': {
     icon: Star,
-    gradient: 'from-orange-500 to-amber-400',
+    gradient: 'from-accent to-warning',
     confettiColors: ['#F97316', '#FB923C', '#FDBA74', '#EA580C', '#C2410C'],
     emoji: '🔥',
   },
@@ -203,7 +203,7 @@ const CelebrationOverlay = ({ config, onComplete }: CelebrationOverlayProps) => 
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <Icon className="w-16 h-16 text-primary-foreground drop-shadow-lg" />
+              <Icon className="w-16 h-16 text-primary-foreground drop-shadow-sm" />
             </motion.div>
           </div>
           
@@ -267,7 +267,7 @@ const CelebrationOverlay = ({ config, onComplete }: CelebrationOverlayProps) => 
           }}
           className="absolute w-3 h-3"
         >
-          <Sparkles className="w-full h-full text-yellow-400" />
+          <Sparkles className="w-full h-full text-warning" />
         </motion.div>
       ))}
     </motion.div>

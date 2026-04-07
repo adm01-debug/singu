@@ -33,8 +33,8 @@ interface LuxIntelligencePanelProps {
 const StatusBadge = ({ status }: { status: string }) => {
   const config: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: typeof CheckCircle2; color: string }> = {
     pending: { label: 'Pendente', variant: 'outline', icon: Clock, color: 'text-muted-foreground' },
-    processing: { label: 'Analisando...', variant: 'secondary', icon: Loader2, color: 'text-amber-600' },
-    completed: { label: 'Concluído', variant: 'default', icon: CheckCircle2, color: 'text-emerald-600' },
+    processing: { label: 'Analisando...', variant: 'secondary', icon: Loader2, color: 'text-warning' },
+    completed: { label: 'Concluído', variant: 'default', icon: CheckCircle2, color: 'text-success' },
     error: { label: 'Erro', variant: 'destructive', icon: AlertCircle, color: 'text-destructive' },
   };
   const c = config[status] || config.pending;
@@ -125,7 +125,7 @@ const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: numb
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay: index * 0.05 }}
-    className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-indigo-50/50 to-violet-50/50 dark:from-indigo-950/20 dark:to-violet-950/20 border border-indigo-100/50 dark:border-indigo-800/30"
+    className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/50 to-secondary/50 dark:from-primary/20 dark:to-secondary/20 border border-primary/50 dark:border-primary/30"
   >
     <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shadow-md">
       {(stakeholder.first_name || stakeholder.name || '?').charAt(0)}
@@ -199,13 +199,13 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="summary" className="space-y-4">
         {record.ai_summary && (
-          <DataCard title="Resumo Executivo" icon={Brain} iconColor="bg-violet-100 dark:bg-violet-900/30 text-violet-600">
+          <DataCard title="Resumo Executivo" icon={Brain} iconColor="bg-secondary dark:bg-secondary/30 text-secondary">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
           </DataCard>
         )}
         
         {record.ai_report && (
-          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-info dark:bg-info/30 text-info">
             <ScrollArea className="max-h-96">
               <div className="prose prose-sm dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                 {record.ai_report}
@@ -224,7 +224,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="fiscal" className="space-y-4">
         {Object.keys(fiscal).length > 0 ? (
-          <DataCard title="Dados da Receita Federal" icon={Building2} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+          <DataCard title="Dados da Receita Federal" icon={Building2} iconColor="bg-info dark:bg-info/30 text-info">
             <div className="space-y-3">
               {[
                 { key: 'cnpj', label: 'CNPJ' },
@@ -248,7 +248,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                       onClick={() => copyToClipboard(fiscal[key], key)}
                     >
                       {copiedField === key ? (
-                        <Check className="w-3 h-3 text-emerald-500" />
+                        <Check className="w-3 h-3 text-success" />
                       ) : (
                         <Copy className="w-3 h-3 text-muted-foreground" />
                       )}
@@ -285,7 +285,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="audience" className="space-y-4">
         {Object.keys(audience).length > 0 ? (
-          <DataCard title="Público-Alvo & Comunicação" icon={Target} iconColor="bg-orange-100 dark:bg-orange-900/30 text-orange-600">
+          <DataCard title="Público-Alvo & Comunicação" icon={Target} iconColor="bg-accent dark:bg-accent/30 text-accent">
             <div className="space-y-4">
               {audience.target_audience && (
                 <div>
@@ -310,7 +310,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                   <p className="text-xs text-muted-foreground mb-2">Temas de Conteúdo</p>
                   <div className="flex flex-wrap gap-1.5">
                     {audience.content_themes.map((t: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-xs bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                      <Badge key={i} variant="outline" className="text-xs bg-accent dark:bg-accent/20 border-accent/30 dark:border-accent/30">
                         {t}
                       </Badge>
                     ))}
@@ -329,7 +329,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="social" className="space-y-4">
         {socialProfiles.length > 0 ? (
-          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
+          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-success dark:bg-success/30 text-success">
             <div className="space-y-2">
               {socialProfiles.map((profile: any, i: number) => (
                 <SocialProfileCard key={i} profile={profile} />
@@ -346,7 +346,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="stakeholders" className="space-y-4">
         {stakeholders.length > 0 ? (
-          <DataCard title={`Stakeholders Identificados (${stakeholders.length})`} icon={Users} iconColor="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+          <DataCard title={`Stakeholders Identificados (${stakeholders.length})`} icon={Users} iconColor="bg-primary dark:bg-primary/30 text-primary">
             <div className="space-y-2">
               {stakeholders.map((s: any, i: number) => (
                 <StakeholderCard key={i} stakeholder={s} index={i} />
@@ -392,13 +392,13 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="summary" className="space-y-4">
         {record.ai_summary && (
-          <DataCard title="Resumo do Perfil" icon={Brain} iconColor="bg-violet-100 dark:bg-violet-900/30 text-violet-600">
+          <DataCard title="Resumo do Perfil" icon={Brain} iconColor="bg-secondary dark:bg-secondary/30 text-secondary">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
           </DataCard>
         )}
         
         {record.ai_report && (
-          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+          <DataCard title="Relatório Completo" icon={FileText} iconColor="bg-info dark:bg-info/30 text-info">
             <ScrollArea className="max-h-96">
               <div className="prose prose-sm dark:prose-invert max-w-none text-sm whitespace-pre-wrap">
                 {record.ai_report}
@@ -418,7 +418,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
       <TabsContent value="professional" className="space-y-4">
         {Object.keys(profile).length > 0 ? (
           <>
-            <DataCard title="Perfil Profissional" icon={Briefcase} iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600">
+            <DataCard title="Perfil Profissional" icon={Briefcase} iconColor="bg-info dark:bg-info/30 text-info">
               <div className="space-y-3">
                 {profile.current_position && (
                   <div className="flex items-center justify-between py-2 border-b border-border/50">
@@ -454,7 +454,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             </DataCard>
 
             {profile.education && profile.education.length > 0 && (
-              <DataCard title="Formação" icon={GraduationCap} iconColor="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">
+              <DataCard title="Formação" icon={GraduationCap} iconColor="bg-success dark:bg-success/30 text-success">
                 <div className="space-y-3">
                   {profile.education.map((e: any, i: number) => (
                     <div key={i} className="p-3 rounded-lg bg-muted/50">
@@ -471,7 +471,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             )}
 
             {profile.previous_companies && profile.previous_companies.length > 0 && (
-              <DataCard title="Empresas Anteriores" icon={Building2} iconColor="bg-slate-100 dark:bg-slate-900/30 text-slate-600">
+              <DataCard title="Empresas Anteriores" icon={Building2} iconColor="bg-slate-100 dark:bg-muted/30 text-muted-foreground">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.previous_companies.map((c: string, i: number) => (
                     <Badge key={i} variant="outline" className="text-xs">{c}</Badge>
@@ -492,10 +492,10 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {(profile.hobbies?.length > 0 || profile.interests?.length > 0 || profile.travels?.length > 0) ? (
           <>
             {profile.hobbies && profile.hobbies.length > 0 && (
-              <DataCard title="Hobbies" icon={Heart} iconColor="bg-pink-100 dark:bg-pink-900/30 text-pink-600">
+              <DataCard title="Hobbies" icon={Heart} iconColor="bg-primary dark:bg-primary/30 text-primary">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.hobbies.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-800">
+                    <Badge key={i} variant="outline" className="text-xs bg-primary dark:bg-primary/20 border-primary/30 dark:border-primary/30">
                       {h}
                     </Badge>
                   ))}
@@ -504,10 +504,10 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             )}
 
             {profile.interests && profile.interests.length > 0 && (
-              <DataCard title="Interesses" icon={TrendingUp} iconColor="bg-amber-100 dark:bg-amber-900/30 text-amber-600">
+              <DataCard title="Interesses" icon={TrendingUp} iconColor="bg-warning dark:bg-warning/30 text-warning">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.interests.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                    <Badge key={i} variant="outline" className="text-xs bg-warning dark:bg-warning/20 border-warning/30 dark:border-warning/30">
                       {h}
                     </Badge>
                   ))}
@@ -537,7 +537,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="social" className="space-y-4">
         {socialProfiles.length > 0 && (
-          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-green-100 dark:bg-green-900/30 text-green-600">
+          <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-success dark:bg-success/30 text-success">
             <div className="space-y-2">
               {socialProfiles.map((p: any, i: number) => (
                 <SocialProfileCard key={i} profile={p} />
@@ -610,7 +610,7 @@ export function LuxIntelligencePanel({
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
         >
-          <Sparkles className="w-8 h-8 text-violet-500" />
+          <Sparkles className="w-8 h-8 text-secondary" />
         </motion.div>
         <span className="ml-3 text-sm text-muted-foreground">Carregando dados Lux...</span>
       </div>
@@ -631,7 +631,7 @@ export function LuxIntelligencePanel({
           }}
           transition={{ duration: 3, repeat: Infinity }}
         >
-          <Sparkles className="w-16 h-16 text-violet-500/40 mb-4" />
+          <Sparkles className="w-16 h-16 text-secondary/40 mb-4" />
         </motion.div>
         <h3 className="text-lg font-medium text-foreground mb-2">
           Nenhuma análise Lux ainda
@@ -681,14 +681,14 @@ export function LuxIntelligencePanel({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <Card className="border-violet-200 dark:border-violet-800 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30">
+            <Card className="border-secondary/30 dark:border-secondary/30 bg-gradient-to-r from-secondary to-secondary dark:from-secondary/30 dark:to-secondary/30">
               <CardContent className="py-6">
                 <div className="flex items-center gap-4">
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   >
-                    <Sparkles className="w-8 h-8 text-violet-500" />
+                    <Sparkles className="w-8 h-8 text-secondary" />
                   </motion.div>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">Varredura em andamento...</p>
@@ -697,7 +697,7 @@ export function LuxIntelligencePanel({
                     </p>
                     <div className="mt-3">
                       <motion.div
-                        className="h-1.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 rounded-full"
+                        className="h-1.5 bg-gradient-to-r from-secondary via-secondary to-secondary rounded-full"
                         animate={{ 
                           backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                         }}

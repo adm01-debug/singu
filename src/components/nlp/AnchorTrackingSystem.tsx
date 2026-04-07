@@ -133,33 +133,33 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
   const getStrengthColor = (strength: number, type: string) => {
     if (type === 'positive') {
       switch (strength) {
-        case 1: return 'bg-green-500/20';
-        case 2: return 'bg-green-500/40';
-        case 3: return 'bg-green-500/60';
+        case 1: return 'bg-success/20';
+        case 2: return 'bg-success/40';
+        case 3: return 'bg-success/60';
       }
     } else {
       switch (strength) {
-        case 1: return 'bg-red-500/20';
-        case 2: return 'bg-red-500/40';
-        case 3: return 'bg-red-500/60';
+        case 1: return 'bg-destructive/20';
+        case 2: return 'bg-destructive/40';
+        case 3: return 'bg-destructive/60';
       }
     }
   };
 
   return (
-    <Card className={cn("border-teal-500/30 bg-gradient-to-br from-teal-950/20 to-background", className)}>
+    <Card className={cn("border-accent/20 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Anchor className="h-5 w-5 text-teal-400" />
+            <Anchor className="h-5 w-5 text-accent" />
             Anchor Tracking System
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-green-500/20 text-green-400">
+            <Badge variant="outline" className="bg-success/20 text-success">
               <ThumbsUp className="h-3 w-3 mr-1" />
               {positiveAnchors.length}
             </Badge>
-            <Badge variant="outline" className="bg-red-500/20 text-red-400">
+            <Badge variant="outline" className="bg-destructive/20 text-destructive">
               <ThumbsDown className="h-3 w-3 mr-1" />
               {negativeAnchors.length}
             </Badge>
@@ -236,7 +236,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
         {/* Positive Anchors */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-green-400" />
+            <Sparkles className="h-4 w-4 text-success" />
             Âncoras Positivas (Ativar)
           </h4>
           
@@ -266,19 +266,19 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
                 <motion.div
                   key={anchor.id}
                   layout
-                  className="bg-green-500/10 rounded-lg p-3 border border-green-500/30"
+                  className="bg-success/10 rounded-lg p-3 border border-success/30"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-green-400" />
+                        <Zap className="h-4 w-4 text-success" />
                         <span className="font-medium text-sm">{anchor.trigger}</span>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        → Ativa: <span className="text-green-400">{anchor.emotionalState}</span>
+                        → Ativa: <span className="text-success">{anchor.emotionalState}</span>
                       </div>
                       {anchor.howToActivate && (
-                        <div className="text-xs bg-green-500/20 rounded p-1.5 mt-2">
+                        <div className="text-xs bg-success/20 rounded p-1.5 mt-2">
                           💡 {anchor.howToActivate}
                         </div>
                       )}
@@ -291,7 +291,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
                             onClick={() => updateStrength(anchor.id, s as 1 | 2 | 3)}
                             className={cn(
                               "w-2 h-4 rounded-sm transition-colors",
-                              s <= anchor.strength ? 'bg-green-400' : 'bg-muted/50'
+                              s <= anchor.strength ? 'bg-success' : 'bg-muted/50'
                             )}
                           />
                         ))}
@@ -315,7 +315,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
         {/* Negative Anchors */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-400" />
+            <AlertTriangle className="h-4 w-4 text-destructive" />
             Âncoras Negativas (Evitar)
           </h4>
           
@@ -330,7 +330,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
                     key={idx}
                     variant="outline"
                     size="sm"
-                    className="text-xs h-6 border-red-500/30"
+                    className="text-xs h-6 border-destructive/30"
                     onClick={() => addFromSuggestion('negative', ca)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
@@ -345,19 +345,19 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
                 <motion.div
                   key={anchor.id}
                   layout
-                  className="bg-red-500/10 rounded-lg p-3 border border-red-500/30"
+                  className="bg-destructive/10 rounded-lg p-3 border border-destructive/30"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-red-400" />
+                        <Shield className="h-4 w-4 text-destructive" />
                         <span className="font-medium text-sm">{anchor.trigger}</span>
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        → Ativa: <span className="text-red-400">{anchor.emotionalState}</span>
+                        → Ativa: <span className="text-destructive">{anchor.emotionalState}</span>
                       </div>
                       {anchor.howToActivate && (
-                        <div className="text-xs bg-red-500/20 rounded p-1.5 mt-2">
+                        <div className="text-xs bg-destructive/20 rounded p-1.5 mt-2">
                           ⚠️ {anchor.howToActivate}
                         </div>
                       )}
@@ -370,7 +370,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
                             onClick={() => updateStrength(anchor.id, s as 1 | 2 | 3)}
                             className={cn(
                               "w-2 h-4 rounded-sm transition-colors",
-                              s <= anchor.strength ? 'bg-red-400' : 'bg-muted/50'
+                              s <= anchor.strength ? 'bg-destructive' : 'bg-muted/50'
                             )}
                           />
                         ))}
@@ -393,21 +393,21 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
 
         {/* Strategy Summary */}
         {(positiveAnchors.length > 0 || negativeAnchors.length > 0) && (
-          <div className="bg-teal-500/10 rounded-lg p-3 border border-teal-500/30">
+          <div className="bg-accent/10 rounded-lg p-3 border border-accent/20">
             <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
-              <Heart className="h-4 w-4 text-teal-400" />
+              <Heart className="h-4 w-4 text-accent" />
               Estratégia de Âncoras para {activeContact.firstName}
             </h4>
             <div className="text-xs space-y-1 text-muted-foreground">
               {positiveAnchors.length > 0 && (
                 <p>
-                  <span className="text-green-400">✓ ATIVAR:</span>{' '}
+                  <span className="text-success">✓ ATIVAR:</span>{' '}
                   {positiveAnchors.slice(0, 3).map(a => a.trigger).join(', ')}
                 </p>
               )}
               {negativeAnchors.length > 0 && (
                 <p>
-                  <span className="text-red-400">✗ EVITAR:</span>{' '}
+                  <span className="text-destructive">✗ EVITAR:</span>{' '}
                   {negativeAnchors.slice(0, 3).map(a => a.trigger).join(', ')}
                 </p>
               )}

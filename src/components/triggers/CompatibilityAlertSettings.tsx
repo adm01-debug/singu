@@ -103,9 +103,9 @@ export function CompatibilityAlertSettings() {
   };
 
   const getThresholdLevel = (value: number) => {
-    if (value >= 70) return { label: 'Alto', color: 'text-amber-600', description: 'Poucos alertas, apenas casos críticos' };
-    if (value >= 50) return { label: 'Médio', color: 'text-blue-600', description: 'Alerta equilibrado' };
-    return { label: 'Baixo', color: 'text-emerald-600', description: 'Mais alertas, monitoramento amplo' };
+    if (value >= 70) return { label: 'Alto', color: 'text-warning', description: 'Poucos alertas, apenas casos críticos' };
+    if (value >= 50) return { label: 'Médio', color: 'text-info', description: 'Alerta equilibrado' };
+    return { label: 'Baixo', color: 'text-success', description: 'Mais alertas, monitoramento amplo' };
   };
 
   const thresholdLevel = getThresholdLevel(settings.alert_threshold);
@@ -140,7 +140,7 @@ export function CompatibilityAlertSettings() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-sm font-medium flex items-center gap-2">
-              <Target className="w-4 h-4 text-red-500" />
+              <Target className="w-4 h-4 text-destructive" />
               Limite de Alerta
               <TooltipProvider>
                 <Tooltip>
@@ -186,7 +186,7 @@ export function CompatibilityAlertSettings() {
         <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/30 transition-colors">
           <div className="space-y-1">
             <Label className="font-medium flex items-center gap-2">
-              <Users className="w-4 h-4 text-blue-500" />
+              <Users className="w-4 h-4 text-info" />
               Apenas Clientes Importantes
             </Label>
             <p className="text-xs text-muted-foreground">
@@ -233,7 +233,7 @@ export function CompatibilityAlertSettings() {
         <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/30 transition-colors">
           <div className="space-y-1">
             <Label className="font-medium flex items-center gap-2">
-              <Bell className="w-4 h-4 text-amber-500" />
+              <Bell className="w-4 h-4 text-warning" />
               Notificações por Email
             </Label>
             <p className="text-xs text-muted-foreground">
@@ -247,14 +247,14 @@ export function CompatibilityAlertSettings() {
         </div>
 
         {/* Preview Alert */}
-        <div className="p-4 rounded-lg border-2 border-dashed border-amber-300 bg-amber-50 dark:bg-amber-950/20">
+        <div className="p-4 rounded-lg border-2 border-dashed border-warning/30 bg-warning dark:bg-warning/20">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              <p className="text-sm font-medium text-warning dark:text-warning">
                 Prévia do Alerta
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+              <p className="text-xs text-warning dark:text-warning mt-1">
                 "A compatibilidade com <strong>João Silva</strong> está em <strong>45%</strong>, 
                 abaixo do limite de <strong>{settings.alert_threshold}%</strong>. 
                 Considere revisar sua estratégia de comunicação."

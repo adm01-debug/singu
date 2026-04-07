@@ -29,14 +29,14 @@ export function TrainingProgressTab({
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
           <div className="text-center">
-            <Trophy className="w-10 h-10 mx-auto text-yellow-500 mb-2" />
+            <Trophy className="w-10 h-10 mx-auto text-warning mb-2" />
             <p className="text-2xl font-bold">{score}</p>
             <p className="text-xs text-muted-foreground">Pontos Totais</p>
           </div>
         </Card>
         <Card className="p-4">
           <div className="text-center">
-            <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-2" />
+            <CheckCircle2 className="w-10 h-10 mx-auto text-success mb-2" />
             <p className="text-2xl font-bold">
               {completedScenarios.length}/{scenarios.length}
             </p>
@@ -59,10 +59,10 @@ export function TrainingProgressTab({
             <div key={disc} className="flex items-center gap-3 p-2 rounded border">
               <Badge className={cn(
                 'shrink-0',
-                disc === 'D' && 'bg-red-500',
-                disc === 'I' && 'bg-yellow-500',
-                disc === 'S' && 'bg-green-500',
-                disc === 'C' && 'bg-blue-500',
+                disc === 'D' && 'bg-destructive',
+                disc === 'I' && 'bg-warning',
+                disc === 'S' && 'bg-success',
+                disc === 'C' && 'bg-info',
               )}>
                 {disc}
               </Badge>
@@ -75,7 +75,7 @@ export function TrainingProgressTab({
               {isSameAsUser ? (
                 <Badge variant="outline">Seu Perfil</Badge>
               ) : isCompleted ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <CheckCircle2 className="w-5 h-5 text-success" />
               ) : (
                 <div className="w-5 h-5 rounded-full border-2 border-muted" />
               )}

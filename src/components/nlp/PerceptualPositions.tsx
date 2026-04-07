@@ -39,9 +39,9 @@ const POSITION_INFO = {
     title: '1ª Posição - EU',
     subtitle: 'Sua perspectiva como vendedor',
     icon: <Eye className="h-5 w-5" />,
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/20',
-    borderColor: 'border-blue-500/30',
+    color: 'text-info',
+    bgColor: 'bg-info/20',
+    borderColor: 'border-info/30',
     questions: [
       'O que EU quero desta interação?',
       'Como EU me sinto sobre esta situação?',
@@ -53,9 +53,9 @@ const POSITION_INFO = {
     title: '2ª Posição - OUTRO',
     subtitle: `Perspectiva do cliente`,
     icon: <Users className="h-5 w-5" />,
-    color: 'text-green-400',
-    bgColor: 'bg-green-500/20',
-    borderColor: 'border-green-500/30',
+    color: 'text-success',
+    bgColor: 'bg-success/20',
+    borderColor: 'border-success/30',
     questions: [
       'O que o CLIENTE realmente quer?',
       'Como o CLIENTE se sente agora?',
@@ -67,9 +67,9 @@ const POSITION_INFO = {
     title: '3ª Posição - OBSERVADOR',
     subtitle: 'Visão externa e neutra',
     icon: <Telescope className="h-5 w-5" />,
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/20',
-    borderColor: 'border-purple-500/30',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary/20',
+    borderColor: 'border-secondary/30',
     questions: [
       'O que um observador neutro veria?',
       'Qual padrão está se repetindo?',
@@ -172,14 +172,14 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
   const integration = generateIntegration();
 
   return (
-    <Card className={cn("border-violet-500/30 bg-gradient-to-br from-violet-950/20 to-background", className)}>
+    <Card className={cn("border-secondary/30/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-violet-400" />
+            <Brain className="h-5 w-5 text-secondary" />
             Posições Perceptuais
           </CardTitle>
-          <Badge variant="outline" className="bg-violet-500/20">
+          <Badge variant="outline" className="bg-secondary/20">
             {Object.keys(analyses).length}/3 Analisadas
           </Badge>
         </div>
@@ -201,7 +201,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                 className={cn(
                   "p-3 rounded-lg border transition-all text-center",
                   currentPosition === pos ? `${info.bgColor} ${info.borderColor}` : 'bg-muted/30 border-transparent',
-                  hasAnalysis && currentPosition !== pos && 'ring-2 ring-green-500/50'
+                  hasAnalysis && currentPosition !== pos && 'ring-2 ring-success/50'
                 )}
               >
                 <div className={cn("flex justify-center mb-1", info.color)}>
@@ -211,7 +211,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                   {pos === 'first' ? 'EU' : pos === 'second' ? activeContact.firstName : 'Observador'}
                 </div>
                 {hasAnalysis && (
-                  <CheckCircle2 className="h-3 w-3 text-green-500 mx-auto mt-1" />
+                  <CheckCircle2 className="h-3 w-3 text-success mx-auto mt-1" />
                 )}
               </button>
             );
@@ -271,7 +271,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
         {Object.keys(analyses).length > 0 && (
           <div className="space-y-2">
             <h4 className="text-sm font-medium flex items-center gap-2">
-              <Lightbulb className="h-4 w-4 text-yellow-500" />
+              <Lightbulb className="h-4 w-4 text-warning" />
               Insights por Posição
             </h4>
             
@@ -289,7 +289,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                     <div className="space-y-1">
                       {analysis.insights.map((insight, idx) => (
                         <div key={idx} className="text-xs flex items-start gap-1">
-                          <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                          <CheckCircle2 className="h-3 w-3 text-success mt-0.5 shrink-0" />
                           <span>{insight}</span>
                         </div>
                       ))}
@@ -299,7 +299,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
                   {analysis.blindSpots.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {analysis.blindSpots.map((spot, idx) => (
-                        <div key={idx} className="text-xs flex items-start gap-1 text-yellow-400">
+                        <div key={idx} className="text-xs flex items-start gap-1 text-warning">
                           <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                           <span>{spot}</span>
                         </div>
@@ -317,44 +317,44 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-lg p-4 border border-violet-500/30"
+            className="bg-gradient-to-r from-secondary/20 to-secondary/20 rounded-lg p-4 border border-secondary/30/30"
           >
             <h4 className="font-medium text-sm flex items-center gap-2 mb-3">
-              <RefreshCw className="h-4 w-4 text-violet-400" />
+              <RefreshCw className="h-4 w-4 text-secondary" />
               Síntese Integrativa
             </h4>
             
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
-                <ArrowRight className="h-3 w-3 text-green-400 mt-1 shrink-0" />
+                <ArrowRight className="h-3 w-3 text-success mt-1 shrink-0" />
                 <div>
-                  <span className="text-green-400 font-medium">Terreno Comum:</span>
+                  <span className="text-success font-medium">Terreno Comum:</span>
                   <span className="text-muted-foreground ml-1">{integration.commonGround}</span>
                 </div>
               </div>
               
               {integration.keyTension && (
                 <div className="flex items-start gap-2">
-                  <ArrowRight className="h-3 w-3 text-yellow-400 mt-1 shrink-0" />
+                  <ArrowRight className="h-3 w-3 text-warning mt-1 shrink-0" />
                   <div>
-                    <span className="text-yellow-400 font-medium">Tensão Chave:</span>
+                    <span className="text-warning font-medium">Tensão Chave:</span>
                     <span className="text-muted-foreground ml-1">{integration.keyTension}</span>
                   </div>
                 </div>
               )}
               
               <div className="flex items-start gap-2">
-                <ArrowRight className="h-3 w-3 text-violet-400 mt-1 shrink-0" />
+                <ArrowRight className="h-3 w-3 text-secondary mt-1 shrink-0" />
                 <div>
-                  <span className="text-violet-400 font-medium">Ação Estratégica:</span>
+                  <span className="text-secondary font-medium">Ação Estratégica:</span>
                   <span className="text-muted-foreground ml-1">{integration.strategicAction}</span>
                 </div>
               </div>
               
               <div className="flex items-start gap-2">
-                <ArrowRight className="h-3 w-3 text-blue-400 mt-1 shrink-0" />
+                <ArrowRight className="h-3 w-3 text-info mt-1 shrink-0" />
                 <div>
-                  <span className="text-blue-400 font-medium">Mudança de Comunicação:</span>
+                  <span className="text-info font-medium">Mudança de Comunicação:</span>
                   <span className="text-muted-foreground ml-1">{integration.communicationShift}</span>
                 </div>
               </div>

@@ -64,10 +64,10 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
 
   const getSaturationColor = (level: string) => {
     switch (level) {
-      case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900/30';
-      case 'medium': return 'text-amber-600 bg-amber-100 dark:bg-amber-900/30';
-      case 'low': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30';
-      default: return 'text-green-600 bg-green-100 dark:bg-green-900/30';
+      case 'high': return 'text-destructive bg-destructive dark:bg-destructive/30';
+      case 'medium': return 'text-warning bg-warning dark:bg-warning/30';
+      case 'low': return 'text-warning bg-warning dark:bg-warning/30';
+      default: return 'text-success bg-success dark:bg-success/30';
     }
   };
 
@@ -94,15 +94,15 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
             animate={{ opacity: 1, y: 0 }}
             className={cn(
               'p-3 rounded-lg border flex items-center gap-3',
-              resistanceScore > 70 ? 'bg-red-50 border-red-200 dark:bg-red-900/20' :
-              resistanceScore > 50 ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20' :
-              'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20'
+              resistanceScore > 70 ? 'bg-destructive border-destructive dark:bg-destructive/20' :
+              resistanceScore > 50 ? 'bg-warning border-warning/30 dark:bg-warning/20' :
+              'bg-warning border-warning dark:bg-warning/20'
             )}
           >
             <Shield className={cn(
               'h-5 w-5',
-              resistanceScore > 70 ? 'text-red-600' :
-              resistanceScore > 50 ? 'text-amber-600' : 'text-yellow-600'
+              resistanceScore > 70 ? 'text-destructive' :
+              resistanceScore > 50 ? 'text-warning' : 'text-warning'
             )} />
             <div className="flex-1">
               <div className="flex items-center justify-between">
@@ -234,9 +234,9 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                                     variant="secondary" 
                                     className={cn(
                                       'text-xs',
-                                      brain === 'reptilian' && 'bg-red-100 text-red-700 dark:bg-red-900/30',
-                                      brain === 'limbic' && 'bg-pink-100 text-pink-700 dark:bg-pink-900/30',
-                                      brain === 'neocortex' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30'
+                                      brain === 'reptilian' && 'bg-destructive text-destructive dark:bg-destructive/30',
+                                      brain === 'limbic' && 'bg-primary text-primary dark:bg-primary/30',
+                                      brain === 'neocortex' && 'bg-info text-info dark:bg-info/30'
                                     )}
                                   >
                                     {brain === 'reptilian' ? '🦎 Reptiliano' : 
@@ -318,7 +318,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                         transition={{ delay: index * 0.05 }}
                         className={cn(
                           'p-3 rounded-lg border',
-                          exposure.saturated ? 'bg-red-50 border-red-200 dark:bg-red-900/10' : 'bg-muted/30'
+                          exposure.saturated ? 'bg-destructive border-destructive dark:bg-destructive/10' : 'bg-muted/30'
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -342,9 +342,9 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                           </div>
                           <div className="text-right">
                             {exposure.cooldownUntil ? (
-                              <span className="text-amber-600">⏳ Cooldown</span>
+                              <span className="text-warning">⏳ Cooldown</span>
                             ) : (
-                              <span className="text-green-600">✓ Disponível</span>
+                              <span className="text-success">✓ Disponível</span>
                             )}
                           </div>
                         </div>
@@ -353,7 +353,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                           value={saturationPercent} 
                           className={cn(
                             'h-1.5',
-                            exposure.saturated && '[&>div]:bg-red-500'
+                            exposure.saturated && '[&>div]:bg-destructive'
                           )}
                         />
                       </motion.div>
@@ -396,11 +396,11 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                     {fullAnalysis.conflictWarnings.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-sm font-medium flex items-center gap-1">
-                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          <AlertTriangle className="h-4 w-4 text-warning" />
                           Conflitos Detectados
                         </p>
                         {fullAnalysis.conflictWarnings.map((warning, i) => (
-                          <div key={i} className="p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/10 text-xs">
+                          <div key={i} className="p-3 rounded-lg bg-warning border border-warning/30 dark:bg-warning/10 text-xs">
                             <span className="font-medium">
                               {MENTAL_TRIGGERS[warning.recentTrigger as keyof typeof MENTAL_TRIGGERS]?.name}
                             </span>
@@ -456,9 +456,9 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                           <Badge 
                             variant="secondary"
                             className={cn(
-                              trigger.neuralTarget === 'reptilian' && 'bg-red-100 text-red-700',
-                              trigger.neuralTarget === 'limbic' && 'bg-pink-100 text-pink-700',
-                              trigger.neuralTarget === 'neocortex' && 'bg-blue-100 text-blue-700',
+                              trigger.neuralTarget === 'reptilian' && 'bg-destructive text-destructive',
+                              trigger.neuralTarget === 'limbic' && 'bg-primary text-primary',
+                              trigger.neuralTarget === 'neocortex' && 'bg-info text-info',
                             )}
                           >
                             {trigger.neuralTarget === 'reptilian' ? '🦎' : 

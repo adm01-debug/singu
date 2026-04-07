@@ -60,22 +60,22 @@ const typeLabels = {
 };
 
 const typeColors = {
-  follow_up: 'text-blue-500 bg-blue-500/10',
-  birthday: 'text-amber-500 bg-amber-500/10',
-  decay: 'text-red-500 bg-red-500/10',
-  milestone: 'text-emerald-500 bg-emerald-500/10'
+  follow_up: 'text-info bg-info/10',
+  birthday: 'text-warning bg-warning/10',
+  decay: 'text-destructive bg-destructive/10',
+  milestone: 'text-success bg-success/10'
 };
 
 const priorityColors = {
-  high: 'border-l-red-500 bg-red-500/5',
-  medium: 'border-l-amber-500 bg-amber-500/5',
-  low: 'border-l-emerald-500 bg-emerald-500/5'
+  high: 'border-l-destructive bg-destructive/5',
+  medium: 'border-l-warning bg-warning/5',
+  low: 'border-l-success bg-success/5'
 };
 
 const priorityBadgeColors = {
-  high: 'bg-red-500/10 text-red-600 border-red-500/30',
-  medium: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  low: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+  high: 'bg-destructive/10 text-destructive border-destructive/30',
+  medium: 'bg-warning/10 text-warning border-warning/30',
+  low: 'bg-success/10 text-success border-success/30'
 };
 
 export const SmartRemindersPanel = ({ className, compact = false }: SmartRemindersPanelProps) => {
@@ -212,7 +212,7 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
 
                         {reminder.type === 'decay' && reminder.metadata && (
                           <div className="flex items-center gap-2 text-xs">
-                            <Thermometer className="w-3 h-3 text-red-500" />
+                            <Thermometer className="w-3 h-3 text-destructive" />
                             <span className="text-muted-foreground">
                               {String(reminder.metadata.daysSinceLastInteraction)} dias sem contato
                             </span>
@@ -227,7 +227,7 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
                           <Button
                             size="sm"
                             variant="default"
-                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+                            className="h-7 text-xs bg-success hover:bg-success"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleComplete(reminder);
@@ -411,20 +411,20 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
         {/* Summary Stats */}
         {summary && (
           <div className="grid grid-cols-4 gap-2 mt-4">
-            <div className="p-2 rounded-lg bg-blue-500/10 text-center">
-              <p className="text-lg font-bold text-blue-600">{summary.byType.follow_up}</p>
+            <div className="p-2 rounded-lg bg-info/10 text-center">
+              <p className="text-lg font-bold text-info">{summary.byType.follow_up}</p>
               <p className="text-[10px] text-muted-foreground">Follow-ups</p>
             </div>
-            <div className="p-2 rounded-lg bg-amber-500/10 text-center">
-              <p className="text-lg font-bold text-amber-600">{summary.byType.birthday}</p>
+            <div className="p-2 rounded-lg bg-warning/10 text-center">
+              <p className="text-lg font-bold text-warning">{summary.byType.birthday}</p>
               <p className="text-[10px] text-muted-foreground">Aniversários</p>
             </div>
-            <div className="p-2 rounded-lg bg-red-500/10 text-center">
-              <p className="text-lg font-bold text-red-600">{summary.byType.decay}</p>
+            <div className="p-2 rounded-lg bg-destructive/10 text-center">
+              <p className="text-lg font-bold text-destructive">{summary.byType.decay}</p>
               <p className="text-[10px] text-muted-foreground">Esfriando</p>
             </div>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-center">
-              <p className="text-lg font-bold text-emerald-600">{summary.byType.milestone}</p>
+            <div className="p-2 rounded-lg bg-success/10 text-center">
+              <p className="text-lg font-bold text-success">{summary.byType.milestone}</p>
               <p className="text-[10px] text-muted-foreground">Marcos</p>
             </div>
           </div>
@@ -541,10 +541,10 @@ export const SmartRemindersPanel = ({ className, compact = false }: SmartReminde
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 p-3 bg-red-500/10 rounded-lg border border-red-500/30"
+            className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg border border-destructive/30"
           >
-            <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
-            <p className="text-xs text-red-600">
+            <AlertTriangle className="w-4 h-4 text-destructive shrink-0" />
+            <p className="text-xs text-destructive">
               Você tem {summary.byPriority.high} lembrete{summary.byPriority.high > 1 ? 's' : ''} urgente{summary.byPriority.high > 1 ? 's' : ''} que precisa{summary.byPriority.high > 1 ? 'm' : ''} de atenção.
             </p>
           </motion.div>

@@ -43,7 +43,7 @@ const interactionIcons: Record<string, React.ElementType> = {
 const interactionColors: Record<string, string> = {
   call: 'bg-success/15 text-success ring-success/20',
   email: 'bg-info/15 text-info ring-info/20',
-  whatsapp: 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/20',
+  whatsapp: 'bg-success/15 text-success ring-success/20',
   meeting: 'bg-accent/15 text-accent ring-accent/20',
   note: 'bg-muted text-muted-foreground ring-border',
 };

@@ -104,17 +104,17 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
   const getEventColor = (type: ImportantDate['type']) => {
     switch (type) {
       case 'birthday':
-        return 'bg-pink-500';
+        return 'bg-primary';
       case 'contract_renewal':
-        return 'bg-blue-500';
+        return 'bg-info';
       case 'anniversary':
-        return 'bg-red-500';
+        return 'bg-destructive';
       case 'milestone':
-        return 'bg-amber-500';
+        return 'bg-warning';
       case 'first_purchase':
-        return 'bg-green-500';
+        return 'bg-success';
       default:
-        return 'bg-purple-500';
+        return 'bg-secondary';
     }
   };
 
@@ -123,9 +123,9 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
       case 'overdue':
         return 'text-destructive';
       case 'today':
-        return 'text-green-500';
+        return 'text-success';
       case 'urgent':
-        return 'text-amber-500';
+        return 'text-warning';
       default:
         return 'text-muted-foreground';
     }
@@ -286,19 +286,19 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
             {/* Legend */}
             <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-pink-500" />
+                <div className="w-2 h-2 rounded-full bg-primary" />
                 Aniversário
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <div className="w-2 h-2 rounded-full bg-info" />
                 Renovação
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-red-500" />
+                <div className="w-2 h-2 rounded-full bg-destructive" />
                 Parceria
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <div className="w-2 h-2 rounded-full bg-amber-500" />
+                <div className="w-2 h-2 rounded-full bg-warning" />
                 Marco
               </div>
             </div>
@@ -315,7 +315,7 @@ export const ImportantDatesCalendar = forwardRef<HTMLDivElement, ImportantDatesC
                   </>
                 ) : (
                   <>
-                    <Star className="h-4 w-4 text-amber-500" />
+                    <Star className="h-4 w-4 text-warning" />
                     Próximos Eventos
                   </>
                 )}
@@ -395,30 +395,30 @@ function EventCard({ event, showDate = false, onNavigate }: EventCardProps) {
   const getEventColor = (type: ImportantDate['type']) => {
     switch (type) {
       case 'birthday':
-        return 'border-pink-500/30 bg-pink-500/5';
+        return 'border-primary/30 bg-primary/5';
       case 'contract_renewal':
-        return 'border-blue-500/30 bg-blue-500/5';
+        return 'border-info/30 bg-info/5';
       case 'anniversary':
-        return 'border-red-500/30 bg-red-500/5';
+        return 'border-destructive/30 bg-destructive/5';
       case 'milestone':
-        return 'border-amber-500/30 bg-amber-500/5';
+        return 'border-warning/30 bg-warning/5';
       default:
-        return 'border-purple-500/30 bg-purple-500/5';
+        return 'border-secondary/30 bg-secondary/5';
     }
   };
 
   const getEventIcon = (type: ImportantDate['type']) => {
     switch (type) {
       case 'birthday':
-        return <Cake className="h-4 w-4 text-pink-500" />;
+        return <Cake className="h-4 w-4 text-primary" />;
       case 'contract_renewal':
-        return <FileText className="h-4 w-4 text-blue-500" />;
+        return <FileText className="h-4 w-4 text-info" />;
       case 'anniversary':
-        return <Heart className="h-4 w-4 text-red-500" />;
+        return <Heart className="h-4 w-4 text-destructive" />;
       case 'milestone':
-        return <Award className="h-4 w-4 text-amber-500" />;
+        return <Award className="h-4 w-4 text-warning" />;
       default:
-        return <Gift className="h-4 w-4 text-purple-500" />;
+        return <Gift className="h-4 w-4 text-secondary" />;
     }
   };
 

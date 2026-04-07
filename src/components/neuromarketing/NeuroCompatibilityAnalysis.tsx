@@ -74,15 +74,15 @@ const NeuroCompatibilityAnalysis = ({
   if (!compatibility) return null;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-100 border-green-200';
-    if (score >= 60) return 'bg-yellow-100 border-yellow-200';
-    return 'bg-red-100 border-red-200';
+    if (score >= 80) return 'bg-success border-success';
+    if (score >= 60) return 'bg-warning border-warning';
+    return 'bg-destructive border-destructive';
   };
 
   return (
@@ -113,7 +113,7 @@ const NeuroCompatibilityAnalysis = ({
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2 mb-1">
-              <Brain className="h-4 w-4 text-blue-500" />
+              <Brain className="h-4 w-4 text-info" />
               <span className="text-sm font-medium">Alinhamento Cerebral</span>
             </div>
             <Progress value={compatibility.brainAlignment} className="h-2 mb-1" />
@@ -122,7 +122,7 @@ const NeuroCompatibilityAnalysis = ({
 
           <div className="p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2 mb-1">
-              <Zap className="h-4 w-4 text-yellow-500" />
+              <Zap className="h-4 w-4 text-warning" />
               <span className="text-sm font-medium">Match de Estímulos</span>
             </div>
             <Progress value={compatibility.stimuliMatch} className="h-2 mb-1" />
@@ -140,7 +140,7 @@ const NeuroCompatibilityAnalysis = ({
 
           <div className="p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2 mb-1">
-              <Users className="h-4 w-4 text-purple-500" />
+              <Users className="h-4 w-4 text-secondary" />
               <span className="text-sm font-medium">Fit Comunicação</span>
             </div>
             <Progress value={compatibility.communicationFit} className="h-2 mb-1" />
@@ -183,12 +183,12 @@ const NeuroCompatibilityAnalysis = ({
         {compatibility.strengths.length > 0 && (
           <div className="space-y-2">
             <h4 className="font-medium text-sm flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-success" />
               Pontos Fortes
             </h4>
             <div className="space-y-1">
               {compatibility.strengths.map((strength, i) => (
-                <div key={i} className="text-sm flex items-center gap-2 text-green-700 dark:text-green-400">
+                <div key={i} className="text-sm flex items-center gap-2 text-success dark:text-success">
                   <span>•</span> {strength}
                 </div>
               ))}
@@ -200,12 +200,12 @@ const NeuroCompatibilityAnalysis = ({
         {compatibility.challenges.length > 0 && (
           <div className="space-y-2">
             <h4 className="font-medium text-sm flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertCircle className="h-4 w-4 text-warning" />
               Desafios
             </h4>
             <div className="space-y-1">
               {compatibility.challenges.map((challenge, i) => (
-                <div key={i} className="text-sm flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                <div key={i} className="text-sm flex items-center gap-2 text-warning dark:text-warning">
                   <span>•</span> {challenge}
                 </div>
               ))}

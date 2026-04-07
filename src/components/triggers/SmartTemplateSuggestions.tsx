@@ -62,16 +62,16 @@ interface SmartSuggestion {
 }
 
 const DISC_COLORS: Record<DISCProfile, string> = {
-  D: 'bg-red-500/10 text-red-600 border-red-200',
-  I: 'bg-amber-500/10 text-amber-600 border-amber-200',
-  S: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
-  C: 'bg-blue-500/10 text-blue-600 border-blue-200',
+  D: 'bg-destructive/10 text-destructive border-destructive',
+  I: 'bg-warning/10 text-warning border-warning/30',
+  S: 'bg-success/10 text-success border-success/30',
+  C: 'bg-info/10 text-info border-info',
 };
 
 const TAG_CONFIG = {
-  top_performer: { label: 'Top Performer', icon: Award, color: 'bg-amber-500/10 text-amber-600 border-amber-300' },
-  disc_match: { label: 'Match DISC', icon: Users, color: 'bg-blue-500/10 text-blue-600 border-blue-300' },
-  rising_star: { label: 'Em Alta', icon: TrendingUp, color: 'bg-emerald-500/10 text-emerald-600 border-emerald-300' },
+  top_performer: { label: 'Top Performer', icon: Award, color: 'bg-warning/10 text-warning border-warning/30' },
+  disc_match: { label: 'Match DISC', icon: Users, color: 'bg-info/10 text-info border-info' },
+  rising_star: { label: 'Em Alta', icon: TrendingUp, color: 'bg-success/10 text-success border-success/30' },
   recommended: { label: 'Recomendado', icon: Sparkles, color: 'bg-primary/10 text-primary border-primary/30' },
 };
 
@@ -124,22 +124,22 @@ function TemplatePreview({ suggestion, contact, onUse }: TemplatePreviewProps) {
     <div className="space-y-4">
       {/* Success stats */}
       {successData && successData.totalUsages > 0 && (
-        <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-200">
+        <div className="p-3 rounded-lg bg-success/5 border border-success/30">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-emerald-600" />
-            <span className="text-sm font-medium text-emerald-700">Histórico de Sucesso</span>
+            <TrendingUp className="w-4 h-4 text-success" />
+            <span className="text-sm font-medium text-success">Histórico de Sucesso</span>
           </div>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-lg font-bold text-emerald-600">{successData.totalUsages}</p>
+              <p className="text-lg font-bold text-success">{successData.totalUsages}</p>
               <p className="text-xs text-muted-foreground">Usos</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-emerald-600">{successData.successRate.toFixed(0)}%</p>
+              <p className="text-lg font-bold text-success">{successData.successRate.toFixed(0)}%</p>
               <p className="text-xs text-muted-foreground">Sucesso</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-amber-600">
+              <p className="text-lg font-bold text-warning">
                 {successData.avgRating > 0 ? successData.avgRating.toFixed(1) : '-'}
               </p>
               <p className="text-xs text-muted-foreground">Nota</p>
@@ -486,14 +486,14 @@ export function SmartTemplateSuggestions({ contact, className, onSelectTemplate 
                             {successData && successData.totalUsages > 0 && (
                               <div className="flex items-center gap-3 mt-1">
                                 <span className="text-xs text-muted-foreground">
-                                  <span className="text-emerald-600 font-medium">{successData.successRate.toFixed(0)}%</span> sucesso
+                                  <span className="text-success font-medium">{successData.successRate.toFixed(0)}%</span> sucesso
                                 </span>
                                 <span className="text-xs text-muted-foreground">
                                   {successData.totalUsages} usos
                                 </span>
                                 {successData.avgRating > 0 && (
                                   <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                                    <Star className="w-3 h-3 text-warning fill-warning" />
                                     {successData.avgRating.toFixed(1)}
                                   </span>
                                 )}

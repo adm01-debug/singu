@@ -412,12 +412,12 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
       {data.highlights?.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-sm flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-green-500" />
+            <TrendingUp className="h-4 w-4 text-success" />
             Destaques
           </h4>
           <div className="space-y-2">
             {data.highlights.map((highlight: string, i: number) => (
-              <div key={`highlight-${i}-${highlight.slice(0, 15)}`} className="p-3 rounded-lg bg-green-500/10 text-sm">
+              <div key={`highlight-${i}-${highlight.slice(0, 15)}`} className="p-3 rounded-lg bg-success/10 text-sm">
                 {highlight}
               </div>
             ))}
@@ -429,12 +429,12 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
       {data.recommendations?.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-sm flex items-center gap-2">
-            <Target className="h-4 w-4 text-amber-500" />
+            <Target className="h-4 w-4 text-warning" />
             Recomendações
           </h4>
           <div className="space-y-2">
             {data.recommendations.map((rec: string, i: number) => (
-              <div key={`rec-${i}-${rec.slice(0, 15)}`} className="p-3 rounded-lg bg-amber-500/10 text-sm flex items-start gap-2">
+              <div key={`rec-${i}-${rec.slice(0, 15)}`} className="p-3 rounded-lg bg-warning/10 text-sm flex items-start gap-2">
                 <ChevronRight className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 {rec}
               </div>
@@ -457,12 +457,12 @@ function StatCard({ label, value, icon, variant = 'default' }: StatCardProps) {
   return (
     <div className={`
       p-4 rounded-lg border text-center
-      ${variant === 'warning' ? 'border-amber-500/50 bg-amber-500/5' : 'bg-secondary/30'}
+      ${variant === 'warning' ? 'border-warning/50 bg-warning/5' : 'bg-secondary/30'}
     `}>
       <div className="flex items-center justify-center mb-2 text-muted-foreground">
         {icon}
       </div>
-      <p className={`text-2xl font-bold ${variant === 'warning' ? 'text-amber-500' : ''}`}>
+      <p className={`text-2xl font-bold ${variant === 'warning' ? 'text-warning' : ''}`}>
         {value}
       </p>
       <p className="text-xs text-muted-foreground">{label}</p>

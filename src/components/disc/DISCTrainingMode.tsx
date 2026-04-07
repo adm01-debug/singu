@@ -366,7 +366,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
             animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5 }}
           >
-            <Trophy className="w-16 h-16 mx-auto mb-4 text-yellow-500" />
+            <Trophy className="w-16 h-16 mx-auto mb-4 text-warning" />
           </motion.div>
           <h2 className="text-2xl font-bold mb-2">Treinamento Concluído! 🎉</h2>
           <p className="text-muted-foreground mb-6">
@@ -379,7 +379,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
               <div className="text-sm text-muted-foreground">Precisão</div>
             </div>
             <div className="bg-muted/50 rounded-lg p-4">
-              <div className="text-3xl font-bold text-green-500">{progress.correctAnswers}</div>
+              <div className="text-3xl font-bold text-success">{progress.correctAnswers}</div>
               <div className="text-sm text-muted-foreground">Acertos</div>
             </div>
           </div>
@@ -388,9 +388,9 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
           <div className="flex justify-center gap-3 mb-8">
             {(['D', 'I', 'S', 'C'] as const).map(profile => {
               const mastery = progress.profileMastery[profile] || 0;
-              const color = profile === 'D' ? 'bg-red-500' : 
-                           profile === 'I' ? 'bg-yellow-500' : 
-                           profile === 'S' ? 'bg-green-500' : 'bg-blue-500';
+              const color = profile === 'D' ? 'bg-destructive' : 
+                           profile === 'I' ? 'bg-warning' : 
+                           profile === 'S' ? 'bg-success' : 'bg-info';
               return (
                 <div key={profile} className="text-center">
                   <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center text-primary-foreground font-bold mb-1`}>
@@ -422,7 +422,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
           <div className="flex items-center gap-2">
             {progress.streak >= 3 && (
               <Badge variant="secondary" className="gap-1">
-                <Star className="w-3 h-3 text-yellow-500" />
+                <Star className="w-3 h-3 text-warning" />
                 {progress.streak} seguidos!
               </Badge>
             )}
@@ -473,9 +473,9 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                 disabled={showResult}
                 className={`w-full text-left p-4 rounded-lg border transition-all ${
                   showCorrect
-                    ? 'border-green-500 bg-green-500/10'
+                    ? 'border-success bg-success/10'
                     : showWrong
-                    ? 'border-red-500 bg-red-500/10'
+                    ? 'border-destructive bg-destructive/10'
                     : isSelected
                     ? 'border-primary bg-primary/5'
                     : 'border-border hover:border-primary/50'
@@ -512,8 +512,8 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
               animate={{ opacity: 1, y: 0 }}
               className={`p-4 rounded-lg ${
                 selectedOptionData.isCorrect
-                  ? 'bg-green-500/10 border border-green-500/30'
-                  : 'bg-red-500/10 border border-red-500/30'
+                  ? 'bg-success/10 border border-success/30'
+                  : 'bg-destructive/10 border border-destructive/30'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -530,7 +530,7 @@ const DISCTrainingMode: React.FC<DISCTrainingModeProps> = ({ onProgress }) => {
                     {selectedOptionData.explanation}
                   </p>
                   <div className="flex items-center gap-2 text-sm">
-                    <Lightbulb className="w-4 h-4 text-yellow-500" />
+                    <Lightbulb className="w-4 h-4 text-warning" />
                     <span className="text-muted-foreground">
                       {currentScenario?.learningPoint}
                     </span>

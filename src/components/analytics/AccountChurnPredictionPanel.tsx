@@ -79,8 +79,8 @@ export function AccountChurnPredictionPanel({
     switch (level) {
       case 'critical': return 'text-destructive';
       case 'high': return 'text-warning';
-      case 'medium': return 'text-yellow-500';
-      default: return 'text-emerald-500';
+      case 'medium': return 'text-warning';
+      default: return 'text-success';
     }
   };
 
@@ -88,8 +88,8 @@ export function AccountChurnPredictionPanel({
     switch (level) {
       case 'critical': return 'bg-destructive/10 border-destructive/30';
       case 'high': return 'bg-warning/10 border-warning/30';
-      case 'medium': return 'bg-yellow-500/10 border-yellow-500/30';
-      default: return 'bg-emerald-500/10 border-emerald-500/30';
+      case 'medium': return 'bg-warning/10 border-warning/30';
+      default: return 'bg-success/10 border-success/30';
     }
   };
 
@@ -103,14 +103,14 @@ export function AccountChurnPredictionPanel({
   };
 
   const getHealthIcon = (score: number) => {
-    if (score >= 70) return <ShieldCheck className="h-5 w-5 text-emerald-500" />;
-    if (score >= 40) return <Shield className="h-5 w-5 text-yellow-500" />;
+    if (score >= 70) return <ShieldCheck className="h-5 w-5 text-success" />;
+    if (score >= 40) return <Shield className="h-5 w-5 text-warning" />;
     return <ShieldAlert className="h-5 w-5 text-destructive" />;
   };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'improving': return <TrendingUp className="h-4 w-4 text-emerald-500" />;
+      case 'improving': return <TrendingUp className="h-4 w-4 text-success" />;
       case 'declining': return <TrendingDown className="h-4 w-4 text-warning" />;
       case 'critical': return <AlertTriangle className="h-4 w-4 text-destructive" />;
       default: return <Activity className="h-4 w-4 text-muted-foreground" />;
@@ -166,8 +166,8 @@ export function AccountChurnPredictionPanel({
 
           {/* Stakeholder Summary */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="text-center p-3 rounded-lg bg-emerald-500/10">
-              <div className="text-2xl font-bold text-emerald-600">{singleAccount.championCount}</div>
+            <div className="text-center p-3 rounded-lg bg-success/10">
+              <div className="text-2xl font-bold text-success">{singleAccount.championCount}</div>
               <div className="text-xs text-muted-foreground">Champions</div>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted">
@@ -295,8 +295,8 @@ export function AccountChurnPredictionPanel({
                 Saúde do Portfólio: 
                 <span className={cn(
                   "font-medium ml-1",
-                  portfolioHealthScore >= 70 ? "text-emerald-500" :
-                  portfolioHealthScore >= 40 ? "text-yellow-500" : "text-destructive"
+                  portfolioHealthScore >= 70 ? "text-success" :
+                  portfolioHealthScore >= 40 ? "text-warning" : "text-destructive"
                 )}>
                   {portfolioHealthScore}%
                 </span>
@@ -308,7 +308,7 @@ export function AccountChurnPredictionPanel({
       <CardContent>
         {displayedAccounts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-emerald-500 opacity-50" />
+            <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-success opacity-50" />
             <p className="font-medium">Nenhuma conta em risco</p>
             <p className="text-sm">Todas as suas contas estão saudáveis!</p>
           </div>

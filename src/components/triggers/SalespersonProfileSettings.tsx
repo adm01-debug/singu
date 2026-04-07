@@ -150,7 +150,7 @@ export function SalespersonProfileSettings() {
         {/* VAK Profile */}
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-2">
-            <Eye className="w-4 h-4 text-purple-500" />
+            <Eye className="w-4 h-4 text-secondary" />
             Sistema Representacional (VAK)
           </Label>
           <p className="text-xs text-muted-foreground">
@@ -187,7 +187,7 @@ export function SalespersonProfileSettings() {
         {/* DISC Profile */}
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-2">
-            <Target className="w-4 h-4 text-blue-500" />
+            <Target className="w-4 h-4 text-info" />
             Perfil DISC
           </Label>
           <p className="text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ export function SalespersonProfileSettings() {
         {/* Metaprograms */}
         <div className="space-y-4">
           <Label className="text-sm font-medium flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-green-500" />
+            <Sparkles className="w-4 h-4 text-success" />
             Metaprogramas
           </Label>
           <p className="text-xs text-muted-foreground">

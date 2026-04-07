@@ -20,7 +20,7 @@ const badgeVariants = cva(
         muted: "border-transparent bg-muted text-muted-foreground",
         gradient: "border-0 bg-gradient-to-r from-primary to-accent text-primary-foreground",
         glass: "border-border/50 bg-background/50 backdrop-blur-sm text-foreground",
-        premium: "border-0 bg-gradient-to-r from-amber-500 to-orange-500 text-primary-foreground",
+        premium: "border-0 bg-gradient-to-r from-warning to-accent text-primary-foreground",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",

@@ -102,9 +102,9 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
   };
 
   const getImportanceColor = (importance: number) => {
-    if (importance === 1) return 'text-yellow-400 bg-yellow-500/20';
-    if (importance === 2) return 'text-orange-400 bg-orange-500/20';
-    if (importance === 3) return 'text-blue-400 bg-blue-500/20';
+    if (importance === 1) return 'text-warning bg-warning/20';
+    if (importance === 2) return 'text-accent bg-accent/20';
+    if (importance === 3) return 'text-info bg-info/20';
     return 'text-muted-foreground bg-muted/50';
   };
 
@@ -116,14 +116,14 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
   };
 
   return (
-    <Card className={cn("border-amber-500/30 bg-gradient-to-br from-amber-950/20 to-background", className)}>
+    <Card className={cn("border-warning/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ListOrdered className="h-5 w-5 text-amber-400" />
+            <ListOrdered className="h-5 w-5 text-warning" />
             Hierarquia de Critérios
           </CardTitle>
-          <Badge variant="outline" className="bg-amber-500/20">
+          <Badge variant="outline" className="bg-warning/20">
             {criteria.length} critérios
           </Badge>
         </div>
@@ -208,9 +208,9 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                   exit={{ opacity: 0, x: 20 }}
                   className={cn(
                     "bg-muted/30 rounded-lg p-3 border-l-4",
-                    criterion.importance === 1 ? 'border-l-yellow-500' :
-                    criterion.importance === 2 ? 'border-l-orange-500' :
-                    criterion.importance === 3 ? 'border-l-blue-500' :
+                    criterion.importance === 1 ? 'border-l-warning' :
+                    criterion.importance === 2 ? 'border-l-accent' :
+                    criterion.importance === 3 ? 'border-l-info' :
                     'border-l-muted'
                   )}
                 >
@@ -243,7 +243,7 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                         </Badge>
                         <span className="font-medium text-sm">{criterion.name}</span>
                         {criterion.importance === 1 && (
-                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                          <Star className="h-4 w-4 text-warning fill-warning" />
                         )}
                       </div>
                       
@@ -254,8 +254,8 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                       </div>
 
                       {criterion.howToAddress && (
-                        <div className="text-xs bg-amber-500/10 rounded p-2 mt-2">
-                          <span className="text-amber-400 font-medium">Como abordar: </span>
+                        <div className="text-xs bg-warning/10 rounded p-2 mt-2">
+                          <span className="text-warning font-medium">Como abordar: </span>
                           <span className="text-muted-foreground">{criterion.howToAddress}</span>
                         </div>
                       )}
@@ -264,7 +264,7 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 w-6 p-0 text-muted-foreground hover:text-red-400"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                       onClick={() => removeCriterion(criterion.id)}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -278,25 +278,25 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
 
         {/* Strategy Summary */}
         {criteria.length >= 2 && (
-          <div className="bg-amber-500/10 rounded-lg p-3 border border-amber-500/30">
+          <div className="bg-warning/10 rounded-lg p-3 border border-warning/30">
             <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
-              <Lightbulb className="h-4 w-4 text-amber-400" />
+              <Lightbulb className="h-4 w-4 text-warning" />
               Estratégia de Abordagem
             </h4>
             <div className="text-xs space-y-1 text-muted-foreground">
               <p>
-                <strong className="text-amber-400">Foco Principal:</strong>{' '}
+                <strong className="text-warning">Foco Principal:</strong>{' '}
                 Lidere com <strong>{criteria[0]?.name}</strong> - este é o critério decisivo.
               </p>
               {criteria[1] && (
                 <p>
-                  <strong className="text-orange-400">Reforço:</strong>{' '}
+                  <strong className="text-accent">Reforço:</strong>{' '}
                   Conecte com <strong>{criteria[1].name}</strong> para criar convicção.
                 </p>
               )}
               {criteria.length > 3 && (
                 <p className="flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3 text-blue-400" />
+                  <AlertCircle className="h-3 w-3 text-info" />
                   <span>Critérios secundários ({criteria.slice(3).map(c => c.name).join(', ')}) são bons para diferenciação.</span>
                 </p>
               )}

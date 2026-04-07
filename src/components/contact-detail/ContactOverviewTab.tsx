@@ -86,9 +86,9 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* Alerts */}
       {alerts.length > 0 && (
-        <Card className="md:col-span-2 lg:col-span-3 border-orange-200 dark:border-orange-800">
+        <Card className="md:col-span-2 lg:col-span-3 border-accent/30 dark:border-accent/30">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-orange-600 dark:text-orange-400">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-accent dark:text-accent">
               <AlertTriangle className="h-4 w-4" />
               Alertas Ativos ({alerts.length})
             </CardTitle>
@@ -101,8 +101,8 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                   variant="outline"
                   className={cn(
                     'cursor-pointer text-xs',
-                    alert.priority === 'high' ? 'border-red-300 text-red-600' :
-                    alert.priority === 'medium' ? 'border-orange-300 text-orange-600' :
+                    alert.priority === 'high' ? 'border-destructive text-destructive' :
+                    alert.priority === 'medium' ? 'border-accent/30 text-accent' :
                     'border-muted text-muted-foreground'
                   )}
                   onClick={() => onDismissAlert?.(alert.id)}
@@ -120,7 +120,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
         <Card className="md:col-span-2 lg:col-span-3">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <Lightbulb className="h-4 w-4 text-yellow-500" />
+              <Lightbulb className="h-4 w-4 text-warning" />
               Insights ({insights.length})
             </CardTitle>
           </CardHeader>
@@ -151,7 +151,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Heart className="h-4 w-4 text-pink-500" />
+            <Heart className="h-4 w-4 text-primary" />
             Informações Pessoais
           </CardTitle>
         </CardHeader>
@@ -206,7 +206,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Clock className="h-4 w-4 text-blue-500" />
+            <Clock className="h-4 w-4 text-info" />
             Cadência & Preferências
           </CardTitle>
         </CardHeader>
@@ -274,7 +274,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <CollapsibleSection
         title="Relacionados"
         icon={Users}
-        iconColor="text-purple-500"
+        iconColor="text-secondary"
         badge={relatives.length}
         defaultOpen={relatives.length > 0}
       >
@@ -289,7 +289,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                 <div className="text-right text-xs text-muted-foreground">
                   {rel.occupation && <p>{rel.occupation}</p>}
                   {rel.is_decision_influencer && (
-                    <Badge variant="outline" className="text-xs text-amber-600">Influenciador</Badge>
+                    <Badge variant="outline" className="text-xs text-warning">Influenciador</Badge>
                   )}
                 </div>
               </div>
@@ -304,7 +304,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <CollapsibleSection
         title="Eventos de Vida"
         icon={Gift}
-        iconColor="text-green-500"
+        iconColor="text-success"
         badge={lifeEvents.length}
         defaultOpen={lifeEvents.length > 0}
         className="md:col-span-2 lg:col-span-3"

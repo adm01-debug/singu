@@ -32,14 +32,14 @@ const statusConfig: Record<string, {
   },
   processing: { 
     label: 'Analisando', 
-    color: 'text-amber-600', 
-    bgColor: 'bg-amber-100 dark:bg-amber-900/30',
+    color: 'text-warning', 
+    bgColor: 'bg-warning dark:bg-warning/30',
     icon: Loader2 
   },
   completed: { 
     label: 'Concluído', 
-    color: 'text-emerald-600', 
-    bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
+    color: 'text-success', 
+    bgColor: 'bg-success dark:bg-success/30',
     icon: CheckCircle2 
   },
   error: { 
@@ -55,7 +55,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
     return (
       <Card className="h-full">
         <CardContent className="flex items-center justify-center h-40">
-          <Loader2 className="w-5 h-5 animate-spin text-violet-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-secondary" />
         </CardContent>
       </Card>
     );
@@ -78,7 +78,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
     <Card className="h-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <History className="w-4 h-4 text-violet-500" />
+          <History className="w-4 h-4 text-secondary" />
           Histórico de Varreduras
           <Badge variant="secondary" className="ml-auto">
             {records.length}
@@ -105,7 +105,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
                     variant="ghost"
                     className={`w-full justify-start h-auto py-3 px-3 ${
                       isSelected 
-                        ? 'bg-violet-100 dark:bg-violet-900/30 border border-violet-300 dark:border-violet-700' 
+                        ? 'bg-secondary dark:bg-secondary/30 border border-secondary/30 dark:border-secondary/30' 
                         : 'hover:bg-muted/50'
                     }`}
                     onClick={() => onSelect(record)}
@@ -125,7 +125,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
                             {format(new Date(record.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </span>
                           {index === 0 && record.status === 'completed' && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-800">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-secondary dark:bg-secondary/20 border-secondary/30 dark:border-secondary/30">
                               Mais recente
                             </Badge>
                           )}

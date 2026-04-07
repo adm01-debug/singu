@@ -44,44 +44,44 @@ import { cn } from '@/lib/utils';
 const probabilityConfig = {
   high: {
     label: 'Alta',
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500/10',
-    borderColor: 'border-emerald-500/30',
-    badge: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+    color: 'text-success',
+    bgColor: 'bg-success/10',
+    borderColor: 'border-success/30',
+    badge: 'bg-success/20 text-success border-success/30'
   },
   medium: {
     label: 'Média',
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/30',
-    badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
+    borderColor: 'border-warning/30',
+    badge: 'bg-warning/20 text-warning border-warning/30'
   },
   low: {
     label: 'Baixa',
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/30',
-    badge: 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
+    borderColor: 'border-accent/30',
+    badge: 'bg-accent/20 text-accent border-accent/30'
   },
   very_low: {
     label: 'Muito Baixa',
-    color: 'text-red-500',
-    bgColor: 'bg-red-500/10',
-    borderColor: 'border-red-500/30',
-    badge: 'bg-red-500/20 text-red-400 border-red-500/30'
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
+    borderColor: 'border-destructive/30',
+    badge: 'bg-destructive/20 text-destructive border-destructive/30'
   }
 };
 
 const trendIcons = {
-  up: { icon: TrendingUp, color: 'text-emerald-500' },
-  down: { icon: TrendingDown, color: 'text-red-500' },
+  up: { icon: TrendingUp, color: 'text-success' },
+  down: { icon: TrendingDown, color: 'text-destructive' },
   stable: { icon: Minus, color: 'text-muted-foreground' }
 };
 
 const rankIcons = [
-  { icon: Trophy, color: 'text-yellow-500' },
-  { icon: Medal, color: 'text-gray-400' },
-  { icon: Award, color: 'text-amber-600' }
+  { icon: Trophy, color: 'text-warning' },
+  { icon: Medal, color: 'text-muted-foreground' },
+  { icon: Award, color: 'text-warning' }
 ];
 
 interface ClosingScoreRankingProps {
@@ -170,19 +170,19 @@ export function ClosingScoreRanking({
                   Todos
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProbabilityFilter('high')}>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2" />
+                  <span className="w-2 h-2 rounded-full bg-success mr-2" />
                   Alta
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProbabilityFilter('medium')}>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
+                  <span className="w-2 h-2 rounded-full bg-warning mr-2" />
                   Média
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProbabilityFilter('low')}>
-                  <span className="w-2 h-2 rounded-full bg-orange-500 mr-2" />
+                  <span className="w-2 h-2 rounded-full bg-accent mr-2" />
                   Baixa
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setProbabilityFilter('very_low')}>
-                  <span className="w-2 h-2 rounded-full bg-red-500 mr-2" />
+                  <span className="w-2 h-2 rounded-full bg-destructive mr-2" />
                   Muito Baixa
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -210,19 +210,19 @@ export function ClosingScoreRanking({
               <p className="text-xs text-muted-foreground">Score Médio</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-emerald-500">{stats.highProbability}</p>
+              <p className="text-2xl font-bold text-success">{stats.highProbability}</p>
               <p className="text-xs text-muted-foreground">Alta</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-amber-500">{stats.mediumProbability}</p>
+              <p className="text-2xl font-bold text-warning">{stats.mediumProbability}</p>
               <p className="text-xs text-muted-foreground">Média</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-orange-500">{stats.lowProbability}</p>
+              <p className="text-2xl font-bold text-accent">{stats.lowProbability}</p>
               <p className="text-xs text-muted-foreground">Baixa</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-500">{stats.veryLowProbability}</p>
+              <p className="text-2xl font-bold text-destructive">{stats.veryLowProbability}</p>
               <p className="text-xs text-muted-foreground">Muito Baixa</p>
             </div>
           </div>

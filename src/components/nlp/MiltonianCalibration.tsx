@@ -253,11 +253,11 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'presupposition': return 'bg-purple-500/20 text-purple-400';
-      case 'embedded': return 'bg-blue-500/20 text-blue-400';
-      case 'metaphor': return 'bg-green-500/20 text-green-400';
-      case 'pacing': return 'bg-yellow-500/20 text-yellow-400';
-      case 'hypnotic': return 'bg-red-500/20 text-red-400';
+      case 'presupposition': return 'bg-secondary/20 text-secondary';
+      case 'embedded': return 'bg-info/20 text-info';
+      case 'metaphor': return 'bg-success/20 text-success';
+      case 'pacing': return 'bg-warning/20 text-warning';
+      case 'hypnotic': return 'bg-destructive/20 text-destructive';
       default: return 'bg-muted text-muted-foreground';
     }
   };
@@ -272,19 +272,19 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
   };
 
   return (
-    <Card className={cn("border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 to-background", className)}>
+    <Card className={cn("border-primary/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Wand2 className="h-5 w-5 text-indigo-400" />
+            <Wand2 className="h-5 w-5 text-primary" />
             Calibração Miltoniana
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-indigo-500/20">
+            <Badge variant="outline" className="bg-primary/20">
               {getVAKIcon()}
               <span className="ml-1">{vakType}</span>
             </Badge>
-            <Badge variant="outline" className="bg-indigo-500/20">
+            <Badge variant="outline" className="bg-primary/20">
               DISC: {discProfile}
             </Badge>
           </div>
@@ -346,7 +346,7 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
                     onClick={() => copyToClipboard(pattern.adaptedExample, pattern.id)}
                   >
                     {copiedId === pattern.id ? (
-                      <Check className="h-3 w-3 text-green-500" />
+                      <Check className="h-3 w-3 text-success" />
                     ) : (
                       <Copy className="h-3 w-3" />
                     )}
@@ -355,13 +355,13 @@ const MiltonianCalibration: React.FC<MiltonianCalibrationProps> = ({
 
                 <p className="text-xs text-muted-foreground">{pattern.description}</p>
 
-                <div className="bg-indigo-500/10 rounded p-2">
-                  <div className="text-xs text-indigo-400 mb-1">Template:</div>
+                <div className="bg-primary/10 rounded p-2">
+                  <div className="text-xs text-primary mb-1">Template:</div>
                   <p className="text-sm font-mono">{pattern.template}</p>
                 </div>
 
-                <div className="bg-green-500/10 rounded p-2">
-                  <div className="text-xs text-green-400 mb-1">
+                <div className="bg-success/10 rounded p-2">
+                  <div className="text-xs text-success mb-1">
                     Adaptado para {activeContact.firstName} ({vakType}/{discProfile}):
                   </div>
                   <p className="text-sm italic">"{pattern.adaptedExample}"</p>

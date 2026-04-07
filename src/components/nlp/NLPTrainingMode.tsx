@@ -345,8 +345,8 @@ const NLPTrainingMode: React.FC = () => {
                         key={option.id}
                         className={cn(
                           'flex items-center space-x-2 p-3 rounded-lg border transition-colors',
-                          showResult && option.isCorrect && 'bg-green-50 border-green-300 dark:bg-green-950',
-                          showResult && !option.isCorrect && selectedAnswer === option.id && 'bg-red-50 border-red-300 dark:bg-red-950',
+                          showResult && option.isCorrect && 'bg-success border-success dark:bg-success',
+                          showResult && !option.isCorrect && selectedAnswer === option.id && 'bg-destructive border-destructive dark:bg-destructive',
                           !showResult && selectedAnswer === option.id && 'bg-primary/10 border-primary'
                         )}
                       >
@@ -356,8 +356,8 @@ const NLPTrainingMode: React.FC = () => {
                         </Label>
                         {showResult && (
                           option.isCorrect ? 
-                            <CheckCircle className="w-5 h-5 text-green-600" /> : 
-                            selectedAnswer === option.id && <XCircle className="w-5 h-5 text-red-600" />
+                            <CheckCircle className="w-5 h-5 text-success" /> : 
+                            selectedAnswer === option.id && <XCircle className="w-5 h-5 text-destructive" />
                         )}
                       </div>
                     ))}
@@ -375,7 +375,7 @@ const NLPTrainingMode: React.FC = () => {
                     >
                       <div className={cn(
                         'p-4 rounded-lg',
-                        selectedOption.isCorrect ? 'bg-green-50 dark:bg-green-950' : 'bg-amber-50 dark:bg-amber-950'
+                        selectedOption.isCorrect ? 'bg-success dark:bg-success' : 'bg-warning dark:bg-warning'
                       )}>
                         <p className="text-sm">{selectedOption.explanation}</p>
                       </div>
