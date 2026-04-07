@@ -576,6 +576,7 @@ const Contatos = () => {
               />
             ) : null}
 
+            {filteredAndSortedContacts.length === 0 && !loading && (
               searchTerm || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
                   searchTerm={searchTerm || 'filtros ativos'}
