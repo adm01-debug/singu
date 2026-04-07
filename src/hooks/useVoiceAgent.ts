@@ -176,7 +176,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   useEffect(() => { processTranscriptRef.current = processTranscript; }, [processTranscript]);
 
   const handleScribeError = useCallback((err: unknown) => {
-    console.error("[Voice] Scribe runtime error:", err);
+    logger.error("[Voice] Scribe runtime error:", err);
     isStartingRef.current = false;
     clearResetPhaseTimer();
     clearSessionStartTimer();
@@ -214,7 +214,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
     try {
       const { data, error: tokenError } = await supabase.functions.invoke("elevenlabs-scribe-token");
       if (tokenError || !data?.token) {
-        console.error("[Voice] Token error:", tokenError);
+        logger.error("[Voice] Token error:", tokenError);
         throw new Error("Não foi possível obter token de transcrição");
       }
 
@@ -234,7 +234,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
     } catch (err) {
       isStartingRef.current = false;
       clearSessionStartTimer();
-      console.error("[Voice] startListening error:", err);
+      logger.error("[Voice] startListening error:", err);
       const message = friendlyErrorMessage(err);
       setError(message);
       setPhase("error");
