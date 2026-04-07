@@ -42,11 +42,13 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   const forceDisconnectScribe = useCallback(() => {
     clearSessionStartTimer();
     try {
-      disconnectScribeRef.current();
+      if (scribe.isConnected) {
+        disconnectScribeRef.current();
+      }
     } catch (e) {
       logger.warn("[Voice] Failed to disconnect Scribe:", e);
     }
-  }, [clearSessionStartTimer]);
+  }, [clearSessionStartTimer, scribe.isConnected]);
 
   const handleScribeErrorRef = useRef<(err: unknown) => void>(() => undefined);
 
@@ -166,7 +168,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   }, [clearResetPhaseTimer, clearSessionStartTimer, partialTranscript, phase, processTranscript, scribe, setPhase, isStartingRef]);
 
   const reset = useCallback(() => {
-    scribe.disconnect();
+    try { scribe.disconnect(); } catch {}
     stopSpeakingRef.current?.();
     stopSpeakingRef.current = null;
     resetAll();

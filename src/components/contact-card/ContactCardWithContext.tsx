@@ -208,6 +208,21 @@ export function ContactCardWithContext({
                   <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                 </div>
 
+                {/* Badges row: Sentiment + DISC + Role */}
+                <AnimatePresence>
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    {contact.sentiment && (
+                      <SentimentIndicator sentiment={contact.sentiment as 'positive' | 'neutral' | 'negative'} size="sm" />
+                    )}
+                    {(contact.behavior as Record<string, unknown>)?.discProfile && (
+                      <DISCBadge profile={(contact.behavior as Record<string, unknown>).discProfile as string} size="sm" showLabel={false} />
+                    )}
+                    {contact.role && (
+                      <RoleBadge role={contact.role as 'contact' | 'owner' | 'manager' | 'buyer' | 'decision_maker' | 'influencer'} />
+                    )}
+                  </div>
+                </AnimatePresence>
+
                 {/* Footer: Stage + Time */}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
                   <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
