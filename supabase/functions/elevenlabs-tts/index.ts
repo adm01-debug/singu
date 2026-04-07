@@ -1,17 +1,27 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MAX_TEXT_LENGTH = 5000;
-const MAX_VOICE_ID_LENGTH = 50;
-const VOICE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
-const DEFAULT_VOICE_ID = "FGY2WhTYpPnrIDTdsKH5"; // Laura - good for Portuguese
-
-function sanitizeText(text: string): string {
-  return text.replace(/<[^>]*>/g, "").trim();
+async function authenticateRequest(req: Request): Promise<string> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new Error("UNAUTHORIZED");
+  }
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getClaims(token);
+  if (error || !data?.claims?.sub) {
+    throw new Error("UNAUTHORIZED");
+  }
+  return data.claims.sub as string;
 }
 
 serve(async (req) => {
@@ -19,14 +29,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
-
   try {
+    // Authenticate user
+    try {
+      await authenticateRequest(req);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
@@ -42,42 +55,15 @@ serve(async (req) => {
       );
     }
 
-    const { text, voiceId } = body as { text?: unknown; voiceId?: unknown };
-
-    // Validate text
-    if (!text || typeof text !== "string") {
+    const { text, voiceId } = body as { text?: unknown; voiceId?: string };
+    if (!text || typeof text !== "string" || text.length > 5000) {
       return new Response(
-        JSON.stringify({ error: "Missing required field: text (string)" }),
+        JSON.stringify({ error: "Invalid text (required, max 5000 chars)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const sanitizedText = sanitizeText(text);
-    if (sanitizedText.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Text cannot be empty after sanitization" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (sanitizedText.length > MAX_TEXT_LENGTH) {
-      return new Response(
-        JSON.stringify({ error: `Text exceeds maximum length of ${MAX_TEXT_LENGTH} characters` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate voiceId
-    let selectedVoiceId = DEFAULT_VOICE_ID;
-    if (voiceId !== undefined && voiceId !== null) {
-      if (typeof voiceId !== "string" || voiceId.length > MAX_VOICE_ID_LENGTH || !VOICE_ID_PATTERN.test(voiceId)) {
-        return new Response(
-          JSON.stringify({ error: "Invalid voiceId format" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      selectedVoiceId = voiceId;
-    }
+    const selectedVoiceId = voiceId || "FGY2WhTYpPnrIDTdsKH5"; // Laura - good for Portuguese
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}?output_format=mp3_22050_32`,
@@ -88,7 +74,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: sanitizedText,
+          text,
           model_id: "eleven_multilingual_v2",
           voice_settings: {
             stability: 0.5,
