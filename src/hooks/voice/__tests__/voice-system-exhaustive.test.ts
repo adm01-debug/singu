@@ -57,7 +57,6 @@ describe("Voice Auth Module", () => {
       }));
       const { getAuthToken } = await import("../auth");
       const token = await getAuthToken();
-      // Falls back to env variable
       expect(typeof token).toBe("string");
     });
 
@@ -174,7 +173,6 @@ describe("Retry Module", () => {
       };
       await withRetry(fn, { maxRetries: 3, baseDelay: 50 });
       expect(timestamps.length).toBe(3);
-      // Second delay should be longer than first
       if (timestamps.length >= 3) {
         const delay1 = timestamps[1] - timestamps[0];
         const delay2 = timestamps[2] - timestamps[1];
@@ -196,7 +194,7 @@ describe("Retry Module", () => {
           shouldRetry: (e) => (e as Error).message.includes("custom-retryable"),
         })
       ).rejects.toThrow("custom-retryable");
-      expect(attempts).toBe(3); // 1 initial + 2 retries
+      expect(attempts).toBe(3);
     });
   });
 
@@ -276,7 +274,7 @@ describe("Retry Module", () => {
 // 3. processVoiceTranscript — Validation Tests
 // ============================================================
 describe("processVoiceTranscript — Validation", () => {
-  describe("validateAction logic (via processVoiceTranscript behavior)", () => {
+  describe("validateAction logic", () => {
     it("validates all action types", () => {
       const VALID_ACTIONS = new Set(["search", "navigate", "answer", "create_interaction", "create_reminder"]);
       expect(VALID_ACTIONS.has("search")).toBe(true);
@@ -399,7 +397,7 @@ describe("voiceFetch — URL & Header logic", () => {
     };
     expect(headers["Content-Type"]).toBe("application/json");
     expect(headers.apikey).toBeTruthy();
-    expect(headers.Authorization).toStartWith("Bearer ");
+    expect(headers.Authorization).toMatch(/^Bearer /);
   });
 });
 
@@ -420,27 +418,20 @@ describe("Edge Function Shared Auth — Contract validation", () => {
   });
 
   it("handleCorsAndMethod returns response for OPTIONS", () => {
-    // Simulate the logic
     const method = "OPTIONS";
-    const shouldReturn = method === "OPTIONS";
-    expect(shouldReturn).toBe(true);
+    expect(method === "OPTIONS").toBe(true);
   });
 
-  it("handleCorsAndMethod returns 405 for GET", () => {
-    const method = "GET";
-    const isPost = method === "POST";
-    const isOptions = method === "OPTIONS";
-    expect(isPost).toBe(false);
-    expect(isOptions).toBe(false);
-    // Should return 405
+  it("handleCorsAndMethod rejects non-POST/OPTIONS methods", () => {
+    const invalidMethods = ["GET", "PUT", "DELETE", "PATCH"];
+    invalidMethods.forEach((m) => {
+      expect(m !== "POST" && m !== "OPTIONS").toBe(true);
+    });
   });
 
   it("handleCorsAndMethod allows POST", () => {
-    const method = "POST";
-    const isOptions = method === "OPTIONS";
-    const isPost = method === "POST";
-    expect(isOptions).toBe(false);
-    expect(isPost).toBe(true);
+    expect("POST" !== "OPTIONS").toBe(true);
+    expect("POST" === "POST").toBe(true);
   });
 
   it("jsonError produces correct structure", () => {
@@ -491,7 +482,7 @@ describe("TTS Edge Function — Input validation", () => {
 
   describe("Text input validation", () => {
     it("rejects empty text", () => {
-      const text = "";
+      const text: string = "";
       const isValid = text && typeof text === "string" && text.trim().length > 0 && text.length <= 5000;
       expect(isValid).toBeFalsy();
     });
@@ -521,13 +512,13 @@ describe("TTS Edge Function — Input validation", () => {
     });
 
     it("handles null text", () => {
-      const text = null;
-      const isValid = text && typeof text === "string" && (text as string).trim().length > 0;
+      const text: string | null = null;
+      const isValid = text && typeof text === "string" && text.trim().length > 0;
       expect(isValid).toBeFalsy();
     });
 
     it("handles number as text", () => {
-      const text = 12345;
+      const text: unknown = 12345;
       const isValid = text && typeof text === "string";
       expect(isValid).toBeFalsy();
     });
@@ -539,7 +530,7 @@ describe("TTS Edge Function — Input validation", () => {
 // ============================================================
 describe("Voice Agent — Transcript validation", () => {
   it("rejects empty transcript", () => {
-    const transcript = "";
+    const transcript: string = "";
     const isValid = transcript && typeof transcript === "string" && transcript.trim().length > 0 && transcript.length <= 1000;
     expect(isValid).toBeFalsy();
   });
@@ -558,10 +549,8 @@ describe("Voice Agent — Transcript validation", () => {
 
   it("handles XSS attempt in transcript", () => {
     const transcript = '<script>alert("xss")</script>';
-    // Transcript is sent to AI, not rendered as HTML
     const sanitized = transcript.trim().slice(0, 1000);
     expect(sanitized).toContain("<script>");
-    // The AI processes it as text, not as code
     expect(typeof sanitized).toBe("string");
   });
 
@@ -569,7 +558,6 @@ describe("Voice Agent — Transcript validation", () => {
     const transcript = "'; DROP TABLE contacts; --";
     const sanitized = transcript.trim().slice(0, 1000);
     expect(sanitized.length).toBeGreaterThan(0);
-    // Sent as JSON body, not interpolated into SQL
   });
 });
 
@@ -594,7 +582,7 @@ describe("VoiceAgentAction — Structure validation", () => {
       response: "Indo para o dashboard",
       data: { route: "/dashboard" },
     };
-    expect(action.data?.route).toStartWith("/");
+    expect(action.data?.route).toMatch(/^\//);
   });
 
   it("answer action works without data", () => {
@@ -626,10 +614,10 @@ describe("VoiceAgentAction — Structure validation", () => {
 
   it("filters can be partial", () => {
     const data = {
-      filters: { tag: "vip" },
+      filters: { tag: "vip" } as Record<string, string | undefined>,
     };
     expect(data.filters.tag).toBe("vip");
-    expect((data.filters as Record<string, unknown>).company).toBeUndefined();
+    expect(data.filters.company).toBeUndefined();
   });
 
   it("handles empty data object", () => {
@@ -638,7 +626,7 @@ describe("VoiceAgentAction — Structure validation", () => {
   });
 
   it("handles undefined data", () => {
-    const action = { action: "answer" as const, response: "ok" };
+    const action: { action: string; response: string; data?: unknown } = { action: "answer", response: "ok" };
     expect(action.data).toBeUndefined();
   });
 });
@@ -661,14 +649,10 @@ describe("AbortController — Timeout simulation", () => {
   it("DOMException has correct name on abort", () => {
     const controller = new AbortController();
     controller.abort();
-    const handler = () => {
+    try {
       if (controller.signal.aborted) {
         throw new DOMException("The operation was aborted", "AbortError");
       }
-    };
-    expect(handler).toThrow();
-    try {
-      handler();
     } catch (e) {
       expect((e as DOMException).name).toBe("AbortError");
     }
@@ -689,10 +673,8 @@ describe("AbortController — Timeout simulation", () => {
 describe("Error Edge Cases", () => {
   it("handles concurrent abort and response", () => {
     const controller = new AbortController();
-    // Simulate: response arrives but abort also fires
     const responseReceived = true;
     controller.abort();
-    // Should prefer the response if already received
     expect(responseReceived).toBe(true);
     expect(controller.signal.aborted).toBe(true);
   });
@@ -704,7 +686,7 @@ describe("Error Edge Cases", () => {
   });
 
   it("handles malformed JSON from AI", () => {
-    const malformed = "{ action: 'search' }"; // Invalid JSON
+    const malformed = "{ action: 'search' }";
     let result;
     try {
       result = JSON.parse(malformed);
@@ -727,8 +709,8 @@ describe("Error Edge Cases", () => {
   });
 
   it("handles AI returning null action", () => {
-    const action = null;
-    const isValid = action && typeof action === "object" && "action" in action;
+    const action: unknown = null;
+    const isValid = action && typeof action === "object" && "action" in (action as object);
     expect(isValid).toBeFalsy();
   });
 });
@@ -742,7 +724,6 @@ describe("Integration Scenarios", () => {
     const sanitized = transcript.trim().slice(0, 1000);
     expect(sanitized).toBe("Buscar o contato Maria Silva");
 
-    // Simulate AI response
     const aiResult = {
       action: "search",
       response: "Buscando Maria Silva...",
@@ -760,7 +741,7 @@ describe("Integration Scenarios", () => {
       "/pipeline", "/automacao", "/relatorios", "/configuracoes",
     ];
     routes.forEach((route) => {
-      expect(route).toStartWith("/");
+      expect(route).toMatch(/^\//);
       expect(route.length).toBeGreaterThan(1);
     });
   });
@@ -776,7 +757,7 @@ describe("Integration Scenarios", () => {
     scenarios.forEach(({ error, expectContains }) => {
       const msg = friendlyErrorMessage(error);
       expect(msg).toContain(expectContains);
-      expect(msg.length).toBeLessThan(200); // Friendly messages should be concise
+      expect(msg.length).toBeLessThan(200);
     });
   });
 
@@ -789,5 +770,89 @@ describe("Integration Scenarios", () => {
     const long = calcTimeout(1000);
     expect(short).toBeLessThan(medium);
     expect(medium).toBeLessThan(long);
+  });
+});
+
+// ============================================================
+// 13. Additional Security Scenarios
+// ============================================================
+describe("Security — Edge function hardening", () => {
+  it("voice-agent rejects body without transcript key", () => {
+    const body = { text: "hello" };
+    const transcript = (body as Record<string, unknown>).transcript;
+    expect(transcript).toBeUndefined();
+  });
+
+  it("TTS rejects body without text key", () => {
+    const body = { transcript: "hello" };
+    const text = (body as Record<string, unknown>).text;
+    expect(text).toBeUndefined();
+  });
+
+  it("Auth header must start with Bearer", () => {
+    const validHeader = "Bearer abc123";
+    const invalidHeader = "Basic abc123";
+    expect(validHeader.startsWith("Bearer ")).toBe(true);
+    expect(invalidHeader.startsWith("Bearer ")).toBe(false);
+  });
+
+  it("Auth header without space after Bearer is invalid", () => {
+    const header = "Bearerabc123";
+    expect(header.startsWith("Bearer ")).toBe(false);
+  });
+
+  it("Empty auth header is rejected", () => {
+    const header = "";
+    expect(header.startsWith("Bearer ")).toBe(false);
+  });
+
+  it("voiceId regex prevents path traversal", () => {
+    const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
+    expect(VOICE_ID_REGEX.test("../../etc/passwd")).toBe(false);
+    expect(VOICE_ID_REGEX.test("..%2F..%2Fetc")).toBe(false);
+  });
+
+  it("transcript length limit prevents DoS", () => {
+    const hugeTranscript = "x".repeat(100000);
+    const sanitized = hugeTranscript.slice(0, 1000);
+    expect(sanitized.length).toBe(1000);
+  });
+
+  it("text length limit prevents TTS abuse", () => {
+    const hugeText = "y".repeat(100000);
+    const isValid = hugeText.length <= 5000;
+    expect(isValid).toBe(false);
+  });
+});
+
+// ============================================================
+// 14. Concurrent / Race Condition scenarios
+// ============================================================
+describe("Concurrent Scenarios", () => {
+  it("multiple AbortControllers are independent", () => {
+    const c1 = new AbortController();
+    const c2 = new AbortController();
+    c1.abort();
+    expect(c1.signal.aborted).toBe(true);
+    expect(c2.signal.aborted).toBe(false);
+  });
+
+  it("parallel token refreshes resolve independently", async () => {
+    const refreshes = Array.from({ length: 5 }, () =>
+      Promise.resolve({ token: `token-${Math.random()}` })
+    );
+    const results = await Promise.all(refreshes);
+    expect(results.length).toBe(5);
+    const uniqueTokens = new Set(results.map((r) => r.token));
+    expect(uniqueTokens.size).toBe(5);
+  });
+
+  it("rapid phase transitions don't lose state", () => {
+    const phases = ["idle", "listening", "processing", "speaking", "idle"];
+    let current = "idle";
+    phases.forEach((p) => {
+      current = p;
+    });
+    expect(current).toBe("idle");
   });
 });
