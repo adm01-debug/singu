@@ -71,7 +71,10 @@ const Dashboard = () => {
   if (loading) {
     return (
       <AppLayout>
-        <DashboardSkeleton />
+        <div className="p-4 md:p-6 space-y-5 md:space-y-6">
+          <WelcomeHeroCard onAIClick={() => {}} />
+          <DashboardSkeleton />
+        </div>
       </AppLayout>
     );
   }
