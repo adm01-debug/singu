@@ -117,20 +117,22 @@ export function AppSidebar() {
   })();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/50" aria-label="Navegação principal">
+    <Sidebar collapsible="icon" className="border-r border-border" aria-label="Navegação principal">
+      {/* ─── Header ─── */}
       <SidebarHeader className="p-3">
-        <Link to="/" className="flex items-center gap-2 min-w-0">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg nexus-gradient-bg shadow-sm shadow-primary/30">
-            <Zap className="w-4 h-4 text-primary-foreground drop-shadow-[0_0_4px_rgba(255,255,255,0.5)]" />
+        <Link to="/" className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary">
+            <Zap className="w-4 h-4 text-primary-foreground" />
           </div>
           {!collapsed && (
-            <span className="font-heading text-base font-extrabold tracking-tight" aria-label="SINGU">
-              <span className="text-sidebar-accent-foreground">SINGU</span>
+            <span className="font-heading text-sm font-bold tracking-tight text-foreground">
+              SINGU
             </span>
           )}
         </Link>
       </SidebarHeader>
 
+      {/* ─── Navigation ─── */}
       <SidebarContent className="px-2" role="navigation" aria-label="Menu principal">
         {navSections.map((section, sectionIdx) => {
           const isCollapsedSection = sectionCollapsed[section.key] && !collapsed;
@@ -140,23 +142,23 @@ export function AppSidebar() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.key)}
-                  className="flex items-center justify-between w-full px-2.5 mb-1 group/label hover:bg-sidebar-accent/50 rounded-md py-1 transition-colors"
+                  className="flex items-center justify-between w-full px-2 mb-0.5 group/label hover:bg-muted/50 rounded-md py-1 transition-colors"
                   aria-expanded={!isCollapsedSection}
                   aria-controls={`nav-section-${section.key}`}
                 >
-                  <SidebarGroupLabel className="text-[11px] uppercase tracking-wider text-sidebar-foreground/60 pointer-events-none p-0 h-auto font-semibold">
+                  <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/50 pointer-events-none p-0 h-auto font-medium">
                     {section.label}
                   </SidebarGroupLabel>
                   <ChevronDown
                     className={cn(
-                      "h-3 w-3 text-sidebar-foreground/40 transition-transform duration-200",
+                      "h-3 w-3 text-muted-foreground/30 transition-transform duration-200",
                       isCollapsedSection && "-rotate-90"
                     )}
                     aria-hidden="true"
                   />
                 </button>
               ) : (
-                sectionIdx > 0 && <Separator className="my-1.5 mx-auto w-6 bg-sidebar-border/40" />
+                sectionIdx > 0 && <Separator className="my-1.5 mx-auto w-5 bg-border/50" />
               )}
               <SidebarGroupContent
                 id={`nav-section-${section.key}`}
@@ -177,21 +179,18 @@ export function AppSidebar() {
                           isActive={isActive}
                           tooltip={item.title}
                           className={cn(
-                            "rounded-lg transition-all duration-200",
+                            "rounded-md transition-colors duration-150 h-9",
                             isActive
-                              ? "text-primary font-semibold bg-gradient-to-r from-primary/15 via-primary/10 to-accent/5 shadow-[inset_3px_0_0_hsl(var(--primary))] ring-1 ring-primary/15"
-                              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                              ? "text-foreground font-medium bg-muted"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           )}
                         >
                           <Link to={item.url} aria-current={isActive ? "page" : undefined}>
                             <item.icon className={cn(
-                              "h-4 w-4 shrink-0 transition-colors",
-                              isActive ? "text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.4)]" : ""
+                              "h-4 w-4 shrink-0",
+                              isActive ? "text-primary" : ""
                             )} />
-                            <span>{item.title}</span>
-                            {isActive && (
-                              <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)] animate-glow-pulse" />
-                            )}
+                            <span className="text-sm">{item.title}</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -204,23 +203,24 @@ export function AppSidebar() {
         })}
       </SidebarContent>
 
-      <SidebarFooter className="p-2 space-y-1.5">
+      {/* ─── Footer ─── */}
+      <SidebarFooter className="p-2 space-y-1">
         {!collapsed && (
           <>
-            <Separator className="bg-sidebar-border/30" />
+            <Separator className="bg-border/50" />
             {user && (
-              <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-sidebar-accent/30 transition-colors">
-                <div className="h-7 w-7 rounded-full nexus-gradient-bg flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
+              <div className="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-muted/40 transition-colors">
+                <div className="h-7 w-7 rounded-full bg-primary/15 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0">
                   {userInitials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-sidebar-accent-foreground truncate">{userName}</p>
-                  <p className="text-[11px] text-sidebar-foreground/50 truncate">{user.email}</p>
+                  <p className="text-xs font-medium text-foreground truncate">{userName}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 shrink-0 text-sidebar-foreground/50 hover:text-destructive"
+                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                   onClick={handleSignOut}
                   aria-label="Sair da conta"
                 >
@@ -228,8 +228,8 @@ export function AppSidebar() {
                 </Button>
               </div>
             )}
-            <div className="flex items-center justify-between px-2">
-              <p className="text-[10px] text-sidebar-foreground/40 select-none">SINGU v2.0</p>
+            <div className="px-2 pt-0.5">
+              <p className="text-[10px] text-muted-foreground/40 select-none">SINGU v2.0</p>
             </div>
           </>
         )}
@@ -237,7 +237,7 @@ export function AppSidebar() {
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="w-full justify-start gap-2 text-sidebar-foreground/50 hover:text-sidebar-foreground text-xs h-8"
+          className="w-full justify-start gap-2 text-muted-foreground/50 hover:text-foreground text-xs h-8"
           aria-label={collapsed ? "Expandir sidebar" : "Recolher sidebar"}
         >
           {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
