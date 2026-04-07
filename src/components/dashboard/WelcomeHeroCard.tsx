@@ -22,7 +22,11 @@ function formatDisplayName(raw: string): string {
     .join(' ');
 }
 
-export function WelcomeHeroCard() {
+interface WelcomeHeroCardProps {
+  onAIClick?: () => void;
+}
+
+export function WelcomeHeroCard({ onAIClick }: WelcomeHeroCardProps) {
   const { user } = useAuth();
   const [profileName, setProfileName] = useState<string>('');
   
@@ -138,14 +142,14 @@ export function WelcomeHeroCard() {
           transition={{ delay: 0.5 }}
             className="hidden md:flex items-center gap-3"
         >
-          <Link 
-            to="/contatos"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-card/70 border border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 group/ai shadow-[0_18px_44px_-30px_hsl(var(--nexus-glow)/0.45)]"
+          <button 
+            onClick={onAIClick}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-card/70 border border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 group/ai shadow-[0_18px_44px_-30px_hsl(var(--nexus-glow)/0.45)] cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-primary group-hover/ai:animate-pulse" />
             <span className="text-sm font-semibold text-primary">SINGU AI</span>
             <ArrowRight className="w-3.5 h-3.5 text-primary opacity-0 group-hover/ai:opacity-100 -ml-1 group-hover/ai:ml-0 transition-all duration-300" />
-          </Link>
+          </button>
         </motion.div>
       </div>
     </motion.div>
