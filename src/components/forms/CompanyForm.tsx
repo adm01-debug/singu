@@ -26,7 +26,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail, Tag, Globe, MapPinned, Sparkles } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail, Tag, Globe, Sparkles, Hash, Calendar, Shield, Briefcase, Palette, GitMerge, ChevronRight } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -35,10 +35,10 @@ import { CompanyEmailsForm } from '@/components/forms/company/CompanyEmailsForm'
 import { CompanyAddressesForm } from '@/components/forms/company/CompanyAddressesForm';
 import { CompanySocialMediaForm } from '@/components/forms/company/CompanySocialMediaForm';
 import { TagInput } from '@/components/ui/tag-input';
+import { cn } from '@/lib/utils';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
-  // Dados Básicos
   nome_crm: z.string().trim().min(1, 'Nome é obrigatório').max(150, 'Máximo 150 caracteres'),
   nome_fantasia: z.string().trim().max(150).optional().or(z.literal('')),
   razao_social: z.string().trim().max(200).optional().or(z.literal('')),
@@ -47,13 +47,9 @@ const companySchema = z.object({
   status: z.string().optional(),
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
   website: z.string().trim().max(300).optional().or(z.literal('')),
-
-  // Tags & Listas (now arrays)
   tags_array: z.array(z.string()).optional(),
   challenges: z.array(z.string()).optional(),
   competitors: z.array(z.string()).optional(),
-
-  // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
   cnpj_base: z.string().trim().max(10).optional().or(z.literal('')),
   capital_social: z.coerce.number().optional().or(z.literal(0)),
@@ -65,8 +61,6 @@ const companySchema = z.object({
   data_fundacao: z.string().optional().or(z.literal('')),
   inscricao_estadual: z.string().trim().max(30).optional().or(z.literal('')),
   inscricao_municipal: z.string().trim().max(30).optional().or(z.literal('')),
-
-  // Classificação
   is_customer: z.boolean().optional(),
   is_supplier: z.boolean().optional(),
   is_carrier: z.boolean().optional(),
@@ -75,8 +69,6 @@ const companySchema = z.object({
   grupo_economico_id: z.string().trim().max(50).optional().or(z.literal('')),
   tipo_cooperativa: z.string().trim().max(100).optional().or(z.literal('')),
   numero_cooperativa: z.string().trim().max(50).optional().or(z.literal('')),
-
-  // Estrutura & IDs Relacionais
   employee_count: z.string().optional(),
   annual_revenue: z.string().trim().max(50).optional().or(z.literal('')),
   financial_health: z.string().optional(),
@@ -141,6 +133,28 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
   return (company[field] as string) ?? fallback;
 }
 
+/* ─── Section wrapper for visual grouping ─── */
+function FormSection({ icon: Icon, title, children, className }: {
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("space-y-4", className)}>
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+          <Icon className="w-3.5 h-3.5 text-primary" />
+        </div>
+        <h4 className="text-sm font-semibold text-foreground tracking-tight">{title}</h4>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
   const c = company as Record<string, unknown> | null;
   const companyId = (c?.id as string) || undefined;
@@ -150,7 +164,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
   const { data: nichosOptions = [], isLoading: nichosLoading } = useExternalLookup('companies', 'nicho_cliente');
 
-  // ─── Related data hooks (normalized tables) ───
   const phonesHook = useCompanyPhones(companyId);
   const emailsHook = useCompanyEmails(companyId);
   const addressesHook = useCompanyAddresses(companyId);
@@ -217,7 +230,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         cleaned[key] = value;
       }
     }
-    // Arrays are already in correct format from TagInput
     if (Array.isArray(data.tags_array) && data.tags_array.length === 0) cleaned.tags_array = null;
     if (Array.isArray(data.challenges) && data.challenges.length === 0) cleaned.challenges = null;
     if (Array.isArray(data.competitors) && data.competitors.length === 0) cleaned.competitors = null;
@@ -227,7 +239,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     clearDraft();
   };
 
-  // Tabs configuration - only show "Básico" when creating, all tabs when editing
   const allTabs = [
     { value: 'basico', label: 'Básico', icon: Building2 },
     { value: 'fiscal', label: 'Fiscal', icon: FileText },
@@ -243,28 +254,32 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col max-h-[calc(90vh-2rem)]">
-        {/* Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-1 ring-primary/20">
-            <Building2 className="w-5 h-5 text-primary" />
+        {/* ─── Premium Header ─── */}
+        <div className="relative pb-5 mb-1 shrink-0">
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-primary/5 to-transparent rounded-t-xl -mx-6 -mt-6 pointer-events-none" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+              <Building2 className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-bold text-foreground tracking-tight">
+                {isEditing ? 'Editar Empresa' : 'Nova Empresa'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {isEditing ? 'Atualize as informações da empresa' : 'Preencha os dados para criar uma nova empresa'}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="font-semibold text-foreground">
-              {isEditing ? 'Editar Empresa' : 'Nova Empresa'}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {isEditing ? 'Atualize as informações da empresa' : 'Preencha os dados da empresa'}
-            </p>
-          </div>
+          <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         </div>
 
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-4">
+        {/* ─── Scrollable content ─── */}
+        <div className="flex-1 overflow-y-auto py-5 -mx-1 px-1 space-y-1">
           <Tabs defaultValue="basico" className="w-full">
             {visibleTabs.length > 1 && (
-              <TabsList className={`grid w-full mb-4`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}>
+              <TabsList className="grid w-full mb-5 h-auto p-1 bg-muted/50" style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}>
                 {visibleTabs.map(tab => (
-                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5 py-2.5 data-[state=active]:shadow-sm">
                     <tab.icon className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">{tab.label}</span>
                   </TabsTrigger>
@@ -273,9 +288,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             )}
 
             {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
-            <TabsContent value="basico" className="space-y-5 mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Logo + Nome no CRM */}
+            <TabsContent value="basico" className="space-y-6 mt-0">
+              {/* Identity Section */}
+              <FormSection icon={Building2} title="Identificação">
                 <div className="md:col-span-2 flex items-start gap-4">
                   <CompanyLogoUpload
                     logoUrl={logoUrl}
@@ -284,9 +299,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   />
                   <FormField control={form.control} name="nome_crm" render={({ field }) => (
                     <FormItem className="flex-1">
-                      <FormLabel>Nome no CRM *</FormLabel>
-                      <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
-                      <FormDescription>Nome exibido nas listagens</FormDescription>
+                      <FormLabel className="text-foreground font-medium">Nome no CRM <span className="text-destructive">*</span></FormLabel>
+                      <FormControl><Input placeholder="Nome usado internamente" className="h-11" {...field} /></FormControl>
+                      <FormDescription className="text-xs">Nome principal exibido nas listagens e buscas</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -295,7 +310,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="nome_fantasia" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome Fantasia</FormLabel>
-                    <FormControl><Input placeholder="Nome comercial" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Nome comercial" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -303,17 +318,22 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="razao_social" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Razão Social</FormLabel>
-                    <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Razão social completa" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+              </FormSection>
 
+              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+
+              {/* Classification Section */}
+              <FormSection icon={Briefcase} title="Classificação">
                 <FormField control={form.control} name="status" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || 'ativo'}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {statusOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -359,23 +379,30 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
                 <FormField control={form.control} name="website" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                      Website
+                    </FormLabel>
+                    <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+              </FormSection>
 
+              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+
+              {/* Notes & Tags Section */}
+              <FormSection icon={Tag} title="Anotações e Tags">
                 <FormField control={form.control} name="notes" render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Notas</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Observações sobre a empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                      <Textarea placeholder="Observações sobre a empresa..." className="min-h-[100px] resize-y" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                {/* Tags with chip input */}
                 <FormField control={form.control} name="tags_array" render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Tags</FormLabel>
@@ -417,24 +444,26 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
+              </FormSection>
 
-              {/* Progressive Disclosure hint for new companies */}
+              {/* Progressive Disclosure hint */}
               {!isEditing && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground">
-                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
-                  <span>Após criar, você poderá adicionar dados fiscais, classificação, telefones, endereços e redes sociais.</span>
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-primary/[0.02] border border-primary/10 text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-muted-foreground">Após criar, você poderá adicionar <span className="text-foreground font-medium">dados fiscais, telefones, endereços e redes sociais</span>.</span>
                 </div>
               )}
             </TabsContent>
 
             {/* ═══ ABA 2: DADOS FISCAIS ═══ */}
-            <TabsContent value="fiscal" className="space-y-5 mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <TabsContent value="fiscal" className="space-y-6 mt-0">
+              <FormSection icon={Hash} title="CNPJ & Situação">
                 <FormField control={form.control} name="cnpj" render={({ field }) => (
                   <FormItem>
                     <FormLabel>CNPJ</FormLabel>
-                    <FormControl><Input placeholder="00.000.000/0000-00" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="00.000.000/0000-00" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -442,8 +471,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="cnpj_base" render={({ field }) => (
                   <FormItem>
                     <FormLabel>CNPJ Base</FormLabel>
-                    <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
-                    <FormDescription>8 primeiros dígitos do CNPJ</FormDescription>
+                    <FormControl><Input placeholder="Ex: 12345678" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormDescription className="text-xs">8 primeiros dígitos</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -453,7 +482,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Situação RF</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {situacaoRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -466,15 +495,19 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="situacao_rf_data" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data Situação RF</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="date" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+              </FormSection>
 
+              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+
+              <FormSection icon={Landmark} title="Dados Legais">
                 <FormField control={form.control} name="capital_social" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Capital Social (R$)</FormLabel>
-                    <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="number" step="0.01" placeholder="0.00" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -482,7 +515,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="natureza_juridica" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Natureza Jurídica (Código)</FormLabel>
-                    <FormControl><Input placeholder="Ex: 2062" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: 2062" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -490,7 +523,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="natureza_juridica_desc" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Natureza Jurídica (Descrição)</FormLabel>
-                    <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -500,7 +533,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Porte (Receita Federal)</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {porteRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -512,8 +545,11 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
                 <FormField control={form.control} name="data_fundacao" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Data de Fundação</FormLabel>
-                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                      Data de Fundação
+                    </FormLabel>
+                    <FormControl><Input type="date" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -521,7 +557,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="inscricao_estadual" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inscrição Estadual</FormLabel>
-                    <FormControl><Input placeholder="IE" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="IE" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -529,35 +565,34 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="inscricao_municipal" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inscrição Municipal</FormLabel>
-                    <FormControl><Input placeholder="IM" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="IM" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
+              </FormSection>
             </TabsContent>
 
             {/* ═══ ABA 3: CLASSIFICAÇÃO ═══ */}
-            <TabsContent value="classificacao" className="space-y-5 mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="md:col-span-2 space-y-3">
-                  <p className="text-sm font-medium text-foreground">Tipo de Parceiro</p>
-                  <div className="flex flex-wrap gap-6">
+            <TabsContent value="classificacao" className="space-y-6 mt-0">
+              <FormSection icon={Shield} title="Tipo de Parceiro">
+                <div className="md:col-span-2">
+                  <div className="flex flex-wrap gap-4 p-4 rounded-xl bg-muted/30 border border-border/50">
                     <FormField control={form.control} name="is_customer" render={({ field }) => (
-                      <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormItem className="flex items-center gap-2.5 space-y-0">
                         <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel className="font-normal cursor-pointer">Cliente Ativo</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer text-sm">Cliente Ativo</FormLabel>
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="is_supplier" render={({ field }) => (
-                      <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormItem className="flex items-center gap-2.5 space-y-0">
                         <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel className="font-normal cursor-pointer">Fornecedor</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer text-sm">Fornecedor</FormLabel>
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="is_carrier" render={({ field }) => (
-                      <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormItem className="flex items-center gap-2.5 space-y-0">
                         <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel className="font-normal cursor-pointer">Transportadora</FormLabel>
+                        <FormLabel className="font-normal cursor-pointer text-sm">Transportadora</FormLabel>
                       </FormItem>
                     )} />
                   </div>
@@ -565,10 +600,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
                 <div className="md:col-span-2">
                   <FormField control={form.control} name="is_matriz" render={({ field }) => (
-                    <FormItem className="flex items-center gap-2 space-y-0">
+                    <FormItem className="flex items-center gap-2.5 space-y-0 p-3 rounded-lg bg-muted/20 border border-border/30">
                       <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="font-normal cursor-pointer">É Matriz</FormLabel>
-                      <FormDescription className="ml-2">(desmarque para filial)</FormDescription>
+                      <FormLabel className="font-normal cursor-pointer text-sm">É Matriz</FormLabel>
+                      <FormDescription className="ml-1 text-xs">(desmarque para filial)</FormDescription>
                     </FormItem>
                   )} />
                 </div>
@@ -576,7 +611,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="grupo_economico" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grupo Econômico</FormLabel>
-                    <FormControl><Input placeholder="Ex: Coanorp Cooperativa" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Coanorp Cooperativa" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -584,7 +619,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="tipo_cooperativa" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Cooperativa</FormLabel>
-                    <FormControl><Input placeholder="Ex: Singular, Central..." {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Singular, Central..." className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -592,22 +627,22 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="numero_cooperativa" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nº da Cooperativa</FormLabel>
-                    <FormControl><Input placeholder="Número de registro" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Número de registro" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
+              </FormSection>
             </TabsContent>
 
             {/* ═══ ABA 4: ESTRUTURA ═══ */}
-            <TabsContent value="estrutura" className="space-y-5 mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <TabsContent value="estrutura" className="space-y-6 mt-0">
+              <FormSection icon={Landmark} title="Financeiro & Porte">
                 <FormField control={form.control} name="employee_count" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nº Funcionários</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {employeeCountOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -620,7 +655,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="annual_revenue" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Faturamento Anual</FormLabel>
-                    <FormControl><Input placeholder="R$ 1-5M" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="R$ 1-5M" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -630,7 +665,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Saúde Financeira</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || 'unknown'}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {financialHealthOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -642,22 +677,24 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
                 <FormField control={form.control} name="cores_marca" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cores da Marca</FormLabel>
-                    <FormControl><Input placeholder="Ex: #0066CC, #FF6600" {...field} value={field.value ?? ''} /></FormControl>
-                    <FormDescription>Cores principais da identidade visual</FormDescription>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                      Cores da Marca
+                    </FormLabel>
+                    <FormControl><Input placeholder="Ex: #0066CC, #FF6600" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormDescription className="text-xs">Cores da identidade visual</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
+              </FormSection>
 
-                {/* ─── IDs Relacionais ─── */}
-                <div className="md:col-span-2 pt-2">
-                  <p className="text-sm font-medium text-muted-foreground mb-3">IDs Relacionais (Sistema)</p>
-                </div>
+              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
 
+              <FormSection icon={GitMerge} title="IDs Relacionais">
                 <FormField control={form.control} name="matriz_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID da Matriz</FormLabel>
-                    <FormControl><Input placeholder="UUID da empresa matriz" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da empresa matriz" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -665,7 +702,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Grupo Econômico</FormLabel>
-                    <FormControl><Input placeholder="UUID do grupo" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID do grupo" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -673,7 +710,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="central_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Central</FormLabel>
-                    <FormControl><Input placeholder="UUID da central" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da central" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -681,7 +718,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="singular_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Singular</FormLabel>
-                    <FormControl><Input placeholder="UUID da singular" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da singular" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -689,7 +726,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="confederacao_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Confederação</FormLabel>
-                    <FormControl><Input placeholder="UUID da confederação" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da confederação" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -697,23 +734,22 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bitrix Company ID</FormLabel>
-                    <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="number" placeholder="ID no Bitrix24" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
-                {/* ─── Notas de Merge ─── */}
                 <FormField control={form.control} name="merge_notes" render={({ field }) => (
                   <FormItem className="md:col-span-2">
                     <FormLabel>Notas de Merge</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                      <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px] resize-y" {...field} value={field.value ?? ''} />
                     </FormControl>
-                    <FormDescription>Registro de merges realizados</FormDescription>
+                    <FormDescription className="text-xs">Registro de merges realizados</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
+              </FormSection>
             </TabsContent>
 
             {/* ═══ ABA 5: TELEFONES ═══ */}
@@ -727,10 +763,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   isLoading={phonesHook.isLoading}
                 />
               ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  Salve a empresa primeiro para adicionar telefones
-                </div>
+                <EmptyTabPlaceholder icon={Phone} text="Salve a empresa primeiro para adicionar telefones" />
               )}
             </TabsContent>
 
@@ -745,10 +778,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   isLoading={addressesHook.isLoading}
                 />
               ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  Salve a empresa primeiro para adicionar endereços
-                </div>
+                <EmptyTabPlaceholder icon={MapPin} text="Salve a empresa primeiro para adicionar endereços" />
               )}
             </TabsContent>
 
@@ -756,52 +786,63 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             <TabsContent value="redes" className="space-y-6 mt-0">
               {companyId ? (
                 <>
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-primary" /> Emails
-                    </h4>
-                    <CompanyEmailsForm
-                      companyId={companyId}
-                      emails={emailsHook.data}
-                      onSave={async (email) => { await emailsHook.upsert.mutateAsync(email); }}
-                      onDelete={async (id) => { await emailsHook.remove.mutateAsync(id); }}
-                      isLoading={emailsHook.isLoading}
-                    />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                      <Share2 className="w-4 h-4 text-primary" /> Redes Sociais & Website
-                    </h4>
-                    <CompanySocialMediaForm
-                      companyId={companyId}
-                      socialMedia={socialMediaHook.data}
-                      onSave={async (item) => { await socialMediaHook.upsert.mutateAsync(item); }}
-                      onDelete={async (id) => { await socialMediaHook.remove.mutateAsync(id); }}
-                      isLoading={socialMediaHook.isLoading}
-                    />
-                  </div>
+                  <FormSection icon={Mail} title="Emails">
+                    <div className="md:col-span-2">
+                      <CompanyEmailsForm
+                        companyId={companyId}
+                        emails={emailsHook.data}
+                        onSave={async (email) => { await emailsHook.upsert.mutateAsync(email); }}
+                        onDelete={async (id) => { await emailsHook.remove.mutateAsync(id); }}
+                        isLoading={emailsHook.isLoading}
+                      />
+                    </div>
+                  </FormSection>
+                  <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+                  <FormSection icon={Share2} title="Redes Sociais & Website">
+                    <div className="md:col-span-2">
+                      <CompanySocialMediaForm
+                        companyId={companyId}
+                        socialMedia={socialMediaHook.data}
+                        onSave={async (item) => { await socialMediaHook.upsert.mutateAsync(item); }}
+                        onDelete={async (id) => { await socialMediaHook.remove.mutateAsync(id); }}
+                        isLoading={socialMediaHook.isLoading}
+                      />
+                    </div>
+                  </FormSection>
                 </>
               ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  <Share2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  Salve a empresa primeiro para adicionar emails e redes sociais
-                </div>
+                <EmptyTabPlaceholder icon={Share2} text="Salve a empresa primeiro para adicionar emails e redes sociais" />
               )}
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Sticky Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border shrink-0 bg-background">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {isEditing ? 'Salvar Alterações' : 'Criar Empresa'}
-          </Button>
+        {/* ─── Premium Sticky Footer ─── */}
+        <div className="relative pt-4 shrink-0">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="ghost" onClick={onCancel} className="px-6">
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting} className="px-8 h-11 shadow-lg shadow-primary/20 font-semibold">
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isEditing ? 'Salvar Alterações' : 'Criar Empresa'}
+            </Button>
+          </div>
         </div>
       </form>
     </Form>
+  );
+}
+
+/* ─── Empty state for locked tabs ─── */
+function EmptyTabPlaceholder({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+        <Icon className="w-7 h-7 text-muted-foreground/50" />
+      </div>
+      <p className="text-sm text-muted-foreground max-w-[250px]">{text}</p>
+    </div>
   );
 }
