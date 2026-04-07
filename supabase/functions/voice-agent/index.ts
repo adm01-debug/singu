@@ -1,25 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-async function authenticateRequest(req: Request): Promise<string> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("UNAUTHORIZED");
-  }
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) throw new Error("UNAUTHORIZED");
-  return user.id;
-}
+import {
+  corsHeaders,
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+  jsonOk,
+} from "../_shared/auth.ts";
 
 const SYSTEM_PROMPT = `Você é um assistente de voz inteligente para um CRM de relacionamentos (SINGU).
 Sua função é interpretar comandos de voz do usuário e retornar uma ação estruturada.
@@ -63,28 +49,50 @@ Se o usuário fizer uma pergunta geral, use action="answer" e responda de forma 
 Se o comando não fizer sentido, responda com action="answer" e peça esclarecimento.
 Seja conciso e amigável. Use linguagem informal brasileira.`;
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+const TOOL_SCHEMA = {
+  type: "function" as const,
+  function: {
+    name: "execute_voice_command",
+    description: "Execute a voice command from the user",
+    parameters: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["search", "navigate", "answer", "create_interaction", "create_reminder"],
+        },
+        response: { type: "string", description: "Friendly response to speak back (max 2 sentences)" },
+        data: {
+          type: "object",
+          properties: {
+            query: { type: "string" },
+            route: { type: "string" },
+            contactName: { type: "string" },
+            filters: {
+              type: "object",
+              properties: {
+                tag: { type: "string" },
+                company: { type: "string" },
+                sentiment: { type: "string" },
+              },
+            },
+          },
+        },
+      },
+      required: ["action", "response"],
+      additionalProperties: false,
+    },
+  },
+};
 
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+serve(async (req) => {
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
+
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
-    try {
-      await authenticateRequest(req);
-    } catch {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
@@ -94,18 +102,12 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON body" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Invalid JSON body", 400);
     }
 
     const transcript = body?.transcript;
     if (!transcript || typeof transcript !== "string" || transcript.trim().length === 0 || transcript.length > 1000) {
-      return new Response(
-        JSON.stringify({ error: "Invalid transcript (required, max 1000 chars)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Invalid transcript (required, max 1000 chars)", 400);
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -120,66 +122,17 @@ serve(async (req) => {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: transcript.trim() },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "execute_voice_command",
-              description: "Execute a voice command from the user",
-              parameters: {
-                type: "object",
-                properties: {
-                  action: {
-                    type: "string",
-                    enum: ["search", "navigate", "answer", "create_interaction", "create_reminder"],
-                  },
-                  response: { type: "string", description: "Friendly response to speak back (max 2 sentences)" },
-                  data: {
-                    type: "object",
-                    properties: {
-                      query: { type: "string" },
-                      route: { type: "string" },
-                      contactName: { type: "string" },
-                      filters: {
-                        type: "object",
-                        properties: {
-                          tag: { type: "string" },
-                          company: { type: "string" },
-                          sentiment: { type: "string" },
-                        },
-                      },
-                    },
-                  },
-                },
-                required: ["action", "response"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
+        tools: [TOOL_SCHEMA],
         tool_choice: { type: "function", function: { name: "execute_voice_command" } },
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add funds." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      if (response.status === 429) return jsonError("Rate limit exceeded. Please try again later.", 429);
+      if (response.status === 402) return jsonError("AI credits exhausted. Please add funds.", 402);
       const errText = await response.text();
       console.error("AI gateway error:", response.status, errText);
-      return new Response(
-        JSON.stringify({ error: "AI processing failed" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("AI processing failed", 500);
     }
 
     const aiData = await response.json();
@@ -205,16 +158,10 @@ serve(async (req) => {
       result = { action: "answer", response: result.response || "Desculpe, ocorreu um erro.", data: {} };
     }
 
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonOk(result);
   } catch (error: unknown) {
     console.error("Voice agent error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonError(message, 500);
   }
 });
