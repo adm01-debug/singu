@@ -144,9 +144,12 @@ export function ContactCardWithContext({
           onDelete={() => onDelete(contact)}
         >
           <Card className={cn(
-            "h-full card-hover group cursor-pointer overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
+            "h-full group cursor-pointer overflow-hidden relative transition-all duration-300",
+            "border border-border/50 hover:border-primary/40",
+            "hover:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.25)]",
+            "bg-card/80 backdrop-blur-sm",
             isHighlighted && "ring-2 ring-primary",
-            isSelected && "bg-primary/5"
+            isSelected && "bg-primary/5 border-primary/30"
           )}>
             {/* Selection Checkbox */}
             {selectionMode && (
