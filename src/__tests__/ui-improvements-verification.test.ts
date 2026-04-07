@@ -941,8 +941,9 @@ describe('Performance Optimizations', () => {
     expect(allDashboard).toContain('Suspense');
   });
 
-  it('uses useMemo', () => {
-    expect(indexPage).toContain('useMemo');
+  it('uses useMemo in dashboard ecosystem', () => {
+    const mappedData = readSrc('hooks/useDashboardMappedData.ts');
+    expect(mappedData).toContain('useMemo');
   });
 
   it('uses useRef', () => {
