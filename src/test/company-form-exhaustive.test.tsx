@@ -486,19 +486,23 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('42')).toBeInTheDocument(); // bitrix_company_id
   });
 
-  it('populates tags_array as comma-separated string', () => {
+  it('populates tags_array as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('agro, cooperativa, VIP')).toBeInTheDocument();
+    expect(screen.getByText('agro')).toBeInTheDocument();
+    expect(screen.getByText('cooperativa')).toBeInTheDocument();
+    expect(screen.getByText('VIP')).toBeInTheDocument();
   });
 
-  it('populates challenges as comma-separated string', () => {
+  it('populates challenges as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('Logística, Custos')).toBeInTheDocument();
+    expect(screen.getByText('Logística')).toBeInTheDocument();
+    expect(screen.getByText('Custos')).toBeInTheDocument();
   });
 
-  it('populates competitors as comma-separated string', () => {
+  it('populates competitors as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('Coamo, C.Vale')).toBeInTheDocument();
+    expect(screen.getByText('Coamo')).toBeInTheDocument();
+    expect(screen.getByText('C.Vale')).toBeInTheDocument();
   });
 
   it('populates website field', () => {
