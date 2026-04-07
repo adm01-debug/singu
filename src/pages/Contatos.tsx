@@ -436,15 +436,6 @@ const Contatos = () => {
                     <AdvancedDataExporter entityType="contacts" />
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={toggleDensity} className="gap-2">
-                  <Rows3 className="w-4 h-4" />
-                  Densidade: {density === 'comfortable' ? 'Confortável' : density === 'compact' ? 'Compacta' : 'Normal'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowShortcuts(true)} className="gap-2">
-                  <Keyboard className="w-4 h-4" />
-                  Atalhos de teclado
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
