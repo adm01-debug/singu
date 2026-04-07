@@ -358,7 +358,7 @@ export function ClosingScoreRanking({
                     {/* Quick Action for High Probability */}
                     {item.probability === 'high' && !compact && (
                       <div className="absolute -top-2 -right-2">
-                        <Badge className="bg-success text-success-foreground shadow-lg animate-pulse">
+                        <Badge className="bg-success text-success-foreground shadow-sm animate-pulse">
                           <Zap className="h-3 w-3 mr-1" />
                           Fechar agora!
                         </Badge>

@@ -205,7 +205,7 @@ export function OnboardingTour({
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="absolute rounded-lg ring-4 ring-primary shadow-2xl"
+            className="absolute rounded-lg ring-4 ring-primary shadow-md"
             style={{
               top: targetRect.top - 8,
               left: targetRect.left - 8,
@@ -223,7 +223,7 @@ export function OnboardingTour({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className="bg-card border border-border rounded-xl shadow-2xl p-6 w-80 z-[60]"
+          className="bg-card border border-border rounded-xl shadow-md p-6 w-80 z-[60]"
           style={getTooltipStyle()}
         >
           {/* Header */}

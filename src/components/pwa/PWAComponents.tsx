@@ -107,7 +107,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
         exit={{ opacity: 0, y: 100 }}
         className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50"
       >
-        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0 shadow-lg">
+        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-white/20 rounded-lg">
@@ -299,7 +299,7 @@ export function IOSInstallInstructions() {
       exit={{ opacity: 0, y: 100 }}
       className="fixed bottom-4 left-4 right-4 z-50"
     >
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -364,7 +364,7 @@ export function NotificationPermission() {
       exit={{ opacity: 0, scale: 0.9 }}
       className="fixed bottom-4 right-4 z-50 w-80"
     >
-      <Card className="border-0 shadow-lg">
+      <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -414,7 +414,7 @@ export function AppSplashScreen({ progress = 0 }: { progress?: number }) {
         transition={{ type: "spring", duration: 0.5 }}
         className="flex flex-col items-center"
       >
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm">
           <span className="text-3xl font-bold text-primary">R</span>
         </div>
         <h1 className="text-2xl font-bold text-primary-foreground mb-2">SINGU</h1>
