@@ -487,7 +487,7 @@ const Contatos = () => {
           <>
             {/* Contacts Grid/List */}
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
                     key={contact.id}
