@@ -9,20 +9,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-destructive",
-        outline: "border border-border/70 bg-card/70 hover:border-primary/35 hover:bg-primary/10 hover:text-foreground shadow-[0_12px_30px_-24px_hsl(var(--foreground)/0.45)]",
-        secondary: "bg-secondary/85 text-secondary-foreground hover:bg-secondary shadow-[0_12px_30px_-24px_hsl(var(--foreground)/0.35)]",
-        ghost: "hover:bg-primary/10 hover:text-foreground",
+        outline: "border border-border bg-card hover:border-primary/30 hover:bg-primary/5 hover:text-foreground",
+        secondary: "bg-secondary/85 text-secondary-foreground hover:bg-secondary",
+        ghost: "hover:bg-muted/50 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Gradient variants using semantic design tokens
-        gradient: "bg-gradient-primary text-primary-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md",
-        "gradient-success": "bg-gradient-success text-success-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-success",
-        "gradient-warning": "bg-gradient-warning text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 shadow-md focus-warning",
-        premium: "bg-gradient-premium text-warning-foreground hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5",
-        success: "bg-success text-success-foreground hover:bg-success/90 hover:shadow-md focus-success",
-        warning: "bg-warning text-warning-foreground hover:bg-warning/90 hover:shadow-md focus-warning",
-        info: "bg-info text-info-foreground hover:bg-info/90 hover:shadow-md",
+        gradient: "bg-gradient-primary text-primary-foreground hover:opacity-90",
+        "gradient-success": "bg-gradient-success text-success-foreground hover:opacity-90 focus-success",
+        "gradient-warning": "bg-gradient-warning text-warning-foreground hover:opacity-90 focus-warning",
+        premium: "bg-gradient-premium text-primary-foreground hover:opacity-90",
+        success: "bg-success text-success-foreground hover:bg-success/90 focus-success",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+        info: "bg-info text-info-foreground hover:bg-info/90",
         // Glass variant
         glass: "bg-card/60 backdrop-blur-md border border-border/60 text-foreground hover:bg-card/80 hover:border-primary/30",
       },
