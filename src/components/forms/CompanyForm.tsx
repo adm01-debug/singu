@@ -444,11 +444,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
 
               {/* Progressive Disclosure hint */}
               {!isEditing && (
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/5 to-primary/[0.02] border border-primary/10 text-sm">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-muted-foreground">Após criar, você poderá adicionar <span className="text-foreground font-medium">dados fiscais, telefones, endereços e redes sociais</span>.</span>
+                <div className="flex items-center gap-2.5 p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground">
+                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <span>Após criar, você poderá adicionar dados fiscais, telefones, endereços e redes sociais.</span>
                 </div>
               )}
             </TabsContent>
