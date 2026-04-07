@@ -203,7 +203,7 @@ describe('CompanyForm — Tab Navigation', () => {
 
   it('switches to Classificação tab and shows classification fields', async () => {
     renderForm();
-    await userEvent.click(screen.getByText('Classif.'));
+    await userEvent.click(screen.getByText('Classificação'));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
     expect(screen.getByText('Cliente Ativo')).toBeInTheDocument();
     expect(screen.getByText('Fornecedor')).toBeInTheDocument();
@@ -263,7 +263,7 @@ describe('CompanyForm — Default Values Population', () => {
 
   it('populates classification fields from full external company', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Classif.'));
+    await userEvent.click(screen.getByText('Classificação'));
 
     // is_customer should be checked
     const checkboxes = screen.getAllByRole('checkbox');
@@ -467,7 +467,7 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('79114450')).toBeInTheDocument(); // cnpj_base
 
     // Classificação tab
-    await userEvent.click(screen.getByText('Classif.'));
+    await userEvent.click(screen.getByText('Classificação'));
     expect(screen.getByDisplayValue('Coanorp Cooperativa')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Singular')).toBeInTheDocument();
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument();
@@ -631,7 +631,7 @@ describe('CompanyForm — Stress & Boundary', () => {
     renderForm(fullExternalCompany);
     for (let i = 0; i < 5; i++) {
       await userEvent.click(screen.getByText('Fiscal'));
-      await userEvent.click(screen.getByText('Classif.'));
+      await userEvent.click(screen.getByText('Classificação'));
       await userEvent.click(screen.getByText('Estrutura'));
       await userEvent.click(screen.getByText('Básico'));
     }
