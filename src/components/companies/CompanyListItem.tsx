@@ -46,7 +46,7 @@ export function CompanyListItem({
         {company.logo_url ? (
           <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
         ) : (
-          (company.name || 'E')[0].toUpperCase()
+          ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
         )}
       </div>
       <div className="flex-1 min-w-0">

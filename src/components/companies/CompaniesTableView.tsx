@@ -95,7 +95,7 @@ export function CompaniesTableView({
                       {company.logo_url ? (
                         <img src={company.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
                       ) : (
-                        (company.name || 'E')[0].toUpperCase()
+                        ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
                       )}
                     </div>
                     <div className="min-w-0">
