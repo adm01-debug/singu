@@ -1,5 +1,6 @@
-import { Grid3X3, List, Table2 } from 'lucide-react';
+import { Grid3X3, List, Table2, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 export type ViewMode = 'grid' | 'list' | 'table';
@@ -23,13 +24,14 @@ const columnOptions: GridColumns[] = [2, 3, 4, 5, 6];
 
 function ColumnIcon({ cols, active }: { cols: number; active: boolean }) {
   return (
-    <div className="flex gap-[2px]">
+    <div className="flex gap-[2px] items-center">
       {Array.from({ length: cols }).map((_, i) => (
         <div
           key={i}
           className={cn(
-            'w-[3px] h-3.5 rounded-[1px] transition-colors',
-            active ? 'bg-primary-foreground' : 'bg-muted-foreground/60'
+            'rounded-[1px] transition-colors',
+            cols <= 3 ? 'w-[4px] h-[14px]' : cols === 4 ? 'w-[3px] h-[14px]' : 'w-[2.5px] h-[14px]',
+            active ? 'bg-primary-foreground' : 'bg-muted-foreground/70'
           )}
         />
       ))}
@@ -39,53 +41,82 @@ function ColumnIcon({ cols, active }: { cols: number; active: boolean }) {
 
 export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColumnsChange, className }: ViewModeSwitcherProps) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {/* View Mode Buttons */}
-      <div className="flex items-center gap-0.5 bg-secondary/60 rounded-lg p-1">
-        {modes.map((mode) => {
-          const Icon = mode.icon;
-          const isActive = value === mode.value;
-          return (
-            <Button
-              key={mode.value}
-              variant={isActive ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onChange(mode.value)}
-              className={cn(
-                'h-7 px-2.5 gap-1.5 text-xs font-medium transition-colors',
-                !isActive && 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              {mode.label}
-            </Button>
-          );
-        })}
-      </div>
-
-      {/* Grid Columns - inline, only when grid mode */}
-      {value === 'grid' && onGridColumnsChange && (
-        <div className="flex items-center gap-1 bg-secondary/60 rounded-lg p-1">
-          {columnOptions.map((cols) => {
-            const isActive = gridColumns === cols;
-            return (
-              <button
-                key={cols}
-                onClick={() => onGridColumnsChange(cols)}
-                className={cn(
-                  'flex items-center justify-center w-7 h-7 rounded-md transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                )}
-                title={`${cols} colunas`}
-              >
-                <ColumnIcon cols={cols} active={isActive} />
-              </button>
-            );
-          })}
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            'gap-2 text-xs font-medium h-9 px-3 border-border/60 bg-card hover:bg-muted/60',
+            className
+          )}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          Layout
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="w-[220px] p-0 border-border/40 bg-[hsl(var(--card))] shadow-none rounded-xl overflow-hidden"
+      >
+        {/* Visualização */}
+        <div className="px-4 pt-4 pb-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Visualização
+          </span>
+          <div className="flex items-center gap-1 mt-2 bg-secondary/40 rounded-lg p-1">
+            {modes.map((mode) => {
+              const Icon = mode.icon;
+              const isActive = value === mode.value;
+              return (
+                <button
+                  key={mode.value}
+                  onClick={() => onChange(mode.value)}
+                  className={cn(
+                    'flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition-colors flex-1 justify-center',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {mode.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Colunas - only in grid mode */}
+        {value === 'grid' && onGridColumnsChange && (
+          <div className="px-4 pb-4 pt-1 border-t border-border/30">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Colunas
+            </span>
+            <div className="flex items-center gap-1 mt-2">
+              {columnOptions.map((cols) => {
+                const isActive = gridColumns === cols;
+                return (
+                  <button
+                    key={cols}
+                    onClick={() => onGridColumnsChange(cols)}
+                    className={cn(
+                      'flex items-center justify-center w-9 h-9 rounded-lg transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary/40 text-muted-foreground hover:text-foreground hover:bg-secondary/60'
+                    )}
+                    title={`${cols} colunas`}
+                  >
+                    <ColumnIcon cols={cols} active={isActive} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
