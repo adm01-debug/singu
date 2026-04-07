@@ -3,14 +3,23 @@ import type { VoiceAgentAction } from "./types";
 
 /**
  * processVoiceTranscript — Sends transcript to AI and returns structured action.
+ * Handles 401 with automatic session refresh retry.
  */
 export async function processVoiceTranscript(transcript: string): Promise<VoiceAgentAction> {
+  return executeWithAuthRetry(transcript);
+}
+
+async function executeWithAuthRetry(transcript: string, retried = false): Promise<VoiceAgentAction> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const authToken = session?.access_token;
+
+    if (!authToken) {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
 
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
@@ -25,6 +34,15 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
         signal: controller.signal,
       }
     );
+
+    // If 401 and haven't retried, refresh session and retry once
+    if (response.status === 401 && !retried) {
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (!refreshError) {
+        return executeWithAuthRetry(transcript, true);
+      }
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "");
