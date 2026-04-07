@@ -505,7 +505,7 @@ const Empresas = () => {
 
       {/* Create Dialog */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <CompanyForm
             onSubmit={handleCreate}
             onCancel={() => setIsFormOpen(false)}
@@ -516,7 +516,7 @@ const Empresas = () => {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingCompany} onOpenChange={(open) => !open && setEditingCompany(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden">
           <CompanyForm
             company={editingCompany}
             onSubmit={handleUpdate}
