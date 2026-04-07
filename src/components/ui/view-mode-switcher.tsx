@@ -61,7 +61,7 @@ export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColum
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[240px] p-0 border-border/40 bg-[hsl(var(--card))] shadow-none rounded-xl overflow-hidden"
+        className="w-[260px] p-0 border-border/40 bg-[hsl(var(--card))] shadow-none rounded-xl overflow-hidden"
       >
         {/* Visualização */}
         <div className="px-4 pt-4 pb-3">
