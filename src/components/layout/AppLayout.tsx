@@ -127,15 +127,15 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
               ))}
             </nav>
 
-            {/* Desktop search bar */}
+            {/* Desktop search bar — wide, prominent */}
             <button
               onClick={() => setIsOpen(true)}
-              className="hidden md:flex items-center gap-2 rounded-lg bg-secondary/50 px-3 py-1.5 text-sm text-muted-foreground cursor-pointer hover:bg-secondary hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ml-auto"
-              aria-label="Abrir busca rápida (⌘K)"
+              className="hidden md:flex items-center gap-2.5 rounded-full bg-secondary/60 border border-border/40 px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:bg-secondary/80 hover:border-primary/30 hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ml-auto min-w-[280px] lg:min-w-[360px]"
+              aria-label="Abrir busca inteligente (⌘K)"
             >
-              <Search className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>Buscar...</span>
-              <kbd className="ml-4 inline-flex h-5 items-center gap-0.5 rounded border border-border bg-background px-1.5 text-[11px] font-mono text-muted-foreground" aria-hidden="true">
+              <Search className="h-4 w-4 text-primary/70 shrink-0" aria-hidden="true" />
+              <span className="flex-1 text-left">Busca inteligente...</span>
+              <kbd className="inline-flex h-5 items-center gap-0.5 rounded border border-border/60 bg-background/80 px-1.5 text-[11px] font-mono text-muted-foreground/70 shrink-0" aria-hidden="true">
                 <Command className="h-2.5 w-2.5" />K
               </kbd>
             </button>
