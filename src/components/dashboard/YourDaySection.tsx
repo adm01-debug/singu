@@ -198,12 +198,14 @@ export function YourDaySection({ className }: YourDaySectionProps) {
                           {(() => {
                             const followUpDate = item.interaction.follow_up_date ? parseISO(item.interaction.follow_up_date) : null;
                             const daysSince = followUpDate ? Math.floor((Date.now() - followUpDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
-                            const urgencyClass = daysSince > 30 ? 'border-destructive/50 text-destructive bg-destructive/10' 
+                            const urgencyClass = daysSince > 60 ? 'border-destructive/60 text-destructive bg-destructive/15 animate-pulse' 
+                              : daysSince > 30 ? 'border-destructive/50 text-destructive bg-destructive/10' 
                               : daysSince > 14 ? 'border-destructive/30 text-destructive' 
                               : 'border-warning/30 text-warning';
+                            const urgencyLabel = daysSince > 60 ? '🔴 ' : daysSince > 30 ? '⚠️ ' : '';
                             return (
                               <Badge variant="outline" className={cn("text-[10px] font-medium shrink-0 tabular-nums", urgencyClass)} title={followUpDate ? format(followUpDate, 'dd/MM/yyyy') : ''}>
-                                {followUpDate && formatDistanceToNow(followUpDate, { addSuffix: true, locale: ptBR })}
+                                {urgencyLabel}{followUpDate && formatDistanceToNow(followUpDate, { addSuffix: true, locale: ptBR })}
                               </Badge>
                             );
                           })()}
