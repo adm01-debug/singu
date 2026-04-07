@@ -547,12 +547,13 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
 // SECTION 9: SUBMISSION — ARRAY CONVERSION
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Array Field Submission', () => {
-  it('converts tags_array comma string to array on submit', async () => {
+  it('converts tags_array via TagInput on submit', async () => {
     renderForm();
     const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Test Company');
-    const tagsInput = screen.getByPlaceholderText('Ex: VIP, Cooperativa, Agro (separadas por vírgula)');
-    await userEvent.type(tagsInput, 'Tag1, Tag2, Tag3');
+    // TagInput: type tag and press Enter
+    const tagsInput = screen.getByPlaceholderText(/VIP.*Cooperativa.*Agro/i);
+    await userEvent.type(tagsInput, 'Tag1{enter}Tag2{enter}Tag3{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalledTimes(1);
@@ -571,10 +572,11 @@ describe('CompanyForm — Array Field Submission', () => {
     });
   });
 
-  it('converts challenges comma string to array on submit', async () => {
+  it('converts challenges via TagInput on submit', async () => {
     renderForm();
     await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
-    await userEvent.type(screen.getByPlaceholderText('Ex: Logística, Custos (vírgula)'), 'A, B');
+    const challengesInput = screen.getByPlaceholderText(/Logística.*Custos/i);
+    await userEvent.type(challengesInput, 'A{enter}B{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       const submitted = mockSubmit.mock.calls[0][0];
@@ -582,10 +584,11 @@ describe('CompanyForm — Array Field Submission', () => {
     });
   });
 
-  it('converts competitors comma string to array on submit', async () => {
+  it('converts competitors via TagInput on submit', async () => {
     renderForm();
     await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
-    await userEvent.type(screen.getByPlaceholderText('Ex: Empresa A, Empresa B (vírgula)'), 'X, Y');
+    const competitorsInput = screen.getByPlaceholderText(/Empresa A.*Empresa B/i);
+    await userEvent.type(competitorsInput, 'X{enter}Y{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       const submitted = mockSubmit.mock.calls[0][0];
