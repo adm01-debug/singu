@@ -64,6 +64,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
         scoreChange: '',
         topContacts: [],
         recentActivities: [],
+        interactionSparkline: [],
         loading: true,
       };
     }
