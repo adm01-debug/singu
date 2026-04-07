@@ -184,7 +184,7 @@ function normalizeText(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
 
-export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(({ open, onOpenChange }, ref) => {
+export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(({ open, onOpenChange, voiceMode = false, onVoiceModeChange }, ref) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{
     contacts: SearchResult[];
@@ -195,7 +195,12 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     companies: [],
     interactions: [],
   });
-  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [voiceOpenInternal, setVoiceOpenInternal] = useState(false);
+  const voiceOpen = voiceMode || voiceOpenInternal;
+  const setVoiceOpen = useCallback((v: boolean) => {
+    setVoiceOpenInternal(v);
+    onVoiceModeChange?.(v);
+  }, [onVoiceModeChange]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
