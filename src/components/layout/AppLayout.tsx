@@ -128,7 +128,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
           </div>
 
           {/* Center: search bar + mic */}
-          <div className="flex-1 flex items-center justify-center gap-2">
+          <div className="flex-1 flex items-center justify-center gap-2 pr-[30%]">
             <button
               onClick={() => setIsOpen(true)}
               className="flex items-center gap-2.5 rounded-full bg-secondary/60 border border-border/40 px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:bg-secondary/80 hover:border-primary/30 hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none w-full max-w-[480px]"
