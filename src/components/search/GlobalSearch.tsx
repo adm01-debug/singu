@@ -44,6 +44,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
 
+const LazyVoiceOverlay = lazy(() => import("./VoiceSearchOverlayConnected"));
+
 interface SearchResult {
   id: string;
   type: 'contact' | 'company' | 'interaction';
