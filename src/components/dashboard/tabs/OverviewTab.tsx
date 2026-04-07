@@ -71,6 +71,9 @@ export function OverviewTab({
                 <Brain className="w-3 h-3 text-primary" />
               </div>
               <span className="font-medium">Briefing Pré-Contato</span>
+              <span className="text-[10px] text-muted-foreground/70 ml-1">
+                {briefingOpen ? '' : '— clique para expandir'}
+              </span>
               {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
             </Button>
           </CollapsibleTrigger>
