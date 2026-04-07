@@ -25,7 +25,7 @@ const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
   negotiation: { label: 'Negociação', color: 'bg-warning text-warning dark:bg-warning/30 dark:text-warning' },
   customer: { label: 'Cliente', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
   loyal_customer: { label: 'Cliente Fiel', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
-  advocate: { label: 'Advogado', color: 'bg-teal-100 text-accent dark:bg-accent/30 dark:text-accent' },
+  advocate: { label: 'Advogado', color: 'bg-accent/10 text-accent dark:bg-accent/30 dark:text-accent' },
   at_risk: { label: 'Em Risco', color: 'bg-accent text-accent dark:bg-accent/30 dark:text-accent' },
   lost: { label: 'Perdido', color: 'bg-destructive text-destructive dark:bg-destructive/30 dark:text-destructive' },
 };

@@ -147,7 +147,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
   };
 
   return (
-    <Card className={cn("border-teal-500/30 bg-card", className)}>
+    <Card className={cn("border-accent/20 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -393,7 +393,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
 
         {/* Strategy Summary */}
         {(positiveAnchors.length > 0 || negativeAnchors.length > 0) && (
-          <div className="bg-accent/10 rounded-lg p-3 border border-teal-500/30">
+          <div className="bg-accent/10 rounded-lg p-3 border border-accent/20">
             <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
               <Heart className="h-4 w-4 text-accent" />
               Estratégia de Âncoras para {activeContact.firstName}

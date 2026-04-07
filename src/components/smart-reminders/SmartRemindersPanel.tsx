@@ -68,8 +68,8 @@ const typeColors = {
 
 const priorityColors = {
   high: 'border-l-destructive bg-destructive/5',
-  medium: 'border-l-amber-500 bg-warning/5',
-  low: 'border-l-emerald-500 bg-success/5'
+  medium: 'border-l-warning bg-warning/5',
+  low: 'border-l-success bg-success/5'
 };
 
 const priorityBadgeColors = {
