@@ -78,7 +78,8 @@ import { KeyboardHint } from '@/components/ui/keyboard-hint';
 import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
-type ViewMode = 'grid' | 'list';
+import { ViewModeSwitcher, type ViewMode } from '@/components/ui/view-mode-switcher';
+import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 
 const filterConfigs: FilterConfig[] = [
   {
