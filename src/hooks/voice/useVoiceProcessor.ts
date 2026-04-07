@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { playTtsAudio } from "./playTtsAudio";
 import { processVoiceTranscript } from "./processTranscript";
-import { withRetry, friendlyErrorMessage } from "./retry";
+import { withRetry, friendlyErrorMessage, RateLimiter } from "./retry";
 import { logVoiceCommand } from "./logVoiceCommand";
 import type { VoiceAgentAction, VoiceAgentPhase } from "./types";
 
