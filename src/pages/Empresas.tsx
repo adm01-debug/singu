@@ -338,6 +338,8 @@ const Empresas = () => {
       />
 
       <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Stats Summary Bar */}
+        <CompaniesStatsBar companies={companies} contactCountMap={companyMetrics.contactCountMap} />
         {/* Search, View Mode and Selection Toggle */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md">
