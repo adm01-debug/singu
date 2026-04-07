@@ -71,7 +71,7 @@ export function WelcomeGreetingPopup() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.95 }}
           transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-auto max-w-md"
+          className="fixed bottom-6 right-6 z-[100] w-auto max-w-sm"
         >
           <div className="relative flex items-center gap-3 rounded-2xl border border-primary/25 bg-card/95 backdrop-blur-xl px-4 py-3 shadow-[0_16px_48px_-16px_hsl(var(--primary)/0.35)]">
             {/* Icon */}
