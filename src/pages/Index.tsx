@@ -96,7 +96,7 @@ const Dashboard = () => {
       <ScrollProgressBar />
 
       <div className="p-4 md:p-6 space-y-5 md:space-y-6">
-        <WelcomeHeroCard />
+        
         <WelcomeGreetingPopup />
         <OnboardingChecklist
           hasProfile={hasProfile}
