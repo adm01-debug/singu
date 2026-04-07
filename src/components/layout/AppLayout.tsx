@@ -1,6 +1,6 @@
-import { ReactNode, useMemo } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, Command, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { Search, Command, Settings, LogOut, ChevronRight, Mic } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -107,11 +107,10 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Desktop Header Bar */}
-        <header className="hidden md:flex h-14 items-center justify-between border-b border-border/50 px-3 sm:px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-30" role="banner">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <header className="hidden md:flex h-14 items-center border-b border-border/50 px-3 sm:px-5 bg-background/95 backdrop-blur-sm sticky top-0 z-30" role="banner">
+          {/* Left: sidebar trigger + breadcrumb */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 w-[200px] shrink-0">
             <SidebarTrigger className="text-muted-foreground hover:text-foreground hover:bg-secondary/60 rounded-lg transition-colors shrink-0" aria-label="Alternar sidebar" />
-            
-            {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
               {breadcrumbs.map((crumb, idx) => (
                 <span key={idx} className="flex items-center gap-1">
@@ -126,11 +125,13 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
                 </span>
               ))}
             </nav>
+          </div>
 
-            {/* Desktop search bar — wide, prominent */}
+          {/* Center: search bar + mic */}
+          <div className="flex-1 flex items-center justify-center gap-2">
             <button
               onClick={() => setIsOpen(true)}
-              className="hidden md:flex items-center gap-2.5 rounded-full bg-secondary/60 border border-border/40 px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:bg-secondary/80 hover:border-primary/30 hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ml-auto min-w-[280px] lg:min-w-[360px]"
+              className="flex items-center gap-2.5 rounded-full bg-secondary/60 border border-border/40 px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:bg-secondary/80 hover:border-primary/30 hover:text-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none w-full max-w-[480px]"
               aria-label="Abrir busca inteligente (⌘K)"
             >
               <Search className="h-4 w-4 text-primary/70 shrink-0" aria-hidden="true" />
@@ -138,6 +139,13 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
               <kbd className="inline-flex h-5 items-center gap-0.5 rounded border border-border/60 bg-background/80 px-1.5 text-[11px] font-mono text-muted-foreground/70 shrink-0" aria-hidden="true">
                 <Command className="h-2.5 w-2.5" />K
               </kbd>
+            </button>
+            <button
+              className="shrink-0 h-9 w-9 rounded-full border border-border/40 bg-secondary/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:border-primary/30 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label="Entrada por voz"
+              onClick={() => {/* TODO: voice input */}}
+            >
+              <Mic className="h-4 w-4" />
             </button>
           </div>
 
