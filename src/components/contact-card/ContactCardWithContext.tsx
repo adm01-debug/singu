@@ -144,10 +144,10 @@ export function ContactCardWithContext({
           onEdit={() => onEdit(contact)}
           onDelete={() => onDelete(contact)}
         >
-          <Card className={cn(
+           <Card className={cn(
             "h-full group cursor-pointer overflow-hidden relative transition-colors duration-150",
-            "border border-border/30 hover:border-border/60",
-            "bg-card/60",
+            "border border-border/30 hover:border-border/50 hover:bg-muted/15",
+            "bg-card/40",
             isHighlighted && "ring-1 ring-primary/50",
             isSelected && "bg-primary/5 border-primary/30"
           )}>
@@ -200,7 +200,7 @@ export function ContactCardWithContext({
                       alt={`${contact.first_name} ${contact.last_name}`}
                       fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                       size="md"
-                      className="w-10 h-10 border-2 border-primary/15 shrink-0"
+                      className="w-9 h-9 shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       {isInlineEditing ? (
