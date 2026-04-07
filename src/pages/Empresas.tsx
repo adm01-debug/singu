@@ -359,7 +359,7 @@ const Empresas = () => {
           </div>
           <div className="flex items-center gap-2">
             <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
-            <AdvancedDataExporter entityType="companies" />
+            
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
