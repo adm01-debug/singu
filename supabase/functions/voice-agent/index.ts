@@ -72,6 +72,16 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate user
+    try {
+      await authenticateRequest(req);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
