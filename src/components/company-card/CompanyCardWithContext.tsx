@@ -12,6 +12,9 @@ import {
   Cpu,
   HeartPulse,
   GraduationCap,
+  MapPin,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -330,11 +333,29 @@ export function CompanyCardWithContext({
                   </div>
 
                   {/* Metrics row */}
-                  <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
                       {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
                     </span>
+                    {(company.city || company.state) && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" />
+                        {[company.city, company.state].filter(Boolean).join(', ')}
+                      </span>
+                    )}
+                    {company.phone && (
+                      <span className="flex items-center gap-1">
+                        <Phone className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[100px]">{company.phone}</span>
+                      </span>
+                    )}
+                    {company.email && (
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[120px]">{company.email}</span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Footer: Status + Time */}
