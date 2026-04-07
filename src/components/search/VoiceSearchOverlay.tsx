@@ -244,7 +244,8 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                 </motion.div>
 
                 <motion.div
-                  className="cursor-pointer select-none"
+                  ref={orbRef}
+                  className="cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-full"
                   onClick={handleOrbClick}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
