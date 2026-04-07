@@ -65,15 +65,20 @@ export function OverviewTab({
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
+              className={cn(
+                "w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200",
+                briefingOpen && "border-primary/30 bg-primary/5 text-primary"
+              )}
             >
               <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
                 <Brain className="w-3 h-3 text-primary" />
               </div>
               <span className="font-medium">Briefing Pré-Contato</span>
-              <span className="text-[10px] text-muted-foreground/70 ml-1">
-                {briefingOpen ? '' : '— clique para expandir'}
-              </span>
+              {!briefingOpen && (
+                <span className="text-[10px] text-muted-foreground/70 ml-1 hidden sm:inline">
+                  Resumo inteligente dos seus contatos prioritários
+                </span>
+              )}
               {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
             </Button>
           </CollapsibleTrigger>
