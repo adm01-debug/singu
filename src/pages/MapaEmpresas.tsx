@@ -304,7 +304,7 @@ export default function MapaEmpresas() {
 
   return (
     <AppLayout>
-      <Header title="Mapa de Empresas" subtitle="Visualize a localização geográfica dos seus clientes" />
+      <Header title="Mapa de Empresas" subtitle="Visualize a localização geográfica dos seus clientes" hideBack />
 
       <div className="p-4 md:p-6 space-y-4">
         {/* Stats bar */}

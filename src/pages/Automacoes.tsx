@@ -303,6 +303,7 @@ export default function Automacoes() {
       <Header 
         title="Automações & Workflows" 
         subtitle="Crie regras automáticas: Se X acontecer → Faça Y"
+        hideBack
         showAddButton
         addButtonLabel="Nova Automação"
         onAddClick={() => setFormOpen(true)}

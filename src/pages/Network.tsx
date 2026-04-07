@@ -34,6 +34,7 @@ const Network = () => {
       <Header 
         title="Network Visualization" 
         subtitle="Mapa interativo de relacionamentos, empresas e contatos"
+        hideBack
       />
 
       <div className="p-6 space-y-4">
