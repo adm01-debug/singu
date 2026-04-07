@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Surface } from '@/components/ui/surface';
