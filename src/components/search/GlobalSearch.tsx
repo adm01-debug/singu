@@ -692,6 +692,25 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         </div>
       </div>
     </CommandDialog>
+
+    {voiceOpen && (
+      <Suspense fallback={null}>
+        <LazyVoiceOverlay
+          isOpen={voiceOpen}
+          onClose={() => setVoiceOpen(false)}
+          onAction={(action) => {
+            if (action.action === 'navigate' && action.data?.route) {
+              navigate(action.data.route);
+            } else if (action.action === 'search' && action.data?.query) {
+              setVoiceOpen(false);
+              onOpenChange(true);
+              setQuery(action.data.query);
+            }
+          }}
+        />
+      </Suspense>
+    )}
+    </>
   );
 });
 
