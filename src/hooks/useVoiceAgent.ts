@@ -42,13 +42,11 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   const forceDisconnectScribe = useCallback(() => {
     clearSessionStartTimer();
     try {
-      if (scribe.isConnected) {
-        disconnectScribeRef.current();
-      }
+      disconnectScribeRef.current();
     } catch (e) {
       logger.warn("[Voice] Failed to disconnect Scribe:", e);
     }
-  }, [clearSessionStartTimer, scribe.isConnected]);
+  }, [clearSessionStartTimer]);
 
   const handleScribeErrorRef = useRef<(err: unknown) => void>(() => undefined);
 

@@ -28,7 +28,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Contact } from '@/hooks/useContacts';
-import type { RelationshipStage } from '@/types';
+import type { RelationshipStage, DISCProfile } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
@@ -215,7 +215,7 @@ export function ContactCardWithContext({
                       <SentimentIndicator sentiment={contact.sentiment as 'positive' | 'neutral' | 'negative'} size="sm" />
                     )}
                     {(contact.behavior as Record<string, unknown>)?.discProfile && (
-                      <DISCBadge profile={(contact.behavior as Record<string, unknown>).discProfile as string} size="sm" showLabel={false} />
+                      <DISCBadge profile={(contact.behavior as Record<string, unknown>).discProfile as DISCProfile} size="sm" showLabel={false} />
                     )}
                     {contact.role && (
                       <RoleBadge role={contact.role as 'contact' | 'owner' | 'manager' | 'buyer' | 'decision_maker' | 'influencer'} />
