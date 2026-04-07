@@ -373,6 +373,8 @@ const Contatos = () => {
       />
 
       <div className="p-4 md:p-6 space-y-5">
+        {/* Stats Summary Bar */}
+        <ContactsStatsBar contacts={contacts} />
         {/* Search and View Toggle */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md group">
