@@ -40,37 +40,37 @@ const celebrationStyles: Record<CelebrationType, {
 }> = {
   'follow-up-complete': {
     icon: CheckCircle2,
-    gradient: 'from-success to-teal-400',
+    gradient: 'from-success to-accent',
     confettiColors: ['#10B981', '#14B8A6', '#34D399', '#2DD4BF', '#6EE7B7'],
     emoji: '✅',
   },
   'deal-closed': {
     icon: Trophy,
-    gradient: 'from-warning to-yellow-400',
+    gradient: 'from-warning to-warning',
     confettiColors: ['#F59E0B', '#FBBF24', '#FCD34D', '#FDE68A', '#D97706'],
     emoji: '🏆',
   },
   'relationship-milestone': {
     icon: Heart,
-    gradient: 'from-primary to-pink-400',
+    gradient: 'from-primary to-primary',
     confettiColors: ['#F43F5E', '#EC4899', '#F472B6', '#FB7185', '#FDA4AF'],
     emoji: '💝',
   },
   'goal-achieved': {
     icon: Target,
-    gradient: 'from-violet-500 to-purple-400',
+    gradient: 'from-secondary to-secondary',
     confettiColors: ['#8B5CF6', '#A78BFA', '#C4B5FD', '#7C3AED', '#6D28D9'],
     emoji: '🎯',
   },
   'birthday-wished': {
     icon: PartyPopper,
-    gradient: 'from-primary to-rose-400',
+    gradient: 'from-primary to-primary',
     confettiColors: ['#EC4899', '#F472B6', '#FBCFE8', '#DB2777', '#BE185D'],
     emoji: '🎂',
   },
   'task-complete': {
     icon: Sparkles,
-    gradient: 'from-info to-cyan-400',
+    gradient: 'from-info to-accent',
     confettiColors: ['#3B82F6', '#06B6D4', '#22D3EE', '#60A5FA', '#0EA5E9'],
     emoji: '⭐',
   },

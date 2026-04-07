@@ -123,7 +123,7 @@ export function CompatibilityAlertsList({
   const getSeverityColor = (score: number, threshold: number) => {
     const diff = threshold - score;
     if (diff >= 30) return 'border-destructive bg-destructive dark:bg-destructive/30';
-    if (diff >= 15) return 'border-amber-500 bg-warning dark:bg-warning/30';
+    if (diff >= 15) return 'border-warning/30 bg-warning dark:bg-warning/30';
     return 'border-warning bg-warning dark:bg-warning/30';
   };
 

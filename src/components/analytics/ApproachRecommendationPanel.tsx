@@ -449,7 +449,7 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
                                 className={cn(
                                   "w-3 h-3",
                                   i < Math.round(tech.effectiveness / 20) 
-                                    ? "text-warning fill-yellow-500" 
+                                    ? "text-warning fill-warning" 
                                     : "text-muted"
                                 )}
                               />

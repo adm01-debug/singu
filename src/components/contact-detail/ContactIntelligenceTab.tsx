@@ -49,7 +49,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
       </div>
       <div className="grid gap-4 md:grid-cols-2">
       {/* Hidden Objections */}
-      <Card className={cn(unresolvedObjections.length > 0 && 'border-orange-200 dark:border-orange-800')}>
+      <Card className={cn(unresolvedObjections.length > 0 && 'border-accent/30 dark:border-accent/30')}>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
             <AlertTriangle className="h-4 w-4 text-accent" />
@@ -67,7 +67,7 @@ export function ContactIntelligenceTab({ contactId }: Props) {
                       variant="outline"
                       className={cn('text-xs',
                         obj.severity === 'high' ? 'text-destructive border-destructive' :
-                        obj.severity === 'medium' ? 'text-accent border-orange-300' :
+                        obj.severity === 'medium' ? 'text-accent border-accent/30' :
                         'text-muted-foreground'
                       )}
                     >

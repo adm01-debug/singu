@@ -247,7 +247,7 @@ export function CompatibilityAlertSettings() {
         </div>
 
         {/* Preview Alert */}
-        <div className="p-4 rounded-lg border-2 border-dashed border-amber-300 bg-warning dark:bg-warning/20">
+        <div className="p-4 rounded-lg border-2 border-dashed border-warning/30 bg-warning dark:bg-warning/20">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div>

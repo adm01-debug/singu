@@ -188,7 +188,7 @@ export function MeetingMode({ contact, interactions, open, onClose }: MeetingMod
 
             {/* DISC Communication Tips */}
             {discConfig && (
-              <Card className={cn('border-l-4', discProfile === 'D' ? 'border-l-red-500' : discProfile === 'I' ? 'border-l-amber-500' : discProfile === 'S' ? 'border-l-emerald-500' : 'border-l-blue-500')}>
+              <Card className={cn('border-l-4', discProfile === 'D' ? 'border-l-destructive' : discProfile === 'I' ? 'border-l-amber-500' : discProfile === 'S' ? 'border-l-emerald-500' : 'border-l-info')}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Brain className="w-4 h-4 text-primary" />

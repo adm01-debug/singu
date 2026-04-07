@@ -199,7 +199,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="summary" className="space-y-4">
         {record.ai_summary && (
-          <DataCard title="Resumo Executivo" icon={Brain} iconColor="bg-violet-100 dark:bg-secondary/30 text-secondary">
+          <DataCard title="Resumo Executivo" icon={Brain} iconColor="bg-secondary dark:bg-secondary/30 text-secondary">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
           </DataCard>
         )}
@@ -310,7 +310,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                   <p className="text-xs text-muted-foreground mb-2">Temas de Conteúdo</p>
                   <div className="flex flex-wrap gap-1.5">
                     {audience.content_themes.map((t: string, i: number) => (
-                      <Badge key={i} variant="outline" className="text-xs bg-accent dark:bg-accent/20 border-orange-200 dark:border-orange-800">
+                      <Badge key={i} variant="outline" className="text-xs bg-accent dark:bg-accent/20 border-accent/30 dark:border-accent/30">
                         {t}
                       </Badge>
                     ))}
@@ -392,7 +392,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 
       <TabsContent value="summary" className="space-y-4">
         {record.ai_summary && (
-          <DataCard title="Resumo do Perfil" icon={Brain} iconColor="bg-violet-100 dark:bg-secondary/30 text-secondary">
+          <DataCard title="Resumo do Perfil" icon={Brain} iconColor="bg-secondary dark:bg-secondary/30 text-secondary">
             <p className="text-sm text-muted-foreground leading-relaxed">{record.ai_summary}</p>
           </DataCard>
         )}
@@ -495,7 +495,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
               <DataCard title="Hobbies" icon={Heart} iconColor="bg-primary dark:bg-primary/30 text-primary">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.hobbies.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs bg-primary dark:bg-primary/20 border-pink-200 dark:border-pink-800">
+                    <Badge key={i} variant="outline" className="text-xs bg-primary dark:bg-primary/20 border-primary/30 dark:border-primary/30">
                       {h}
                     </Badge>
                   ))}
@@ -507,7 +507,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
               <DataCard title="Interesses" icon={TrendingUp} iconColor="bg-warning dark:bg-warning/30 text-warning">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.interests.map((h: string, i: number) => (
-                    <Badge key={i} variant="outline" className="text-xs bg-warning dark:bg-warning/20 border-amber-200 dark:border-amber-800">
+                    <Badge key={i} variant="outline" className="text-xs bg-warning dark:bg-warning/20 border-warning/30 dark:border-warning/30">
                       {h}
                     </Badge>
                   ))}
@@ -681,7 +681,7 @@ export function LuxIntelligencePanel({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <Card className="border-violet-200 dark:border-violet-800 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-secondary/30 dark:to-fuchsia-950/30">
+            <Card className="border-secondary/30 dark:border-secondary/30 bg-gradient-to-r from-secondary to-secondary dark:from-secondary/30 dark:to-secondary/30">
               <CardContent className="py-6">
                 <div className="flex items-center gap-4">
                   <motion.div
@@ -697,7 +697,7 @@ export function LuxIntelligencePanel({
                     </p>
                     <div className="mt-3">
                       <motion.div
-                        className="h-1.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-violet-500 rounded-full"
+                        className="h-1.5 bg-gradient-to-r from-secondary via-secondary to-secondary rounded-full"
                         animate={{ 
                           backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                         }}

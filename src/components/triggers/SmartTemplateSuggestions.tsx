@@ -63,15 +63,15 @@ interface SmartSuggestion {
 
 const DISC_COLORS: Record<DISCProfile, string> = {
   D: 'bg-destructive/10 text-destructive border-destructive',
-  I: 'bg-warning/10 text-warning border-amber-200',
-  S: 'bg-success/10 text-success border-emerald-200',
+  I: 'bg-warning/10 text-warning border-warning/30',
+  S: 'bg-success/10 text-success border-success/30',
   C: 'bg-info/10 text-info border-info',
 };
 
 const TAG_CONFIG = {
-  top_performer: { label: 'Top Performer', icon: Award, color: 'bg-warning/10 text-warning border-amber-300' },
+  top_performer: { label: 'Top Performer', icon: Award, color: 'bg-warning/10 text-warning border-warning/30' },
   disc_match: { label: 'Match DISC', icon: Users, color: 'bg-info/10 text-info border-info' },
-  rising_star: { label: 'Em Alta', icon: TrendingUp, color: 'bg-success/10 text-success border-emerald-300' },
+  rising_star: { label: 'Em Alta', icon: TrendingUp, color: 'bg-success/10 text-success border-success/30' },
   recommended: { label: 'Recomendado', icon: Sparkles, color: 'bg-primary/10 text-primary border-primary/30' },
 };
 
@@ -124,7 +124,7 @@ function TemplatePreview({ suggestion, contact, onUse }: TemplatePreviewProps) {
     <div className="space-y-4">
       {/* Success stats */}
       {successData && successData.totalUsages > 0 && (
-        <div className="p-3 rounded-lg bg-success/5 border border-emerald-200">
+        <div className="p-3 rounded-lg bg-success/5 border border-success/30">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-success" />
             <span className="text-sm font-medium text-success">Histórico de Sucesso</span>
@@ -493,7 +493,7 @@ export function SmartTemplateSuggestions({ contact, className, onSelectTemplate 
                                 </span>
                                 {successData.avgRating > 0 && (
                                   <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                                    <Star className="w-3 h-3 text-warning fill-amber-500" />
+                                    <Star className="w-3 h-3 text-warning fill-warning" />
                                     {successData.avgRating.toFixed(1)}
                                   </span>
                                 )}

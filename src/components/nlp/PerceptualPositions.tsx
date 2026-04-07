@@ -172,7 +172,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
   const integration = generateIntegration();
 
   return (
-    <Card className={cn("border-violet-500/30 bg-card", className)}>
+    <Card className={cn("border-secondary/30/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -317,7 +317,7 @@ const PerceptualPositions: React.FC<PerceptualPositionsProps> = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-secondary/20 to-secondary/20 rounded-lg p-4 border border-violet-500/30"
+            className="bg-gradient-to-r from-secondary/20 to-secondary/20 rounded-lg p-4 border border-secondary/30/30"
           >
             <h4 className="font-medium text-sm flex items-center gap-2 mb-3">
               <RefreshCw className="h-4 w-4 text-secondary" />

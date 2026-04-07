@@ -60,8 +60,8 @@ interface SuggestedTemplate {
 
 const DISC_DESCRIPTIONS: Record<DISCProfile, { name: string; icon: string; color: string }> = {
   D: { name: 'Dominante', icon: '🔴', color: 'bg-destructive text-destructive border-destructive' },
-  I: { name: 'Influente', icon: '🟡', color: 'bg-warning text-warning border-amber-200' },
-  S: { name: 'Estável', icon: '🟢', color: 'bg-success text-success border-emerald-200' },
+  I: { name: 'Influente', icon: '🟡', color: 'bg-warning text-warning border-warning/30' },
+  S: { name: 'Estável', icon: '🟢', color: 'bg-success text-success border-success/30' },
   C: { name: 'Consciente', icon: '🔵', color: 'bg-info text-info border-info' },
 };
 
@@ -367,7 +367,7 @@ export function ProfileBasedSuggestions({
   const categoryBadges = {
     vak: { color: 'bg-info text-info border-info', label: 'VAK' },
     metaprogram: { color: 'bg-secondary text-secondary border-secondary', label: 'Metaprograma' },
-    combined: { color: 'bg-success text-success border-emerald-200', label: 'Combinado' },
+    combined: { color: 'bg-success text-success border-success/30', label: 'Combinado' },
   };
 
   if (!vakProfile && !metaprogramProfile) {

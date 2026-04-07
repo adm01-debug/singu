@@ -67,7 +67,7 @@ const typeColors = {
 };
 
 const priorityColors = {
-  high: 'border-l-red-500 bg-destructive/5',
+  high: 'border-l-destructive bg-destructive/5',
   medium: 'border-l-amber-500 bg-warning/5',
   low: 'border-l-emerald-500 bg-success/5'
 };

@@ -358,7 +358,7 @@ export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
         </Card>
       )}
       {actionsByPriority.high.length > 0 && (
-        <Card className="border-orange-200">
+        <Card className="border-accent/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-accent"><Bell className="h-5 w-5" />Alta Prioridade ({actionsByPriority.high.length})</CardTitle>
           </CardHeader>

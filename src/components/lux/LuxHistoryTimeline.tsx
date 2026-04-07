@@ -105,7 +105,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
                     variant="ghost"
                     className={`w-full justify-start h-auto py-3 px-3 ${
                       isSelected 
-                        ? 'bg-violet-100 dark:bg-secondary/30 border border-violet-300 dark:border-violet-700' 
+                        ? 'bg-secondary dark:bg-secondary/30 border border-secondary/30 dark:border-secondary/30' 
                         : 'hover:bg-muted/50'
                     }`}
                     onClick={() => onSelect(record)}
@@ -125,7 +125,7 @@ export function LuxHistoryTimeline({ records, selectedId, onSelect, loading }: L
                             {format(new Date(record.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </span>
                           {index === 0 && record.status === 'completed' && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-violet-50 dark:bg-secondary/20 border-violet-200 dark:border-violet-800">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-secondary dark:bg-secondary/20 border-secondary/30 dark:border-secondary/30">
                               Mais recente
                             </Badge>
                           )}

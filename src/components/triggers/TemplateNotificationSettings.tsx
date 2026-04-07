@@ -25,8 +25,8 @@ type DISCProfile = 'D' | 'I' | 'S' | 'C';
 
 const DISC_PROFILES: { id: DISCProfile; name: string; color: string }[] = [
   { id: 'D', name: 'Dominante', color: 'bg-destructive/10 text-destructive border-destructive' },
-  { id: 'I', name: 'Influente', color: 'bg-warning/10 text-warning border-amber-200' },
-  { id: 'S', name: 'Estável', color: 'bg-success/10 text-success border-emerald-200' },
+  { id: 'I', name: 'Influente', color: 'bg-warning/10 text-warning border-warning/30' },
+  { id: 'S', name: 'Estável', color: 'bg-success/10 text-success border-success/30' },
   { id: 'C', name: 'Conforme', color: 'bg-info/10 text-info border-info' },
 ];
 

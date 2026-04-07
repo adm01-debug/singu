@@ -86,7 +86,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* Alerts */}
       {alerts.length > 0 && (
-        <Card className="md:col-span-2 lg:col-span-3 border-orange-200 dark:border-orange-800">
+        <Card className="md:col-span-2 lg:col-span-3 border-accent/30 dark:border-accent/30">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-accent dark:text-accent">
               <AlertTriangle className="h-4 w-4" />
@@ -102,7 +102,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                   className={cn(
                     'cursor-pointer text-xs',
                     alert.priority === 'high' ? 'border-destructive text-destructive' :
-                    alert.priority === 'medium' ? 'border-orange-300 text-accent' :
+                    alert.priority === 'medium' ? 'border-accent/30 text-accent' :
                     'border-muted text-muted-foreground'
                   )}
                   onClick={() => onDismissAlert?.(alert.id)}

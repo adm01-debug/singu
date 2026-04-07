@@ -392,7 +392,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           className={cn(
                             "rounded p-3 border-l-4",
                             section.stage === 'problem' ? 'bg-destructive/10 border-destructive' :
-                            section.stage === 'agitate' ? 'bg-accent/10 border-orange-500' :
+                            section.stage === 'agitate' ? 'bg-accent/10 border-accent/30' :
                             'bg-success/10 border-success'
                           )}
                         >
@@ -465,7 +465,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                             "rounded p-3 border-l-4",
                             section.stage === 'promise' ? 'bg-secondary/10 border-secondary' :
                             section.stage === 'picture' ? 'bg-info/10 border-info' :
-                            section.stage === 'proof' ? 'bg-success/10 border-emerald-500' :
+                            section.stage === 'proof' ? 'bg-success/10 border-success/30' :
                             'bg-destructive/10 border-destructive'
                           )}
                         >
@@ -779,7 +779,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                           className={cn(
                             "rounded p-3 border-l-4",
                             section.stage === 'attention' ? 'bg-destructive/10 border-destructive' :
-                            section.stage === 'interest' ? 'bg-warning/10 border-amber-500' :
+                            section.stage === 'interest' ? 'bg-warning/10 border-warning/30' :
                             section.stage === 'desire' ? 'bg-info/10 border-info' :
                             'bg-success/10 border-success'
                           )}
@@ -835,7 +835,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                         </Badge>
                         <div className="flex gap-1">
                           {Array.from({ length: cta.urgencyLevel }).map((_, i) => (
-                            <Zap key={i} className="h-3 w-3 text-warning fill-amber-500" />
+                            <Zap key={i} className="h-3 w-3 text-warning fill-warning" />
                           ))}
                         </div>
                       </div>

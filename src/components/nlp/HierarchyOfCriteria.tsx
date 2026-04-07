@@ -208,9 +208,9 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                   exit={{ opacity: 0, x: 20 }}
                   className={cn(
                     "bg-muted/30 rounded-lg p-3 border-l-4",
-                    criterion.importance === 1 ? 'border-l-yellow-500' :
-                    criterion.importance === 2 ? 'border-l-orange-500' :
-                    criterion.importance === 3 ? 'border-l-blue-500' :
+                    criterion.importance === 1 ? 'border-l-warning' :
+                    criterion.importance === 2 ? 'border-l-accent' :
+                    criterion.importance === 3 ? 'border-l-info' :
                     'border-l-muted'
                   )}
                 >
@@ -243,7 +243,7 @@ const HierarchyOfCriteria: React.FC<HierarchyOfCriteriaProps> = ({
                         </Badge>
                         <span className="font-medium text-sm">{criterion.name}</span>
                         {criterion.importance === 1 && (
-                          <Star className="h-4 w-4 text-warning fill-yellow-400" />
+                          <Star className="h-4 w-4 text-warning fill-warning" />
                         )}
                       </div>
                       

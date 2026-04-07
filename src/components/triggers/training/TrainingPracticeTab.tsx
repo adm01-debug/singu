@@ -126,7 +126,7 @@ export function TrainingPracticeTab({
               className={cn(
                 'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all',
                 selectedAnswer === option.id && !showResult && 'border-primary bg-primary/10',
-                showResult && option.isCorrect && 'border-emerald-500 bg-success dark:bg-success/30',
+                showResult && option.isCorrect && 'border-success/30 bg-success dark:bg-success/30',
                 showResult && selectedAnswer === option.id && !option.isCorrect && 'border-destructive bg-destructive dark:bg-destructive/30',
                 !showResult && 'hover:border-primary/50'
               )}

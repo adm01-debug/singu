@@ -760,7 +760,7 @@ export function TriggerAnalytics({ className }: { className?: string }) {
                             <span className="font-semibold text-success">{triggerStat.successRate.toFixed(0)}%</span>
                           </p>
                           <div className="flex items-center justify-end gap-1">
-                            <Star className="w-3 h-3 text-warning fill-amber-500" />
+                            <Star className="w-3 h-3 text-warning fill-warning" />
                             <span className="text-sm font-semibold">{(triggerStat.avgRating / 20).toFixed(1)}</span>
                           </div>
                         </div>

@@ -95,7 +95,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
             className={cn(
               'p-3 rounded-lg border flex items-center gap-3',
               resistanceScore > 70 ? 'bg-destructive border-destructive dark:bg-destructive/20' :
-              resistanceScore > 50 ? 'bg-warning border-amber-200 dark:bg-warning/20' :
+              resistanceScore > 50 ? 'bg-warning border-warning/30 dark:bg-warning/20' :
               'bg-warning border-warning dark:bg-warning/20'
             )}
           >
@@ -400,7 +400,7 @@ export function AdvancedTriggersPanel({ contact: contactProp, className }: Advan
                           Conflitos Detectados
                         </p>
                         {fullAnalysis.conflictWarnings.map((warning, i) => (
-                          <div key={i} className="p-3 rounded-lg bg-warning border border-amber-200 dark:bg-warning/10 text-xs">
+                          <div key={i} className="p-3 rounded-lg bg-warning border border-warning/30 dark:bg-warning/10 text-xs">
                             <span className="font-medium">
                               {MENTAL_TRIGGERS[warning.recentTrigger as keyof typeof MENTAL_TRIGGERS]?.name}
                             </span>

@@ -202,7 +202,7 @@ function ProfileCard({ metrics, isExpanded, onToggle }: {
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 text-warning fill-yellow-500" />
+                    <Star className="w-4 h-4 text-warning fill-warning" />
                     <p className="text-2xl font-bold">{metrics.avgRating.toFixed(1)}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">Média</p>
@@ -443,7 +443,7 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Avaliação</span>
                                   <div className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 text-warning fill-yellow-500" />
+                                    <Star className="w-3 h-3 text-warning fill-warning" />
                                     <span className="font-medium">{data.avgRating.toFixed(1)}</span>
                                   </div>
                                 </div>

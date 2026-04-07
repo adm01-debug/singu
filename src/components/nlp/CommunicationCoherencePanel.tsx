@@ -346,7 +346,7 @@ const CommunicationCoherencePanel: React.FC<CommunicationCoherencePanelProps> = 
                         className={cn(
                           'p-2 rounded-lg mb-2 border text-sm',
                           issue.severity === 'error' && 'bg-destructive dark:bg-destructive border-destructive',
-                          issue.severity === 'warning' && 'bg-warning dark:bg-warning border-amber-200',
+                          issue.severity === 'warning' && 'bg-warning dark:bg-warning border-warning/30',
                           issue.severity === 'suggestion' && 'bg-info dark:bg-info border-info'
                         )}
                       >

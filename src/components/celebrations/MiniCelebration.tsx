@@ -44,7 +44,7 @@ const variants: Record<MiniCelebrationVariant, {
   sparkle: {
     icon: Sparkles,
     color: 'text-secondary',
-    bgColor: 'bg-violet-500',
+    bgColor: 'bg-secondary',
     particles: ['#8B5CF6', '#A78BFA', '#C4B5FD'],
   },
   heart: {

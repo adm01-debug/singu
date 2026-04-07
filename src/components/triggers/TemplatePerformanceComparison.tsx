@@ -371,7 +371,7 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
                           <div className="flex items-center justify-center gap-1">
                             {data.avgRating > 0 ? (
                               <>
-                                <Star className="w-3.5 h-3.5 text-warning fill-yellow-500" />
+                                <Star className="w-3.5 h-3.5 text-warning fill-warning" />
                                 <span className="text-sm font-medium">
                                   {data.avgRating.toFixed(1)}
                                 </span>

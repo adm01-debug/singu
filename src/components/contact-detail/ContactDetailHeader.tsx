@@ -21,7 +21,7 @@ const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
   unknown: { label: 'Desconhecido', color: 'bg-muted text-muted-foreground' },
   prospect: { label: 'Prospect', color: 'bg-info text-info dark:bg-info/30 dark:text-info' },
   qualified_lead: { label: 'Lead Qualificado', color: 'bg-primary text-primary dark:bg-primary/30 dark:text-primary' },
-  opportunity: { label: 'Oportunidade', color: 'bg-violet-100 text-secondary dark:bg-secondary/30 dark:text-secondary' },
+  opportunity: { label: 'Oportunidade', color: 'bg-secondary text-secondary dark:bg-secondary/30 dark:text-secondary' },
   negotiation: { label: 'Negociação', color: 'bg-warning text-warning dark:bg-warning/30 dark:text-warning' },
   customer: { label: 'Cliente', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
   loyal_customer: { label: 'Cliente Fiel', color: 'bg-success text-success dark:bg-success/30 dark:text-success' },
