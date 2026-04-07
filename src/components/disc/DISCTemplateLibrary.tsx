@@ -364,7 +364,7 @@ const DISCTemplateLibrary: React.FC<DISCTemplateLibraryProps> = ({ filterProfile
                                 className="h-7 w-7 shrink-0"
                                 onClick={() => toggleFavorite(template.id)}
                               >
-                                <Star className={`w-3.5 h-3.5 ${isFavorite(template.id) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
+                                <Star className={`w-3.5 h-3.5 ${isFavorite(template.id) ? 'fill-yellow-400 text-warning' : 'text-muted-foreground'}`} />
                               </Button>
                               <Badge variant="secondary" className="text-xs">
                                 {template.effectiveness}% eficaz

@@ -131,15 +131,15 @@ const NeuroScore = ({
   }, [interactions, discProfile, analyzeText, generateNeuroProfileFromDISC, previousScore]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 75) return 'text-emerald-500';
-    if (score >= 50) return 'text-amber-500';
-    return 'text-red-500';
+    if (score >= 75) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 75) return 'bg-emerald-500/10 border-emerald-500/30';
-    if (score >= 50) return 'bg-amber-500/10 border-amber-500/30';
-    return 'bg-red-500/10 border-red-500/30';
+    if (score >= 75) return 'bg-success/10 border-success/30';
+    if (score >= 50) return 'bg-warning/10 border-warning/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getScoreLabel = (score: number) => {
@@ -192,7 +192,7 @@ const NeuroScore = ({
                   {trend !== 'stable' && (
                     <TrendIcon className={cn(
                       "h-4 w-4",
-                      trend === 'up' ? 'text-emerald-500' : 'text-red-500'
+                      trend === 'up' ? 'text-success' : 'text-destructive'
                     )} />
                   )}
                 </div>
@@ -285,7 +285,7 @@ const NeuroScore = ({
                 {trend !== 'stable' && (
                   <div className={cn(
                     "flex items-center gap-1 text-xs",
-                    trend === 'up' ? 'text-emerald-500' : 'text-red-500'
+                    trend === 'up' ? 'text-success' : 'text-destructive'
                   )}>
                     <TrendIcon className="h-3 w-3" />
                     <span>{trend === 'up' ? 'Subindo' : 'Caindo'}</span>

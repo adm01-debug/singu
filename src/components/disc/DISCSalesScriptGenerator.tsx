@@ -291,15 +291,15 @@ const DISCSalesScriptGenerator: React.FC<DISCSalesScriptGeneratorProps> = ({ con
           {/* Tips and Magic Words */}
           <div className="grid md:grid-cols-2 gap-4">
             {/* Tips */}
-            <div className="bg-green-500/10 rounded-lg p-4">
-              <h4 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center gap-2">
+            <div className="bg-success/10 rounded-lg p-4">
+              <h4 className="font-medium text-success dark:text-success mb-2 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Dicas para Esta Etapa
               </h4>
               <ul className="space-y-1.5">
                 {currentStage.tips.map((tip, idx) => (
                   <li key={idx} className="text-sm flex items-start gap-2">
-                    <ChevronRight className="w-3 h-3 mt-1 text-green-600" />
+                    <ChevronRight className="w-3 h-3 mt-1 text-success" />
                     {tip}
                   </li>
                 ))}
@@ -329,14 +329,14 @@ const DISCSalesScriptGenerator: React.FC<DISCSalesScriptGeneratorProps> = ({ con
 
           {/* Warnings */}
           {currentStage.warnings.length > 0 && (
-            <div className="bg-red-500/10 rounded-lg p-4">
-              <h4 className="font-medium text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
+            <div className="bg-destructive/10 rounded-lg p-4">
+              <h4 className="font-medium text-destructive dark:text-destructive mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Evitar
               </h4>
               <div className="flex flex-wrap gap-2">
                 {currentStage.warnings.map((warning, idx) => (
-                  <Badge key={idx} variant="outline" className="border-red-500/50 text-red-700 dark:text-red-400">
+                  <Badge key={idx} variant="outline" className="border-destructive/50 text-destructive dark:text-destructive">
                     ✕ {warning}
                   </Badge>
                 ))}

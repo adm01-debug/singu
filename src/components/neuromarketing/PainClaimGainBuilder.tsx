@@ -212,11 +212,11 @@ O que faz mais sentido para você?"
 
           {/* PAIN TAB */}
           <TabsContent value="pain" className="space-y-4">
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-              <h4 className="font-medium text-red-700 dark:text-red-300 text-sm mb-1">
+            <div className="p-3 bg-destructive dark:bg-destructive/20 rounded-lg border border-destructive dark:border-destructive">
+              <h4 className="font-medium text-destructive dark:text-destructive text-sm mb-1">
                 💢 Identifique as DORES do cliente
               </h4>
-              <p className="text-xs text-red-600 dark:text-red-400">
+              <p className="text-xs text-destructive dark:text-destructive">
                 O cérebro reptiliano é motivado a EVITAR dor. Quanto mais específica e intensa, melhor.
               </p>
             </div>
@@ -269,7 +269,7 @@ O que faz mais sentido para você?"
             {/* Pain Tips */}
             <div className="p-3 bg-muted/50 rounded-lg">
               <h5 className="text-sm font-medium flex items-center gap-2 mb-2">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                <Lightbulb className="h-4 w-4 text-warning" />
                 Dicas para identificar dores
               </h5>
               <ul className="text-xs space-y-1 text-muted-foreground">
@@ -282,11 +282,11 @@ O que faz mais sentido para você?"
 
           {/* CLAIM TAB */}
           <TabsContent value="claim" className="space-y-4">
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <h4 className="font-medium text-blue-700 dark:text-blue-300 text-sm mb-1">
+            <div className="p-3 bg-info dark:bg-info/20 rounded-lg border border-info dark:border-info">
+              <h4 className="font-medium text-info dark:text-info text-sm mb-1">
                 🏆 Defina seu DIFERENCIAL ÚNICO
               </h4>
-              <p className="text-xs text-blue-600 dark:text-blue-400">
+              <p className="text-xs text-info dark:text-info">
                 O que SÓ VOCÊ oferece? Por que escolher você e não o concorrente?
               </p>
             </div>
@@ -295,7 +295,7 @@ O que faz mais sentido para você?"
             <div className="space-y-2">
               {claims.map((claim, i) => (
                 <div key={claim.id} className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <Award className="h-5 w-5 text-blue-500" />
+                  <Award className="h-5 w-5 text-info" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">{claim.claim}</p>
                     {claim.proofPoints[0] && (
@@ -333,11 +333,11 @@ O que faz mais sentido para você?"
 
           {/* GAIN TAB */}
           <TabsContent value="gain" className="space-y-4">
-            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-              <h4 className="font-medium text-green-700 dark:text-green-300 text-sm mb-1">
+            <div className="p-3 bg-success dark:bg-success/20 rounded-lg border border-success dark:border-success">
+              <h4 className="font-medium text-success dark:text-success text-sm mb-1">
                 💰 Quantifique os GANHOS
               </h4>
-              <p className="text-xs text-green-600 dark:text-green-400">
+              <p className="text-xs text-success dark:text-success">
                 Ganhos tangíveis e específicos. Números concretos convencem o cérebro primitivo.
               </p>
             </div>

@@ -170,7 +170,7 @@ const NeuroDecisionPath = ({
               <div className="space-y-1">
                 {BRAIN_SYSTEM_INFO[dominantBrain].communicationStyle.slice(0, 3).map((tip, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-success" />
                     <span>{tip}</span>
                   </div>
                 ))}
@@ -202,7 +202,7 @@ const NeuroDecisionPath = ({
                 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="font-medium text-green-600">Drivers:</span>
+                    <span className="font-medium text-success">Drivers:</span>
                     <ul className="mt-1 space-y-0.5">
                       {info.keyDrivers.slice(0, 3).map((d, i) => (
                         <li key={i}>• {d}</li>
@@ -210,7 +210,7 @@ const NeuroDecisionPath = ({
                     </ul>
                   </div>
                   <div>
-                    <span className="font-medium text-amber-600">Atenção:</span>
+                    <span className="font-medium text-warning">Atenção:</span>
                     <ul className="mt-1 space-y-0.5">
                       {info.warnings.slice(0, 2).map((w, i) => (
                         <li key={i}>• {w}</li>
@@ -265,7 +265,7 @@ const NeuroDecisionPath = ({
             {/* Recommendations based on stimuli */}
             <div className="mt-4 p-3 bg-muted/50 rounded-lg">
               <h5 className="font-medium text-sm mb-2 flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
+                <Lightbulb className="h-4 w-4 text-warning" />
                 Estímulos Recomendados para {contactName.split(' ')[0]}
               </h5>
               <div className="space-y-1 text-sm">

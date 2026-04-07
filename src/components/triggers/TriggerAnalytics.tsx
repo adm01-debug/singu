@@ -85,10 +85,10 @@ const DISC_COLORS: Record<DISCProfile, string> = {
 };
 
 const DISC_BG_COLORS: Record<DISCProfile, string> = {
-  D: 'bg-red-500/10 text-red-600',
-  I: 'bg-amber-500/10 text-amber-600',
-  S: 'bg-emerald-500/10 text-emerald-600',
-  C: 'bg-blue-500/10 text-blue-600',
+  D: 'bg-destructive/10 text-destructive',
+  I: 'bg-warning/10 text-warning',
+  S: 'bg-success/10 text-success',
+  C: 'bg-info/10 text-info',
 };
 
 const DISC_NAMES: Record<DISCProfile, string> = {
@@ -462,8 +462,8 @@ export function TriggerAnalytics({ className }: { className?: string }) {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <div className="p-2 rounded-lg bg-success/10">
+                  <CheckCircle2 className="w-5 h-5 text-success" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.successRate.toFixed(1)}%</p>
@@ -482,8 +482,8 @@ export function TriggerAnalytics({ className }: { className?: string }) {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Star className="w-5 h-5 text-amber-600" />
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <Star className="w-5 h-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.avgRating.toFixed(1)}</p>
@@ -502,8 +502,8 @@ export function TriggerAnalytics({ className }: { className?: string }) {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Users className="w-5 h-5 text-blue-600" />
+                <div className="p-2 rounded-lg bg-info/10">
+                  <Users className="w-5 h-5 text-info" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{Object.values(stats.byDISC).filter(d => d.totalUsages > 0).length}</p>
@@ -641,11 +641,11 @@ export function TriggerAnalytics({ className }: { className?: string }) {
                       <p className="text-xs text-muted-foreground">Usos</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-emerald-600">{discStats.successRate.toFixed(0)}%</p>
+                      <p className="text-2xl font-bold text-success">{discStats.successRate.toFixed(0)}%</p>
                       <p className="text-xs text-muted-foreground">Sucesso</p>
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-amber-600">{(discStats.avgRating / 20).toFixed(1)}</p>
+                      <p className="text-2xl font-bold text-warning">{(discStats.avgRating / 20).toFixed(1)}</p>
                       <p className="text-xs text-muted-foreground">Nota</p>
                     </div>
                   </div>
@@ -666,7 +666,7 @@ export function TriggerAnalytics({ className }: { className?: string }) {
                               </div>
                               <div className="text-right text-xs">
                                 <p className="text-muted-foreground">{t.count}x</p>
-                                <p className="text-emerald-600">{t.successRate.toFixed(0)}%</p>
+                                <p className="text-success">{t.successRate.toFixed(0)}%</p>
                               </div>
                             </div>
                           );
@@ -757,10 +757,10 @@ export function TriggerAnalytics({ className }: { className?: string }) {
                           </p>
                           <p className="text-sm">
                             <span className="text-muted-foreground">Sucesso:</span>{' '}
-                            <span className="font-semibold text-emerald-600">{triggerStat.successRate.toFixed(0)}%</span>
+                            <span className="font-semibold text-success">{triggerStat.successRate.toFixed(0)}%</span>
                           </p>
                           <div className="flex items-center justify-end gap-1">
-                            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                            <Star className="w-3 h-3 text-warning fill-amber-500" />
                             <span className="text-sm font-semibold">{(triggerStat.avgRating / 20).toFixed(1)}</span>
                           </div>
                         </div>

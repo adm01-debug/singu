@@ -52,10 +52,10 @@ const vakIcons: Record<string, React.ElementType> = {
 };
 
 const vakColors: Record<string, string> = {
-  Visual: 'text-blue-500 bg-blue-500/10',
-  Auditory: 'text-purple-500 bg-purple-500/10',
-  Kinesthetic: 'text-orange-500 bg-orange-500/10',
-  Digital: 'text-green-500 bg-green-500/10',
+  Visual: 'text-info bg-info/10',
+  Auditory: 'text-secondary bg-secondary/10',
+  Kinesthetic: 'text-accent bg-accent/10',
+  Digital: 'text-success bg-success/10',
 };
 
 interface PreContactBriefingProps {

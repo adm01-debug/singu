@@ -115,29 +115,29 @@ const VAK_COMPATIBILITY: Record<VAKType, Record<VAKType, number>> = {
 const LEVEL_CONFIG = {
   excellent: {
     label: 'Excelente',
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-100 dark:bg-emerald-950/30',
+    color: 'text-success',
+    bgColor: 'bg-success dark:bg-success/30',
     icon: CheckCircle2,
     description: 'Alta compatibilidade, comunicação natural',
   },
   good: {
     label: 'Boa',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-950/30',
+    color: 'text-info',
+    bgColor: 'bg-info dark:bg-info/30',
     icon: TrendingUp,
     description: 'Compatibilidade favorável com pequenos ajustes',
   },
   moderate: {
     label: 'Moderada',
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100 dark:bg-amber-950/30',
+    color: 'text-warning',
+    bgColor: 'bg-warning dark:bg-warning/30',
     icon: AlertTriangle,
     description: 'Requer adaptação consciente',
   },
   challenging: {
     label: 'Desafiadora',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100 dark:bg-red-950/30',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive dark:bg-destructive/30',
     icon: AlertTriangle,
     description: 'Demanda esforço extra de adaptação',
   },
@@ -239,8 +239,8 @@ function ContactCard({
                   <p className="text-xs text-muted-foreground mb-1">DISC</p>
                   <p className={cn(
                     'font-bold',
-                    contact.discScore >= 70 ? 'text-green-600' :
-                    contact.discScore >= 50 ? 'text-amber-600' : 'text-red-600'
+                    contact.discScore >= 70 ? 'text-success' :
+                    contact.discScore >= 50 ? 'text-warning' : 'text-destructive'
                   )}>
                     {contact.discScore > 0 ? `${contact.discScore}%` : '-'}
                   </p>
@@ -249,8 +249,8 @@ function ContactCard({
                   <p className="text-xs text-muted-foreground mb-1">VAK</p>
                   <p className={cn(
                     'font-bold',
-                    contact.vakScore >= 70 ? 'text-green-600' :
-                    contact.vakScore >= 50 ? 'text-amber-600' : 'text-red-600'
+                    contact.vakScore >= 70 ? 'text-success' :
+                    contact.vakScore >= 50 ? 'text-warning' : 'text-destructive'
                   )}>
                     {contact.vakScore > 0 ? `${contact.vakScore}%` : '-'}
                   </p>
@@ -259,8 +259,8 @@ function ContactCard({
                   <p className="text-xs text-muted-foreground mb-1">Meta</p>
                   <p className={cn(
                     'font-bold',
-                    contact.metaprogramScore >= 70 ? 'text-green-600' :
-                    contact.metaprogramScore >= 50 ? 'text-amber-600' : 'text-red-600'
+                    contact.metaprogramScore >= 70 ? 'text-success' :
+                    contact.metaprogramScore >= 50 ? 'text-warning' : 'text-destructive'
                   )}>
                     {contact.metaprogramScore > 0 ? `${contact.metaprogramScore}%` : '-'}
                   </p>
@@ -270,14 +270,14 @@ function ContactCard({
               {/* Opportunities */}
               {contact.opportunities.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium mb-2 flex items-center gap-1 text-green-600">
+                  <p className="text-xs font-medium mb-2 flex items-center gap-1 text-success">
                     <Sparkles className="w-3 h-3" />
                     Oportunidades
                   </p>
                   <ul className="space-y-1">
                     {contact.opportunities.map((opp, i) => (
                       <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-green-500 mt-0.5 shrink-0" />
+                        <CheckCircle2 className="w-3 h-3 text-success mt-0.5 shrink-0" />
                         {opp}
                       </li>
                     ))}
@@ -288,14 +288,14 @@ function ContactCard({
               {/* Challenges */}
               {contact.challenges.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium mb-2 flex items-center gap-1 text-amber-600">
+                  <p className="text-xs font-medium mb-2 flex items-center gap-1 text-warning">
                     <AlertTriangle className="w-3 h-3" />
                     Desafios
                   </p>
                   <ul className="space-y-1">
                     {contact.challenges.map((ch, i) => (
                       <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
-                        <ArrowRight className="w-3 h-3 text-amber-500 mt-0.5 shrink-0" />
+                        <ArrowRight className="w-3 h-3 text-warning mt-0.5 shrink-0" />
                         {ch}
                       </li>
                     ))}
@@ -329,23 +329,23 @@ function StatsOverview({ stats }: { stats: PortfolioStats }) {
         <p className="text-xs text-muted-foreground">Total</p>
       </div>
       <div className={cn('p-3 rounded-lg text-center', LEVEL_CONFIG.excellent.bgColor)}>
-        <Crown className="w-5 h-5 mx-auto mb-1 text-emerald-600" />
-        <p className="text-2xl font-bold text-emerald-600">{stats.excellent}</p>
+        <Crown className="w-5 h-5 mx-auto mb-1 text-success" />
+        <p className="text-2xl font-bold text-success">{stats.excellent}</p>
         <p className="text-xs text-muted-foreground">Excelentes</p>
       </div>
       <div className={cn('p-3 rounded-lg text-center', LEVEL_CONFIG.good.bgColor)}>
-        <Star className="w-5 h-5 mx-auto mb-1 text-blue-600" />
-        <p className="text-2xl font-bold text-blue-600">{stats.good}</p>
+        <Star className="w-5 h-5 mx-auto mb-1 text-info" />
+        <p className="text-2xl font-bold text-info">{stats.good}</p>
         <p className="text-xs text-muted-foreground">Boas</p>
       </div>
       <div className={cn('p-3 rounded-lg text-center', LEVEL_CONFIG.moderate.bgColor)}>
-        <Zap className="w-5 h-5 mx-auto mb-1 text-amber-600" />
-        <p className="text-2xl font-bold text-amber-600">{stats.moderate}</p>
+        <Zap className="w-5 h-5 mx-auto mb-1 text-warning" />
+        <p className="text-2xl font-bold text-warning">{stats.moderate}</p>
         <p className="text-xs text-muted-foreground">Moderadas</p>
       </div>
       <div className={cn('p-3 rounded-lg text-center', LEVEL_CONFIG.challenging.bgColor)}>
-        <AlertTriangle className="w-5 h-5 mx-auto mb-1 text-red-600" />
-        <p className="text-2xl font-bold text-red-600">{stats.challenging}</p>
+        <AlertTriangle className="w-5 h-5 mx-auto mb-1 text-destructive" />
+        <p className="text-2xl font-bold text-destructive">{stats.challenging}</p>
         <p className="text-xs text-muted-foreground">Desafiadoras</p>
       </div>
     </div>
@@ -697,8 +697,8 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
 
         {/* Top Opportunities */}
         {stats.topOpportunities.length > 0 && (
-          <div className="p-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/20">
-            <h4 className="font-medium text-sm mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+          <div className="p-4 rounded-lg border border-success dark:border-success bg-success dark:bg-success/20">
+            <h4 className="font-medium text-sm mb-3 flex items-center gap-2 text-success dark:text-success">
               <Crown className="w-4 h-4" />
               Melhores Oportunidades
             </h4>
@@ -713,7 +713,7 @@ export function PortfolioCompatibilityReport({ className }: PortfolioCompatibili
                       </Badge>
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-green-600">
+                  <span className="text-sm font-semibold text-success">
                     {c.compatibilityScore}%
                   </span>
                 </div>

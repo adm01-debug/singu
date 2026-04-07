@@ -50,10 +50,10 @@ export function MetricCard({ icon, label, value, suffix = '', color, trend }: {
   icon: React.ReactNode; label: string; value: string | number; suffix?: string; color: string; trend?: 'up' | 'down';
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-100 text-blue-600 dark:bg-blue-950/50',
-    purple: 'bg-purple-100 text-purple-600 dark:bg-purple-950/50',
-    red: 'bg-red-100 text-red-600 dark:bg-red-950/50',
-    emerald: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50',
+    blue: 'bg-info text-info dark:bg-info/50',
+    purple: 'bg-secondary text-secondary dark:bg-secondary/50',
+    red: 'bg-destructive text-destructive dark:bg-destructive/50',
+    emerald: 'bg-success text-success dark:bg-success/50',
   };
   return (
     <Card>
@@ -61,7 +61,7 @@ export function MetricCard({ icon, label, value, suffix = '', color, trend }: {
         <div className="flex items-start justify-between">
           <div className={`p-2 rounded-lg ${colorClasses[color]}`}>{icon}</div>
           {trend && (
-            <div className={trend === 'up' ? 'text-emerald-600' : 'text-red-600'}>
+            <div className={trend === 'up' ? 'text-success' : 'text-destructive'}>
               {trend === 'up' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
             </div>
           )}
@@ -83,9 +83,9 @@ export function PriorityCard({ label, count, total, color }: {
 }) {
   const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
   const colorClasses: Record<string, { bg: string; bar: string }> = {
-    red: { bg: 'bg-red-100 dark:bg-red-950/30', bar: 'bg-red-500' },
-    orange: { bg: 'bg-orange-100 dark:bg-orange-950/30', bar: 'bg-orange-500' },
-    blue: { bg: 'bg-blue-100 dark:bg-blue-950/30', bar: 'bg-blue-500' },
+    red: { bg: 'bg-destructive dark:bg-destructive/30', bar: 'bg-destructive' },
+    orange: { bg: 'bg-accent dark:bg-accent/30', bar: 'bg-accent' },
+    blue: { bg: 'bg-info dark:bg-info/30', bar: 'bg-info' },
     gray: { bg: 'bg-muted', bar: 'bg-muted-foreground' },
   };
   return (
@@ -130,9 +130,9 @@ export function SegmentCard({ segmentKey, segment, count, percentage, icon }: {
 
 export function PriorityBadge({ priority }: { priority: string }) {
   const config: Record<string, { color: string; label: string }> = {
-    urgent: { color: 'bg-red-100 text-red-700', label: 'Urgente' },
-    high: { color: 'bg-orange-100 text-orange-700', label: 'Alta' },
-    medium: { color: 'bg-blue-100 text-blue-700', label: 'Média' },
+    urgent: { color: 'bg-destructive text-destructive', label: 'Urgente' },
+    high: { color: 'bg-accent text-accent', label: 'Alta' },
+    medium: { color: 'bg-info text-info', label: 'Média' },
     low: { color: 'bg-muted text-muted-foreground', label: 'Baixa' },
   };
   const cfg = config[priority] || config.medium;
@@ -196,10 +196,10 @@ export function ScoreCard({ label, score, detail, color, trend }: {
   label: string; score: number; detail: string; color: string; trend?: string | null;
 }) {
   const colors: Record<string, string> = {
-    blue: 'bg-blue-100 text-blue-700', green: 'bg-green-100 text-green-700', amber: 'bg-amber-100 text-amber-700',
+    blue: 'bg-info text-info', green: 'bg-success text-success', amber: 'bg-warning text-warning',
   };
   const TrendIcon = trend === 'improving' ? ArrowUp : trend === 'declining' ? ArrowDown : Minus;
-  const trendColor = trend === 'improving' ? 'text-green-600' : trend === 'declining' ? 'text-red-600' : 'text-gray-400';
+  const trendColor = trend === 'improving' ? 'text-success' : trend === 'declining' ? 'text-destructive' : 'text-muted-foreground';
   return (
     <div className={`p-4 rounded-lg ${colors[color]}`}>
       <div className="flex items-center justify-between">
@@ -266,7 +266,7 @@ export function ContactRFMDetail({ rfm, history, onRefresh, analyzing }: {
             </div>
             <div className="bg-muted/30 rounded-lg p-4">
               <div className="flex items-center gap-2 text-muted-foreground"><Percent className="h-4 w-4" /><span className="text-sm">Probabilidade de Churn</span></div>
-              <div className={`text-lg font-semibold mt-1 ${(rfm.churnProbability || 0) > 50 ? 'text-red-600' : (rfm.churnProbability || 0) > 25 ? 'text-yellow-600' : 'text-green-600'}`}>{rfm.churnProbability?.toFixed(0) || 0}%</div>
+              <div className={`text-lg font-semibold mt-1 ${(rfm.churnProbability || 0) > 50 ? 'text-destructive' : (rfm.churnProbability || 0) > 25 ? 'text-warning' : 'text-success'}`}>{rfm.churnProbability?.toFixed(0) || 0}%</div>
             </div>
           </div>
           {historyChartData.length > 1 && (
@@ -311,7 +311,7 @@ export function ContactRFMDetail({ rfm, history, onRefresh, analyzing }: {
                   <div key={i} className="p-3 border rounded-lg">
                     <div className="font-medium">{offer.offerType}</div>
                     <div className="text-sm text-muted-foreground">{offer.description}</div>
-                    {offer.discountPercent && <Badge className="mt-2 bg-green-100 text-green-700">{offer.discountPercent}% OFF</Badge>}
+                    {offer.discountPercent && <Badge className="mt-2 bg-success text-success">{offer.discountPercent}% OFF</Badge>}
                   </div>
                 ))}
               </div>
@@ -340,9 +340,9 @@ export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
   return (
     <div className="space-y-6">
       {actionsByPriority.urgent.length > 0 && (
-        <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/20">
+        <Card className="border-destructive bg-destructive/50 dark:bg-destructive/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-700"><AlertTriangle className="h-5 w-5" />Ações Urgentes ({actionsByPriority.urgent.length})</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5" />Ações Urgentes ({actionsByPriority.urgent.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -360,7 +360,7 @@ export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
       {actionsByPriority.high.length > 0 && (
         <Card className="border-orange-200">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-700"><Bell className="h-5 w-5" />Alta Prioridade ({actionsByPriority.high.length})</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-accent"><Bell className="h-5 w-5" />Alta Prioridade ({actionsByPriority.high.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

@@ -213,10 +213,10 @@ const NeuroTrainingMode = ({
 
   const getScoreMessage = () => {
     const percentage = (score / TRAINING_QUESTIONS.length) * 100;
-    if (percentage >= 90) return { message: 'Excelente! Você é um expert em neurovendas!', color: 'text-green-500' };
-    if (percentage >= 70) return { message: 'Muito bom! Continue praticando para dominar.', color: 'text-blue-500' };
-    if (percentage >= 50) return { message: 'Bom começo! Revise os conceitos e tente novamente.', color: 'text-yellow-500' };
-    return { message: 'Continue estudando! A prática leva à perfeição.', color: 'text-orange-500' };
+    if (percentage >= 90) return { message: 'Excelente! Você é um expert em neurovendas!', color: 'text-success' };
+    if (percentage >= 70) return { message: 'Muito bom! Continue praticando para dominar.', color: 'text-info' };
+    if (percentage >= 50) return { message: 'Bom começo! Revise os conceitos e tente novamente.', color: 'text-warning' };
+    return { message: 'Continue estudando! A prática leva à perfeição.', color: 'text-accent' };
   };
 
   if (!isTraining) {
@@ -393,7 +393,7 @@ const NeuroTrainingMode = ({
                       className={cn(
                         "w-full p-3 rounded-lg border text-left transition-all",
                         isSelected && !showResult && "border-primary bg-primary/5",
-                        showCorrectness && option.isCorrect && "border-green-500 bg-green-500/10",
+                        showCorrectness && option.isCorrect && "border-success bg-success/10",
                         showCorrectness && isSelected && !option.isCorrect && "border-destructive bg-destructive/10",
                         !isSelected && !showResult && "hover:border-muted-foreground/50"
                       )}
@@ -401,7 +401,7 @@ const NeuroTrainingMode = ({
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">{option.label}</span>
                         {showCorrectness && option.isCorrect && (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-success" />
                         )}
                         {showCorrectness && isSelected && !option.isCorrect && (
                           <XCircle className="h-4 w-4 text-destructive" />
@@ -419,7 +419,7 @@ const NeuroTrainingMode = ({
 
               {/* Hint */}
               {!showResult && (
-                <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-warning/10 text-warning dark:text-warning">
                   <Lightbulb className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <p className="text-xs">{currentQuestion.hint}</p>
                 </div>

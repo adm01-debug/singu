@@ -135,7 +135,7 @@ export function CompatibilityScore({
         score: vakScore,
         maxScore: 100,
         icon: Eye,
-        color: isSameVAK ? 'text-emerald-600' : vakScore >= 70 ? 'text-blue-600' : 'text-amber-600',
+        color: isSameVAK ? 'text-success' : vakScore >= 70 ? 'text-info' : 'text-warning',
         insight: isSameVAK 
           ? `Ambos são ${VAK_LABELS[vakProfile.primary].fullName}s - comunicação natural!`
           : `Você: ${VAK_LABELS[salespersonProfile.vakProfile].name} → Cliente: ${VAK_LABELS[vakProfile.primary].name}`,
@@ -155,7 +155,7 @@ export function CompatibilityScore({
         score: discScore,
         maxScore: 100,
         icon: Target,
-        color: discScore >= 80 ? 'text-emerald-600' : discScore >= 60 ? 'text-blue-600' : 'text-amber-600',
+        color: discScore >= 80 ? 'text-success' : discScore >= 60 ? 'text-info' : 'text-warning',
         insight: isSameDISC
           ? `Ambos são ${DISC_LABELS[contactDISC].name}s - sintonia comportamental!`
           : `Você: ${salespersonProfile.discProfile} (${DISC_LABELS[salespersonProfile.discProfile].name}) → Cliente: ${contactDISC} (${DISC_LABELS[contactDISC].name})`,
@@ -174,7 +174,7 @@ export function CompatibilityScore({
         score: isSame ? 90 : 50,
         maxScore: 100,
         icon: Zap,
-        color: isSame ? 'text-emerald-600' : 'text-amber-600',
+        color: isSame ? 'text-success' : 'text-warning',
         insight: isSame
           ? 'Motivação alinhada - fácil de persuadir.'
           : `Você foca em "${sellerMot}" mas cliente foca em "${clientMot}"`,
@@ -197,7 +197,7 @@ export function CompatibilityScore({
         score: isSame ? 85 : 55,
         maxScore: 100,
         icon: Compass,
-        color: isSame ? 'text-emerald-600' : 'text-amber-600',
+        color: isSame ? 'text-success' : 'text-warning',
         insight: isSame
           ? 'Referência alinhada - validação natural.'
           : `Você usa ref. ${sellerRef} mas cliente usa ref. ${clientRef}`,
@@ -220,7 +220,7 @@ export function CompatibilityScore({
         score: isSame ? 85 : 55,
         maxScore: 100,
         icon: GitBranch,
-        color: isSame ? 'text-emerald-600' : 'text-amber-600',
+        color: isSame ? 'text-success' : 'text-warning',
         insight: isSame
           ? 'Estilos compatíveis - apresentação fluida.'
           : `Você prefere ${sellerWork} mas cliente prefere ${clientWork}`,
@@ -247,10 +247,10 @@ export function CompatibilityScore({
 
   // Get score level
   const getScoreLevel = (score: number) => {
-    if (score >= 80) return { label: 'Excelente', color: 'text-emerald-600', bgColor: 'bg-emerald-100', icon: CheckCircle2 };
-    if (score >= 60) return { label: 'Boa', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: TrendingUp };
-    if (score >= 40) return { label: 'Moderada', color: 'text-amber-600', bgColor: 'bg-amber-100', icon: AlertTriangle };
-    return { label: 'Desafiadora', color: 'text-red-600', bgColor: 'bg-red-100', icon: AlertTriangle };
+    if (score >= 80) return { label: 'Excelente', color: 'text-success', bgColor: 'bg-success', icon: CheckCircle2 };
+    if (score >= 60) return { label: 'Boa', color: 'text-info', bgColor: 'bg-info', icon: TrendingUp };
+    if (score >= 40) return { label: 'Moderada', color: 'text-warning', bgColor: 'bg-warning', icon: AlertTriangle };
+    return { label: 'Desafiadora', color: 'text-destructive', bgColor: 'bg-destructive', icon: AlertTriangle };
   };
 
   const scoreLevel = getScoreLevel(overallScore);

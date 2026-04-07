@@ -40,17 +40,17 @@ export function ClosingScoreAlertsList({
   const getAlertStyles = (changeType: string) => {
     if (changeType === 'improved_to_high') {
       return {
-        bg: 'bg-emerald-500/10 border-emerald-500/30',
+        bg: 'bg-success/10 border-success/30',
         icon: TrendingUp,
-        iconColor: 'text-emerald-500',
-        badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+        iconColor: 'text-success',
+        badgeBg: 'bg-success/20 text-success border-success/30'
       };
     }
     return {
-      bg: 'bg-red-500/10 border-red-500/30',
+      bg: 'bg-destructive/10 border-destructive/30',
       icon: TrendingDown,
-      iconColor: 'text-red-500',
-      badgeBg: 'bg-red-500/20 text-red-400 border-red-500/30'
+      iconColor: 'text-destructive',
+      badgeBg: 'bg-destructive/20 text-destructive border-destructive/30'
     };
   };
 
@@ -214,10 +214,10 @@ export function ClosingScoreAlertsList({
 
                 {/* Quick action for high probability */}
                 {alert.change_type === 'improved_to_high' && (
-                  <div className="mt-3 pt-3 border-t border-emerald-500/20">
+                  <div className="mt-3 pt-3 border-t border-success/20">
                     <Button
                       size="sm"
-                      className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30"
+                      className="w-full bg-success/20 hover:bg-success/30 text-success border border-success/30"
                       onClick={() => navigate(`/contatos/${alert.contact_id}`)}
                     >
                       <Target className="h-4 w-4 mr-2" />
@@ -228,11 +228,11 @@ export function ClosingScoreAlertsList({
 
                 {/* Quick action for very low probability */}
                 {alert.change_type === 'dropped_to_very_low' && (
-                  <div className="mt-3 pt-3 border-t border-red-500/20">
+                  <div className="mt-3 pt-3 border-t border-destructive/20">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
                       onClick={() => navigate(`/contatos/${alert.contact_id}`)}
                     >
                       <TrendingDown className="h-4 w-4 mr-2" />

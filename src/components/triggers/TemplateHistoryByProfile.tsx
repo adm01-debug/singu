@@ -88,33 +88,33 @@ interface TemplateProfileMetrics {
 const DISC_CONFIG: Record<DISCProfile, { label: string; color: string; bgColor: string; description: string }> = {
   D: {
     label: 'Dominante',
-    color: 'text-red-600',
-    bgColor: 'bg-red-100 dark:bg-red-950/30',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive dark:bg-destructive/30',
     description: 'Direto, decisivo, focado em resultados',
   },
   I: {
     label: 'Influente',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-950/30',
+    color: 'text-warning',
+    bgColor: 'bg-warning dark:bg-warning/30',
     description: 'Entusiasta, persuasivo, otimista',
   },
   S: {
     label: 'Estável',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-950/30',
+    color: 'text-success',
+    bgColor: 'bg-success dark:bg-success/30',
     description: 'Paciente, confiável, trabalha em equipe',
   },
   C: {
     label: 'Analítico',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-950/30',
+    color: 'text-info',
+    bgColor: 'bg-info dark:bg-info/30',
     description: 'Preciso, analítico, focado em qualidade',
   },
 };
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'stable' }) {
-  if (trend === 'up') return <TrendingUp className="w-4 h-4 text-green-500" />;
-  if (trend === 'down') return <TrendingDown className="w-4 h-4 text-red-500" />;
+  if (trend === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
+  if (trend === 'down') return <TrendingDown className="w-4 h-4 text-destructive" />;
   return <Minus className="w-4 h-4 text-muted-foreground" />;
 }
 
@@ -164,8 +164,8 @@ function ProfileCard({ metrics, isExpanded, onToggle }: {
               <div className="flex items-center gap-1 justify-end">
                 <span className={cn(
                   'text-lg font-bold',
-                  metrics.successRate >= 70 ? 'text-green-600' :
-                  metrics.successRate >= 40 ? 'text-yellow-600' : 'text-red-600'
+                  metrics.successRate >= 70 ? 'text-success' :
+                  metrics.successRate >= 40 ? 'text-warning' : 'text-destructive'
                 )}>
                   {metrics.successRate.toFixed(0)}%
                 </span>
@@ -197,12 +197,12 @@ function ProfileCard({ metrics, isExpanded, onToggle }: {
               {/* Stats Summary */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg bg-muted/50 text-center">
-                  <p className="text-2xl font-bold text-green-600">{metrics.successCount}</p>
+                  <p className="text-2xl font-bold text-success">{metrics.successCount}</p>
                   <p className="text-xs text-muted-foreground">Sucessos</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 text-center">
                   <div className="flex items-center justify-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-4 h-4 text-warning fill-yellow-500" />
                     <p className="text-2xl font-bold">{metrics.avgRating.toFixed(1)}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">Média</p>
@@ -243,7 +243,7 @@ function ProfileCard({ metrics, isExpanded, onToggle }: {
                             </Badge>
                             <span className={cn(
                               'text-sm font-semibold',
-                              template.successRate >= 70 ? 'text-green-600' : 'text-yellow-600'
+                              template.successRate >= 70 ? 'text-success' : 'text-warning'
                             )}>
                               {template.successRate.toFixed(0)}%
                             </span>
@@ -281,8 +281,8 @@ function ProfileCard({ metrics, isExpanded, onToggle }: {
                               variant="outline"
                               className={cn(
                                 'text-xs',
-                                usage.result === 'success' && 'border-green-200 text-green-600',
-                                usage.result === 'failure' && 'border-red-200 text-red-600'
+                                usage.result === 'success' && 'border-success text-success',
+                                usage.result === 'failure' && 'border-destructive text-destructive'
                               )}
                             >
                               {usage.result === 'success' ? 'Sucesso' :
@@ -361,8 +361,8 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                   <div className="text-right">
                     <p className={cn(
                       'font-semibold',
-                      tm.overallSuccessRate >= 70 ? 'text-green-600' :
-                      tm.overallSuccessRate >= 40 ? 'text-yellow-600' : 'text-muted-foreground'
+                      tm.overallSuccessRate >= 70 ? 'text-success' :
+                      tm.overallSuccessRate >= 40 ? 'text-warning' : 'text-muted-foreground'
                     )}>
                       {tm.overallSuccessRate.toFixed(0)}%
                     </p>
@@ -419,7 +419,7 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                                 </span>
                               </div>
                               {isBest && (
-                                <Badge variant="outline" className="text-xs border-green-300 text-green-600">
+                                <Badge variant="outline" className="text-xs border-success text-success">
                                   Melhor
                                 </Badge>
                               )}
@@ -433,8 +433,8 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                                 <span className="text-muted-foreground">Sucesso</span>
                                 <span className={cn(
                                   'font-medium',
-                                  data.successRate >= 70 ? 'text-green-600' :
-                                  data.successRate >= 40 ? 'text-yellow-600' : 'text-red-600'
+                                  data.successRate >= 70 ? 'text-success' :
+                                  data.successRate >= 40 ? 'text-warning' : 'text-destructive'
                                 )}>
                                   {data.usages > 0 ? `${data.successRate.toFixed(0)}%` : '-'}
                                 </span>
@@ -443,7 +443,7 @@ function TemplateByProfileView({ templateMetrics }: { templateMetrics: TemplateP
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">Avaliação</span>
                                   <div className="flex items-center gap-1">
-                                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                    <Star className="w-3 h-3 text-warning fill-yellow-500" />
                                     <span className="font-medium">{data.avgRating.toFixed(1)}</span>
                                   </div>
                                 </div>

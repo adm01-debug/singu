@@ -218,8 +218,8 @@ const NeuroTooltip = ({
               <div className="pt-2 border-t">
                 {content.tips.map((tip, index) => (
                   <div key={index} className="flex items-start gap-1.5">
-                    <Lightbulb className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-amber-700 dark:text-amber-400">{tip}</p>
+                    <Lightbulb className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-warning dark:text-warning">{tip}</p>
                   </div>
                 ))}
               </div>

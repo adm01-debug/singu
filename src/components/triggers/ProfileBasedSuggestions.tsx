@@ -59,17 +59,17 @@ interface SuggestedTemplate {
 }
 
 const DISC_DESCRIPTIONS: Record<DISCProfile, { name: string; icon: string; color: string }> = {
-  D: { name: 'Dominante', icon: '🔴', color: 'bg-red-100 text-red-700 border-red-200' },
-  I: { name: 'Influente', icon: '🟡', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  S: { name: 'Estável', icon: '🟢', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  C: { name: 'Consciente', icon: '🔵', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  D: { name: 'Dominante', icon: '🔴', color: 'bg-destructive text-destructive border-destructive' },
+  I: { name: 'Influente', icon: '🟡', color: 'bg-warning text-warning border-amber-200' },
+  S: { name: 'Estável', icon: '🟢', color: 'bg-success text-success border-emerald-200' },
+  C: { name: 'Consciente', icon: '🔵', color: 'bg-info text-info border-info' },
 };
 
 const VAK_DESCRIPTIONS: Record<VAKType, { name: string; icon: typeof Eye; color: string }> = {
-  V: { name: 'Visual', icon: Eye, color: 'bg-blue-100 text-blue-700' },
-  A: { name: 'Auditivo', icon: Ear, color: 'bg-purple-100 text-purple-700' },
-  K: { name: 'Cinestésico', icon: Hand, color: 'bg-orange-100 text-orange-700' },
-  D: { name: 'Digital', icon: Brain, color: 'bg-slate-100 text-slate-700' },
+  V: { name: 'Visual', icon: Eye, color: 'bg-info text-info' },
+  A: { name: 'Auditivo', icon: Ear, color: 'bg-secondary text-secondary' },
+  K: { name: 'Cinestésico', icon: Hand, color: 'bg-accent text-accent' },
+  D: { name: 'Digital', icon: Brain, color: 'bg-slate-100 text-muted-foreground' },
 };
 
 function TemplatePreviewDialog({
@@ -365,9 +365,9 @@ export function ProfileBasedSuggestions({
   }, [suggestions, activeCategory]);
 
   const categoryBadges = {
-    vak: { color: 'bg-blue-100 text-blue-700 border-blue-200', label: 'VAK' },
-    metaprogram: { color: 'bg-purple-100 text-purple-700 border-purple-200', label: 'Metaprograma' },
-    combined: { color: 'bg-emerald-100 text-emerald-700 border-emerald-200', label: 'Combinado' },
+    vak: { color: 'bg-info text-info border-info', label: 'VAK' },
+    metaprogram: { color: 'bg-secondary text-secondary border-secondary', label: 'Metaprograma' },
+    combined: { color: 'bg-success text-success border-emerald-200', label: 'Combinado' },
   };
 
   if (!vakProfile && !metaprogramProfile) {

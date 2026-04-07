@@ -77,10 +77,10 @@ const discLabels: Record<DISCProfile, string> = {
 };
 
 const discColors: Record<DISCProfile, string> = {
-  D: 'bg-red-100 text-red-700 border-red-200',
-  I: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  S: 'bg-green-100 text-green-700 border-green-200',
-  C: 'bg-blue-100 text-blue-700 border-blue-200',
+  D: 'bg-destructive text-destructive border-destructive',
+  I: 'bg-warning text-warning border-warning',
+  S: 'bg-success text-success border-success',
+  C: 'bg-info text-info border-info',
 };
 
 export function TemplatePerformanceComparison({ contact, className }: TemplatePerformanceComparisonProps) {
@@ -193,8 +193,8 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
   }, [allTemplates]);
 
   const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
-    if (trend === 'up') return <TrendingUp className="w-4 h-4 text-green-500" />;
-    if (trend === 'down') return <TrendingDown className="w-4 h-4 text-red-500" />;
+    if (trend === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
+    if (trend === 'down') return <TrendingDown className="w-4 h-4 text-destructive" />;
     return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
@@ -261,25 +261,25 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border border-yellow-200 dark:border-yellow-800"
+            className="p-4 rounded-lg bg-muted/30 border border-warning dark:border-warning"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-900">
-                <Trophy className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-2 rounded-full bg-warning dark:bg-warning">
+                <Trophy className="w-5 h-5 text-warning dark:text-warning" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                <p className="text-sm font-medium text-warning dark:text-warning">
                   🏆 Template Campeão do Cenário
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                <p className="text-xs text-warning dark:text-warning">
                   {topPerformer.template.title}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-yellow-700 dark:text-yellow-300">
+                <p className="text-lg font-bold text-warning dark:text-warning">
                   {topPerformer.successRate.toFixed(0)}%
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                <p className="text-xs text-warning dark:text-warning">
                   {topPerformer.totalUsages} usos
                 </p>
               </div>
@@ -321,14 +321,14 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
                         className={cn(
                           'cursor-pointer transition-colors hover:bg-muted/50',
                           isExpanded && 'bg-muted/30',
-                          isTopPerformer && 'bg-yellow-50/50 dark:bg-yellow-950/10'
+                          isTopPerformer && 'bg-warning/50 dark:bg-warning/10'
                         )}
                         onClick={() => setExpandedTemplate(isExpanded ? null : data.template.id)}
                       >
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {isTopPerformer && (
-                              <Trophy className="w-4 h-4 text-yellow-500 shrink-0" />
+                              <Trophy className="w-4 h-4 text-warning shrink-0" />
                             )}
                             <div className="min-w-0">
                               <p className="font-medium truncate text-sm">
@@ -352,9 +352,9 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
                           <div className="flex flex-col items-center gap-1">
                             <span className={cn(
                               'text-sm font-semibold',
-                              data.successRate >= 70 && 'text-green-600',
-                              data.successRate >= 40 && data.successRate < 70 && 'text-yellow-600',
-                              data.successRate < 40 && data.successRate > 0 && 'text-red-600',
+                              data.successRate >= 70 && 'text-success',
+                              data.successRate >= 40 && data.successRate < 70 && 'text-warning',
+                              data.successRate < 40 && data.successRate > 0 && 'text-destructive',
                               data.successRate === 0 && 'text-muted-foreground'
                             )}>
                               {data.totalUsages > 0 ? `${data.successRate.toFixed(0)}%` : '-'}
@@ -371,7 +371,7 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
                           <div className="flex items-center justify-center gap-1">
                             {data.avgRating > 0 ? (
                               <>
-                                <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                                <Star className="w-3.5 h-3.5 text-warning fill-yellow-500" />
                                 <span className="text-sm font-medium">
                                   {data.avgRating.toFixed(1)}
                                 </span>
@@ -413,21 +413,21 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
                                   {/* Stats Grid */}
                                   <div className="grid grid-cols-4 gap-3">
                                     <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-green-600 mb-1">
+                                      <div className="flex items-center gap-2 text-success mb-1">
                                         <Target className="w-4 h-4" />
                                         <span className="text-xs font-medium">Sucesso</span>
                                       </div>
                                       <p className="text-xl font-bold">{data.successCount}</p>
                                     </div>
                                     <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-yellow-600 mb-1">
+                                      <div className="flex items-center gap-2 text-warning mb-1">
                                         <Minus className="w-4 h-4" />
                                         <span className="text-xs font-medium">Neutro</span>
                                       </div>
                                       <p className="text-xl font-bold">{data.neutralCount}</p>
                                     </div>
                                     <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-red-600 mb-1">
+                                      <div className="flex items-center gap-2 text-destructive mb-1">
                                         <TrendingDown className="w-4 h-4" />
                                         <span className="text-xs font-medium">Falha</span>
                                       </div>
@@ -506,7 +506,7 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
               <p className="text-xs text-muted-foreground">Total de usos</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-success">
                 {performanceData.filter(d => d.totalUsages > 0).length > 0
                   ? (
                       performanceData

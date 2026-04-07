@@ -119,9 +119,9 @@ export function NLPAnalyticsPanel() {
       {/* Summary Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Brain} iconClass="bg-primary/10 text-primary" label="Análises PNL" value={stats.totalAnalyses} delay={0.1} />
-        <StatCard icon={Heart} iconClass="bg-pink-500/10 text-pink-500" label="Estados Emocionais" value={stats.emotionalStates.length} delay={0.2} />
-        <StatCard icon={Sparkles} iconClass="bg-emerald-500/10 text-emerald-500" label="Valores Únicos" value={stats.topValues.length} delay={0.3} />
-        <StatCard icon={AlertTriangle} iconClass="bg-amber-500/10 text-amber-500" label="Objeções Detectadas" value={stats.objectionTypes.reduce((a, b) => a + b.count, 0)} delay={0.4} />
+        <StatCard icon={Heart} iconClass="bg-primary/10 text-primary" label="Estados Emocionais" value={stats.emotionalStates.length} delay={0.2} />
+        <StatCard icon={Sparkles} iconClass="bg-success/10 text-success" label="Valores Únicos" value={stats.topValues.length} delay={0.3} />
+        <StatCard icon={AlertTriangle} iconClass="bg-warning/10 text-warning" label="Objeções Detectadas" value={stats.objectionTypes.reduce((a, b) => a + b.count, 0)} delay={0.4} />
       </div>
 
       {/* Tabs */}
@@ -334,7 +334,7 @@ export function NLPAnalyticsPanel() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-amber-500" /> Objeções por Tipo</CardTitle>
+                <CardTitle className="flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-warning" /> Objeções por Tipo</CardTitle>
                 <CardDescription>Taxa de resolução por categoria</CardDescription>
               </CardHeader>
               <CardContent>

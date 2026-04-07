@@ -43,7 +43,7 @@ export function TrainingPracticeTab({
   if (scenarios.length === 0) {
     return (
       <div className="text-center py-8">
-        <Trophy className="w-12 h-12 mx-auto text-yellow-500 mb-4" />
+        <Trophy className="w-12 h-12 mx-auto text-warning mb-4" />
         <p className="text-muted-foreground">
           Complete seu perfil DISC para acessar os cenários de prática.
         </p>
@@ -55,7 +55,7 @@ export function TrainingPracticeTab({
     return (
       <div className="text-center py-8">
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="mb-4">
-          <Trophy className="w-16 h-16 mx-auto text-yellow-500" />
+          <Trophy className="w-16 h-16 mx-auto text-warning" />
         </motion.div>
         <h3 className="text-xl font-bold mb-2">Treinamento Completo! 🎉</h3>
         <p className="text-muted-foreground mb-4">
@@ -92,13 +92,13 @@ export function TrainingPracticeTab({
       <Progress value={((currentScenario + 1) / scenarios.length) * 100} className="h-2" />
 
       {/* Scenario */}
-      <div className="p-4 rounded-lg border bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
+      <div className="p-4 rounded-lg border bg-muted/30">
         <div className="flex items-center gap-2 mb-3">
           <Badge className={cn(
-            currentScenarioData.clientProfile.disc === 'D' && 'bg-red-500',
-            currentScenarioData.clientProfile.disc === 'I' && 'bg-yellow-500',
-            currentScenarioData.clientProfile.disc === 'S' && 'bg-green-500',
-            currentScenarioData.clientProfile.disc === 'C' && 'bg-blue-500',
+            currentScenarioData.clientProfile.disc === 'D' && 'bg-destructive',
+            currentScenarioData.clientProfile.disc === 'I' && 'bg-warning',
+            currentScenarioData.clientProfile.disc === 'S' && 'bg-success',
+            currentScenarioData.clientProfile.disc === 'C' && 'bg-info',
           )}>
             {currentScenarioData.clientProfile.disc}
           </Badge>
@@ -126,8 +126,8 @@ export function TrainingPracticeTab({
               className={cn(
                 'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all',
                 selectedAnswer === option.id && !showResult && 'border-primary bg-primary/10',
-                showResult && option.isCorrect && 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30',
-                showResult && selectedAnswer === option.id && !option.isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/30',
+                showResult && option.isCorrect && 'border-emerald-500 bg-success dark:bg-success/30',
+                showResult && selectedAnswer === option.id && !option.isCorrect && 'border-destructive bg-destructive dark:bg-destructive/30',
                 !showResult && 'hover:border-primary/50'
               )}
             >
@@ -141,8 +141,8 @@ export function TrainingPracticeTab({
                     className={cn(
                       'text-xs mt-2 p-2 rounded',
                       option.isCorrect
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                        ? 'bg-success text-success dark:bg-success/50 dark:text-success'
+                        : 'bg-destructive text-destructive dark:bg-destructive/50 dark:text-destructive'
                     )}
                   >
                     {option.explanation}
@@ -150,7 +150,7 @@ export function TrainingPracticeTab({
                 )}
               </div>
               {showResult && option.isCorrect && (
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <CheckCircle2 className="w-5 h-5 text-success" />
               )}
             </Label>
           ))}

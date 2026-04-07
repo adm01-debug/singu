@@ -42,10 +42,10 @@ const TYPE_ICONS: Record<AppreciationType, any> = {
 };
 
 const TYPE_COLORS: Record<AppreciationType, string> = {
-  sincere_compliment: 'text-pink-500 bg-pink-500/10',
+  sincere_compliment: 'text-primary bg-primary/10',
   specific_recognition: 'text-warning bg-warning/10',
   effort_acknowledgment: 'text-primary bg-primary/10',
-  character_praise: 'text-purple-500 bg-purple-500/10',
+  character_praise: 'text-secondary bg-secondary/10',
   achievement_celebration: 'text-success bg-success/10',
   growth_recognition: 'text-accent-foreground bg-accent/10',
   contribution_thanks: 'text-warning bg-warning/10',
@@ -73,7 +73,7 @@ export function AppreciationPanel({ contact = null, className }: AppreciationPan
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <MessageCircleHeart className="h-5 w-5 text-pink-500" />
+            <MessageCircleHeart className="h-5 w-5 text-primary" />
             Biblioteca de Apreciação
           </CardTitle>
           <Badge variant="outline">Perfil {discProfile}</Badge>

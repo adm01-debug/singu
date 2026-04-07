@@ -49,14 +49,14 @@ const CATEGORY_ICONS = {
 };
 
 const CATEGORY_COLORS = {
-  altruism: 'text-pink-500 bg-pink-500/10',
-  legacy: 'text-purple-500 bg-purple-500/10',
-  community: 'text-blue-500 bg-blue-500/10',
-  family: 'text-orange-500 bg-orange-500/10',
-  purpose: 'text-indigo-500 bg-indigo-500/10',
+  altruism: 'text-primary bg-primary/10',
+  legacy: 'text-secondary bg-secondary/10',
+  community: 'text-info bg-info/10',
+  family: 'text-accent bg-accent/10',
+  purpose: 'text-primary bg-primary/10',
   growth: 'text-success bg-success/10',
-  justice: 'text-amber-500 bg-amber-500/10',
-  innovation: 'text-cyan-500 bg-cyan-500/10'
+  justice: 'text-warning bg-warning/10',
+  innovation: 'text-accent bg-accent/10'
 };
 
 const CATEGORY_LABELS = {

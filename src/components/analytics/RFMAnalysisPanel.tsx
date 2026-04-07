@@ -85,13 +85,13 @@ export function RFMAnalysisPanel({ compact = false, contactId }: RFMAnalysisPane
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-lg p-3">
+            <div className="bg-success dark:bg-success/30 rounded-lg p-3">
               <div className="text-sm text-muted-foreground">Campeões</div>
-              <div className="text-2xl font-bold text-emerald-600">{dashboardStats.segmentDistribution.champions || 0}</div>
+              <div className="text-2xl font-bold text-success">{dashboardStats.segmentDistribution.champions || 0}</div>
             </div>
-            <div className="bg-red-50 dark:bg-red-950/30 rounded-lg p-3">
+            <div className="bg-destructive dark:bg-destructive/30 rounded-lg p-3">
               <div className="text-sm text-muted-foreground">Em Risco</div>
-              <div className="text-2xl font-bold text-red-600">{(dashboardStats.segmentDistribution.at_risk || 0) + (dashboardStats.segmentDistribution.cant_lose || 0)}</div>
+              <div className="text-2xl font-bold text-destructive">{(dashboardStats.segmentDistribution.at_risk || 0) + (dashboardStats.segmentDistribution.cant_lose || 0)}</div>
             </div>
           </div>
           <div className="space-y-2">

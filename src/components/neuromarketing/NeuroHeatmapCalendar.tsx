@@ -139,11 +139,11 @@ const NeuroHeatmapCalendar = ({
 
   // Get color based on score
   const getScoreColor = (score: number): string => {
-    if (score >= 80) return 'bg-green-500';
-    if (score >= 60) return 'bg-green-400';
-    if (score >= 40) return 'bg-yellow-400';
-    if (score >= 20) return 'bg-orange-400';
-    return 'bg-red-400';
+    if (score >= 80) return 'bg-success';
+    if (score >= 60) return 'bg-success';
+    if (score >= 40) return 'bg-warning';
+    if (score >= 20) return 'bg-accent';
+    return 'bg-destructive';
   };
 
   const getScoreOpacity = (score: number): number => {
@@ -259,15 +259,15 @@ const NeuroHeatmapCalendar = ({
         {/* Legend */}
         <div className="flex items-center justify-center gap-4 pt-2">
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-red-400 opacity-50" />
+            <div className="w-3 h-3 rounded bg-destructive opacity-50" />
             <span className="text-xs text-muted-foreground">Evitar</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-yellow-400 opacity-70" />
+            <div className="w-3 h-3 rounded bg-warning opacity-70" />
             <span className="text-xs text-muted-foreground">Neutro</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded bg-green-500" />
+            <div className="w-3 h-3 rounded bg-success" />
             <span className="text-xs text-muted-foreground">Ideal</span>
           </div>
         </div>
@@ -320,7 +320,7 @@ const NeuroHeatmapCalendar = ({
                     >
                       {chemicalInfo.namePt}
                     </Badge>
-                    <span className="text-sm font-bold text-green-600">
+                    <span className="text-sm font-bold text-success">
                       {slot.score.toFixed(0)}%
                     </span>
                   </div>

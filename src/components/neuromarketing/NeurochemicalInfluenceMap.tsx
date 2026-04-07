@@ -323,7 +323,7 @@ const NeurochemicalInfluenceMap = ({
                   {/* Sales Tactics */}
                   <div>
                     <h5 className="text-sm font-medium mb-2 flex items-center gap-1">
-                      <Trophy className="h-3.5 w-3.5 text-green-500" />
+                      <Trophy className="h-3.5 w-3.5 text-success" />
                       Táticas de Vendas
                     </h5>
                     <ul className="space-y-1">
@@ -332,7 +332,7 @@ const NeurochemicalInfluenceMap = ({
                           key={idx}
                           className="text-xs text-muted-foreground flex items-start gap-1.5"
                         >
-                          <ChevronRight className="h-3 w-3 mt-0.5 text-green-500 flex-shrink-0" />
+                          <ChevronRight className="h-3 w-3 mt-0.5 text-success flex-shrink-0" />
                           {tactic}
                         </li>
                       ))}

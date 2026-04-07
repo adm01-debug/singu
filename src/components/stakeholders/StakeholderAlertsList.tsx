@@ -48,14 +48,14 @@ const SEVERITY_STYLES: Record<string, { bg: string; border: string; badge: strin
     badge: 'bg-destructive text-destructive-foreground'
   },
   high: {
-    bg: 'bg-orange-500/10',
-    border: 'border-orange-500/50',
+    bg: 'bg-accent/10',
+    border: 'border-accent/50',
     badge: 'bg-warning text-warning-foreground'
   },
   medium: {
-    bg: 'bg-yellow-500/10',
-    border: 'border-yellow-500/50',
-    badge: 'bg-yellow-500 text-foreground'
+    bg: 'bg-warning/10',
+    border: 'border-warning/50',
+    badge: 'bg-warning text-foreground'
   },
   low: {
     bg: 'bg-primary/10',

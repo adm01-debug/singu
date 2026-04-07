@@ -52,10 +52,10 @@ const DISC_COLORS = {
 };
 
 const DISC_BG_COLORS = {
-  D: 'bg-red-500/10 text-red-600',
-  I: 'bg-amber-500/10 text-amber-600',
-  S: 'bg-emerald-500/10 text-emerald-600',
-  C: 'bg-blue-500/10 text-blue-600'
+  D: 'bg-destructive/10 text-destructive',
+  I: 'bg-warning/10 text-warning',
+  S: 'bg-success/10 text-success',
+  C: 'bg-info/10 text-info'
 };
 
 const DISCAnalyticsPanel = () => {
@@ -240,8 +240,8 @@ const DISCAnalyticsPanel = () => {
           <Card>
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
-                <Target className="w-8 h-8 text-emerald-500" />
-                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600">
+                <Target className="w-8 h-8 text-success" />
+                <Badge variant="outline" className="bg-success/10 text-success">
                   {stats.avgConfidence}%
                 </Badge>
               </div>
@@ -278,8 +278,8 @@ const DISCAnalyticsPanel = () => {
           <Card>
             <CardContent className="pt-5">
               <div className="flex items-center justify-between">
-                <Activity className="w-8 h-8 text-purple-500" />
-                <Badge variant="outline" className="bg-purple-500/10 text-purple-600">
+                <Activity className="w-8 h-8 text-secondary" />
+                <Badge variant="outline" className="bg-secondary/10 text-secondary">
                   7 dias
                 </Badge>
               </div>
@@ -496,7 +496,7 @@ const DISCAnalyticsPanel = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle2 className="w-5 h-5 text-success" />
                   Melhor Performance
                 </CardTitle>
               </CardHeader>
@@ -516,8 +516,8 @@ const DISCAnalyticsPanel = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="p-3 bg-emerald-500/10 rounded-lg">
-                    <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                  <div className="p-3 bg-success/10 rounded-lg">
+                    <p className="text-sm text-success dark:text-success">
                       <Lightbulb className="w-4 h-4 inline mr-1" />
                       Priorize contatos com este perfil para maximizar resultados
                     </p>
@@ -530,7 +530,7 @@ const DISCAnalyticsPanel = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
+                  <AlertCircle className="w-5 h-5 text-warning" />
                   Oportunidade de Melhoria
                 </CardTitle>
               </CardHeader>
@@ -550,8 +550,8 @@ const DISCAnalyticsPanel = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="p-3 bg-amber-500/10 rounded-lg">
-                    <p className="text-sm text-amber-700 dark:text-amber-400">
+                  <div className="p-3 bg-warning/10 rounded-lg">
+                    <p className="text-sm text-warning dark:text-warning">
                       <Lightbulb className="w-4 h-4 inline mr-1" />
                       Estude as estratégias específicas para este perfil
                     </p>
@@ -638,9 +638,9 @@ const DISCAnalyticsPanel = () => {
                         <Badge 
                           variant="outline"
                           className={cn(
-                            contact.relationshipScore >= 70 ? 'bg-emerald-500/10 text-emerald-600' :
-                            contact.relationshipScore >= 40 ? 'bg-amber-500/10 text-amber-600' :
-                            'bg-red-500/10 text-red-600'
+                            contact.relationshipScore >= 70 ? 'bg-success/10 text-success' :
+                            contact.relationshipScore >= 40 ? 'bg-warning/10 text-warning' :
+                            'bg-destructive/10 text-destructive'
                           )}
                         >
                           {contact.relationshipScore}%

@@ -274,13 +274,13 @@ const NeuroPortfolioDashboard = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                className="p-4 rounded-lg bg-destructive dark:bg-destructive/20 border border-destructive dark:border-destructive"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   <span className="text-sm font-medium">Reptiliano</span>
                 </div>
-                <p className="text-2xl font-bold text-red-600">{brainDistribution.reptilian.count}</p>
+                <p className="text-2xl font-bold text-destructive">{brainDistribution.reptilian.count}</p>
                 <p className="text-xs text-muted-foreground">Foco em segurança</p>
               </motion.div>
 
@@ -288,13 +288,13 @@ const NeuroPortfolioDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="p-4 rounded-lg bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800"
+                className="p-4 rounded-lg bg-pink-50 dark:bg-primary/20 border border-pink-200 dark:border-pink-800"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Heart className="h-5 w-5 text-pink-500" />
+                  <Heart className="h-5 w-5 text-primary" />
                   <span className="text-sm font-medium">Límbico</span>
                 </div>
-                <p className="text-2xl font-bold text-pink-600">{brainDistribution.limbic.count}</p>
+                <p className="text-2xl font-bold text-primary">{brainDistribution.limbic.count}</p>
                 <p className="text-xs text-muted-foreground">Foco emocional</p>
               </motion.div>
 
@@ -302,13 +302,13 @@ const NeuroPortfolioDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                className="p-4 rounded-lg bg-info dark:bg-info/20 border border-info dark:border-info"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Brain className="h-5 w-5 text-blue-500" />
+                  <Brain className="h-5 w-5 text-info" />
                   <span className="text-sm font-medium">Neocórtex</span>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">{brainDistribution.neocortex.count}</p>
+                <p className="text-2xl font-bold text-info">{brainDistribution.neocortex.count}</p>
                 <p className="text-xs text-muted-foreground">Foco analítico</p>
               </motion.div>
 
@@ -456,7 +456,7 @@ const NeuroPortfolioDashboard = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  <Lightbulb className="h-5 w-5 text-warning" />
                   6 Estímulos Primários - Ranking do Portfólio
                 </CardTitle>
                 <CardDescription>
@@ -473,7 +473,7 @@ const NeuroPortfolioDashboard = () => {
                       transition={{ delay: index * 0.1 }}
                       className={`p-4 rounded-lg border transition-all
                         ${index === 0 ? 'bg-primary/10 border-primary ring-2 ring-primary' : 
-                          index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200' :
+                          index === 1 ? 'bg-warning dark:bg-warning/20 border-warning' :
                           'bg-muted/30'}`}
                     >
                       <div className="flex items-center gap-2 mb-2">

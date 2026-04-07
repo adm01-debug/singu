@@ -24,10 +24,10 @@ import { subscribeToPush, isPushSupported, getSubscriptionStatus } from '@/lib/p
 type DISCProfile = 'D' | 'I' | 'S' | 'C';
 
 const DISC_PROFILES: { id: DISCProfile; name: string; color: string }[] = [
-  { id: 'D', name: 'Dominante', color: 'bg-red-500/10 text-red-600 border-red-200' },
-  { id: 'I', name: 'Influente', color: 'bg-amber-500/10 text-amber-600 border-amber-200' },
-  { id: 'S', name: 'Estável', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-200' },
-  { id: 'C', name: 'Conforme', color: 'bg-blue-500/10 text-blue-600 border-blue-200' },
+  { id: 'D', name: 'Dominante', color: 'bg-destructive/10 text-destructive border-destructive' },
+  { id: 'I', name: 'Influente', color: 'bg-warning/10 text-warning border-amber-200' },
+  { id: 'S', name: 'Estável', color: 'bg-success/10 text-success border-emerald-200' },
+  { id: 'C', name: 'Conforme', color: 'bg-info/10 text-info border-info' },
 ];
 
 export function TemplateNotificationSettings({ className }: { className?: string }) {

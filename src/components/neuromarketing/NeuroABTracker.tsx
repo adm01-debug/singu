@@ -248,11 +248,11 @@ const NeuroABTracker = ({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3 rounded-lg bg-green-500/10 border border-green-500/20"
+                className="p-3 rounded-lg bg-success/10 border border-success/20"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  <span className="text-xs font-medium text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span className="text-xs font-medium text-success dark:text-success">
                     Melhor Abordagem
                   </span>
                 </div>
@@ -315,7 +315,7 @@ const NeuroABTracker = ({
 
                   <div className="flex items-center gap-2">
                     {stat.trend === 'up' && (
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-success" />
                     )}
                     {stat.trend === 'down' && (
                       <TrendingDown className="h-4 w-4 text-destructive" />
@@ -338,13 +338,13 @@ const NeuroABTracker = ({
 
                     <div className="flex justify-between text-xs">
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <div className="w-2 h-2 rounded-full bg-success" />
                         <span className="text-muted-foreground">
                           {stat.successCount} sucesso
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                        <div className="w-2 h-2 rounded-full bg-warning" />
                         <span className="text-muted-foreground">
                           {stat.neutralCount} neutro
                         </span>

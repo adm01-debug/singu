@@ -426,7 +426,7 @@ const NeuroObjectionHandler = ({
         {/* Pro tip */}
         <div className="p-3 rounded-lg bg-accent/50 border">
           <div className="flex items-start gap-2">
-            <Lightbulb className="h-4 w-4 text-amber-500 mt-0.5" />
+            <Lightbulb className="h-4 w-4 text-warning mt-0.5" />
             <div>
               <p className="text-sm font-medium">Dica de Neurovendas</p>
               <p className="text-xs text-muted-foreground mt-1">

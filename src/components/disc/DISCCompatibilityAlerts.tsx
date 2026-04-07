@@ -153,15 +153,15 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
   }, [toast]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-500';
-    if (score >= 50) return 'text-yellow-500';
-    return 'text-red-500';
+    if (score >= 70) return 'text-success';
+    if (score >= 50) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBadge = (score: number) => {
-    if (score >= 70) return 'bg-green-500/10 text-green-700 border-green-500/30';
-    if (score >= 50) return 'bg-yellow-500/10 text-yellow-700 border-yellow-500/30';
-    return 'bg-red-500/10 text-red-700 border-red-500/30';
+    if (score >= 70) return 'bg-success/10 text-success border-success/30';
+    if (score >= 50) return 'bg-warning/10 text-warning border-warning/30';
+    return 'bg-destructive/10 text-destructive border-destructive/30';
   };
 
   if (!settings.enabled) {
@@ -187,7 +187,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-500" />
+            <AlertTriangle className="w-5 h-5 text-warning" />
             <CardTitle className="text-lg">Alertas de Compatibilidade</CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -309,7 +309,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
           </div>
         ) : alerts.length === 0 ? (
           <div className="py-8 text-center">
-            <Shield className="w-10 h-10 mx-auto mb-3 text-green-500/50" />
+            <Shield className="w-10 h-10 mx-auto mb-3 text-success/50" />
             <h3 className="font-medium mb-2">Tudo Sob Controle</h3>
             <p className="text-sm text-muted-foreground">
               Nenhum contato com compatibilidade crítica detectado
@@ -361,7 +361,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
                           <ul className="text-sm space-y-0.5">
                             {alert.challenges.slice(0, 2).map((challenge, i) => (
                               <li key={i} className="flex items-center gap-1 text-muted-foreground">
-                                <X className="w-3 h-3 text-red-500" />
+                                <X className="w-3 h-3 text-destructive" />
                                 {challenge}
                               </li>
                             ))}
@@ -377,7 +377,7 @@ const DISCCompatibilityAlerts: React.FC<DISCCompatibilityAlertsProps> = ({
                           <ul className="text-sm space-y-0.5">
                             {alert.tips.slice(0, 2).map((tip, i) => (
                               <li key={i} className="flex items-center gap-1 text-muted-foreground">
-                                <Check className="w-3 h-3 text-green-500" />
+                                <Check className="w-3 h-3 text-success" />
                                 {tip}
                               </li>
                             ))}

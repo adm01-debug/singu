@@ -31,7 +31,7 @@ export function TrainingTipsTab({ salespersonProfile, getDISCTip, getVAKTip }: T
         {/* DISC Selection */}
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-2">
-            <Target className="w-4 h-4 text-blue-500" />
+            <Target className="w-4 h-4 text-info" />
             Perfil DISC do Cliente
           </Label>
           <div className="grid grid-cols-4 gap-2">
@@ -56,7 +56,7 @@ export function TrainingTipsTab({ salespersonProfile, getDISCTip, getVAKTip }: T
         {/* VAK Selection */}
         <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-2">
-            <Eye className="w-4 h-4 text-purple-500" />
+            <Eye className="w-4 h-4 text-secondary" />
             Sistema VAK do Cliente
           </Label>
           <div className="grid grid-cols-4 gap-2">
@@ -86,8 +86,8 @@ export function TrainingTipsTab({ salespersonProfile, getDISCTip, getVAKTip }: T
         <TipCard
           key={`disc-${selectedDISC}`}
           tip={discTip}
-          icon={<Target className="w-4 h-4 text-blue-600" />}
-          bgClass="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30"
+          icon={<Target className="w-4 h-4 text-info" />}
+          bgClass="bg-muted/30"
         />
       )}
 
@@ -96,8 +96,8 @@ export function TrainingTipsTab({ salespersonProfile, getDISCTip, getVAKTip }: T
         <TipCard
           key={`vak-${selectedVAK}`}
           tip={vakTip}
-          icon={<Eye className="w-4 h-4 text-purple-600" />}
-          bgClass="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30"
+          icon={<Eye className="w-4 h-4 text-secondary" />}
+          bgClass="bg-muted/30"
         />
       )}
     </div>
@@ -116,26 +116,26 @@ function TipCard({ tip, icon, bgClass }: { tip: TrainingTip; icon: React.ReactNo
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
+            <p className="text-xs font-medium text-success flex items-center gap-1">
               <ThumbsUp className="w-3 h-3" /> FAÇA
             </p>
             <ul className="space-y-1">
               {tip.doList.map((item, i) => (
                 <li key={i} className="text-xs flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-3 h-3 text-success mt-0.5 shrink-0" />
                   {item}
                 </li>
               ))}
             </ul>
           </div>
           <div className="space-y-2">
-            <p className="text-xs font-medium text-red-600 flex items-center gap-1">
+            <p className="text-xs font-medium text-destructive flex items-center gap-1">
               <ThumbsDown className="w-3 h-3" /> NÃO FAÇA
             </p>
             <ul className="space-y-1">
               {tip.dontList.map((item, i) => (
                 <li key={i} className="text-xs flex items-start gap-1.5">
-                  <AlertTriangle className="w-3 h-3 text-red-500 mt-0.5 shrink-0" />
+                  <AlertTriangle className="w-3 h-3 text-destructive mt-0.5 shrink-0" />
                   {item}
                 </li>
               ))}

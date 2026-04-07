@@ -48,8 +48,8 @@ const QUICK_PRINCIPLES = [
     id: 'warmth', 
     icon: Thermometer, 
     label: 'Calor Humano', 
-    color: 'text-orange-500',
-    bg: 'bg-orange-500/10',
+    color: 'text-accent',
+    bg: 'bg-accent/10',
     description: 'Analise o calor da sua comunicação'
   },
   { 
@@ -64,24 +64,24 @@ const QUICK_PRINCIPLES = [
     id: 'identity', 
     icon: Award, 
     label: 'Identidade', 
-    color: 'text-purple-500',
-    bg: 'bg-purple-500/10',
+    color: 'text-secondary',
+    bg: 'bg-secondary/10',
     description: 'Reforce a identidade positiva'
   },
   { 
     id: 'talk', 
     icon: MessageSquare, 
     label: 'Fala/Escuta', 
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
+    color: 'text-info',
+    bg: 'bg-info/10',
     description: 'Monitore sua proporção de fala'
   },
   { 
     id: 'appreciation', 
     icon: Gift, 
     label: 'Apreciação', 
-    color: 'text-pink-500',
-    bg: 'bg-pink-500/10',
+    color: 'text-primary',
+    bg: 'bg-primary/10',
     description: 'Demonstre apreciação genuína'
   },
 ];

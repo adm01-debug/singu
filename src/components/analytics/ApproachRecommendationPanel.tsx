@@ -449,7 +449,7 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
                                 className={cn(
                                   "w-3 h-3",
                                   i < Math.round(tech.effectiveness / 20) 
-                                    ? "text-yellow-500 fill-yellow-500" 
+                                    ? "text-warning fill-yellow-500" 
                                     : "text-muted"
                                 )}
                               />
@@ -499,12 +499,12 @@ export function ApproachRecommendationPanel({ contact, interactions, className }
                 {/* Trust Builders */}
                 <div>
                   <h4 className="font-medium flex items-center gap-2 mb-3">
-                    <Heart className="w-4 h-4 text-pink-500" />
+                    <Heart className="w-4 h-4 text-primary" />
                     Construtores de Confiança
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {trustBuilders.map((builder, idx) => (
-                      <Badge key={idx} variant="outline" className="bg-pink-500/5 border-pink-500/30">
+                      <Badge key={idx} variant="outline" className="bg-primary/5 border-pink-500/30">
                         {builder}
                       </Badge>
                     ))}
@@ -618,10 +618,10 @@ function PhaseCard({
   copiedItem: string | null;
 }) {
   const phaseColors = [
-    'bg-blue-500',
-    'bg-purple-500',
-    'bg-emerald-500',
-    'bg-orange-500',
+    'bg-info',
+    'bg-secondary',
+    'bg-success',
+    'bg-accent',
     'bg-pink-500',
   ];
 

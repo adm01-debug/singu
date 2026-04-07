@@ -58,9 +58,9 @@ const NeuroEnrichedTriggers = ({ discProfile, showAll = false }: NeuroEnrichedTr
 
   const getBrainIcon = (system: BrainSystem) => {
     switch (system) {
-      case 'reptilian': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      case 'limbic': return <Heart className="h-4 w-4 text-pink-500" />;
-      case 'neocortex': return <Brain className="h-4 w-4 text-blue-500" />;
+      case 'reptilian': return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      case 'limbic': return <Heart className="h-4 w-4 text-primary" />;
+      case 'neocortex': return <Brain className="h-4 w-4 text-info" />;
     }
   };
 
@@ -85,8 +85,8 @@ const NeuroEnrichedTriggers = ({ discProfile, showAll = false }: NeuroEnrichedTr
               <div 
                 key={trigger.id}
                 className={`p-3 rounded-lg border transition-all hover:shadow-md
-                  ${trigger.effectivenessMultiplier > 1 ? 'bg-green-50 dark:bg-green-900/20 border-green-200' :
-                    trigger.effectivenessMultiplier < 1 ? 'bg-red-50 dark:bg-red-900/20 border-red-200' :
+                  ${trigger.effectivenessMultiplier > 1 ? 'bg-success dark:bg-success/20 border-success' :
+                    trigger.effectivenessMultiplier < 1 ? 'bg-destructive dark:bg-destructive/20 border-destructive' :
                     'bg-muted/30'}`}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -182,12 +182,12 @@ const NeuroEnrichedTriggers = ({ discProfile, showAll = false }: NeuroEnrichedTr
                 {/* Best/Avoid For */}
                 <div className="flex items-center gap-2 mt-2 text-xs">
                   {trigger.bestFor.length > 0 && (
-                    <span className="text-green-600 dark:text-green-400">
+                    <span className="text-success dark:text-success">
                       ✓ Ideal: {trigger.bestFor.join(', ')}
                     </span>
                   )}
                   {trigger.avoidFor.length > 0 && (
-                    <span className="text-red-600 dark:text-red-400">
+                    <span className="text-destructive dark:text-destructive">
                       ✗ Evitar: {trigger.avoidFor.join(', ')}
                     </span>
                   )}
