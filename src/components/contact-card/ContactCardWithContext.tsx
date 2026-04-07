@@ -370,7 +370,7 @@ export function ContactCardWithContext({
                     alt={`${contact.first_name} ${contact.last_name}`}
                     fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`}
                     size="md"
-                    className="w-12 h-12 border-2 border-primary/20"
+                    className="w-10 h-10"
                   />
                   <div className="absolute -top-1 -right-1">
                     <PriorityIndicator 
