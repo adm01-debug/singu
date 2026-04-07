@@ -70,7 +70,7 @@ serve(async (req) => {
     }
 
     // Sanitize voiceId to prevent path traversal
-    let selectedVoiceId = "FGY2WhTYpPnrIDTdsKH5"; // Laura default
+    let selectedVoiceId = "4tRn1lSkEn13EVTuqb0g"; // Custom voice default
     if (voiceId && typeof voiceId === "string") {
       if (!VOICE_ID_REGEX.test(voiceId)) {
         return new Response(
