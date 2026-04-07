@@ -104,7 +104,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Generaliza a objeção para um contexto maior onde faz menos sentido.',
     formula: '"Isso é parte de uma questão maior: [contexto ampliado]. E nesse contexto, [nova perspectiva]."',
     icon: '🔼',
-    color: 'bg-primary text-primary border-indigo-200',
+    color: 'bg-primary text-primary border-primary/20',
     examples: [
       '"A questão maior é: vocês querem liderar ou seguir o mercado?"',
       '"No final das contas, o que importa é o resultado para sua empresa."',
@@ -121,7 +121,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Especifica a objeção até que ela pareça gerenciável ou irrelevante.',
     formula: '"Especificamente, qual parte de [objeção] te preocupa mais?"',
     icon: '🔽',
-    color: 'bg-cyan-100 text-accent border-accent/30',
+    color: 'bg-accent/10 text-accent border-accent/30',
     examples: [
       '"Quando você diz \'caro\', está comparando com qual alternativa especificamente?"',
       '"Qual funcionalidade específica você acha desnecessária?"',
@@ -189,7 +189,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Muda o foco do resultado temido para um resultado desejado.',
     formula: '"Além de [preocupação atual], você já considerou [outro resultado positivo]?"',
     icon: '🎲',
-    color: 'bg-teal-100 text-accent border-teal-200',
+    color: 'bg-accent/10 text-accent border-accent/20',
     examples: [
       '"Além do custo, já pensou no valor da produtividade que vai ganhar?"',
       '"E se em vez de focar no risco, olhássemos para a oportunidade?"',

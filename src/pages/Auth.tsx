@@ -276,7 +276,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <Card className="border-border/30 shadow-xl shadow-primary/5 backdrop-blur-sm">
+          <Card className="border-border/30 shadow-md shadow-primary/5 backdrop-blur-sm">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">
                 {mode === 'login' ? 'Entrar' : 'Criar conta'}

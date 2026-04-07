@@ -190,7 +190,7 @@ export const METAPROGRAM_LABELS = {
     general: {
       name: 'Geral',
       icon: '🌐',
-      color: 'bg-primary text-primary border-indigo-200',
+      color: 'bg-primary text-primary border-primary/20',
       description: 'Prefere visão geral, conceitos amplos e o "big picture".',
       communicationTips: [
         'Comece com o panorama geral antes dos detalhes',
@@ -202,7 +202,7 @@ export const METAPROGRAM_LABELS = {
     specific: {
       name: 'Específico',
       icon: '🔍',
-      color: 'bg-cyan-100 text-accent border-accent/30',
+      color: 'bg-accent/10 text-accent border-accent/30',
       description: 'Prefere detalhes, especificidades e informações granulares.',
       communicationTips: [
         'Forneça dados e números específicos',
@@ -238,7 +238,7 @@ export const METAPROGRAM_LABELS = {
     reactive: {
       name: 'Reativo',
       icon: '⏳',
-      color: 'bg-teal-100 text-accent border-teal-200',
+      color: 'bg-accent/10 text-accent border-accent/20',
       description: 'Analisa primeiro, age depois. Espera o momento certo.',
       communicationTips: [
         'Use: "Pense sobre isso...", "Quando estiver pronto..."',

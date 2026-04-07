@@ -122,7 +122,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Pensativo',
     icon: '🧐',
     color: 'text-primary',
-    bgColor: 'bg-primary border-indigo-200',
+    bgColor: 'bg-primary border-primary/20',
     description: 'Cliente está refletindo',
     salesApproach: 'Dê espaço e faça perguntas que ajudem a clarificar.'
   },
@@ -130,7 +130,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Analítico',
     icon: '📊',
     color: 'text-accent',
-    bgColor: 'bg-cyan-100 border-accent/30',
+    bgColor: 'bg-accent/10 border-accent/30',
     description: 'Cliente quer dados e provas',
     salesApproach: 'Apresente números, cases e ROI comprovado.'
   },

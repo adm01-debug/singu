@@ -207,7 +207,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Potenciais Fiéis',
     description: 'Clientes recentes com bom potencial',
     color: 'text-accent',
-    bgColor: 'bg-cyan-100',
+    bgColor: 'bg-accent/10',
     icon: 'star',
     priority: 3,
     actionFocus: 'Criar relacionamento, ofertas personalizadas'

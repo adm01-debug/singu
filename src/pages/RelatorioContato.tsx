@@ -305,7 +305,7 @@ const RelatorioContato = () => {
               <div className="text-sm text-muted-foreground">Cinestésico</div>
               <div className="text-xs text-muted-foreground mt-1">Quer sentir segurança</div>
             </div>
-            <div className="text-center p-4 bg-teal-50 rounded-lg">
+            <div className="text-center p-4 bg-accent/5 rounded-lg">
               <div className="text-2xl font-bold text-accent">20%</div>
               <div className="text-sm text-muted-foreground">Auditivo</div>
               <div className="text-xs text-muted-foreground mt-1">Menos foco em texto longo</div>

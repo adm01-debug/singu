@@ -229,7 +229,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Experiências reais de outros',
     effectiveness: 8,
     icon: '💬',
-    color: 'text-accent bg-teal-100',
+    color: 'text-accent bg-accent/10',
     examples: [
       'Veja o que o João da empresa X disse',
       'Case de sucesso com resultados reais',
@@ -318,7 +318,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Detalhes geram credibilidade',
     effectiveness: 9,
     icon: '📊',
-    color: 'text-accent bg-cyan-100',
+    color: 'text-accent bg-accent/10',
     examples: [
       'Aumento de 37,2% nas vendas',
       'Economia de R$ 12.847/mês',

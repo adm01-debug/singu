@@ -464,7 +464,7 @@ const Insights = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-lg group">
+                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-sm group">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-4">
                           <div className={cn(

@@ -41,7 +41,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
     description: 'Ativa conceitos no subconsciente que influenciam decisões posteriores',
     effectiveness: 9,
     icon: '🧲',
-    color: 'text-accent bg-cyan-100',
+    color: 'text-accent bg-accent/10',
     examples: [
       'Antes de falar de preço, mencione "investimento inteligente"...',
       'Use palavras como "economia", "retorno", "lucro" antes de apresentar valores',

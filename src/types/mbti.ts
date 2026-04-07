@@ -97,7 +97,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Teórico, preciso e focado em ideias',
     decisionStyle: 'Lógico puro, busca a verdade objetiva',
     color: 'text-accent',
-    bgColor: 'bg-cyan-100',
+    bgColor: 'bg-accent/10',
     icon: '🔬',
     salesTips: [
       'Permita explorar tecnicamente o produto',
@@ -160,7 +160,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Empático, profundo e focado em significado',
     decisionStyle: 'Guiado por valores e intuição sobre as pessoas',
     color: 'text-accent',
-    bgColor: 'bg-teal-100',
+    bgColor: 'bg-accent/10',
     icon: '🌟',
     salesTips: [
       'Conecte-se em nível pessoal e autêntico',
