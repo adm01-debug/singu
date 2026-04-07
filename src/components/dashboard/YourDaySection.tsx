@@ -158,9 +158,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* Unified list layout */}
       {hasAnyData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
           {/* Left Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40 flex flex-col">
             {/* Overdue Follow-ups */}
             {overdueFollowUps.length > 0 && (
               <div>
@@ -271,7 +271,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
             {/* Empty state for left column */}
             {overdueFollowUps.length === 0 && todayFollowUps.length === 0 && (
-              <div className="text-center py-6">
+              <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
                 <p className="text-xs text-muted-foreground">Nenhum follow-up pendente</p>
               </div>
@@ -279,7 +279,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
           </div>
 
           {/* Right Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40 flex flex-col">
             {/* Birthdays */}
             {upcomingBirthdays.length > 0 && (
               <div>
@@ -373,7 +373,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
             {/* Empty state for right column */}
             {upcomingBirthdays.length === 0 && needsAttention.length === 0 && (
-              <div className="text-center py-6">
+              <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
                 <p className="text-xs text-muted-foreground">Tudo tranquilo por aqui</p>
               </div>

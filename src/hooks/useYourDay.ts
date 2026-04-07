@@ -210,9 +210,10 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
         const daysSinceContact = Math.floor((today.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24));
         
         if ((contact.relationship_score || 0) < 30 && daysSinceContact > 14) {
+          const companyHint = company?.name ? ` · ${company.name}` : '';
           needsAttention.push({
             contact, company,
-            reason: 'Score baixo e sem contato há mais de 2 semanas',
+            reason: `Score ${contact.relationship_score || 0}% — sem contato há ${daysSinceContact}d${companyHint}`,
             priority: 'high',
             daysSinceContact,
           });
@@ -220,16 +221,17 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
           (contact.role === 'decision_maker' || contact.role === 'owner') &&
           daysSinceContact > 21
         ) {
+          const roleLabel = contact.role === 'owner' ? 'Sócio' : 'Decisor';
           needsAttention.push({
             contact, company,
-            reason: 'Decisor sem contato há mais de 3 semanas',
+            reason: `${roleLabel} — último contato há ${daysSinceContact} dias`,
             priority: 'medium',
             daysSinceContact,
           });
         } else if (contact.sentiment === 'negative' && daysSinceContact > 7) {
           needsAttention.push({
             contact, company,
-            reason: 'Sentimento negativo precisa de atenção',
+            reason: `Sentimento negativo detectado há ${daysSinceContact}d — ação recomendada`,
             priority: 'low',
             daysSinceContact,
           });
