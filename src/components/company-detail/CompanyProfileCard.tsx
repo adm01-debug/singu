@@ -9,11 +9,16 @@ import {
 import { motion } from 'framer-motion';
 import type { Tables } from '@/integrations/supabase/types';
 import type { CompanyPhone, CompanyEmail, CompanyAddress, CompanySocialMedia } from '@/hooks/useCompanyRelatedData';
+import { toTitleCase } from '@/lib/formatters';
 
 type Company = Tables<'companies'>;
 type HealthStatus = 'growing' | 'stable' | 'cutting' | 'unknown';
 
-const safeInitial = (value: unknown, fallback = '?') => String(value ?? fallback).charAt(0);
+/** Strip leading numeric prefix like "05 - " and return first letter */
+const safeInitial = (value: unknown, fallback = '?') => {
+  const cleaned = String(value ?? fallback).replace(/^\d+\s*[-–—]\s*/, '');
+  return (cleaned || fallback).charAt(0).toUpperCase();
+};
 
 export interface CompanyProfileCardProps {
   company: Company;
@@ -80,7 +85,7 @@ export function CompanyProfileCard({
             </div>
             
             <div className="text-center mt-4">
-              <h1 className="text-2xl font-bold text-foreground">{company.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{toTitleCase(company.name)}</h1>
               {c.nome_fantasia && c.nome_fantasia !== company.name && (
                 <p className="text-sm text-muted-foreground">{String(c.nome_fantasia)}</p>
               )}
