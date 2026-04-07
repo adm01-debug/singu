@@ -243,7 +243,7 @@ export function ContactCardWithContext({
                       </a>
                     )}
                     {contact.whatsapp && (
-                      <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-md hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-500 transition-colors" title={contact.whatsapp}>
+                      <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-md hover:bg-success/10 text-muted-foreground hover:text-success transition-colors" title={contact.whatsapp}>
                         <MessageCircle className="w-3.5 h-3.5" />
                       </a>
                     )}
