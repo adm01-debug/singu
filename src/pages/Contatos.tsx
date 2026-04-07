@@ -468,8 +468,8 @@ const Contatos = () => {
           viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />
         ) : (
           <>
-            {/* Contacts Grid/List */}
-            {viewMode === 'grid' ? (
+            {/* Contacts Grid */}
+            {viewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
@@ -489,7 +489,10 @@ const Contatos = () => {
                   />
                 ))}
               </div>
-            ) : (
+            )}
+
+            {/* Contacts List */}
+            {viewMode === 'list' && (
               filteredAndSortedContacts.length > 50 ? (
                 <VirtualList
                   rowCount={filteredAndSortedContacts.length}
@@ -556,7 +559,10 @@ const Contatos = () => {
                   ))}
                 </div>
               )
-            ) : viewMode === 'table' ? (
+            )}
+
+            {/* Contacts Table */}
+            {viewMode === 'table' && (
               <ContactsTableView
                 contacts={filteredAndSortedContacts}
                 selectionMode={selectionMode}
@@ -574,7 +580,7 @@ const Contatos = () => {
                   }
                 }}
               />
-            ) : null}
+            )}
 
             {filteredAndSortedContacts.length === 0 && !loading && (
               searchTerm || Object.keys(activeFilters).length > 0 ? (
