@@ -1,0 +1,95 @@
+import { Link } from 'react-router-dom';
+import { Building2, MapPin, Users, Phone, Mail } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { Company } from '@/hooks/useCompanies';
+import { cn } from '@/lib/utils';
+import { toTitleCase } from '@/lib/formatters';
+
+interface CompanyListItemProps {
+  company: Company;
+  contactCount: number;
+  lastInteractionDays: number | null;
+  isSelected: boolean;
+  selectionMode: boolean;
+  onSelect: (id: string, selected: boolean) => void;
+}
+
+export function CompanyListItem({
+  company,
+  contactCount,
+  lastInteractionDays,
+  isSelected,
+  selectionMode,
+  onSelect,
+}: CompanyListItemProps) {
+  const location = [company.city, company.state].filter(Boolean).join(', ');
+
+  return (
+    <Link
+      to={`/empresas/${company.id}`}
+      className={cn(
+        'flex items-center gap-4 px-4 py-3 rounded-lg border border-border/30 bg-card/40 hover:bg-muted/20 hover:border-border/50 transition-colors group',
+        isSelected && 'bg-primary/5 border-primary/30'
+      )}
+    >
+      {selectionMode && (
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(c) => onSelect(company.id, c as boolean)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      )}
+      <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center text-sm font-semibold text-muted-foreground shrink-0">
+        {company.logo_url ? (
+          <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+        ) : (
+          (company.name || 'E')[0].toUpperCase()
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+            {toTitleCase(company.name)}
+          </span>
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[9px] font-semibold shrink-0',
+              company.is_customer
+                ? 'border-success/40 text-success bg-success/10'
+                : 'border-primary/40 text-primary bg-primary/10'
+            )}
+          >
+            {company.is_customer ? 'Cliente' : 'Prospect'}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+          {company.industry && <span>{company.industry}</span>}
+          {location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3 h-3" />
+              {location}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Users className="w-3 h-3" />
+            {contactCount}
+          </span>
+        </div>
+      </div>
+      <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground shrink-0">
+        {lastInteractionDays !== null && lastInteractionDays !== undefined && (
+          <span className={lastInteractionDays > 14 ? 'text-warning' : lastInteractionDays > 30 ? 'text-destructive' : ''}>
+            {lastInteractionDays === 0 ? 'Hoje' : `${lastInteractionDays}d`}
+          </span>
+        )}
+        <span className="tabular-nums">
+          {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
+        </span>
+      </div>
+    </Link>
+  );
+}

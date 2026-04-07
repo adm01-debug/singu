@@ -1,0 +1,135 @@
+import { Link } from 'react-router-dom';
+import { Building2, ArrowUpDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
+import { RelationshipScore } from '@/components/ui/relationship-score';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { Contact } from '@/hooks/useContacts';
+import { cn } from '@/lib/utils';
+import { formatContactName } from '@/lib/formatters';
+
+interface ContactsTableViewProps {
+  contacts: Contact[];
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+  onSelect: (id: string, selected: boolean) => void;
+  getCompanyName: (id: string | null) => string | null;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  onSortChange: (field: string) => void;
+}
+
+export function ContactsTableView({
+  contacts,
+  selectionMode,
+  selectedIds,
+  onSelect,
+  getCompanyName,
+  sortBy,
+  sortOrder,
+  onSortChange,
+}: ContactsTableViewProps) {
+  const SortButton = ({ field, children }: { field: string; children: React.ReactNode }) => (
+    <button
+      onClick={() => onSortChange(field)}
+      className="flex items-center gap-1 hover:text-foreground transition-colors"
+    >
+      {children}
+      <ArrowUpDown className={cn('w-3 h-3', sortBy === field ? 'text-primary' : 'text-muted-foreground/50')} />
+    </button>
+  );
+
+  return (
+    <div className="border border-border/60 rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent border-border/40">
+            {selectionMode && <TableHead className="w-10" />}
+            <TableHead><SortButton field="first_name">CONTATO</SortButton></TableHead>
+            <TableHead className="hidden md:table-cell">EMPRESA</TableHead>
+            <TableHead className="hidden lg:table-cell">CARGO</TableHead>
+            <TableHead className="hidden md:table-cell text-center">SCORE</TableHead>
+            <TableHead className="hidden lg:table-cell">E-MAIL</TableHead>
+            <TableHead><SortButton field="updated_at">ATUALIZAÇÃO</SortButton></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {contacts.map((contact) => {
+            const fullName = formatContactName(contact.first_name, contact.last_name);
+            const companyName = getCompanyName(contact.company_id);
+            return (
+              <TableRow
+                key={contact.id}
+                className={cn(
+                  'group cursor-pointer border-border/30 hover:bg-muted/20',
+                  selectedIds.has(contact.id) && 'bg-primary/5'
+                )}
+              >
+                {selectionMode && (
+                  <TableCell className="w-10">
+                    <Checkbox
+                      checked={selectedIds.has(contact.id)}
+                      onCheckedChange={(c) => onSelect(contact.id, c as boolean)}
+                    />
+                  </TableCell>
+                )}
+                <TableCell>
+                  <Link to={`/contatos/${contact.id}`} className="flex items-center gap-3 min-w-0">
+                    <OptimizedAvatar
+                      src={contact.avatar_url}
+                      alt={fullName}
+                      fallback={fullName}
+                      size="sm"
+                    />
+                    <div className="min-w-0">
+                      <span className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                        {fullName}
+                      </span>
+                      {contact.role_title && (
+                        <span className="text-xs text-muted-foreground line-clamp-1">{contact.role_title}</span>
+                      )}
+                    </div>
+                  </Link>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                  {companyName ? (
+                    <span className="flex items-center gap-1.5">
+                      <Building2 className="w-3 h-3" />
+                      {companyName}
+                    </span>
+                  ) : '—'}
+                </TableCell>
+                <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
+                  {contact.role_title || '—'}
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-center">
+                  {contact.relationship_score != null ? (
+                    <RelationshipScore score={contact.relationship_score} size="sm" />
+                  ) : (
+                    <span className="text-muted-foreground/50">—</span>
+                  )}
+                </TableCell>
+                <TableCell className="hidden lg:table-cell text-muted-foreground text-sm truncate max-w-[200px]">
+                  {contact.email || '—'}
+                </TableCell>
+                <TableCell className="text-xs text-muted-foreground tabular-nums">
+                  {formatDistanceToNow(new Date(contact.updated_at), { locale: ptBR, addSuffix: true })}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
