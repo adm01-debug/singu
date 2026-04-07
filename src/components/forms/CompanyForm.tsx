@@ -320,7 +320,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 )} />
               </FormSection>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+              <div className="h-px bg-border/50" />
 
               {/* Classification Section */}
               <FormSection icon={Briefcase} title="Classificação">
@@ -385,7 +385,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 )} />
               </FormSection>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+              <div className="h-px bg-border/50" />
 
               {/* Notes & Tags Section */}
               <FormSection icon={Tag} title="Anotações e Tags">
@@ -497,7 +497,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 )} />
               </FormSection>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+              <div className="h-px bg-border/50" />
 
               <FormSection icon={Landmark} title="Dados Legais">
                 <FormField control={form.control} name="capital_social" render={({ field }) => (
@@ -684,7 +684,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 )} />
               </FormSection>
 
-              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+              <div className="h-px bg-border/50" />
 
               <FormSection icon={GitMerge} title="IDs Relacionais">
                 <FormField control={form.control} name="matriz_id" render={({ field }) => (
@@ -793,7 +793,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                       />
                     </div>
                   </FormSection>
-                  <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+                  <div className="h-px bg-border/50" />
                   <FormSection icon={Share2} title="Redes Sociais & Website">
                     <div className="md:col-span-2">
                       <CompanySocialMediaForm
