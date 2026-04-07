@@ -1,11 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 import type { VoiceAgentAction, VoiceAgentPhase } from "./types";
+import { logger } from "@/lib/logger";
 
 const ERROR_RESET_DELAY_MS = 5000;
 
-/**
- * Manages all voice agent state and timer-based phase resets.
- */
 export function useVoiceState() {
   const [phase, setPhase] = useState<VoiceAgentPhase>("idle");
   const [partialTranscript, setPartialTranscript] = useState("");
@@ -43,8 +41,6 @@ export function useVoiceState() {
   }, [clearResetPhaseTimer]);
 
   const resetAll = useCallback(() => {
-    isStartingRef.current = false;
-    isProcessingRef.current = false;
     clearResetPhaseTimer();
     clearSessionStartTimer();
     setPhase("idle");
@@ -53,22 +49,21 @@ export function useVoiceState() {
     setAgentResponse("");
     setError(null);
     setCurrentAction(null);
+    isProcessingRef.current = false;
+    isStartingRef.current = false;
   }, [clearResetPhaseTimer, clearSessionStartTimer]);
 
   return {
-    // State
     phase, setPhase,
     partialTranscript, setPartialTranscript,
     finalTranscript, setFinalTranscript,
     agentResponse, setAgentResponse,
     error, setError,
     currentAction, setCurrentAction,
-    // Refs
     isProcessingRef,
     isStartingRef,
     resetPhaseTimerRef,
     sessionStartTimerRef,
-    // Timer helpers
     clearResetPhaseTimer,
     clearSessionStartTimer,
     scheduleIdleReset,

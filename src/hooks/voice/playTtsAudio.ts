@@ -1,11 +1,24 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
-// Dynamic timeout: base 10s + 2s per 100 chars (max 30s)
+/** Calculate dynamic timeout based on text length */
 function calculateTimeout(textLength: number): number {
   const base = 10000;
   const perHundredChars = 2000;
   const extra = Math.ceil(textLength / 100) * perHundredChars;
   return Math.min(base + extra, 30000);
+}
+
+/** Get a valid auth token, refreshing session if needed */
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) return session.access_token;
+
+  // Try refreshing the session
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed?.session?.access_token) return refreshed.session.access_token;
+
+  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 }
 
 export function playTtsAudio(
@@ -17,21 +30,11 @@ export function playTtsAudio(
   let resolvePromise: (() => void) | null = null;
 
   const promise = (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    let authToken = session?.access_token;
+    const authToken = await getAuthToken();
+    const timeout = calculateTimeout(text.length);
 
-    if (!authToken) {
-      // Try refreshing session before giving up
-      const { data } = await supabase.auth.refreshSession();
-      authToken = data.session?.access_token;
-      if (!authToken) {
-        throw new Error("Sessão expirada");
-      }
-    }
-
-    const timeoutMs = calculateTimeout(text.length);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timer = setTimeout(() => controller.abort(), timeout);
 
     let ttsResponse: Response;
     try {
@@ -49,7 +52,35 @@ export function playTtsAudio(
         }
       );
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timer);
+    }
+
+    // Auto-retry on 401 with refreshed token
+    if (ttsResponse.status === 401) {
+      logger.warn("[TTS] 401 received, refreshing session...");
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      const newToken = refreshed?.session?.access_token;
+      if (newToken) {
+        const retryController = new AbortController();
+        const retryTimer = setTimeout(() => retryController.abort(), timeout);
+        try {
+          ttsResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${newToken}`,
+              },
+              body: JSON.stringify({ text }),
+              signal: retryController.signal,
+            }
+          );
+        } finally {
+          clearTimeout(retryTimer);
+        }
+      }
     }
 
     if (!ttsResponse.ok) {

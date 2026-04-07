@@ -6,6 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
+
 async function authenticateRequest(req: Request): Promise<string> {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -17,9 +19,7 @@ async function authenticateRequest(req: Request): Promise<string> {
     { global: { headers: { Authorization: authHeader } } }
   );
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) {
-    throw new Error("UNAUTHORIZED");
-  }
+  if (error || !user?.id) throw new Error("UNAUTHORIZED");
   return user.id;
 }
 
@@ -36,7 +36,6 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate user
     try {
       await authenticateRequest(req);
     } catch {
@@ -61,20 +60,26 @@ serve(async (req) => {
       );
     }
 
-    const { text, voiceId } = body as { text?: unknown; voiceId?: unknown };
+    const { text, voiceId } = body as { text?: unknown; voiceId?: string };
+
     if (!text || typeof text !== "string" || text.trim().length === 0 || text.length > 5000) {
       return new Response(
-        JSON.stringify({ error: "Invalid text (required, non-empty, max 5000 chars)" }),
+        JSON.stringify({ error: "Invalid text (required, max 5000 chars)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Sanitize voiceId: allow only alphanumeric characters
-    const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
-    const defaultVoiceId = "FGY2WhTYpPnrIDTdsKH5"; // Laura - good for Portuguese
-    const selectedVoiceId = (typeof voiceId === "string" && VOICE_ID_REGEX.test(voiceId))
-      ? voiceId
-      : defaultVoiceId;
+    // Sanitize voiceId to prevent path traversal
+    let selectedVoiceId = "FGY2WhTYpPnrIDTdsKH5"; // Laura default
+    if (voiceId && typeof voiceId === "string") {
+      if (!VOICE_ID_REGEX.test(voiceId)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid voiceId format" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      selectedVoiceId = voiceId;
+    }
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}?output_format=mp3_22050_32`,
@@ -85,7 +90,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text,
+          text: text.trim(),
           model_id: "eleven_multilingual_v2",
           voice_settings: {
             stability: 0.5,

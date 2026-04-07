@@ -17,9 +17,7 @@ async function authenticateRequest(req: Request): Promise<string> {
     { global: { headers: { Authorization: authHeader } } }
   );
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) {
-    throw new Error("UNAUTHORIZED");
-  }
+  if (error || !user?.id) throw new Error("UNAUTHORIZED");
   return user.id;
 }
 
@@ -36,7 +34,6 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate user
     try {
       await authenticateRequest(req);
     } catch {

@@ -1,27 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import type { VoiceAgentAction } from "./types";
+
+/** Get a valid auth token, refreshing session if needed */
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) return session.access_token;
+
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed?.session?.access_token) return refreshed.session.access_token;
+
+  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+}
 
 /**
  * processVoiceTranscript — Sends transcript to AI and returns structured action.
- * Handles 401 with automatic session refresh retry.
  */
 export async function processVoiceTranscript(transcript: string): Promise<VoiceAgentAction> {
-  return executeWithAuthRetry(transcript);
-}
-
-async function executeWithAuthRetry(transcript: string, retried = false): Promise<VoiceAgentAction> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token;
+    const authToken = await getAuthToken();
 
-    if (!authToken) {
-      throw new Error("Sessão expirada. Faça login novamente.");
-    }
-
-    const response = await fetch(
+    let response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
       {
         method: "POST",
@@ -35,13 +37,26 @@ async function executeWithAuthRetry(transcript: string, retried = false): Promis
       }
     );
 
-    // If 401 and haven't retried, refresh session and retry once
-    if (response.status === 401 && !retried) {
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (!refreshError) {
-        return executeWithAuthRetry(transcript, true);
+    // Auto-retry on 401 with refreshed token
+    if (response.status === 401) {
+      logger.warn("[Voice] 401 received, refreshing session...");
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      const newToken = refreshed?.session?.access_token;
+      if (newToken) {
+        response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify({ transcript }),
+            signal: controller.signal,
+          }
+        );
       }
-      throw new Error("Sessão expirada. Faça login novamente.");
     }
 
     if (!response.ok) {
@@ -69,6 +84,5 @@ function validateAction(action: VoiceAgentAction): VoiceAgentAction {
       data: {},
     };
   }
-
   return action;
 }
