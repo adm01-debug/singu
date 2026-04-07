@@ -56,6 +56,7 @@ import {
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
+import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
