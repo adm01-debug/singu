@@ -64,27 +64,25 @@ export function ContactsStatsBar({ contacts, className }: ContactsStatsBarProps)
 
   return (
     <div className={cn(
-      'grid grid-cols-2 sm:grid-cols-4 gap-3',
+      'grid grid-cols-2 sm:grid-cols-4 gap-2',
       className
     )}>
       {items.map((item) => (
         <div
           key={item.label}
           className={cn(
-            'flex items-center gap-3 rounded-xl border border-border/40 px-4 py-3',
-            'bg-card/60 backdrop-blur-sm transition-all duration-200',
-            'hover:border-primary/20 hover:shadow-sm'
+            'flex items-center gap-2.5 rounded-lg border border-border/30 px-3 py-2.5',
+            'bg-card/40 transition-colors duration-150',
+            'hover:bg-muted/30'
           )}
         >
-          <div className={cn('rounded-lg p-2', item.bgColor)}>
-            <item.icon className={cn('w-4 h-4', item.color)} />
-          </div>
+          <item.icon className={cn('w-4 h-4 shrink-0', item.color)} />
           <div className="min-w-0">
-            <p className={cn('text-lg font-bold tabular-nums leading-tight', item.color)}>
+            <p className={cn('text-base font-semibold tabular-nums leading-tight', item.color)}>
               {item.value}
               {item.suffix && <span className="text-xs text-muted-foreground font-normal">{item.suffix}</span>}
             </p>
-            <p className="text-[11px] text-muted-foreground truncate">{item.label}</p>
+            <p className="text-[10px] text-muted-foreground/70 truncate">{item.label}</p>
           </div>
         </div>
       ))}

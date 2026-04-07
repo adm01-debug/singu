@@ -45,11 +45,8 @@ export function RelationshipScore({ score, previousScore, size = 'md', showLabel
     return 'bg-destructive';
   };
 
-  const getRingGlow = (score: number) => {
-    if (score >= 80) return 'shadow-[0_0_12px_-2px_hsl(var(--success)/0.4)]';
-    if (score >= 60) return 'shadow-[0_0_12px_-2px_hsl(var(--primary)/0.4)]';
-    if (score >= 40) return 'shadow-[0_0_12px_-2px_hsl(var(--warning)/0.4)]';
-    return 'shadow-[0_0_12px_-2px_hsl(var(--destructive)/0.4)]';
+  const getRingGlow = (_score: number) => {
+    return ''; // Flat design — no glow
   };
 
   const sizeClasses = {
