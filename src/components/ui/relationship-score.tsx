@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +24,11 @@ function getScoreLabel(score: number): string {
   return 'Crítico';
 }
 
+function getTrend(score: number, previousScore?: number) {
+  if (previousScore === undefined || previousScore === score) return 'stable';
+  return score > previousScore ? 'up' : 'down';
+}
+
 export function RelationshipScore({ score, previousScore, size = 'md', showLabel, showMilestone = false, className }: RelationshipScoreProps) {
 
   const getColor = (score: number) => {
@@ -39,23 +45,55 @@ export function RelationshipScore({ score, previousScore, size = 'md', showLabel
     return 'bg-destructive';
   };
 
+  const getRingGlow = (score: number) => {
+    if (score >= 80) return 'shadow-[0_0_12px_-2px_hsl(var(--success)/0.4)]';
+    if (score >= 60) return 'shadow-[0_0_12px_-2px_hsl(var(--primary)/0.4)]';
+    if (score >= 40) return 'shadow-[0_0_12px_-2px_hsl(var(--warning)/0.4)]';
+    return 'shadow-[0_0_12px_-2px_hsl(var(--destructive)/0.4)]';
+  };
+
   const sizeClasses = {
-    sm: { container: 'w-10 h-10', text: 'text-xs', bar: 'h-1' },
-    md: { container: 'w-14 h-14', text: 'text-sm', bar: 'h-1.5' },
-    lg: { container: 'w-20 h-20', text: 'text-lg', bar: 'h-2' },
+    sm: { container: 'w-10 h-10', text: 'text-xs', bar: 'h-1', trendIcon: 'w-2.5 h-2.5' },
+    md: { container: 'w-14 h-14', text: 'text-sm', bar: 'h-1.5', trendIcon: 'w-3 h-3' },
+    lg: { container: 'w-20 h-20', text: 'text-lg', bar: 'h-2', trendIcon: 'w-4 h-4' },
   };
 
   const sizes = sizeClasses[size];
+  const trend = getTrend(score, previousScore);
+
+  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
+  const trendColor = trend === 'up' ? 'text-success' : trend === 'down' ? 'text-destructive' : 'text-muted-foreground';
+  const delta = previousScore !== undefined ? score - previousScore : 0;
 
   const scoreCircle = (
-    <div
-      className={cn(
-        'rounded-full flex items-center justify-center border-2 border-current',
-        sizes.container,
-        getColor(score)
+    <div className="relative">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className={cn(
+          'rounded-full flex items-center justify-center border-2 border-current transition-shadow duration-300',
+          sizes.container,
+          getColor(score),
+          getRingGlow(score)
+        )}
+      >
+        <span className={cn('font-bold tabular-nums', sizes.text)}>{score}</span>
+      </motion.div>
+      {/* Trend indicator badge */}
+      {previousScore !== undefined && trend !== 'stable' && (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.2 }}
+          className={cn(
+            'absolute -bottom-0.5 -right-0.5 rounded-full p-0.5',
+            trend === 'up' ? 'bg-success/20' : 'bg-destructive/20'
+          )}
+        >
+          <TrendIcon className={cn(sizes.trendIcon, trendColor)} />
+        </motion.div>
       )}
-    >
-      <span className={cn('font-bold', sizes.text)}>{score}</span>
     </div>
   );
 
@@ -65,8 +103,14 @@ export function RelationshipScore({ score, previousScore, size = 'md', showLabel
         <TooltipTrigger asChild>
           {scoreCircle}
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-xs">
+        <TooltipContent side="top" className="text-xs space-y-1">
           <p className="font-medium">Score: {score}/100 — {getScoreLabel(score)}</p>
+          {previousScore !== undefined && delta !== 0 && (
+            <p className={cn('flex items-center gap-1', trendColor)}>
+              <TrendIcon className="w-3 h-3" />
+              {delta > 0 ? '+' : ''}{delta} pts
+            </p>
+          )}
           <p className="text-muted-foreground">Nível de relacionamento</p>
         </TooltipContent>
       </Tooltip>
