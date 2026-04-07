@@ -782,24 +782,13 @@
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
 
-  /* Metric card with shimmer */
+  /* Metric card — flat */
   .nexus-metric-card { position: relative; overflow: hidden; }
-  .nexus-metric-card::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.06), transparent);
-    transform: translateX(-100%);
-    pointer-events: none;
-  }
-  .nexus-metric-card:hover::after {
-    animation: shimmer-slide 0.6s ease-out;
-  }
 
-  /* Row hover */
-  .nexus-row-hover { transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+  /* Row hover — clean */
+  .nexus-row-hover { transition: background-color 0.1s ease; }
   .nexus-row-hover:hover {
-    background-color: hsl(var(--primary) / 0.04);
-    box-shadow: inset 3px 0 0 hsl(var(--primary) / 0.5);
+    background-color: hsl(var(--muted) / 0.3);
   }
 
   /* Story link underline */
