@@ -78,7 +78,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: "vad" as const,
     onConnect: () => {
       logger.log("[Voice] Scribe socket connected");
     },
