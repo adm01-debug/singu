@@ -1,5 +1,4 @@
-import { logger } from "@/lib/logger";
-import { getAuthToken, refreshAuthToken } from "./auth";
+import { voiceFetch } from "./voiceFetch";
 
 /**
  * calculateTimeout — Returns a dynamic fetch timeout (ms) based on text length.
@@ -18,7 +17,7 @@ function calculateTimeout(textLength: number): number {
  *
  * Features:
  * - Dynamic timeout based on text length
- * - Auto-retry on 401 with session refresh
+ * - Auto-retry on 401 via voiceFetch
  * - Proper cleanup of object URLs
  */
 export function playTtsAudio(
@@ -30,57 +29,8 @@ export function playTtsAudio(
   let resolvePromise: (() => void) | null = null;
 
   const promise = (async () => {
-    const authToken = await getAuthToken();
     const timeout = calculateTimeout(text.length);
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    let ttsResponse: Response;
-    try {
-      ttsResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({ text }),
-          signal: controller.signal,
-        }
-      );
-    } finally {
-      clearTimeout(timer);
-    }
-
-    // Auto-retry on 401 with refreshed token
-    if (ttsResponse.status === 401) {
-      logger.warn("[TTS] 401 received, refreshing session...");
-      const newToken = await refreshAuthToken();
-      if (newToken) {
-        const retryController = new AbortController();
-        const retryTimer = setTimeout(() => retryController.abort(), timeout);
-        try {
-          ttsResponse = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                Authorization: `Bearer ${newToken}`,
-              },
-              body: JSON.stringify({ text }),
-              signal: retryController.signal,
-            }
-          );
-        } finally {
-          clearTimeout(retryTimer);
-        }
-      }
-    }
+    const ttsResponse = await voiceFetch("elevenlabs-tts", { text }, timeout);
 
     if (!ttsResponse.ok) {
       throw new Error(`TTS failed: ${ttsResponse.status}`);
