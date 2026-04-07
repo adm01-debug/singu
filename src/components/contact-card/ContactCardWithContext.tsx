@@ -35,28 +35,27 @@ import type { ContactRole, SentimentType, DISCProfile, RelationshipStage } from 
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
-/** Solid semantic color for stage bar — clear visual differentiation */
-function getStageBarColor(stage?: string | null): string {
+/** Subtle dot color for stage — Discord/Vercel flat style */
+function getStageDotColor(stage?: string | null): string {
   switch (stage) {
     case 'advocate':
     case 'loyal_customer':
-      return 'from-emerald-500 to-emerald-400';
     case 'customer':
-      return 'from-success to-emerald-500';
+      return 'bg-emerald-500';
     case 'negotiation':
-      return 'from-violet-500 to-purple-400';
+      return 'bg-violet-500';
     case 'opportunity':
-      return 'from-amber-500 to-orange-400';
+      return 'bg-amber-500';
     case 'qualified_lead':
-      return 'from-blue-500 to-sky-400';
+      return 'bg-blue-500';
     case 'prospect':
-      return 'from-slate-400 to-slate-300';
+      return 'bg-muted-foreground';
     case 'at_risk':
-      return 'from-destructive to-orange-500';
+      return 'bg-destructive';
     case 'lost':
-      return 'from-muted-foreground to-muted-foreground/60';
+      return 'bg-muted-foreground/50';
     default:
-      return 'from-muted-foreground/50 to-muted-foreground/30';
+      return 'bg-muted-foreground/40';
   }
 }
 
