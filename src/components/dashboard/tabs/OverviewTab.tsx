@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Surface } from '@/components/ui/surface';
@@ -65,15 +66,20 @@ export function OverviewTab({
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
+              className={cn(
+                "w-full gap-2 text-muted-foreground hover:text-primary border-dashed hover:border-primary/40 hover:bg-primary/5 transition-all duration-200",
+                briefingOpen && "border-primary/30 bg-primary/5 text-primary"
+              )}
             >
               <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
                 <Brain className="w-3 h-3 text-primary" />
               </div>
               <span className="font-medium">Briefing Pré-Contato</span>
-              <span className="text-[10px] text-muted-foreground/70 ml-1">
-                {briefingOpen ? '' : '— clique para expandir'}
-              </span>
+              {!briefingOpen && (
+                <span className="text-[10px] text-muted-foreground/70 ml-1 hidden sm:inline">
+                  Resumo inteligente dos seus contatos prioritários
+                </span>
+              )}
               {briefingOpen ? <ChevronUp className="w-4 h-4 ml-auto" /> : <ChevronDown className="w-4 h-4 ml-auto" />}
             </Button>
           </CollapsibleTrigger>
@@ -86,7 +92,7 @@ export function OverviewTab({
       </DashboardErrorBoundary>
 
       {/* 4. Recent Activity + Top Contacts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
@@ -102,7 +108,6 @@ export function OverviewTab({
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
-            className="lg:col-span-2"
           >
             <TopContactsCard contacts={stats.topContacts} animations={topContactAnimations} />
           </motion.div>

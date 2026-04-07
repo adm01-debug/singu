@@ -18,10 +18,17 @@ function generateSparkline(current: number, seed: number): number[] {
 }
 
 function getScoreLabel(score: number): string {
-  if (score >= 80) return 'Meta: 80% · Excelente';
-  if (score >= 60) return 'Meta: 80% · Bom';
-  if (score >= 40) return 'Meta: 80% · Regular';
+  if (score >= 80) return 'Meta: 80% · ✨ Excelente';
+  if (score >= 60) return 'Meta: 80% · Bom progresso';
+  if (score >= 40) return 'Meta: 80% · Em evolução';
   return 'Meta: 80% · Precisa melhorar';
+}
+
+function getInteractionLabel(count: number): string {
+  if (count === 0) return 'Nenhuma interação esta semana';
+  if (count < 5) return 'Comece a engajar mais!';
+  if (count < 15) return 'Bom ritmo de engajamento';
+  return 'Engajamento intenso 🔥';
 }
 
 export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardStatsGridProps) {
@@ -57,7 +64,8 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       icon: MessageSquare,
       gradientTone: 'premium' as const,
       sparkline: generateSparkline(stats.weeklyInteractions || 1, 3),
-      emptyAction: { label: 'Registrar interação', href: '/interacoes' },
+      emptyAction: stats.weeklyInteractions === 0 ? { label: 'Registrar interação', href: '/interacoes' } : undefined,
+      subtitle: getInteractionLabel(stats.weeklyInteractions),
     },
     {
       title: 'Score Médio',
