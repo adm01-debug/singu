@@ -226,131 +226,131 @@
   }
 
   /* ============================================
-     DARK MODE — Nexus Navy Identity
-     Page: #050510, Card: #111122, Border: #222244
+     DARK MODE — Vercel / Discord Aesthetic
+     Ultra-dark, subtle borders, clean surfaces
      ============================================ */
   .dark {
     color-scheme: dark;
 
-    /* Background — Deep dark (#050510) */
-    --background: 240 45% 6%;
-    --foreground: 0 0% 94%;
+    /* Background — near-black (#0a0a0a) */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 93%;
 
-    /* Card — #111122 */
-    --card: 240 30% 12%;
-    --card-foreground: 0 0% 94%;
+    /* Card — charcoal (#141414) */
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 93%;
 
     /* Popover */
-    --popover: 240 30% 11%;
-    --popover-foreground: 0 0% 94%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 93%;
 
-    /* Primary — Nexus Blue #4D96FF */
-    --primary: 214 100% 65%;
+    /* Primary — Electric violet (#7c3aed) */
+    --primary: 263 84% 58%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary — Oráculo Purple #9B59B6 */
-    --secondary: 283 40% 53%;
+    /* Secondary — Cool gray */
+    --secondary: 240 4% 46%;
     --secondary-foreground: 0 0% 100%;
 
     /* Muted */
-    --muted: 240 18% 17%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
 
-    /* Accent — DataHub Orange */
-    --accent: 28 80% 52%;
+    /* Accent — Cyan/teal */
+    --accent: 172 66% 50%;
     --accent-foreground: 0 0% 100%;
 
     /* Semantic */
-    --success: 142 55% 49%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 48 95% 55%;
-    --warning-foreground: 30 48% 12%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 8%;
 
-    --destructive: 0 72% 70%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --info: 214 100% 65%;
+    --info: 217 91% 60%;
     --info-foreground: 0 0% 100%;
 
-    --celebration: 48 95% 58%;
-    --celebration-foreground: 30 48% 12%;
+    --celebration: 48 96% 53%;
+    --celebration-foreground: 0 0% 8%;
 
-    /* Border — #222244 */
-    --border: 240 28% 22%;
-    --input: 240 40% 8%;
-    --ring: 214 100% 65%;
+    /* Border — ultra-subtle (#1f1f1f) */
+    --border: 0 0% 14%;
+    --input: 0 0% 10%;
+    --ring: 263 84% 58%;
 
-    --ring-destructive: 0 72% 70%;
-    --ring-success: 142 55% 49%;
-    --ring-warning: 48 95% 55%;
+    --ring-destructive: 0 84% 60%;
+    --ring-success: 142 71% 45%;
+    --ring-warning: 38 92% 50%;
 
-    /* Sidebar */
-    --sidebar-background: 240 45% 5%;
-    --sidebar-foreground: 220 18% 74%;
-    --sidebar-primary: 214 100% 65%;
+    /* Sidebar — true black */
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 60%;
+    --sidebar-primary: 263 84% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 28% 10%;
-    --sidebar-accent-foreground: 0 0% 94%;
-    --sidebar-border: 240 28% 16%;
-    --sidebar-ring: 214 100% 65%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 263 84% 58%;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 3px 0 hsl(240 50% 2% / 0.42);
-    --shadow-md: 0 8px 22px -8px hsl(240 50% 2% / 0.5);
-    --shadow-lg: 0 20px 44px -18px hsl(240 50% 2% / 0.58);
-    --shadow-xl: 0 34px 70px -28px hsl(240 50% 2% / 0.68);
+    /* Shadows — invisible, flat design */
+    --shadow-sm: 0 0 0 0 transparent;
+    --shadow-md: 0 0 0 0 transparent;
+    --shadow-lg: 0 0 0 0 transparent;
+    --shadow-xl: 0 0 0 0 transparent;
 
     /* Glass */
-    --glass-bg: 240 30% 12% / 0.8;
-    --glass-border: 214 100% 65% / 0.18;
-    --glass-blur: 8px;
+    --glass-bg: 0 0% 8% / 0.85;
+    --glass-border: 0 0% 20% / 0.5;
+    --glass-blur: 12px;
 
-    /* Surfaces — Deep navy steps */
-    --surface-0: 240 45% 6%;
-    --surface-1: 240 30% 9%;
-    --surface-2: 240 30% 12%;
-    --surface-3: 240 28% 16%;
-    --surface-4: 240 25% 19%;
+    /* Surfaces — pure gray scale */
+    --surface-0: 0 0% 4%;
+    --surface-1: 0 0% 7%;
+    --surface-2: 0 0% 10%;
+    --surface-3: 0 0% 14%;
+    --surface-4: 0 0% 18%;
 
     /* Roles */
-    --role-owner: 270 70% 68%;
-    --role-manager: 234 80% 72%;
-    --role-buyer: 152 60% 55%;
-    --role-contact: 220 35% 62%;
+    --role-owner: 263 70% 65%;
+    --role-manager: 217 80% 65%;
+    --role-buyer: 142 60% 50%;
+    --role-contact: 0 0% 55%;
 
     /* Row States */
-    --row-hover: 214 100% 65% / 0.08;
-    --row-selected: 214 100% 65% / 0.12;
-    --row-active: 214 100% 65% / 0.18;
+    --row-hover: 0 0% 100% / 0.04;
+    --row-selected: 263 84% 58% / 0.08;
+    --row-active: 263 84% 58% / 0.12;
 
     /* Entity Colors */
-    --entity-contact: 214 100% 65%;
-    --entity-company: 283 40% 60%;
-    --entity-interaction: 142 55% 49%;
-    --entity-insight: 48 95% 55%;
+    --entity-contact: 263 84% 58%;
+    --entity-company: 172 66% 50%;
+    --entity-interaction: 142 71% 45%;
+    --entity-insight: 38 92% 50%;
 
     /* Nexus Color Tokens — Dark */
-    --nexus-glow: 214 100% 65%;
-    --nexus-cyan: 185 80% 60%;
-    --nexus-emerald: 142 50% 56%;
-    --nexus-amber: 48 95% 55%;
-    --nexus-rose: 0 75% 55%;
-    --nexus-surface-1: 240 30% 9%;
-    --nexus-surface-2: 240 30% 12%;
-    --nexus-surface-3: 240 28% 16%;
-    --nexus-gradient-start: 214 100% 65%;
-    --nexus-gradient-end: 283 40% 53%;
-    --nexus-blue: 214 100% 65%;
-    --nexus-green: 142 50% 56%;
-    --nexus-yellow: 48 95% 55%;
-    --nexus-red: 0 75% 55%;
-    --nexus-purple: 283 55% 55%;
-    --nexus-orange: 28 80% 52%;
-    --nexus-gold: 28 50% 65%;
-    --nexus-teal: 170 65% 50%;
-    --nexus-muted: 0 0% 60%;
-    --nexus-border: 240 28% 22%;
+    --nexus-glow: 263 84% 58%;
+    --nexus-cyan: 172 66% 50%;
+    --nexus-emerald: 142 60% 50%;
+    --nexus-amber: 38 92% 50%;
+    --nexus-rose: 0 84% 60%;
+    --nexus-surface-1: 0 0% 7%;
+    --nexus-surface-2: 0 0% 10%;
+    --nexus-surface-3: 0 0% 14%;
+    --nexus-gradient-start: 263 84% 58%;
+    --nexus-gradient-end: 217 91% 60%;
+    --nexus-blue: 217 91% 60%;
+    --nexus-green: 142 60% 50%;
+    --nexus-yellow: 38 92% 50%;
+    --nexus-red: 0 84% 60%;
+    --nexus-purple: 263 84% 58%;
+    --nexus-orange: 25 95% 53%;
+    --nexus-gold: 45 93% 47%;
+    --nexus-teal: 172 66% 50%;
+    --nexus-muted: 0 0% 55%;
+    --nexus-border: 0 0% 14%;
   }
 
   .light {
