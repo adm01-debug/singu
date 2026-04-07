@@ -333,6 +333,7 @@ const Empresas = () => {
         showAddButton
         addButtonLabel="Nova Empresa"
         onAddClick={() => setIsFormOpen(true)}
+        hideBack
       />
 
       <div className="p-4 md:p-6 space-y-4 md:space-y-6">
