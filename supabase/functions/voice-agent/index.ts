@@ -5,6 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const MAX_TRANSCRIPT_LENGTH = 1000;
+
 const SYSTEM_PROMPT = `Você é um assistente de voz inteligente para um CRM de relacionamentos (SINGU).
 Sua função é interpretar comandos de voz do usuário e retornar uma ação estruturada.
 
@@ -47,9 +49,56 @@ Se o usuário fizer uma pergunta geral, use action="answer" e responda de forma 
 Se o comando não fizer sentido, responda com action="answer" e peça esclarecimento.
 Seja conciso e amigável. Use linguagem informal brasileira.`;
 
+const VALID_ACTIONS = ["search", "navigate", "answer", "create_interaction", "create_reminder"];
+const VALID_ROUTES = ["/dashboard", "/contatos", "/empresas", "/interacoes", "/pipeline", "/automacao", "/relatorios", "/configuracoes"];
+
+function sanitizeTranscript(text: string): string {
+  return text.replace(/<[^>]*>/g, "").replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, "").trim();
+}
+
+function validateRoute(route: string | undefined): string | undefined {
+  if (!route) return undefined;
+  return VALID_ROUTES.includes(route) ? route : undefined;
+}
+
+function sanitizeResult(raw: Record<string, unknown>): Record<string, unknown> {
+  const action = typeof raw.action === "string" && VALID_ACTIONS.includes(raw.action)
+    ? raw.action
+    : "answer";
+
+  const response = typeof raw.response === "string"
+    ? raw.response.slice(0, 500)
+    : "Desculpe, não entendi. Pode repetir?";
+
+  const data: Record<string, unknown> = {};
+  if (raw.data && typeof raw.data === "object") {
+    const d = raw.data as Record<string, unknown>;
+    if (typeof d.query === "string") data.query = d.query.slice(0, 200);
+    if (typeof d.route === "string") data.route = validateRoute(d.route);
+    if (typeof d.contactName === "string") data.contactName = d.contactName.slice(0, 100);
+    if (d.filters && typeof d.filters === "object") {
+      const f = d.filters as Record<string, unknown>;
+      const filters: Record<string, string> = {};
+      for (const key of ["tag", "company", "sentiment"]) {
+        if (typeof f[key] === "string") filters[key] = (f[key] as string).slice(0, 100);
+      }
+      if (Object.keys(filters).length > 0) data.filters = filters;
+    }
+  }
+
+  return { action, response, data };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
   try {
@@ -68,11 +117,25 @@ serve(async (req) => {
       );
     }
 
-    const transcript = body?.transcript;
-
-    if (!transcript || typeof transcript !== "string" || transcript.length > 1000) {
+    const rawTranscript = body?.transcript;
+    if (!rawTranscript || typeof rawTranscript !== "string") {
       return new Response(
-        JSON.stringify({ error: "Invalid transcript" }),
+        JSON.stringify({ error: "Missing required field: transcript (string)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const transcript = sanitizeTranscript(rawTranscript);
+    if (transcript.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Transcript is empty after sanitization" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (transcript.length > MAX_TRANSCRIPT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Transcript exceeds maximum length of ${MAX_TRANSCRIPT_LENGTH} characters` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -100,14 +163,14 @@ serve(async (req) => {
                 properties: {
                   action: {
                     type: "string",
-                    enum: ["search", "navigate", "answer", "create_interaction", "create_reminder"],
+                    enum: VALID_ACTIONS,
                   },
                   response: { type: "string", description: "Friendly response to speak back (max 2 sentences)" },
                   data: {
                     type: "object",
                     properties: {
                       query: { type: "string" },
-                      route: { type: "string" },
+                      route: { type: "string", enum: VALID_ROUTES },
                       contactName: { type: "string" },
                       filters: {
                         type: "object",
@@ -154,25 +217,23 @@ serve(async (req) => {
     const aiData = await response.json();
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
 
-    let result;
+    let rawResult: Record<string, unknown>;
     if (toolCall?.function?.arguments) {
       try {
-        result = JSON.parse(toolCall.function.arguments);
+        rawResult = JSON.parse(toolCall.function.arguments);
       } catch {
-        result = { action: "answer", response: "Desculpe, não entendi. Pode repetir?", data: {} };
+        rawResult = { action: "answer", response: "Desculpe, não entendi. Pode repetir?", data: {} };
       }
     } else {
       const content = aiData.choices?.[0]?.message?.content || "";
       try {
-        result = JSON.parse(content);
+        rawResult = JSON.parse(content);
       } catch {
-        result = { action: "answer", response: content || "Desculpe, não entendi.", data: {} };
+        rawResult = { action: "answer", response: content || "Desculpe, não entendi.", data: {} };
       }
     }
 
-    if (!result.action || !result.response) {
-      result = { action: "answer", response: result.response || "Desculpe, ocorreu um erro.", data: {} };
-    }
+    const result = sanitizeResult(rawResult);
 
     return new Response(
       JSON.stringify(result),
