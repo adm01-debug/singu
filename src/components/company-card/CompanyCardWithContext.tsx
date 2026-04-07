@@ -113,6 +113,7 @@ interface CompanyCardWithContextProps {
   selectionMode: boolean;
   contactCount?: number;
   lastInteractionDays?: number | null;
+  compact?: boolean;
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (company: Company) => void;
   onDelete: (company: Company) => void;
@@ -126,6 +127,7 @@ export function CompanyCardWithContext({
   isHighlighted,
   selectionMode,
   contactCount = 0,
+  compact = false,
   onSelect,
   onEdit,
   onDelete,
@@ -211,81 +213,137 @@ export function CompanyCardWithContext({
           </div>
 
           <Link to={`/empresas/${company.id}`}>
-            <CardContent className="p-4">
-              {/* Header: Avatar + Name + Badge */}
-              <div className="flex items-center gap-3">
-                {company.logo_url ? (
-                  <img
-                    src={company.logo_url}
-                    alt={displayName}
-                    className="w-10 h-10 rounded-lg object-cover shrink-0"
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                ) : null}
-                <div
-                  className={cn(
-                    'w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0',
-                    company.logo_url && 'hidden'
-                  )}
-                  style={getAvatarStyle(company.name)}
-                >
-                  {getAvatarInitial(company.name)}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  {isInlineEditing ? (
-                    <InlineEdit
-                      value={company.name}
-                      onSave={(v) => handleInlineSave('name', v)}
-                      className="font-semibold text-sm"
-                    />
-                  ) : (
-                    <h3
-                      className="font-semibold text-sm leading-tight line-clamp-1 text-foreground"
-                      onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsInlineEditing(true); }}
+            <CardContent className={cn("p-4", compact && "p-3")}>
+              {compact ? (
+                <>
+                  {/* Compact: Avatar + Badge row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {company.logo_url ? (
+                        <img
+                          src={company.logo_url}
+                          alt={displayName}
+                          className="w-9 h-9 rounded-lg object-cover shrink-0"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div
+                          className="w-9 h-9 rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0"
+                          style={getAvatarStyle(company.name)}
+                        >
+                          {getAvatarInitial(company.name)}
+                        </div>
+                      )}
+                      <h3 className="font-semibold text-sm leading-tight text-foreground truncate max-w-[120px]">
+                        {displayName}
+                      </h3>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-[9px] font-semibold shrink-0',
+                        company.is_customer
+                          ? 'border-success/40 text-success bg-success/10'
+                          : 'border-primary/40 text-primary bg-primary/10'
+                      )}
                     >
-                      {displayName}
-                    </h3>
-                  )}
-                  {subtitle && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
-                      <IndustryIcon className="w-3 h-3 shrink-0" />
-                      {subtitle}
-                    </p>
-                  )}
-                </div>
+                      {company.is_customer ? 'Cliente' : 'Prospect'}
+                    </Badge>
+                  </div>
 
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px] font-semibold shrink-0',
-                    company.is_customer
-                      ? 'border-success/40 text-success bg-success/10'
-                      : 'border-primary/40 text-primary bg-primary/10'
-                  )}
-                >
-                  {company.is_customer ? 'Cliente' : 'Prospect'}
-                </Badge>
-              </div>
+                  {/* Compact metrics */}
+                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
+                    </span>
+                  </div>
 
-              {/* Metrics row */}
-              <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5" />
-                  {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
-                </span>
-              </div>
+                  {/* Compact footer */}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/20">
+                    <StatusDot status={company.status} isCustomer={company.is_customer} />
+                    <TimeAgo date={company.updated_at} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Header: Avatar + Name + Badge */}
+                  <div className="flex items-center gap-3">
+                    {company.logo_url ? (
+                      <img
+                        src={company.logo_url}
+                        alt={displayName}
+                        className="w-10 h-10 rounded-lg object-cover shrink-0"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <div
+                      className={cn(
+                        'w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0',
+                        company.logo_url && 'hidden'
+                      )}
+                      style={getAvatarStyle(company.name)}
+                    >
+                      {getAvatarInitial(company.name)}
+                    </div>
 
-              {/* Footer: Status + Time */}
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
-                <StatusDot status={company.status} isCustomer={company.is_customer} />
-                <TimeAgo date={company.updated_at} />
-              </div>
+                    <div className="min-w-0 flex-1">
+                      {isInlineEditing ? (
+                        <InlineEdit
+                          value={company.name}
+                          onSave={(v) => handleInlineSave('name', v)}
+                          className="font-semibold text-sm"
+                        />
+                      ) : (
+                        <h3
+                          className="font-semibold text-sm leading-tight line-clamp-1 text-foreground"
+                          onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsInlineEditing(true); }}
+                        >
+                          {displayName}
+                        </h3>
+                      )}
+                      {subtitle && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                          <IndustryIcon className="w-3 h-3 shrink-0" />
+                          {subtitle}
+                        </p>
+                      )}
+                    </div>
+
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-[10px] font-semibold shrink-0',
+                        company.is_customer
+                          ? 'border-success/40 text-success bg-success/10'
+                          : 'border-primary/40 text-primary bg-primary/10'
+                      )}
+                    >
+                      {company.is_customer ? 'Cliente' : 'Prospect'}
+                    </Badge>
+                  </div>
+
+                  {/* Metrics row */}
+                  <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
+                    </span>
+                  </div>
+
+                  {/* Footer: Status + Time */}
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
+                    <StatusDot status={company.status} isCustomer={company.is_customer} />
+                    <TimeAgo date={company.updated_at} />
+                  </div>
+                </>
+              )}
             </CardContent>
           </Link>
         </Card>

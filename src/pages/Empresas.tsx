@@ -417,6 +417,7 @@ const Empresas = () => {
                     selectionMode={selectionMode}
                     contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
                     lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
+                    compact={gridColumns >= 5}
                     onSelect={handleSelect}
                     onEdit={setEditingCompany}
                     onDelete={setDeletingCompany}
