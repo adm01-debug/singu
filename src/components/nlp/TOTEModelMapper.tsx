@@ -63,7 +63,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
         name: 'TEST 1 - Objetivo',
         description: 'Cliente define o que quer alcançar',
         icon: <Target className="h-5 w-5" />,
-        color: 'text-blue-400',
+        color: 'text-info',
         clientBehavior: '',
         detectedIndicators: [],
         salesStrategy: ''
@@ -73,7 +73,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
         name: 'OPERATE - Ação',
         description: 'Cliente busca informações e avalia opções',
         icon: <Settings className="h-5 w-5" />,
-        color: 'text-yellow-400',
+        color: 'text-warning',
         clientBehavior: '',
         detectedIndicators: [],
         salesStrategy: ''
@@ -83,7 +83,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
         name: 'TEST 2 - Verificação',
         description: 'Cliente compara resultado com objetivo',
         icon: <CheckCircle2 className="h-5 w-5" />,
-        color: 'text-green-400',
+        color: 'text-success',
         clientBehavior: '',
         detectedIndicators: [],
         salesStrategy: ''
@@ -93,7 +93,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
         name: 'EXIT - Decisão',
         description: 'Cliente decide agir ou reciclar o processo',
         icon: <LogOut className="h-5 w-5" />,
-        color: 'text-purple-400',
+        color: 'text-secondary',
         clientBehavior: '',
         detectedIndicators: [],
         salesStrategy: ''
@@ -199,18 +199,18 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
   };
 
   return (
-    <Card className={cn("border-cyan-500/30 bg-gradient-to-br from-cyan-950/20 to-background", className)}>
+    <Card className={cn("border-cyan-500/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="h-5 w-5 text-cyan-400" />
+            <Target className="h-5 w-5 text-accent" />
             TOTE Model Mapper
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-cyan-500/20">
+            <Badge variant="outline" className="bg-accent/20">
               DISC: {discProfile}
             </Badge>
-            <Badge variant="outline" className="bg-purple-500/20">
+            <Badge variant="outline" className="bg-secondary/20">
               {getTotalObservations()} obs.
             </Badge>
           </div>
@@ -242,7 +242,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
                 className={cn(
                   "p-2 rounded-lg border text-center transition-all relative",
                   currentPhase === phase 
-                    ? 'bg-cyan-500/20 border-cyan-500/50' 
+                    ? 'bg-accent/20 border-cyan-500/50' 
                     : 'bg-muted/30 border-transparent hover:bg-muted/50'
                 )}
               >
@@ -253,7 +253,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
                   {phase === 'test1' ? 'TEST 1' : phase === 'test2' ? 'TEST 2' : phase.toUpperCase()}
                 </div>
                 {hasObs && (
-                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full" />
                 )}
                 {idx < 3 && (
                   <ArrowRight className="absolute -right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground z-10" />
@@ -281,8 +281,8 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
           </div>
 
           {/* DISC-Adapted Behavior */}
-          <div className="bg-cyan-500/10 rounded p-2">
-            <div className="text-xs text-cyan-400 font-medium mb-1">
+          <div className="bg-accent/10 rounded p-2">
+            <div className="text-xs text-accent font-medium mb-1">
               Comportamento típico de {discProfile}:
             </div>
             <p className="text-sm">{totePhases[currentPhase].clientBehavior}</p>
@@ -301,8 +301,8 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
           </div>
 
           {/* Sales Strategy */}
-          <div className="bg-green-500/10 rounded p-2">
-            <div className="text-xs text-green-400 font-medium mb-1">
+          <div className="bg-success/10 rounded p-2">
+            <div className="text-xs text-success font-medium mb-1">
               💡 Estratégia de Venda:
             </div>
             <p className="text-sm">{totePhases[currentPhase].salesStrategy}</p>
@@ -331,7 +331,7 @@ const TOTEModelMapper: React.FC<TOTEModelMapperProps> = ({
               <div className="text-xs font-medium text-muted-foreground">Observações Registradas:</div>
               {observedBehaviors[currentPhase].map((obs, idx) => (
                 <div key={idx} className="text-xs bg-muted/50 rounded p-2 flex items-start gap-2">
-                  <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 text-success mt-0.5 shrink-0" />
                   <span>{obs}</span>
                 </div>
               ))}

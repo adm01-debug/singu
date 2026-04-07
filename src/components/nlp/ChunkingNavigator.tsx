@@ -125,15 +125,15 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'abstract': return 'text-purple-400 bg-purple-500/20 border-purple-500/30';
-      case 'mid': return 'text-blue-400 bg-blue-500/20 border-blue-500/30';
-      case 'specific': return 'text-green-400 bg-green-500/20 border-green-500/30';
+      case 'abstract': return 'text-secondary bg-secondary/20 border-secondary/30';
+      case 'mid': return 'text-info bg-info/20 border-info/30';
+      case 'specific': return 'text-success bg-success/20 border-success/30';
       default: return '';
     }
   };
 
   return (
-    <Card className={cn("border-sky-500/30 bg-gradient-to-br from-sky-950/20 to-background", className)}>
+    <Card className={cn("border-sky-500/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -144,7 +144,7 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
             <Badge variant="outline" className="bg-sky-500/20">
               Meta: {metaChunk === 'general' ? 'Geral' : metaChunk === 'specific' ? 'Específico' : 'Equilibrado'}
             </Badge>
-            <Badge variant="outline" className="bg-purple-500/20">
+            <Badge variant="outline" className="bg-secondary/20">
               {discProfile}
             </Badge>
           </div>
@@ -214,7 +214,7 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
               >
                 <span>"{q}"</span>
                 {copiedIndex === idx ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className="h-3 w-3 text-success" />
                 ) : (
                   <Copy className="h-3 w-3 opacity-0 group-hover:opacity-50" />
                 )}
@@ -247,21 +247,21 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
           <div className="space-y-1">
             <div className={cn(
               "px-3 py-1 rounded text-xs flex items-center justify-between",
-              currentLevel === 'abstract' ? 'bg-purple-500/30 text-purple-300' : 'bg-muted/50'
+              currentLevel === 'abstract' ? 'bg-secondary/30 text-secondary' : 'bg-muted/50'
             )}>
               <span>🌌 Propósito / Valores / "Para quê?"</span>
               <ChevronUp className="h-3 w-3" />
             </div>
             <div className={cn(
               "px-3 py-1 rounded text-xs flex items-center justify-between",
-              currentLevel === 'mid' ? 'bg-blue-500/30 text-blue-300' : 'bg-muted/50'
+              currentLevel === 'mid' ? 'bg-info/30 text-info' : 'bg-muted/50'
             )}>
               <span>🔄 Categoria / Alternativas / "O que mais?"</span>
               <ArrowLeftRight className="h-3 w-3" />
             </div>
             <div className={cn(
               "px-3 py-1 rounded text-xs flex items-center justify-between",
-              currentLevel === 'specific' ? 'bg-green-500/30 text-green-300' : 'bg-muted/50'
+              currentLevel === 'specific' ? 'bg-success/30 text-success' : 'bg-muted/50'
             )}>
               <span>🔍 Detalhes / Exemplos / "Como exatamente?"</span>
               <ChevronDown className="h-3 w-3" />
@@ -271,19 +271,19 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
 
         {/* Quick Navigation Tips */}
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="bg-purple-500/10 rounded p-2 text-center">
-            <ChevronUp className="h-3 w-3 mx-auto mb-1 text-purple-400" />
-            <div className="text-purple-400">Up</div>
+          <div className="bg-secondary/10 rounded p-2 text-center">
+            <ChevronUp className="h-3 w-3 mx-auto mb-1 text-secondary" />
+            <div className="text-secondary">Up</div>
             <div className="text-muted-foreground">Valores</div>
           </div>
-          <div className="bg-blue-500/10 rounded p-2 text-center">
-            <ArrowLeftRight className="h-3 w-3 mx-auto mb-1 text-blue-400" />
-            <div className="text-blue-400">Lateral</div>
+          <div className="bg-info/10 rounded p-2 text-center">
+            <ArrowLeftRight className="h-3 w-3 mx-auto mb-1 text-info" />
+            <div className="text-info">Lateral</div>
             <div className="text-muted-foreground">Opções</div>
           </div>
-          <div className="bg-green-500/10 rounded p-2 text-center">
-            <ChevronDown className="h-3 w-3 mx-auto mb-1 text-green-400" />
-            <div className="text-green-400">Down</div>
+          <div className="bg-success/10 rounded p-2 text-center">
+            <ChevronDown className="h-3 w-3 mx-auto mb-1 text-success" />
+            <div className="text-success">Down</div>
             <div className="text-muted-foreground">Detalhes</div>
           </div>
         </div>

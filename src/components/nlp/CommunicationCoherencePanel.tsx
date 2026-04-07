@@ -219,15 +219,15 @@ const CommunicationCoherencePanel: React.FC<CommunicationCoherencePanelProps> = 
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    return 'text-destructive';
   };
 
   const getScoreBg = (score: number) => {
-    if (score >= 80) return 'bg-green-100 dark:bg-green-950';
-    if (score >= 60) return 'bg-yellow-100 dark:bg-yellow-950';
-    return 'bg-red-100 dark:bg-red-950';
+    if (score >= 80) return 'bg-success dark:bg-success';
+    if (score >= 60) return 'bg-warning dark:bg-warning';
+    return 'bg-destructive dark:bg-destructive';
   };
 
   return (
@@ -321,13 +321,13 @@ const CommunicationCoherencePanel: React.FC<CommunicationCoherencePanelProps> = 
 
               {/* Strengths */}
               {analysis.strengths.length > 0 && (
-                <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                  <h4 className="text-sm font-medium text-green-700 dark:text-green-300 mb-2">
+                <div className="p-3 rounded-lg bg-success dark:bg-success border border-success dark:border-success">
+                  <h4 className="text-sm font-medium text-success dark:text-success mb-2">
                     Pontos Fortes
                   </h4>
                   <ul className="space-y-1">
                     {analysis.strengths.map((strength, idx) => (
-                      <li key={idx} className="text-sm text-green-600 dark:text-green-400">
+                      <li key={idx} className="text-sm text-success dark:text-success">
                         {strength}
                       </li>
                     ))}
@@ -345,15 +345,15 @@ const CommunicationCoherencePanel: React.FC<CommunicationCoherencePanelProps> = 
                         key={idx}
                         className={cn(
                           'p-2 rounded-lg mb-2 border text-sm',
-                          issue.severity === 'error' && 'bg-red-50 dark:bg-red-950 border-red-200',
-                          issue.severity === 'warning' && 'bg-amber-50 dark:bg-amber-950 border-amber-200',
-                          issue.severity === 'suggestion' && 'bg-blue-50 dark:bg-blue-950 border-blue-200'
+                          issue.severity === 'error' && 'bg-destructive dark:bg-destructive border-destructive',
+                          issue.severity === 'warning' && 'bg-warning dark:bg-warning border-amber-200',
+                          issue.severity === 'suggestion' && 'bg-info dark:bg-info border-info'
                         )}
                       >
                         <div className="flex items-start gap-2">
-                          {issue.severity === 'error' && <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />}
-                          {issue.severity === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />}
-                          {issue.severity === 'suggestion' && <Lightbulb className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />}
+                          {issue.severity === 'error' && <XCircle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />}
+                          {issue.severity === 'warning' && <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />}
+                          {issue.severity === 'suggestion' && <Lightbulb className="w-4 h-4 text-info shrink-0 mt-0.5" />}
                           <div>
                             <p className="font-medium">{issue.message}</p>
                             {issue.suggestion && (

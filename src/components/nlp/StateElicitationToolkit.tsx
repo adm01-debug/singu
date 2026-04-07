@@ -46,7 +46,7 @@ const EMOTIONAL_STATES: EmotionalState[] = [
     name: 'Curiosidade',
     description: 'Estado de abertura e interesse em descobrir mais',
     icon: <Sparkles className="h-5 w-5" />,
-    color: 'text-purple-400',
+    color: 'text-secondary',
     useCase: 'No início da conversa ou para reengajar',
     scripts: {
       vak: {
@@ -84,7 +84,7 @@ const EMOTIONAL_STATES: EmotionalState[] = [
     name: 'Confiança',
     description: 'Estado de segurança e certeza na decisão',
     icon: <Shield className="h-5 w-5" />,
-    color: 'text-blue-400',
+    color: 'text-info',
     useCase: 'Antes de pedir compromisso ou fechamento',
     scripts: {
       vak: {
@@ -122,7 +122,7 @@ const EMOTIONAL_STATES: EmotionalState[] = [
     name: 'Urgência',
     description: 'Estado de motivação para agir agora',
     icon: <Clock className="h-5 w-5" />,
-    color: 'text-orange-400',
+    color: 'text-accent',
     useCase: 'Para acelerar decisões e evitar procrastinação',
     scripts: {
       vak: {
@@ -160,7 +160,7 @@ const EMOTIONAL_STATES: EmotionalState[] = [
     name: 'Desejo',
     description: 'Estado de querer intensamente algo',
     icon: <Heart className="h-5 w-5" />,
-    color: 'text-pink-400',
+    color: 'text-primary',
     useCase: 'Para amplificar a motivação e o comprometimento',
     scripts: {
       vak: {
@@ -198,7 +198,7 @@ const EMOTIONAL_STATES: EmotionalState[] = [
     name: 'Comprometimento',
     description: 'Estado de determinação para seguir em frente',
     icon: <Target className="h-5 w-5" />,
-    color: 'text-green-400',
+    color: 'text-success',
     useCase: 'No momento do fechamento e pós-venda',
     scripts: {
       vak: {
@@ -261,18 +261,18 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
   };
 
   return (
-    <Card className={cn("border-rose-500/30 bg-gradient-to-br from-rose-950/20 to-background", className)}>
+    <Card className={cn("border-primary/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Zap className="h-5 w-5 text-rose-400" />
+            <Zap className="h-5 w-5 text-primary" />
             State Elicitation Toolkit
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-rose-500/20">
+            <Badge variant="outline" className="bg-primary/20">
               VAK: {vakType}
             </Badge>
-            <Badge variant="outline" className="bg-purple-500/20">
+            <Badge variant="outline" className="bg-secondary/20">
               DISC: {discProfile}
             </Badge>
           </div>
@@ -291,7 +291,7 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
               className={cn(
                 "p-2 rounded-lg border text-center transition-all",
                 selectedState === state.id 
-                  ? 'bg-rose-500/20 border-rose-500/50' 
+                  ? 'bg-primary/20 border-primary/50' 
                   : 'bg-muted/30 border-transparent hover:bg-muted/50'
               )}
             >
@@ -343,11 +343,11 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: idx * 0.05 }}
                           onClick={() => copyScript(script)}
-                          className="w-full text-left bg-rose-500/10 rounded p-2 text-sm hover:bg-rose-500/20 transition-colors flex items-center justify-between group border border-rose-500/20"
+                          className="w-full text-left bg-primary/10 rounded p-2 text-sm hover:bg-primary/20 transition-colors flex items-center justify-between group border border-primary/20"
                         >
                           <span className="italic">"{script}"</span>
                           {copiedScript === script ? (
-                            <Check className="h-3 w-3 text-green-500 shrink-0" />
+                            <Check className="h-3 w-3 text-success shrink-0" />
                           ) : (
                             <Copy className="h-3 w-3 opacity-0 group-hover:opacity-50 shrink-0" />
                           )}
@@ -368,11 +368,11 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
                             onClick={() => copyScript(script)}
-                            className="w-full text-left bg-purple-500/10 rounded p-2 text-sm hover:bg-purple-500/20 transition-colors flex items-center justify-between group border border-purple-500/20"
+                            className="w-full text-left bg-secondary/10 rounded p-2 text-sm hover:bg-secondary/20 transition-colors flex items-center justify-between group border border-secondary/20"
                           >
                             <span className="italic">"{script}"</span>
                             {copiedScript === script ? (
-                              <Check className="h-3 w-3 text-green-500 shrink-0" />
+                              <Check className="h-3 w-3 text-success shrink-0" />
                             ) : (
                               <Copy className="h-3 w-3 opacity-0 group-hover:opacity-50 shrink-0" />
                             )}
@@ -389,15 +389,15 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
 
         {/* Quick Guide */}
         <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
-          <strong className="text-rose-400">💡 Dica de Eliciação:</strong>{' '}
+          <strong className="text-primary">💡 Dica de Eliciação:</strong>{' '}
           Para {activeContact.firstName} ({vakType}/{discProfile}), comece com{' '}
-          <span className="text-rose-300">
+          <span className="text-primary">
             {vakType === 'V' ? 'imagens e visualizações' : 
              vakType === 'A' ? 'sons e descrições verbais' :
              vakType === 'K' ? 'sensações e experiências' :
              'dados e lógica'}
           </span> e adapte o ritmo para{' '}
-          <span className="text-purple-300">
+          <span className="text-secondary">
             {discProfile === 'D' ? 'direto e rápido' :
              discProfile === 'I' ? 'entusiasta e social' :
              discProfile === 'S' ? 'calmo e seguro' :

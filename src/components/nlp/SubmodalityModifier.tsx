@@ -103,7 +103,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
   };
 
   return (
-    <Card className={cn("border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-950/20 to-background", className)}>
+    <Card className={cn("border-fuchsia-500/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -167,8 +167,8 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
                 <span className="font-medium text-sm">{sub.name}</span>
                 <Badge variant="outline" className={cn(
                   "text-xs",
-                  sub.currentValue > 70 ? 'bg-green-500/20 text-green-400' :
-                  sub.currentValue < 30 ? 'bg-blue-500/20 text-blue-400' :
+                  sub.currentValue > 70 ? 'bg-success/20 text-success' :
+                  sub.currentValue < 30 ? 'bg-info/20 text-info' :
                   'bg-muted'
                 )}>
                   {sub.currentValue}%
@@ -212,15 +212,15 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
           </div>
           <div className="text-xs text-muted-foreground space-y-1">
             <p>
-              <strong className="text-green-400">Para AMPLIFICAR emoções positivas:</strong>{' '}
+              <strong className="text-success">Para AMPLIFICAR emoções positivas:</strong>{' '}
               Aumente brilho, tamanho, intensidade, volume.
             </p>
             <p>
-              <strong className="text-blue-400">Para REDUZIR emoções negativas:</strong>{' '}
+              <strong className="text-info">Para REDUZIR emoções negativas:</strong>{' '}
               Diminua, afaste, escureça, abaixe o volume.
             </p>
             <p>
-              <strong className="text-yellow-400">Exemplo prático:</strong>{' '}
+              <strong className="text-warning">Exemplo prático:</strong>{' '}
               "Imagine o sucesso... agora aumente o brilho dessa imagem... veja-a maior..."
             </p>
           </div>

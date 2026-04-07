@@ -285,10 +285,10 @@ const NLPEvolutionTimeline: React.FC<NLPEvolutionTimelineProps> = ({
                   className="p-3 rounded-lg border bg-card"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    {vakTrend.current === 'V' ? <Eye className="w-4 h-4 text-purple-500" /> :
-                     vakTrend.current === 'A' ? <Ear className="w-4 h-4 text-blue-500" /> :
-                     vakTrend.current === 'K' ? <Hand className="w-4 h-4 text-green-500" /> :
-                     <Brain className="w-4 h-4 text-slate-500" />}
+                    {vakTrend.current === 'V' ? <Eye className="w-4 h-4 text-secondary" /> :
+                     vakTrend.current === 'A' ? <Ear className="w-4 h-4 text-info" /> :
+                     vakTrend.current === 'K' ? <Hand className="w-4 h-4 text-success" /> :
+                     <Brain className="w-4 h-4 text-muted-foreground" />}
                     <span className="text-sm font-medium">Sistema VAK</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -311,10 +311,10 @@ const NLPEvolutionTimeline: React.FC<NLPEvolutionTimelineProps> = ({
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {emotionalTrend.trend === 'improving' ? 
-                      <TrendingUp className="w-4 h-4 text-green-500" /> :
+                      <TrendingUp className="w-4 h-4 text-success" /> :
                      emotionalTrend.trend === 'declining' ?
-                      <TrendingDown className="w-4 h-4 text-red-500" /> :
-                      <Minus className="w-4 h-4 text-yellow-500" />}
+                      <TrendingDown className="w-4 h-4 text-destructive" /> :
+                      <Minus className="w-4 h-4 text-warning" />}
                     <span className="text-sm font-medium">Estado Emocional</span>
                   </div>
                   <div className="flex items-center justify-between">

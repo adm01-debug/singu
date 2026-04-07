@@ -46,22 +46,22 @@ const INCONGRUENCE_PATTERNS = {
   verbal_behavioral: {
     title: 'Verbal vs Comportamental',
     icon: <MessageSquare className="h-4 w-4" />,
-    color: 'text-red-400'
+    color: 'text-destructive'
   },
   stated_actual: {
     title: 'Declarado vs Real',
     icon: <Eye className="h-4 w-4" />,
-    color: 'text-orange-400'
+    color: 'text-accent'
   },
   timeline: {
     title: 'Inconsistência Temporal',
     icon: <TrendingDown className="h-4 w-4" />,
-    color: 'text-yellow-400'
+    color: 'text-warning'
   },
   emotion_content: {
     title: 'Emoção vs Conteúdo',
     icon: <AlertOctagon className="h-4 w-4" />,
-    color: 'text-purple-400'
+    color: 'text-secondary'
   }
 };
 
@@ -191,9 +191,9 @@ const IncongruenceDetector: React.FC<IncongruenceDetectorProps> = ({
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'high': return 'bg-destructive/20 text-destructive border-destructive/30';
+      case 'medium': return 'bg-warning/20 text-warning border-warning/30';
+      default: return 'bg-info/20 text-info border-info/30';
     }
   };
 
@@ -203,17 +203,17 @@ const IncongruenceDetector: React.FC<IncongruenceDetectorProps> = ({
     : detectedIncongruences.slice(0, 3);
 
   return (
-    <Card className={cn("border-orange-500/30 bg-gradient-to-br from-orange-950/20 to-background", className)}>
+    <Card className={cn("border-accent/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <AlertOctagon className="h-5 w-5 text-orange-400" />
+            <AlertOctagon className="h-5 w-5 text-accent" />
             Detector de Incongruências
           </CardTitle>
           <Badge variant="outline" className={cn(
-            overallCongruence >= 80 ? 'bg-green-500/20 text-green-400' :
-            overallCongruence >= 60 ? 'bg-yellow-500/20 text-yellow-400' :
-            'bg-red-500/20 text-red-400'
+            overallCongruence >= 80 ? 'bg-success/20 text-success' :
+            overallCongruence >= 60 ? 'bg-warning/20 text-warning' :
+            'bg-destructive/20 text-destructive'
           )}>
             {Math.max(0, overallCongruence)}% Congruente
           </Badge>
@@ -296,16 +296,16 @@ const IncongruenceDetector: React.FC<IncongruenceDetectorProps> = ({
                           </div>
                         </div>
 
-                        <div className="bg-orange-500/10 rounded p-2 text-sm">
-                          <div className="flex items-center gap-1 text-orange-400 font-medium mb-1">
+                        <div className="bg-accent/10 rounded p-2 text-sm">
+                          <div className="flex items-center gap-1 text-accent font-medium mb-1">
                             <Lightbulb className="h-3 w-3" />
                             Possível Significado
                           </div>
                           <p className="text-muted-foreground text-xs">{inc.possibleMeaning}</p>
                         </div>
 
-                        <div className="bg-purple-500/10 rounded p-2">
-                          <div className="text-purple-400 font-medium text-xs mb-1">
+                        <div className="bg-secondary/10 rounded p-2">
+                          <div className="text-secondary font-medium text-xs mb-1">
                             💡 Pergunta Sugerida para Clarificar:
                           </div>
                           <p className="text-sm italic">"{inc.suggestedProbe}"</p>
