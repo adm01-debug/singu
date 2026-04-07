@@ -138,15 +138,24 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Atualize as informações da empresa')).toBeInTheDocument();
   });
 
-  it('renders all 7 tabs', () => {
+  it('renders all 7 tabs in edit mode', () => {
+    renderForm(fullExternalCompany);
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(7);
+    expect(tabs[0]).toHaveTextContent('Básico');
+    expect(tabs[1]).toHaveTextContent('Fiscal');
+    expect(tabs[2]).toHaveTextContent('Classificação');
+    expect(tabs[3]).toHaveTextContent('Estrutura');
+    expect(tabs[4]).toHaveTextContent('Telefones');
+    expect(tabs[5]).toHaveTextContent('Endereços');
+    expect(tabs[6]).toHaveTextContent('Redes');
+  });
+
+  it('shows only Básico tab in create mode', () => {
     renderForm();
-    expect(screen.getByText('Básico')).toBeInTheDocument();
-    expect(screen.getByText('Fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Classif.')).toBeInTheDocument();
-    expect(screen.getByText('Estrutura')).toBeInTheDocument();
-    expect(screen.getByText('Telefones')).toBeInTheDocument();
-    expect(screen.getByText('Endereços')).toBeInTheDocument();
-    expect(screen.getByText('Redes')).toBeInTheDocument();
+    // In create mode, only the Básico tab content is shown (no tab bar)
+    expect(screen.getByText('Identificação')).toBeInTheDocument();
+    expect(screen.queryByText('Fiscal')).not.toBeInTheDocument();
   });
 
   it('renders submit and cancel buttons', () => {
@@ -162,14 +171,16 @@ describe('CompanyForm — Rendering', () => {
 
   it('renders Básico tab fields by default', () => {
     renderForm();
-    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
+    // "Nome no CRM" has asterisk in a separate <span>, use flexible matcher
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    expect(screen.getByText('Website')).toBeInTheDocument();
+    // Website label has an icon inside, use flexible matcher
+    expect(screen.getByText(/Website/)).toBeInTheDocument();
     expect(screen.getByText('Tags')).toBeInTheDocument();
     expect(screen.getByText('Desafios')).toBeInTheDocument();
     expect(screen.getByText('Concorrentes')).toBeInTheDocument();
@@ -181,22 +192,22 @@ describe('CompanyForm — Rendering', () => {
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Tab Navigation', () => {
   it('switches to Fiscal tab and shows fiscal fields', async () => {
-    renderForm();
-    await userEvent.click(screen.getByText('Fiscal'));
+    renderForm(fullExternalCompany);
+    await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
     expect(screen.getByText('CNPJ')).toBeInTheDocument();
     expect(screen.getByText('Situação RF')).toBeInTheDocument();
     expect(screen.getByText('Capital Social (R$)')).toBeInTheDocument();
     expect(screen.getByText('Natureza Jurídica (Código)')).toBeInTheDocument();
     expect(screen.getByText('Natureza Jurídica (Descrição)')).toBeInTheDocument();
     expect(screen.getByText('Porte (Receita Federal)')).toBeInTheDocument();
-    expect(screen.getByText('Data de Fundação')).toBeInTheDocument();
+    expect(screen.getByText(/Data de Fundação/)).toBeInTheDocument();
     expect(screen.getByText('Inscrição Estadual')).toBeInTheDocument();
     expect(screen.getByText('Inscrição Municipal')).toBeInTheDocument();
   });
 
   it('switches to Classificação tab and shows classification fields', async () => {
-    renderForm();
-    await userEvent.click(screen.getByText('Classif.'));
+    renderForm(fullExternalCompany);
+    await userEvent.click(screen.getByRole('tab', { name: /Classificação/ }));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
     expect(screen.getByText('Cliente Ativo')).toBeInTheDocument();
     expect(screen.getByText('Fornecedor')).toBeInTheDocument();
@@ -208,12 +219,12 @@ describe('CompanyForm — Tab Navigation', () => {
   });
 
   it('switches to Estrutura tab and shows ALL structure fields', async () => {
-    renderForm();
-    await userEvent.click(screen.getByText('Estrutura'));
+    renderForm(fullExternalCompany);
+    await userEvent.click(screen.getByRole('tab', { name: /Estrutura/ }));
     expect(screen.getByText('Nº Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Faturamento Anual')).toBeInTheDocument();
     expect(screen.getByText('Saúde Financeira')).toBeInTheDocument();
-    expect(screen.getByText('Cores da Marca')).toBeInTheDocument();
+    expect(screen.getByText(/Cores da Marca/)).toBeInTheDocument();
     // Relational IDs
     expect(screen.getByText('ID da Matriz')).toBeInTheDocument();
     expect(screen.getByText('ID Grupo Econômico')).toBeInTheDocument();
@@ -224,8 +235,8 @@ describe('CompanyForm — Tab Navigation', () => {
   });
 
   it('switches to Fiscal tab and shows CNPJ Base field', async () => {
-    renderForm();
-    await userEvent.click(screen.getByText('Fiscal'));
+    renderForm(fullExternalCompany);
+    await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
     expect(screen.getByText('CNPJ Base')).toBeInTheDocument();
   });
 });
@@ -245,7 +256,7 @@ describe('CompanyForm — Default Values Population', () => {
 
   it('populates fiscal fields from full external company', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Fiscal'));
+    await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
     expect(screen.getByDisplayValue('79.114.450/0284-18')).toBeInTheDocument();
     expect(screen.getByDisplayValue('319967786.74')).toBeInTheDocument();
     expect(screen.getByDisplayValue('2143')).toBeInTheDocument();
@@ -256,7 +267,7 @@ describe('CompanyForm — Default Values Population', () => {
 
   it('populates classification fields from full external company', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Classif.'));
+    await userEvent.click(screen.getByRole('tab', { name: /Classificação/ }));
 
     // is_customer should be checked
     const checkboxes = screen.getAllByRole('checkbox');
@@ -455,18 +466,18 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
 
     // Fiscal tab
-    await userEvent.click(screen.getByText('Fiscal'));
+    await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
     expect(screen.getByDisplayValue('79.114.450/0284-18')).toBeInTheDocument();
     expect(screen.getByDisplayValue('79114450')).toBeInTheDocument(); // cnpj_base
 
     // Classificação tab
-    await userEvent.click(screen.getByText('Classif.'));
+    await userEvent.click(screen.getByRole('tab', { name: /Classificação/ }));
     expect(screen.getByDisplayValue('Coanorp Cooperativa')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Singular')).toBeInTheDocument();
     expect(screen.getByDisplayValue('12345')).toBeInTheDocument();
 
     // Estrutura tab
-    await userEvent.click(screen.getByText('Estrutura'));
+    await userEvent.click(screen.getByRole('tab', { name: /Estrutura/ }));
     expect(screen.getByDisplayValue('#009639, #FFFFFF')).toBeInTheDocument();
     expect(screen.getByDisplayValue('abc-matriz-uuid')).toBeInTheDocument();
     expect(screen.getByDisplayValue('def-central-uuid')).toBeInTheDocument();
@@ -475,19 +486,23 @@ describe('CompanyForm — External Data Mapping', () => {
     expect(screen.getByDisplayValue('42')).toBeInTheDocument(); // bitrix_company_id
   });
 
-  it('populates tags_array as comma-separated string', () => {
+  it('populates tags_array as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('agro, cooperativa, VIP')).toBeInTheDocument();
+    expect(screen.getByText('agro')).toBeInTheDocument();
+    expect(screen.getByText('cooperativa')).toBeInTheDocument();
+    expect(screen.getByText('VIP')).toBeInTheDocument();
   });
 
-  it('populates challenges as comma-separated string', () => {
+  it('populates challenges as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('Logística, Custos')).toBeInTheDocument();
+    expect(screen.getByText('Logística')).toBeInTheDocument();
+    expect(screen.getByText('Custos')).toBeInTheDocument();
   });
 
-  it('populates competitors as comma-separated string', () => {
+  it('populates competitors as tag badges', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByDisplayValue('Coamo, C.Vale')).toBeInTheDocument();
+    expect(screen.getByText('Coamo')).toBeInTheDocument();
+    expect(screen.getByText('C.Vale')).toBeInTheDocument();
   });
 
   it('populates website field', () => {
@@ -497,7 +512,7 @@ describe('CompanyForm — External Data Mapping', () => {
 
   it('populates grupo_economico_id in Classificação', async () => {
     renderForm(fullExternalCompany);
-    await userEvent.click(screen.getByText('Estrutura'));
+    await userEvent.click(screen.getByRole('tab', { name: /Estrutura/ }));
     expect(screen.getByDisplayValue('9338a177-8645-4600-9817-cb0f6bf1069b')).toBeInTheDocument();
   });
 });
@@ -532,12 +547,13 @@ describe('CompanyForm — Schema Alignment with External DB', () => {
 // SECTION 9: SUBMISSION — ARRAY CONVERSION
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Array Field Submission', () => {
-  it('converts tags_array comma string to array on submit', async () => {
+  it('converts tags_array via TagInput on submit', async () => {
     renderForm();
     const nameInput = screen.getByPlaceholderText('Nome usado internamente');
     await userEvent.type(nameInput, 'Test Company');
-    const tagsInput = screen.getByPlaceholderText('Ex: VIP, Cooperativa, Agro (separadas por vírgula)');
-    await userEvent.type(tagsInput, 'Tag1, Tag2, Tag3');
+    // TagInput: type tag and press Enter
+    const tagsInput = screen.getByPlaceholderText(/VIP.*Cooperativa.*Agro/i);
+    await userEvent.type(tagsInput, 'Tag1{enter}Tag2{enter}Tag3{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       expect(mockSubmit).toHaveBeenCalledTimes(1);
@@ -556,10 +572,11 @@ describe('CompanyForm — Array Field Submission', () => {
     });
   });
 
-  it('converts challenges comma string to array on submit', async () => {
+  it('converts challenges via TagInput on submit', async () => {
     renderForm();
     await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
-    await userEvent.type(screen.getByPlaceholderText('Ex: Logística, Custos (vírgula)'), 'A, B');
+    const challengesInput = screen.getByPlaceholderText(/Logística.*Custos/i);
+    await userEvent.type(challengesInput, 'A{enter}B{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       const submitted = mockSubmit.mock.calls[0][0];
@@ -567,10 +584,11 @@ describe('CompanyForm — Array Field Submission', () => {
     });
   });
 
-  it('converts competitors comma string to array on submit', async () => {
+  it('converts competitors via TagInput on submit', async () => {
     renderForm();
     await userEvent.type(screen.getByPlaceholderText('Nome usado internamente'), 'Test');
-    await userEvent.type(screen.getByPlaceholderText('Ex: Empresa A, Empresa B (vírgula)'), 'X, Y');
+    const competitorsInput = screen.getByPlaceholderText(/Empresa A.*Empresa B/i);
+    await userEvent.type(competitorsInput, 'X{enter}Y{enter}');
     await userEvent.click(screen.getByText('Criar Empresa'));
     await waitFor(() => {
       const submitted = mockSubmit.mock.calls[0][0];
@@ -622,13 +640,13 @@ describe('CompanyForm — Stress & Boundary', () => {
 
   it('handles rapid tab switching', async () => {
     renderForm(fullExternalCompany);
-    for (let i = 0; i < 5; i++) {
-      await userEvent.click(screen.getByText('Fiscal'));
-      await userEvent.click(screen.getByText('Classif.'));
-      await userEvent.click(screen.getByText('Estrutura'));
-      await userEvent.click(screen.getByText('Básico'));
+    for (let i = 0; i < 3; i++) {
+      await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
+      await userEvent.click(screen.getByRole('tab', { name: /Classificação/ }));
+      await userEvent.click(screen.getByRole('tab', { name: /Estrutura/ }));
+      await userEvent.click(screen.getByRole('tab', { name: /Básico/ }));
     }
-    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
   });
 
   it('renders 10 forms concurrently without error', () => {
