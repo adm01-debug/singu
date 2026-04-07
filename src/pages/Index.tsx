@@ -1,10 +1,9 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import { LayoutGrid, BarChart3, Heart, Brain } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeGreetingPopup } from '@/components/dashboard/WelcomeGreetingPopup';
-
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
@@ -95,8 +94,6 @@ const Dashboard = () => {
       <CRMJsonLd />
       <ScrollProgressBar />
 
-      <div className="p-4 md:p-6 space-y-5 md:space-y-6">
-        
         <WelcomeGreetingPopup />
         <OnboardingChecklist
           hasProfile={hasProfile}
