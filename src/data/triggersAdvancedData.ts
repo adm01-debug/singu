@@ -32,7 +32,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Projeta o cliente no futuro já usando a solução com sucesso',
     effectiveness: 9,
     icon: '🔮',
-    color: 'text-secondary bg-violet-100',
+    color: 'text-secondary bg-secondary',
     examples: [
       'Imagine daqui 6 meses, sua equipe usando isso diariamente...',
       'Pense em você apresentando esses resultados pro board...',
@@ -430,7 +430,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Cria lacuna de conhecimento que gera desejo irresistível de saber mais',
     effectiveness: 8,
     icon: '🔮',
-    color: 'text-secondary bg-violet-100',
+    color: 'text-secondary bg-secondary',
     examples: [
       'Descobrimos algo que muda completamente a forma como você vê...',
       'Existe um erro que 90% das empresas cometem e você provavelmente também...',

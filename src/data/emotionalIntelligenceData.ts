@@ -73,7 +73,7 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     namePt: 'Motivação',
     icon: '🔥',
     color: 'text-accent',
-    bgColor: 'bg-accent border-orange-200',
+    bgColor: 'bg-accent border-accent/30',
     description: 'A passion to work for reasons that go beyond money or status; pursuing goals with energy and persistence',
     descriptionPt: 'Paixão pelo trabalho por razões além de dinheiro ou status; buscar metas com energia e persistência',
     characteristics: {
@@ -104,7 +104,7 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     namePt: 'Empatia',
     icon: '💗',
     color: 'text-primary',
-    bgColor: 'bg-primary border-pink-200',
+    bgColor: 'bg-primary border-primary/30',
     description: 'Ability to understand the emotional makeup of other people and skill in treating them according to their emotional reactions',
     descriptionPt: 'Capacidade de entender as emoções dos outros e tratá-los de acordo com suas reações emocionais',
     characteristics: {

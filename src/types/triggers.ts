@@ -282,7 +282,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Expectativa gera dopamina',
     effectiveness: 7,
     icon: '🎁',
-    color: 'text-secondary bg-violet-100',
+    color: 'text-secondary bg-secondary',
     examples: [
       'Imagine quando você tiver isso',
       'Pense nos resultados em 6 meses',

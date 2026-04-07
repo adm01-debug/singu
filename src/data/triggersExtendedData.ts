@@ -173,7 +173,7 @@ export const EXTENDED_MENTAL_TRIGGERS: Record<ExtendedTriggerType, AdvancedMenta
     description: 'Cria lacuna de conhecimento que gera desejo irresistível de saber mais',
     effectiveness: 8,
     icon: '🔮',
-    color: 'text-secondary bg-violet-100',
+    color: 'text-secondary bg-secondary',
     examples: [
       'Descobrimos algo que muda completamente a forma como você vê...',
       'Existe um erro que 90% das empresas cometem e você provavelmente também...',

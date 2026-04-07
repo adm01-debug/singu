@@ -81,7 +81,7 @@ export const METAPROGRAM_LABELS = {
     toward: {
       name: 'Em Direção A',
       icon: '🎯',
-      color: 'bg-success text-success border-emerald-200',
+      color: 'bg-success text-success border-success/30',
       description: 'Motivado por objetivos, conquistas e ganhos. Foca no que quer alcançar.',
       communicationTips: [
         'Use palavras como: alcançar, conquistar, obter, ganhar, realizar',
@@ -93,7 +93,7 @@ export const METAPROGRAM_LABELS = {
     away_from: {
       name: 'Afastar-se De',
       icon: '🛡️',
-      color: 'bg-warning text-warning border-amber-200',
+      color: 'bg-warning text-warning border-warning/30',
       description: 'Motivado por evitar problemas, dores e riscos. Foca no que quer evitar.',
       communicationTips: [
         'Use palavras como: evitar, prevenir, eliminar, resolver, proteger',
@@ -118,7 +118,7 @@ export const METAPROGRAM_LABELS = {
     internal: {
       name: 'Interno',
       icon: '🧭',
-      color: 'bg-violet-100 text-secondary border-violet-200',
+      color: 'bg-secondary text-secondary border-secondary/30',
       description: 'Toma decisões baseado em seus próprios critérios e intuição.',
       communicationTips: [
         'Use frases como: "Você vai perceber que...", "Na sua avaliação..."',
@@ -166,7 +166,7 @@ export const METAPROGRAM_LABELS = {
     procedures: {
       name: 'Procedimentos',
       icon: '📋',
-      color: 'bg-accent text-accent border-orange-200',
+      color: 'bg-accent text-accent border-accent/30',
       description: 'Prefere processos claros, passo a passo e métodos estruturados.',
       communicationTips: [
         'Apresente um processo passo a passo',
@@ -202,7 +202,7 @@ export const METAPROGRAM_LABELS = {
     specific: {
       name: 'Específico',
       icon: '🔍',
-      color: 'bg-cyan-100 text-accent border-cyan-200',
+      color: 'bg-cyan-100 text-accent border-accent/30',
       description: 'Prefere detalhes, especificidades e informações granulares.',
       communicationTips: [
         'Forneça dados e números específicos',
@@ -226,7 +226,7 @@ export const METAPROGRAM_LABELS = {
     proactive: {
       name: 'Proativo',
       icon: '🚀',
-      color: 'bg-primary text-primary border-rose-200',
+      color: 'bg-primary text-primary border-primary/30',
       description: 'Age primeiro, analisa depois. Inicia ações sem esperar.',
       communicationTips: [
         'Use: "Vamos fazer!", "Comece agora!"',
@@ -274,7 +274,7 @@ export const METAPROGRAM_LABELS = {
     difference: {
       name: 'Diferenciador',
       icon: '✨',
-      color: 'bg-primary text-primary border-pink-200',
+      color: 'bg-primary text-primary border-primary/30',
       description: 'Foca em diferenças, novidades e no que é único.',
       communicationTips: [
         'Use: "Diferente de...", "Novo!", "Único!"',

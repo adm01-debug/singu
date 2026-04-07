@@ -53,7 +53,7 @@ export const BRAIN_SYSTEM_INFO: Record<BrainSystem, BrainSystemInfo> = {
     namePt: 'Sistema Límbico',
     icon: '❤️',
     color: 'text-primary',
-    bgColor: 'bg-primary border-pink-300',
+    bgColor: 'bg-primary border-primary/30',
     description: 'The emotional brain. Processes feelings and memories.',
     descriptionPt: 'O cérebro emocional. Processa sentimentos e memórias.',
     evolutionAge: '150 milhões de anos',
@@ -309,7 +309,7 @@ export const NEUROCHEMICAL_INFO: Record<Neurochemical, NeurochemicalInfo> = {
     namePt: 'Ocitocina',
     icon: '🤝',
     color: 'text-primary',
-    bgColor: 'bg-primary border-pink-300',
+    bgColor: 'bg-primary border-primary/30',
     effect: 'Trust, Bonding, Connection, Generosity',
     effectPt: 'Confiança, Vínculo, Conexão, Generosidade',
     triggers: [
@@ -402,7 +402,7 @@ export const NEUROCHEMICAL_INFO: Record<Neurochemical, NeurochemicalInfo> = {
     namePt: 'Adrenalina',
     icon: '🔥',
     color: 'text-accent',
-    bgColor: 'bg-accent border-orange-300',
+    bgColor: 'bg-accent border-accent/30',
     effect: 'Excitement, Action, Risk-taking, Energy',
     effectPt: 'Excitação, Ação, Risco, Energia',
     triggers: [

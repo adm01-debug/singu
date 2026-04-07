@@ -87,7 +87,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Mostra o que acontece se a pessoa mantiver ou abandonar a crença.',
     formula: '"Se você continuar pensando assim, [consequência negativa]. Por outro lado, [consequência positiva]."',
     icon: '➡️',
-    color: 'bg-accent text-accent border-orange-200',
+    color: 'bg-accent text-accent border-accent/30',
     examples: [
       '"Cada mês sem a solução custa R$ X em ineficiência."',
       '"Empresas que adiaram essa decisão perderam market share."',
@@ -121,7 +121,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Especifica a objeção até que ela pareça gerenciável ou irrelevante.',
     formula: '"Especificamente, qual parte de [objeção] te preocupa mais?"',
     icon: '🔽',
-    color: 'bg-cyan-100 text-accent border-cyan-200',
+    color: 'bg-cyan-100 text-accent border-accent/30',
     examples: [
       '"Quando você diz \'caro\', está comparando com qual alternativa especificamente?"',
       '"Qual funcionalidade específica você acha desnecessária?"',
@@ -138,7 +138,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Apresenta um caso real que prova que a crença nem sempre é verdadeira.',
     formula: '"Interessante, porque [empresa/pessoa] tinha a mesma visão e depois [resultado contrário]."',
     icon: '🔀',
-    color: 'bg-success text-success border-emerald-200',
+    color: 'bg-success text-success border-success/30',
     examples: [
       '"A empresa X pensava o mesmo, mas depois de implementar, reduziu custos em 40%."',
       '"Você conhece o caso da empresa Y? Eles também achavam que não era o momento."',
@@ -155,7 +155,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Cria uma analogia que ressignifica a situação de forma mais positiva.',
     formula: '"É como [analogia]. Você não [paralelo com a objeção], você [perspectiva positiva]."',
     icon: '🪞',
-    color: 'bg-primary text-primary border-pink-200',
+    color: 'bg-primary text-primary border-primary/30',
     examples: [
       '"É como comprar um guarda-chuva antes da chuva - parece desnecessário até você precisar."',
       '"Investir em tecnologia é como plantar uma árvore: o melhor momento foi ontem."',
@@ -172,7 +172,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Usa a própria estrutura da objeção para questioná-la.',
     formula: '"Se [objeção] fosse sempre verdade, então [consequência absurda]?"',
     icon: '🔁',
-    color: 'bg-warning text-warning border-amber-200',
+    color: 'bg-warning text-warning border-warning/30',
     examples: [
       '"Se esperar sempre fosse a melhor opção, você nunca teria crescido até aqui."',
       '"Se preço baixo fosse garantia de qualidade, por que você não usa o mais barato?"',
@@ -223,7 +223,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Muda a perspectiva alterando o "zoom" da situação.',
     formula: '"Se você olhar para isso em [novo contexto temporal/espacial], como parece?"',
     icon: '🔍',
-    color: 'bg-violet-100 text-secondary border-violet-200',
+    color: 'bg-secondary text-secondary border-secondary/30',
     examples: [
       '"Em 5 anos, como você vai ver essa decisão?"',
       '"Comparado com o custo de rotatividade de funcionários, esse investimento é pequeno."',
@@ -274,7 +274,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Explora o processo de pensamento que levou à crença.',
     formula: '"Como você sabe que [crença]? O que te faz ter certeza?"',
     icon: '🔬',
-    color: 'bg-primary text-primary border-rose-200',
+    color: 'bg-primary text-primary border-primary/30',
     examples: [
       '"O que te faz pensar que não é o momento certo? Qual indicador?"',
       '"Como você chegou à conclusão de que não vai funcionar para vocês?"',

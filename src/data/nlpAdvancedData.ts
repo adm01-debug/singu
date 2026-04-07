@@ -74,7 +74,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Empolgado',
     icon: '🔥',
     color: 'text-accent',
-    bgColor: 'bg-accent border-orange-200',
+    bgColor: 'bg-accent border-accent/30',
     description: 'Cliente demonstra alto entusiasmo',
     salesApproach: 'Aproveite o momento! Avance para o fechamento.'
   },
@@ -130,7 +130,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Analítico',
     icon: '📊',
     color: 'text-accent',
-    bgColor: 'bg-cyan-100 border-cyan-200',
+    bgColor: 'bg-cyan-100 border-accent/30',
     description: 'Cliente quer dados e provas',
     salesApproach: 'Apresente números, cases e ROI comprovado.'
   },
@@ -138,7 +138,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Hesitante',
     icon: '😬',
     color: 'text-warning',
-    bgColor: 'bg-warning border-amber-200',
+    bgColor: 'bg-warning border-warning/30',
     description: 'Cliente com dúvidas',
     salesApproach: 'Identifique a objeção oculta e ofereça garantias.'
   },
@@ -146,7 +146,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Cético',
     icon: '🤨',
     color: 'text-primary',
-    bgColor: 'bg-primary border-rose-200',
+    bgColor: 'bg-primary border-primary/30',
     description: 'Cliente desconfiado',
     salesApproach: 'Use provas sociais, depoimentos e garantias.'
   },
@@ -162,7 +162,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Ansioso',
     icon: '😰',
     color: 'text-secondary',
-    bgColor: 'bg-violet-100 border-violet-200',
+    bgColor: 'bg-secondary border-secondary/30',
     description: 'Cliente preocupado ou nervoso',
     salesApproach: 'Tranquilize, reduza riscos percebidos e dê segurança.'
   },
