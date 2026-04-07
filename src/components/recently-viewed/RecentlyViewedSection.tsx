@@ -5,6 +5,12 @@ import { ptBR } from 'date-fns/locale';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { useRecentlyViewed, type RecentlyViewedItem } from '@/hooks/useRecentlyViewed';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { toTitleCase } from '@/lib/formatters';
+
+/** Strip leading numeric prefix like "05 - " from names */
+function cleanName(name: string): string {
+  return name.replace(/^\d+\s*[-–—]\s*/, '');
+}
 
 interface RecentlyViewedSectionProps {
   type: 'contact' | 'company';
@@ -37,13 +43,13 @@ export function RecentlyViewedSection({ type }: RecentlyViewedSectionProps) {
             >
               <OptimizedAvatar
                 alt={item.name}
-                fallback={item.name.charAt(0).toUpperCase()}
+                fallback={(cleanName(item.name)[0] || 'E').toUpperCase()}
                 src={item.avatarUrl}
                 size="sm"
               />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                  {item.name}
+                  {toTitleCase(cleanName(item.name))}
                 </p>
                 {item.subtitle && (
                   <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>

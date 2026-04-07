@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { queryExternalData, updateExternalData } from '@/lib/externalData';
+import { toTitleCase } from '@/lib/formatters';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
 import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
@@ -198,7 +199,7 @@ const EmpresaDetalhe = () => {
     <AppLayout>
       <div className="min-h-screen pt-2 md:pt-4">
         <div className="px-4 md:px-6 pt-3 md:pt-4">
-          <PageHeader backTo="/empresas" backLabel="Empresas" title={company.name} />
+          <PageHeader backTo="/empresas" backLabel="Empresas" title={toTitleCase(company.name)} />
         </div>
         
         {/* Header gradient */}
