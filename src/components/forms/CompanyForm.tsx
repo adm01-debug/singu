@@ -141,14 +141,12 @@ function FormSection({ icon: Icon, title, children, className }: {
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Icon className="w-3.5 h-3.5 text-primary" />
-        </div>
-        <h4 className="text-sm font-semibold text-foreground tracking-tight">{title}</h4>
+    <div className={cn("space-y-3", className)}>
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-muted-foreground" />
+        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</h4>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
         {children}
       </div>
     </div>
