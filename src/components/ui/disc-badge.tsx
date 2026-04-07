@@ -94,7 +94,7 @@ export function DISCSelector({ value, onChange, className }: DISCSelectorProps) 
             <div className="flex items-center gap-2 mb-2">
               <span className={cn(
                 'w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg',
-                isSelected ? 'bg-white/30' : 'bg-muted'
+                isSelected ? 'bg-foreground/20' : 'bg-muted'
               )}>
                 {profile}
               </span>

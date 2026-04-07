@@ -90,7 +90,7 @@ const RelatorioContato = () => {
   const contactName = `${contact.first_name} ${contact.last_name}`.trim();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header com botões (não imprime) */}
       <div className="print:hidden bg-background border-b p-4 flex items-center justify-between sticky top-0 z-10">
         <BackButton to={`/contatos/${id}`} label="Voltar ao contato" />
