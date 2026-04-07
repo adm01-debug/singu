@@ -275,6 +275,45 @@ export function ContactCardWithContext({
                       );
                     })()}
                   </div>
+
+                  {/* Row 3: Quick actions — visible on hover */}
+                  {(contact.email || contact.phone || contact.whatsapp) && (
+                    <div className="flex items-center gap-1 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {contact.email && (
+                        <a
+                          href={`mailto:${contact.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title={`Email: ${contact.email}`}
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {contact.phone && (
+                        <a
+                          href={`tel:${contact.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title={`Ligar: ${contact.phone}`}
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {contact.whatsapp && (
+                        <a
+                          href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-500 transition-colors"
+                          title={`WhatsApp: ${contact.whatsapp}`}
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      <span className="ml-auto text-[10px] text-muted-foreground/50">Ações rápidas</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Link>
