@@ -102,7 +102,7 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
         animate={{ opacity: 1, y: 0 }}
         className={className}
       >
-        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
+        <Card className="border-primary/20 bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
               <Brain className="w-4 h-4" />
@@ -164,9 +164,9 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
           exit={{ opacity: 0, scale: 0.95, y: -20 }}
           className={cn("fixed inset-x-4 top-20 z-50 max-w-2xl mx-auto", className)}
         >
-          <Card className="shadow-2xl border-2 border-primary/30 bg-background/95 backdrop-blur-lg">
+          <Card className="border border-primary/20 bg-background/95 backdrop-blur-lg">
             {/* Header */}
-            <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-t-lg">
+            <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -557,7 +557,7 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
       animate={{ opacity: 1, y: 0 }}
       className={className}
     >
-      <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">
+      <Card className="border-primary/20 bg-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
             <Brain className="w-4 h-4" />
