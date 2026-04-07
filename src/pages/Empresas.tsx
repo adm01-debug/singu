@@ -21,6 +21,7 @@ import {
   X
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
+import { CompaniesStatsBar } from '@/components/companies/CompaniesStatsBar';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
