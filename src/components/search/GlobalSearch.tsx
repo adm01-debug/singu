@@ -65,6 +65,8 @@ interface RecentItem {
 interface GlobalSearchProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  voiceMode?: boolean;
+  onVoiceModeChange?: (open: boolean) => void;
 }
 
 const navigationItems = [
