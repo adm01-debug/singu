@@ -1,48 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-async function authenticateRequest(req: Request): Promise<string> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("UNAUTHORIZED");
-  }
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) throw new Error("UNAUTHORIZED");
-  return user.id;
-}
+import {
+  corsHeaders,
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+  jsonOk,
+} from "../_shared/auth.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
 
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
-    try {
-      await authenticateRequest(req);
-    } catch {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
@@ -52,33 +24,21 @@ serve(async (req) => {
       "https://api.elevenlabs.io/v1/single-use-token/realtime_scribe",
       {
         method: "POST",
-        headers: {
-          "xi-api-key": ELEVENLABS_API_KEY,
-        },
+        headers: { "xi-api-key": ELEVENLABS_API_KEY },
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("ElevenLabs token error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: `ElevenLabs API error: ${response.status}` }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError(`ElevenLabs API error: ${response.status}`, 500);
     }
 
     const { token } = await response.json();
-
-    return new Response(
-      JSON.stringify({ token }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonOk({ token });
   } catch (error: unknown) {
     console.error("Error generating scribe token:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonError(message, 500);
   }
 });

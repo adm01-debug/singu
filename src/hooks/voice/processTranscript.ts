@@ -1,5 +1,4 @@
-import { logger } from "@/lib/logger";
-import { getAuthToken, refreshAuthToken } from "./auth";
+import { voiceFetch } from "./voiceFetch";
 import type { VoiceAgentAction } from "./types";
 
 const VALID_ACTIONS = new Set(["search", "navigate", "answer", "create_interaction", "create_reminder"]);
@@ -9,7 +8,7 @@ const VALID_ACTIONS = new Set(["search", "navigate", "answer", "create_interacti
  * and returns a structured VoiceAgentAction.
  *
  * Features:
- * - 15s abort timeout
+ * - 15s abort timeout (via voiceFetch)
  * - Auto-retry on 401 with session refresh
  * - Strict action validation
  */
@@ -19,46 +18,8 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
     return { action: "answer", response: "Não recebi nenhum comando. Pode repetir?", data: {} };
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
   try {
-    const authToken = await getAuthToken();
-
-    let response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ transcript: sanitized }),
-        signal: controller.signal,
-      }
-    );
-
-    // Auto-retry on 401 with refreshed token
-    if (response.status === 401) {
-      logger.warn("[Voice] 401 received, refreshing session...");
-      const newToken = await refreshAuthToken();
-      if (newToken) {
-        response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              Authorization: `Bearer ${newToken}`,
-            },
-            body: JSON.stringify({ transcript: sanitized }),
-            signal: controller.signal,
-          }
-        );
-      }
-    }
+    const response = await voiceFetch("voice-agent", { transcript: sanitized }, 15000);
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "");
@@ -72,8 +33,6 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
       throw new Error("timeout");
     }
     throw err;
-  } finally {
-    clearTimeout(timeout);
   }
 }
 

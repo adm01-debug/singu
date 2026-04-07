@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef } from "react";
 import type { VoiceAgentAction, VoiceAgentPhase } from "./types";
-import { logger } from "@/lib/logger";
 
 const ERROR_RESET_DELAY_MS = 5000;
 

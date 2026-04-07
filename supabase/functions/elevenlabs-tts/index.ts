@@ -1,50 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import {
+  corsHeaders,
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+} from "../_shared/auth.ts";
 
 const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
 
-async function authenticateRequest(req: Request): Promise<string> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new Error("UNAUTHORIZED");
-  }
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) throw new Error("UNAUTHORIZED");
-  return user.id;
-}
-
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
 
-  if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method not allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
-    try {
-      await authenticateRequest(req);
-    } catch {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
@@ -54,29 +25,19 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON body" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Invalid JSON body", 400);
     }
 
     const { text, voiceId } = body as { text?: unknown; voiceId?: string };
 
     if (!text || typeof text !== "string" || text.trim().length === 0 || text.length > 5000) {
-      return new Response(
-        JSON.stringify({ error: "Invalid text (required, max 5000 chars)" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Invalid text (required, max 5000 chars)", 400);
     }
 
-    // Sanitize voiceId to prevent path traversal
-    let selectedVoiceId = "4tRn1lSkEn13EVTuqb0g"; // Custom voice default
+    let selectedVoiceId = "4tRn1lSkEn13EVTuqb0g";
     if (voiceId && typeof voiceId === "string") {
       if (!VOICE_ID_REGEX.test(voiceId)) {
-        return new Response(
-          JSON.stringify({ error: "Invalid voiceId format" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("Invalid voiceId format", 400);
       }
       selectedVoiceId = voiceId;
     }
@@ -107,16 +68,9 @@ serve(async (req) => {
       console.error("ElevenLabs TTS error:", response.status, errorText);
 
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "TTS rate limit exceeded. Try again shortly." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("TTS rate limit exceeded. Try again shortly.", 429);
       }
-
-      return new Response(
-        JSON.stringify({ error: `TTS failed: ${response.status}` }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError(`TTS failed: ${response.status}`, 500);
     }
 
     const audioBuffer = await response.arrayBuffer();
@@ -131,9 +85,6 @@ serve(async (req) => {
   } catch (error: unknown) {
     console.error("TTS error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonError(message, 500);
   }
 });
