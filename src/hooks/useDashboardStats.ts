@@ -96,6 +96,17 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
 
     const interactionDiff = thisWeekInteractions - lastWeekInteractions;
 
+    // Real sparkline: count interactions per week for last 7 weeks
+    const interactionSparkline: number[] = [];
+    for (let w = 6; w >= 0; w--) {
+      const wStart = subWeeks(thisWeekStart, w);
+      const wEnd = subWeeks(thisWeekEnd, w);
+      const count = interactions.filter(i => {
+        const d = new Date(i.created_at);
+        return d >= wStart && d <= wEnd;
+      }).length;
+      interactionSparkline.push(count);
+    }
     const scoresWithValue = contacts.filter(c => c.relationship_score !== null && c.relationship_score !== undefined);
     const avgScore = scoresWithValue.length > 0
       ? Math.round(scoresWithValue.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / scoresWithValue.length)
@@ -212,6 +223,7 @@ export function useDashboardStats({ contacts = [], companies = [], interactions 
       scoreChange: '+0% vs mês anterior',
       topContacts,
       recentActivities,
+      interactionSparkline,
       loading: false,
     };
   }, [contacts, companies, interactions, loading]);
