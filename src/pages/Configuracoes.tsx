@@ -149,6 +149,7 @@ const Configuracoes = () => {
       <Header 
         title="Configurações" 
         subtitle="Gerencie seu perfil, preferências e configurações do sistema"
+        hideBack
       />
       
       <div className="p-6 space-y-6">

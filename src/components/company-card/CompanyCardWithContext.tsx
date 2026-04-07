@@ -3,9 +3,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Building2, 
-  MapPin, 
-  Phone, 
-  Mail, 
   Users,
   MoreVertical,
   Factory,
@@ -15,7 +12,6 @@ import {
   Cpu,
   HeartPulse,
   GraduationCap,
-  
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +32,7 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase } from '@/lib/formatters';
 
-/** Strip leading numeric prefix like "05 - " or "32 - " from company names for display */
+/** Strip leading numeric prefix like "05 - " from company names */
 function getAvatarInitial(name: string): string {
   const cleaned = name.replace(/^\d+\s*[-–—]\s*/, '');
   return (cleaned || name || 'E')[0].toUpperCase();
@@ -52,73 +48,8 @@ const industryIcons: Record<string, React.ElementType> = {
   'Serviços': Briefcase,
 };
 
-/* ── Health Score Ring with semantic colors ── */
-const healthRingConfig: Record<string, { color: string; label: string; percent: number }> = {
-  excellent: { color: 'text-success', label: 'Excelente', percent: 100 },
-  good:      { color: 'text-success', label: 'Boa', percent: 85 },
-  growing:   { color: 'text-success', label: 'Crescendo', percent: 75 },
-  stable:    { color: 'text-info', label: 'Estável', percent: 60 },
-  average:   { color: 'text-warning', label: 'Regular', percent: 45 },
-  declining: { color: 'text-warning', label: 'Declínio', percent: 30 },
-  poor:      { color: 'text-destructive', label: 'Ruim', percent: 15 },
-  critical:  { color: 'text-destructive', label: 'Crítica', percent: 5 },
-};
-
-function HealthRing({ health, status }: { health: string | null; status: string | null }) {
-  const config = healthRingConfig[health || ''];
-  
-  // Derive visual from status if no financial_health
-  const derivedConfig = config || (
-    status === 'active' || status === 'ativo'
-      ? { color: 'text-success', label: 'Ativo', percent: 70 }
-      : status === 'inactive' || status === 'inativo'
-      ? { color: 'text-destructive', label: 'Inativo', percent: 15 }
-      : status === 'prospect' || status === 'prospecto'
-      ? { color: 'text-info', label: 'Prospecto', percent: 50 }
-      : null
-  );
-
-  if (!derivedConfig) {
-    return (
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
-        <span className="text-xs">Sem dados</span>
-      </div>
-    );
-  }
-
-  // Simple dot indicator instead of SVG ring for cleaner look
-  const dotColorMap: Record<string, string> = {
-    'text-success': 'bg-success',
-    'text-info': 'bg-info',
-    'text-warning': 'bg-warning',
-    'text-destructive': 'bg-destructive',
-  };
-  const dotColor = dotColorMap[derivedConfig.color] || 'bg-primary';
-
-  return (
-    <div className={cn('flex items-center gap-1.5', derivedConfig.color)}>
-      <span className={cn('w-2 h-2 rounded-full', dotColor)} />
-      <span className="text-xs font-medium">{derivedConfig.label}</span>
-    </div>
-  );
-}
-
-/* ── Health badge ── */
-const healthBadgeConfig: Record<string, { className: string; label: string }> = {
-  excellent: { className: 'border-success/50 text-success bg-success/10', label: 'Excelente' },
-  good:      { className: 'border-success/50 text-success bg-success/10', label: 'Boa' },
-  growing:   { className: 'border-success/50 text-success bg-success/10', label: 'Crescendo' },
-  stable:    { className: 'border-info/50 text-info bg-info/10', label: 'Estável' },
-  average:   { className: 'border-warning/50 text-warning bg-warning/10', label: 'Regular' },
-  declining: { className: 'border-warning/50 text-warning bg-warning/10', label: 'Em Declínio' },
-  poor:      { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Ruim' },
-  critical:  { className: 'border-destructive/50 text-destructive bg-destructive/10', label: 'Crítica' },
-};
-
 /* ── Deterministic avatar color from name hash ── */
 function hashStringToHue(str: string): number {
-  // Use FNV-1a for better distribution with similar prefixes
   let hash = 2166136261;
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i);
@@ -127,25 +58,51 @@ function hashStringToHue(str: string): number {
   return Math.abs(hash) % 360;
 }
 
-function getAvatarGradient(health: string | null, status: string | null, name?: string): string {
-  if (health === 'excellent' || health === 'good' || health === 'growing') return 'from-success to-success/70';
-  if (health === 'stable') return 'from-info to-primary';
-  if (health === 'average') return 'from-warning to-warning/70';
-  if (health === 'declining' || health === 'poor' || health === 'critical') return 'from-destructive to-destructive/70';
-  if (status === 'inactive' || status === 'inativo') return 'from-destructive/80 to-destructive/60';
-  // For active/prospect/unknown — always use deterministic color from name for visual variety
-  return '';
-}
-
-function getAvatarStyle(health: string | null, status: string | null, name: string): React.CSSProperties | undefined {
-  // Only apply custom color when there's no health-based or status-based gradient
-  if (health && healthRingConfig[health]) return undefined;
-  if (status === 'inactive' || status === 'inativo') return undefined;
-  // Deterministic color from company name — ensures visual variety in grids
+function getAvatarStyle(name: string): React.CSSProperties {
   const hue = hashStringToHue(name);
   return {
     background: `linear-gradient(135deg, hsl(${hue}, 55%, 45%), hsl(${(hue + 40) % 360}, 50%, 35%))`,
   };
+}
+
+/* ── Status dot + label ── */
+function StatusDot({ status, isCustomer }: { status: string | null; isCustomer: boolean | null }) {
+  if (isCustomer) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-success" />
+        <span className="text-xs text-success font-medium">Ativo</span>
+      </div>
+    );
+  }
+
+  const normalized = (status || '').toLowerCase();
+  if (normalized === 'inactive' || normalized === 'inativo') {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-destructive" />
+        <span className="text-xs text-destructive font-medium">Inativo</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="w-2 h-2 rounded-full bg-info" />
+      <span className="text-xs text-info font-medium">Ativo</span>
+    </div>
+  );
+}
+
+/* ── Time ago with urgency color ── */
+function TimeAgo({ date }: { date: string }) {
+  const daysSince = Math.floor((Date.now() - new Date(date).getTime()) / (1000 * 60 * 60 * 24));
+  const color = daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
+  return (
+    <span className={cn('text-[11px] tabular-nums', color)}>
+      {formatDistanceToNow(new Date(date), { locale: ptBR, addSuffix: true })}
+    </span>
+  );
 }
 
 interface CompanyCardWithContextProps {
@@ -169,7 +126,6 @@ export function CompanyCardWithContext({
   isHighlighted,
   selectionMode,
   contactCount = 0,
-  lastInteractionDays,
   onSelect,
   onEdit,
   onDelete,
@@ -189,10 +145,6 @@ export function CompanyCardWithContext({
     try {
       if (field === 'name') {
         await onUpdate(company.id, { name: value });
-      } else if (field === 'email') {
-        await onUpdate(company.id, { email: value });
-      } else if (field === 'phone') {
-        await onUpdate(company.id, { phone: value });
       }
       return true;
     } catch {
@@ -201,15 +153,17 @@ export function CompanyCardWithContext({
   };
 
   const displayName = toTitleCase(company.name);
-  const hasSegment = !!company.industry;
-  const healthConfig = healthBadgeConfig[company.financial_health || ''];
+  const subtitle = company.industry
+    ? company.industry
+    : (company.city || company.state)
+    ? [company.city, company.state].filter(Boolean).join(', ')
+    : null;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: Math.min(index * 0.03, 0.4) }}
-      whileHover={{ scale: 1.01, y: -2 }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
       {...hoverProps}
     >
       <QuickActionsMenu
@@ -222,202 +176,118 @@ export function CompanyCardWithContext({
         onDelete={() => onDelete(company)}
       >
         <Card className={cn(
-          "h-full card-hover group cursor-pointer transition-all duration-200 overflow-hidden",
-          "hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30",
-          isHighlighted && "ring-2 ring-primary",
-          isSelected && "bg-primary/5"
+          "h-full group cursor-pointer overflow-hidden transition-colors duration-150",
+          "border border-border/30 hover:border-border/50",
+          isHighlighted && "ring-1 ring-primary/50",
+          isSelected && "bg-primary/5 border-primary/30"
         )}>
-          {/* Status color bar — semantic: green=customer, blue=prospect, muted=unknown */}
-          {(() => {
-            const barClass = company.is_customer 
-              ? 'bg-gradient-to-r from-success to-emerald-500'
-              : company.status === 'prospect' || company.status === 'prospecto'
-              ? 'bg-gradient-to-r from-primary to-sky-400'
-              : 'bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/20';
-            return <div className={cn("h-[3px] w-full rounded-t-[inherit]", barClass)} />;
-          })()}
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-start justify-between gap-2 mb-4">
-              <div className="flex items-center gap-3">
-                {selectionMode && (
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={(checked) => onSelect(company.id, checked as boolean)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                )}
-                
-                <Link to={`/empresas/${company.id}`} className="flex items-center gap-3 min-w-0">
-                  {company.logo_url ? (
-                    <img 
-                      src={company.logo_url} 
-                      alt={displayName} 
-                      className="w-12 h-12 rounded-xl object-cover shadow-soft"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                        (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                  ) : null}
-                  <div 
-                    className={cn(
-                      'w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center text-primary-foreground font-bold text-lg shadow-soft',
-                      getAvatarGradient(company.financial_health, company.status, company.name),
-                      company.logo_url && 'hidden'
-                    )}
-                    style={getAvatarStyle(company.financial_health, company.status, company.name)}
-                  >
-                    {getAvatarInitial(company.name)}
-                  </div>
-                  <div className="min-w-0">
-                    {isInlineEditing ? (
-                      <InlineEdit
-                        value={company.name}
-                        onSave={(v) => handleInlineSave('name', v)}
-                        className="font-semibold text-foreground"
-                      />
-                    ) : (
-                      <h3 
-                        className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2"
-                        onDoubleClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setIsInlineEditing(true);
-                        }}
-                      >
-                        {displayName}
-                      </h3>
-                    )}
-                    {hasSegment && (
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <IndustryIcon className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">{company.industry}</span>
-                      </div>
-                    )}
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        'text-[10px] font-semibold mt-1 w-fit',
-                        company.is_customer 
-                          ? 'border-success/40 text-success bg-success/10' 
-                          : 'border-primary/40 text-primary bg-primary/10'
-                      )}
-                    >
-                      {company.is_customer ? 'Cliente' : 'Prospect'}
-                    </Badge>
-                  </div>
-                </Link>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => { e.preventDefault(); onEdit(company); }}>
-                    Editar
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={(e) => { e.preventDefault(); onDelete(company); }}
-                    className="text-destructive"
-                  >
-                    Excluir
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {selectionMode && (
+            <div className="absolute top-3 left-3 z-20">
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelect(company.id, checked as boolean)}
+                onClick={(e) => e.stopPropagation()}
+              />
             </div>
+          )}
 
-            <Link to={`/empresas/${company.id}`}>
-              <div className="space-y-2 mb-4">
-                {(company.city || company.state) ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="truncate">{[company.city, company.state].filter(Boolean).join(', ')}</span>
-                  </div>
-                ) : (() => {
-                  // Extract location from name pattern "Company - City/UF" or "Company - UF"
-                  const nameMatch = company.name.match(/[-–—]\s*([^-–—]+?)\s*[-–—]\s*([A-Z]{2})\s*$/i) 
-                    || company.name.match(/[-–—]\s*([A-Z]{2})\s*$/i);
-                  if (nameMatch) {
-                    const location = nameMatch.length === 3 
-                      ? `${nameMatch[1].trim()}, ${nameMatch[2].toUpperCase()}`
-                      : nameMatch[1].toUpperCase();
-                    return (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="truncate">{location}</span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-                {company.phone && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{company.phone}</span>
-                  </div>
-                )}
-                {company.email && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{company.email}</span>
-                  </div>
-                )}
-              </div>
+          <div className="absolute top-3 right-3 z-20">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(company)}>Editar</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete(company)} className="text-destructive">Excluir</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-              {healthConfig && (
-                <div className="mb-4">
-                  <Badge variant="outline" className={healthConfig.className}>
-                    {healthConfig.label}
-                  </Badge>
+          <Link to={`/empresas/${company.id}`}>
+            <CardContent className="p-4">
+              {/* Header: Avatar + Name + Badge */}
+              <div className="flex items-center gap-3">
+                {company.logo_url ? (
+                  <img
+                    src={company.logo_url}
+                    alt={displayName}
+                    className="w-10 h-10 rounded-lg object-cover shrink-0"
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={cn(
+                    'w-10 h-10 rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0',
+                    company.logo_url && 'hidden'
+                  )}
+                  style={getAvatarStyle(company.name)}
+                >
+                  {getAvatarInitial(company.name)}
                 </div>
-              )}
 
-              {company.tags && company.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {company.tags.slice(0, 3).map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {company.tags.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{company.tags.length - 3}
-                    </Badge>
+                <div className="min-w-0 flex-1">
+                  {isInlineEditing ? (
+                    <InlineEdit
+                      value={company.name}
+                      onSave={(v) => handleInlineSave('name', v)}
+                      className="font-semibold text-sm"
+                    />
+                  ) : (
+                    <h3
+                      className="font-semibold text-sm leading-tight line-clamp-1 text-foreground"
+                      onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsInlineEditing(true); }}
+                    >
+                      {displayName}
+                    </h3>
+                  )}
+                  {subtitle && (
+                    <p className="text-xs text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                      <IndustryIcon className="w-3 h-3 shrink-0" />
+                      {subtitle}
+                    </p>
                   )}
                 </div>
-              )}
 
-              {/* Inline Metrics */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] font-semibold shrink-0',
+                    company.is_customer
+                      ? 'border-success/40 text-success bg-success/10'
+                      : 'border-primary/40 text-primary bg-primary/10'
+                  )}
+                >
+                  {company.is_customer ? 'Cliente' : 'Prospect'}
+                </Badge>
+              </div>
+
+              {/* Metrics row */}
+              <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5" />
                   {contactCount} {contactCount === 1 ? 'contato' : 'contatos'}
                 </span>
-                {lastInteractionDays !== null && lastInteractionDays !== undefined && (
-                  <span className={lastInteractionDays > 14 ? 'text-warning' : lastInteractionDays > 30 ? 'text-destructive' : ''}>
-                    {lastInteractionDays === 0 ? 'Interação hoje' : `${lastInteractionDays}d sem interação`}
-                  </span>
-                )}
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <HealthRing health={company.financial_health} status={company.status} />
-                {(() => {
-                  const daysSince = Math.floor((Date.now() - new Date(company.updated_at).getTime()) / (1000 * 60 * 60 * 24));
-                  const urgencyColor = daysSince <= 3 ? 'text-success' : daysSince <= 7 ? 'text-muted-foreground' : daysSince <= 14 ? 'text-warning' : 'text-destructive';
-                  return (
-                    <span className={`text-xs ${urgencyColor}`}>
-                      {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
-                    </span>
-                  );
-                })()}
+              {/* Footer: Status + Time */}
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
+                <StatusDot status={company.status} isCustomer={company.is_customer} />
+                <TimeAgo date={company.updated_at} />
               </div>
-            </Link>
-          </CardContent>
+            </CardContent>
+          </Link>
         </Card>
       </QuickActionsMenu>
     </motion.div>

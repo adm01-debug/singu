@@ -264,6 +264,7 @@ const Insights = () => {
       <Header 
         title="Insights com IA" 
         subtitle="Análise inteligente dos seus relacionamentos e interações"
+        hideBack
       />
       
       <div className="p-6 space-y-6">

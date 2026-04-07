@@ -83,7 +83,7 @@ const Analytics = () => {
   if (loading) {
     return (
       <AppLayout>
-        <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" />
+        <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" hideBack />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32" />)}
@@ -99,7 +99,7 @@ const Analytics = () => {
   return (
     <AppLayout>
       <SEOHead title="Analytics" description="Métricas avançadas de relacionamento e engajamento" />
-      <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" />
+      <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" hideBack />
       
       <div className="p-6 space-y-6">
         <SmartBreadcrumbs />

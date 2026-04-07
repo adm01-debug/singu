@@ -258,6 +258,7 @@ const Interacoes = () => {
       <Header 
         title="Interações" 
         subtitle={`${filteredAndSortedInteractions.length} de ${interactions.length} interações`}
+        hideBack
         showAddButton
         addButtonLabel="Nova Interação"
         onAddClick={() => setIsFormOpen(true)}

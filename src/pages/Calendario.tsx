@@ -223,6 +223,7 @@ const Calendario = () => {
       <Header 
         title="Calendário" 
         subtitle="Acompanhe e gerencie seus follow-ups pendentes"
+        hideBack
       />
       
       <div className="p-6 space-y-6">

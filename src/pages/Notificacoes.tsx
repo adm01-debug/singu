@@ -193,6 +193,7 @@ const Notificacoes = () => {
       <Header 
         title="Notificações" 
         subtitle="Configure alertas e notificações push"
+        hideBack
       />
 
       <div className="p-6 space-y-6">
