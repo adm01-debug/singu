@@ -301,7 +301,7 @@ export const TALK_RATIO_QUALITY = {
     range: { min: 0, max: 20 }, // Deviation from ideal
     label: 'Excelente',
     description: 'Equilíbrio perfeito entre falar e ouvir',
-    color: 'text-emerald-600',
+    color: 'text-success',
     emoji: '🎯'
   },
   good: {
@@ -315,14 +315,14 @@ export const TALK_RATIO_QUALITY = {
     range: { min: 36, max: 50 },
     label: 'Precisa Melhorar',
     description: 'Desequilíbrio notável que afeta a qualidade',
-    color: 'text-amber-600',
+    color: 'text-warning',
     emoji: '⚠️'
   },
   poor: {
     range: { min: 51, max: 100 },
     label: 'Crítico',
     description: 'Desequilíbrio significativo prejudicando a comunicação',
-    color: 'text-red-600',
+    color: 'text-destructive',
     emoji: '🚨'
   }
 };

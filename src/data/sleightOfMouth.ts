@@ -52,7 +52,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Reconhece a intenção positiva e redireciona para uma forma melhor de alcançá-la.',
     formula: '"Entendo que você quer [intenção positiva]. E se [solução] fosse uma forma ainda melhor de conseguir isso?"',
     icon: '🎯',
-    color: 'bg-blue-100 text-blue-700 border-blue-200',
+    color: 'bg-info text-info border-info',
     examples: [
       '"Entendo que você quer proteger o orçamento. E se essa ferramenta reduzisse custos no longo prazo?"',
       '"Sua intenção de minimizar riscos faz total sentido. É por isso que oferecemos garantia."',
@@ -69,7 +69,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Troca uma palavra-chave por um sinônimo que carrega significado diferente.',
     formula: '"Não é [palavra negativa], é [palavra positiva]."',
     icon: '🔄',
-    color: 'bg-purple-100 text-purple-700 border-purple-200',
+    color: 'bg-secondary text-secondary border-secondary',
     examples: [
       '"Não é caro, é um investimento estratégico."',
       '"Não é complexo, é completo."',
@@ -87,7 +87,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Mostra o que acontece se a pessoa mantiver ou abandonar a crença.',
     formula: '"Se você continuar pensando assim, [consequência negativa]. Por outro lado, [consequência positiva]."',
     icon: '➡️',
-    color: 'bg-orange-100 text-orange-700 border-orange-200',
+    color: 'bg-accent text-accent border-orange-200',
     examples: [
       '"Cada mês sem a solução custa R$ X em ineficiência."',
       '"Empresas que adiaram essa decisão perderam market share."',
@@ -104,7 +104,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Generaliza a objeção para um contexto maior onde faz menos sentido.',
     formula: '"Isso é parte de uma questão maior: [contexto ampliado]. E nesse contexto, [nova perspectiva]."',
     icon: '🔼',
-    color: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+    color: 'bg-primary text-primary border-indigo-200',
     examples: [
       '"A questão maior é: vocês querem liderar ou seguir o mercado?"',
       '"No final das contas, o que importa é o resultado para sua empresa."',
@@ -121,7 +121,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Especifica a objeção até que ela pareça gerenciável ou irrelevante.',
     formula: '"Especificamente, qual parte de [objeção] te preocupa mais?"',
     icon: '🔽',
-    color: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+    color: 'bg-cyan-100 text-accent border-cyan-200',
     examples: [
       '"Quando você diz \'caro\', está comparando com qual alternativa especificamente?"',
       '"Qual funcionalidade específica você acha desnecessária?"',
@@ -138,7 +138,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Apresenta um caso real que prova que a crença nem sempre é verdadeira.',
     formula: '"Interessante, porque [empresa/pessoa] tinha a mesma visão e depois [resultado contrário]."',
     icon: '🔀',
-    color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    color: 'bg-success text-success border-emerald-200',
     examples: [
       '"A empresa X pensava o mesmo, mas depois de implementar, reduziu custos em 40%."',
       '"Você conhece o caso da empresa Y? Eles também achavam que não era o momento."',
@@ -155,7 +155,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Cria uma analogia que ressignifica a situação de forma mais positiva.',
     formula: '"É como [analogia]. Você não [paralelo com a objeção], você [perspectiva positiva]."',
     icon: '🪞',
-    color: 'bg-pink-100 text-pink-700 border-pink-200',
+    color: 'bg-primary text-primary border-pink-200',
     examples: [
       '"É como comprar um guarda-chuva antes da chuva - parece desnecessário até você precisar."',
       '"Investir em tecnologia é como plantar uma árvore: o melhor momento foi ontem."',
@@ -172,7 +172,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Usa a própria estrutura da objeção para questioná-la.',
     formula: '"Se [objeção] fosse sempre verdade, então [consequência absurda]?"',
     icon: '🔁',
-    color: 'bg-amber-100 text-amber-700 border-amber-200',
+    color: 'bg-warning text-warning border-amber-200',
     examples: [
       '"Se esperar sempre fosse a melhor opção, você nunca teria crescido até aqui."',
       '"Se preço baixo fosse garantia de qualidade, por que você não usa o mais barato?"',
@@ -189,7 +189,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Muda o foco do resultado temido para um resultado desejado.',
     formula: '"Além de [preocupação atual], você já considerou [outro resultado positivo]?"',
     icon: '🎲',
-    color: 'bg-teal-100 text-teal-700 border-teal-200',
+    color: 'bg-teal-100 text-accent border-teal-200',
     examples: [
       '"Além do custo, já pensou no valor da produtividade que vai ganhar?"',
       '"E se em vez de focar no risco, olhássemos para a oportunidade?"',
@@ -206,7 +206,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Eleva a discussão para valores mais fundamentais do cliente.',
     formula: '"Entendo que [critério atual] é importante. Mas o que é mais importante para você: [valor superior]?"',
     icon: '👑',
-    color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+    color: 'bg-warning text-warning border-warning',
     examples: [
       '"Preço é importante, mas o que é mais importante: economizar hoje ou crescer amanhã?"',
       '"Tempo é um recurso, mas qual recurso é mais escasso: tempo ou oportunidades?"',
@@ -223,7 +223,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Muda a perspectiva alterando o "zoom" da situação.',
     formula: '"Se você olhar para isso em [novo contexto temporal/espacial], como parece?"',
     icon: '🔍',
-    color: 'bg-violet-100 text-violet-700 border-violet-200',
+    color: 'bg-violet-100 text-secondary border-violet-200',
     examples: [
       '"Em 5 anos, como você vai ver essa decisão?"',
       '"Comparado com o custo de rotatividade de funcionários, esse investimento é pequeno."',
@@ -240,7 +240,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Sobe um nível e questiona de onde vem a crença ou o que ela representa.',
     formula: '"Interessante você pensar assim. De onde vem essa ideia?"',
     icon: '🧠',
-    color: 'bg-slate-100 text-slate-700 border-slate-200',
+    color: 'bg-slate-100 text-muted-foreground border-slate-200',
     examples: [
       '"Essa é uma perspectiva comum em empresas que ainda não testaram. Vocês testaram?"',
       '"Muita gente começa pensando assim. Você chegou a essa conclusão com base em quê?"',
@@ -274,7 +274,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Explora o processo de pensamento que levou à crença.',
     formula: '"Como você sabe que [crença]? O que te faz ter certeza?"',
     icon: '🔬',
-    color: 'bg-rose-100 text-rose-700 border-rose-200',
+    color: 'bg-primary text-primary border-rose-200',
     examples: [
       '"O que te faz pensar que não é o momento certo? Qual indicador?"',
       '"Como você chegou à conclusão de que não vai funcionar para vocês?"',

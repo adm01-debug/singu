@@ -10,8 +10,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Self-Awareness',
     namePt: 'Autoconsciência',
     icon: '🪞',
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100 border-purple-200',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary border-secondary',
     description: 'Ability to recognize and understand own emotions, drives, and their effects on others',
     descriptionPt: 'Capacidade de reconhecer e entender as próprias emoções, motivações e seus efeitos nos outros',
     characteristics: {
@@ -41,8 +41,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Self-Regulation',
     namePt: 'Autorregulação',
     icon: '⚖️',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 border-blue-200',
+    color: 'text-info',
+    bgColor: 'bg-info border-info',
     description: 'Ability to control or redirect disruptive impulses and moods, and think before acting',
     descriptionPt: 'Capacidade de controlar ou redirecionar impulsos e humores disruptivos, e pensar antes de agir',
     characteristics: {
@@ -72,8 +72,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Motivation',
     namePt: 'Motivação',
     icon: '🔥',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100 border-orange-200',
+    color: 'text-accent',
+    bgColor: 'bg-accent border-orange-200',
     description: 'A passion to work for reasons that go beyond money or status; pursuing goals with energy and persistence',
     descriptionPt: 'Paixão pelo trabalho por razões além de dinheiro ou status; buscar metas com energia e persistência',
     characteristics: {
@@ -103,8 +103,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Empathy',
     namePt: 'Empatia',
     icon: '💗',
-    color: 'text-pink-600',
-    bgColor: 'bg-pink-100 border-pink-200',
+    color: 'text-primary',
+    bgColor: 'bg-primary border-pink-200',
     description: 'Ability to understand the emotional makeup of other people and skill in treating them according to their emotional reactions',
     descriptionPt: 'Capacidade de entender as emoções dos outros e tratá-los de acordo com suas reações emocionais',
     characteristics: {
@@ -134,8 +134,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Social Skills',
     namePt: 'Habilidades Sociais',
     icon: '🤝',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 border-green-200',
+    color: 'text-success',
+    bgColor: 'bg-success border-success',
     description: 'Proficiency in managing relationships and building networks; finding common ground and building rapport',
     descriptionPt: 'Proficiência em gerenciar relacionamentos e construir redes; encontrar pontos em comum e criar rapport',
     characteristics: {
@@ -263,40 +263,40 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     name: 'Low',
     namePt: 'Baixo',
     range: [0, 25],
-    color: 'text-red-600',
-    bgColor: 'bg-red-100',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive',
     description: 'Área com significativo potencial de desenvolvimento'
   },
   developing: {
     name: 'Developing',
     namePt: 'Em Desenvolvimento',
     range: [26, 45],
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-accent',
+    bgColor: 'bg-accent',
     description: 'Mostra consciência básica, com espaço para crescimento'
   },
   moderate: {
     name: 'Moderate',
     namePt: 'Moderado',
     range: [46, 65],
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    color: 'text-warning',
+    bgColor: 'bg-warning',
     description: 'Competência adequada para a maioria das situações'
   },
   high: {
     name: 'High',
     namePt: 'Alto',
     range: [66, 85],
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-success',
+    bgColor: 'bg-success',
     description: 'Demonstra forte capacidade nesta área'
   },
   exceptional: {
     name: 'Exceptional',
     namePt: 'Excepcional',
     range: [86, 100],
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary',
     description: 'Domínio excepcional, potencial para mentoria'
   }
 };

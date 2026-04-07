@@ -131,7 +131,7 @@ export const WARMTH_LEVELS = {
     range: { min: 31, max: 55 },
     label: 'Neutro',
     description: 'Comunicação educada mas sem calor especial',
-    color: 'text-slate-600 bg-slate-50',
+    color: 'text-muted-foreground bg-slate-50',
     icon: '😐',
     suggestions: [
       'Adicione mais toques pessoais',
@@ -143,7 +143,7 @@ export const WARMTH_LEVELS = {
     range: { min: 56, max: 75 },
     label: 'Caloroso',
     description: 'Comunicação acolhedora e agradável',
-    color: 'text-amber-600 bg-amber-50',
+    color: 'text-warning bg-warning',
     icon: '☀️',
     suggestions: [
       'Mantenha esse nível de calor',
@@ -154,7 +154,7 @@ export const WARMTH_LEVELS = {
     range: { min: 76, max: 90 },
     label: 'Muito Caloroso',
     description: 'Comunicação que transmite genuíno afeto',
-    color: 'text-orange-600 bg-orange-50',
+    color: 'text-accent bg-accent',
     icon: '🔥',
     suggestions: [
       'Excelente! Continue assim',
@@ -165,7 +165,7 @@ export const WARMTH_LEVELS = {
     range: { min: 91, max: 100 },
     label: 'Excepcional',
     description: 'Comunicação que cria conexão profunda',
-    color: 'text-rose-600 bg-rose-50',
+    color: 'text-primary bg-primary',
     icon: '💖',
     suggestions: [
       'Perfeito! Mantenha a autenticidade'
