@@ -556,9 +556,26 @@ const Contatos = () => {
                   ))}
                 </div>
               )
-            )}
+            ) : viewMode === 'table' ? (
+              <ContactsTableView
+                contacts={filteredAndSortedContacts}
+                selectionMode={selectionMode}
+                selectedIds={selectedIds}
+                onSelect={handleSelect}
+                getCompanyName={getCompanyName}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(field) => {
+                  if (sortBy === field) {
+                    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+                  } else {
+                    setSortBy(field);
+                    setSortOrder('asc');
+                  }
+                }}
+              />
+            ) : null}
 
-            {filteredAndSortedContacts.length === 0 && !loading && (
               searchTerm || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
                   searchTerm={searchTerm || 'filtros ativos'}
