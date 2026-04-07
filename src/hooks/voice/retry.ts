@@ -79,14 +79,14 @@ export function friendlyErrorMessage(error: unknown): string {
     return "Permissão do microfone negada. Habilite o microfone nas configurações do navegador.";
   if (msg.includes("token"))
     return "Não foi possível iniciar a transcrição. Tente novamente.";
-  if (msg.includes("timeout"))
-    return "A conexão de voz demorou demais para responder. Tente novamente.";
   if (msg.includes("429") || msg.includes("rate limit"))
     return "Muitas requisições. Aguarde alguns segundos e tente novamente.";
   if (msg.includes("402") || msg.includes("credits"))
     return "Créditos de IA esgotados. Contate o administrador.";
   if (msg.includes("websocket") || msg.includes("scribe") || msg.includes("closed unexpectedly") || msg.includes("no reason provided"))
     return "Não foi possível conectar ao serviço de voz. Tente novamente.";
+  if (msg.includes("timeout"))
+    return "A conexão de voz demorou demais para responder. Tente novamente.";
   if (msg.includes("network") || msg.includes("fetch"))
     return "Erro de conexão. Verifique sua internet e tente novamente.";
   if (msg.includes("tts") || msg.includes("audio"))
