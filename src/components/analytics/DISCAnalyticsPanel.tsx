@@ -333,7 +333,7 @@ const DISCAnalyticsPanel = () => {
                           if (payload && payload.length > 0) {
                             const data = payload[0].payload;
                             return (
-                              <div className="bg-card border rounded-lg p-3 shadow-lg">
+                              <div className="bg-card border rounded-lg p-3 shadow-soft">
                                 <p className="font-medium">{data.name}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {data.value} contatos

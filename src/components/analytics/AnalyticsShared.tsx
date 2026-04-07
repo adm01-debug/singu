@@ -22,7 +22,7 @@ export const CustomTooltip = forwardRef<HTMLDivElement, CustomTooltipProps>(
   function CustomTooltip({ active, payload, label }, ref) {
     if (active && payload && payload.length) {
       return (
-        <div ref={ref} className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <div ref={ref} className="bg-card border border-border rounded-lg p-3 shadow-soft">
           <p className="font-medium text-foreground mb-2">{label}</p>
           {payload.map((entry, index: number) => (
             <p key={index} className="text-sm text-muted-foreground">
@@ -43,7 +43,7 @@ export const PieTooltip = forwardRef<HTMLDivElement, CustomTooltipProps>(
   function PieTooltip({ active, payload }, ref) {
     if (active && payload && payload.length) {
       return (
-        <div ref={ref} className="bg-card border border-border rounded-lg p-3 shadow-lg">
+        <div ref={ref} className="bg-card border border-border rounded-lg p-3 shadow-soft">
           <p className="font-medium text-foreground">{payload[0].name}</p>
           <p className="text-sm text-muted-foreground">
             Quantidade: <span className="font-medium">{payload[0].value}</span>

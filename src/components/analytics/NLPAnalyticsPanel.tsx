@@ -25,7 +25,7 @@ interface TooltipPayloadItem { color: string; name: string; value: number | stri
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: TooltipPayloadItem[]; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+    <div className="bg-card border border-border rounded-lg p-3 shadow-soft">
       <p className="font-medium text-foreground mb-2">{label}</p>
       {payload.map((entry, i) => (
         <p key={i} className="text-sm text-muted-foreground">

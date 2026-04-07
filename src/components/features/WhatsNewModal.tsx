@@ -109,7 +109,7 @@ export function WhatsNewModal({
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-[calc(100vw-2rem)] max-w-sm"
         >
-          <div className="rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+          <div className="rounded-2xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-medium overflow-hidden">
             {/* Compact gradient header */}
             <div className="bg-gradient-primary px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">

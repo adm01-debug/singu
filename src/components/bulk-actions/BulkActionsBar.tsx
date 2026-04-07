@@ -139,7 +139,7 @@ export function BulkActionsBar({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           >
-            <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-xl shadow-2xl">
+            <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-xl shadow-medium">
               {/* Selection info */}
               <div className="flex items-center gap-2 pr-4 border-r border-border">
                 <Button

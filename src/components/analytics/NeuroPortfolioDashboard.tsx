@@ -543,7 +543,7 @@ const NeuroPortfolioDashboard = () => {
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             return (
-                              <div className="bg-popover border rounded-lg p-2 shadow-lg">
+                              <div className="bg-popover border rounded-lg p-2 shadow-soft">
                                 <p className="font-medium">{payload[0].payload.icon} {payload[0].payload.name}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {payload[0].value} contatos
