@@ -1,4 +1,25 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
+
+/** Calculate dynamic timeout based on text length */
+function calculateTimeout(textLength: number): number {
+  const base = 10000;
+  const perHundredChars = 2000;
+  const extra = Math.ceil(textLength / 100) * perHundredChars;
+  return Math.min(base + extra, 30000);
+}
+
+/** Get a valid auth token, refreshing session if needed */
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) return session.access_token;
+
+  // Try refreshing the session
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed?.session?.access_token) return refreshed.session.access_token;
+
+  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+}
 
 export function playTtsAudio(
   text: string,
@@ -9,11 +30,11 @@ export function playTtsAudio(
   let resolvePromise: (() => void) | null = null;
 
   const promise = (async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const authToken = await getAuthToken();
+    const timeout = calculateTimeout(text.length);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timer = setTimeout(() => controller.abort(), timeout);
 
     let ttsResponse: Response;
     try {
@@ -31,7 +52,35 @@ export function playTtsAudio(
         }
       );
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timer);
+    }
+
+    // Auto-retry on 401 with refreshed token
+    if (ttsResponse.status === 401) {
+      logger.warn("[TTS] 401 received, refreshing session...");
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      const newToken = refreshed?.session?.access_token;
+      if (newToken) {
+        const retryController = new AbortController();
+        const retryTimer = setTimeout(() => retryController.abort(), timeout);
+        try {
+          ttsResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${newToken}`,
+              },
+              body: JSON.stringify({ text }),
+              signal: retryController.signal,
+            }
+          );
+        } finally {
+          clearTimeout(retryTimer);
+        }
+      }
     }
 
     if (!ttsResponse.ok) {
@@ -40,7 +89,6 @@ export function playTtsAudio(
 
     const contentType = ttsResponse.headers.get("Content-Type") || "";
     if (contentType.includes("application/json")) {
-      // Error response returned as JSON
       const errorData = await ttsResponse.json();
       throw new Error(errorData?.error || "TTS returned error JSON");
     }
@@ -87,7 +135,6 @@ export function playTtsAudio(
       audio.onerror = null;
       const resolve = resolvePromise;
       cleanup();
-      // Resolve the promise so the caller doesn't hang
       resolve?.();
     }
   }

@@ -1,5 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 import type { VoiceAgentAction } from "./types";
+
+/** Get a valid auth token, refreshing session if needed */
+async function getAuthToken(): Promise<string> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) return session.access_token;
+
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed?.session?.access_token) return refreshed.session.access_token;
+
+  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+}
 
 /**
  * processVoiceTranscript — Sends transcript to AI and returns structured action.
@@ -9,10 +21,9 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
   const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const authToken = await getAuthToken();
 
-    const response = await fetch(
+    let response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
       {
         method: "POST",
@@ -25,6 +36,28 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
         signal: controller.signal,
       }
     );
+
+    // Auto-retry on 401 with refreshed token
+    if (response.status === 401) {
+      logger.warn("[Voice] 401 received, refreshing session...");
+      const { data: refreshed } = await supabase.auth.refreshSession();
+      const newToken = refreshed?.session?.access_token;
+      if (newToken) {
+        response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${newToken}`,
+            },
+            body: JSON.stringify({ transcript }),
+            signal: controller.signal,
+          }
+        );
+      }
+    }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => "");
@@ -51,6 +84,5 @@ function validateAction(action: VoiceAgentAction): VoiceAgentAction {
       data: {},
     };
   }
-
   return action;
 }
