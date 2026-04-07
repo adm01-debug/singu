@@ -1,69 +1,35 @@
-## Análise de Problemas Identificados
 
-### 1. Paleta Dark Mode — Monotonia Sufocante
-- Background `224 28% 6%` é escuro demais, sem respiração
-- Cards `224 24% 10%` quase não contrastam com o fundo
-- Tudo parece uma massa cinza-escura uniforme
+# Redesign Completo SINGU — Estética Discord/Vercel
 
-### 2. Welcome Hero — Invisível
-- Apenas texto plano "Olá! 👋" com ícone minúsculo
-- Zero impacto visual, zero personalidade
+## Fase 1: Design System (Fundação)
+Atualizar `index.css` e `tailwind.config.ts` com novos tokens:
+- Backgrounds mais escuros e ricos (tons de cinza-azulado como Vercel)
+- Bordas ultra sutis (opacidade ~10-15%)
+- Accent colors mais vibrantes e pontuais (roxo/violeta como Discord)
+- Cards sem sombra, com bordas finas e hover states sutis
+- Typography: pesos mais limpos, tamanhos otimizados
 
-### 3. Stats Cards — Sem Presença
-- Cards genéricos, sem gradientes, sem cor
-- Perdidos no final da página
+## Fase 2: Sidebar / Navegação
+- Sidebar mais limpa e minimalista estilo Discord
+- Ícones menores, texto mais clean
+- Item ativo com indicador lateral sutil (barra lateral fina)
+- Seções com labels discretos
+- Footer do perfil redesenhado
 
-### 4. Cards de Conteúdo — Todos Iguais
-- Sem hierarquia visual entre seções
-- Bordas quase invisíveis, sem sombras efetivas
+## Fase 3: Dashboard / Cards
+- Stat cards flat com bordas sutis e tipografia forte
+- Skeleton loading mais suave
+- Seções de atividade e tarefas com layout clean
+- Menos gradientes decorativos, mais sobriedade
 
-### 5. Tab Bar — Sem Personalidade
-- Fundo cinza genérico, sem destaque no estado ativo
+## Fase 4: Listagens de Dados
+- Tabelas/listas com linhas separadoras ultra finas
+- Hover states com background sutil
+- Badges e status com cores mais contidas
+- Header das listagens mais limpo
 
-### 6. Sidebar — Escura demais
-- Blends com o background, sem separação clara
-
----
-
-## Plano de Execução (8 melhorias)
-
-### M1: Refresh da Paleta Dark Mode
-- Aumentar luminosidade do background de 6% → 8%
-- Cards de 10% → 12% para melhor contraste
-- Bordas mais visíveis (16% → 18%)
-- Muted foreground mais legível (55% → 60%)
-
-### M2: Welcome Hero Premium
-- Gradient background com primary → accent
-- Texto maior, ícone maior, layout mais impactante
-- Glow sutil animado
-
-### M3: Stats Cards com Gradient Top Border
-- Adicionar borda superior colorida por categoria
-- Ícones maiores com fundo gradient
-- Layout mais espaçoso
-
-### M4: Card Design System Upgrade
-- Bordas mais visíveis no dark mode
-- Hover com glow sutil na cor primária
-- Header com fundo sutil para separação visual
-
-### M5: Tab Bar Premium
-- Tab ativa com gradient underline
-- Fundo mais contrastante
-- Transição mais suave
-
-### M6: Activity Feed Visual Refresh
-- Ícones coloridos com background pill
-- Separadores visuais entre items
-- Timestamp com melhor formatação
-
-### M7: Sidebar Visual Upgrade
-- Logo com glow accent
-- Separadores de seção mais visíveis
-- Hover state mais pronunciado
-
-### M8: Gradient Accents Globais
-- Adicionar gradientes sutis em headers de seção
-- Decoradores visuais em empty states
-- Micro-animações em elementos interativos
+## Fase 5: Formulários (Empresa/Contato)
+- Inputs com bordas mais sutis
+- Layout mais compacto e organizado
+- Menos decoração, mais funcionalidade
+- Buttons mais clean e minimalistas
