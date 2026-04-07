@@ -196,7 +196,7 @@ export function ContactCardWithContext({
                   getStageBarColor(contact.relationship_stage)
                 )} />
 
-                <div className="px-4 pt-3 pb-3">
+                <div className="px-4 pt-4 pb-3.5">
                   {/* Row 1: Avatar + Name + Score */}
                   <div className="flex items-start gap-2.5">
                     <OptimizedAvatar 
