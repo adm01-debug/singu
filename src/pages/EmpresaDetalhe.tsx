@@ -199,7 +199,7 @@ const EmpresaDetalhe = () => {
     <AppLayout>
       <div className="min-h-screen pt-2 md:pt-4">
         <div className="px-4 md:px-6 pt-3 md:pt-4">
-          <PageHeader backTo="/empresas" backLabel="Empresas" title={company.name} />
+          <PageHeader backTo="/empresas" backLabel="Empresas" title={toTitleCase(company.name)} />
         </div>
         
         {/* Header gradient */}
