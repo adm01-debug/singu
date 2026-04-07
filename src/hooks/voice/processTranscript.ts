@@ -1,22 +1,24 @@
-import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { getAuthToken, refreshAuthToken } from "./auth";
 import type { VoiceAgentAction } from "./types";
 
-/** Get a valid auth token, refreshing session if needed */
-async function getAuthToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) return session.access_token;
-
-  const { data: refreshed } = await supabase.auth.refreshSession();
-  if (refreshed?.session?.access_token) return refreshed.session.access_token;
-
-  return import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-}
+const VALID_ACTIONS = new Set(["search", "navigate", "answer", "create_interaction", "create_reminder"]);
 
 /**
- * processVoiceTranscript — Sends transcript to AI and returns structured action.
+ * processVoiceTranscript — Sends a voice transcript to the AI edge function
+ * and returns a structured VoiceAgentAction.
+ *
+ * Features:
+ * - 15s abort timeout
+ * - Auto-retry on 401 with session refresh
+ * - Strict action validation
  */
 export async function processVoiceTranscript(transcript: string): Promise<VoiceAgentAction> {
+  const sanitized = transcript.trim().slice(0, 1000);
+  if (!sanitized) {
+    return { action: "answer", response: "Não recebi nenhum comando. Pode repetir?", data: {} };
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -32,7 +34,7 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ transcript }),
+        body: JSON.stringify({ transcript: sanitized }),
         signal: controller.signal,
       }
     );
@@ -40,8 +42,7 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
     // Auto-retry on 401 with refreshed token
     if (response.status === 401) {
       logger.warn("[Voice] 401 received, refreshing session...");
-      const { data: refreshed } = await supabase.auth.refreshSession();
-      const newToken = refreshed?.session?.access_token;
+      const newToken = await refreshAuthToken();
       if (newToken) {
         response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/voice-agent`,
@@ -52,7 +53,7 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
               apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
               Authorization: `Bearer ${newToken}`,
             },
-            body: JSON.stringify({ transcript }),
+            body: JSON.stringify({ transcript: sanitized }),
             signal: controller.signal,
           }
         );
@@ -76,8 +77,12 @@ export async function processVoiceTranscript(transcript: string): Promise<VoiceA
   }
 }
 
+/**
+ * validateAction — Ensures the AI response has a valid action and response string.
+ * Falls back to a safe "answer" action if malformed.
+ */
 function validateAction(action: VoiceAgentAction): VoiceAgentAction {
-  if (!action?.action || !action?.response) {
+  if (!action?.action || !action?.response || !VALID_ACTIONS.has(action.action)) {
     return {
       action: "answer",
       response: action?.response || "Desculpe, não entendi. Pode repetir?",
