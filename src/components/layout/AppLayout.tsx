@@ -71,6 +71,7 @@ function getBreadcrumbs(pathname: string, pageTitle: string): { label: string; p
 
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
+  const [voiceMode, setVoiceMode] = useState(false);
   const { state } = useSidebar();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -143,7 +144,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
             <button
               className="shrink-0 h-9 w-9 rounded-full border border-border/40 bg-secondary/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 hover:border-primary/30 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               aria-label="Entrada por voz"
-              onClick={() => {/* TODO: voice input */}}
+              onClick={() => setVoiceMode(true)}
             >
               <Mic className="h-4 w-4" />
             </button>
@@ -201,7 +202,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       <MobileBottomNav />
 
       {/* Global Components */}
-      <GlobalSearch open={isOpen} onOpenChange={setIsOpen} />
+      <GlobalSearch open={isOpen} onOpenChange={setIsOpen} voiceMode={voiceMode} onVoiceModeChange={setVoiceMode} />
       <div className="hidden md:flex fixed bottom-8 right-8 lg:bottom-10 lg:right-10 z-50 flex-col items-end gap-3">
         <ScrollToTopButton className="relative" />
         <QuickAddButton className="relative z-10" />

@@ -16,7 +16,17 @@ serve(async (req) => {
       throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
-    const { text, voiceId } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { text, voiceId } = body as { text?: unknown; voiceId?: string };
     if (!text || typeof text !== "string" || text.length > 5000) {
       return new Response(
         JSON.stringify({ error: "Invalid text (required, max 5000 chars)" }),
