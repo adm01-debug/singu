@@ -138,15 +138,22 @@ describe('CompanyForm — Rendering', () => {
     expect(screen.getByText('Atualize as informações da empresa')).toBeInTheDocument();
   });
 
-  it('renders all 7 tabs', () => {
-    renderForm();
+  it('renders all 7 tabs in edit mode', () => {
+    renderForm(fullExternalCompany);
     expect(screen.getByText('Básico')).toBeInTheDocument();
     expect(screen.getByText('Fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Classif.')).toBeInTheDocument();
+    expect(screen.getByText('Classificação')).toBeInTheDocument();
     expect(screen.getByText('Estrutura')).toBeInTheDocument();
     expect(screen.getByText('Telefones')).toBeInTheDocument();
     expect(screen.getByText('Endereços')).toBeInTheDocument();
     expect(screen.getByText('Redes')).toBeInTheDocument();
+  });
+
+  it('shows only Básico tab in create mode', () => {
+    renderForm();
+    // In create mode, only the Básico tab content is shown (no tab bar)
+    expect(screen.getByText('Identificação')).toBeInTheDocument();
+    expect(screen.queryByText('Fiscal')).not.toBeInTheDocument();
   });
 
   it('renders submit and cancel buttons', () => {
