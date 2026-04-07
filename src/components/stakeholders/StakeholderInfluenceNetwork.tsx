@@ -344,7 +344,7 @@ export function StakeholderInfluenceNetwork({
       {/* Graph container */}
       <div
         ref={containerRef}
-        className="w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden"
+        className="w-full bg-gradient-to-br from-muted/30 to-muted/50 rounded-lg overflow-hidden"
         style={{ height: `${height}px` }}
       >
         <ForceGraph2D
