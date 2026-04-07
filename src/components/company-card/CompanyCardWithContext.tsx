@@ -113,6 +113,7 @@ interface CompanyCardWithContextProps {
   selectionMode: boolean;
   contactCount?: number;
   lastInteractionDays?: number | null;
+  compact?: boolean;
   onSelect: (id: string, selected: boolean) => void;
   onEdit: (company: Company) => void;
   onDelete: (company: Company) => void;
@@ -126,6 +127,7 @@ export function CompanyCardWithContext({
   isHighlighted,
   selectionMode,
   contactCount = 0,
+  compact = false,
   onSelect,
   onEdit,
   onDelete,
