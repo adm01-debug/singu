@@ -813,14 +813,13 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
           </Tabs>
         </div>
 
-        {/* ─── Premium Sticky Footer ─── */}
-        <div className="relative pt-4 shrink-0">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="ghost" onClick={onCancel} className="px-6">
+        {/* ─── Footer ─── */}
+        <div className="pt-4 shrink-0 border-t border-border">
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" onClick={onCancel} className="text-sm">
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="px-8 h-11 shadow-lg shadow-primary/20 font-semibold">
+            <Button type="submit" disabled={isSubmitting} className="text-sm">
               {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {isEditing ? 'Salvar Alterações' : 'Criar Empresa'}
             </Button>
