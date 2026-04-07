@@ -78,7 +78,7 @@ import { KeyboardHint } from '@/components/ui/keyboard-hint';
 import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
-import { ViewModeSwitcher, type ViewMode } from '@/components/ui/view-mode-switcher';
+import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 
 const filterConfigs: FilterConfig[] = [
@@ -137,6 +137,10 @@ const Contatos = () => {
   // Initialize state from URL params
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
+  const [gridColumns, setGridColumns] = useState<GridColumns>(() => {
+    const c = searchParams.get('cols');
+    return c ? (Number(c) as GridColumns) : 3;
+  });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [deletingContact, setDeletingContact] = useState<Contact | null>(null);
@@ -182,9 +186,10 @@ const Contatos = () => {
     }
     if (sortBy !== 'updated_at') params.set('sort', sortBy);
     if (sortOrder !== 'desc') params.set('order', sortOrder);
+    if (gridColumns !== 3) params.set('cols', String(gridColumns));
     
     setSearchParams(params, { replace: true });
-  }, [searchTerm, viewMode, activeFilters, sortBy, sortOrder, setSearchParams]);
+  }, [searchTerm, viewMode, activeFilters, sortBy, sortOrder, gridColumns, setSearchParams]);
 
   // Fuzzy search for better matching
   const { results: fuzzyResults, setQuery: setFuzzyQuery } = useFuzzySearch(contacts, {
@@ -412,7 +417,7 @@ const Contatos = () => {
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
             </Button>
-            <ViewModeSwitcher value={viewMode} onChange={setViewMode} />
+            <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
 
             {/* Secondary actions in overflow menu */}
             <DropdownMenu>
@@ -470,7 +475,13 @@ const Contatos = () => {
           <>
             {/* Contacts Grid */}
             {viewMode === 'grid' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className={`grid grid-cols-1 gap-5 ${
+                gridColumns === 2 ? 'md:grid-cols-2' :
+                gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' :
+                gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+                gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
+                'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+              }`}>
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
                     key={contact.id}
