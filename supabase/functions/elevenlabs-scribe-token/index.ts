@@ -17,9 +17,7 @@ async function authenticateRequest(req: Request): Promise<string> {
     { global: { headers: { Authorization: authHeader } } }
   );
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) {
-    throw new Error("UNAUTHORIZED");
-  }
+  if (error || !user?.id) throw new Error("UNAUTHORIZED");
   return user.id;
 }
 
@@ -28,8 +26,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
-    // Authenticate user
     try {
       await authenticateRequest(req);
     } catch {

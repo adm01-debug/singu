@@ -17,9 +17,7 @@ async function authenticateRequest(req: Request): Promise<string> {
     { global: { headers: { Authorization: authHeader } } }
   );
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user?.id) {
-    throw new Error("UNAUTHORIZED");
-  }
+  if (error || !user?.id) throw new Error("UNAUTHORIZED");
   return user.id;
 }
 
@@ -70,8 +68,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
-    // Authenticate user
     try {
       await authenticateRequest(req);
     } catch {
@@ -97,10 +101,9 @@ serve(async (req) => {
     }
 
     const transcript = body?.transcript;
-
-    if (!transcript || typeof transcript !== "string" || transcript.length > 1000) {
+    if (!transcript || typeof transcript !== "string" || transcript.trim().length === 0 || transcript.length > 1000) {
       return new Response(
-        JSON.stringify({ error: "Invalid transcript" }),
+        JSON.stringify({ error: "Invalid transcript (required, max 1000 chars)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -115,7 +118,7 @@ serve(async (req) => {
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: transcript },
+          { role: "user", content: transcript.trim() },
         ],
         tools: [
           {
