@@ -86,7 +86,7 @@ export function OverviewTab({
       </DashboardErrorBoundary>
 
       {/* 4. Recent Activity + Top Contacts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
@@ -102,7 +102,6 @@ export function OverviewTab({
             initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.25, delay: prefersReducedMotion ? 0 : 0.05 }}
-            className="lg:col-span-2"
           >
             <TopContactsCard contacts={stats.topContacts} animations={topContactAnimations} />
           </motion.div>
