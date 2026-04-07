@@ -469,6 +469,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const modKey = isMac ? '⌘' : 'Ctrl';
 
   return (
+    <>
     <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
       <div className="flex items-center justify-between gap-2 px-3 border-b border-border">
         <div className="flex items-center gap-2">
