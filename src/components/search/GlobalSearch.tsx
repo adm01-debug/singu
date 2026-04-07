@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/command';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { toTitleCase } from '@/lib/formatters';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
@@ -358,7 +359,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         companies: companies?.map(c => ({
           id: c.id,
           type: 'company' as const,
-          title: c.name,
+          title: toTitleCase(c.name),
           subtitle: c.industry,
           meta: c.city && c.state ? `${c.city}, ${c.state}` : undefined,
         })) || [],
