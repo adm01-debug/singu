@@ -1,4 +1,4 @@
-import { Clock, Phone, Mail, Video, MessageSquare } from 'lucide-react';
+import { Clock, Phone, Mail, Video, MessageSquare, Globe, Send, AtSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import type { DashboardStats } from '@/hooks/useDashboardStats';
 
 interface RecentActivityCardProps {
@@ -14,18 +15,47 @@ interface RecentActivityCardProps {
   animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
 }
 
-function ActivityIcon({ type }: { type: string }) {
-  const iconWrapClass = "w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ring-1";
-  const iconClass = "w-4 h-4";
-  switch (type) {
-    case 'call': return <div className={`${iconWrapClass} bg-success/10 ring-success/20`}><Phone className={`${iconClass} text-success`} /></div>;
-    case 'email': return <div className={`${iconWrapClass} bg-info/10 ring-info/20`}><Mail className={`${iconClass} text-info`} /></div>;
-    case 'meeting': return <div className={`${iconWrapClass} bg-accent/10 ring-accent/20`}><Video className={`${iconClass} text-accent`} /></div>;
-    default: return <div className={`${iconWrapClass} bg-primary/10 ring-primary/20`}><MessageSquare className={`${iconClass} text-primary`} /></div>;
+/** Map interaction type + channel to a specific icon and color */
+function getActivityVisual(type: string, description: string) {
+  const desc = description.toLowerCase();
+  
+  if (desc.includes('whatsapp')) return { icon: MessageSquare, bg: 'bg-success/10 ring-success/20', color: 'text-success' };
+  if (desc.includes('email') || type === 'email') return { icon: Mail, bg: 'bg-info/10 ring-info/20', color: 'text-info' };
+  if (desc.includes('instagram') || desc.includes('facebook') || desc.includes('linkedin')) return { icon: AtSign, bg: 'bg-accent/10 ring-accent/20', color: 'text-accent' };
+  if (type === 'call' || desc.includes('ligação') || desc.includes('telefone')) return { icon: Phone, bg: 'bg-warning/10 ring-warning/20', color: 'text-warning' };
+  if (type === 'meeting' || desc.includes('reunião')) return { icon: Video, bg: 'bg-primary/10 ring-primary/20', color: 'text-primary' };
+  if (desc.includes('mensagem')) return { icon: Send, bg: 'bg-success/10 ring-success/20', color: 'text-success' };
+  
+  return { icon: Globe, bg: 'bg-muted ring-border/30', color: 'text-muted-foreground' };
+}
+
+/** Get time-based color for the timestamp */
+function getTimeColor(date: Date): string {
+  const days = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 1) return 'text-success';
+  if (days <= 7) return 'text-muted-foreground';
+  if (days <= 30) return 'text-warning';
+  return 'text-destructive/70';
+}
+
+/** Deduplicate consecutive activities from the same contact */
+function deduplicateActivities(activities: DashboardStats['recentActivities']): DashboardStats['recentActivities'] {
+  if (activities.length === 0) return activities;
+  
+  const result: DashboardStats['recentActivities'] = [activities[0]];
+  for (let i = 1; i < activities.length; i++) {
+    const prev = activities[i - 1];
+    const curr = activities[i];
+    // Skip if same contact + same type consecutively
+    if (curr.entityName === prev.entityName && curr.type === prev.type) continue;
+    result.push(curr);
   }
+  return result;
 }
 
 export function RecentActivityCard({ activities, animations }: RecentActivityCardProps) {
+  const dedupedActivities = deduplicateActivities(activities);
+  
   return (
     <Card className="h-full border-border/60 hover:border-border transition-colors overflow-hidden relative">
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-accent/60 rounded-t-xl" />
@@ -39,16 +69,20 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
       </CardHeader>
       <CardContent>
         <ScrollArea className="max-h-[320px]">
-          <div className="space-y-2 pr-2">
-            {activities.length === 0 ? (
+          <div className="space-y-1 pr-2">
+            {dedupedActivities.length === 0 ? (
               <EmptyState
                 illustration="interactions"
                 title="Sem atividade recente"
                 description="Registre interações com seus contatos para acompanhar o progresso."
               />
             ) : (
-              activities.map((activity, index) => {
+              dedupedActivities.map((activity, index) => {
                 const animation = animations[index];
+                const visual = getActivityVisual(activity.type, activity.description);
+                const Icon = visual.icon;
+                const timeColor = getTimeColor(activity.createdAt);
+                
                 return (
                   <motion.div
                     key={activity.id}
@@ -59,16 +93,20 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
                   >
                     <Link
                       to={`/contatos/${activity.contactId}`}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
+                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all group cursor-pointer"
                     >
-                      <ActivityIcon type={activity.type} />
+                      <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ring-1", visual.bg)}>
+                        <Icon className={cn("w-3.5 h-3.5", visual.color)} />
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">
-                          <span className="font-medium text-foreground group-hover:text-primary transition-colors">{activity.entityName}</span>
-                          <span className="text-muted-foreground"> — {activity.description}</span>
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                          {activity.entityName}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {activity.description}
                         </p>
                       </div>
-                      <span className="text-xs text-muted-foreground/80 whitespace-nowrap flex-shrink-0 ml-2 tabular-nums">
+                      <span className={cn("text-[10px] whitespace-nowrap flex-shrink-0 ml-1 tabular-nums font-medium", timeColor)}>
                         {formatDistanceToNow(activity.createdAt, { locale: ptBR, addSuffix: true })}
                       </span>
                     </Link>

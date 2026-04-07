@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RoleBadge } from '@/components/ui/role-badge';
-import { RelationshipScore } from '@/components/ui/relationship-score';
-import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { Surface } from '@/components/ui/surface';
 import { Typography } from '@/components/ui/typography';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,13 +12,22 @@ import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { pluralize } from '@/lib/formatters';
-import type { ContactRole, SentimentType } from '@/types';
+import { cn } from '@/lib/utils';
+import type { ContactRole } from '@/types';
 import type { DashboardStats } from '@/hooks/useDashboardStats';
 
 interface TopContactsCardProps {
   contacts: DashboardStats['topContacts'];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
+}
+
+/** Semantic score colors and labels */
+function getScoreVisual(score: number) {
+  if (score >= 80) return { bg: 'bg-success/15 border-success/30', text: 'text-success', label: 'Excelente' };
+  if (score >= 60) return { bg: 'bg-primary/15 border-primary/30', text: 'text-primary', label: 'Bom' };
+  if (score >= 40) return { bg: 'bg-warning/15 border-warning/30', text: 'text-warning', label: 'Regular' };
+  return { bg: 'bg-destructive/15 border-destructive/30', text: 'text-destructive', label: 'Baixo' };
 }
 
 export function TopContactsCard({ contacts, animations }: TopContactsCardProps) {
@@ -55,6 +62,8 @@ export function TopContactsCard({ contacts, animations }: TopContactsCardProps) 
             ) : (
               contacts.map((contact, index) => {
                 const animation = animations[index];
+                const scoreVisual = getScoreVisual(contact.relationshipScore);
+                
                 return (
                   <motion.div
                     key={contact.id}
@@ -89,7 +98,6 @@ export function TopContactsCard({ contacts, animations }: TopContactsCardProps) 
                             )}
                             <div className="flex items-center gap-2 mt-0.5">
                               <RoleBadge role={contact.role as ContactRole} />
-                              <SentimentIndicator sentiment={contact.sentiment as SentimentType} size="sm" />
                             </div>
                           </div>
                         </div>
@@ -103,7 +111,25 @@ export function TopContactsCard({ contacts, animations }: TopContactsCardProps) 
                                   : 'Novo contato'}
                             </Typography>
                           </div>
-                          <RelationshipScore score={contact.relationshipScore} size="sm" />
+                          {/* Semantic score badge instead of circle */}
+                          <div 
+                            className={cn(
+                              "flex flex-col items-center px-2.5 py-1.5 rounded-lg border min-w-[52px]",
+                              scoreVisual.bg
+                            )}
+                            role="meter" 
+                            aria-valuenow={contact.relationshipScore} 
+                            aria-valuemin={0} 
+                            aria-valuemax={100}
+                            aria-label={`Score: ${contact.relationshipScore}`}
+                          >
+                            <span className={cn("text-sm font-bold tabular-nums leading-none", scoreVisual.text)}>
+                              {contact.relationshipScore}
+                            </span>
+                            <span className={cn("text-[9px] font-medium leading-tight mt-0.5", scoreVisual.text)}>
+                              {scoreVisual.label}
+                            </span>
+                          </div>
                         </div>
                       </Surface>
                     </Link>
