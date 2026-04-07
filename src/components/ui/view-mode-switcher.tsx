@@ -23,15 +23,18 @@ const modes = [
 const columnOptions: GridColumns[] = [2, 3, 4, 5, 6];
 
 function ColumnIcon({ cols, active }: { cols: number; active: boolean }) {
+  // Each column icon is a set of vertical bars inside a fixed-width container
+  const barWidth = cols <= 3 ? 3 : 2;
+  const gap = cols <= 3 ? 2 : 1.5;
   return (
-    <div className="flex gap-[2px] items-center">
+    <div className="flex items-center justify-center" style={{ gap: `${gap}px` }}>
       {Array.from({ length: cols }).map((_, i) => (
         <div
           key={i}
+          style={{ width: `${barWidth}px`, height: '12px', borderRadius: '1px' }}
           className={cn(
-            'rounded-[1px] transition-colors',
-            cols <= 3 ? 'w-[4px] h-[14px]' : cols === 4 ? 'w-[3px] h-[14px]' : 'w-[2.5px] h-[14px]',
-            active ? 'bg-primary-foreground' : 'bg-muted-foreground/70'
+            'transition-colors',
+            active ? 'bg-primary-foreground' : 'bg-muted-foreground/60'
           )}
         />
       ))}
@@ -58,14 +61,14 @@ export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColum
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[220px] p-0 border-border/40 bg-[hsl(var(--card))] shadow-none rounded-xl overflow-hidden"
+        className="w-[240px] p-0 border-border/40 bg-[hsl(var(--card))] shadow-none rounded-xl overflow-hidden"
       >
         {/* Visualização */}
         <div className="px-4 pt-4 pb-3">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
             Visualização
           </span>
-          <div className="flex items-center gap-1 mt-2 bg-secondary/40 rounded-lg p-1">
+          <div className="flex items-center bg-secondary/40 rounded-lg p-1">
             {modes.map((mode) => {
               const Icon = mode.icon;
               const isActive = value === mode.value;
@@ -74,13 +77,13 @@ export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColum
                   key={mode.value}
                   onClick={() => onChange(mode.value)}
                   className={cn(
-                    'flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition-colors flex-1 justify-center',
+                    'flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium transition-colors flex-1 justify-center whitespace-nowrap',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                   )}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   {mode.label}
                 </button>
               );
@@ -90,11 +93,11 @@ export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColum
 
         {/* Colunas - only in grid mode */}
         {value === 'grid' && onGridColumnsChange && (
-          <div className="px-4 pb-4 pt-1 border-t border-border/30">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="px-4 pb-4 pt-1 border-t border-border/20">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block mb-2">
               Colunas
             </span>
-            <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-1.5">
               {columnOptions.map((cols) => {
                 const isActive = gridColumns === cols;
                 return (
@@ -102,7 +105,7 @@ export function ViewModeSwitcher({ value, onChange, gridColumns = 3, onGridColum
                     key={cols}
                     onClick={() => onGridColumnsChange(cols)}
                     className={cn(
-                      'flex items-center justify-center w-9 h-9 rounded-lg transition-colors',
+                      'flex items-center justify-center h-9 flex-1 rounded-lg transition-colors',
                       isActive
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-secondary/40 text-muted-foreground hover:text-foreground hover:bg-secondary/60'
