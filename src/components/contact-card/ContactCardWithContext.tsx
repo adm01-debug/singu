@@ -219,21 +219,30 @@ export function ContactCardWithContext({
                       ) : (() => {
                         const displayName = formatContactName(contact.first_name, contact.last_name);
                         const isGenericName = displayName === 'Contato';
-                        return (
-                          <h3 
-                            className={cn(
-                              "font-semibold text-sm leading-tight transition-colors cursor-pointer",
-                              isGenericName 
-                                ? "text-muted-foreground/70" 
-                                : "text-foreground group-hover:text-primary"
-                            )}
+                        return isGenericName ? (
+                          <div 
+                            className="flex items-center gap-1.5 cursor-pointer group/name"
                             onDoubleClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               setIsInlineEditing(true);
                             }}
                           >
-                            {isGenericName ? 'Sem nome ✎' : displayName}
+                            <span className="text-sm font-medium text-muted-foreground/60 italic group-hover/name:text-primary/70 transition-colors">
+                              Adicionar nome
+                            </span>
+                            <span className="text-xs text-primary/50 opacity-0 group-hover/name:opacity-100 transition-opacity">✏️</span>
+                          </div>
+                        ) : (
+                          <h3 
+                            className="font-semibold text-sm leading-tight transition-colors cursor-pointer text-foreground group-hover:text-primary"
+                            onDoubleClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsInlineEditing(true);
+                            }}
+                          >
+                            {displayName}
                           </h3>
                         );
                       })()}
