@@ -412,28 +412,7 @@ const Contatos = () => {
               <CheckSquare className="w-4 h-4" aria-hidden="true" />
               <span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
             </Button>
-            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1" role="group" aria-label="Modo de visualização">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="h-8 w-8"
-                aria-label="Visualização em grade"
-                aria-pressed={viewMode === 'grid'}
-              >
-                <Grid3X3 className="w-4 h-4" aria-hidden="true" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="h-8 w-8"
-                aria-label="Visualização em lista"
-                aria-pressed={viewMode === 'list'}
-              >
-                <List className="w-4 h-4" aria-hidden="true" />
-              </Button>
-            </div>
+            <ViewModeSwitcher value={viewMode} onChange={setViewMode} />
 
             {/* Secondary actions in overflow menu */}
             <DropdownMenu>
