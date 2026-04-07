@@ -193,6 +193,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     companies: [],
     interactions: [],
   });
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
   const navigate = useNavigate();
@@ -469,9 +470,19 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
 
   return (
     <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
-      <div className="flex items-center gap-2 px-3 border-b border-border">
-        <Zap className="w-4 h-4 text-primary" />
-        <span className="text-xs font-medium text-muted-foreground">Super Command Palette</span>
+      <div className="flex items-center justify-between gap-2 px-3 border-b border-border">
+        <div className="flex items-center gap-2">
+          <Zap className="w-4 h-4 text-primary" />
+          <span className="text-xs font-medium text-muted-foreground">Super Command Palette</span>
+        </div>
+        <button
+          onClick={() => { onOpenChange(false); setVoiceOpen(true); }}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors"
+          aria-label="Assistente de Voz"
+        >
+          <Mic className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Voz</span>
+        </button>
       </div>
       <CommandInput 
         placeholder="Buscar contatos, empresas, navegar ou executar ações..." 
