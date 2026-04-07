@@ -7,16 +7,6 @@ interface DashboardStatsGridProps {
   prefersReducedMotion: boolean;
 }
 
-function generateSparkline(current: number, seed: number): number[] {
-  const points: number[] = [];
-  for (let i = 0; i < 7; i++) {
-    const noise = Math.sin(seed * (i + 1)) * 0.3;
-    const trend = i / 6;
-    points.push(Math.max(0, Math.round(current * (0.5 + trend * 0.5 + noise))));
-  }
-  return points;
-}
-
 function getScoreLabel(score: number): string {
   if (score >= 80) return 'Meta: 80% · ✨ Excelente';
   if (score >= 60) return 'Meta: 80% · Bom progresso';
@@ -45,7 +35,6 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       changeType: companyChangeType,
       icon: Building2,
       gradientTone: 'primary' as const,
-      sparkline: generateSparkline(stats.totalCompanies, 1),
     },
     {
       title: 'Contatos Cadastrados',
@@ -54,7 +43,6 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       changeType: contactChangeType,
       icon: Users,
       gradientTone: 'success' as const,
-      sparkline: generateSparkline(stats.totalContacts, 2),
     },
     {
       title: 'Interações (7 dias)',
@@ -63,7 +51,7 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       changeType: interactionChangeType,
       icon: MessageSquare,
       gradientTone: 'premium' as const,
-      sparkline: generateSparkline(stats.weeklyInteractions || 1, 3),
+      sparkline: stats.interactionSparkline,
       emptyAction: stats.weeklyInteractions === 0 ? { label: 'Registrar interação', href: '/interacoes' } : undefined,
       subtitle: getInteractionLabel(stats.weeklyInteractions),
     },
@@ -74,7 +62,6 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       changeType: scoreChangeType,
       icon: TrendingUp,
       gradientTone: 'warning' as const,
-      sparkline: generateSparkline(stats.averageScore || 1, 4),
       subtitle: getScoreLabel(stats.averageScore),
     },
   ];
