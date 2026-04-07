@@ -137,26 +137,26 @@ const RelatorioContato = () => {
           </h2>
           
           <div className="grid grid-cols-4 gap-4 mb-4">
-            <div className="text-center p-4 bg-red-50 rounded-lg">
-              <div className="text-2xl font-bold text-red-600">
+            <div className="text-center p-4 bg-destructive rounded-lg">
+              <div className="text-2xl font-bold text-destructive">
                 {latestDisc?.dominance_score || behavior.discProfile === 'D' ? '85' : '45'}%
               </div>
               <div className="text-sm text-muted-foreground">Dominância (D)</div>
             </div>
-            <div className="text-center p-4 bg-yellow-50 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-center p-4 bg-warning rounded-lg">
+              <div className="text-2xl font-bold text-warning">
                 {latestDisc?.influence_score || '65'}%
               </div>
               <div className="text-sm text-muted-foreground">Influência (I)</div>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="text-center p-4 bg-success rounded-lg">
+              <div className="text-2xl font-bold text-success">
                 {latestDisc?.steadiness_score || '75'}%
               </div>
               <div className="text-sm text-muted-foreground">Estabilidade (S)</div>
             </div>
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="text-center p-4 bg-info rounded-lg">
+              <div className="text-2xl font-bold text-info">
                 {latestDisc?.conscientiousness_score || '30'}%
               </div>
               <div className="text-sm text-muted-foreground">Conformidade (C)</div>
@@ -206,17 +206,17 @@ const RelatorioContato = () => {
             <tbody>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Límbico (Emocional)</td>
-                <td className="border border-gray-300 p-2 text-red-600 font-bold">ALTO</td>
+                <td className="border border-gray-300 p-2 text-destructive font-bold">ALTO</td>
                 <td className="border border-gray-300 p-2">Conexão emocional, pertencimento, validação</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Neocórtex (Racional)</td>
-                <td className="border border-gray-300 p-2 text-yellow-600 font-bold">MÉDIO</td>
+                <td className="border border-gray-300 p-2 text-warning font-bold">MÉDIO</td>
                 <td className="border border-gray-300 p-2">Justificativas lógicas, comparações</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Reptiliano (Instintivo)</td>
-                <td className="border border-gray-300 p-2 text-green-600 font-bold">BAIXO</td>
+                <td className="border border-gray-300 p-2 text-success font-bold">BAIXO</td>
                 <td className="border border-gray-300 p-2">Menos foco em urgência primal</td>
               </tr>
             </tbody>
@@ -242,34 +242,34 @@ const RelatorioContato = () => {
             <tbody>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Novidade</td>
-                <td className="border border-gray-300 p-2 text-red-600 font-bold">CRÍTICO</td>
+                <td className="border border-gray-300 p-2 text-destructive font-bold">CRÍTICO</td>
                 <td className="border border-gray-300 p-2">"Lançamento exclusivo 2026", "Acabou de chegar"</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Prova Social</td>
-                <td className="border border-gray-300 p-2 text-red-600 font-bold">ALTO</td>
+                <td className="border border-gray-300 p-2 text-destructive font-bold">ALTO</td>
                 <td className="border border-gray-300 p-2">"Outras empresas do segmento escolheram..."</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Exclusividade</td>
-                <td className="border border-gray-300 p-2 text-red-600 font-bold">ALTO</td>
+                <td className="border border-gray-300 p-2 text-destructive font-bold">ALTO</td>
                 <td className="border border-gray-300 p-2">"Poucos clientes têm acesso a esta linha"</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Segurança</td>
-                <td className="border border-gray-300 p-2 text-yellow-600 font-bold">MÉDIO</td>
+                <td className="border border-gray-300 p-2 text-warning font-bold">MÉDIO</td>
                 <td className="border border-gray-300 p-2">"Garantimos que será diferente do anterior"</td>
               </tr>
               <tr>
                 <td className="border border-gray-300 p-2 font-medium">Antecipação</td>
-                <td className="border border-gray-300 p-2 text-yellow-600 font-bold">MÉDIO</td>
+                <td className="border border-gray-300 p-2 text-warning font-bold">MÉDIO</td>
                 <td className="border border-gray-300 p-2">"Imagine a reação dos destinatários..."</td>
               </tr>
             </tbody>
           </table>
 
-          <div className="bg-red-50 p-3 rounded-lg">
-            <p className="text-red-700"><strong>⚠️ EVITAR:</strong> Urgência agressiva, Escassez forçada (gera desconfiança no perfil S)</p>
+          <div className="bg-destructive p-3 rounded-lg">
+            <p className="text-destructive"><strong>⚠️ EVITAR:</strong> Urgência agressiva, Escassez forçada (gera desconfiança no perfil S)</p>
           </div>
         </section>
 
@@ -295,18 +295,18 @@ const RelatorioContato = () => {
           </h2>
           
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">45%</div>
+            <div className="text-center p-4 bg-secondary rounded-lg">
+              <div className="text-2xl font-bold text-secondary">45%</div>
               <div className="text-sm text-muted-foreground">Visual</div>
               <div className="text-xs text-muted-foreground mt-1">Precisa ver imagens</div>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">35%</div>
+            <div className="text-center p-4 bg-accent rounded-lg">
+              <div className="text-2xl font-bold text-accent">35%</div>
               <div className="text-sm text-muted-foreground">Cinestésico</div>
               <div className="text-xs text-muted-foreground mt-1">Quer sentir segurança</div>
             </div>
             <div className="text-center p-4 bg-teal-50 rounded-lg">
-              <div className="text-2xl font-bold text-teal-600">20%</div>
+              <div className="text-2xl font-bold text-accent">20%</div>
               <div className="text-sm text-muted-foreground">Auditivo</div>
               <div className="text-xs text-muted-foreground mt-1">Menos foco em texto longo</div>
             </div>
@@ -387,25 +387,25 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
           <div className="grid grid-cols-1 gap-4">
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 1: Follow-up Inicial</h4>
-              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
+              <p className="text-sm text-foreground bg-success p-2 rounded">
                 "Oi Beatriz! Tudo bem? Lembrei de você - chegaram umas opções novas que são perfeitas pro que você precisa. Bem diferentes do ano passado! Posso te mandar umas fotos?"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 2: Envio de Opções</h4>
-              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
+              <p className="text-sm text-foreground bg-success p-2 rounded">
                 "Olha essas opções que separei! 👇 [IMAGEM] Essa linha é novidade 2026, nenhum cliente usou ainda. Perfeita pra causar aquele impacto diferente! O que achou? 😊"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 3: Pedido de Quantidade</h4>
-              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
+              <p className="text-sm text-foreground bg-success p-2 rounded">
                 "Amei que você gostou! 🎉 Me conta: aproximadamente quantas unidades vocês precisam? Assim já monto a proposta certinha pra você apresentar pro diretor!"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 4: Follow-up Pós-Proposta</h4>
-              <p className="text-sm text-foreground bg-green-50 p-2 rounded">
+              <p className="text-sm text-foreground bg-success p-2 rounded">
                 "Oi Beatriz! 😊 Conseguiu dar uma olhadinha na proposta? Se precisar de algum ajuste ou quiser que eu explique algo pro diretor, estou à disposição!"
               </p>
             </div>
@@ -419,8 +419,8 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
           </h2>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h4 className="font-bold text-green-700 mb-2">✅ FAZER</h4>
+            <div className="bg-success p-4 rounded-lg">
+              <h4 className="font-bold text-success mb-2">✅ FAZER</h4>
               <ul className="text-sm space-y-1">
                 <li>• Horário: 10h-11h ou 14h-16h</li>
                 <li>• Dias: Terça a Quinta</li>
@@ -428,8 +428,8 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
                 <li>• Enviar imagens sempre</li>
               </ul>
             </div>
-            <div className="bg-red-50 p-4 rounded-lg">
-              <h4 className="font-bold text-red-700 mb-2">❌ EVITAR</h4>
+            <div className="bg-destructive p-4 rounded-lg">
+              <h4 className="font-bold text-destructive mb-2">❌ EVITAR</h4>
               <ul className="text-sm space-y-1">
                 <li>• Mensagens após 18h</li>
                 <li>• Fins de semana</li>

@@ -72,14 +72,14 @@ const categoryIcons: Record<string, React.ElementType> = {
 };
 
 const categoryColors: Record<string, string> = {
-  personality: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  preference: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  behavior: 'bg-green-500/10 text-green-500 border-green-500/20',
-  opportunity: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-  risk: 'bg-red-500/10 text-red-500 border-red-500/20',
-  relationship: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-  sentiment: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
-  action: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+  personality: 'bg-secondary/10 text-secondary border-secondary/20',
+  preference: 'bg-info/10 text-info border-info/20',
+  behavior: 'bg-success/10 text-success border-success/20',
+  opportunity: 'bg-warning/10 text-warning border-warning/20',
+  risk: 'bg-destructive/10 text-destructive border-destructive/20',
+  relationship: 'bg-primary/10 text-primary border-primary/20',
+  sentiment: 'bg-accent/10 text-accent border-accent/20',
+  action: 'bg-primary/10 text-primary border-primary/20',
 };
 
 const categoryLabels: Record<string, string> = {
@@ -94,9 +94,9 @@ const categoryLabels: Record<string, string> = {
 };
 
 const priorityColors: Record<string, string> = {
-  high: 'bg-red-500/10 text-red-500 border-red-500/30',
-  medium: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
-  low: 'bg-green-500/10 text-green-500 border-green-500/30',
+  high: 'bg-destructive/10 text-destructive border-destructive/30',
+  medium: 'bg-warning/10 text-warning border-warning/30',
+  low: 'bg-success/10 text-success border-success/30',
 };
 
 const Insights = () => {
@@ -334,7 +334,7 @@ const Insights = () => {
           
           <Card className="border-border/50">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+              <div className="p-3 rounded-xl bg-warning/10 text-warning">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
@@ -348,7 +348,7 @@ const Insights = () => {
           
           <Card className="border-border/50">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-red-500/10 text-red-500">
+              <div className="p-3 rounded-xl bg-destructive/10 text-destructive">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
@@ -362,7 +362,7 @@ const Insights = () => {
           
           <Card className="border-border/50">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-green-500/10 text-green-500">
+              <div className="p-3 rounded-xl bg-success/10 text-success">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
