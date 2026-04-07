@@ -719,8 +719,8 @@ describe('Dashboard Index Layout', () => {
     expect(content).toContain('TabsContent');
   });
 
-  it('has WelcomeHeroCard', () => {
-    expect(content).toContain('WelcomeHeroCard');
+  it('does not have WelcomeHeroCard (removed)', () => {
+    expect(content).not.toContain('WelcomeHeroCard');
   });
 
   it('has OnboardingChecklist', () => {
