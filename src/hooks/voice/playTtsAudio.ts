@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 
+// Dynamic timeout: base 10s + 2s per 100 chars (max 30s)
+function calculateTimeout(textLength: number): number {
+  const base = 10000;
+  const perHundredChars = 2000;
+  const extra = Math.ceil(textLength / 100) * perHundredChars;
+  return Math.min(base + extra, 30000);
+}
+
 export function playTtsAudio(
   text: string,
   options?: { onStart?: () => void }
@@ -10,10 +18,20 @@ export function playTtsAudio(
 
   const promise = (async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    let authToken = session?.access_token;
 
+    if (!authToken) {
+      // Try refreshing session before giving up
+      const { data } = await supabase.auth.refreshSession();
+      authToken = data.session?.access_token;
+      if (!authToken) {
+        throw new Error("Sessão expirada");
+      }
+    }
+
+    const timeoutMs = calculateTimeout(text.length);
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     let ttsResponse: Response;
     try {
@@ -40,7 +58,6 @@ export function playTtsAudio(
 
     const contentType = ttsResponse.headers.get("Content-Type") || "";
     if (contentType.includes("application/json")) {
-      // Error response returned as JSON
       const errorData = await ttsResponse.json();
       throw new Error(errorData?.error || "TTS returned error JSON");
     }
@@ -87,7 +104,6 @@ export function playTtsAudio(
       audio.onerror = null;
       const resolve = resolvePromise;
       cleanup();
-      // Resolve the promise so the caller doesn't hang
       resolve?.();
     }
   }

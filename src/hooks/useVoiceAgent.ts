@@ -1,17 +1,14 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { supabase } from "@/integrations/supabase/client";
-import { playTtsAudio } from "./voice/playTtsAudio";
-import { processVoiceTranscript } from "./voice/processTranscript";
-import { withRetry, friendlyErrorMessage } from "./voice/retry";
-import { logVoiceCommand } from "./voice/logVoiceCommand";
-import type { VoiceAgentAction, VoiceAgentPhase, UseVoiceAgentOptions } from "./voice/types";
+import { useVoiceState } from "./voice/useVoiceState";
+import { useTranscriptProcessor } from "./voice/useTranscriptProcessor";
+import { friendlyErrorMessage } from "./voice/retry";
+import type { UseVoiceAgentOptions } from "./voice/types";
 import { logger } from '@/lib/logger';
 
 export type { VoiceAgentAction, VoiceAgentPhase } from "./voice/types";
 
-const ERROR_RESET_DELAY_MS = 5000;
-const PROCESSING_ERROR_RESET_DELAY_MS = 3000;
 const SESSION_START_TIMEOUT_MS = 8000;
 const SCRIBE_CONNECT_OPTIONS = {
   modelId: "scribe_v2_realtime",
@@ -23,91 +20,55 @@ const SCRIBE_CONNECT_OPTIONS = {
 } as const;
 
 export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) {
-  const onActionRef = useRef(onAction);
-  const onErrorRef = useRef(onError);
-  useEffect(() => { onActionRef.current = onAction; }, [onAction]);
-  useEffect(() => { onErrorRef.current = onError; }, [onError]);
+  const state = useVoiceState();
+  const { processTranscript, stopSpeaking, cleanupSpeaking, onErrorRef } =
+    useTranscriptProcessor(state, { onAction, onError });
 
-  const [phase, setPhase] = useState<VoiceAgentPhase>("idle");
-  const [partialTranscript, setPartialTranscript] = useState("");
-  const [finalTranscript, setFinalTranscript] = useState("");
-  const [agentResponse, setAgentResponse] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [currentAction, setCurrentAction] = useState<VoiceAgentAction | null>(null);
+  const processTranscriptRef = useRef(processTranscript);
+  useEffect(() => { processTranscriptRef.current = processTranscript; }, [processTranscript]);
 
-  const stopSpeakingRef = useRef<(() => void) | null>(null);
-  const isProcessingRef = useRef(false);
-  const isStartingRef = useRef(false);
-  const resetPhaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sessionStartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const disconnectScribeRef = useRef<() => void>(() => undefined);
-
-  const clearResetPhaseTimer = useCallback(() => {
-    if (resetPhaseTimerRef.current !== null) {
-      clearTimeout(resetPhaseTimerRef.current);
-      resetPhaseTimerRef.current = null;
-    }
-  }, []);
-
-  const clearSessionStartTimer = useCallback(() => {
-    if (sessionStartTimerRef.current !== null) {
-      clearTimeout(sessionStartTimerRef.current);
-      sessionStartTimerRef.current = null;
-    }
-  }, []);
-
-  const scheduleIdleReset = useCallback((delay = ERROR_RESET_DELAY_MS) => {
-    clearResetPhaseTimer();
-    resetPhaseTimerRef.current = setTimeout(() => {
-      resetPhaseTimerRef.current = null;
-      setPhase("idle");
-      setError(null);
-    }, delay);
-  }, [clearResetPhaseTimer]);
+  const handleScribeErrorRef = useRef<(err: unknown) => void>(() => undefined);
 
   const forceDisconnectScribe = useCallback(() => {
-    clearSessionStartTimer();
+    state.clearSessionStartTimer();
     try {
       disconnectScribeRef.current();
-    } catch (disconnectError) {
-      logger.warn("[Voice] Failed to disconnect Scribe:", disconnectError);
+    } catch (e) {
+      logger.warn("[Voice] Failed to disconnect Scribe:", e);
     }
-  }, [clearSessionStartTimer]);
-
-  const handleScribeErrorRef = useRef<(err: unknown) => void>(() => undefined);
+  }, [state]);
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
     commitStrategy: CommitStrategy.VAD,
-    onConnect: () => {
-      logger.log("[Voice] Scribe socket connected");
-    },
+    onConnect: () => logger.log("[Voice] Scribe socket connected"),
     onSessionStarted: () => {
       logger.log("[Voice] Scribe session started");
-      isStartingRef.current = false;
-      clearResetPhaseTimer();
-      clearSessionStartTimer();
-      setError(null);
-      setPhase("listening");
+      state.isStartingRef.current = false;
+      state.clearResetPhaseTimer();
+      state.clearSessionStartTimer();
+      state.setError(null);
+      state.setPhase("listening");
     },
     onDisconnect: () => {
       logger.log("[Voice] Scribe disconnected");
-      isStartingRef.current = false;
-      clearSessionStartTimer();
-      setPartialTranscript("");
-      setPhase((current) => (
+      state.isStartingRef.current = false;
+      state.clearSessionStartTimer();
+      state.setPartialTranscript("");
+      state.setPhase((current) =>
         current === "processing" || current === "speaking" || current === "error"
           ? current
           : "idle"
-      ));
+      );
     },
     onError: (err: unknown) => handleScribeErrorRef.current(err),
     onPartialTranscript: (data: { text: string }) => {
-      setPartialTranscript(data.text);
+      state.setPartialTranscript(data.text);
     },
     onCommittedTranscript: (data: { text: string }) => {
       if (data.text.trim()) {
-        setPartialTranscript("");
+        state.setPartialTranscript("");
         processTranscriptRef.current(data.text.trim());
       }
     },
@@ -115,101 +76,41 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
   disconnectScribeRef.current = () => scribe.disconnect();
 
-  const processTranscriptRef = useRef<(text: string) => void>(() => undefined);
-
-  const processTranscript = useCallback(async (text: string) => {
-    if (isProcessingRef.current || !text.trim()) return;
-
-    clearResetPhaseTimer();
-    isProcessingRef.current = true;
-    setPhase("processing");
-    setFinalTranscript(text);
-    setAgentResponse("");
-    const startTime = Date.now();
-
-    try {
-      const action = await withRetry(() => processVoiceTranscript(text));
-      setCurrentAction(action);
-      setAgentResponse(action.response);
-
-      if (action.response) {
-        setPhase("speaking");
-        try {
-          const { promise, stop } = playTtsAudio(action.response);
-          stopSpeakingRef.current = stop;
-          await promise;
-        } catch {
-        } finally {
-          stopSpeakingRef.current = null;
-        }
-      }
-
-      logVoiceCommand(action, {
-        transcript: text,
-        durationMs: Date.now() - startTime,
-        success: true,
-      });
-
-      setPhase("idle");
-      onActionRef.current?.(action);
-    } catch (err) {
-      const message = friendlyErrorMessage(err);
-      setError(message);
-      setPhase("error");
-      onErrorRef.current?.(message);
-
-      logVoiceCommand(
-        { action: "answer", response: message, data: {} },
-        {
-          transcript: text,
-          durationMs: Date.now() - startTime,
-          success: false,
-        }
-      );
-
-      scheduleIdleReset(PROCESSING_ERROR_RESET_DELAY_MS);
-    } finally {
-      isProcessingRef.current = false;
-    }
-  }, [clearResetPhaseTimer, scheduleIdleReset]);
-
-  useEffect(() => { processTranscriptRef.current = processTranscript; }, [processTranscript]);
-
   const handleScribeError = useCallback((err: unknown) => {
     logger.error("[Voice] Scribe runtime error:", err);
-    isStartingRef.current = false;
-    clearResetPhaseTimer();
-    clearSessionStartTimer();
+    state.isStartingRef.current = false;
+    state.clearResetPhaseTimer();
+    state.clearSessionStartTimer();
     forceDisconnectScribe();
-    setPartialTranscript("");
+    state.setPartialTranscript("");
 
     const message = friendlyErrorMessage(err);
-    setError(message);
-    setPhase("error");
+    state.setError(message);
+    state.setPhase("error");
     onErrorRef.current?.(message);
-    scheduleIdleReset();
-  }, [clearResetPhaseTimer, clearSessionStartTimer, forceDisconnectScribe, scheduleIdleReset]);
+    state.scheduleIdleReset();
+  }, [state, forceDisconnectScribe, onErrorRef]);
 
   useEffect(() => { handleScribeErrorRef.current = handleScribeError; }, [handleScribeError]);
 
   const startListening = useCallback(async () => {
     const scribeStatus = scribe.status ?? "disconnected";
-    if (isStartingRef.current || scribeStatus === "connecting") return;
+    if (state.isStartingRef.current || scribeStatus === "connecting") return;
 
-    clearResetPhaseTimer();
-    clearSessionStartTimer();
+    state.clearResetPhaseTimer();
+    state.clearSessionStartTimer();
 
     if (scribeStatus !== "disconnected" || scribe.isConnected) {
       forceDisconnectScribe();
     }
 
-    isStartingRef.current = true;
-    setError(null);
-    setPartialTranscript("");
-    setFinalTranscript("");
-    setAgentResponse("");
-    setCurrentAction(null);
-    setPhase("idle");
+    state.isStartingRef.current = true;
+    state.setError(null);
+    state.setPartialTranscript("");
+    state.setFinalTranscript("");
+    state.setAgentResponse("");
+    state.setCurrentAction(null);
+    state.setPhase("idle");
 
     try {
       const { data, error: tokenError } = await supabase.functions.invoke("elevenlabs-scribe-token");
@@ -220,8 +121,8 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
       logger.log("[Voice] Token obtained, connecting to Scribe...");
 
-      sessionStartTimerRef.current = setTimeout(() => {
-        if (!isStartingRef.current) return;
+      state.sessionStartTimerRef.current = setTimeout(() => {
+        if (!state.isStartingRef.current) return;
         handleScribeError(new Error("Scribe session start timeout"));
       }, SESSION_START_TIMEOUT_MS);
 
@@ -232,77 +133,57 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
 
       logger.log("[Voice] Scribe connection initiated");
     } catch (err) {
-      isStartingRef.current = false;
-      clearSessionStartTimer();
+      state.isStartingRef.current = false;
+      state.clearSessionStartTimer();
       logger.error("[Voice] startListening error:", err);
       const message = friendlyErrorMessage(err);
-      setError(message);
-      setPhase("error");
+      state.setError(message);
+      state.setPhase("error");
       onErrorRef.current?.(message);
-      scheduleIdleReset();
+      state.scheduleIdleReset();
     }
-  }, [clearResetPhaseTimer, clearSessionStartTimer, forceDisconnectScribe, handleScribeError, scheduleIdleReset, scribe]);
+  }, [state, forceDisconnectScribe, handleScribeError, onErrorRef, scribe]);
 
   const stopListening = useCallback(() => {
-    isStartingRef.current = false;
-    clearResetPhaseTimer();
-    clearSessionStartTimer();
+    state.isStartingRef.current = false;
+    state.clearResetPhaseTimer();
+    state.clearSessionStartTimer();
     scribe.disconnect();
 
-    if (phase === "listening") {
-      if (partialTranscript.trim()) {
-        processTranscript(partialTranscript.trim());
+    if (state.phase === "listening") {
+      if (state.partialTranscript.trim()) {
+        processTranscript(state.partialTranscript.trim());
       } else {
-        setPhase("idle");
+        state.setPhase("idle");
       }
-    } else if (phase !== "processing" && phase !== "speaking") {
-      setPhase("idle");
+    } else if (state.phase !== "processing" && state.phase !== "speaking") {
+      state.setPhase("idle");
     }
-  }, [clearResetPhaseTimer, clearSessionStartTimer, partialTranscript, phase, processTranscript, scribe]);
-
-  const stopSpeaking = useCallback(() => {
-    clearResetPhaseTimer();
-    stopSpeakingRef.current?.();
-    stopSpeakingRef.current = null;
-    setPhase("idle");
-  }, [clearResetPhaseTimer]);
+  }, [state, processTranscript, scribe]);
 
   const reset = useCallback(() => {
-    isStartingRef.current = false;
-    clearResetPhaseTimer();
-    clearSessionStartTimer();
     scribe.disconnect();
-    stopSpeakingRef.current?.();
-    stopSpeakingRef.current = null;
-    setPhase("idle");
-    setPartialTranscript("");
-    setFinalTranscript("");
-    setAgentResponse("");
-    setError(null);
-    setCurrentAction(null);
-    isProcessingRef.current = false;
-  }, [clearResetPhaseTimer, clearSessionStartTimer, scribe]);
+    cleanupSpeaking();
+    state.resetAll();
+  }, [scribe, cleanupSpeaking, state]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      clearResetPhaseTimer();
-      clearSessionStartTimer();
-      try {
-        disconnectScribeRef.current();
-      } catch {
-      }
-      stopSpeakingRef.current?.();
-      stopSpeakingRef.current = null;
+      state.clearResetPhaseTimer();
+      state.clearSessionStartTimer();
+      try { disconnectScribeRef.current(); } catch { /* noop */ }
+      cleanupSpeaking();
     };
-  }, [clearResetPhaseTimer, clearSessionStartTimer]);
+  }, [state, cleanupSpeaking]);
 
   return {
-    phase,
-    partialTranscript,
-    finalTranscript,
-    agentResponse,
-    error,
-    currentAction,
+    phase: state.phase,
+    partialTranscript: state.partialTranscript,
+    finalTranscript: state.finalTranscript,
+    agentResponse: state.agentResponse,
+    error: state.error,
+    currentAction: state.currentAction,
     isConnected: scribe.isConnected,
     startListening,
     stopListening,
