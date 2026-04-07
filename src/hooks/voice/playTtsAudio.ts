@@ -6,6 +6,7 @@ export function playTtsAudio(
 ): { promise: Promise<void>; stop: () => void } {
   let audio: HTMLAudioElement | null = null;
   let objectUrl: string | null = null;
+  let resolvePromise: (() => void) | null = null;
 
   const promise = (async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -37,6 +38,13 @@ export function playTtsAudio(
       throw new Error(`TTS failed: ${ttsResponse.status}`);
     }
 
+    const contentType = ttsResponse.headers.get("Content-Type") || "";
+    if (contentType.includes("application/json")) {
+      // Error response returned as JSON
+      const errorData = await ttsResponse.json();
+      throw new Error(errorData?.error || "TTS returned error JSON");
+    }
+
     const blob = await ttsResponse.blob();
     if (blob.size === 0) {
       throw new Error("Empty audio response");
@@ -47,6 +55,7 @@ export function playTtsAudio(
     options?.onStart?.();
 
     return new Promise<void>((resolve, reject) => {
+      resolvePromise = resolve;
       audio!.onended = () => {
         cleanup();
         resolve();
@@ -68,6 +77,7 @@ export function playTtsAudio(
       objectUrl = null;
     }
     audio = null;
+    resolvePromise = null;
   }
 
   function stop() {
@@ -75,7 +85,10 @@ export function playTtsAudio(
       audio.pause();
       audio.onended = null;
       audio.onerror = null;
+      const resolve = resolvePromise;
       cleanup();
+      // Resolve the promise so the caller doesn't hang
+      resolve?.();
     }
   }
 

@@ -67,13 +67,15 @@ export const FloatingParticles: React.FC<FloatingParticlesProps> = React.memo(({
       canvas.height = rect.height * dpr;
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
-      ctx.scale(dpr, dpr);
+      // Reset transform then apply fresh scale to prevent accumulation
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
 
     const draw = () => {
-      const w = canvas.width / (window.devicePixelRatio || 1);
-      const h = canvas.height / (window.devicePixelRatio || 1);
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
       const cfg = PHASE_CONFIG[configKey] || PHASE_CONFIG.idle;
 
       ctx.clearRect(0, 0, w, h);
