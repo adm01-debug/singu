@@ -128,8 +128,8 @@ export function ContactCardWithContext({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.05 }}
-        whileHover={{ scale: 1.01, y: -2 }}
+        transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
+        whileHover={{ scale: 1.02, y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
         {...hoverProps}
       >
         <QuickActionsMenu
