@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { LayoutGrid, BarChart3, Heart, Brain } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeGreetingPopup } from '@/components/dashboard/WelcomeGreetingPopup';
-import { WelcomeHeroCard } from '@/components/dashboard/WelcomeHeroCard';
+
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
