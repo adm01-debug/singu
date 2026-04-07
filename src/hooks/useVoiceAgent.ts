@@ -152,7 +152,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
     isStartingRef.current = false;
     clearResetPhaseTimer();
     clearSessionStartTimer();
-    scribe.disconnect();
+    try { scribe.disconnect(); } catch {}
 
     if (phase === "listening") {
       if (partialTranscript.trim()) {
@@ -166,7 +166,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
   }, [clearResetPhaseTimer, clearSessionStartTimer, partialTranscript, phase, processTranscript, scribe, setPhase, isStartingRef]);
 
   const reset = useCallback(() => {
-    scribe.disconnect();
+    try { scribe.disconnect(); } catch {}
     stopSpeakingRef.current?.();
     stopSpeakingRef.current = null;
     resetAll();

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MoreVertical,
   Mail,
@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
+import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { DISCBadge } from '@/components/ui/disc-badge';
+import { RoleBadge } from '@/components/ui/role-badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
@@ -25,7 +28,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Contact } from '@/hooks/useContacts';
-import type { RelationshipStage } from '@/types';
+import type { RelationshipStage, DISCProfile } from '@/types';
 import { cn } from '@/lib/utils';
 import { formatContactName, toTitleCase } from '@/lib/formatters';
 
@@ -205,6 +208,21 @@ export function ContactCardWithContext({
                   <RelationshipScore score={contact.relationship_score || 0} size="sm" />
                 </div>
 
+                {/* Badges row: Sentiment + DISC + Role */}
+                <AnimatePresence>
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    {contact.sentiment && (
+                      <SentimentIndicator sentiment={contact.sentiment as 'positive' | 'neutral' | 'negative'} size="sm" />
+                    )}
+                    {(contact.behavior as Record<string, unknown>)?.discProfile && (
+                      <DISCBadge profile={(contact.behavior as Record<string, unknown>).discProfile as DISCProfile} size="sm" showLabel={false} />
+                    )}
+                    {contact.role && (
+                      <RoleBadge role={contact.role as 'contact' | 'owner' | 'manager' | 'buyer' | 'decision_maker' | 'influencer'} />
+                    )}
+                  </div>
+                </AnimatePresence>
+
                 {/* Footer: Stage + Time */}
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/20">
                   <RelationshipStageBadge stage={(contact.relationship_stage as RelationshipStage) || 'unknown'} />
@@ -225,7 +243,7 @@ export function ContactCardWithContext({
                       </a>
                     )}
                     {contact.whatsapp && (
-                      <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-md hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-500 transition-colors" title={contact.whatsapp}>
+                      <a href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-md hover:bg-success/10 text-muted-foreground hover:text-success transition-colors" title={contact.whatsapp}>
                         <MessageCircle className="w-3.5 h-3.5" />
                       </a>
                     )}
