@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useModalHistory } from '@/hooks/useModalHistory';
@@ -25,6 +25,7 @@ import {
   UserPlus,
   Building,
   MessagesSquare,
+  Mic,
 } from 'lucide-react';
 import {
   CommandDialog,
