@@ -152,7 +152,7 @@ export function useVoiceAgent({ onAction, onError }: UseVoiceAgentOptions = {}) 
     isStartingRef.current = false;
     clearResetPhaseTimer();
     clearSessionStartTimer();
-    scribe.disconnect();
+    try { scribe.disconnect(); } catch {}
 
     if (phase === "listening") {
       if (partialTranscript.trim()) {
