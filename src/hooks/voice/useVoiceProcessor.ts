@@ -21,9 +21,11 @@ export function useVoiceProcessor(callbacks: ProcessorCallbacks) {
 
   const isProcessingRef = useRef(false);
   const stopSpeakingRef = useRef<(() => void) | null>(null);
+  const rateLimiter = useRef(new RateLimiter(800));
 
   const processTranscript = useCallback(async (text: string) => {
     if (isProcessingRef.current || !text.trim()) return;
+    if (!rateLimiter.current.canProceed()) return;
 
     isProcessingRef.current = true;
     cbRef.current.setPhase("processing");
