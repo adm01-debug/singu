@@ -398,12 +398,13 @@ export function ContactCardWithContext({
                     {(() => {
                       const displayName = formatContactName(contact.first_name, contact.last_name);
                       const isGenericName = displayName === 'Contato';
-                      return (
-                        <h3 className={cn(
-                          "font-semibold truncate",
-                          isGenericName ? "text-muted-foreground/70" : "text-foreground"
-                        )}>
-                          {isGenericName ? 'Sem nome ✎' : displayName}
+                      return isGenericName ? (
+                        <span className="font-medium text-muted-foreground/60 italic truncate">
+                          Adicionar nome ✏️
+                        </span>
+                      ) : (
+                        <h3 className="font-semibold truncate text-foreground">
+                          {displayName}
                         </h3>
                       );
                     })()}
