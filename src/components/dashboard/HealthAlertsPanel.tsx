@@ -75,7 +75,7 @@ export function HealthAlertsPanel() {
     return type === 'critical' ? (
       <AlertTriangle className="h-4 w-4 text-destructive" />
     ) : (
-      <Bell className="h-4 w-4 text-yellow-500" />
+      <Bell className="h-4 w-4 text-warning" />
     );
   };
 
@@ -98,7 +98,7 @@ export function HealthAlertsPanel() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Heart className="h-5 w-5 text-red-500" />
+            <Heart className="h-5 w-5 text-destructive" />
             Alertas de Saúde do Cliente
             {alerts.length > 0 && (
               <Badge variant="destructive" className="ml-2">
@@ -136,7 +136,7 @@ export function HealthAlertsPanel() {
           <TabsContent value="alerts" className="space-y-3">
             {alerts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Heart className="h-12 w-12 mx-auto mb-3 text-green-500" />
+                <Heart className="h-12 w-12 mx-auto mb-3 text-success" />
                 <p className="font-medium">Todos os clientes estão saudáveis!</p>
                 <p className="text-sm">Nenhum alerta de saúde crítica no momento.</p>
               </div>
@@ -263,7 +263,7 @@ export function HealthAlertsPanel() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">
-                    Limite de Atenção: <span className="text-yellow-500 font-medium">{localSettings.warning_threshold}%</span>
+                    Limite de Atenção: <span className="text-warning font-medium">{localSettings.warning_threshold}%</span>
                   </Label>
                   <Switch
                     checked={localSettings.notify_on_warning}
@@ -315,19 +315,19 @@ function AlertCard({ alert, onDismiss, onNavigate }: AlertCardProps) {
       exit={{ opacity: 0, x: -100 }}
       className={`
         p-4 rounded-lg border 
-        ${isCritical ? 'border-destructive/50 bg-destructive/5' : 'border-yellow-500/50 bg-yellow-500/5'}
+        ${isCritical ? 'border-destructive/50 bg-destructive/5' : 'border-warning/50 bg-warning/5'}
       `}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1">
           <div className={`
             p-2 rounded-full 
-            ${isCritical ? 'bg-destructive/10' : 'bg-yellow-500/10'}
+            ${isCritical ? 'bg-destructive/10' : 'bg-warning/10'}
           `}>
             {isCritical ? (
               <AlertTriangle className="h-4 w-4 text-destructive" />
             ) : (
-              <Bell className="h-4 w-4 text-yellow-500" />
+              <Bell className="h-4 w-4 text-warning" />
             )}
           </div>
           

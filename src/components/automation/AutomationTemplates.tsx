@@ -125,11 +125,11 @@ const templates: Template[] = [
 ];
 
 const categoryColors: Record<string, string> = {
-  'Retenção': 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+  'Retenção': 'bg-warning/10 text-warning dark:text-warning',
   'Risco': 'bg-destructive/10 text-destructive',
   'Engajamento': 'bg-primary/10 text-primary',
-  'Crescimento': 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  'Produtividade': 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+  'Crescimento': 'bg-success/10 text-success dark:text-success',
+  'Produtividade': 'bg-secondary/10 text-secondary dark:text-secondary',
 };
 
 interface AutomationTemplatesProps {
