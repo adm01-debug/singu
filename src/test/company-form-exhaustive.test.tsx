@@ -140,13 +140,15 @@ describe('CompanyForm — Rendering', () => {
 
   it('renders all 7 tabs in edit mode', () => {
     renderForm(fullExternalCompany);
-    expect(screen.getByText('Básico')).toBeInTheDocument();
-    expect(screen.getByText('Fiscal')).toBeInTheDocument();
-    expect(screen.getByText('Classificação')).toBeInTheDocument();
-    expect(screen.getByText('Estrutura')).toBeInTheDocument();
-    expect(screen.getByText('Telefones')).toBeInTheDocument();
-    expect(screen.getByText('Endereços')).toBeInTheDocument();
-    expect(screen.getByText('Redes')).toBeInTheDocument();
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(7);
+    expect(tabs[0]).toHaveTextContent('Básico');
+    expect(tabs[1]).toHaveTextContent('Fiscal');
+    expect(tabs[2]).toHaveTextContent('Classificação');
+    expect(tabs[3]).toHaveTextContent('Estrutura');
+    expect(tabs[4]).toHaveTextContent('Telefones');
+    expect(tabs[5]).toHaveTextContent('Endereços');
+    expect(tabs[6]).toHaveTextContent('Redes');
   });
 
   it('shows only Básico tab in create mode', () => {
@@ -169,14 +171,16 @@ describe('CompanyForm — Rendering', () => {
 
   it('renders Básico tab fields by default', () => {
     renderForm();
-    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
+    // "Nome no CRM" has asterisk in a separate <span>, use flexible matcher
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
     expect(screen.getByText('Nome Fantasia')).toBeInTheDocument();
     expect(screen.getByText('Razão Social')).toBeInTheDocument();
     expect(screen.getByText('Notas')).toBeInTheDocument();
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Ramo de Atividade')).toBeInTheDocument();
     expect(screen.getByText('Nicho do Cliente')).toBeInTheDocument();
-    expect(screen.getByText('Website')).toBeInTheDocument();
+    // Website label has an icon inside, use flexible matcher
+    expect(screen.getByText(/Website/)).toBeInTheDocument();
     expect(screen.getByText('Tags')).toBeInTheDocument();
     expect(screen.getByText('Desafios')).toBeInTheDocument();
     expect(screen.getByText('Concorrentes')).toBeInTheDocument();
