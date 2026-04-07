@@ -188,7 +188,7 @@ describe('CompanyForm — Rendering', () => {
 // ═══════════════════════════════════════════════════════════════
 describe('CompanyForm — Tab Navigation', () => {
   it('switches to Fiscal tab and shows fiscal fields', async () => {
-    renderForm();
+    renderForm(fullExternalCompany);
     await userEvent.click(screen.getByText('Fiscal'));
     expect(screen.getByText('CNPJ')).toBeInTheDocument();
     expect(screen.getByText('Situação RF')).toBeInTheDocument();
@@ -202,7 +202,7 @@ describe('CompanyForm — Tab Navigation', () => {
   });
 
   it('switches to Classificação tab and shows classification fields', async () => {
-    renderForm();
+    renderForm(fullExternalCompany);
     await userEvent.click(screen.getByText('Classificação'));
     expect(screen.getByText('Tipo de Parceiro')).toBeInTheDocument();
     expect(screen.getByText('Cliente Ativo')).toBeInTheDocument();
@@ -215,7 +215,7 @@ describe('CompanyForm — Tab Navigation', () => {
   });
 
   it('switches to Estrutura tab and shows ALL structure fields', async () => {
-    renderForm();
+    renderForm(fullExternalCompany);
     await userEvent.click(screen.getByText('Estrutura'));
     expect(screen.getByText('Nº Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Faturamento Anual')).toBeInTheDocument();
@@ -231,7 +231,7 @@ describe('CompanyForm — Tab Navigation', () => {
   });
 
   it('switches to Fiscal tab and shows CNPJ Base field', async () => {
-    renderForm();
+    renderForm(fullExternalCompany);
     await userEvent.click(screen.getByText('Fiscal'));
     expect(screen.getByText('CNPJ Base')).toBeInTheDocument();
   });
