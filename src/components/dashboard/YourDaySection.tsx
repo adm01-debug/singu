@@ -271,7 +271,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
             {/* Empty state for left column */}
             {overdueFollowUps.length === 0 && todayFollowUps.length === 0 && (
-              <div className="text-center py-6">
+              <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
                 <p className="text-xs text-muted-foreground">Nenhum follow-up pendente</p>
               </div>
@@ -373,7 +373,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
             {/* Empty state for right column */}
             {upcomingBirthdays.length === 0 && needsAttention.length === 0 && (
-              <div className="text-center py-6">
+              <div className="text-center py-6 flex-1 flex flex-col items-center justify-center">
                 <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-success/60" />
                 <p className="text-xs text-muted-foreground">Tudo tranquilo por aqui</p>
               </div>
