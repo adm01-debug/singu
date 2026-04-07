@@ -28,6 +28,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     // Authenticate user
     try {
@@ -54,15 +61,20 @@ serve(async (req) => {
       );
     }
 
-    const { text, voiceId } = body as { text?: unknown; voiceId?: string };
-    if (!text || typeof text !== "string" || text.length > 5000) {
+    const { text, voiceId } = body as { text?: unknown; voiceId?: unknown };
+    if (!text || typeof text !== "string" || text.trim().length === 0 || text.length > 5000) {
       return new Response(
-        JSON.stringify({ error: "Invalid text (required, max 5000 chars)" }),
+        JSON.stringify({ error: "Invalid text (required, non-empty, max 5000 chars)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const selectedVoiceId = voiceId || "FGY2WhTYpPnrIDTdsKH5"; // Laura - good for Portuguese
+    // Sanitize voiceId: allow only alphanumeric characters
+    const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
+    const defaultVoiceId = "FGY2WhTYpPnrIDTdsKH5"; // Laura - good for Portuguese
+    const selectedVoiceId = (typeof voiceId === "string" && VOICE_ID_REGEX.test(voiceId))
+      ? voiceId
+      : defaultVoiceId;
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}?output_format=mp3_22050_32`,
