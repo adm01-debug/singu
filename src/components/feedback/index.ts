@@ -34,11 +34,8 @@ export { ErrorState, InlineError, LoadingWithError } from './ErrorState';
 
 // Other feedback components
 export { ErrorBoundary } from './ErrorBoundary';
-export { OfflineBanner } from './OfflineBanner';
 export { ContextualHelp, FeatureHighlight, InlineHelp } from './ContextualHelp';
 export { FeatureSpotlight } from './FeatureSpotlight';
-export { DraftRecoveryBanner } from './DraftRecoveryBanner';
-export { ProgressToast } from './ProgressToast';
 
 // Accessibility feedback components
 export { AriaLiveProvider, useAriaLiveRegion, liveAnnouncements } from './AriaLiveRegion';
