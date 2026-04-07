@@ -709,10 +709,19 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
           onAction={(action) => {
             if (action.action === 'navigate' && action.data?.route) {
               navigate(action.data.route);
-            } else if (action.action === 'search' && action.data?.query) {
-              setVoiceOpen(false);
-              onOpenChange(true);
-              setQuery(action.data.query);
+            } else if (action.action === 'search') {
+              // Build search query from data.query, filters, or contactName
+              const searchQuery = action.data?.query
+                || action.data?.contactName
+                || action.data?.filters?.company
+                || action.data?.filters?.tag
+                || action.data?.filters?.sentiment
+                || '';
+              if (searchQuery) {
+                setVoiceOpen(false);
+                onOpenChange(true);
+                setQuery(searchQuery);
+              }
             }
           }}
         />
