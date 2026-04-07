@@ -150,9 +150,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(0, 84%, 60%)',
       secondary: 'hsl(0, 60%, 50%)',
-      bg: 'bg-red-50 dark:bg-red-950/30',
-      text: 'text-red-700 dark:text-red-300',
-      border: 'border-red-200 dark:border-red-800'
+      bg: 'bg-destructive dark:bg-destructive/30',
+      text: 'text-destructive dark:text-destructive',
+      border: 'border-destructive dark:border-destructive'
     },
     icon: '⚡'
   },
@@ -242,9 +242,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(48, 96%, 53%)',
       secondary: 'hsl(48, 80%, 45%)',
-      bg: 'bg-yellow-50 dark:bg-yellow-950/30',
-      text: 'text-yellow-700 dark:text-yellow-300',
-      border: 'border-yellow-200 dark:border-yellow-800'
+      bg: 'bg-warning dark:bg-warning/30',
+      text: 'text-warning dark:text-warning',
+      border: 'border-warning dark:border-warning'
     },
     icon: '🌟'
   },
@@ -334,9 +334,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(142, 71%, 45%)',
       secondary: 'hsl(142, 60%, 40%)',
-      bg: 'bg-green-50 dark:bg-green-950/30',
-      text: 'text-green-700 dark:text-green-300',
-      border: 'border-green-200 dark:border-green-800'
+      bg: 'bg-success dark:bg-success/30',
+      text: 'text-success dark:text-success',
+      border: 'border-success dark:border-success'
     },
     icon: '🛡️'
   },
@@ -426,9 +426,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(217, 91%, 60%)',
       secondary: 'hsl(217, 80%, 50%)',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
-      text: 'text-blue-700 dark:text-blue-300',
-      border: 'border-blue-200 dark:border-blue-800'
+      bg: 'bg-info dark:bg-info/30',
+      text: 'text-info dark:text-info',
+      border: 'border-info dark:border-info'
     },
     icon: '📊'
   }

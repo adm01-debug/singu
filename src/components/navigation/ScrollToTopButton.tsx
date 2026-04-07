@@ -55,7 +55,7 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
             onClick={scrollToTop}
             size="icon"
             variant="outline"
-            className="h-10 w-10 rounded-full shadow-lg bg-background/90 backdrop-blur-sm border-border/80 hover:bg-primary hover:text-primary-foreground transition-all"
+            className="h-10 w-10 rounded-full shadow-sm bg-background/90 backdrop-blur-sm border-border/80 hover:bg-primary hover:text-primary-foreground transition-all"
             aria-label="Voltar ao topo"
           >
             <ArrowUp className="h-4 w-4" />

@@ -36,7 +36,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           className={cn(
             "relative overflow-hidden bg-gradient-premium",
             "hover:opacity-90",
-            "text-primary-foreground border-0 shadow-lg shadow-primary/30",
+            "text-primary-foreground border-0 shadow-sm shadow-primary/30",
             "transition-all duration-300",
             processing && "animate-pulse",
             className
@@ -74,7 +74,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
             "bg-gradient-premium bg-[length:200%_100%]",
             "hover:bg-[position:100%_0]",
             "text-primary-foreground border-0",
-            "shadow-lg shadow-primary/40",
+            "shadow-sm shadow-primary/40",
             "backdrop-blur-sm",
             "transition-all duration-500",
             "font-semibold tracking-wide",
@@ -160,7 +160,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           "bg-gradient-premium bg-[length:200%_100%]",
           "hover:bg-[position:100%_0]",
           "text-primary-foreground border-0",
-          "shadow-xl shadow-primary/30",
+          "shadow-md shadow-primary/30",
           "transition-all duration-500",
           "font-semibold text-base tracking-wide",
           "py-6",

@@ -188,8 +188,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   champions: {
     name: 'Campeões',
     description: 'Compram frequentemente, gastam muito e compraram recentemente',
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-100',
+    color: 'text-success',
+    bgColor: 'bg-success',
     icon: 'trophy',
     priority: 1,
     actionFocus: 'Recompensar lealdade, oferecer exclusividade'
@@ -197,8 +197,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   loyal_customers: {
     name: 'Clientes Fiéis',
     description: 'Compram regularmente e gastam bem',
-    color: 'text-green-600',
-    bgColor: 'bg-green-100',
+    color: 'text-success',
+    bgColor: 'bg-success',
     icon: 'heart',
     priority: 2,
     actionFocus: 'Upsell, programas de fidelidade'
@@ -206,8 +206,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   potential_loyalists: {
     name: 'Potenciais Fiéis',
     description: 'Clientes recentes com bom potencial',
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-100',
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
     icon: 'star',
     priority: 3,
     actionFocus: 'Criar relacionamento, ofertas personalizadas'
@@ -215,8 +215,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   recent_customers: {
     name: 'Clientes Recentes',
     description: 'Compraram recentemente pela primeira vez',
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-info',
+    bgColor: 'bg-info',
     icon: 'sparkles',
     priority: 4,
     actionFocus: 'Onboarding, primeira experiência excepcional'
@@ -224,8 +224,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   promising: {
     name: 'Promissores',
     description: 'Compradores recentes com potencial de crescimento',
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100',
+    color: 'text-primary',
+    bgColor: 'bg-primary',
     icon: 'trending-up',
     priority: 5,
     actionFocus: 'Engajamento, educação sobre produtos'
@@ -233,8 +233,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   needing_attention: {
     name: 'Precisam de Atenção',
     description: 'Clientes médios que estão esfriando',
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-100',
+    color: 'text-warning',
+    bgColor: 'bg-warning',
     icon: 'bell',
     priority: 6,
     actionFocus: 'Reengajamento, ofertas limitadas'
@@ -242,8 +242,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   about_to_sleep: {
     name: 'Prestes a Dormir',
     description: 'Abaixo da média, podem ser perdidos em breve',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100',
+    color: 'text-accent',
+    bgColor: 'bg-accent',
     icon: 'moon',
     priority: 7,
     actionFocus: 'Reativação urgente, descobrir problemas'
@@ -251,8 +251,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   at_risk: {
     name: 'Em Risco',
     description: 'Gastaram muito antes mas não compram há tempo',
-    color: 'text-red-500',
-    bgColor: 'bg-red-100',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive',
     icon: 'alert-triangle',
     priority: 8,
     actionFocus: 'Win-back agressivo, ofertas especiais'
@@ -260,8 +260,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   cant_lose: {
     name: 'Não Podemos Perder',
     description: 'Grandes gastadores que estão escapando',
-    color: 'text-red-600',
-    bgColor: 'bg-red-200',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive',
     icon: 'shield-alert',
     priority: 9,
     actionFocus: 'Contato pessoal imediato, resolver problemas'
@@ -269,7 +269,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   hibernating: {
     name: 'Hibernando',
     description: 'Última compra foi há muito tempo, baixo valor',
-    color: 'text-gray-500',
+    color: 'text-muted-foreground',
     bgColor: 'bg-gray-100',
     icon: 'pause-circle',
     priority: 10,
@@ -278,7 +278,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   lost: {
     name: 'Perdidos',
     description: 'Menor recência, frequência e valor monetário',
-    color: 'text-gray-400',
+    color: 'text-muted-foreground',
     bgColor: 'bg-gray-50',
     icon: 'x-circle',
     priority: 11,

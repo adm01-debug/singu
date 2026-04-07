@@ -325,8 +325,8 @@ export default function Automacoes() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <Power className="w-5 h-5 text-emerald-500" />
+              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <Power className="w-5 h-5 text-success" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{activeCount}</p>
@@ -336,8 +336,8 @@ export default function Automacoes() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                <History className="w-5 h-5 text-amber-500" />
+              <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                <History className="w-5 h-5 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalExecutions}</p>
@@ -535,7 +535,7 @@ export default function Automacoes() {
                 {logs.map(log => (
                   <div key={log.id} className="flex items-center gap-3 p-3 rounded-lg border border-border">
                     {log.success ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                     ) : (
                       <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                     )}

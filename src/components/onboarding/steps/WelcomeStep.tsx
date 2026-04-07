@@ -64,7 +64,7 @@ const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + index * 0.1 }}
-              className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 group"
+              className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 hover:shadow-sm transition-all duration-300 group"
             >
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 mx-auto group-hover:bg-gradient-primary group-hover:text-primary-foreground transition-all duration-300">
                 <Icon className="w-6 h-6 text-primary group-hover:text-primary-foreground" />

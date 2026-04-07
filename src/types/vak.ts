@@ -38,31 +38,31 @@ export const VAK_LABELS: Record<VAKType, {
     name: 'Visual', 
     fullName: 'Visual',
     description: 'Pensa em imagens, fala rápido, usa palavras visuais', 
-    color: 'text-purple-700',
-    bgColor: 'bg-purple-100 border-purple-200',
+    color: 'text-secondary',
+    bgColor: 'bg-secondary border-secondary',
     icon: '👁️'
   },
   A: { 
     name: 'Auditivo', 
     fullName: 'Auditivo',
     description: 'Pensa em sons, ritmo equilibrado, valoriza tom de voz', 
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-100 border-blue-200',
+    color: 'text-info',
+    bgColor: 'bg-info border-info',
     icon: '👂'
   },
   K: { 
     name: 'Cinestésico', 
     fullName: 'Cinestésico',
     description: 'Pensa em sensações, fala devagar, valoriza conexão', 
-    color: 'text-green-700',
-    bgColor: 'bg-green-100 border-green-200',
+    color: 'text-success',
+    bgColor: 'bg-success border-success',
     icon: '✋'
   },
   D: { 
     name: 'Digital', 
     fullName: 'Auditivo Digital',
     description: 'Pensa em lógica e dados, analítico, valoriza fatos', 
-    color: 'text-slate-700',
+    color: 'text-muted-foreground',
     bgColor: 'bg-slate-100 border-slate-200',
     icon: '🧠'
   },
