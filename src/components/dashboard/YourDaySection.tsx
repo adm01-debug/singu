@@ -158,9 +158,9 @@ export function YourDaySection({ className }: YourDaySectionProps) {
 
       {/* Unified list layout */}
       {hasAnyData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
           {/* Left Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-destructive/40 flex flex-col">
             {/* Overdue Follow-ups */}
             {overdueFollowUps.length > 0 && (
               <div>
@@ -279,7 +279,7 @@ export function YourDaySection({ className }: YourDaySectionProps) {
           </div>
 
           {/* Right Column */}
-          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40">
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-4 border-l-2 border-l-warning/40 flex flex-col">
             {/* Birthdays */}
             {upcomingBirthdays.length > 0 && (
               <div>
