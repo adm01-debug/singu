@@ -710,7 +710,6 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
             if (action.action === 'navigate' && action.data?.route) {
               navigate(action.data.route);
             } else if (action.action === 'search') {
-              // Build search query from data.query, filters, or contactName
               const searchQuery = action.data?.query
                 || action.data?.contactName
                 || action.data?.filters?.company
@@ -722,6 +721,16 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
                 onOpenChange(true);
                 setQuery(searchQuery);
               }
+            } else if (action.action === 'create_interaction' && action.data?.contactName) {
+              setVoiceOpen(false);
+              toast.info(`Para registrar interação com ${action.data.contactName}, abra o contato e clique em "Nova Interação".`);
+              onOpenChange(true);
+              setQuery(action.data.contactName);
+            } else if (action.action === 'create_reminder' && action.data?.contactName) {
+              setVoiceOpen(false);
+              toast.info(`Lembrete sugerido: ${action.response}`);
+              onOpenChange(true);
+              setQuery(action.data.contactName);
             }
           }}
         />
