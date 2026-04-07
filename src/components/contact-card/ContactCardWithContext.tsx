@@ -128,10 +128,9 @@ export function ContactCardWithContext({
   if (viewMode === 'grid') {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
-        whileHover={{ scale: 1.02, y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
+        transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
         {...hoverProps}
       >
         <QuickActionsMenu
@@ -146,11 +145,10 @@ export function ContactCardWithContext({
           onDelete={() => onDelete(contact)}
         >
           <Card className={cn(
-            "h-full group cursor-pointer overflow-hidden relative transition-all duration-300",
-            "border border-border/50 hover:border-primary/40",
-            "hover:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.25)]",
-            "bg-card/80 backdrop-blur-sm",
-            isHighlighted && "ring-2 ring-primary",
+            "h-full group cursor-pointer overflow-hidden relative transition-colors duration-150",
+            "border border-border/30 hover:border-border/60",
+            "bg-card/60",
+            isHighlighted && "ring-1 ring-primary/50",
             isSelected && "bg-primary/5 border-primary/30"
           )}>
             {/* Selection Checkbox */}
@@ -192,11 +190,7 @@ export function ContactCardWithContext({
             
               <Link to={`/contatos/${contact.id}`}>
               <CardContent className="p-0">
-                {/* Stage color bar — primary visual differentiator */}
-                <div className={cn(
-                  "h-[3px] rounded-t-[inherit] bg-gradient-to-r",
-                  getStageBarColor(contact.relationship_stage)
-                )} />
+                {/* Stage dot indicator */}
 
                 <div className="px-4 pt-4 pb-3.5">
                   {/* Row 1: Avatar + Name + Score */}
@@ -352,19 +346,13 @@ export function ContactCardWithContext({
         onDelete={() => onDelete(contact)}
       >
         <Card className={cn(
-          "cursor-pointer group overflow-hidden relative transition-all duration-300",
-          "border border-border/50 hover:border-primary/40",
-          "hover:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.25)]",
-          "bg-card/80 backdrop-blur-sm",
-          isHighlighted && "ring-2 ring-primary",
+          "cursor-pointer group overflow-hidden relative transition-colors duration-150",
+          "border border-border/30 hover:border-border/60 hover:bg-muted/20",
+          "bg-card/60",
+          isHighlighted && "ring-1 ring-primary/50",
           isSelected && "bg-primary/5 border-primary/30"
         )}>
-          {/* Stage color bar on left side */}
-          <div className={cn(
-            "absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[inherit] bg-gradient-to-b",
-            getStageBarColor(contact.relationship_stage)
-          )} />
-          <CardContent className="p-4 pl-5">
+          <CardContent className="p-4 pl-4">
             <div className="flex items-center gap-4">
               {/* Selection Checkbox */}
               {selectionMode && (
