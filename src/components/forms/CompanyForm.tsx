@@ -296,7 +296,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                   <FormField control={form.control} name="nome_crm" render={({ field }) => (
                     <FormItem className="flex-1">
                       <FormLabel className="text-foreground font-medium">Nome no CRM <span className="text-destructive">*</span></FormLabel>
-                      <FormControl><Input placeholder="Nome usado internamente" className="h-11" {...field} /></FormControl>
+                      <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
                       <FormDescription className="text-xs">Nome principal exibido nas listagens e buscas</FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -306,7 +306,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="nome_fantasia" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome Fantasia</FormLabel>
-                    <FormControl><Input placeholder="Nome comercial" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Nome comercial" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -314,7 +314,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="razao_social" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Razão Social</FormLabel>
-                    <FormControl><Input placeholder="Razão social completa" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -329,7 +329,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Status</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || 'ativo'}>
                       <FormControl>
-                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {statusOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -379,7 +379,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                       <Globe className="w-3.5 h-3.5 text-muted-foreground" />
                       Website
                     </FormLabel>
-                    <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -459,7 +459,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="cnpj" render={({ field }) => (
                   <FormItem>
                     <FormLabel>CNPJ</FormLabel>
-                    <FormControl><Input placeholder="00.000.000/0000-00" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="00.000.000/0000-00" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -467,7 +467,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="cnpj_base" render={({ field }) => (
                   <FormItem>
                     <FormLabel>CNPJ Base</FormLabel>
-                    <FormControl><Input placeholder="Ex: 12345678" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
                     <FormDescription className="text-xs">8 primeiros dígitos</FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -478,7 +478,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Situação RF</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {situacaoRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -491,7 +491,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="situacao_rf_data" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data Situação RF</FormLabel>
-                    <FormControl><Input type="date" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -503,7 +503,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="capital_social" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Capital Social (R$)</FormLabel>
-                    <FormControl><Input type="number" step="0.01" placeholder="0.00" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -511,7 +511,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="natureza_juridica" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Natureza Jurídica (Código)</FormLabel>
-                    <FormControl><Input placeholder="Ex: 2062" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: 2062" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -519,7 +519,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="natureza_juridica_desc" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Natureza Jurídica (Descrição)</FormLabel>
-                    <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -529,7 +529,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Porte (Receita Federal)</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {porteRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -545,7 +545,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                       <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                       Data de Fundação
                     </FormLabel>
-                    <FormControl><Input type="date" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -553,7 +553,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="inscricao_estadual" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inscrição Estadual</FormLabel>
-                    <FormControl><Input placeholder="IE" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="IE" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -561,7 +561,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="inscricao_municipal" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inscrição Municipal</FormLabel>
-                    <FormControl><Input placeholder="IM" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="IM" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -607,7 +607,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="grupo_economico" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grupo Econômico</FormLabel>
-                    <FormControl><Input placeholder="Ex: Coanorp Cooperativa" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Coanorp Cooperativa" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -615,7 +615,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="tipo_cooperativa" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Cooperativa</FormLabel>
-                    <FormControl><Input placeholder="Ex: Singular, Central..." className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Singular, Central..." {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -623,7 +623,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="numero_cooperativa" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nº da Cooperativa</FormLabel>
-                    <FormControl><Input placeholder="Número de registro" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Número de registro" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -638,7 +638,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Nº Funcionários</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
-                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {employeeCountOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -651,7 +651,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="annual_revenue" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Faturamento Anual</FormLabel>
-                    <FormControl><Input placeholder="R$ 1-5M" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="R$ 1-5M" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -661,7 +661,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                     <FormLabel>Saúde Financeira</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || 'unknown'}>
                       <FormControl>
-                        <SelectTrigger className="h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {financialHealthOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -677,7 +677,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                       <Palette className="w-3.5 h-3.5 text-muted-foreground" />
                       Cores da Marca
                     </FormLabel>
-                    <FormControl><Input placeholder="Ex: #0066CC, #FF6600" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: #0066CC, #FF6600" {...field} value={field.value ?? ''} /></FormControl>
                     <FormDescription className="text-xs">Cores da identidade visual</FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -690,7 +690,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="matriz_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID da Matriz</FormLabel>
-                    <FormControl><Input placeholder="UUID da empresa matriz" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da empresa matriz" className="font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -698,7 +698,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Grupo Econômico</FormLabel>
-                    <FormControl><Input placeholder="UUID do grupo" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID do grupo" className="font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -706,7 +706,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="central_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Central</FormLabel>
-                    <FormControl><Input placeholder="UUID da central" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da central" className="font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -714,7 +714,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="singular_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Singular</FormLabel>
-                    <FormControl><Input placeholder="UUID da singular" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da singular" className="font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -722,7 +722,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="confederacao_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>ID Confederação</FormLabel>
-                    <FormControl><Input placeholder="UUID da confederação" className="h-11 font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="UUID da confederação" className="font-mono text-xs" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -730,7 +730,7 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bitrix Company ID</FormLabel>
-                    <FormControl><Input type="number" placeholder="ID no Bitrix24" className="h-11" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
