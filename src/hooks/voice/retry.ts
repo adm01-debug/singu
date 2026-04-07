@@ -1,5 +1,17 @@
 /**
+ * @module voice/retry
+ * Provides retry logic with exponential backoff and user-friendly error translation.
+ */
+
+/**
  * withRetry — Retries an async operation with exponential backoff.
+ *
+ * @param fn - The async function to execute
+ * @param options.maxRetries - Max number of retries (default: 2)
+ * @param options.baseDelay - Base delay in ms between retries (default: 500)
+ * @param options.shouldRetry - Predicate to determine if an error is retryable
+ * @returns The resolved value from fn
+ * @throws The last error if all retries are exhausted
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
@@ -23,6 +35,10 @@ export async function withRetry<T>(
   throw lastError;
 }
 
+/**
+ * isRetryableError — Determines if an error is transient and worth retrying.
+ * Matches network errors, timeouts, and server errors (500, 503, 429).
+ */
 function isRetryableError(error: unknown): boolean {
   if (error instanceof Error) {
     const msg = error.message.toLowerCase();
@@ -39,7 +55,11 @@ function isRetryableError(error: unknown): boolean {
 }
 
 /**
- * Translates technical error messages to user-friendly Portuguese messages.
+ * friendlyErrorMessage — Translates technical error messages to user-friendly
+ * Portuguese messages for display in the voice UI.
+ *
+ * Covers: microphone permissions, token errors, timeouts, rate limits,
+ * credit exhaustion, WebSocket issues, network errors, and TTS failures.
  */
 export function friendlyErrorMessage(error: unknown): string {
   if (error instanceof Event) {

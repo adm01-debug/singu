@@ -2,13 +2,18 @@ import { logger } from "@/lib/logger";
 import type { VoiceAgentAction } from "./types";
 
 /**
- * logVoiceCommand — Logs a voice command for analytics.
- * Fire-and-forget.
+ * logVoiceCommand — Logs a voice command for analytics and debugging.
+ * Fire-and-forget — never throws.
+ *
+ * @param action - The parsed voice action
+ * @param meta.transcript - The original user transcript
+ * @param meta.durationMs - Total processing time in milliseconds
+ * @param meta.success - Whether the command was successfully processed
  */
 export function logVoiceCommand(
   action: VoiceAgentAction,
   meta: { transcript: string; durationMs?: number; success?: boolean }
-) {
+): void {
   try {
     logger.log("[Voice] Command:", {
       action: action.action,
@@ -17,6 +22,6 @@ export function logVoiceCommand(
       success: meta.success,
     });
   } catch {
-    // Silent
+    // Silent — logging must never break the voice flow
   }
 }
