@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MoreVertical,
   Mail,
@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RelationshipScore } from '@/components/ui/relationship-score';
 import { RelationshipStageBadge } from '@/components/ui/relationship-stage';
+import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
+import { DISCBadge } from '@/components/ui/disc-badge';
+import { RoleBadge } from '@/components/ui/role-badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { QuickActionsMenu } from '@/components/context-menu/QuickActionsMenu';
 import { InlineEdit } from '@/components/inline-edit/InlineEdit';
