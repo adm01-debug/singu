@@ -598,55 +598,7 @@ describe('CompanyCardWithContext Improvements', () => {
   });
 });
 
-// ============================================
-// 9. DASHBOARD — WelcomeHeroCard
-// ============================================
-describe('WelcomeHeroCard Improvements', () => {
-  const content = readSrc('components/dashboard/WelcomeHeroCard.tsx');
-
-  it('has greeting logic', () => {
-    expect(content).toContain('Bom dia');
-    expect(content).toContain('Boa tarde');
-    expect(content).toContain('Boa noite');
-  });
-
-  it('has clean greeting without emoji clutter', () => {
-    expect(content).toContain('Bom dia');
-    expect(content).toContain('Boa tarde');
-    expect(content).toContain('Boa noite');
-  });
-
-  it('shows today date in pt-BR', () => {
-    expect(content).toContain("'pt-BR'");
-  });
-
-  it('uses semantic foreground tokens', () => {
-    expect(content).toContain('text-foreground');
-    expect(content).toContain('text-muted-foreground');
-  });
-
-  it('is minimal — no stat cards in hero', () => {
-    expect(content).not.toContain("'Contatos'");
-    expect(content).not.toContain("'Interações'");
-    expect(content).not.toContain("'Score'");
-  });
-
-  it('uses Calendar icon for date display', () => {
-    expect(content).toContain('Calendar');
-  });
-
-  it('uses motion for animations', () => {
-    expect(content).toContain('motion');
-  });
-
-  it('extracts user first name', () => {
-    expect(content).toContain('first_name');
-  });
-
-  it('uses Intl.DateTimeFormat for proper date formatting', () => {
-    expect(content).toContain('Intl.DateTimeFormat');
-  });
-});
+// WelcomeHeroCard was permanently removed from the project
 
 // ============================================
 // 10. DASHBOARD — YourDaySection
@@ -785,10 +737,8 @@ describe('Dashboard Index Layout', () => {
   });
 
   it('uses Typography or semantic headings in dashboard ecosystem', () => {
-    const statsGrid = readSrc('components/dashboard/DashboardStatsGrid.tsx');
-    const welcomeCard = readSrc('components/dashboard/WelcomeHeroCard.tsx');
-    const fullEcosystem = allDashboard + '\n' + statsGrid + '\n' + welcomeCard;
-    expect(fullEcosystem).toMatch(/Typography|<h[1-6]|font-semibold|font-bold/);
+    const statCard = readSrc('components/ui/stat-card.tsx');
+    expect(statCard).toMatch(/Typography|<h[1-6]|font-semibold|font-bold|font-medium/);
   });
 });
 
