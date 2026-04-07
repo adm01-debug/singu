@@ -39,6 +39,7 @@ export interface DashboardStats {
   scoreChange: string;
   topContacts: TopContact[];
   recentActivities: RecentActivity[];
+  interactionSparkline: number[];
   loading: boolean;
 }
 
