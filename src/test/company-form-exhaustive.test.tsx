@@ -200,7 +200,7 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('Natureza Jurídica (Código)')).toBeInTheDocument();
     expect(screen.getByText('Natureza Jurídica (Descrição)')).toBeInTheDocument();
     expect(screen.getByText('Porte (Receita Federal)')).toBeInTheDocument();
-    expect(screen.getByText('Data de Fundação')).toBeInTheDocument();
+    expect(screen.getByText(/Data de Fundação/)).toBeInTheDocument();
     expect(screen.getByText('Inscrição Estadual')).toBeInTheDocument();
     expect(screen.getByText('Inscrição Municipal')).toBeInTheDocument();
   });
@@ -224,7 +224,7 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('Nº Funcionários')).toBeInTheDocument();
     expect(screen.getByText('Faturamento Anual')).toBeInTheDocument();
     expect(screen.getByText('Saúde Financeira')).toBeInTheDocument();
-    expect(screen.getByText('Cores da Marca')).toBeInTheDocument();
+    expect(screen.getByText(/Cores da Marca/)).toBeInTheDocument();
     // Relational IDs
     expect(screen.getByText('ID da Matriz')).toBeInTheDocument();
     expect(screen.getByText('ID Grupo Econômico')).toBeInTheDocument();
