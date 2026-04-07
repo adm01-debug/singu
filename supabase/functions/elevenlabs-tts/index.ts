@@ -16,12 +16,11 @@ async function authenticateRequest(req: Request): Promise<string> {
     Deno.env.get("SUPABASE_ANON_KEY")!,
     { global: { headers: { Authorization: authHeader } } }
   );
-  const token = authHeader.replace("Bearer ", "");
-  const { data, error } = await supabase.auth.getClaims(token);
-  if (error || !data?.claims?.sub) {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user?.id) {
     throw new Error("UNAUTHORIZED");
   }
-  return data.claims.sub as string;
+  return user.id;
 }
 
 serve(async (req) => {
