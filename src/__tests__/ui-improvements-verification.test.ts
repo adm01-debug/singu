@@ -739,8 +739,7 @@ describe('Dashboard Index Layout', () => {
   it('uses Typography or semantic headings in dashboard ecosystem', () => {
     const statsGrid = readSrc('components/dashboard/DashboardStatsGrid.tsx');
     const overviewTab = readSrc('components/dashboard/tabs/OverviewTab.tsx');
-    const fullEcosystem = allDashboard + '\n' + statsGrid + '\n' + overviewTab;
-    expect(fullEcosystem).toMatch(/Typography|<h[1-6]|font-semibold|font-bold/);
+    expect(statsGrid + overviewTab).toMatch(/Typography|<h[1-6]|font-semibold|font-bold/);
   });
 });
 
