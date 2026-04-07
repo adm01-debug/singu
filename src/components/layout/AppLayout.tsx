@@ -1,6 +1,6 @@
 import { ReactNode, useMemo, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Search, Command, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { Search, Command, Settings, LogOut, ChevronRight, Mic } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
