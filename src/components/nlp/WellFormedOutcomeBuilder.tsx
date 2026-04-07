@@ -131,14 +131,14 @@ const WellFormedOutcomeBuilder: React.FC<WellFormedOutcomeBuilderProps> = ({
   };
 
   return (
-    <Card className={cn("border-emerald-500/30 bg-gradient-to-br from-emerald-950/20 to-background", className)}>
+    <Card className={cn("border-success/20 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="h-5 w-5 text-emerald-400" />
+            <Target className="h-5 w-5 text-success" />
             Well-Formed Outcome Builder
           </CardTitle>
-          <Badge variant="outline" className="bg-emerald-500/20">
+          <Badge variant="outline" className="bg-success/10 text-success">
             {completedCount}/{criteria.length} critérios
           </Badge>
         </div>
