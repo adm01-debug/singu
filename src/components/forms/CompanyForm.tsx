@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail, Tag, Globe, MapPinned } from 'lucide-react';
+import { Building2, Loader2, FileText, Users, Landmark, Share2, MapPin, Phone, Mail, Tag, Globe, MapPinned, Sparkles } from 'lucide-react';
 import type { Company } from '@/hooks/useCompanies';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -34,6 +34,7 @@ import { CompanyPhonesForm } from '@/components/forms/company/CompanyPhonesForm'
 import { CompanyEmailsForm } from '@/components/forms/company/CompanyEmailsForm';
 import { CompanyAddressesForm } from '@/components/forms/company/CompanyAddressesForm';
 import { CompanySocialMediaForm } from '@/components/forms/company/CompanySocialMediaForm';
+import { TagInput } from '@/components/ui/tag-input';
 
 // ─── Schema ────────────────────────────────────────────────────────
 const companySchema = z.object({
@@ -47,10 +48,10 @@ const companySchema = z.object({
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
   website: z.string().trim().max(300).optional().or(z.literal('')),
 
-  // Tags & Listas
-  tags_array: z.string().trim().max(500).optional().or(z.literal('')),
-  challenges: z.string().trim().max(500).optional().or(z.literal('')),
-  competitors: z.string().trim().max(500).optional().or(z.literal('')),
+  // Tags & Listas (now arrays)
+  tags_array: z.array(z.string()).optional(),
+  challenges: z.array(z.string()).optional(),
+  competitors: z.array(z.string()).optional(),
 
   // Dados Fiscais
   cnpj: z.string().trim().max(20).optional().or(z.literal('')),
@@ -135,7 +136,6 @@ const porteRfOptions = [
   { value: 'DEMAIS', label: 'Demais' },
 ];
 
-// Helper to safely read any company field (handles external data mapping)
 function getCompanyField(company: Record<string, unknown> | null | undefined, field: string, fallback = '') {
   if (!company) return fallback;
   return (company[field] as string) ?? fallback;
@@ -144,6 +144,7 @@ function getCompanyField(company: Record<string, unknown> | null | undefined, fi
 export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: CompanyFormProps) {
   const c = company as Record<string, unknown> | null;
   const companyId = (c?.id as string) || undefined;
+  const isEditing = !!company;
   const [logoUrl, setLogoUrl] = useState<string | null>((c?.logo_url as string) || null);
 
   const { data: ramosOptions = [], isLoading: ramosLoading } = useExternalLookup('companies', 'ramo_atividade');
@@ -167,9 +168,9 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
       status: getCompanyField(c, 'status', 'ativo'),
       notes: getCompanyField(c, 'notes'),
       website: getCompanyField(c, 'website'),
-      tags_array: Array.isArray(c?.tags_array) ? (c.tags_array as string[]).join(', ') : '',
-      challenges: Array.isArray(c?.challenges) ? (c.challenges as string[]).join(', ') : '',
-      competitors: Array.isArray(c?.competitors) ? (c.competitors as string[]).join(', ') : '',
+      tags_array: Array.isArray(c?.tags_array) ? (c.tags_array as string[]) : [],
+      challenges: Array.isArray(c?.challenges) ? (c.challenges as string[]) : [],
+      competitors: Array.isArray(c?.competitors) ? (c.competitors as string[]) : [],
       cnpj: getCompanyField(c, 'cnpj'),
       cnpj_base: getCompanyField(c, 'cnpj_base'),
       capital_social: (c?.capital_social as number) ?? 0,
@@ -205,11 +206,6 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
   const draftKey = company ? `company-edit-${(company as Record<string, unknown>).id}` : 'company-new';
   const { clearDraft } = useFormDraft(form, { key: draftKey, enabled: !company });
 
-  const parseCommaSeparated = (val: string | null | undefined): string[] | null => {
-    if (!val || !val.trim()) return null;
-    return val.split(',').map(s => s.trim()).filter(Boolean);
-  };
-
   const handleSubmit = async (data: CompanyFormData) => {
     const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
@@ -221,564 +217,588 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         cleaned[key] = value;
       }
     }
-    // Convert comma-separated strings to arrays for the DB
-    cleaned.tags_array = parseCommaSeparated(data.tags_array);
-    cleaned.challenges = parseCommaSeparated(data.challenges);
-    cleaned.competitors = parseCommaSeparated(data.competitors);
+    // Arrays are already in correct format from TagInput
+    if (Array.isArray(data.tags_array) && data.tags_array.length === 0) cleaned.tags_array = null;
+    if (Array.isArray(data.challenges) && data.challenges.length === 0) cleaned.challenges = null;
+    if (Array.isArray(data.competitors) && data.competitors.length === 0) cleaned.competitors = null;
     cleaned.logo_url = logoUrl;
     delete cleaned.razao_social_fiscal;
     await onSubmit(cleaned);
     clearDraft();
   };
 
+  // Tabs configuration - only show "Básico" when creating, all tabs when editing
+  const allTabs = [
+    { value: 'basico', label: 'Básico', icon: Building2 },
+    { value: 'fiscal', label: 'Fiscal', icon: FileText },
+    { value: 'classificacao', label: 'Classificação', icon: Users },
+    { value: 'estrutura', label: 'Estrutura', icon: Landmark },
+    { value: 'telefones', label: 'Telefones', icon: Phone },
+    { value: 'endereco', label: 'Endereços', icon: MapPin },
+    { value: 'redes', label: 'Redes', icon: Share2 },
+  ];
+
+  const visibleTabs = isEditing ? allTabs : [allTabs[0]];
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col max-h-[calc(90vh-2rem)]">
         {/* Header */}
-        <div className="flex items-center gap-3 pb-4 border-b border-border">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div className="flex items-center gap-3 pb-4 border-b border-border shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-1 ring-primary/20">
             <Building2 className="w-5 h-5 text-primary" />
           </div>
-          <div>
-            <h3 className="font-semibold">
-              {company ? 'Editar Empresa' : 'Nova Empresa'}
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground">
+              {isEditing ? 'Editar Empresa' : 'Nova Empresa'}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {company ? 'Atualize as informações da empresa' : 'Preencha os dados da empresa'}
+              {isEditing ? 'Atualize as informações da empresa' : 'Preencha os dados da empresa'}
             </p>
           </div>
         </div>
 
-        <Tabs defaultValue="basico" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 mb-4">
-            <TabsTrigger value="basico" className="text-xs gap-1">
-              <Building2 className="w-3.5 h-3.5" />
-              Básico
-            </TabsTrigger>
-            <TabsTrigger value="fiscal" className="text-xs gap-1">
-              <FileText className="w-3.5 h-3.5" />
-              Fiscal
-            </TabsTrigger>
-            <TabsTrigger value="classificacao" className="text-xs gap-1">
-              <Users className="w-3.5 h-3.5" />
-              Classif.
-            </TabsTrigger>
-            <TabsTrigger value="estrutura" className="text-xs gap-1">
-              <Landmark className="w-3.5 h-3.5" />
-              Estrutura
-            </TabsTrigger>
-            <TabsTrigger value="telefones" className="text-xs gap-1">
-              <Phone className="w-3.5 h-3.5" />
-              Telefones
-            </TabsTrigger>
-            <TabsTrigger value="endereco" className="text-xs gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              Endereços
-            </TabsTrigger>
-            <TabsTrigger value="redes" className="text-xs gap-1">
-              <Share2 className="w-3.5 h-3.5" />
-              Redes
-            </TabsTrigger>
-          </TabsList>
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto py-4 space-y-4">
+          <Tabs defaultValue="basico" className="w-full">
+            {visibleTabs.length > 1 && (
+              <TabsList className={`grid w-full mb-4`} style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}>
+                {visibleTabs.map(tab => (
+                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5">
+                    <tab.icon className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            )}
 
-          {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
-          <TabsContent value="basico" className="space-y-4 mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Logo + Nome no CRM */}
-              <div className="md:col-span-2 flex items-start gap-4">
-                <CompanyLogoUpload
-                  logoUrl={logoUrl}
-                  onLogoChange={setLogoUrl}
-                  companyId={companyId}
-                />
-                <FormField control={form.control} name="nome_crm" render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Nome no CRM *</FormLabel>
-                    <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
-                    <FormDescription>Nome exibido nas listagens</FormDescription>
+            {/* ═══ ABA 1: DADOS BÁSICOS ═══ */}
+            <TabsContent value="basico" className="space-y-5 mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Logo + Nome no CRM */}
+                <div className="md:col-span-2 flex items-start gap-4">
+                  <CompanyLogoUpload
+                    logoUrl={logoUrl}
+                    onLogoChange={setLogoUrl}
+                    companyId={companyId}
+                  />
+                  <FormField control={form.control} name="nome_crm" render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Nome no CRM *</FormLabel>
+                      <FormControl><Input placeholder="Nome usado internamente" {...field} /></FormControl>
+                      <FormDescription>Nome exibido nas listagens</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+
+                <FormField control={form.control} name="nome_fantasia" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome Fantasia</FormLabel>
+                    <FormControl><Input placeholder="Nome comercial" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="razao_social" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Razão Social</FormLabel>
+                    <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="status" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || 'ativo'}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {statusOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="ramo_atividade" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ramo de Atividade</FormLabel>
+                    <FormControl>
+                      <SearchableSelect
+                        value={field.value ?? ''}
+                        onValueChange={field.onChange}
+                        options={ramosOptions}
+                        isLoading={ramosLoading}
+                        placeholder="Selecione o ramo"
+                        searchPlaceholder="Buscar ramo..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="nicho_cliente" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nicho do Cliente</FormLabel>
+                    <FormControl>
+                      <SearchableSelect
+                        value={field.value ?? ''}
+                        onValueChange={field.onChange}
+                        options={nichosOptions}
+                        isLoading={nichosLoading}
+                        placeholder="Selecione o nicho"
+                        searchPlaceholder="Buscar nicho..."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="website" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Website</FormLabel>
+                    <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="notes" render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Notas</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Observações sobre a empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                {/* Tags with chip input */}
+                <FormField control={form.control} name="tags_array" render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Tags</FormLabel>
+                    <FormControl>
+                      <TagInput
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder="Ex: VIP, Cooperativa, Agro — pressione Enter"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="challenges" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Desafios</FormLabel>
+                    <FormControl>
+                      <TagInput
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder="Ex: Logística, Custos"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="competitors" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Concorrentes</FormLabel>
+                    <FormControl>
+                      <TagInput
+                        value={field.value ?? []}
+                        onChange={field.onChange}
+                        placeholder="Ex: Empresa A, Empresa B"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
               </div>
 
-              <FormField control={form.control} name="nome_fantasia" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Fantasia</FormLabel>
-                  <FormControl><Input placeholder="Nome comercial" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="razao_social" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Razão Social</FormLabel>
-                  <FormControl><Input placeholder="Razão social completa" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="status" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'ativo'}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {statusOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="ramo_atividade" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ramo de Atividade</FormLabel>
-                  <FormControl>
-                    <SearchableSelect
-                      value={field.value ?? ''}
-                      onValueChange={field.onChange}
-                      options={ramosOptions}
-                      isLoading={ramosLoading}
-                      placeholder="Selecione o ramo"
-                      searchPlaceholder="Buscar ramo..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="nicho_cliente" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nicho do Cliente</FormLabel>
-                  <FormControl>
-                    <SearchableSelect
-                      value={field.value ?? ''}
-                      onValueChange={field.onChange}
-                      options={nichosOptions}
-                      isLoading={nichosLoading}
-                      placeholder="Selecione o nicho"
-                      searchPlaceholder="Buscar nicho..."
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="website" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Website</FormLabel>
-                  <FormControl><Input placeholder="https://www.empresa.com.br" type="url" inputMode="url" autoComplete="url" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="notes" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Notas</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Observações sobre a empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="tags_array" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Tags</FormLabel>
-                  <FormControl><Input placeholder="Ex: VIP, Cooperativa, Agro (separadas por vírgula)" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormDescription>Separar por vírgula</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="challenges" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Desafios</FormLabel>
-                  <FormControl><Input placeholder="Ex: Logística, Custos (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="competitors" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Concorrentes</FormLabel>
-                  <FormControl><Input placeholder="Ex: Empresa A, Empresa B (vírgula)" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-          </TabsContent>
-
-          {/* ═══ ABA 2: DADOS FISCAIS ═══ */}
-          <TabsContent value="fiscal" className="space-y-4 mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="cnpj" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CNPJ</FormLabel>
-                  <FormControl><Input placeholder="00.000.000/0000-00" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="cnpj_base" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CNPJ Base</FormLabel>
-                  <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormDescription>8 primeiros dígitos do CNPJ</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="situacao_rf" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Situação RF</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {situacaoRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="situacao_rf_data" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data Situação RF</FormLabel>
-                  <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="capital_social" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Capital Social (R$)</FormLabel>
-                  <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="natureza_juridica" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Natureza Jurídica (Código)</FormLabel>
-                  <FormControl><Input placeholder="Ex: 2062" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="natureza_juridica_desc" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Natureza Jurídica (Descrição)</FormLabel>
-                  <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="porte_rf" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Porte (Receita Federal)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {porteRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="data_fundacao" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de Fundação</FormLabel>
-                  <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="inscricao_estadual" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Inscrição Estadual</FormLabel>
-                  <FormControl><Input placeholder="IE" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="inscricao_municipal" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Inscrição Municipal</FormLabel>
-                  <FormControl><Input placeholder="IM" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-          </TabsContent>
-
-          {/* ═══ ABA 3: CLASSIFICAÇÃO ═══ */}
-          <TabsContent value="classificacao" className="space-y-4 mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2 space-y-3">
-                <p className="text-sm font-medium text-foreground">Tipo de Parceiro</p>
-                <div className="flex flex-wrap gap-6">
-                  <FormField control={form.control} name="is_customer" render={({ field }) => (
-                    <FormItem className="flex items-center gap-2 space-y-0">
-                      <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Cliente Ativo</FormLabel>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="is_supplier" render={({ field }) => (
-                    <FormItem className="flex items-center gap-2 space-y-0">
-                      <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Fornecedor</FormLabel>
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="is_carrier" render={({ field }) => (
-                    <FormItem className="flex items-center gap-2 space-y-0">
-                      <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                      <FormLabel className="font-normal cursor-pointer">Transportadora</FormLabel>
-                    </FormItem>
-                  )} />
+              {/* Progressive Disclosure hint for new companies */}
+              {!isEditing && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border text-sm text-muted-foreground">
+                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                  <span>Após criar, você poderá adicionar dados fiscais, classificação, telefones, endereços e redes sociais.</span>
                 </div>
-              </div>
+              )}
+            </TabsContent>
 
-              <div className="md:col-span-2">
-                <FormField control={form.control} name="is_matriz" render={({ field }) => (
-                  <FormItem className="flex items-center gap-2 space-y-0">
-                    <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
-                    <FormLabel className="font-normal cursor-pointer">É Matriz</FormLabel>
-                    <FormDescription className="ml-2">(desmarque para filial)</FormDescription>
+            {/* ═══ ABA 2: DADOS FISCAIS ═══ */}
+            <TabsContent value="fiscal" className="space-y-5 mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField control={form.control} name="cnpj" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CNPJ</FormLabel>
+                    <FormControl><Input placeholder="00.000.000/0000-00" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="cnpj_base" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CNPJ Base</FormLabel>
+                    <FormControl><Input placeholder="Ex: 12345678" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormDescription>8 primeiros dígitos do CNPJ</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="situacao_rf" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Situação RF</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {situacaoRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="situacao_rf_data" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data Situação RF</FormLabel>
+                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="capital_social" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Capital Social (R$)</FormLabel>
+                    <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="natureza_juridica" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Natureza Jurídica (Código)</FormLabel>
+                    <FormControl><Input placeholder="Ex: 2062" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="natureza_juridica_desc" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Natureza Jurídica (Descrição)</FormLabel>
+                    <FormControl><Input placeholder="Ex: Sociedade Empresária LTDA" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="porte_rf" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Porte (Receita Federal)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {porteRfOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="data_fundacao" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data de Fundação</FormLabel>
+                    <FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="inscricao_estadual" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Inscrição Estadual</FormLabel>
+                    <FormControl><Input placeholder="IE" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="inscricao_municipal" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Inscrição Municipal</FormLabel>
+                    <FormControl><Input placeholder="IM" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
                   </FormItem>
                 )} />
               </div>
+            </TabsContent>
 
-              <FormField control={form.control} name="grupo_economico" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grupo Econômico</FormLabel>
-                  <FormControl><Input placeholder="Ex: Coanorp Cooperativa" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="tipo_cooperativa" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Cooperativa</FormLabel>
-                  <FormControl><Input placeholder="Ex: Singular, Central..." {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="numero_cooperativa" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nº da Cooperativa</FormLabel>
-                  <FormControl><Input placeholder="Número de registro" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-          </TabsContent>
-
-          {/* ═══ ABA 4: ESTRUTURA ═══ */}
-          <TabsContent value="estrutura" className="space-y-4 mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="employee_count" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nº Funcionários</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {employeeCountOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="annual_revenue" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Faturamento Anual</FormLabel>
-                  <FormControl><Input placeholder="R$ 1-5M" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="financial_health" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Saúde Financeira</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'unknown'}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {financialHealthOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="cores_marca" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cores da Marca</FormLabel>
-                  <FormControl><Input placeholder="Ex: #0066CC, #FF6600" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormDescription>Cores principais da identidade visual</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              {/* ─── IDs Relacionais ─── */}
-              <div className="md:col-span-2 pt-2">
-                <p className="text-sm font-medium text-muted-foreground mb-3">IDs Relacionais (Sistema)</p>
-              </div>
-
-              <FormField control={form.control} name="matriz_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID da Matriz</FormLabel>
-                  <FormControl><Input placeholder="UUID da empresa matriz" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID Grupo Econômico</FormLabel>
-                  <FormControl><Input placeholder="UUID do grupo" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="central_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID Central</FormLabel>
-                  <FormControl><Input placeholder="UUID da central" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="singular_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID Singular</FormLabel>
-                  <FormControl><Input placeholder="UUID da singular" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="confederacao_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ID Confederação</FormLabel>
-                  <FormControl><Input placeholder="UUID da confederação" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bitrix Company ID</FormLabel>
-                  <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              {/* ─── Notas de Merge ─── */}
-              <FormField control={form.control} name="merge_notes" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Notas de Merge</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormDescription>Registro de merges realizados</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-          </TabsContent>
-          <TabsContent value="telefones" className="mt-0">
-            {companyId ? (
-              <CompanyPhonesForm
-                companyId={companyId}
-                phones={phonesHook.data}
-                onSave={async (phone) => { await phonesHook.upsert.mutateAsync(phone); }}
-                onDelete={async (id) => { await phonesHook.remove.mutateAsync(id); }}
-                isLoading={phonesHook.isLoading}
-              />
-            ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                Salve a empresa primeiro para adicionar telefones
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ═══ ABA 6: ENDEREÇOS (normalizado) ═══ */}
-          <TabsContent value="endereco" className="mt-0">
-            {companyId ? (
-              <CompanyAddressesForm
-                companyId={companyId}
-                addresses={addressesHook.data}
-                onSave={async (addr) => { await addressesHook.upsert.mutateAsync(addr); }}
-                onDelete={async (id) => { await addressesHook.remove.mutateAsync(id); }}
-                isLoading={addressesHook.isLoading}
-              />
-            ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                Salve a empresa primeiro para adicionar endereços
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ═══ ABA 7: REDES SOCIAIS + EMAILS (normalizado) ═══ */}
-          <TabsContent value="redes" className="space-y-6 mt-0">
-            {companyId ? (
-              <>
-                <div>
-                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" /> Emails
-                  </h4>
-                  <CompanyEmailsForm
-                    companyId={companyId}
-                    emails={emailsHook.data}
-                    onSave={async (email) => { await emailsHook.upsert.mutateAsync(email); }}
-                    onDelete={async (id) => { await emailsHook.remove.mutateAsync(id); }}
-                    isLoading={emailsHook.isLoading}
-                  />
+            {/* ═══ ABA 3: CLASSIFICAÇÃO ═══ */}
+            <TabsContent value="classificacao" className="space-y-5 mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-3">
+                  <p className="text-sm font-medium text-foreground">Tipo de Parceiro</p>
+                  <div className="flex flex-wrap gap-6">
+                    <FormField control={form.control} name="is_customer" render={({ field }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Cliente Ativo</FormLabel>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="is_supplier" render={({ field }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Fornecedor</FormLabel>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="is_carrier" render={({ field }) => (
+                      <FormItem className="flex items-center gap-2 space-y-0">
+                        <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Transportadora</FormLabel>
+                      </FormItem>
+                    )} />
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <Share2 className="w-4 h-4 text-primary" /> Redes Sociais & Website
-                  </h4>
-                  <CompanySocialMediaForm
-                    companyId={companyId}
-                    socialMedia={socialMediaHook.data}
-                    onSave={async (item) => { await socialMediaHook.upsert.mutateAsync(item); }}
-                    onDelete={async (id) => { await socialMediaHook.remove.mutateAsync(id); }}
-                    isLoading={socialMediaHook.isLoading}
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <Share2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                Salve a empresa primeiro para adicionar emails e redes sociais
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <div className="md:col-span-2">
+                  <FormField control={form.control} name="is_matriz" render={({ field }) => (
+                    <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormControl><Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} /></FormControl>
+                      <FormLabel className="font-normal cursor-pointer">É Matriz</FormLabel>
+                      <FormDescription className="ml-2">(desmarque para filial)</FormDescription>
+                    </FormItem>
+                  )} />
+                </div>
+
+                <FormField control={form.control} name="grupo_economico" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grupo Econômico</FormLabel>
+                    <FormControl><Input placeholder="Ex: Coanorp Cooperativa" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="tipo_cooperativa" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Cooperativa</FormLabel>
+                    <FormControl><Input placeholder="Ex: Singular, Central..." {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="numero_cooperativa" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nº da Cooperativa</FormLabel>
+                    <FormControl><Input placeholder="Número de registro" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </TabsContent>
+
+            {/* ═══ ABA 4: ESTRUTURA ═══ */}
+            <TabsContent value="estrutura" className="space-y-5 mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField control={form.control} name="employee_count" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nº Funcionários</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {employeeCountOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="annual_revenue" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Faturamento Anual</FormLabel>
+                    <FormControl><Input placeholder="R$ 1-5M" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="financial_health" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Saúde Financeira</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || 'unknown'}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {financialHealthOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="cores_marca" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cores da Marca</FormLabel>
+                    <FormControl><Input placeholder="Ex: #0066CC, #FF6600" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormDescription>Cores principais da identidade visual</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                {/* ─── IDs Relacionais ─── */}
+                <div className="md:col-span-2 pt-2">
+                  <p className="text-sm font-medium text-muted-foreground mb-3">IDs Relacionais (Sistema)</p>
+                </div>
+
+                <FormField control={form.control} name="matriz_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID da Matriz</FormLabel>
+                    <FormControl><Input placeholder="UUID da empresa matriz" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="grupo_economico_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Grupo Econômico</FormLabel>
+                    <FormControl><Input placeholder="UUID do grupo" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="central_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Central</FormLabel>
+                    <FormControl><Input placeholder="UUID da central" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="singular_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Singular</FormLabel>
+                    <FormControl><Input placeholder="UUID da singular" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="confederacao_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ID Confederação</FormLabel>
+                    <FormControl><Input placeholder="UUID da confederação" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="bitrix_company_id" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bitrix Company ID</FormLabel>
+                    <FormControl><Input type="number" placeholder="ID no Bitrix24" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                {/* ─── Notas de Merge ─── */}
+                <FormField control={form.control} name="merge_notes" render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Notas de Merge</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Histórico de fusões/merges desta empresa..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormDescription>Registro de merges realizados</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+            </TabsContent>
+
+            {/* ═══ ABA 5: TELEFONES ═══ */}
+            <TabsContent value="telefones" className="mt-0">
+              {companyId ? (
+                <CompanyPhonesForm
+                  companyId={companyId}
+                  phones={phonesHook.data}
+                  onSave={async (phone) => { await phonesHook.upsert.mutateAsync(phone); }}
+                  onDelete={async (id) => { await phonesHook.remove.mutateAsync(id); }}
+                  isLoading={phonesHook.isLoading}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  <Phone className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  Salve a empresa primeiro para adicionar telefones
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ═══ ABA 6: ENDEREÇOS ═══ */}
+            <TabsContent value="endereco" className="mt-0">
+              {companyId ? (
+                <CompanyAddressesForm
+                  companyId={companyId}
+                  addresses={addressesHook.data}
+                  onSave={async (addr) => { await addressesHook.upsert.mutateAsync(addr); }}
+                  onDelete={async (id) => { await addressesHook.remove.mutateAsync(id); }}
+                  isLoading={addressesHook.isLoading}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  <MapPin className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  Salve a empresa primeiro para adicionar endereços
+                </div>
+              )}
+            </TabsContent>
+
+            {/* ═══ ABA 7: REDES SOCIAIS + EMAILS ═══ */}
+            <TabsContent value="redes" className="space-y-6 mt-0">
+              {companyId ? (
+                <>
+                  <div>
+                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary" /> Emails
+                    </h4>
+                    <CompanyEmailsForm
+                      companyId={companyId}
+                      emails={emailsHook.data}
+                      onSave={async (email) => { await emailsHook.upsert.mutateAsync(email); }}
+                      onDelete={async (id) => { await emailsHook.remove.mutateAsync(id); }}
+                      isLoading={emailsHook.isLoading}
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                      <Share2 className="w-4 h-4 text-primary" /> Redes Sociais & Website
+                    </h4>
+                    <CompanySocialMediaForm
+                      companyId={companyId}
+                      socialMedia={socialMediaHook.data}
+                      onSave={async (item) => { await socialMediaHook.upsert.mutateAsync(item); }}
+                      onDelete={async (id) => { await socialMediaHook.remove.mutateAsync(id); }}
+                      isLoading={socialMediaHook.isLoading}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  <Share2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  Salve a empresa primeiro para adicionar emails e redes sociais
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Sticky Footer */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-border shrink-0 bg-background">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            {company ? 'Salvar Alterações' : 'Criar Empresa'}
+            {isEditing ? 'Salvar Alterações' : 'Criar Empresa'}
           </Button>
         </div>
       </form>
