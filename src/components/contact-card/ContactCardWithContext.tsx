@@ -5,6 +5,9 @@ import {
   Building2, 
   MoreVertical,
   ChevronDown,
+  Mail,
+  Phone,
+  MessageCircle,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -128,8 +131,8 @@ export function ContactCardWithContext({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.05 }}
-        whileHover={{ scale: 1.01, y: -2 }}
+        transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
+        whileHover={{ scale: 1.02, y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
         {...hoverProps}
       >
         <QuickActionsMenu
@@ -144,9 +147,12 @@ export function ContactCardWithContext({
           onDelete={() => onDelete(contact)}
         >
           <Card className={cn(
-            "h-full card-hover group cursor-pointer overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
+            "h-full group cursor-pointer overflow-hidden relative transition-all duration-300",
+            "border border-border/50 hover:border-primary/40",
+            "hover:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.25)]",
+            "bg-card/80 backdrop-blur-sm",
             isHighlighted && "ring-2 ring-primary",
-            isSelected && "bg-primary/5"
+            isSelected && "bg-primary/5 border-primary/30"
           )}>
             {/* Selection Checkbox */}
             {selectionMode && (
@@ -193,7 +199,7 @@ export function ContactCardWithContext({
                   getStageBarColor(contact.relationship_stage)
                 )} />
 
-                <div className="px-4 pt-3 pb-3">
+                <div className="px-4 pt-4 pb-3.5">
                   {/* Row 1: Avatar + Name + Score */}
                   <div className="flex items-start gap-2.5">
                     <OptimizedAvatar 
@@ -213,21 +219,30 @@ export function ContactCardWithContext({
                       ) : (() => {
                         const displayName = formatContactName(contact.first_name, contact.last_name);
                         const isGenericName = displayName === 'Contato';
-                        return (
-                          <h3 
-                            className={cn(
-                              "font-semibold text-sm leading-tight transition-colors cursor-pointer",
-                              isGenericName 
-                                ? "text-muted-foreground/70" 
-                                : "text-foreground group-hover:text-primary"
-                            )}
+                        return isGenericName ? (
+                          <div 
+                            className="flex items-center gap-1.5 cursor-pointer group/name"
                             onDoubleClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               setIsInlineEditing(true);
                             }}
                           >
-                            {isGenericName ? 'Sem nome ✎' : displayName}
+                            <span className="text-sm font-medium text-muted-foreground/60 italic group-hover/name:text-primary/70 transition-colors">
+                              Adicionar nome
+                            </span>
+                            <span className="text-xs text-primary/50 opacity-0 group-hover/name:opacity-100 transition-opacity">✏️</span>
+                          </div>
+                        ) : (
+                          <h3 
+                            className="font-semibold text-sm leading-tight transition-colors cursor-pointer text-foreground group-hover:text-primary"
+                            onDoubleClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setIsInlineEditing(true);
+                            }}
+                          >
+                            {displayName}
                           </h3>
                         );
                       })()}
@@ -269,6 +284,45 @@ export function ContactCardWithContext({
                       );
                     })()}
                   </div>
+
+                  {/* Row 3: Quick actions — visible on hover */}
+                  {(contact.email || contact.phone || contact.whatsapp) && (
+                    <div className="flex items-center gap-1 mt-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {contact.email && (
+                        <a
+                          href={`mailto:${contact.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title={`Email: ${contact.email}`}
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {contact.phone && (
+                        <a
+                          href={`tel:${contact.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                          title={`Ligar: ${contact.phone}`}
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {contact.whatsapp && (
+                        <a
+                          href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-md hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-500 transition-colors"
+                          title={`WhatsApp: ${contact.whatsapp}`}
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      <span className="ml-auto text-[10px] text-muted-foreground/50">Ações rápidas</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Link>
@@ -299,9 +353,12 @@ export function ContactCardWithContext({
         onDelete={() => onDelete(contact)}
       >
         <Card className={cn(
-          "card-hover cursor-pointer group overflow-hidden relative hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 transition-all duration-200",
+          "cursor-pointer group overflow-hidden relative transition-all duration-300",
+          "border border-border/50 hover:border-primary/40",
+          "hover:shadow-[0_8px_30px_-8px_hsl(var(--primary)/0.25)]",
+          "bg-card/80 backdrop-blur-sm",
           isHighlighted && "ring-2 ring-primary",
-          isSelected && "bg-primary/5"
+          isSelected && "bg-primary/5 border-primary/30"
         )}>
           {/* Stage color bar on left side */}
           <div className={cn(
@@ -341,12 +398,13 @@ export function ContactCardWithContext({
                     {(() => {
                       const displayName = formatContactName(contact.first_name, contact.last_name);
                       const isGenericName = displayName === 'Contato';
-                      return (
-                        <h3 className={cn(
-                          "font-semibold truncate",
-                          isGenericName ? "text-muted-foreground/70" : "text-foreground"
-                        )}>
-                          {isGenericName ? 'Sem nome ✎' : displayName}
+                      return isGenericName ? (
+                        <span className="font-medium text-muted-foreground/60 italic truncate">
+                          Adicionar nome ✏️
+                        </span>
+                      ) : (
+                        <h3 className="font-semibold truncate text-foreground">
+                          {displayName}
                         </h3>
                       );
                     })()}

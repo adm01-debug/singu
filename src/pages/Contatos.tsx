@@ -56,6 +56,7 @@ import {
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
+import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
@@ -372,6 +373,8 @@ const Contatos = () => {
       />
 
       <div className="p-4 md:p-6 space-y-5">
+        {/* Stats Summary Bar */}
+        <ContactsStatsBar contacts={contacts} />
         {/* Search and View Toggle */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1 max-w-md group">
@@ -487,7 +490,7 @@ const Contatos = () => {
           <>
             {/* Contacts Grid/List */}
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredAndSortedContacts.map((contact, index) => (
                   <ContactCardWithContext
                     key={contact.id}
