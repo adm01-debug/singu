@@ -45,7 +45,7 @@ import { CompanyForm } from '@/components/forms/CompanyForm';
 import { CompanyCardWithContext } from '@/components/company-card/CompanyCardWithContext';
 import { CompanyListItem } from '@/components/companies/CompanyListItem';
 import { CompaniesTableView } from '@/components/companies/CompaniesTableView';
-import { ViewModeSwitcher, type ViewMode } from '@/components/ui/view-mode-switcher';
+import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useContacts } from '@/hooks/useContacts';
@@ -147,6 +147,10 @@ const Empresas = () => {
 
   const [localSearch, setLocalSearch] = useState(() => searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
+  const [gridColumns, setGridColumns] = useState<GridColumns>(() => {
+    const c = searchParams.get('cols');
+    return c ? (Number(c) as GridColumns) : 3;
+  });
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
@@ -176,8 +180,9 @@ const Empresas = () => {
     }
     if (sortBy !== 'updated_at') params.set('sort', sortBy);
     if (sortOrder !== 'desc') params.set('order', sortOrder);
+    if (gridColumns !== 3) params.set('cols', String(gridColumns));
     setSearchParams(params, { replace: true });
-  }, [localSearch, viewMode, activeFilters, sortBy, sortOrder, setSearchParams]);
+  }, [localSearch, viewMode, activeFilters, sortBy, sortOrder, gridColumns, setSearchParams]);
 
   // Debounced server-side search
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -353,7 +358,7 @@ const Empresas = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <ViewModeSwitcher value={viewMode} onChange={setViewMode} />
+            <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
             <AdvancedDataExporter entityType="companies" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
@@ -391,7 +396,13 @@ const Empresas = () => {
           <>
             {/* Companies Grid */}
             {viewMode === 'grid' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className={`grid grid-cols-1 gap-4 ${
+                gridColumns === 2 ? 'md:grid-cols-2' :
+                gridColumns === 3 ? 'md:grid-cols-2 lg:grid-cols-3' :
+                gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+                gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
+                'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+              }`}>
                 {filteredAndSortedCompanies.map((company, index) => (
                   <CompanyCardWithContext
                     key={company.id}
