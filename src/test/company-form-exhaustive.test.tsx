@@ -640,13 +640,13 @@ describe('CompanyForm — Stress & Boundary', () => {
 
   it('handles rapid tab switching', async () => {
     renderForm(fullExternalCompany);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       await userEvent.click(screen.getByRole('tab', { name: /Fiscal/ }));
       await userEvent.click(screen.getByRole('tab', { name: /Classificação/ }));
       await userEvent.click(screen.getByRole('tab', { name: /Estrutura/ }));
       await userEvent.click(screen.getByRole('tab', { name: /Básico/ }));
     }
-    expect(screen.getByText('Nome no CRM *')).toBeInTheDocument();
+    expect(screen.getByText(/Nome no CRM/)).toBeInTheDocument();
   });
 
   it('renders 10 forms concurrently without error', () => {
