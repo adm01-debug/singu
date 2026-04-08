@@ -13,7 +13,7 @@ export type CompanyUpdate = TablesUpdate<'companies'>;
 
 /** Fields from the local Supabase schema that do NOT exist in the external DB */
 const LOCAL_ONLY = new Set([
-  'name', 'industry', 'tags', 'phone', 'email', 'address',
+  'name', 'industry', 'tags', 'notes', 'phone', 'email', 'address',
   'city', 'state', 'instagram', 'linkedin', 'facebook',
   'youtube', 'twitter', 'tiktok',
 ]);

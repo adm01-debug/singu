@@ -154,7 +154,7 @@ const EmpresaDetalhe = () => {
     if (!id) return;
     setEditSubmitting(true);
     try {
-      const { name, industry, tags, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...cleanData } = data as Record<string, unknown>;
+      const { name, industry, tags, notes, phone, email, address, city, state, instagram, linkedin, facebook, youtube, twitter, tiktok, ...cleanData } = data as Record<string, unknown>;
       const { error } = await updateExternalData('companies', id, cleanData);
       if (error) throw error;
       toast({ title: 'Empresa atualizada', description: 'As alterações foram salvas.' });
