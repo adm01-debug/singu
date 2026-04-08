@@ -189,7 +189,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Campeões',
     description: 'Compram frequentemente, gastam muito e compraram recentemente',
     color: 'text-success',
-    bgColor: 'bg-success',
+    bgColor: 'bg-success/10',
     icon: 'trophy',
     priority: 1,
     actionFocus: 'Recompensar lealdade, oferecer exclusividade'
@@ -198,7 +198,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Clientes Fiéis',
     description: 'Compram regularmente e gastam bem',
     color: 'text-success',
-    bgColor: 'bg-success',
+    bgColor: 'bg-success/10',
     icon: 'heart',
     priority: 2,
     actionFocus: 'Upsell, programas de fidelidade'
@@ -206,8 +206,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   potential_loyalists: {
     name: 'Potenciais Fiéis',
     description: 'Clientes recentes com bom potencial',
-    color: 'text-accent',
-    bgColor: 'bg-accent/10',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
     icon: 'star',
     priority: 3,
     actionFocus: 'Criar relacionamento, ofertas personalizadas'
@@ -216,7 +216,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Clientes Recentes',
     description: 'Compraram recentemente pela primeira vez',
     color: 'text-info',
-    bgColor: 'bg-info',
+    bgColor: 'bg-info/10',
     icon: 'sparkles',
     priority: 4,
     actionFocus: 'Onboarding, primeira experiência excepcional'
@@ -225,7 +225,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Promissores',
     description: 'Compradores recentes com potencial de crescimento',
     color: 'text-primary',
-    bgColor: 'bg-primary',
+    bgColor: 'bg-primary/10',
     icon: 'trending-up',
     priority: 5,
     actionFocus: 'Engajamento, educação sobre produtos'
@@ -234,7 +234,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Precisam de Atenção',
     description: 'Clientes médios que estão esfriando',
     color: 'text-warning',
-    bgColor: 'bg-warning',
+    bgColor: 'bg-warning/10',
     icon: 'bell',
     priority: 6,
     actionFocus: 'Reengajamento, ofertas limitadas'
@@ -242,8 +242,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   about_to_sleep: {
     name: 'Prestes a Dormir',
     description: 'Abaixo da média, podem ser perdidos em breve',
-    color: 'text-accent',
-    bgColor: 'bg-accent',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
     icon: 'moon',
     priority: 7,
     actionFocus: 'Reativação urgente, descobrir problemas'
@@ -252,7 +252,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Em Risco',
     description: 'Gastaram muito antes mas não compram há tempo',
     color: 'text-destructive',
-    bgColor: 'bg-destructive',
+    bgColor: 'bg-destructive/10',
     icon: 'alert-triangle',
     priority: 8,
     actionFocus: 'Win-back agressivo, ofertas especiais'
@@ -261,7 +261,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Não Podemos Perder',
     description: 'Grandes gastadores que estão escapando',
     color: 'text-destructive',
-    bgColor: 'bg-destructive',
+    bgColor: 'bg-destructive/20',
     icon: 'shield-alert',
     priority: 9,
     actionFocus: 'Contato pessoal imediato, resolver problemas'
@@ -270,7 +270,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Hibernando',
     description: 'Última compra foi há muito tempo, baixo valor',
     color: 'text-muted-foreground',
-    bgColor: 'bg-gray-100',
+    bgColor: 'bg-muted',
     icon: 'pause-circle',
     priority: 10,
     actionFocus: 'Campanhas de reativação de baixo custo'
@@ -278,8 +278,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   lost: {
     name: 'Perdidos',
     description: 'Menor recência, frequência e valor monetário',
-    color: 'text-muted-foreground',
-    bgColor: 'bg-gray-50',
+    color: 'text-muted-foreground/60',
+    bgColor: 'bg-muted/50',
     icon: 'x-circle',
     priority: 11,
     actionFocus: 'Última tentativa ou arquivar'

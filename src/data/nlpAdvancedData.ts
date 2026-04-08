@@ -73,8 +73,8 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
   excited: {
     name: 'Empolgado',
     icon: '🔥',
-    color: 'text-accent',
-    bgColor: 'bg-accent border-accent/30',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10 border-warning/20',
     description: 'Cliente demonstra alto entusiasmo',
     salesApproach: 'Aproveite o momento! Avance para o fechamento.'
   },
@@ -82,7 +82,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Interessado',
     icon: '👀',
     color: 'text-info',
-    bgColor: 'bg-info border-info',
+    bgColor: 'bg-info/10 border-info/20',
     description: 'Cliente mostra interesse ativo',
     salesApproach: 'Aprofunde os benefícios e mostre casos de sucesso.'
   },
@@ -90,7 +90,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Curioso',
     icon: '🤔',
     color: 'text-secondary',
-    bgColor: 'bg-secondary border-secondary',
+    bgColor: 'bg-secondary/10 border-secondary/20',
     description: 'Cliente quer saber mais',
     salesApproach: 'Forneça informações detalhadas e exemplos práticos.'
   },
@@ -98,7 +98,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Esperançoso',
     icon: '🌟',
     color: 'text-warning',
-    bgColor: 'bg-warning border-warning',
+    bgColor: 'bg-warning/10 border-warning/20',
     description: 'Cliente tem expectativas positivas',
     salesApproach: 'Reforce a confiança e mostre como alcançar os resultados.'
   },
@@ -106,7 +106,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Confiante',
     icon: '💪',
     color: 'text-success',
-    bgColor: 'bg-success border-success',
+    bgColor: 'bg-success/10 border-success/20',
     description: 'Cliente seguro na decisão',
     salesApproach: 'Momento ideal para fechar! Seja direto.'
   },
@@ -114,7 +114,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Neutro',
     icon: '😐',
     color: 'text-muted-foreground',
-    bgColor: 'bg-gray-100 border-gray-200',
+    bgColor: 'bg-muted border-border',
     description: 'Cliente em estado neutro',
     salesApproach: 'Busque criar interesse com perguntas de descoberta.'
   },
@@ -122,15 +122,15 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Pensativo',
     icon: '🧐',
     color: 'text-primary',
-    bgColor: 'bg-primary border-primary/20',
+    bgColor: 'bg-primary/10 border-primary/20',
     description: 'Cliente está refletindo',
     salesApproach: 'Dê espaço e faça perguntas que ajudem a clarificar.'
   },
   analytical: {
     name: 'Analítico',
     icon: '📊',
-    color: 'text-accent',
-    bgColor: 'bg-accent/10 border-accent/30',
+    color: 'text-info',
+    bgColor: 'bg-info/10 border-info/20',
     description: 'Cliente quer dados e provas',
     salesApproach: 'Apresente números, cases e ROI comprovado.'
   },
@@ -138,15 +138,15 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Hesitante',
     icon: '😬',
     color: 'text-warning',
-    bgColor: 'bg-warning border-warning/30',
+    bgColor: 'bg-warning/10 border-warning/20',
     description: 'Cliente com dúvidas',
     salesApproach: 'Identifique a objeção oculta e ofereça garantias.'
   },
   skeptical: {
     name: 'Cético',
     icon: '🤨',
-    color: 'text-primary',
-    bgColor: 'bg-primary border-primary/30',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10 border-destructive/20',
     description: 'Cliente desconfiado',
     salesApproach: 'Use provas sociais, depoimentos e garantias.'
   },
@@ -154,7 +154,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Frustrado',
     icon: '😤',
     color: 'text-destructive',
-    bgColor: 'bg-destructive border-destructive',
+    bgColor: 'bg-destructive/10 border-destructive/20',
     description: 'Cliente irritado ou frustrado',
     salesApproach: 'Ouça ativamente, valide sentimentos e ofereça soluções.'
   },
@@ -162,7 +162,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Ansioso',
     icon: '😰',
     color: 'text-secondary',
-    bgColor: 'bg-secondary border-secondary/30',
+    bgColor: 'bg-secondary/10 border-secondary/20',
     description: 'Cliente preocupado ou nervoso',
     salesApproach: 'Tranquilize, reduza riscos percebidos e dê segurança.'
   },
@@ -170,7 +170,7 @@ export const EMOTIONAL_STATE_INFO: Record<EmotionalState, {
     name: 'Resistente',
     icon: '🛑',
     color: 'text-muted-foreground',
-    bgColor: 'bg-slate-100 border-slate-200',
+    bgColor: 'bg-muted border-border',
     description: 'Cliente fechado para mudanças',
     salesApproach: 'Não force. Use perguntas para entender a resistência.'
   }

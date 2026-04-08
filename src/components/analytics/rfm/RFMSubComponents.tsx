@@ -347,7 +347,7 @@ export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
           <CardContent>
             <div className="space-y-3">
               {actionsByPriority.urgent.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-background rounded-lg">
+                <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg">
                   <div className={`p-2 rounded-lg ${RFM_SEGMENTS[item.segment as RFMSegment].bgColor}`}>{SEGMENT_ICONS[item.segment as RFMSegment]}</div>
                   <div className="flex-1"><div className="font-medium">{item.actions[0]?.action}</div><div className="text-sm text-muted-foreground">{item.actions[0]?.description}</div></div>
                   <Link to={`/contatos/${item.contactId}`}><Button size="sm">Ver Contato</Button></Link>

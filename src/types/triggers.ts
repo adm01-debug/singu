@@ -108,7 +108,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Valoriza o que é raro ou limitado',
     effectiveness: 9,
     icon: '⏳',
-    color: 'text-destructive bg-destructive',
+    color: 'text-destructive bg-destructive/10',
     examples: [
       'Restam apenas 2 vagas',
       'Oferta válida até sexta',
@@ -125,7 +125,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Prazo limitado força decisão rápida',
     effectiveness: 8,
     icon: '⚡',
-    color: 'text-accent bg-accent',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Preciso da resposta até amanhã',
       'O preço muda na próxima semana',
@@ -142,7 +142,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Medo de perder oportunidade única',
     effectiveness: 8,
     icon: '😰',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       'Seus concorrentes já estão usando',
       'Você pode ficar para trás',
@@ -159,7 +159,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Acesso restrito gera desejo',
     effectiveness: 7,
     icon: '👑',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Acesso antecipado para você',
       'Condição especial para parceiros',
@@ -178,7 +178,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Se outros fazem, deve ser bom',
     effectiveness: 9,
     icon: '👥',
-    color: 'text-info bg-info',
+    color: 'text-info bg-info/10',
     examples: [
       '500+ empresas já usam',
       'Líder de mercado no segmento',
@@ -195,7 +195,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Confiança em especialistas',
     effectiveness: 9,
     icon: '🎓',
-    color: 'text-primary bg-primary',
+    color: 'text-primary bg-primary/10',
     examples: [
       'Segundo pesquisa da Harvard',
       'Recomendado por especialistas',
@@ -212,7 +212,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Maioria não pode estar errada',
     effectiveness: 7,
     icon: '✅',
-    color: 'text-success bg-success',
+    color: 'text-success bg-success/10',
     examples: [
       '9 em cada 10 recomendam',
       'Escolha preferida do mercado',
@@ -229,7 +229,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Experiências reais de outros',
     effectiveness: 8,
     icon: '💬',
-    color: 'text-accent bg-accent/10',
+    color: 'text-success bg-success/10',
     examples: [
       'Veja o que o João da empresa X disse',
       'Case de sucesso com resultados reais',
@@ -248,7 +248,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Histórias criam conexão',
     effectiveness: 8,
     icon: '📖',
-    color: 'text-primary bg-primary',
+    color: 'text-accent bg-accent/10',
     examples: [
       'Deixa eu te contar como começamos',
       'Um cliente tinha o mesmo problema',
@@ -265,7 +265,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Fazer parte de algo maior',
     effectiveness: 7,
     icon: '🤝',
-    color: 'text-primary bg-primary',
+    color: 'text-destructive bg-destructive/10',
     examples: [
       'Junte-se à nossa comunidade',
       'Faça parte do movimento',
@@ -282,7 +282,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Expectativa gera dopamina',
     effectiveness: 7,
     icon: '🎁',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       'Imagine quando você tiver isso',
       'Pense nos resultados em 6 meses',
@@ -299,7 +299,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Entender a dor do cliente',
     effectiveness: 9,
     icon: '❤️',
-    color: 'text-destructive bg-destructive',
+    color: 'text-destructive bg-destructive/5',
     examples: [
       'Eu entendo sua frustração',
       'Já passei por isso também',
@@ -318,7 +318,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Detalhes geram credibilidade',
     effectiveness: 9,
     icon: '📊',
-    color: 'text-accent bg-accent/10',
+    color: 'text-info bg-info/10',
     examples: [
       'Aumento de 37,2% nas vendas',
       'Economia de R$ 12.847/mês',
@@ -335,7 +335,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Justificativa aumenta aceitação',
     effectiveness: 8,
     icon: '🧠',
-    color: 'text-muted-foreground bg-slate-100',
+    color: 'text-muted-foreground bg-muted',
     examples: [
       'Porque nossa metodologia é única',
       'O motivo é simples: qualidade',
@@ -352,7 +352,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Contraste evidencia valor',
     effectiveness: 8,
     icon: '⚖️',
-    color: 'text-muted-foreground bg-gray-100',
+    color: 'text-muted-foreground bg-muted',
     examples: [
       'Comparado ao concorrente X',
       'Antes vs Depois',
@@ -369,7 +369,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Reduz risco percebido',
     effectiveness: 9,
     icon: '🛡️',
-    color: 'text-success bg-success',
+    color: 'text-success bg-success/10',
     examples: [
       'Garantia de 30 dias ou dinheiro de volta',
       'Sem compromisso, pode cancelar',
@@ -422,7 +422,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Algo feito especialmente para ele',
     effectiveness: 8,
     icon: '✨',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Preparei isso pensando no seu caso',
       'Customizei para sua empresa',
@@ -458,7 +458,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Pessoas mantêm comportamentos',
     effectiveness: 7,
     icon: '🔄',
-    color: 'text-info bg-info',
+    color: 'text-info bg-info/5',
     examples: [
       'Você sempre foi inovador',
       'Como empresa que preza qualidade',
@@ -475,7 +475,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Sequência de acordos menores',
     effectiveness: 8,
     icon: '👍',
-    color: 'text-success bg-success',
+    color: 'text-success bg-success/5',
     examples: [
       'Faz sentido para você?',
       'Concorda com essa análise?',
@@ -492,7 +492,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Declaração perante outros',
     effectiveness: 7,
     icon: '📢',
-    color: 'text-accent bg-accent',
+    color: 'text-warning bg-warning/5',
     examples: [
       'Posso contar com você no evento?',
       'Confirmo com a equipe então?',
@@ -507,8 +507,8 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
 export const TRIGGER_CATEGORIES: Record<TriggerCategory, { name: string; icon: string; color: string }> = {
   urgency: { name: 'Urgência', icon: '⚡', color: 'text-destructive' },
   social: { name: 'Prova Social', icon: '👥', color: 'text-info' },
-  emotional: { name: 'Emocional', icon: '❤️', color: 'text-primary' },
-  logic: { name: 'Lógico', icon: '🧠', color: 'text-accent' },
+  emotional: { name: 'Emocional', icon: '❤️', color: 'text-accent' },
+  logic: { name: 'Lógico', icon: '🧠', color: 'text-info' },
   reciprocity: { name: 'Reciprocidade', icon: '🎁', color: 'text-secondary' },
   commitment: { name: 'Compromisso', icon: '🎯', color: 'text-success' },
 };

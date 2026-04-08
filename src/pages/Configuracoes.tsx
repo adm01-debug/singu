@@ -196,7 +196,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-sm">
+              <Card className="border-border/50 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="w-5 h-5 text-primary" />
@@ -217,7 +217,7 @@ const Configuracoes = () => {
                         size="xl"
                         className="border-4 border-primary/20"
                       />
-                      <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-sm">
+                      <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg">
                         <Camera className="w-4 h-4" />
                       </button>
                     </div>
@@ -329,7 +329,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-sm">
+              <Card className="border-border/50 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Bell className="w-5 h-5 text-primary" />
@@ -422,7 +422,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-sm">
+              <Card className="border-border/50 shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />

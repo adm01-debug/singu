@@ -365,7 +365,7 @@ const Analytics = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><Heart className="w-5 h-5 text-primary" />Distribuição de Sentimentos</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2"><Heart className="w-5 h-5 text-accent" />Distribuição de Sentimentos</CardTitle>
                     <CardDescription>Proporção de interações por tipo de sentimento</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -426,7 +426,7 @@ const Analytics = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                      <div className="p-4 rounded-lg bg-success/10 border border-emerald-500/20">
                         <div className="flex items-center gap-2 mb-2">
                           <TrendingUp className="w-4 h-4 text-success" /><span className="font-medium text-success">Positivo</span>
                         </div>

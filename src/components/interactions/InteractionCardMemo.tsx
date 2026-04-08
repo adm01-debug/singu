@@ -137,7 +137,7 @@ export const InteractionCardMemo = memo(function InteractionCardMemo({
       <Card
         className={cn(
           'transition-all duration-200 hover:shadow-md',
-          isHighlighted && 'ring-2 ring-primary shadow-sm',
+          isHighlighted && 'ring-2 ring-primary shadow-lg',
           isCompact ? 'p-3' : ''
         )}
       >

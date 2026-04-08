@@ -84,7 +84,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(function Badge({
             e.stopPropagation();
             onClose?.();
           }}
-          className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-foreground/10 transition-colors"
+          className="ml-0.5 shrink-0 rounded-full p-0.5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           aria-label="Remove"
         >
           <X className="h-3 w-3" />

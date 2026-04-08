@@ -198,7 +198,7 @@ const CelebrationOverlay = ({ config, onComplete }: CelebrationOverlayProps) => 
             className={`absolute inset-0 bg-gradient-to-r ${style.gradient} rounded-3xl blur-xl`}
           />
           
-          <div className={`relative bg-gradient-to-br ${style.gradient} rounded-3xl p-6 shadow-md`}>
+          <div className={`relative bg-gradient-to-br ${style.gradient} rounded-3xl p-6 shadow-2xl`}>
             <motion.div
               animate={{ rotate: [0, 10, -10, 0] }}
               transition={{ duration: 0.5, delay: 0.3 }}

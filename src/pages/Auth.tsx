@@ -151,7 +151,7 @@ const Auth = () => {
     <div className="min-h-screen flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ background: 'var(--gradient-primary)' }}>
-        <div className="absolute inset-0 bg-foreground/5" />
+        <div className="absolute inset-0 bg-black/5" />
         
         {/* Modern geometric decorative elements */}
         <div className="absolute top-16 left-16 w-72 h-72 bg-foreground/8 rounded-3xl blur-3xl rotate-12" />
@@ -276,7 +276,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <Card className="border-border/30 shadow-md shadow-primary/5 backdrop-blur-sm">
+          <Card className="border-border/30 shadow-xl shadow-primary/5 backdrop-blur-sm">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">
                 {mode === 'login' ? 'Entrar' : 'Criar conta'}

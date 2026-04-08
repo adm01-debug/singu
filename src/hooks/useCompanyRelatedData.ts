@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -88,12 +89,12 @@ function useCompanyRelated<T extends { id?: string; company_id: string }>(
         });
         if (error) {
           // Gracefully handle missing tables in external DB (404/406)
-          console.warn(`[useCompanyRelated] Table "${table}" not available:`, error.message);
+          logger.warn(`[useCompanyRelated] Table "${table}" not available:`, error.message);
           return [];
         }
         return data || [];
       } catch (err) {
-        console.warn(`[useCompanyRelated] Failed to fetch "${table}":`, err);
+        logger.warn(`[useCompanyRelated] Failed to fetch "${table}":`, err);
         return [];
       }
     },

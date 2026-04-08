@@ -36,7 +36,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           className={cn(
             "relative overflow-hidden bg-gradient-premium",
             "hover:opacity-90",
-            "text-primary-foreground border-0 shadow-sm shadow-primary/30",
+            "text-primary-foreground border-0 shadow-lg shadow-primary/30",
             "transition-all duration-300",
             processing && "animate-pulse",
             className
@@ -74,7 +74,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
             "bg-gradient-premium bg-[length:200%_100%]",
             "hover:bg-[position:100%_0]",
             "text-primary-foreground border-0",
-            "shadow-sm shadow-primary/40",
+            "shadow-lg shadow-primary/40",
             "backdrop-blur-sm",
             "transition-all duration-500",
             "font-semibold tracking-wide",
@@ -160,7 +160,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
           "bg-gradient-premium bg-[length:200%_100%]",
           "hover:bg-[position:100%_0]",
           "text-primary-foreground border-0",
-          "shadow-md shadow-primary/30",
+          "shadow-xl shadow-primary/30",
           "transition-all duration-500",
           "font-semibold text-base tracking-wide",
           "py-6",
@@ -179,7 +179,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
         {!isDisabled && (
           <>
             <motion.div
-              className="absolute w-1 h-1 bg-white/60 rounded-full"
+              className="absolute w-1 h-1 bg-foreground/40 rounded-full"
               animate={{
                 x: [0, 30, 60],
                 y: [0, -20, 0],
@@ -189,7 +189,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
               style={{ left: '20%', top: '50%' }}
             />
             <motion.div
-              className="absolute w-1 h-1 bg-white/60 rounded-full"
+              className="absolute w-1 h-1 bg-foreground/40 rounded-full"
               animate={{
                 x: [0, -25, -50],
                 y: [0, -15, 0],
@@ -225,7 +225,7 @@ export function LuxButton({ onClick, loading, processing, variant = 'default', c
                 {[0, 1, 2].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-1.5 h-1.5 bg-white rounded-full"
+                    className="w-1.5 h-1.5 bg-foreground rounded-full"
                     animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
                     transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
                   />

@@ -471,7 +471,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             )}
 
             {profile.previous_companies && profile.previous_companies.length > 0 && (
-              <DataCard title="Empresas Anteriores" icon={Building2} iconColor="bg-slate-100 dark:bg-muted/30 text-muted-foreground">
+              <DataCard title="Empresas Anteriores" icon={Building2} iconColor="bg-muted dark:bg-muted/30 text-muted-foreground">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.previous_companies.map((c: string, i: number) => (
                     <Badge key={i} variant="outline" className="text-xs">{c}</Badge>
@@ -655,7 +655,7 @@ export function LuxIntelligencePanel({
       {/* Header with Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-premium text-primary-foreground shadow-sm shadow-primary/30">
+          <div className="p-2 rounded-xl bg-gradient-premium text-primary-foreground shadow-lg shadow-primary/30">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>

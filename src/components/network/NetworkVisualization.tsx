@@ -389,7 +389,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleZoomIn} className="shadow-sm">
+                <Button size="icon" variant="secondary" onClick={handleZoomIn} className="shadow-lg">
                   <ZoomIn className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -400,7 +400,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleZoomOut} className="shadow-sm">
+                <Button size="icon" variant="secondary" onClick={handleZoomOut} className="shadow-lg">
                   <ZoomOut className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -411,7 +411,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" variant="secondary" onClick={handleCenter} className="shadow-sm">
+                <Button size="icon" variant="secondary" onClick={handleCenter} className="shadow-lg">
                   <Maximize2 className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -421,7 +421,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-sm p-3 rounded-lg shadow-sm border">
+        <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border">
           <p className="text-xs font-medium mb-2 text-muted-foreground">Legenda</p>
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 text-xs">
@@ -454,7 +454,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="absolute top-4 right-4 w-72 bg-background/95 backdrop-blur-sm rounded-lg shadow-md border p-4"
+              className="absolute top-4 right-4 w-72 bg-background/95 backdrop-blur-sm rounded-lg shadow-xl border p-4"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">

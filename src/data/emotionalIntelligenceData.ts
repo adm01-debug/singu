@@ -11,7 +11,7 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     namePt: 'Autoconsciência',
     icon: '🪞',
     color: 'text-secondary',
-    bgColor: 'bg-secondary border-secondary',
+    bgColor: 'bg-secondary/10 border-secondary/20',
     description: 'Ability to recognize and understand own emotions, drives, and their effects on others',
     descriptionPt: 'Capacidade de reconhecer e entender as próprias emoções, motivações e seus efeitos nos outros',
     characteristics: {
@@ -42,7 +42,7 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     namePt: 'Autorregulação',
     icon: '⚖️',
     color: 'text-info',
-    bgColor: 'bg-info border-info',
+    bgColor: 'bg-info/10 border-info/20',
     description: 'Ability to control or redirect disruptive impulses and moods, and think before acting',
     descriptionPt: 'Capacidade de controlar ou redirecionar impulsos e humores disruptivos, e pensar antes de agir',
     characteristics: {
@@ -72,8 +72,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Motivation',
     namePt: 'Motivação',
     icon: '🔥',
-    color: 'text-accent',
-    bgColor: 'bg-accent border-accent/30',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10 border-warning/20',
     description: 'A passion to work for reasons that go beyond money or status; pursuing goals with energy and persistence',
     descriptionPt: 'Paixão pelo trabalho por razões além de dinheiro ou status; buscar metas com energia e persistência',
     characteristics: {
@@ -103,8 +103,8 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     name: 'Empathy',
     namePt: 'Empatia',
     icon: '💗',
-    color: 'text-primary',
-    bgColor: 'bg-primary border-primary/30',
+    color: 'text-accent',
+    bgColor: 'bg-accent/10 border-accent/20',
     description: 'Ability to understand the emotional makeup of other people and skill in treating them according to their emotional reactions',
     descriptionPt: 'Capacidade de entender as emoções dos outros e tratá-los de acordo com suas reações emocionais',
     characteristics: {
@@ -135,7 +135,7 @@ export const EQ_PILLAR_INFO: Record<EQPillar, EQPillarInfo> = {
     namePt: 'Habilidades Sociais',
     icon: '🤝',
     color: 'text-success',
-    bgColor: 'bg-success border-success',
+    bgColor: 'bg-success/10 border-success/20',
     description: 'Proficiency in managing relationships and building networks; finding common ground and building rapport',
     descriptionPt: 'Proficiência em gerenciar relacionamentos e construir redes; encontrar pontos em comum e criar rapport',
     characteristics: {
@@ -264,15 +264,15 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Baixo',
     range: [0, 25],
     color: 'text-destructive',
-    bgColor: 'bg-destructive',
+    bgColor: 'bg-destructive/10',
     description: 'Área com significativo potencial de desenvolvimento'
   },
   developing: {
     name: 'Developing',
     namePt: 'Em Desenvolvimento',
     range: [26, 45],
-    color: 'text-accent',
-    bgColor: 'bg-accent',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
     description: 'Mostra consciência básica, com espaço para crescimento'
   },
   moderate: {
@@ -280,7 +280,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Moderado',
     range: [46, 65],
     color: 'text-warning',
-    bgColor: 'bg-warning',
+    bgColor: 'bg-warning/10',
     description: 'Competência adequada para a maioria das situações'
   },
   high: {
@@ -288,7 +288,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Alto',
     range: [66, 85],
     color: 'text-success',
-    bgColor: 'bg-success',
+    bgColor: 'bg-success/10',
     description: 'Demonstra forte capacidade nesta área'
   },
   exceptional: {
@@ -296,7 +296,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Excepcional',
     range: [86, 100],
     color: 'text-secondary',
-    bgColor: 'bg-secondary',
+    bgColor: 'bg-secondary/10',
     description: 'Domínio excepcional, potencial para mentoria'
   }
 };

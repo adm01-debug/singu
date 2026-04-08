@@ -32,7 +32,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Projeta o cliente no futuro já usando a solução com sucesso',
     effectiveness: 9,
     icon: '🔮',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       'Imagine daqui 6 meses, sua equipe usando isso diariamente...',
       'Pense em você apresentando esses resultados pro board...',
@@ -65,7 +65,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Quebra o padrão mental para captar atenção instantânea',
     effectiveness: 8,
     icon: '⚡',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Espera - antes de você dizer não, deixa eu te fazer uma pergunta...',
       'Posso ser brutalmente honesto com você por 30 segundos?',
@@ -98,7 +98,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Histórias dentro de histórias que mantêm atenção e criam tensão',
     effectiveness: 8,
     icon: '🔄',
-    color: 'text-primary bg-primary',
+    color: 'text-primary bg-primary/10',
     examples: [
       'Isso me lembra de um cliente que... mas antes deixa eu te contar sobre...',
       'Sabe o que o João me disse? Mas pra entender, preciso contar sobre...',
@@ -131,7 +131,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Oferece escolhas que levam ao mesmo resultado',
     effectiveness: 9,
     icon: '🎭',
-    color: 'text-primary bg-primary',
+    color: 'text-destructive bg-destructive/10',
     examples: [
       'Você prefere começar segunda ou terça?',
       'Quer receber o contrato por email ou WhatsApp?',
@@ -165,7 +165,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Versão intensificada do FOMO com quantificação de perda',
     effectiveness: 10,
     icon: '📉',
-    color: 'text-destructive bg-destructive',
+    color: 'text-destructive bg-destructive/10',
     examples: [
       'Cada dia sem isso custa R$ 847 - já são R$ 25.000 perdidos',
       'Seus concorrentes já capturaram 34% do mercado que era seu',
@@ -198,7 +198,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Conecta a compra à identidade do cliente',
     effectiveness: 9,
     icon: '🦋',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       'Você é o tipo de líder que aceita o segundo lugar?',
       'Empresas como a sua não esperam - elas lideram',
@@ -231,7 +231,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Cria senso de "nós vs eles" e pertencimento exclusivo',
     effectiveness: 8,
     icon: '🏛️',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Nossos clientes não são qualquer um - são os top 5%',
       'Você vai fazer parte do grupo que mudou o jogo',
@@ -264,7 +264,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Reduz esforço mental para facilitar a decisão',
     effectiveness: 9,
     icon: '🧘',
-    color: 'text-success bg-success',
+    color: 'text-success bg-success/10',
     examples: [
       'É simples: 1 clique e pronto',
       'Zero complicação - a gente cuida de tudo',
@@ -298,7 +298,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Ativa conceitos no subconsciente que influenciam decisões posteriores',
     effectiveness: 9,
     icon: '🧲',
-    color: 'text-accent bg-accent/10',
+    color: 'text-info bg-info/10',
     examples: [
       'Antes de falar de preço, mencione "investimento inteligente"...',
       'Use palavras como "economia", "retorno", "lucro" antes de apresentar valores',
@@ -331,7 +331,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Estabelece ponto de referência alto para fazer seu preço parecer vantajoso',
     effectiveness: 10,
     icon: '⚓',
-    color: 'text-info bg-info',
+    color: 'text-info bg-info/10',
     examples: [
       'Empresas pagam até R$ 50.000/mês por isso. Nosso investimento é R$ 8.000.',
       'O prejuízo de não resolver isso é R$ 200.000/ano. Nossa solução custa R$ 30.000.',
@@ -364,7 +364,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Adiciona uma terceira opção "isca" que torna sua opção preferida mais atraente',
     effectiveness: 8,
     icon: '🎯',
-    color: 'text-accent bg-accent',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Plano A: R$ 500 (básico) | Plano B: R$ 1.500 (premium) | Plano C: R$ 1.400 (quase premium)',
       'Opção 1: só software | Opção 2: software + suporte | Opção 3: só suporte pelo mesmo preço',
@@ -397,7 +397,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Apresenta a mesma informação de forma diferente para influenciar a decisão',
     effectiveness: 9,
     icon: '🖼️',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       '95% de sucesso (positivo) vs 5% de falha (negativo)',
       'Você economiza R$ 500/mês vs Você perde R$ 500/mês sem isso',
@@ -430,7 +430,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Cria lacuna de conhecimento que gera desejo irresistível de saber mais',
     effectiveness: 8,
     icon: '🔮',
-    color: 'text-secondary bg-secondary',
+    color: 'text-secondary bg-secondary/10',
     examples: [
       'Descobrimos algo que muda completamente a forma como você vê...',
       'Existe um erro que 90% das empresas cometem e você provavelmente também...',
@@ -463,7 +463,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Pessoas julgam experiências pelo pico emocional e pelo fim, não pela média',
     effectiveness: 7,
     icon: '🎢',
-    color: 'text-primary bg-primary',
+    color: 'text-accent bg-accent/10',
     examples: [
       'Termine toda reunião com algo positivo e memorável',
       'Crie um momento "wow" no meio da apresentação',
@@ -496,7 +496,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Pessoas valorizam mais o que já possuem. Faça o cliente "experimentar" a posse',
     effectiveness: 8,
     icon: '🎁',
-    color: 'text-success bg-success',
+    color: 'text-success bg-success/10',
     examples: [
       'Use por 30 dias grátis - depois você decide',
       'Configure sua conta agora - é sua enquanto quiser',
@@ -529,7 +529,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Relembra investimentos já feitos para justificar continuar investindo',
     effectiveness: 7,
     icon: '💸',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Você já investiu tempo aprendendo nosso sistema...',
       'Depois de tudo que você construiu até aqui...',
@@ -562,7 +562,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Tendência de seguir o que a maioria está fazendo',
     effectiveness: 8,
     icon: '🚂',
-    color: 'text-info bg-info',
+    color: 'text-info bg-info/10',
     examples: [
       'O mercado inteiro está migrando para essa solução...',
       'Todas as empresas do seu setor já adotaram...',
@@ -595,7 +595,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Transfere percepção positiva de um atributo para outros',
     effectiveness: 7,
     icon: '😇',
-    color: 'text-warning bg-warning',
+    color: 'text-warning bg-warning/10',
     examples: [
       'Trabalhamos com Google, Amazon e Microsoft...',
       'Nosso fundador é ex-McKinsey...',
@@ -628,7 +628,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Apresenta algo extremo primeiro para fazer sua oferta parecer razoável',
     effectiveness: 8,
     icon: '⚖️',
-    color: 'text-muted-foreground bg-slate-100',
+    color: 'text-muted-foreground bg-muted',
     examples: [
       'O projeto completo custaria R$ 100.000. Mas você só precisa do módulo de R$ 15.000.',
       'Implementar internamente levaria 2 anos. Conosco, 3 meses.',
@@ -661,7 +661,7 @@ export const ADVANCED_MENTAL_TRIGGERS: Record<AdvancedTriggerType, AdvancedMenta
     description: 'Cria senso de identidade compartilhada - "somos iguais", "fazemos parte do mesmo grupo"',
     effectiveness: 8,
     icon: '🤝',
-    color: 'text-primary bg-primary',
+    color: 'text-destructive bg-destructive/10',
     examples: [
       'Como empreendedor, você entende que...',
       'Nós, do setor de tecnologia, sabemos que...',

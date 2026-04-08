@@ -224,8 +224,8 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                   transition={{ delay: 0.15 }}
                   className="text-center"
                 >
-                  <h2 className="font-display text-xs font-medium text-white/50 mb-0.5">{title}</h2>
-                  <p className="text-white/25 text-[10px]">{subtitle}</p>
+                  <h2 className="font-display text-xs font-medium text-foreground/50 mb-0.5">{title}</h2>
+                  <p className="text-foreground/25 text-[10px]">{subtitle}</p>
                 </motion.div>
 
                 <motion.div
@@ -269,11 +269,11 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                       exit={{ opacity: 0, y: -10 }}
                       className="w-full"
                     >
-                      <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1">
+                      <div className="bg-foreground/5 border border-foreground/10 rounded-2xl px-5 py-4">
+                        <p className="text-[10px] text-foreground/30 uppercase tracking-widest mb-1">
                           {phase === "listening" ? "Você está dizendo:" : "Você disse:"}
                         </p>
-                        <p className="text-base font-medium text-white/90">
+                        <p className="text-base font-medium text-foreground/90">
                           "{partialTranscript || finalTranscript}"
                           {phase === "listening" && partialTranscript && (
                             <motion.span
@@ -299,14 +299,14 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       className="w-full"
                     >
-                      <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4">
+                      <div className="bg-foreground/5 border border-foreground/10 rounded-2xl px-5 py-4">
                         <div className="flex items-start gap-3">
                           <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
                             <MessageCircle className="h-3.5 w-3.5 text-primary" />
                           </div>
                           <div>
-                            <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1">Assistente</p>
-                            <p className="text-sm font-medium text-white/90">{agentResponse}</p>
+                            <p className="text-[10px] text-foreground/30 uppercase tracking-widest mb-1">Assistente</p>
+                            <p className="text-sm font-medium text-foreground/90">{agentResponse}</p>
                           </div>
                         </div>
                       </div>
@@ -328,7 +328,7 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                         </div>
                         <div>
                           <p className="text-sm font-medium text-destructive">{error}</p>
-                          <p className="text-xs text-white/40 mt-1">Toque no orbe para tentar novamente</p>
+                          <p className="text-xs text-foreground/40 mt-1">Toque no orbe para tentar novamente</p>
                         </div>
                       </div>
                     </motion.div>
@@ -342,7 +342,7 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                     transition={{ delay: 0.25 }}
                     className="space-y-3 text-center w-full"
                   >
-                    <p className="text-[10px] text-white/25 uppercase tracking-widest font-medium">
+                    <p className="text-[10px] text-foreground/25 uppercase tracking-widest font-medium">
                       Experimente dizer
                     </p>
                     <div className="flex flex-wrap justify-center gap-2">
@@ -350,7 +350,7 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                         <button
                           key={cmd}
                           onClick={() => onCommandSelect?.(cmd)}
-                          className="group px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-full text-xs text-white/35 hover:text-white/70 border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer hover:shadow-[0_0_12px_rgba(255,255,255,0.05)]"
+                          className="group px-3 py-1.5 bg-foreground/[0.04] hover:bg-foreground/[0.08] rounded-full text-xs text-foreground/35 hover:text-foreground/70 border border-foreground/[0.06] hover:border-foreground/[0.12] transition-all duration-200 cursor-pointer "
                         >
                           <span className="group-hover:tracking-wide transition-all duration-200">"{cmd}"</span>
                         </button>
@@ -364,13 +364,13 @@ export const VoiceSearchOverlay = React.forwardRef<HTMLDivElement, VoiceSearchOv
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="text-[10px] text-white/20"
+                    className="text-[10px] text-foreground/20"
                   >
-                    <kbd className="px-1 py-0.5 bg-white/5 rounded text-[9px] font-mono border border-white/10">ESC</kbd> para fechar
+                    <kbd className="px-1 py-0.5 bg-foreground/5 rounded text-[9px] font-mono border border-foreground/10">ESC</kbd> para fechar
                   </motion.p>
                   <button
                     onClick={onClose}
-                    className="flex items-center justify-center w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white/80 transition-colors"
+                    className="flex items-center justify-center w-7 h-7 rounded-full bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 text-foreground/40 hover:text-foreground/80 transition-colors"
                     aria-label="Fechar assistente de voz"
                   >
                     <X className="h-3.5 w-3.5" />

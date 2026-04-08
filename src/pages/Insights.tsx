@@ -75,10 +75,10 @@ const categoryColors: Record<string, string> = {
   personality: 'bg-secondary/10 text-secondary border-secondary/20',
   preference: 'bg-info/10 text-info border-info/20',
   behavior: 'bg-success/10 text-success border-success/20',
-  opportunity: 'bg-warning/10 text-warning border-warning/20',
+  opportunity: 'bg-warning/10 text-warning border-amber-500/20',
   risk: 'bg-destructive/10 text-destructive border-destructive/20',
-  relationship: 'bg-primary/10 text-primary border-primary/20',
-  sentiment: 'bg-accent/10 text-accent border-accent/20',
+  relationship: 'bg-accent/10 text-accent border-accent/20',
+  sentiment: 'bg-info/10 text-info border-info/20',
   action: 'bg-primary/10 text-primary border-primary/20',
 };
 
@@ -464,7 +464,7 @@ const Insights = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-sm group">
+                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-lg group">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-4">
                           <div className={cn(

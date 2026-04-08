@@ -107,10 +107,10 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
         exit={{ opacity: 0, y: 100 }}
         className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50"
       >
-        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0 shadow-sm">
+        <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-foreground/15 rounded-lg">
+              <div className="p-2 bg-foreground/20 rounded-lg">
                 <Smartphone className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -122,7 +122,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="bg-background text-primary hover:bg-background/90"
+                    className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                     onClick={handleInstall}
                   >
                     <Download className="h-4 w-4 mr-1" />
@@ -131,7 +131,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="hover:bg-foreground/15"
+                    className="hover:bg-foreground/20"
                     onClick={handleDismiss}
                   >
                     Agora não
@@ -140,7 +140,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
               </div>
               <button
                 onClick={handleDismiss}
-                className="p-1 hover:bg-foreground/15 rounded-full transition-colors"
+                className="p-1 hover:bg-foreground/20 rounded-full transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -256,7 +256,7 @@ export function UpdateAvailable({ onUpdate }: { onUpdate: () => void }) {
           variant="secondary"
           onClick={handleUpdateClick}
           disabled={updating}
-          className="bg-background text-primary hover:bg-background/90"
+          className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
         >
           {updating ? (
             <>
@@ -299,7 +299,7 @@ export function IOSInstallInstructions() {
       exit={{ opacity: 0, y: 100 }}
       className="fixed bottom-4 left-4 right-4 z-50"
     >
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0 shadow-lg">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -364,7 +364,7 @@ export function NotificationPermission() {
       exit={{ opacity: 0, scale: 0.9 }}
       className="fixed bottom-4 right-4 z-50 w-80"
     >
-      <Card className="border-0 shadow-sm">
+      <Card className="border-0 shadow-lg">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">

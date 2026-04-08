@@ -150,9 +150,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(0, 84%, 60%)',
       secondary: 'hsl(0, 60%, 50%)',
-      bg: 'bg-destructive dark:bg-destructive/30',
-      text: 'text-destructive dark:text-destructive',
-      border: 'border-destructive dark:border-destructive'
+      bg: 'bg-destructive/5 dark:bg-destructive/10',
+      text: 'text-destructive',
+      border: 'border-destructive/20 dark:border-red-800'
     },
     icon: '⚡'
   },
@@ -242,9 +242,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(48, 96%, 53%)',
       secondary: 'hsl(48, 80%, 45%)',
-      bg: 'bg-warning dark:bg-warning/30',
-      text: 'text-warning dark:text-warning',
-      border: 'border-warning dark:border-warning'
+      bg: 'bg-warning/5 dark:bg-warning/10',
+      text: 'text-warning',
+      border: 'border-warning/20 dark:border-yellow-800'
     },
     icon: '🌟'
   },
@@ -334,9 +334,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(142, 71%, 45%)',
       secondary: 'hsl(142, 60%, 40%)',
-      bg: 'bg-success dark:bg-success/30',
-      text: 'text-success dark:text-success',
-      border: 'border-success dark:border-success'
+      bg: 'bg-success/5 dark:bg-success/10',
+      text: 'text-success',
+      border: 'border-success/20 dark:border-green-800'
     },
     icon: '🛡️'
   },
@@ -426,9 +426,9 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(217, 91%, 60%)',
       secondary: 'hsl(217, 80%, 50%)',
-      bg: 'bg-info dark:bg-info/30',
-      text: 'text-info dark:text-info',
-      border: 'border-info dark:border-info'
+      bg: 'bg-info/5 dark:bg-info/10',
+      text: 'text-info',
+      border: 'border-info/20 dark:border-blue-800'
     },
     icon: '📊'
   }

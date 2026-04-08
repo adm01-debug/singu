@@ -107,7 +107,7 @@ export function TourPreferencesPanel() {
       className="space-y-6"
     >
       {/* Onboarding Tour Section */}
-      <Card className="border-border/50 shadow-sm">
+      <Card className="border-border/50 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-primary" />
@@ -166,7 +166,7 @@ export function TourPreferencesPanel() {
       </Card>
 
       {/* Push Notifications Section */}
-      <Card className="border-border/50 shadow-sm">
+      <Card className="border-border/50 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="w-5 h-5 text-primary" />

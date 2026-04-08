@@ -137,25 +137,25 @@ const RelatorioContato = () => {
           </h2>
           
           <div className="grid grid-cols-4 gap-4 mb-4">
-            <div className="text-center p-4 bg-destructive rounded-lg">
+            <div className="text-center p-4 bg-destructive/5 rounded-lg">
               <div className="text-2xl font-bold text-destructive">
                 {latestDisc?.dominance_score || behavior.discProfile === 'D' ? '85' : '45'}%
               </div>
               <div className="text-sm text-muted-foreground">Dominância (D)</div>
             </div>
-            <div className="text-center p-4 bg-warning rounded-lg">
+            <div className="text-center p-4 bg-warning/5 rounded-lg">
               <div className="text-2xl font-bold text-warning">
                 {latestDisc?.influence_score || '65'}%
               </div>
               <div className="text-sm text-muted-foreground">Influência (I)</div>
             </div>
-            <div className="text-center p-4 bg-success rounded-lg">
+            <div className="text-center p-4 bg-success/5 rounded-lg">
               <div className="text-2xl font-bold text-success">
                 {latestDisc?.steadiness_score || '75'}%
               </div>
               <div className="text-sm text-muted-foreground">Estabilidade (S)</div>
             </div>
-            <div className="text-center p-4 bg-info rounded-lg">
+            <div className="text-center p-4 bg-info/5 rounded-lg">
               <div className="text-2xl font-bold text-info">
                 {latestDisc?.conscientiousness_score || '30'}%
               </div>
@@ -268,7 +268,7 @@ const RelatorioContato = () => {
             </tbody>
           </table>
 
-          <div className="bg-destructive p-3 rounded-lg">
+          <div className="bg-destructive/5 p-3 rounded-lg">
             <p className="text-destructive"><strong>⚠️ EVITAR:</strong> Urgência agressiva, Escassez forçada (gera desconfiança no perfil S)</p>
           </div>
         </section>
@@ -295,18 +295,18 @@ const RelatorioContato = () => {
           </h2>
           
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-secondary rounded-lg">
+            <div className="text-center p-4 bg-secondary/5 rounded-lg">
               <div className="text-2xl font-bold text-secondary">45%</div>
               <div className="text-sm text-muted-foreground">Visual</div>
               <div className="text-xs text-muted-foreground mt-1">Precisa ver imagens</div>
             </div>
-            <div className="text-center p-4 bg-accent rounded-lg">
-              <div className="text-2xl font-bold text-accent">35%</div>
+            <div className="text-center p-4 bg-warning/5 rounded-lg">
+              <div className="text-2xl font-bold text-warning">35%</div>
               <div className="text-sm text-muted-foreground">Cinestésico</div>
               <div className="text-xs text-muted-foreground mt-1">Quer sentir segurança</div>
             </div>
-            <div className="text-center p-4 bg-accent/5 rounded-lg">
-              <div className="text-2xl font-bold text-accent">20%</div>
+            <div className="text-center p-4 bg-success/5 rounded-lg">
+              <div className="text-2xl font-bold text-success">20%</div>
               <div className="text-sm text-muted-foreground">Auditivo</div>
               <div className="text-xs text-muted-foreground mt-1">Menos foco em texto longo</div>
             </div>
@@ -387,25 +387,25 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
           <div className="grid grid-cols-1 gap-4">
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 1: Follow-up Inicial</h4>
-              <p className="text-sm text-foreground bg-success p-2 rounded">
+              <p className="text-sm text-foreground bg-success/5 p-2 rounded">
                 "Oi Beatriz! Tudo bem? Lembrei de você - chegaram umas opções novas que são perfeitas pro que você precisa. Bem diferentes do ano passado! Posso te mandar umas fotos?"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 2: Envio de Opções</h4>
-              <p className="text-sm text-foreground bg-success p-2 rounded">
+              <p className="text-sm text-foreground bg-success/5 p-2 rounded">
                 "Olha essas opções que separei! 👇 [IMAGEM] Essa linha é novidade 2026, nenhum cliente usou ainda. Perfeita pra causar aquele impacto diferente! O que achou? 😊"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 3: Pedido de Quantidade</h4>
-              <p className="text-sm text-foreground bg-success p-2 rounded">
+              <p className="text-sm text-foreground bg-success/5 p-2 rounded">
                 "Amei que você gostou! 🎉 Me conta: aproximadamente quantas unidades vocês precisam? Assim já monto a proposta certinha pra você apresentar pro diretor!"
               </p>
             </div>
             <div className="border p-3 rounded-lg">
               <h4 className="font-bold text-sm text-muted-foreground mb-1">Template 4: Follow-up Pós-Proposta</h4>
-              <p className="text-sm text-foreground bg-success p-2 rounded">
+              <p className="text-sm text-foreground bg-success/5 p-2 rounded">
                 "Oi Beatriz! 😊 Conseguiu dar uma olhadinha na proposta? Se precisar de algum ajuste ou quiser que eu explique algo pro diretor, estou à disposição!"
               </p>
             </div>
@@ -419,7 +419,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
           </h2>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-success p-4 rounded-lg">
+            <div className="bg-success/5 p-4 rounded-lg">
               <h4 className="font-bold text-success mb-2">✅ FAZER</h4>
               <ul className="text-sm space-y-1">
                 <li>• Horário: 10h-11h ou 14h-16h</li>
@@ -428,7 +428,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
                 <li>• Enviar imagens sempre</li>
               </ul>
             </div>
-            <div className="bg-destructive p-4 rounded-lg">
+            <div className="bg-destructive/5 p-4 rounded-lg">
               <h4 className="font-bold text-destructive mb-2">❌ EVITAR</h4>
               <ul className="text-sm space-y-1">
                 <li>• Mensagens após 18h</li>

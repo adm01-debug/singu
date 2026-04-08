@@ -69,7 +69,7 @@ const VAK_DESCRIPTIONS: Record<VAKType, { name: string; icon: typeof Eye; color:
   V: { name: 'Visual', icon: Eye, color: 'bg-info text-info' },
   A: { name: 'Auditivo', icon: Ear, color: 'bg-secondary text-secondary' },
   K: { name: 'Cinestésico', icon: Hand, color: 'bg-accent text-accent' },
-  D: { name: 'Digital', icon: Brain, color: 'bg-slate-100 text-muted-foreground' },
+  D: { name: 'Digital', icon: Brain, color: 'bg-muted text-muted-foreground' },
 };
 
 function TemplatePreviewDialog({

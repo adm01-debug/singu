@@ -39,7 +39,7 @@ export const VAK_LABELS: Record<VAKType, {
     fullName: 'Visual',
     description: 'Pensa em imagens, fala rápido, usa palavras visuais', 
     color: 'text-secondary',
-    bgColor: 'bg-secondary border-secondary',
+    bgColor: 'bg-secondary/10 border-secondary/20',
     icon: '👁️'
   },
   A: { 
@@ -47,7 +47,7 @@ export const VAK_LABELS: Record<VAKType, {
     fullName: 'Auditivo',
     description: 'Pensa em sons, ritmo equilibrado, valoriza tom de voz', 
     color: 'text-info',
-    bgColor: 'bg-info border-info',
+    bgColor: 'bg-info/10 border-info/20',
     icon: '👂'
   },
   K: { 
@@ -55,7 +55,7 @@ export const VAK_LABELS: Record<VAKType, {
     fullName: 'Cinestésico',
     description: 'Pensa em sensações, fala devagar, valoriza conexão', 
     color: 'text-success',
-    bgColor: 'bg-success border-success',
+    bgColor: 'bg-success/10 border-success/20',
     icon: '✋'
   },
   D: { 
@@ -63,7 +63,7 @@ export const VAK_LABELS: Record<VAKType, {
     fullName: 'Auditivo Digital',
     description: 'Pensa em lógica e dados, analítico, valoriza fatos', 
     color: 'text-muted-foreground',
-    bgColor: 'bg-slate-100 border-slate-200',
+    bgColor: 'bg-muted border-border',
     icon: '🧠'
   },
 };

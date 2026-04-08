@@ -76,7 +76,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Direto, lógico e focado em eficiência',
     decisionStyle: 'Analítico e estratégico, baseado em visão de longo prazo',
     color: 'text-primary',
-    bgColor: 'bg-primary',
+    bgColor: 'bg-primary/10',
     icon: '🏛️',
     salesTips: [
       'Apresente visão estratégica de longo prazo',
@@ -96,8 +96,8 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     weaknesses: ['Distraído', 'Insensível às vezes', 'Procrastinador'],
     communicationStyle: 'Teórico, preciso e focado em ideias',
     decisionStyle: 'Lógico puro, busca a verdade objetiva',
-    color: 'text-accent',
-    bgColor: 'bg-accent/10',
+    color: 'text-info',
+    bgColor: 'bg-info/10',
     icon: '🔬',
     salesTips: [
       'Permita explorar tecnicamente o produto',
@@ -118,7 +118,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Assertivo, direto e focado em resultados',
     decisionStyle: 'Rápido e decisivo, orientado a objetivos',
     color: 'text-secondary',
-    bgColor: 'bg-secondary',
+    bgColor: 'bg-secondary/10',
     icon: '👑',
     salesTips: [
       'Seja direto e focado em resultados',
@@ -139,7 +139,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Entusiasmado, debatedor e cheio de ideias',
     decisionStyle: 'Explora todas as possibilidades, adora desafiar',
     color: 'text-warning',
-    bgColor: 'bg-warning',
+    bgColor: 'bg-warning/10',
     icon: '💡',
     salesTips: [
       'Esteja preparado para debates intelectuais',
@@ -159,8 +159,8 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     weaknesses: ['Perfeccionista', 'Sensível demais', 'Reservado'],
     communicationStyle: 'Empático, profundo e focado em significado',
     decisionStyle: 'Guiado por valores e intuição sobre as pessoas',
-    color: 'text-accent',
-    bgColor: 'bg-accent/10',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
     icon: '🌟',
     salesTips: [
       'Conecte-se em nível pessoal e autêntico',
@@ -180,8 +180,8 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     weaknesses: ['Idealista demais', 'Impraticável', 'Vulnerável'],
     communicationStyle: 'Gentil, pessoal e focado em valores',
     decisionStyle: 'Baseado em valores pessoais profundos',
-    color: 'text-primary',
-    bgColor: 'bg-primary',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
     icon: '🕊️',
     salesTips: [
       'Seja autêntico e evite táticas de pressão',
@@ -202,7 +202,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Inspirador, caloroso e focado nas pessoas',
     decisionStyle: 'Considera impacto nas pessoas e harmonia',
     color: 'text-success',
-    bgColor: 'bg-success',
+    bgColor: 'bg-success/10',
     icon: '🌈',
     salesTips: [
       'Mostre impacto positivo na equipe/empresa',
@@ -223,7 +223,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Entusiasmado, criativo e cheio de possibilidades',
     decisionStyle: 'Guiado por valores e possibilidades empolgantes',
     color: 'text-warning',
-    bgColor: 'bg-warning',
+    bgColor: 'bg-warning/10',
     icon: '🎭',
     salesTips: [
       'Seja entusiasmado e criativo',
@@ -244,7 +244,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Direto, factual e orientado a detalhes',
     decisionStyle: 'Metódico, baseado em experiência e fatos',
     color: 'text-muted-foreground',
-    bgColor: 'bg-slate-100',
+    bgColor: 'bg-muted',
     icon: '📊',
     salesTips: [
       'Forneça dados detalhados e documentação',
@@ -286,7 +286,7 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     communicationStyle: 'Direto, assertivo e focado em resultados',
     decisionStyle: 'Lógico, rápido e baseado em regras claras',
     color: 'text-destructive',
-    bgColor: 'bg-destructive',
+    bgColor: 'bg-destructive/10',
     icon: '📈',
     salesTips: [
       'Seja organizado e profissional',
@@ -306,8 +306,8 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     weaknesses: ['Preocupado com status', 'Inflexível', 'Vulnerável a críticas'],
     communicationStyle: 'Caloroso, sociável e focado em harmonia',
     decisionStyle: 'Considera tradição e bem-estar do grupo',
-    color: 'text-primary',
-    bgColor: 'bg-primary',
+    color: 'text-accent',
+    bgColor: 'bg-accent/10',
     icon: '🤗',
     salesTips: [
       'Construa relacionamento pessoal primeiro',
@@ -369,8 +369,8 @@ export const MBTI_TYPES: Record<MBTIType, MBTITypeInfo> = {
     weaknesses: ['Impaciente', 'Busca risco', 'Insensível'],
     communicationStyle: 'Direto, energético e focado em ação',
     decisionStyle: 'Rápido e pragmático, baseado no momento',
-    color: 'text-accent',
-    bgColor: 'bg-accent',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
     icon: '⚡',
     salesTips: [
       'Seja dinâmico e energético',

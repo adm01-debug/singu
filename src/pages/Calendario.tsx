@@ -260,13 +260,13 @@ const Calendario = () => {
             </CardContent>
           </Card>
           
-          <Card className="border-accent/30 bg-accent/5">
+          <Card className="border-warning/30 bg-warning/5">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-accent/10 text-accent">
+              <div className="p-3 rounded-xl bg-warning/10 text-warning">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <MorphingNumber value={stats.today} className="text-2xl font-bold text-accent" />
+                <MorphingNumber value={stats.today} className="text-2xl font-bold text-warning" />
                 <p className="text-sm text-muted-foreground">Hoje</p>
               </div>
             </CardContent>
@@ -293,7 +293,7 @@ const Calendario = () => {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <Card className="border-border/50 shadow-sm">
+            <Card className="border-border/50 shadow-lg">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl capitalize">
@@ -411,7 +411,7 @@ const Calendario = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <Card className="border-border/50 shadow-sm h-full">
+            <Card className="border-border/50 shadow-lg h-full">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" />
