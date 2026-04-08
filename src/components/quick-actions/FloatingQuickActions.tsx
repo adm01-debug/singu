@@ -161,13 +161,13 @@ export function FloatingQuickActions({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: (actions.length - 1 - index) * 0.05 + 0.1 }}
-                  className="text-sm font-medium text-foreground bg-card px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap"
+                  className="text-sm font-medium text-foreground bg-card px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap"
                 >
                   {action.label}
                 </motion.span>
                 <Button
                   size="icon"
-                  className={cn('h-12 w-12 rounded-full shadow-lg text-primary-foreground', action.color)}
+                  className={cn('h-12 w-12 rounded-full shadow-sm text-primary-foreground', action.color)}
                   onClick={action.action}
                   aria-label={action.label}
                 >
@@ -189,7 +189,7 @@ export function FloatingQuickActions({
           onClick={toggleMenu}
           aria-label={isOpen ? 'Fechar ações rápidas' : 'Abrir ações rápidas'}
           className={cn(
-            'h-14 w-14 rounded-full shadow-lg transition-all',
+            'h-14 w-14 rounded-full shadow-sm transition-all',
             isOpen
               ? 'bg-destructive hover:bg-destructive/90'
               : 'bg-primary hover:bg-primary/90'
@@ -212,7 +212,7 @@ export function MiniFloatingAction({ onClick }: { onClick: () => void }) {
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
-      className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center md:hidden"
+      className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-sm flex items-center justify-center md:hidden"
     >
       <Plus className="w-6 h-6" />
     </motion.button>

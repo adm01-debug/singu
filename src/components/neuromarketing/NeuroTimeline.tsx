@@ -253,7 +253,7 @@ const NeuroTimeline = ({
                     className={cn(
                       "relative z-10 w-12 h-12 rounded-full flex items-center justify-center border-2 cursor-pointer transition-all",
                       BRAIN_SYSTEM_INFO[point.dominantBrain].bgColor,
-                      "hover:shadow-lg"
+                      "hover:shadow-sm"
                     )}
                   >
                     <span className="text-xl">{BRAIN_SYSTEM_INFO[point.dominantBrain].icon}</span>

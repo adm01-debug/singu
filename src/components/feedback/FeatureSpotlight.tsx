@@ -79,7 +79,7 @@ export function FeatureSpotlight({
             <div className={cn('absolute w-0 h-0 border-[6px]', arrowClasses[position])} />
             
             {/* Card */}
-            <div className="bg-primary text-primary-foreground rounded-lg p-3 shadow-lg">
+            <div className="bg-primary text-primary-foreground rounded-lg p-3 shadow-sm">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
