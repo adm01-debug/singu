@@ -110,7 +110,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
         <Card className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-0 shadow-lg">
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-white/20 rounded-lg">
+              <div className="p-2 bg-foreground/20 rounded-lg">
                 <Smartphone className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
@@ -122,7 +122,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="bg-white text-primary hover:bg-white/90"
+                    className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
                     onClick={handleInstall}
                   >
                     <Download className="h-4 w-4 mr-1" />
@@ -131,7 +131,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="hover:bg-white/20"
+                    className="hover:bg-foreground/20"
                     onClick={handleDismiss}
                   >
                     Agora não
@@ -140,7 +140,7 @@ export const InstallPrompt = React.forwardRef<HTMLDivElement>(function InstallPr
               </div>
               <button
                 onClick={handleDismiss}
-                className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                className="p-1 hover:bg-foreground/20 rounded-full transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -256,7 +256,7 @@ export function UpdateAvailable({ onUpdate }: { onUpdate: () => void }) {
           variant="secondary"
           onClick={handleUpdateClick}
           disabled={updating}
-          className="bg-white text-primary hover:bg-white/90"
+          className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
         >
           {updating ? (
             <>
@@ -414,7 +414,7 @@ export function AppSplashScreen({ progress = 0 }: { progress?: number }) {
         transition={{ type: "spring", duration: 0.5 }}
         className="flex flex-col items-center"
       >
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+        <div className="w-20 h-20 bg-card rounded-2xl flex items-center justify-center mb-6 shadow-sm">
           <span className="text-3xl font-bold text-primary">R</span>
         </div>
         <h1 className="text-2xl font-bold text-primary-foreground mb-2">SINGU</h1>

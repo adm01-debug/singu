@@ -150,8 +150,8 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(0, 84%, 60%)',
       secondary: 'hsl(0, 60%, 50%)',
-      bg: 'bg-red-50 dark:bg-red-950/30',
-      text: 'text-red-700 dark:text-red-300',
+      bg: 'bg-destructive/5 dark:bg-destructive/10',
+      text: 'text-destructive',
       border: 'border-red-200 dark:border-red-800'
     },
     icon: '⚡'
@@ -242,8 +242,8 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(48, 96%, 53%)',
       secondary: 'hsl(48, 80%, 45%)',
-      bg: 'bg-yellow-50 dark:bg-yellow-950/30',
-      text: 'text-yellow-700 dark:text-yellow-300',
+      bg: 'bg-warning/5 dark:bg-warning/10',
+      text: 'text-warning',
       border: 'border-yellow-200 dark:border-yellow-800'
     },
     icon: '🌟'
@@ -334,8 +334,8 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(142, 71%, 45%)',
       secondary: 'hsl(142, 60%, 40%)',
-      bg: 'bg-green-50 dark:bg-green-950/30',
-      text: 'text-green-700 dark:text-green-300',
+      bg: 'bg-success/5 dark:bg-success/10',
+      text: 'text-success',
       border: 'border-green-200 dark:border-green-800'
     },
     icon: '🛡️'
@@ -426,8 +426,8 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
     color: {
       primary: 'hsl(217, 91%, 60%)',
       secondary: 'hsl(217, 80%, 50%)',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
-      text: 'text-blue-700 dark:text-blue-300',
+      bg: 'bg-info/5 dark:bg-info/10',
+      text: 'text-info',
       border: 'border-blue-200 dark:border-blue-800'
     },
     icon: '📊'

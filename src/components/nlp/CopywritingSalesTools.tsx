@@ -605,7 +605,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
                         }}
                       >
                         {preview.channel === 'whatsapp' ? (
-                          <div className="bg-white rounded-lg p-3 shadow-sm max-w-[250px] ml-auto">
+                          <div className="bg-card rounded-lg p-3 max-w-[250px] ml-auto">
                             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                               {preview.formattedText.substring(0, 200)}
                               {preview.formattedText.length > 200 && '...'}

@@ -93,7 +93,7 @@ export function PriorityCard({ label, count, total, color }: {
       <div className="text-sm font-medium">{label}</div>
       <div className="text-2xl font-bold mt-1">{count}</div>
       <div className="mt-2">
-        <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+        <div className="h-2 bg-foreground/20 rounded-full overflow-hidden">
           <div className={`h-full ${colorClasses[color].bar} transition-all`} style={{ width: `${percentage}%` }} />
         </div>
         <div className="text-xs text-muted-foreground mt-1">{percentage}%</div>
@@ -347,7 +347,7 @@ export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
           <CardContent>
             <div className="space-y-3">
               {actionsByPriority.urgent.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-background rounded-lg">
+                <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg">
                   <div className={`p-2 rounded-lg ${RFM_SEGMENTS[item.segment as RFMSegment].bgColor}`}>{SEGMENT_ICONS[item.segment as RFMSegment]}</div>
                   <div className="flex-1"><div className="font-medium">{item.actions[0]?.action}</div><div className="text-sm text-muted-foreground">{item.actions[0]?.description}</div></div>
                   <Link to={`/contatos/${item.contactId}`}><Button size="sm">Ver Contato</Button></Link>
