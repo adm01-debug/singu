@@ -6,7 +6,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -23,7 +22,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
-import { getContactBehavior, getDISCProfile } from '@/lib/contact-utils';
 import { logger } from "@/lib/logger";
 
 interface ProfileMetrics {

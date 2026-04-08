@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Heart, AlertTriangle, TrendingUp, TrendingDown, Minus, Activity, Clock, MessageSquare, Smile, Users, Target } from 'lucide-react';
+import { Heart, AlertTriangle, TrendingUp, TrendingDown, Minus, Activity, Clock, MessageSquare, Smile, Target } from 'lucide-react';
 import { useClientHealth } from '@/hooks/useClientHealth';
 import { Contact, Interaction } from '@/types';
 

@@ -41,7 +41,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { MENTAL_TRIGGERS, TriggerType, TRIGGER_CATEGORIES, TriggerCategory } from '@/types/triggers';
+import { MENTAL_TRIGGERS, TriggerType, TRIGGER_CATEGORIES } from '@/types/triggers';
 import { TriggerResult } from '@/hooks/useTriggerHistory';
 import { logger } from "@/lib/logger";
 

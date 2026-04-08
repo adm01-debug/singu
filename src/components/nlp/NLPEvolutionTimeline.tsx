@@ -23,10 +23,9 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { VAK_LABELS, VAKType } from '@/types/vak';
-import { METAPROGRAM_LABELS } from '@/types/metaprograms';
 import { EMOTIONAL_STATE_INFO } from '@/data/nlpAdvancedData';
 import { EmotionalState } from '@/types/nlp-advanced';
-import { format, subDays, subMonths } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logger } from "@/lib/logger";
 

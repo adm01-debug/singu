@@ -3,7 +3,7 @@
 // Analyzes contacts and interactions through neuroscience lens
 // ==============================================
 
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { 
   BrainSystem, 
   PrimalStimulus, 
@@ -23,7 +23,6 @@ import {
   PAIN_KEYWORDS,
   GAIN_KEYWORDS
 } from '@/data/neuromarketingData';
-import type { Contact } from '@/types';
 
 type DISCProfile = 'D' | 'I' | 'S' | 'C';
 

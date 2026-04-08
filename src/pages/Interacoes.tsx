@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
@@ -48,7 +48,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
 import { InteractionForm } from '@/components/forms/InteractionForm';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { useInteractions, type Interaction } from '@/hooks/useInteractions';

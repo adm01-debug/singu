@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Contact, DISCProfile, DISC_LABELS } from '@/types';
 import { VAKType, VAK_LABELS, VAK_COMMUNICATION_TIPS } from '@/types/vak';
-import { METAPROGRAM_LABELS, MetaprogramProfile } from '@/types/metaprograms';
+import { METAPROGRAM_LABELS } from '@/types/metaprograms';
 import { SalesStage } from '@/types/nlp-advanced';
 import { POWER_WORDS, SALES_STAGE_INFO } from '@/data/nlpAdvancedData';
 import { getDominantVAK, getDISCProfile, getMetaprogramProfile, getContactBehavior } from '@/lib/contact-utils';

@@ -24,7 +24,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES, getCompatibility } from '@/data/discAdvancedData';
-import { getContactBehavior, getDISCProfile } from '@/lib/contact-utils';
 import { logger } from "@/lib/logger";
 
 interface CompatibilityAlert {

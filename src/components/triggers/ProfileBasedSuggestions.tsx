@@ -22,20 +22,18 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { VAKType, VAKProfile } from '@/types/vak';
 import { MetaprogramProfile, METAPROGRAM_LABELS } from '@/types/metaprograms';
-import { VAK_ADAPTED_TEMPLATES, VAKAdaptedTemplate } from '@/data/vakTemplates';
-import { METAPROGRAM_TEMPLATES, MetaprogramTemplate, getAdaptedMessage, combineTemplateMessage } from '@/data/metaprogramTemplates';
+import { VAK_ADAPTED_TEMPLATES } from '@/data/vakTemplates';
+import { METAPROGRAM_TEMPLATES, getAdaptedMessage } from '@/data/metaprogramTemplates';
 import { toast } from 'sonner';
 
 interface ProfileBasedSuggestionsProps {

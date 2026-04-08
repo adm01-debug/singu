@@ -26,7 +26,7 @@ import { DISCBadge } from '@/components/ui/disc-badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useDISCAnalysis } from '@/hooks/useDISCAnalysis';
-import { DISC_PROFILES, DISC_BLEND_PROFILES, getProfileInfo } from '@/data/discAdvancedData';
+import { DISC_PROFILES } from '@/data/discAdvancedData';
 import { DISCProfile } from '@/types';
 import { getContactBehavior } from '@/lib/contact-utils';
 import { cn } from '@/lib/utils';

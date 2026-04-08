@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Skeleton, SkeletonText, SkeletonAvatar } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { SkeletonPageContainer, SkeletonPageHeader, SkeletonStatsGrid } from './SkeletonPrimitives';
-import { ContactCardSkeleton, CompanyCardSkeleton, InteractionCardSkeleton } from './EntitySkeletons';
+import { ContactCardSkeleton } from './EntitySkeletons';
 
 // Contacts Page Skeleton
 export const ContactsPageSkeleton = () => (

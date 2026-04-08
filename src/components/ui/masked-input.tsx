@@ -1,6 +1,5 @@
-import { forwardRef, useState, useCallback, ChangeEvent, InputHTMLAttributes } from 'react';
+import { forwardRef, useCallback, ChangeEvent, InputHTMLAttributes } from 'react';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 
 // ============================================
 // PHONE MASK

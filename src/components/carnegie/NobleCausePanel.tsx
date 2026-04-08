@@ -20,7 +20,6 @@ import {
   ChevronUp,
   Sparkles
 } from 'lucide-react';
-import { NobleCause } from '@/types/carnegie';
 import { useCarnegieAnalysis } from '@/hooks/useCarnegieAnalysis';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';

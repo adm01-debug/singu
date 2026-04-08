@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 
 interface QuickAction {
   id: string;

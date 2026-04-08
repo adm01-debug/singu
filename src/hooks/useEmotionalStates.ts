@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { EmotionalAnalysis, EmotionalState, EmotionalAnchor } from '@/types/nlp-advanced';
 import { EMOTIONAL_STATE_KEYWORDS, EMOTIONAL_STATE_INFO } from '@/data/nlpAdvancedData';
 

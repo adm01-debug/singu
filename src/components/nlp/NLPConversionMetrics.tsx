@@ -13,7 +13,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, RadarChart,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Target, Award, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';

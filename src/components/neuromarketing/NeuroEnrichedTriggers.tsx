@@ -6,7 +6,6 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Brain,
@@ -16,7 +15,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
-import { MENTAL_TRIGGERS, TriggerType } from '@/types/triggers';
+import { MENTAL_TRIGGERS } from '@/types/triggers';
 import { BrainSystem, Neurochemical } from '@/types/neuromarketing';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 

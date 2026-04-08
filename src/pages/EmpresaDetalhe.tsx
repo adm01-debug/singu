@@ -6,7 +6,6 @@ import { toTitleCase } from '@/lib/formatters';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
 import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
-import type { CompanyPhone, CompanyEmail, CompanyAddress, CompanySocialMedia } from '@/hooks/useCompanyRelatedData';
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,

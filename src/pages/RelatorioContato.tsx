@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { queryExternalData } from "@/lib/externalData";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer } from "lucide-react";
 import { BackButton } from "@/components/navigation/BackButton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";

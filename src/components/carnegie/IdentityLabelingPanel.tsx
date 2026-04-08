@@ -19,7 +19,6 @@ import {
   Eye,
   Brain
 } from 'lucide-react';
-import { IdentityLabel } from '@/types/carnegie';
 import { useCarnegieAnalysis } from '@/hooks/useCarnegieAnalysis';
 import { cn } from '@/lib/utils';
 import { Contact } from '@/types';

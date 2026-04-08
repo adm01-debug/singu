@@ -3,8 +3,8 @@
 // Based on NLP, Behavioral Science & Neuroscience Research
 // ==============================================
 
-import { TriggerType, TriggerCategory, MentalTrigger } from './triggers';
-import { Neurochemical, BrainSystem, PrimalStimulus } from './neuromarketing';
+import { TriggerType, TriggerCategory } from './triggers';
+import { Neurochemical, BrainSystem } from './neuromarketing';
 
 // ============================================
 // 1. ADVANCED TRIGGER TYPES

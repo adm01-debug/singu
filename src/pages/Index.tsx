@@ -9,7 +9,6 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardSkeleton from '@/components/skeletons/DashboardSkeleton';
-import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { useCompatibilityAlerts } from '@/hooks/useCompatibilityAlerts';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useStaggerAnimation } from '@/hooks/useStaggerAnimation';

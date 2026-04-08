@@ -3,7 +3,7 @@ import { RapportProfile, RapportScript } from '@/types/nlp-advanced';
 import { Contact, DISCProfile } from '@/types';
 import { VAKType } from '@/types/vak';
 import { RAPPORT_TEMPLATES, POWER_WORDS } from '@/data/nlpAdvancedData';
-import { getDominantVAK, getDISCProfile as getBehaviorDISC, getDISCConfidence, getVAKProfile, getContactBehavior, getMetaprogramProfile } from '@/lib/contact-utils';
+import { getDominantVAK, getDISCProfile as getBehaviorDISC, getDISCConfidence, getContactBehavior } from '@/lib/contact-utils';
 
 export function useRapportGenerator(contact: Contact) {
   const rapportProfile = useMemo((): RapportProfile => {

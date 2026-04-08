@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
-import { differenceInDays, subDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 
 export interface ChurnRisk {
   contactId: string;

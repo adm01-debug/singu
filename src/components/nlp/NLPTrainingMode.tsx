@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   GraduationCap, Eye, Ear, Hand, Brain, Target, Shield,
   CheckCircle, XCircle, RefreshCw, Lightbulb, Star,
@@ -21,7 +20,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { VAK_LABELS, VAKType, VAK_COMMUNICATION_TIPS } from '@/types/vak';
-import { METAPROGRAM_LABELS } from '@/types/metaprograms';
 import { toast } from 'sonner';
 
 type TrainingType = 'vak_detection' | 'vak_adaptation' | 'meta_detection' | 'meta_adaptation' | 'combined';

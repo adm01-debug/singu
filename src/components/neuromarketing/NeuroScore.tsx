@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Brain, TrendingUp, TrendingDown, Minus, Sparkles, Info } from 'lucide-react';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
-import { BrainSystem, PrimalStimulus, Neurochemical } from '@/types/neuromarketing';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 

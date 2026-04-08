@@ -5,7 +5,7 @@
 // ==============================================
 
 import { useMemo } from 'react';
-import { differenceInDays, differenceInHours, parseISO, format } from 'date-fns';
+import { differenceInDays, parseISO, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
 import { getDISCProfile, getVAKPrimary } from '@/types/behavior';

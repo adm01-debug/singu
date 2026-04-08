@@ -3,7 +3,7 @@
 // Provides trigger chains, saturation detection, timing, and A/B testing
 // ==============================================
 
-import { useMemo, useCallback, useState, useEffect } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { Contact } from '@/types';
 import { TriggerType, MENTAL_TRIGGERS } from '@/types/triggers';
 import {
@@ -26,7 +26,7 @@ import {
   INTENSITY_LEVELS,
 } from '@/data/triggersAdvancedData';
 import { useTriggerHistory } from './useTriggerHistory';
-import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
+import { differenceInHours, parseISO } from 'date-fns';
 
 // ============================================
 // SATURATION THRESHOLDS
