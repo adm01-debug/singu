@@ -247,7 +247,8 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
     { value: 'redes', label: 'Redes', icon: Share2 },
   ];
 
-  const visibleTabs = isEditing ? allTabs : [allTabs[0]];
+  const createTabs = allTabs.slice(0, 4);
+  const visibleTabs = isEditing ? allTabs : createTabs;
 
   return (
     <Form {...form}>
@@ -273,11 +274,11 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
         <div className="flex-1 overflow-y-auto py-4 space-y-1">
           <Tabs defaultValue="basico" className="w-full">
             {visibleTabs.length > 1 && (
-              <TabsList className="grid w-full mb-4 h-auto p-0.5 bg-muted/30 border border-border" style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, 1fr)` }}>
+              <TabsList className="grid w-full mb-4 h-auto gap-1 p-0.5 bg-muted/30 border border-border" style={{ gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))` }}>
                 {visibleTabs.map(tab => (
-                  <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5 py-2 data-[state=active]:bg-card data-[state=active]:border-border rounded-md">
-                    <tab.icon className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                  <TabsTrigger key={tab.value} value={tab.value} className="min-w-0 px-2 text-xs gap-1.5 py-2 data-[state=active]:bg-card data-[state=active]:border-border rounded-md">
+                    <tab.icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden min-w-0 truncate sm:inline">{tab.label}</span>
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -442,11 +443,10 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
                 )} />
               </FormSection>
 
-              {/* Progressive Disclosure hint */}
               {!isEditing && (
                 <div className="flex items-center gap-2.5 p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground">
                   <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
-                  <span>Após criar, você poderá adicionar dados fiscais, telefones, endereços e redes sociais.</span>
+                  <span>Preencha os dados cadastrais nas abas acima. Após criar, você poderá complementar telefones, endereços, emails e redes sociais.</span>
                 </div>
               )}
             </TabsContent>

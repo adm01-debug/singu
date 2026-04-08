@@ -236,13 +236,16 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
 
       {isMobile ? (
         <Sheet open={activeForm !== null} onOpenChange={() => handleCloseForm()}>
-          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+          <SheetContent
+            side="bottom"
+            className={activeForm === 'company' ? 'h-[90vh] overflow-hidden' : 'h-[90vh] overflow-y-auto'}
+          >
             {renderFormContent()}
           </SheetContent>
         </Sheet>
       ) : (
         <Dialog open={activeForm !== null} onOpenChange={() => handleCloseForm()}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className={activeForm === 'company' ? 'max-w-5xl max-h-[90vh] overflow-hidden' : 'max-w-2xl max-h-[90vh] overflow-y-auto'}>
             {renderFormContent()}
           </DialogContent>
         </Dialog>
