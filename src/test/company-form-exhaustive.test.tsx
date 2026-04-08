@@ -151,11 +151,15 @@ describe('CompanyForm — Rendering', () => {
     expect(tabs[6]).toHaveTextContent('Redes');
   });
 
-  it('shows only Básico tab in create mode', () => {
+  it('shows cadastro principal tabs in create mode', () => {
     renderForm();
-    // In create mode, only the Básico tab content is shown (no tab bar)
-    expect(screen.getByText('Identificação')).toBeInTheDocument();
-    expect(screen.queryByText('Fiscal')).not.toBeInTheDocument();
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(4);
+    expect(tabs[0]).toHaveTextContent('Básico');
+    expect(tabs[1]).toHaveTextContent('Fiscal');
+    expect(tabs[2]).toHaveTextContent('Classificação');
+    expect(tabs[3]).toHaveTextContent('Estrutura');
+    expect(screen.queryByText('Telefones')).not.toBeInTheDocument();
   });
 
   it('renders submit and cancel buttons', () => {
