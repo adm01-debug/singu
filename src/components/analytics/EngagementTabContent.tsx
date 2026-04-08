@@ -17,29 +17,20 @@ import {
   PolarRadiusAxis,
   Radar,
 } from 'recharts';
-import {
-  BarChart3,
-  Activity,
-  Target,
-} from 'lucide-react';
+import { BarChart3, Activity, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CustomTooltip } from './AnalyticsShared';
-import type { PeriodFilter } from './analyticsData';
-import {
-  getEngagementByChannelData,
-  getEngagementRadarData,
-  getRelationshipEvolutionData,
-} from './analyticsData';
-
 interface EngagementTabContentProps {
-  period: PeriodFilter;
+  channelData: Array<{ channel: string; sent: number; received: number; rate: number }>;
+  radarData: Array<{ metric: string; value: number; fullMark: number }>;
+  relationshipData: Array<{ date: string; score: number; interactions: number }>;
 }
 
-export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
-  const channelData = getEngagementByChannelData(period);
-  const radarData = getEngagementRadarData(period);
-  const relationshipData = getRelationshipEvolutionData(period);
-
+export const EngagementTabContent = ({
+  channelData,
+  radarData,
+  relationshipData,
+}: EngagementTabContentProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Engagement by Channel */}
@@ -54,9 +45,7 @@ export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
               <BarChart3 className="w-5 h-5 text-primary" />
               Engajamento por Canal
             </CardTitle>
-            <CardDescription>
-              Mensagens enviadas vs recebidas por canal
-            </CardDescription>
+            <CardDescription>Mensagens enviadas vs recebidas por canal</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -72,8 +61,18 @@ export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
-                  <Bar dataKey="sent" name="Enviadas" fill="hsl(221, 83%, 53%)" radius={[0, 4, 4, 0]} />
-                  <Bar dataKey="received" name="Recebidas" fill="hsl(142, 76%, 36%)" radius={[0, 4, 4, 0]} />
+                  <Bar
+                    dataKey="sent"
+                    name="Enviadas"
+                    fill="hsl(221, 83%, 53%)"
+                    radius={[0, 4, 4, 0]}
+                  />
+                  <Bar
+                    dataKey="received"
+                    name="Recebidas"
+                    fill="hsl(142, 76%, 36%)"
+                    radius={[0, 4, 4, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -93,9 +92,7 @@ export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
               <Target className="w-5 h-5 text-primary" />
               Métricas de Engajamento
             </CardTitle>
-            <CardDescription>
-              Análise multidimensional do seu desempenho
-            </CardDescription>
+            <CardDescription>Análise multidimensional do seu desempenho</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -139,9 +136,7 @@ export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
               <Activity className="w-5 h-5 text-primary" />
               Volume de Interações
             </CardTitle>
-            <CardDescription>
-              Número de interações ao longo do período selecionado
-            </CardDescription>
+            <CardDescription>Número de interações ao longo do período selecionado</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
@@ -154,10 +149,7 @@ export const EngagementTabContent = ({ period }: EngagementTabContentProps) => {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
+                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area

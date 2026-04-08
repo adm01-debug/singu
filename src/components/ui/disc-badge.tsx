@@ -10,31 +10,41 @@ interface DISCBadgeProps {
   className?: string;
 }
 
-export function DISCBadge({ profile, confidence, size = 'md', showLabel = true, className }: DISCBadgeProps) {
+export function DISCBadge({
+  profile,
+  confidence,
+  size = 'md',
+  showLabel = true,
+  className,
+}: DISCBadgeProps) {
   if (!profile) {
     return (
-      <span className={cn(
-        'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
-        className
-      )}>
+      <span
+        className={cn(
+          'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
+          className,
+        )}
+      >
         Não definido
       </span>
     );
   }
   const config = DISC_LABELS[profile];
-  
+
   // Safety check: if profile is not a valid DISC type, show fallback
   if (!config) {
     return (
-      <span className={cn(
-        'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
-        className
-      )}>
+      <span
+        className={cn(
+          'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
+          className,
+        )}
+      >
         {profile || 'Não definido'}
       </span>
     );
   }
-  
+
   const sizeClasses = {
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-3 py-1 text-sm',
@@ -47,16 +57,14 @@ export function DISCBadge({ profile, confidence, size = 'md', showLabel = true, 
         className={cn(
           'inline-flex items-center rounded-full font-semibold border',
           config.color,
-          sizeClasses[size]
+          sizeClasses[size],
         )}
       >
         <span className="mr-1.5 font-bold">{profile}</span>
         {showLabel && <span className="font-medium">{config.name}</span>}
       </span>
       {confidence !== undefined && confidence > 0 && (
-        <span className="text-xs text-muted-foreground">
-          {confidence}% confiança
-        </span>
+        <span className="text-xs text-muted-foreground">{confidence}% confiança</span>
       )}
     </div>
   );
@@ -88,22 +96,21 @@ export function DISCSelector({ value, onChange, className }: DISCSelectorProps) 
               'p-4 rounded-xl border-2 text-left transition-all',
               isSelected
                 ? cn(config.color, 'border-current shadow-md')
-                : 'border-border bg-card hover:border-muted-foreground/30'
+                : 'border-border bg-card hover:border-muted-foreground/30',
             )}
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg',
-                isSelected ? 'bg-white/30' : 'bg-muted'
-              )}>
+              <span
+                className={cn(
+                  'w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg',
+                  isSelected ? 'bg-white/30' : 'bg-muted',
+                )}
+              >
                 {profile}
               </span>
               <span className="font-semibold">{config.name}</span>
             </div>
-            <p className={cn(
-              'text-sm',
-              isSelected ? 'opacity-90' : 'text-muted-foreground'
-            )}>
+            <p className={cn('text-sm', isSelected ? 'opacity-90' : 'text-muted-foreground')}>
               {config.description}
             </p>
           </motion.button>
@@ -115,16 +122,20 @@ export function DISCSelector({ value, onChange, className }: DISCSelectorProps) 
 
 interface DISCChartProps {
   profile: DISCProfile;
+  scores?: Record<DISCProfile, number>;
   className?: string;
 }
 
-export function DISCChart({ profile, className }: DISCChartProps) {
+export function DISCChart({ profile, scores, className }: DISCChartProps) {
   const profiles: DISCProfile[] = ['D', 'I', 'S', 'C'];
-  
-  // Simulate scores based on primary profile
+
+  // Use provided scores or generate deterministic defaults from primary profile
   const getScore = (p: DISCProfile): number => {
-    if (p === profile) return 85 + Math.random() * 15;
-    return 20 + Math.random() * 40;
+    if (scores) return scores[p] ?? 0;
+    // Deterministic fallback based on primary profile
+    if (p === profile) return 85;
+    const offsets: Record<string, number> = { D: 35, I: 30, S: 40, C: 25 };
+    return offsets[p] ?? 30;
   };
 
   return (
@@ -149,15 +160,20 @@ export function DISCChart({ profile, className }: DISCChartProps) {
                 transition={{ duration: 0.8, ease: 'easeOut' }}
                 className={cn(
                   'h-full rounded-full',
-                  isPrimary ? config.color.split(' ')[0].replace('bg-', 'bg-') : 'bg-muted-foreground/30'
+                  isPrimary
+                    ? config.color.split(' ')[0].replace('bg-', 'bg-')
+                    : 'bg-muted-foreground/30',
                 )}
                 style={{
-                  backgroundColor: isPrimary 
-                    ? p === 'D' ? '#ef4444' 
-                    : p === 'I' ? '#eab308' 
-                    : p === 'S' ? '#22c55e' 
-                    : '#3b82f6'
-                    : undefined
+                  backgroundColor: isPrimary
+                    ? p === 'D'
+                      ? '#ef4444'
+                      : p === 'I'
+                        ? '#eab308'
+                        : p === 'S'
+                          ? '#22c55e'
+                          : '#3b82f6'
+                    : undefined,
                 }}
               />
             </div>

@@ -12,30 +12,20 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Heart,
-  Zap,
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Heart, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CustomTooltip, PieTooltip, ComparisonBadge } from './AnalyticsShared';
-import type { PeriodFilter } from './analyticsData';
-import {
-  calcChange,
-  getRelationshipEvolutionData,
-  getSentimentDistributionData,
-  getSentimentColors,
-} from './analyticsData';
+import { getSentimentColors } from './analyticsData';
 
 interface SentimentTabContentProps {
-  period: PeriodFilter;
+  sentimentData: Array<{ name: string; value: number; prevValue: number }>;
+  relationshipData: Array<{ date: string; score: number; interactions: number }>;
 }
 
-export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
-  const relationshipData = getRelationshipEvolutionData(period);
-  const sentimentData = getSentimentDistributionData(period);
+export const SentimentTabContent = ({
+  sentimentData,
+  relationshipData,
+}: SentimentTabContentProps) => {
   const sentimentColors = getSentimentColors();
 
   return (
@@ -52,9 +42,7 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
               <Heart className="w-5 h-5 text-pink-500" />
               Distribuição de Sentimentos
             </CardTitle>
-            <CardDescription>
-              Proporção de interações por tipo de sentimento
-            </CardDescription>
+            <CardDescription>Proporção de interações por tipo de sentimento</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -90,7 +78,9 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
                   <div key={item.name} className="flex items-center gap-2">
                     <div
                       className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: sentimentColors[item.name as keyof typeof sentimentColors] }}
+                      style={{
+                        backgroundColor: sentimentColors[item.name as keyof typeof sentimentColors],
+                      }}
                     />
                     <span className="text-sm text-muted-foreground">{item.name}</span>
                     <ComparisonBadge comparison={comparison} />
@@ -114,19 +104,14 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
               <TrendingUp className="w-5 h-5 text-emerald-500" />
               Evolução do Sentimento
             </CardTitle>
-            <CardDescription>
-              Tendência de sentimentos ao longo do tempo
-            </CardDescription>
+            <CardDescription>Tendência de sentimentos ao longo do tempo</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={relationshipData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
+                  <XAxis dataKey="date" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar
@@ -163,11 +148,12 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
                   <TrendingUp className="w-4 h-4 text-emerald-500" />
                   <span className="font-medium text-emerald-500">Positivo</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground mb-1">
-                  {sentimentData[0].value}
-                </p>
+                <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[0].value}</p>
                 <p className="text-sm text-muted-foreground">
-                  {Math.round((sentimentData[0].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total
+                  {Math.round(
+                    (sentimentData[0].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100,
+                  )}
+                  % do total
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-muted/50 border border-border">
@@ -175,11 +161,12 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
                   <Minus className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium text-muted-foreground">Neutro</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground mb-1">
-                  {sentimentData[1].value}
-                </p>
+                <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[1].value}</p>
                 <p className="text-sm text-muted-foreground">
-                  {Math.round((sentimentData[1].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total
+                  {Math.round(
+                    (sentimentData[1].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100,
+                  )}
+                  % do total
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
@@ -187,11 +174,12 @@ export const SentimentTabContent = ({ period }: SentimentTabContentProps) => {
                   <TrendingDown className="w-4 h-4 text-red-500" />
                   <span className="font-medium text-red-500">Negativo</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground mb-1">
-                  {sentimentData[2].value}
-                </p>
+                <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[2].value}</p>
                 <p className="text-sm text-muted-foreground">
-                  {Math.round((sentimentData[2].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total
+                  {Math.round(
+                    (sentimentData[2].value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100,
+                  )}
+                  % do total
                 </p>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   TrendingUp,
@@ -16,7 +16,13 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { TriggerAnalytics } from '@/components/triggers/TriggerAnalytics';
@@ -28,7 +34,7 @@ import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 
 // Extracted sub-components
 import type { PeriodFilter } from '@/components/analytics/analyticsData';
-import { periodOptions, getMetricsStats } from '@/components/analytics/analyticsData';
+import { periodOptions, useAnalyticsData } from '@/components/analytics/analyticsData';
 import { StatCard } from '@/components/analytics/AnalyticsShared';
 import { OverviewTabContent } from '@/components/analytics/OverviewTabContent';
 import { EngagementTabContent } from '@/components/analytics/EngagementTabContent';
@@ -38,34 +44,31 @@ import { NLPTabContent } from '@/components/analytics/NLPTabContent';
 import { IntelligenceTabContent } from '@/components/analytics/IntelligenceTabContent';
 
 const Analytics = () => {
-  const { user } = useAuth();
+  useAuth();
   const [period, setPeriod] = useState<PeriodFilter>('30d');
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const stats = getMetricsStats(period);
+  const {
+    loading,
+    stats,
+    relationshipEvolution,
+    topPerformers,
+    sentimentDistribution,
+    engagementByChannel,
+    engagementRadar,
+  } = useAnalyticsData(period);
 
   if (loading) {
     return (
       <AppLayout>
-        <Header
-          title="Analytics"
-          subtitle="Métricas avançadas de relacionamento e engajamento"
-        />
+        <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" />
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-32" />
             ))}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-80" />
             ))}
           </div>
@@ -76,10 +79,7 @@ const Analytics = () => {
 
   return (
     <AppLayout>
-      <Header
-        title="Analytics"
-        subtitle="Métricas avançadas de relacionamento e engajamento"
-      />
+      <Header title="Analytics" subtitle="Métricas avançadas de relacionamento e engajamento" />
 
       <div className="p-6 space-y-6">
         <SmartBreadcrumbs />
@@ -97,7 +97,7 @@ const Analytics = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {periodOptions.map(opt => (
+                {periodOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </SelectItem>
@@ -198,10 +198,7 @@ const Analytics = () => {
 
           {/* RFM Analysis Tab */}
           <TabsContent value="rfm" className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <RFMAnalysisPanel />
             </motion.div>
           </TabsContent>
@@ -218,17 +215,27 @@ const Analytics = () => {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            <OverviewTabContent period={period} />
+            <OverviewTabContent
+              relationshipData={relationshipEvolution}
+              topPerformers={topPerformers}
+            />
           </TabsContent>
 
           {/* Engagement Tab */}
           <TabsContent value="engagement" className="space-y-6">
-            <EngagementTabContent period={period} />
+            <EngagementTabContent
+              channelData={engagementByChannel}
+              radarData={engagementRadar}
+              relationshipData={relationshipEvolution}
+            />
           </TabsContent>
 
           {/* Sentiment Tab */}
           <TabsContent value="sentiment" className="space-y-6">
-            <SentimentTabContent period={period} />
+            <SentimentTabContent
+              sentimentData={sentimentDistribution}
+              relationshipData={relationshipEvolution}
+            />
           </TabsContent>
 
           {/* Triggers Tab */}

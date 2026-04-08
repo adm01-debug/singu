@@ -1,3 +1,36 @@
+import { useState, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
+import { differenceInDays, subDays, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface AnalyticsContact {
+  id: string;
+  first_name: string;
+  last_name: string;
+  relationship_score: number | null;
+  sentiment: string | null;
+  created_at: string;
+  updated_at: string;
+  behavior: unknown;
+}
+
+interface AnalyticsInteraction {
+  id: string;
+  contact_id: string;
+  type: string;
+  sentiment: string | null;
+  channel: string | null;
+  created_at: string;
+}
+
+interface PreviousInteraction {
+  id: string;
+  sentiment: string | null;
+  created_at: string;
+}
+
 export type PeriodFilter = '7d' | '30d' | '90d' | '365d';
 
 export interface PeriodComparison {
@@ -24,181 +57,259 @@ export const periodOptions = [
   { value: '365d', label: 'Último ano' },
 ];
 
-// Mock data generators
-export const getRelationshipEvolutionData = (period: PeriodFilter) => {
-  const dataByPeriod = {
-    '7d': [
-      { date: 'Seg', score: 71, newContacts: 2, interactions: 8 },
-      { date: 'Ter', score: 72, newContacts: 1, interactions: 12 },
-      { date: 'Qua', score: 73, newContacts: 3, interactions: 15 },
-      { date: 'Qui', score: 72, newContacts: 0, interactions: 10 },
-      { date: 'Sex', score: 74, newContacts: 2, interactions: 18 },
-      { date: 'Sab', score: 74, newContacts: 0, interactions: 3 },
-      { date: 'Dom', score: 75, newContacts: 0, interactions: 2 },
-    ],
-    '30d': [
-      { date: 'Sem 1', score: 68, newContacts: 5, interactions: 42 },
-      { date: 'Sem 2', score: 70, newContacts: 8, interactions: 55 },
-      { date: 'Sem 3', score: 72, newContacts: 6, interactions: 48 },
-      { date: 'Sem 4', score: 75, newContacts: 7, interactions: 62 },
-    ],
-    '90d': [
-      { date: 'Out', score: 65, newContacts: 18, interactions: 145 },
-      { date: 'Nov', score: 70, newContacts: 22, interactions: 178 },
-      { date: 'Dez', score: 75, newContacts: 15, interactions: 162 },
-    ],
-    '365d': [
-      { date: 'Jan', score: 55, newContacts: 12, interactions: 98 },
-      { date: 'Fev', score: 58, newContacts: 15, interactions: 110 },
-      { date: 'Mar', score: 60, newContacts: 18, interactions: 125 },
-      { date: 'Abr', score: 62, newContacts: 14, interactions: 118 },
-      { date: 'Mai', score: 65, newContacts: 20, interactions: 142 },
-      { date: 'Jun', score: 67, newContacts: 22, interactions: 155 },
-      { date: 'Jul', score: 68, newContacts: 16, interactions: 138 },
-      { date: 'Ago', score: 70, newContacts: 19, interactions: 148 },
-      { date: 'Set', score: 72, newContacts: 21, interactions: 165 },
-      { date: 'Out', score: 73, newContacts: 18, interactions: 152 },
-      { date: 'Nov', score: 74, newContacts: 23, interactions: 178 },
-      { date: 'Dez', score: 75, newContacts: 15, interactions: 162 },
-    ],
-  };
-  return dataByPeriod[period];
+const PERIOD_DAYS: Record<PeriodFilter, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+  '365d': 365,
 };
 
-export const getSentimentDistributionData = (period: PeriodFilter) => {
-  const dataByPeriod = {
-    '7d': [
-      { name: 'Positivo', value: 45, prevValue: 42 },
-      { name: 'Neutro', value: 35, prevValue: 38 },
-      { name: 'Negativo', value: 8, prevValue: 10 },
-    ],
-    '30d': [
-      { name: 'Positivo', value: 52, prevValue: 45 },
-      { name: 'Neutro', value: 42, prevValue: 45 },
-      { name: 'Negativo', value: 12, prevValue: 16 },
-    ],
-    '90d': [
-      { name: 'Positivo', value: 68, prevValue: 55 },
-      { name: 'Neutro', value: 55, prevValue: 60 },
-      { name: 'Negativo', value: 18, prevValue: 25 },
-    ],
-    '365d': [
-      { name: 'Positivo', value: 285, prevValue: 240 },
-      { name: 'Neutro', value: 220, prevValue: 250 },
-      { name: 'Negativo', value: 65, prevValue: 85 },
-    ],
-  };
-  return dataByPeriod[period];
-};
+export function useAnalyticsData(period: PeriodFilter) {
+  const { user } = useAuth();
+  const [contacts, setContacts] = useState<AnalyticsContact[]>([]);
+  const [interactions, setInteractions] = useState<AnalyticsInteraction[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const days = PERIOD_DAYS[period];
+        const cutoff = subDays(new Date(), days).toISOString();
+        const previousCutoff = subDays(new Date(), days * 2).toISOString();
+
+        const [contactsRes, interactionsRes, previousInteractionsRes] = await Promise.all([
+          supabase
+            .from('contacts')
+            .select(
+              'id, first_name, last_name, relationship_score, sentiment, created_at, updated_at, behavior',
+            )
+            .order('relationship_score', { ascending: false }),
+          supabase
+            .from('interactions')
+            .select('id, contact_id, type, sentiment, channel, created_at')
+            .gte('created_at', cutoff)
+            .order('created_at', { ascending: true }),
+          supabase
+            .from('interactions')
+            .select('id, sentiment, created_at')
+            .gte('created_at', previousCutoff)
+            .lt('created_at', cutoff),
+        ]);
+
+        setContacts(contactsRes.data || []);
+        setInteractions(interactionsRes.data || []);
+
+        // Store previous period interactions count for comparison
+        (window as unknown as Record<string, PreviousInteraction[]>).__prevInteractions =
+          previousInteractionsRes.data || [];
+      } catch (error) {
+        logger.error('Error fetching analytics data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, period]);
+
+  const stats = useMemo(() => {
+    const prevInteractions: PreviousInteraction[] =
+      (window as unknown as Record<string, PreviousInteraction[]>).__prevInteractions || [];
+
+    const totalCurrent = interactions.length;
+    const totalPrevious = prevInteractions.length;
+
+    const avgScore =
+      contacts.length > 0
+        ? Math.round(
+            contacts.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / contacts.length,
+          )
+        : 0;
+
+    const positiveInteractions = interactions.filter(
+      (i) => i.sentiment === 'positive' || i.sentiment === 'positivo',
+    ).length;
+    const positiveRate =
+      totalCurrent > 0 ? Math.round((positiveInteractions / totalCurrent) * 100) : 0;
+
+    const prevPositive = prevInteractions.filter(
+      (i) => i.sentiment === 'positive' || i.sentiment === 'positivo',
+    ).length;
+    const prevPositiveRate =
+      totalPrevious > 0 ? Math.round((prevPositive / totalPrevious) * 100) : 0;
+
+    const activeContacts = new Set(interactions.map((i) => i.contact_id)).size;
+    const engagementRate =
+      contacts.length > 0 ? Math.round((activeContacts / contacts.length) * 100) : 0;
+
+    return {
+      totalInteractions: calcChange(totalCurrent, totalPrevious),
+      avgScore: calcChange(avgScore, avgScore), // No previous score tracking yet
+      positiveRate: calcChange(positiveRate, prevPositiveRate),
+      engagementRate: calcChange(engagementRate, engagementRate),
+    };
+  }, [contacts, interactions]);
+
+  const relationshipEvolution = useMemo(() => {
+    if (interactions.length === 0) return [];
+
+    const days = PERIOD_DAYS[period];
+    const buckets: Record<
+      string,
+      { score: number; count: number; newContacts: number; interactions: number }
+    > = {};
+
+    if (days <= 7) {
+      // Daily buckets
+      for (let i = 0; i < 7; i++) {
+        const d = subDays(new Date(), 6 - i);
+        const key = format(d, 'EEE', { locale: ptBR });
+        buckets[key] = { score: 0, count: 0, newContacts: 0, interactions: 0 };
+      }
+      interactions.forEach((inter) => {
+        const key = format(new Date(inter.created_at), 'EEE', { locale: ptBR });
+        if (buckets[key]) buckets[key].interactions++;
+      });
+      contacts.forEach((c) => {
+        const daysDiff = differenceInDays(new Date(), new Date(c.created_at));
+        if (daysDiff <= 7) {
+          const key = format(new Date(c.created_at), 'EEE', { locale: ptBR });
+          if (buckets[key]) buckets[key].newContacts++;
+        }
+      });
+    } else if (days <= 30) {
+      // Weekly buckets
+      for (let i = 0; i < 4; i++) {
+        buckets[`Sem ${i + 1}`] = { score: 0, count: 0, newContacts: 0, interactions: 0 };
+      }
+      interactions.forEach((inter) => {
+        const daysDiff = differenceInDays(new Date(), new Date(inter.created_at));
+        const weekIdx = Math.min(3, Math.floor(daysDiff / 7));
+        const key = `Sem ${4 - weekIdx}`;
+        if (buckets[key]) buckets[key].interactions++;
+      });
+    } else {
+      // Monthly buckets
+      const months = days <= 90 ? 3 : 12;
+      for (let i = 0; i < months; i++) {
+        const d = subDays(new Date(), (months - 1 - i) * 30);
+        const key = format(d, 'MMM', { locale: ptBR });
+        buckets[key] = { score: 0, count: 0, newContacts: 0, interactions: 0 };
+      }
+      interactions.forEach((inter) => {
+        const key = format(new Date(inter.created_at), 'MMM', { locale: ptBR });
+        if (buckets[key]) buckets[key].interactions++;
+      });
+    }
+
+    // Calculate avg score per bucket (use overall since we don't track historical scores)
+    const avgScore =
+      contacts.length > 0
+        ? Math.round(
+            contacts.reduce((sum, c) => sum + (c.relationship_score || 0), 0) / contacts.length,
+          )
+        : 0;
+
+    return Object.entries(buckets).map(([date, data]) => ({
+      date,
+      score: avgScore,
+      newContacts: data.newContacts,
+      interactions: data.interactions,
+    }));
+  }, [interactions, contacts, period]);
+
+  const topPerformers = useMemo(() => {
+    return contacts
+      .filter((c) => (c.relationship_score || 0) > 0)
+      .slice(0, 5)
+      .map((c) => ({
+        name: `${c.first_name} ${c.last_name || ''}`.trim(),
+        score: c.relationship_score || 0,
+        interactions: interactions.filter((i) => i.contact_id === c.id).length,
+        sentiment: c.sentiment || 'neutro',
+      }));
+  }, [contacts, interactions]);
+
+  const sentimentDistribution = useMemo(() => {
+    const counts = { positive: 0, neutral: 0, negative: 0 };
+    interactions.forEach((i) => {
+      const s = i.sentiment?.toLowerCase();
+      if (s === 'positive' || s === 'positivo') counts.positive++;
+      else if (s === 'negative' || s === 'negativo') counts.negative++;
+      else counts.neutral++;
+    });
+    return [
+      { name: 'Positivo', value: counts.positive, prevValue: 0 },
+      { name: 'Neutro', value: counts.neutral, prevValue: 0 },
+      { name: 'Negativo', value: counts.negative, prevValue: 0 },
+    ];
+  }, [interactions]);
+
+  const engagementByChannel = useMemo(() => {
+    const channels: Record<string, number> = {};
+    interactions.forEach((i) => {
+      const ch = i.channel || i.type || 'Outro';
+      channels[ch] = (channels[ch] || 0) + 1;
+    });
+    const total = interactions.length || 1;
+    return Object.entries(channels)
+      .map(([channel, count]) => ({
+        channel: channel.charAt(0).toUpperCase() + channel.slice(1),
+        sent: count,
+        received: Math.round(count * 0.75),
+        rate: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.sent - a.sent);
+  }, [interactions]);
+
+  const engagementRadar = useMemo(() => {
+    const totalContacts = contacts.length || 1;
+    const activeContactIds = new Set(interactions.map((i) => i.contact_id));
+    const frequency = Math.min(
+      100,
+      Math.round((interactions.length / (PERIOD_DAYS[period] || 30)) * 10),
+    );
+    const responseRate =
+      totalContacts > 0 ? Math.round((activeContactIds.size / totalContacts) * 100) : 0;
+    const positiveRate =
+      interactions.length > 0
+        ? Math.round(
+            (interactions.filter((i) => i.sentiment === 'positive' || i.sentiment === 'positivo')
+              .length /
+              interactions.length) *
+              100,
+          )
+        : 0;
+
+    return [
+      { metric: 'Frequência', value: Math.min(100, frequency), fullMark: 100 },
+      { metric: 'Resposta', value: responseRate, fullMark: 100 },
+      { metric: 'Qualidade', value: positiveRate, fullMark: 100 },
+      { metric: 'Proatividade', value: Math.min(100, Math.round(frequency * 0.8)), fullMark: 100 },
+      { metric: 'Follow-up', value: Math.min(100, responseRate), fullMark: 100 },
+      { metric: 'Conversão', value: Math.round(positiveRate * 0.6), fullMark: 100 },
+    ];
+  }, [contacts, interactions, period]);
+
+  return {
+    loading,
+    stats,
+    relationshipEvolution,
+    topPerformers,
+    sentimentDistribution,
+    engagementByChannel,
+    engagementRadar,
+    contacts,
+    interactions,
+  };
+}
+
+// Keep color config exports
 export const getSentimentColors = () => ({
   Positivo: 'hsl(142, 76%, 36%)',
   Neutro: 'hsl(215, 16%, 47%)',
   Negativo: 'hsl(0, 84%, 60%)',
 });
-
-export const getEngagementByChannelData = (period: PeriodFilter) => {
-  const dataByPeriod = {
-    '7d': [
-      { channel: 'Email', sent: 17, received: 12, rate: 71 },
-      { channel: 'Reunião', sent: 8, received: 8, rate: 100 },
-      { channel: 'Ligação', sent: 10, received: 6, rate: 60 },
-      { channel: 'WhatsApp', sent: 25, received: 22, rate: 88 },
-    ],
-    '30d': [
-      { channel: 'Email', sent: 65, received: 48, rate: 74 },
-      { channel: 'Reunião', sent: 28, received: 28, rate: 100 },
-      { channel: 'Ligação', sent: 42, received: 28, rate: 67 },
-      { channel: 'WhatsApp', sent: 95, received: 82, rate: 86 },
-    ],
-    '90d': [
-      { channel: 'Email', sent: 185, received: 142, rate: 77 },
-      { channel: 'Reunião', sent: 75, received: 75, rate: 100 },
-      { channel: 'Ligação', sent: 118, received: 82, rate: 69 },
-      { channel: 'WhatsApp', sent: 265, received: 235, rate: 89 },
-    ],
-    '365d': [
-      { channel: 'Email', sent: 720, received: 548, rate: 76 },
-      { channel: 'Reunião', sent: 285, received: 285, rate: 100 },
-      { channel: 'Ligação', sent: 465, received: 325, rate: 70 },
-      { channel: 'WhatsApp', sent: 1050, received: 920, rate: 88 },
-    ],
-  };
-  return dataByPeriod[period];
-};
-
-export const getEngagementRadarData = (period: PeriodFilter) => {
-  const dataByPeriod = {
-    '7d': [
-      { metric: 'Frequência', value: 75, fullMark: 100 },
-      { metric: 'Resposta', value: 82, fullMark: 100 },
-      { metric: 'Qualidade', value: 68, fullMark: 100 },
-      { metric: 'Proatividade', value: 55, fullMark: 100 },
-      { metric: 'Follow-up', value: 72, fullMark: 100 },
-      { metric: 'Conversão', value: 45, fullMark: 100 },
-    ],
-    '30d': [
-      { metric: 'Frequência', value: 78, fullMark: 100 },
-      { metric: 'Resposta', value: 85, fullMark: 100 },
-      { metric: 'Qualidade', value: 72, fullMark: 100 },
-      { metric: 'Proatividade', value: 62, fullMark: 100 },
-      { metric: 'Follow-up', value: 78, fullMark: 100 },
-      { metric: 'Conversão', value: 52, fullMark: 100 },
-    ],
-    '90d': [
-      { metric: 'Frequência', value: 82, fullMark: 100 },
-      { metric: 'Resposta', value: 88, fullMark: 100 },
-      { metric: 'Qualidade', value: 76, fullMark: 100 },
-      { metric: 'Proatividade', value: 68, fullMark: 100 },
-      { metric: 'Follow-up', value: 82, fullMark: 100 },
-      { metric: 'Conversão', value: 58, fullMark: 100 },
-    ],
-    '365d': [
-      { metric: 'Frequência', value: 85, fullMark: 100 },
-      { metric: 'Resposta', value: 90, fullMark: 100 },
-      { metric: 'Qualidade', value: 80, fullMark: 100 },
-      { metric: 'Proatividade', value: 72, fullMark: 100 },
-      { metric: 'Follow-up', value: 85, fullMark: 100 },
-      { metric: 'Conversão', value: 65, fullMark: 100 },
-    ],
-  };
-  return dataByPeriod[period];
-};
-
-export const getTopPerformersData = () => [
-  { name: 'João Silva', score: 92, interactions: 45, sentiment: 'positivo' },
-  { name: 'Maria Santos', score: 88, interactions: 38, sentiment: 'positivo' },
-  { name: 'Pedro Costa', score: 85, interactions: 32, sentiment: 'neutro' },
-  { name: 'Ana Oliveira', score: 82, interactions: 28, sentiment: 'positivo' },
-  { name: 'Carlos Lima', score: 78, interactions: 25, sentiment: 'neutro' },
-];
-
-export const getMetricsStats = (period: PeriodFilter) => {
-  const statsByPeriod = {
-    '7d': {
-      totalInteractions: calcChange(68, 55),
-      avgScore: calcChange(75, 71),
-      positiveRate: calcChange(54, 48),
-      engagementRate: calcChange(78, 72),
-    },
-    '30d': {
-      totalInteractions: calcChange(207, 175),
-      avgScore: calcChange(75, 68),
-      positiveRate: calcChange(49, 42),
-      engagementRate: calcChange(82, 75),
-    },
-    '90d': {
-      totalInteractions: calcChange(485, 420),
-      avgScore: calcChange(75, 65),
-      positiveRate: calcChange(48, 40),
-      engagementRate: calcChange(85, 78),
-    },
-    '365d': {
-      totalInteractions: calcChange(1570, 1320),
-      avgScore: calcChange(75, 55),
-      positiveRate: calcChange(50, 42),
-      engagementRate: calcChange(88, 80),
-    },
-  };
-  return statsByPeriod[period];
-};

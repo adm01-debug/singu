@@ -6,24 +6,32 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, Radar, PieChart, Pie, Cell
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
-import {
-  TrendingUp, TrendingDown, Minus, DollarSign, Clock,
-  Users, Target, Award, RefreshCw, ChevronRight
-} from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
-import { getContactBehavior, getDISCProfile } from '@/lib/contact-utils';
 import { logger } from '@/lib/logger';
 
 interface ProfileMetrics {
@@ -44,7 +52,7 @@ const DISC_COLORS: Record<string, string> = {
   D: 'hsl(0, 70%, 50%)',
   I: 'hsl(45, 85%, 50%)',
   S: 'hsl(145, 60%, 45%)',
-  C: 'hsl(210, 70%, 50%)'
+  C: 'hsl(210, 70%, 50%)',
 };
 
 const DISCConversionMetrics: React.FC = () => {
@@ -71,25 +79,62 @@ const DISCConversionMetrics: React.FC = () => {
           .order('created_at', { ascending: true });
 
         // Calculate metrics per profile
-        const profileData: Record<string, {
-          contacts: number;
-          opportunities: number;
-          conversions: number;
-          totalValue: number;
-          totalCycleDays: number;
-          totalRelationshipScore: number;
-          closedCount: number;
-        }> = {
-          D: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          I: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          S: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          C: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 }
+        const profileData: Record<
+          string,
+          {
+            contacts: number;
+            opportunities: number;
+            conversions: number;
+            totalValue: number;
+            totalCycleDays: number;
+            totalRelationshipScore: number;
+            closedCount: number;
+          }
+        > = {
+          D: {
+            contacts: 0,
+            opportunities: 0,
+            conversions: 0,
+            totalValue: 0,
+            totalCycleDays: 0,
+            totalRelationshipScore: 0,
+            closedCount: 0,
+          },
+          I: {
+            contacts: 0,
+            opportunities: 0,
+            conversions: 0,
+            totalValue: 0,
+            totalCycleDays: 0,
+            totalRelationshipScore: 0,
+            closedCount: 0,
+          },
+          S: {
+            contacts: 0,
+            opportunities: 0,
+            conversions: 0,
+            totalValue: 0,
+            totalCycleDays: 0,
+            totalRelationshipScore: 0,
+            closedCount: 0,
+          },
+          C: {
+            contacts: 0,
+            opportunities: 0,
+            conversions: 0,
+            totalValue: 0,
+            totalCycleDays: 0,
+            totalRelationshipScore: 0,
+            closedCount: 0,
+          },
         };
 
-        (contacts || []).forEach(contact => {
+        (contacts || []).forEach((contact) => {
           const behavior = contact.behavior as Record<string, unknown> | null;
-          const discProfile = (behavior?.discProfile || behavior?.disc) as Exclude<DISCProfile, null> | undefined;
-          
+          const discProfile = (behavior?.discProfile || behavior?.disc) as
+            | Exclude<DISCProfile, null>
+            | undefined;
+
           if (!discProfile || !profileData[discProfile]) return;
 
           profileData[discProfile].contacts++;
@@ -103,16 +148,23 @@ const DISCConversionMetrics: React.FC = () => {
           if (stage === 'fechado' || stage === 'cliente') {
             profileData[discProfile].conversions++;
             profileData[discProfile].closedCount++;
-            // Simulate deal value (would come from opportunities table in real app)
-            profileData[discProfile].totalValue += Math.random() * 50000 + 10000;
+            // Estimate deal value from relationship score (real values would come from opportunities/purchase_history)
+            const estimatedValue = (contact.relationship_score || 50) * 500;
+            profileData[discProfile].totalValue += estimatedValue;
           }
 
           // Calculate average cycle from first interaction to conversion
-          const contactInteractions = (interactions || []).filter(i => i.contact_id === contact.id);
+          const contactInteractions = (interactions || []).filter(
+            (i) => i.contact_id === contact.id,
+          );
           if (contactInteractions.length >= 2) {
             const firstDate = new Date(contactInteractions[0].created_at);
-            const lastDate = new Date(contactInteractions[contactInteractions.length - 1].created_at);
-            const cycleDays = Math.round((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+            const lastDate = new Date(
+              contactInteractions[contactInteractions.length - 1].created_at,
+            );
+            const cycleDays = Math.round(
+              (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24),
+            );
             if (cycleDays > 0) {
               profileData[discProfile].totalCycleDays += cycleDays;
             }
@@ -120,37 +172,41 @@ const DISCConversionMetrics: React.FC = () => {
         });
 
         // Build metrics array
-        const calculatedMetrics: ProfileMetrics[] = (['D', 'I', 'S', 'C'] as const).map(profile => {
-          const data = profileData[profile];
-          const conversionRate = data.opportunities > 0 
-            ? Math.round((data.conversions / data.opportunities) * 100) 
-            : 0;
-          const avgDealValue = data.closedCount > 0 
-            ? Math.round(data.totalValue / data.closedCount) 
-            : 0;
-          const avgCycleDays = data.closedCount > 0 
-            ? Math.round(data.totalCycleDays / data.closedCount) 
-            : 0;
-          const avgRelationshipScore = data.contacts > 0 
-            ? Math.round(data.totalRelationshipScore / data.contacts) 
-            : 0;
+        const calculatedMetrics: ProfileMetrics[] = (['D', 'I', 'S', 'C'] as const).map(
+          (profile) => {
+            const data = profileData[profile];
+            const conversionRate =
+              data.opportunities > 0
+                ? Math.round((data.conversions / data.opportunities) * 100)
+                : 0;
+            const avgDealValue =
+              data.closedCount > 0 ? Math.round(data.totalValue / data.closedCount) : 0;
+            const avgCycleDays =
+              data.closedCount > 0 ? Math.round(data.totalCycleDays / data.closedCount) : 0;
+            const avgRelationshipScore =
+              data.contacts > 0 ? Math.round(data.totalRelationshipScore / data.contacts) : 0;
 
-          // Simulate trend (would compare with previous period in real app)
-          const trends: ('up' | 'down' | 'stable')[] = ['up', 'down', 'stable'];
-          const trend = trends[Math.floor(Math.random() * 3)];
+            // Derive trend from conversion rate and relationship score
+            const trend: 'up' | 'down' | 'stable' =
+              conversionRate >= 60
+                ? 'up'
+                : conversionRate <= 20 && data.contacts > 0
+                  ? 'down'
+                  : 'stable';
 
-          return {
-            profile,
-            totalContacts: data.contacts,
-            opportunities: data.opportunities,
-            conversions: data.conversions,
-            conversionRate,
-            avgDealValue,
-            avgCycleDays,
-            avgRelationshipScore,
-            trend
-          };
-        });
+            return {
+              profile,
+              totalContacts: data.contacts,
+              opportunities: data.opportunities,
+              conversions: data.conversions,
+              conversionRate,
+              avgDealValue,
+              avgCycleDays,
+              avgRelationshipScore,
+              trend,
+            };
+          },
+        );
 
         setMetrics(calculatedMetrics);
       } catch (error) {
@@ -163,48 +219,47 @@ const DISCConversionMetrics: React.FC = () => {
     fetchMetrics();
   }, [user, period]);
 
-  const chartData = useMemo(() => 
-    metrics.map(m => ({
-      name: DISC_PROFILES[m.profile]?.name || m.profile,
-      profile: m.profile,
-      'Taxa de Conversão': m.conversionRate,
-      'Score Médio': m.avgRelationshipScore,
-      'Ciclo (dias)': m.avgCycleDays
-    })),
-  [metrics]);
+  const chartData = useMemo(
+    () =>
+      metrics.map((m) => ({
+        name: DISC_PROFILES[m.profile]?.name || m.profile,
+        profile: m.profile,
+        'Taxa de Conversão': m.conversionRate,
+        'Score Médio': m.avgRelationshipScore,
+        'Ciclo (dias)': m.avgCycleDays,
+      })),
+    [metrics],
+  );
 
-  const radarData = useMemo(() => 
-    metrics.map(m => ({
-      profile: m.profile,
-      conversao: m.conversionRate,
-      relacionamento: m.avgRelationshipScore,
-      velocidade: Math.max(0, 100 - m.avgCycleDays), // Inverse: faster = better
-      volume: Math.min(100, m.totalContacts * 5)
-    })),
-  [metrics]);
-
-  const pieData = useMemo(() => 
-    metrics.map(m => ({
-      name: m.profile,
-      value: m.conversions,
-      fill: DISC_COLORS[m.profile]
-    })),
-  [metrics]);
+  const pieData = useMemo(
+    () =>
+      metrics.map((m) => ({
+        name: m.profile,
+        value: m.conversions,
+        fill: DISC_COLORS[m.profile],
+      })),
+    [metrics],
+  );
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-muted-foreground" />;
+      case 'up':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'down':
+        return <TrendingDown className="w-4 h-4 text-red-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
-  const bestProfile = useMemo(() => 
-    metrics.reduce((best, curr) => 
-      curr.conversionRate > (best?.conversionRate || 0) ? curr : best, 
-      metrics[0]
-    ),
-  [metrics]);
+  const bestProfile = useMemo(
+    () =>
+      metrics.reduce(
+        (best, curr) => (curr.conversionRate > (best?.conversionRate || 0) ? curr : best),
+        metrics[0],
+      ),
+    [metrics],
+  );
 
   if (loading) {
     return (
@@ -214,7 +269,7 @@ const DISCConversionMetrics: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-24" />
             ))}
           </div>
@@ -266,22 +321,22 @@ const DISCConversionMetrics: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <Badge 
-                    style={{ 
+                  <Badge
+                    style={{
                       backgroundColor: profileInfo?.color?.bg,
-                      color: profileInfo?.color?.text
+                      color: profileInfo?.color?.text,
                     }}
                   >
                     {metric.profile}
                   </Badge>
                   {isBest && <Award className="w-4 h-4 text-yellow-500" />}
                 </div>
-                <div className="text-2xl font-bold mb-1">
-                  {metric.conversionRate}%
-                </div>
+                <div className="text-2xl font-bold mb-1">{metric.conversionRate}%</div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   {getTrendIcon(metric.trend)}
-                  <span>{metric.conversions}/{metric.opportunities} conv.</span>
+                  <span>
+                    {metric.conversions}/{metric.opportunities} conv.
+                  </span>
                 </div>
               </motion.div>
             );
@@ -299,16 +354,13 @@ const DISCConversionMetrics: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="profile" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))'
+                      border: '1px solid hsl(var(--border))',
                     }}
                   />
-                  <Bar 
-                    dataKey="Taxa de Conversão" 
-                    radius={[4, 4, 0, 0]}
-                  >
+                  <Bar dataKey="Taxa de Conversão" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry) => (
                       <Cell key={entry.profile} fill={DISC_COLORS[entry.profile]} />
                     ))}
@@ -363,38 +415,32 @@ const DISCConversionMetrics: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {metrics.map(metric => {
+                {metrics.map((metric) => {
                   const profileInfo = DISC_PROFILES[metric.profile];
                   return (
                     <tr key={metric.profile} className="border-b border-border/50">
                       <td className="py-2 px-2">
-                        <Badge 
-                          style={{ 
+                        <Badge
+                          style={{
                             backgroundColor: profileInfo?.color?.bg,
-                            color: profileInfo?.color?.text
+                            color: profileInfo?.color?.text,
                           }}
                         >
                           {profileInfo?.name || metric.profile}
                         </Badge>
                       </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        {metric.totalContacts}
-                      </td>
+                      <td className="text-right py-2 px-2 font-mono">{metric.totalContacts}</td>
                       <td className="text-right py-2 px-2 font-mono font-medium">
                         {metric.conversionRate}%
                       </td>
                       <td className="text-right py-2 px-2 font-mono">
                         R$ {metric.avgDealValue.toLocaleString('pt-BR')}
                       </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        {metric.avgCycleDays}
-                      </td>
+                      <td className="text-right py-2 px-2 font-mono">{metric.avgCycleDays}</td>
                       <td className="text-right py-2 px-2 font-mono">
                         {metric.avgRelationshipScore}
                       </td>
-                      <td className="text-center py-2 px-2">
-                        {getTrendIcon(metric.trend)}
-                      </td>
+                      <td className="text-center py-2 px-2">{getTrendIcon(metric.trend)}</td>
                     </tr>
                   );
                 })}
@@ -411,9 +457,9 @@ const DISCConversionMetrics: React.FC = () => {
               Insight Principal
             </h4>
             <p className="text-sm">
-              Perfis <strong>{DISC_PROFILES[bestProfile.profile]?.name}</strong> têm a maior 
-              taxa de conversão ({bestProfile.conversionRate}%). Considere priorizar prospects 
-              com esse perfil e aplicar as estratégias específicas de comunicação.
+              Perfis <strong>{DISC_PROFILES[bestProfile.profile]?.name}</strong> têm a maior taxa de
+              conversão ({bestProfile.conversionRate}%). Considere priorizar prospects com esse
+              perfil e aplicar as estratégias específicas de comunicação.
             </p>
           </div>
         )}

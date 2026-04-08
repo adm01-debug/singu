@@ -6,14 +6,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, PieChart, Pie, Cell, RadarChart,
-  PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Target, Award, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,13 +50,13 @@ const VAK_COLORS: Record<VAKType, string> = {
   V: '#8b5cf6',
   A: '#3b82f6',
   K: '#22c55e',
-  D: '#64748b'
+  D: '#64748b',
 };
 
 const EMOTIONAL_COLORS: Record<string, string> = {
   positive: '#22c55e',
   neutral: '#f59e0b',
-  negative: '#ef4444'
+  negative: '#ef4444',
 };
 
 const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) => {
@@ -55,160 +68,181 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
   const [emotionalMetrics, setEmotionalMetrics] = useState<ProfileMetrics[]>([]);
 
   useEffect(() => {
-    if (user) fetchMetrics();
+    if (!user) return;
+
+    const fetchMetrics = async () => {
+      setLoading(true);
+      try {
+        // Fetch VAK analysis history
+        const { data: vakHistory } = await supabase
+          .from('vak_analysis_history')
+          .select('contact_id, visual_score, auditory_score, kinesthetic_score, digital_score')
+          .eq('user_id', user!.id);
+
+        // Fetch contacts for relationship scores
+        const { data: contacts } = await supabase
+          .from('contacts')
+          .select('id, relationship_score, relationship_stage')
+          .eq('user_id', user!.id);
+
+        // Fetch emotional states
+        const { data: emotionalHistory } = await supabase
+          .from('emotional_states_history')
+          .select('contact_id, emotional_state')
+          .eq('user_id', user!.id);
+
+        // Fetch interactions count
+        const { data: interactions } = await supabase
+          .from('interactions')
+          .select('contact_id')
+          .eq('user_id', user!.id);
+
+        // Process VAK metrics
+        const vakData: Record<
+          VAKType,
+          { contacts: Set<string>; totalScore: number; interactions: number; conversions: number }
+        > = {
+          V: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
+          A: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
+          K: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
+          D: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
+        };
+
+        (vakHistory || []).forEach((entry) => {
+          const scores = {
+            V: entry.visual_score || 0,
+            A: entry.auditory_score || 0,
+            K: entry.kinesthetic_score || 0,
+            D: entry.digital_score || 0,
+          };
+
+          const maxScore = Math.max(...Object.values(scores));
+          const dominant =
+            (Object.keys(scores) as VAKType[]).find((k) => scores[k] === maxScore) || 'V';
+
+          vakData[dominant].contacts.add(entry.contact_id);
+
+          const contact = (contacts || []).find((c) => c.id === entry.contact_id);
+          if (contact) {
+            vakData[dominant].totalScore += contact.relationship_score || 0;
+            if (
+              contact.relationship_stage === 'fechado' ||
+              contact.relationship_stage === 'cliente'
+            ) {
+              vakData[dominant].conversions++;
+            }
+          }
+
+          vakData[dominant].interactions += (interactions || []).filter(
+            (i) => i.contact_id === entry.contact_id,
+          ).length;
+        });
+
+        const processedVak: ProfileMetrics[] = (['V', 'A', 'K', 'D'] as VAKType[]).map((type) => {
+          const data = vakData[type];
+          const contactCount = data.contacts.size;
+          return {
+            profile: VAK_LABELS[type].name,
+            profileType: 'vak',
+            totalContacts: contactCount,
+            avgRelationshipScore: contactCount > 0 ? Math.round(data.totalScore / contactCount) : 0,
+            interactionCount: data.interactions,
+            conversionRate:
+              contactCount > 0 ? Math.round((data.conversions / contactCount) * 100) : 0,
+            trend: data.conversions > 0 ? 'up' : 'stable',
+          };
+        });
+
+        // Process Emotional metrics
+        const emotionalData: Record<string, { contacts: Set<string>; count: number }> = {
+          positive: { contacts: new Set(), count: 0 },
+          neutral: { contacts: new Set(), count: 0 },
+          negative: { contacts: new Set(), count: 0 },
+        };
+
+        const positiveStates = ['excited', 'confident', 'interested', 'curious', 'hopeful'];
+        const negativeStates = ['frustrated', 'anxious', 'resistant', 'skeptical', 'hesitant'];
+
+        (emotionalHistory || []).forEach((entry) => {
+          let category = 'neutral';
+          if (positiveStates.includes(entry.emotional_state)) category = 'positive';
+          else if (negativeStates.includes(entry.emotional_state)) category = 'negative';
+
+          emotionalData[category].contacts.add(entry.contact_id);
+          emotionalData[category].count++;
+        });
+
+        const processedEmotional: ProfileMetrics[] = ['positive', 'neutral', 'negative'].map(
+          (cat) => ({
+            profile: cat === 'positive' ? 'Positivo' : cat === 'neutral' ? 'Neutro' : 'Negativo',
+            profileType: 'emotional',
+            totalContacts: emotionalData[cat].contacts.size,
+            avgRelationshipScore: 0,
+            interactionCount: emotionalData[cat].count,
+            conversionRate: 0,
+            trend: cat === 'positive' ? 'up' : cat === 'negative' ? 'down' : 'stable',
+          }),
+        );
+
+        setVakMetrics(processedVak);
+        setEmotionalMetrics(processedEmotional);
+      } catch (error) {
+        logger.error('Error fetching NLP metrics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
   }, [user, period]);
 
-  const fetchMetrics = async () => {
-    setLoading(true);
-    try {
-      // Fetch VAK analysis history
-      const { data: vakHistory } = await supabase
-        .from('vak_analysis_history')
-        .select('contact_id, visual_score, auditory_score, kinesthetic_score, digital_score')
-        .eq('user_id', user!.id);
-
-      // Fetch contacts for relationship scores
-      const { data: contacts } = await supabase
-        .from('contacts')
-        .select('id, relationship_score, relationship_stage')
-        .eq('user_id', user!.id);
-
-      // Fetch emotional states
-      const { data: emotionalHistory } = await supabase
-        .from('emotional_states_history')
-        .select('contact_id, emotional_state')
-        .eq('user_id', user!.id);
-
-      // Fetch interactions count
-      const { data: interactions } = await supabase
-        .from('interactions')
-        .select('contact_id')
-        .eq('user_id', user!.id);
-
-      // Process VAK metrics
-      const vakData: Record<VAKType, { contacts: Set<string>; totalScore: number; interactions: number; conversions: number }> = {
-        V: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
-        A: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
-        K: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 },
-        D: { contacts: new Set(), totalScore: 0, interactions: 0, conversions: 0 }
-      };
-
-      (vakHistory || []).forEach(entry => {
-        const scores = {
-          V: entry.visual_score || 0,
-          A: entry.auditory_score || 0,
-          K: entry.kinesthetic_score || 0,
-          D: entry.digital_score || 0
-        };
-        
-        const maxScore = Math.max(...Object.values(scores));
-        const dominant = (Object.keys(scores) as VAKType[]).find(k => scores[k] === maxScore) || 'V';
-        
-        vakData[dominant].contacts.add(entry.contact_id);
-        
-        const contact = (contacts || []).find(c => c.id === entry.contact_id);
-        if (contact) {
-          vakData[dominant].totalScore += contact.relationship_score || 0;
-          if (contact.relationship_stage === 'fechado' || contact.relationship_stage === 'cliente') {
-            vakData[dominant].conversions++;
-          }
-        }
-        
-        vakData[dominant].interactions += (interactions || []).filter(i => i.contact_id === entry.contact_id).length;
-      });
-
-      const processedVak: ProfileMetrics[] = (['V', 'A', 'K', 'D'] as VAKType[]).map(type => {
-        const data = vakData[type];
-        const contactCount = data.contacts.size;
-        return {
-          profile: VAK_LABELS[type].name,
-          profileType: 'vak',
-          totalContacts: contactCount,
-          avgRelationshipScore: contactCount > 0 ? Math.round(data.totalScore / contactCount) : 0,
-          interactionCount: data.interactions,
-          conversionRate: contactCount > 0 ? Math.round((data.conversions / contactCount) * 100) : 0,
-          trend: Math.random() > 0.5 ? 'up' : 'stable'
-        };
-      });
-
-      // Process Emotional metrics
-      const emotionalData: Record<string, { contacts: Set<string>; count: number }> = {
-        positive: { contacts: new Set(), count: 0 },
-        neutral: { contacts: new Set(), count: 0 },
-        negative: { contacts: new Set(), count: 0 }
-      };
-
-      const positiveStates = ['excited', 'confident', 'interested', 'curious', 'hopeful'];
-      const negativeStates = ['frustrated', 'anxious', 'resistant', 'skeptical', 'hesitant'];
-
-      (emotionalHistory || []).forEach(entry => {
-        let category = 'neutral';
-        if (positiveStates.includes(entry.emotional_state)) category = 'positive';
-        else if (negativeStates.includes(entry.emotional_state)) category = 'negative';
-        
-        emotionalData[category].contacts.add(entry.contact_id);
-        emotionalData[category].count++;
-      });
-
-      const processedEmotional: ProfileMetrics[] = ['positive', 'neutral', 'negative'].map(cat => ({
-        profile: cat === 'positive' ? 'Positivo' : cat === 'neutral' ? 'Neutro' : 'Negativo',
-        profileType: 'emotional',
-        totalContacts: emotionalData[cat].contacts.size,
-        avgRelationshipScore: 0,
-        interactionCount: emotionalData[cat].count,
-        conversionRate: 0,
-        trend: cat === 'positive' ? 'up' : cat === 'negative' ? 'down' : 'stable'
-      }));
-
-      setVakMetrics(processedVak);
-      setEmotionalMetrics(processedEmotional);
-    } catch (error) {
-      logger.error('Error fetching NLP metrics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const currentMetrics = metricType === 'vak' ? vakMetrics : emotionalMetrics;
-  
-  const chartData = useMemo(() => 
-    currentMetrics.map(m => ({
-      name: m.profile,
-      'Contatos': m.totalContacts,
-      'Score Médio': m.avgRelationshipScore,
-      'Conversão %': m.conversionRate
-    })),
-  [currentMetrics]);
+
+  const chartData = useMemo(
+    () =>
+      currentMetrics.map((m) => ({
+        name: m.profile,
+        Contatos: m.totalContacts,
+        'Score Médio': m.avgRelationshipScore,
+        'Conversão %': m.conversionRate,
+      })),
+    [currentMetrics],
+  );
 
   const pieData = useMemo(() => {
     if (metricType === 'vak') {
-      return vakMetrics.map(m => ({
+      return vakMetrics.map((m) => ({
         name: m.profile,
         value: m.totalContacts,
-        fill: VAK_COLORS[m.profile.charAt(0) as VAKType] || '#64748b'
+        fill: VAK_COLORS[m.profile.charAt(0) as VAKType] || '#64748b',
       }));
     }
-    return emotionalMetrics.map(m => ({
+    return emotionalMetrics.map((m) => ({
       name: m.profile,
       value: m.totalContacts,
-      fill: EMOTIONAL_COLORS[m.profile.toLowerCase()] || '#64748b'
+      fill: EMOTIONAL_COLORS[m.profile.toLowerCase()] || '#64748b',
     }));
   }, [vakMetrics, emotionalMetrics, metricType]);
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-muted-foreground" />;
+      case 'up':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'down':
+        return <TrendingDown className="w-4 h-4 text-red-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
-  const bestProfile = useMemo(() => 
-    currentMetrics.reduce((best, curr) => 
-      curr.conversionRate > (best?.conversionRate || 0) ? curr : best, 
-      currentMetrics[0]
-    ),
-  [currentMetrics]);
+  const bestProfile = useMemo(
+    () =>
+      currentMetrics.reduce(
+        (best, curr) => (curr.conversionRate > (best?.conversionRate || 0) ? curr : best),
+        currentMetrics[0],
+      ),
+    [currentMetrics],
+  );
 
   if (loading) {
     return (
@@ -218,7 +252,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 gap-4 mb-4">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-24" />
             ))}
           </div>
@@ -237,9 +271,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
               <Target className="w-5 h-5 text-primary" />
               Métricas de Conversão PNL
             </CardTitle>
-            <CardDescription>
-              Performance de vendas por perfil comportamental
-            </CardDescription>
+            <CardDescription>Performance de vendas por perfil comportamental</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <Select value={metricType} onValueChange={(v) => setMetricType(v as MetricType)}>
@@ -285,9 +317,7 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
                   <Badge variant="outline">{metric.profile}</Badge>
                   {isBest && <Award className="w-4 h-4 text-yellow-500" />}
                 </div>
-                <div className="text-2xl font-bold mb-1">
-                  {metric.totalContacts}
-                </div>
+                <div className="text-2xl font-bold mb-1">{metric.totalContacts}</div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   {getTrendIcon(metric.trend)}
                   <span>{metric.interactionCount} interações</span>
@@ -313,17 +343,13 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip 
-                    contentStyle={{ 
+                  <Tooltip
+                    contentStyle={{
                       backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))'
+                      border: '1px solid hsl(var(--border))',
                     }}
                   />
-                  <Bar 
-                    dataKey="Contatos" 
-                    fill="hsl(var(--primary))"
-                    radius={[4, 4, 0, 0]}
-                  />
+                  <Bar dataKey="Contatos" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -365,10 +391,12 @@ const NLPConversionMetrics: React.FC<{ className?: string }> = ({ className }) =
               Insight Principal
             </h4>
             <p className="text-sm">
-              Contatos com perfil <strong>{bestProfile.profile}</strong> representam sua maior base 
-              ({bestProfile.totalContacts} contatos). {metricType === 'vak' && bestProfile.avgRelationshipScore > 0 && 
-                `O score médio de relacionamento é ${bestProfile.avgRelationshipScore}%.`}
-              {' '}Adapte sua comunicação para maximizar resultados com esse perfil.
+              Contatos com perfil <strong>{bestProfile.profile}</strong> representam sua maior base
+              ({bestProfile.totalContacts} contatos).{' '}
+              {metricType === 'vak' &&
+                bestProfile.avgRelationshipScore > 0 &&
+                `O score médio de relacionamento é ${bestProfile.avgRelationshipScore}%.`}{' '}
+              Adapte sua comunicação para maximizar resultados com esse perfil.
             </p>
           </div>
         )}
