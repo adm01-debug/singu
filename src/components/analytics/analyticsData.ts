@@ -64,6 +64,9 @@ const PERIOD_DAYS: Record<PeriodFilter, number> = {
   '365d': 365,
 };
 
+// Module-level storage for previous period comparison (avoids polluting window)
+let _prevInteractions: PreviousInteraction[] = [];
+
 export function useAnalyticsData(period: PeriodFilter) {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<AnalyticsContact[]>([]);
@@ -102,9 +105,8 @@ export function useAnalyticsData(period: PeriodFilter) {
         setContacts(contactsRes.data || []);
         setInteractions(interactionsRes.data || []);
 
-        // Store previous period interactions count for comparison
-        (window as unknown as Record<string, PreviousInteraction[]>).__prevInteractions =
-          previousInteractionsRes.data || [];
+        // Store previous period interactions for comparison
+        _prevInteractions = previousInteractionsRes.data || [];
       } catch (error) {
         logger.error('Error fetching analytics data:', error);
       } finally {
@@ -116,8 +118,7 @@ export function useAnalyticsData(period: PeriodFilter) {
   }, [user, period]);
 
   const stats = useMemo(() => {
-    const prevInteractions: PreviousInteraction[] =
-      (window as unknown as Record<string, PreviousInteraction[]>).__prevInteractions || [];
+    const prevInteractions = _prevInteractions;
 
     const totalCurrent = interactions.length;
     const totalPrevious = prevInteractions.length;
