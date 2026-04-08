@@ -459,7 +459,7 @@ export function StakeholderInfluenceNetwork({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="absolute top-3 right-3 w-64 bg-background/95 backdrop-blur-sm rounded-lg shadow-xl border p-3"
+            className="absolute top-3 right-3 w-64 bg-background/95 backdrop-blur-sm rounded-lg shadow-sm border p-3"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
