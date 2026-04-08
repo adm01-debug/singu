@@ -264,7 +264,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Baixo',
     range: [0, 25],
     color: 'text-destructive',
-    bgColor: 'bg-red-100',
+    bgColor: 'bg-destructive/10',
     description: 'Área com significativo potencial de desenvolvimento'
   },
   developing: {
@@ -272,7 +272,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Em Desenvolvimento',
     range: [26, 45],
     color: 'text-warning',
-    bgColor: 'bg-orange-100',
+    bgColor: 'bg-warning/10',
     description: 'Mostra consciência básica, com espaço para crescimento'
   },
   moderate: {
@@ -280,7 +280,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Moderado',
     range: [46, 65],
     color: 'text-warning',
-    bgColor: 'bg-yellow-100',
+    bgColor: 'bg-warning/10',
     description: 'Competência adequada para a maioria das situações'
   },
   high: {
@@ -288,7 +288,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Alto',
     range: [66, 85],
     color: 'text-success',
-    bgColor: 'bg-green-100',
+    bgColor: 'bg-success/10',
     description: 'Demonstra forte capacidade nesta área'
   },
   exceptional: {
@@ -296,7 +296,7 @@ export const EQ_LEVEL_INFO: Record<EQLevel, {
     namePt: 'Excepcional',
     range: [86, 100],
     color: 'text-secondary',
-    bgColor: 'bg-purple-100',
+    bgColor: 'bg-secondary/10',
     description: 'Domínio excepcional, potencial para mentoria'
   }
 };

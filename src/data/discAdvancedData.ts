@@ -152,7 +152,7 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
       secondary: 'hsl(0, 60%, 50%)',
       bg: 'bg-destructive/5 dark:bg-destructive/10',
       text: 'text-destructive',
-      border: 'border-red-200 dark:border-red-800'
+      border: 'border-destructive/20 dark:border-red-800'
     },
     icon: '⚡'
   },
@@ -244,7 +244,7 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
       secondary: 'hsl(48, 80%, 45%)',
       bg: 'bg-warning/5 dark:bg-warning/10',
       text: 'text-warning',
-      border: 'border-yellow-200 dark:border-yellow-800'
+      border: 'border-warning/20 dark:border-yellow-800'
     },
     icon: '🌟'
   },
@@ -336,7 +336,7 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
       secondary: 'hsl(142, 60%, 40%)',
       bg: 'bg-success/5 dark:bg-success/10',
       text: 'text-success',
-      border: 'border-green-200 dark:border-green-800'
+      border: 'border-success/20 dark:border-green-800'
     },
     icon: '🛡️'
   },
@@ -428,7 +428,7 @@ export const DISC_PROFILES: Record<Exclude<DISCProfile, null>, DISCProfileInfo> 
       secondary: 'hsl(217, 80%, 50%)',
       bg: 'bg-info/5 dark:bg-info/10',
       text: 'text-info',
-      border: 'border-blue-200 dark:border-blue-800'
+      border: 'border-info/20 dark:border-blue-800'
     },
     icon: '📊'
   }

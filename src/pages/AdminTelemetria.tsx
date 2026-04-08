@@ -372,7 +372,7 @@ export default function AdminTelemetriaPage() {
                           {row.rpc_name || row.table_name || "-"}
                         </td>
                         <td className="p-3 text-right font-mono font-bold tabular-nums">
-                          <span className={row.duration_ms >= 8000 ? "text-destructive" : row.duration_ms >= 3000 ? "text-yellow-600" : ""}>
+                          <span className={row.duration_ms >= 8000 ? "text-destructive" : row.duration_ms >= 3000 ? "text-warning" : ""}>
                             {formatDuration(row.duration_ms)}
                           </span>
                         </td>

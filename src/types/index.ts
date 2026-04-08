@@ -82,10 +82,10 @@ export type DecisionCriteria =
   | 'referral';
 
 export const DISC_LABELS: Record<string, { name: string; description: string; color: string }> = {
-  D: { name: 'Dominante', description: 'Direto, decisivo, focado em resultados', color: 'bg-red-100 text-red-700 border-red-200' },
-  I: { name: 'Influente', description: 'Entusiasta, otimista, focado em pessoas', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  S: { name: 'Estável', description: 'Paciente, confiável, focado em segurança', color: 'bg-green-100 text-green-700 border-green-200' },
-  C: { name: 'Conforme', description: 'Analítico, preciso, focado em qualidade', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  D: { name: 'Dominante', description: 'Direto, decisivo, focado em resultados', color: 'bg-destructive/10 text-destructive border-destructive/20' },
+  I: { name: 'Influente', description: 'Entusiasta, otimista, focado em pessoas', color: 'bg-warning/10 text-yellow-700 border-warning/20' },
+  S: { name: 'Estável', description: 'Paciente, confiável, focado em segurança', color: 'bg-success/10 text-success border-success/20' },
+  C: { name: 'Conforme', description: 'Analítico, preciso, focado em qualidade', color: 'bg-info/10 text-info border-info/20' },
 };
 
 export const DECISION_ROLE_LABELS: Record<DecisionRole, string> = {

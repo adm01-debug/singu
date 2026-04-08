@@ -73,7 +73,7 @@ const categoryIcons: Record<string, React.ElementType> = {
 
 const categoryColors: Record<string, string> = {
   personality: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  preference: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  preference: 'bg-blue-500/10 text-info border-blue-500/20',
   behavior: 'bg-green-500/10 text-green-500 border-green-500/20',
   opportunity: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   risk: 'bg-red-500/10 text-red-500 border-red-500/20',

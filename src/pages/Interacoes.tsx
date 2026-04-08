@@ -74,9 +74,9 @@ const interactionColors: Record<string, string> = {
   call: 'bg-info/10 text-info',
   email: 'bg-primary/10 text-primary',
   meeting: 'bg-warning/10 text-warning',
-  video_call: 'bg-purple-100 text-purple-600',
+  video_call: 'bg-secondary/10 text-secondary',
   note: 'bg-muted text-muted-foreground',
-  social: 'bg-pink-100 text-pink-600',
+  social: 'bg-accent/10 text-accent',
 };
 
 const interactionLabels: Record<string, string> = {

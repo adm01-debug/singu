@@ -81,7 +81,7 @@ export const METAPROGRAM_LABELS = {
     toward: {
       name: 'Em Direção A',
       icon: '🎯',
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      color: 'bg-success/10 text-success border-success/20',
       description: 'Motivado por objetivos, conquistas e ganhos. Foca no que quer alcançar.',
       communicationTips: [
         'Use palavras como: alcançar, conquistar, obter, ganhar, realizar',
@@ -93,7 +93,7 @@ export const METAPROGRAM_LABELS = {
     away_from: {
       name: 'Afastar-se De',
       icon: '🛡️',
-      color: 'bg-amber-100 text-amber-700 border-amber-200',
+      color: 'bg-warning/10 text-warning border-warning/20',
       description: 'Motivado por evitar problemas, dores e riscos. Foca no que quer evitar.',
       communicationTips: [
         'Use palavras como: evitar, prevenir, eliminar, resolver, proteger',
@@ -105,7 +105,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Usa ambas as direções motivacionais dependendo do contexto.',
       communicationTips: [
         'Combine benefícios com prevenção de problemas',
@@ -118,7 +118,7 @@ export const METAPROGRAM_LABELS = {
     internal: {
       name: 'Interno',
       icon: '🧭',
-      color: 'bg-violet-100 text-violet-700 border-violet-200',
+      color: 'bg-secondary/10 text-secondary border-secondary/20',
       description: 'Toma decisões baseado em seus próprios critérios e intuição.',
       communicationTips: [
         'Use frases como: "Você vai perceber que...", "Na sua avaliação..."',
@@ -142,7 +142,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Usa referência interna e externa dependendo do contexto.',
       communicationTips: [
         'Combine dados externos com espaço para avaliação pessoal',
@@ -166,7 +166,7 @@ export const METAPROGRAM_LABELS = {
     procedures: {
       name: 'Procedimentos',
       icon: '📋',
-      color: 'bg-orange-100 text-orange-700 border-orange-200',
+      color: 'bg-warning/10 text-warning border-warning/20',
       description: 'Prefere processos claros, passo a passo e métodos estruturados.',
       communicationTips: [
         'Apresente um processo passo a passo',
@@ -178,7 +178,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Usa opções e procedimentos dependendo do contexto.',
       communicationTips: [
         'Ofereça opções dentro de um processo estruturado',
@@ -190,7 +190,7 @@ export const METAPROGRAM_LABELS = {
     general: {
       name: 'Geral',
       icon: '🌐',
-      color: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+      color: 'bg-primary/10 text-primary border-primary/20',
       description: 'Prefere visão geral, conceitos amplos e o "big picture".',
       communicationTips: [
         'Comece com o panorama geral antes dos detalhes',
@@ -202,7 +202,7 @@ export const METAPROGRAM_LABELS = {
     specific: {
       name: 'Específico',
       icon: '🔍',
-      color: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+      color: 'bg-info/10 text-info border-info/20',
       description: 'Prefere detalhes, especificidades e informações granulares.',
       communicationTips: [
         'Forneça dados e números específicos',
@@ -214,7 +214,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Alterna entre visão geral e detalhes conforme necessário.',
       communicationTips: [
         'Comece geral e aprofunde quando pedido',
@@ -226,7 +226,7 @@ export const METAPROGRAM_LABELS = {
     proactive: {
       name: 'Proativo',
       icon: '🚀',
-      color: 'bg-rose-100 text-rose-700 border-rose-200',
+      color: 'bg-destructive/10 text-destructive border-destructive/20',
       description: 'Age primeiro, analisa depois. Inicia ações sem esperar.',
       communicationTips: [
         'Use: "Vamos fazer!", "Comece agora!"',
@@ -238,7 +238,7 @@ export const METAPROGRAM_LABELS = {
     reactive: {
       name: 'Reativo',
       icon: '⏳',
-      color: 'bg-teal-100 text-teal-700 border-teal-200',
+      color: 'bg-success/10 text-success border-success/20',
       description: 'Analisa primeiro, age depois. Espera o momento certo.',
       communicationTips: [
         'Use: "Pense sobre isso...", "Quando estiver pronto..."',
@@ -250,7 +250,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Alterna entre ação e análise conforme a situação.',
       communicationTips: [
         'Ofereça opção de agir ou analisar mais',
@@ -274,7 +274,7 @@ export const METAPROGRAM_LABELS = {
     difference: {
       name: 'Diferenciador',
       icon: '✨',
-      color: 'bg-pink-100 text-pink-700 border-pink-200',
+      color: 'bg-accent/10 text-accent border-accent/20',
       description: 'Foca em diferenças, novidades e no que é único.',
       communicationTips: [
         'Use: "Diferente de...", "Novo!", "Único!"',
@@ -286,7 +286,7 @@ export const METAPROGRAM_LABELS = {
     balanced: {
       name: 'Equilibrado',
       icon: '⚖️',
-      color: 'bg-slate-100 text-slate-700 border-slate-200',
+      color: 'bg-muted text-muted-foreground border-border',
       description: 'Valoriza tanto continuidade quanto inovação.',
       communicationTips: [
         'Combine familiaridade com novidade',
