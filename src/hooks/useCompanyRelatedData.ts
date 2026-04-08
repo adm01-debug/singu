@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 // ─── Types ─────────────────────────────────────────────────────
 
