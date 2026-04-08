@@ -18,7 +18,6 @@ import {
   Target,
   PartyPopper
 } from 'lucide-react';
-import { ProgressCelebration } from '@/types/carnegie';
 import { PROGRESS_CELEBRATIONS } from '@/data/carnegieProgressCelebration';
 import { useCarnegieAnalysis } from '@/hooks/useCarnegieAnalysis';
 import { cn } from '@/lib/utils';

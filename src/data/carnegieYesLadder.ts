@@ -3,7 +3,7 @@
 // "Get the other person saying 'yes, yes' immediately" - Dale Carnegie
 // ==============================================
 
-import { YesLadderTemplate, YesLadderStep } from '@/types/carnegie-extended';
+import { YesLadderTemplate } from '@/types/carnegie-extended';
 
 // ============================================
 // YES-LADDER TEMPLATES

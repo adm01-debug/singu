@@ -41,7 +41,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { MENTAL_TRIGGERS, TriggerType, TRIGGER_CATEGORIES, TriggerCategory } from '@/types/triggers';
+import { MENTAL_TRIGGERS, TriggerType, TRIGGER_CATEGORIES } from '@/types/triggers';
 import { TriggerResult } from '@/hooks/useTriggerHistory';
 import { logger } from "@/lib/logger";
 
@@ -109,7 +109,7 @@ const RESULT_COLORS: Record<TriggerResult, string> = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
+      <div className="bg-card border border-border rounded-lg p-3 shadow-sm">
         <p className="font-medium text-foreground mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="text-sm text-muted-foreground">

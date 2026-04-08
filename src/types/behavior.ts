@@ -1,8 +1,8 @@
 // Tipagem para o campo JSONB 'behavior' do Supabase
 // Permite acesso tipado aos dados comportamentais
 
-import { DISCProfile, VAKProfile as VAKProfileScored, ContactBehavior } from './index';
-import { VAKType, VAKProfile as VAKProfileDetailed } from './vak';
+import { DISCProfile } from './index';
+import { VAKType } from './vak';
 
 // Interface unificada para o behavior JSONB que pode vir do Supabase
 export interface BehaviorJson {

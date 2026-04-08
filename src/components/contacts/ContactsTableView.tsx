@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Building2, ArrowUpDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { RelationshipScore } from '@/components/ui/relationship-score';

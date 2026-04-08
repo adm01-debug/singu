@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Contact, DISCProfile, DISC_LABELS } from '@/types';
 import { VAKProfile, VAK_LABELS } from '@/types/vak';
-import { MetaprogramProfile, METAPROGRAM_LABELS } from '@/types/metaprograms';
+import { MetaprogramProfile } from '@/types/metaprograms';
 import { EQAnalysisResult } from '@/types/emotional-intelligence';
 import { BiasAnalysisResult } from '@/types/cognitive-biases';
 

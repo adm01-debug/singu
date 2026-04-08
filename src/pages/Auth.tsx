@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles, Chrome } from 'lucide-react';
+import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
 import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -276,7 +276,7 @@ const Auth = () => {
             </div>
           </div>
 
-          <Card className="border-border/30 shadow-xl shadow-primary/5 backdrop-blur-sm">
+          <Card className="border-border/30 shadow-md backdrop-blur-sm">
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">
                 {mode === 'login' ? 'Entrar' : 'Criar conta'}

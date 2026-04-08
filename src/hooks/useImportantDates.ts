@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Contact, Interaction } from '@/types';
-import { differenceInDays, addYears, format, isBefore, isAfter, addMonths } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { differenceInDays, addYears, isBefore, addMonths } from 'date-fns';
 
 export interface ImportantDate {
   id: string;

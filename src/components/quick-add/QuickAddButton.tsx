@@ -188,7 +188,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
               }}
               onClick={() => handleItemClick(item.type)}
               className={cn(
-                'flex items-center gap-3 px-4 py-3 rounded-full shadow-lg',
+                'flex items-center gap-3 px-4 py-3 rounded-full shadow-sm',
                 'text-primary-foreground font-medium text-sm',
                 'hover:scale-105 active:scale-95 transition-transform',
                 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
@@ -209,7 +209,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
               aria-label={isOpen ? 'Fechar menu de criação rápida' : 'Abrir menu de criação rápida'}
               aria-expanded={isOpen}
               className={cn(
-                'w-14 h-14 rounded-full shadow-xl flex items-center justify-center',
+                'w-14 h-14 rounded-full shadow-md flex items-center justify-center',
                 'bg-primary text-primary-foreground',
                 'hover:bg-primary/90 active:scale-95 transition-all',
                 'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',

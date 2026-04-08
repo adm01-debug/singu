@@ -15,7 +15,6 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useNeuromarketing } from '@/hooks/useNeuromarketing';
 import { BrainSystem, PrimalStimulus } from '@/types/neuromarketing';
 import { cn } from '@/lib/utils';

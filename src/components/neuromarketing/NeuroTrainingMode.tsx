@@ -2,7 +2,7 @@
 // NEURO TRAINING MODE - Interactive Brain System Training
 // ==============================================
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,8 +20,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BrainSystem, PrimalStimulus } from '@/types/neuromarketing';
-import { BRAIN_SYSTEM_INFO, PRIMAL_STIMULUS_INFO } from '@/data/neuromarketingData';
+import { BrainSystem } from '@/types/neuromarketing';
+import { BRAIN_SYSTEM_INFO } from '@/data/neuromarketingData';
 import { cn } from '@/lib/utils';
 
 interface TrainingQuestion {

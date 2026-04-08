@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Contact, Interaction } from '@/types';
 import { BigFiveProfile, BigFiveScore, BigFiveTrait, BIG_FIVE_TRAITS, getBigFiveDescription } from '@/types/big-five';
 

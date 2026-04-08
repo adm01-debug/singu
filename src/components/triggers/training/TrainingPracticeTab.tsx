@@ -10,7 +10,6 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { DISCProfile } from '@/types';
 import { TrainingScenario } from '@/data/communicationTrainingData';
 
 interface TrainingPracticeTabProps {

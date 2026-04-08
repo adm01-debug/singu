@@ -15,9 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { useTemplateNotifications, TemplateNotificationSettings as TNotificationSettings } from '@/hooks/useTemplateNotifications';
+import { useTemplateNotifications } from '@/hooks/useTemplateNotifications';
 import { toast } from 'sonner';
 import { subscribeToPush, isPushSupported, getSubscriptionStatus } from '@/lib/pushNotifications';
 

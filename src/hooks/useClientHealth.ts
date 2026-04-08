@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Contact, Interaction } from '@/types';
-import { differenceInDays, differenceInWeeks, subDays } from 'date-fns';
+import { differenceInDays, subDays } from 'date-fns';
 
 export interface HealthIndicator {
   name: string;

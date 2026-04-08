@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { useStakeholderAlerts, StakeholderAlert } from '@/hooks/useStakeholderAlerts';
+import { useStakeholderAlerts } from '@/hooks/useStakeholderAlerts';
 
 interface StakeholderAlertsListProps {
   companyId?: string;

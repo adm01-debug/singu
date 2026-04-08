@@ -25,7 +25,6 @@ import { CompaniesStatsBar } from '@/components/companies/CompaniesStatsBar';
 import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
-import { AdvancedDataExporter } from '@/components/data-export/AdvancedDataExporter';
 import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';

@@ -27,14 +27,10 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Separator } from '@/components/ui/separator';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
-import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { useAccessibleToast } from '@/hooks/useAccessibleToast';
-import { cn } from '@/lib/utils';
 import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
 import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
@@ -196,7 +192,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-lg">
+              <Card className="border-border/50 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="w-5 h-5 text-primary" />
@@ -217,7 +213,7 @@ const Configuracoes = () => {
                         size="xl"
                         className="border-4 border-primary/20"
                       />
-                      <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-lg">
+                      <button className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors shadow-sm">
                         <Camera className="w-4 h-4" />
                       </button>
                     </div>
@@ -329,7 +325,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-lg">
+              <Card className="border-border/50 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Bell className="w-5 h-5 text-primary" />
@@ -422,7 +418,7 @@ const Configuracoes = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="border-border/50 shadow-lg">
+              <Card className="border-border/50 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />

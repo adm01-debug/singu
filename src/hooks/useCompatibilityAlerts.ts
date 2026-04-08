@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { DISCProfile, DISC_LABELS } from '@/types';
-import { VAKType, VAK_LABELS } from '@/types/vak';
+import { DISCProfile } from '@/types';
+import { VAKType } from '@/types/vak';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
 

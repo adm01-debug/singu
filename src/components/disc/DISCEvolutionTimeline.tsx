@@ -7,7 +7,6 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, 
@@ -21,8 +20,7 @@ import {
   TrendingUp, TrendingDown, Minus, Calendar, 
   Activity, Target, Zap, RefreshCw, ChevronRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { DISCProfile } from '@/types';
+import { motion } from 'framer-motion';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
 import { logger } from "@/lib/logger";
 

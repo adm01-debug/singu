@@ -1,5 +1,5 @@
 import { DISCProfile, DISC_LABELS } from '@/types';
-import { VAKType, VAK_LABELS } from '@/types/vak';
+import { VAKType } from '@/types/vak';
 
 // ============================================
 // Types

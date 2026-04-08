@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
-import { Trash2, Archive, MoreHorizontal } from 'lucide-react';
+import { Trash2, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SwipeAction {

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useInteractions } from '@/hooks/useInteractions';
-import { getHours, getDay, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { getHours, getDay } from 'date-fns';
 
 export interface TimeSlot {
   hour: number;

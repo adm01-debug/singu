@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Tables } from '@/integrations/supabase/types';
-import type { DecisionRole, ContactRole } from '@/types';
+import type { DecisionRole } from '@/types';
 
 type Contact = Tables<'contacts'>;
 type Interaction = Tables<'interactions'>;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatDistanceToNow, format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,11 +11,9 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { LuxButton } from './LuxButton';
 import { LuxHistoryTimeline } from './LuxHistoryTimeline';
 import type { LuxIntelligenceRecord } from '@/hooks/useLuxIntelligence';
@@ -655,7 +653,7 @@ export function LuxIntelligencePanel({
       {/* Header with Status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-premium text-primary-foreground shadow-lg shadow-primary/30">
+          <div className="p-2 rounded-xl bg-gradient-premium text-primary-foreground shadow-sm">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>

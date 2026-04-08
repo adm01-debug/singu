@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, KeyboardEvent, ReactNode } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronDown, Home } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ChevronRight, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Button } from '@/components/ui/button';

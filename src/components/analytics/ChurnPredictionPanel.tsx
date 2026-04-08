@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useChurnPrediction, ChurnRisk } from '@/hooks/useChurnPrediction';
+import { useChurnPrediction } from '@/hooks/useChurnPrediction';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 

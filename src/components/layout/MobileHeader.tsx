@@ -4,7 +4,6 @@ import { Menu, Search, Bell, Zap, ArrowLeft, ChevronRight } from 'lucide-react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { MobileSidebarDrawer } from './MobileSidebarDrawer';
 import { useNavigationStack } from '@/contexts/NavigationStackContext';
-import { cn } from '@/lib/utils';
 
 /** Routes that are considered "detail" or "nested" — show back arrow instead of hamburger */
 const NESTED_ROUTE_PATTERNS = [

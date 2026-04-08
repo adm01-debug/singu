@@ -45,7 +45,6 @@ import {
   NeuroABTracker, NeuroHeatmapCalendar, NeuroTrainingMode,
   NeurochemicalInfluenceMap,
 } from '@/components/neuromarketing';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/seo/SEOHead';

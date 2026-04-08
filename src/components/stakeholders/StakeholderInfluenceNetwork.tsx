@@ -344,7 +344,7 @@ export function StakeholderInfluenceNetwork({
       {/* Graph container */}
       <div
         ref={containerRef}
-        className="w-full bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden"
+        className="w-full bg-gradient-to-br from-muted/30 to-muted/50 dark:from-muted/10 dark:to-muted/20 rounded-lg overflow-hidden"
         style={{ height: `${height}px` }}
       >
         <ForceGraph2D
@@ -459,7 +459,7 @@ export function StakeholderInfluenceNetwork({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="absolute top-3 right-3 w-64 bg-background/95 backdrop-blur-sm rounded-lg shadow-xl border p-3"
+            className="absolute top-3 right-3 w-64 bg-background/95 backdrop-blur-sm rounded-lg shadow-sm border p-3"
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">

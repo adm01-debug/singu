@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
@@ -59,7 +59,6 @@ import { ContactCardWithContext } from '@/components/contact-card/ContactCardWit
 import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
-import { ContextualHelpTooltip } from '@/components/help/ContextualHelpTooltip';
 import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
@@ -67,15 +66,11 @@ import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
-import type { ContactRole } from '@/types';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
-import { FeatureSpotlight } from '@/components/feedback/FeatureSpotlight';
 import type { SearchPreset } from '@/hooks/useSearchPresets';
 import { logger } from "@/lib/logger";
 import { useTableDensity } from '@/hooks/useTableDensity';
-import { DensityToggle } from '@/components/ui/density-toggle';
-import { KeyboardHint } from '@/components/ui/keyboard-hint';
-import { hapticMedium, hapticHeavy, hapticSuccess } from '@/lib/haptics';
+import { hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';

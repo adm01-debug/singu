@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { HelpCircle, Brain, Zap, Heart, Lightbulb } from 'lucide-react';
+import { HelpCircle, Zap, Heart, Lightbulb } from 'lucide-react';
 import { BrainSystem, PrimalStimulus, Neurochemical } from '@/types/neuromarketing';
 import { BRAIN_SYSTEM_INFO, PRIMAL_STIMULUS_INFO, NEUROCHEMICAL_INFO } from '@/data/neuromarketingData';
 import { cn } from '@/lib/utils';

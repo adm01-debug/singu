@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { AutomationAction, ActionType } from '@/hooks/useAutomationRules';
+import type { AutomationAction } from '@/hooks/useAutomationRules';
 
 interface ActionConfigFormProps {
   action: AutomationAction;

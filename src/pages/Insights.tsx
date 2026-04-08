@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -32,9 +32,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PortfolioCompatibilityReport } from '@/components/triggers/PortfolioCompatibilityReport';
 import { CompatibilityAlertsList } from '@/components/triggers/CompatibilityAlertsList';
-import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
-import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { CarnegieDashboard } from '@/components/carnegie';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -464,7 +462,7 @@ const Insights = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-lg group">
+                    <Card className="h-full border-border/50 hover:border-primary/30 transition-all hover:shadow-sm group">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-4">
                           <div className={cn(

@@ -5,9 +5,9 @@
 
 import { useMemo, useCallback } from 'react';
 import { Contact } from '@/types';
-import { CarnegieScore, CarnegieAnalysisResult, TalkRatioAnalysis, WarmthScore } from '@/types/carnegie';
-import { NOBLE_CAUSES, getNobleCausesByDISC } from '@/data/carnegieNobleCauses';
-import { IDENTITY_LABELS, getTopLabelsForContact } from '@/data/carnegieIdentityLabels';
+import { CarnegieScore, TalkRatioAnalysis, WarmthScore } from '@/types/carnegie';
+import { getNobleCausesByDISC } from '@/data/carnegieNobleCauses';
+import { getTopLabelsForContact } from '@/data/carnegieIdentityLabels';
 import { calculateWarmthScore, getWarmthLevel, detectWarmthIndicators, detectColdIndicators, getWarmthSuggestions } from '@/data/carnegieWarmth';
 import { detectFaceSavingScenario, getTechniqueForDISC } from '@/data/carnegieFaceSaving';
 import { detectProgressType, getCelebrationForDISC } from '@/data/carnegieProgressCelebration';

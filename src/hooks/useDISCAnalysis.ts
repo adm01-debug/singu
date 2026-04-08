@@ -2,7 +2,7 @@
 // useDISCAnalysis Hook - Enterprise Level DISC Analysis
 // ==============================================
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Contact, DISCProfile } from '@/types';
