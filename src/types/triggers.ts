@@ -299,7 +299,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Entender a dor do cliente',
     effectiveness: 9,
     icon: '❤️',
-    color: 'text-red-500 bg-red-50',
+    color: 'text-destructive bg-destructive/5',
     examples: [
       'Eu entendo sua frustração',
       'Já passei por isso também',
@@ -458,7 +458,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Pessoas mantêm comportamentos',
     effectiveness: 7,
     icon: '🔄',
-    color: 'text-info bg-blue-50',
+    color: 'text-info bg-info/5',
     examples: [
       'Você sempre foi inovador',
       'Como empresa que preza qualidade',
@@ -475,7 +475,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Sequência de acordos menores',
     effectiveness: 8,
     icon: '👍',
-    color: 'text-green-500 bg-green-50',
+    color: 'text-success bg-success/5',
     examples: [
       'Faz sentido para você?',
       'Concorda com essa análise?',
@@ -492,7 +492,7 @@ export const MENTAL_TRIGGERS: Record<TriggerType, MentalTrigger> = {
     description: 'Declaração perante outros',
     effectiveness: 7,
     icon: '📢',
-    color: 'text-orange-500 bg-orange-50',
+    color: 'text-warning bg-warning/5',
     examples: [
       'Posso contar com você no evento?',
       'Confirmo com a equipe então?',

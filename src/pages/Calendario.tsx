@@ -260,25 +260,25 @@ const Calendario = () => {
             </CardContent>
           </Card>
           
-          <Card className="border-orange-500/30 bg-orange-500/5">
+          <Card className="border-warning/30 bg-warning/5">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-orange-500/10 text-orange-500">
+              <div className="p-3 rounded-xl bg-warning/10 text-warning">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <MorphingNumber value={stats.today} className="text-2xl font-bold text-orange-500" />
+                <MorphingNumber value={stats.today} className="text-2xl font-bold text-warning" />
                 <p className="text-sm text-muted-foreground">Hoje</p>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="border-green-500/30 bg-green-500/5">
+          <Card className="border-success/30 bg-success/5">
             <CardContent className="p-4 flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-green-500/10 text-green-500">
+              <div className="p-3 rounded-xl bg-success/10 text-success">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <MorphingNumber value={stats.upcoming} className="text-2xl font-bold text-green-500" />
+                <MorphingNumber value={stats.upcoming} className="text-2xl font-bold text-success" />
                 <p className="text-sm text-muted-foreground">Próximos</p>
               </div>
             </CardContent>

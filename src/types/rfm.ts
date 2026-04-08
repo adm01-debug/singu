@@ -251,7 +251,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   at_risk: {
     name: 'Em Risco',
     description: 'Gastaram muito antes mas não compram há tempo',
-    color: 'text-red-500',
+    color: 'text-destructive',
     bgColor: 'bg-destructive/10',
     icon: 'alert-triangle',
     priority: 8,
@@ -261,7 +261,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
     name: 'Não Podemos Perder',
     description: 'Grandes gastadores que estão escapando',
     color: 'text-destructive',
-    bgColor: 'bg-red-200',
+    bgColor: 'bg-destructive/20',
     icon: 'shield-alert',
     priority: 9,
     actionFocus: 'Contato pessoal imediato, resolver problemas'
@@ -269,7 +269,7 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   hibernating: {
     name: 'Hibernando',
     description: 'Última compra foi há muito tempo, baixo valor',
-    color: 'text-gray-500',
+    color: 'text-muted-foreground',
     bgColor: 'bg-muted',
     icon: 'pause-circle',
     priority: 10,
@@ -278,8 +278,8 @@ export const RFM_SEGMENTS: Record<RFMSegment, {
   lost: {
     name: 'Perdidos',
     description: 'Menor recência, frequência e valor monetário',
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-50',
+    color: 'text-muted-foreground/60',
+    bgColor: 'bg-muted/50',
     icon: 'x-circle',
     priority: 11,
     actionFocus: 'Última tentativa ou arquivar'

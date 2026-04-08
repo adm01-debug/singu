@@ -268,7 +268,7 @@ const Analytics = () => {
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-lg text-foreground">{performer.score}</p>
-                            <Badge variant="outline" className={cn("text-xs", performer.sentiment === 'positivo' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-muted text-muted-foreground')}>
+                            <Badge variant="outline" className={cn("text-xs", performer.sentiment === 'positivo' ? 'bg-success/10 text-success border-success/30' : 'bg-muted text-muted-foreground')}>
                               {performer.sentiment}
                             </Badge>
                           </div>
@@ -365,7 +365,7 @@ const Analytics = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><Heart className="w-5 h-5 text-pink-500" />Distribuição de Sentimentos</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2"><Heart className="w-5 h-5 text-accent" />Distribuição de Sentimentos</CardTitle>
                     <CardDescription>Proporção de interações por tipo de sentimento</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -400,7 +400,7 @@ const Analytics = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
                 <Card className="h-full">
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><TrendingUp className="w-5 h-5 text-emerald-500" />Evolução do Sentimento</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2"><TrendingUp className="w-5 h-5 text-success" />Evolução do Sentimento</CardTitle>
                     <CardDescription>Tendência de sentimentos ao longo do tempo</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -422,13 +422,13 @@ const Analytics = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" />Insights de Sentimento</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2"><Zap className="w-5 h-5 text-warning" />Insights de Sentimento</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="p-4 rounded-lg bg-success/10 border border-emerald-500/20">
                         <div className="flex items-center gap-2 mb-2">
-                          <TrendingUp className="w-4 h-4 text-emerald-500" /><span className="font-medium text-emerald-500">Positivo</span>
+                          <TrendingUp className="w-4 h-4 text-success" /><span className="font-medium text-success">Positivo</span>
                         </div>
                         <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[0]?.value}</p>
                         <p className="text-sm text-muted-foreground">{Math.round((sentimentData[0]?.value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total</p>
@@ -440,9 +440,9 @@ const Analytics = () => {
                         <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[1]?.value}</p>
                         <p className="text-sm text-muted-foreground">{Math.round((sentimentData[1]?.value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total</p>
                       </div>
-                      <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20">
                         <div className="flex items-center gap-2 mb-2">
-                          <TrendingDown className="w-4 h-4 text-red-500" /><span className="font-medium text-red-500">Negativo</span>
+                          <TrendingDown className="w-4 h-4 text-destructive" /><span className="font-medium text-destructive">Negativo</span>
                         </div>
                         <p className="text-2xl font-bold text-foreground mb-1">{sentimentData[2]?.value}</p>
                         <p className="text-sm text-muted-foreground">{Math.round((sentimentData[2]?.value / sentimentData.reduce((a, b) => a + b.value, 0)) * 100)}% do total</p>

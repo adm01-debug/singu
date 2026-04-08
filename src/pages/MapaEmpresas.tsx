@@ -381,10 +381,10 @@ export default function MapaEmpresas() {
             </div>
             <div className="flex items-center gap-4 text-[10px] text-muted-foreground pt-1 border-t border-border/30">
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" /> Score ≥ 70
+                <span className="w-2.5 h-2.5 rounded-full bg-success/80" /> Score ≥ 70
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" /> Score 40–69
+                <span className="w-2.5 h-2.5 rounded-full bg-warning/80" /> Score 40–69
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded-full bg-destructive/80" /> Score &lt; 40

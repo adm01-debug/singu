@@ -206,7 +206,7 @@ export const SLEIGHT_OF_MOUTH_PATTERNS: Record<SleightOfMouthPattern, SleightPat
     howItWorks: 'Eleva a discussão para valores mais fundamentais do cliente.',
     formula: '"Entendo que [critério atual] é importante. Mas o que é mais importante para você: [valor superior]?"',
     icon: '👑',
-    color: 'bg-warning/10 text-yellow-700 border-warning/20',
+    color: 'bg-warning/10 text-warning border-warning/20',
     examples: [
       '"Preço é importante, mas o que é mais importante: economizar hoje ou crescer amanhã?"',
       '"Tempo é um recurso, mas qual recurso é mais escasso: tempo ou oportunidades?"',

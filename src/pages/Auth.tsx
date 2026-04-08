@@ -154,8 +154,8 @@ const Auth = () => {
         <div className="absolute inset-0 bg-black/5" />
         
         {/* Modern geometric decorative elements */}
-        <div className="absolute top-16 left-16 w-72 h-72 bg-white/8 rounded-3xl blur-3xl rotate-12" />
-        <div className="absolute bottom-16 right-16 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-16 left-16 w-72 h-72 bg-foreground/8 rounded-3xl blur-3xl rotate-12" />
+        <div className="absolute bottom-16 right-16 w-96 h-96 bg-foreground/5 rounded-full blur-3xl" />
         
         {/* Animated network lines */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
@@ -185,7 +185,7 @@ const Auth = () => {
             className="flex items-center gap-4 mb-10"
           >
             <motion.div 
-              className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-xl flex items-center justify-center ring-1 ring-white/20"
+              className="w-14 h-14 rounded-2xl bg-foreground/15 backdrop-blur-xl flex items-center justify-center ring-1 ring-foreground/20"
               whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
               transition={{ duration: 0.5 }}
             >
@@ -226,7 +226,7 @@ const Auth = () => {
             ].map((feature, index) => (
               <motion.div 
                 key={index} 
-                className="flex items-center gap-3 bg-white/12 backdrop-blur-sm rounded-xl px-4 py-3.5 ring-1 ring-white/15"
+                className="flex items-center gap-3 bg-foreground/12 backdrop-blur-sm rounded-xl px-4 py-3.5 ring-1 ring-foreground/15"
                 whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.16)' }}
                 transition={{ duration: 0.2 }}
               >
@@ -245,7 +245,7 @@ const Auth = () => {
           >
             <div className="flex -space-x-2">
               {['bg-primary', 'bg-accent', 'bg-success', 'bg-secondary'].map((bg, i) => (
-                <div key={i} className={`w-8 h-8 rounded-full ${bg} ring-2 ring-white/20 flex items-center justify-center text-[10px] font-bold text-primary-foreground`}>
+                <div key={i} className={`w-8 h-8 rounded-full ${bg} ring-2 ring-foreground/20 flex items-center justify-center text-[10px] font-bold text-primary-foreground`}>
                   {['MS', 'JR', 'AL', 'PK'][i]}
                 </div>
               ))}

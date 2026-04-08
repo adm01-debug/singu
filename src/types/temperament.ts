@@ -38,7 +38,7 @@ export const TEMPERAMENT_TYPES: Record<TemperamentType, TemperamentInfo> = {
     nickname: 'O Entusiasta',
     element: 'Ar',
     icon: '🌟',
-    color: 'text-yellow-700',
+    color: 'text-warning',
     bgColor: 'bg-warning/10',
     description: 'Extrovertido, otimista e sociável. Adora pessoas, diversão e novas experiências.',
     traits: ['Extrovertido', 'Otimista', 'Sociável', 'Espontâneo', 'Entusiasta'],

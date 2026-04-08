@@ -75,7 +75,7 @@ export function VoiceOrb({ phase, isBooting }: { phase: VoiceAgentPhase; isBooti
           animate={{ opacity: 1, scale: [1, 1.15, 1] }}
           transition={{ scale: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }, opacity: { duration: 0.3 } }}
         >
-          <Mic className="h-6 w-6 text-white/90" />
+          <Mic className="h-6 w-6 text-foreground/90" />
         </motion.div>
       )}
 
@@ -86,7 +86,7 @@ export function VoiceOrb({ phase, isBooting }: { phase: VoiceAgentPhase; isBooti
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", damping: 12 }}
         >
-          <Volume2 className="h-6 w-6 text-white/90" />
+          <Volume2 className="h-6 w-6 text-foreground/90" />
         </motion.div>
       )}
     </div>
