@@ -18,6 +18,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { Tables } from '@/integrations/supabase/types';
 
 type QuickAddType = 'contact' | 'company' | 'interaction' | null;
 
