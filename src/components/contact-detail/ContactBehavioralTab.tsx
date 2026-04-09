@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
+import type { Tables } from '@/integrations/supabase/types';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import { DISCCommunicationLogsPanel } from '@/components/contact-detail/DISCCommunicationLogsPanel';
 import type { Contact } from '@/hooks/useContactDetail';
