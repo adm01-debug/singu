@@ -354,7 +354,7 @@ function ContentToggle({ icon, label, description, checked, onCheckedChange }: C
   );
 }
 
-interface WeeklyReportData {
+interface ReportPreviewData {
   stats?: {
     totalInteractions?: number;
     newContacts?: number;
@@ -366,7 +366,7 @@ interface WeeklyReportData {
 }
 
 interface ReportPreviewProps {
-  data: WeeklyReportData | null;
+  data: ReportPreviewData | null;
   generating: boolean;
 }
 
