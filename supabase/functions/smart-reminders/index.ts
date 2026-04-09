@@ -1,19 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface RelationshipDecay {
-  contactId: string;
-  contactName: string;
-  daysSinceLastInteraction: number;
-  relationshipScore: number;
-  decayLevel: 'warming' | 'cooling' | 'cold' | 'frozen';
-  suggestedAction: string;
-}
+import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 interface SmartReminder {
   id: string;
@@ -32,21 +19,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Auth guard: use JWT user_id ──
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult;
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { action, userId } = await req.json();
-    console.log(`Smart Reminders - Action: ${action}, User: ${userId}`);
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'userId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { action } = await req.json();
 
     const reminders: SmartReminder[] = [];
     const today = new Date();
@@ -59,11 +43,7 @@ serve(async (req) => {
     const { data: followUps, error: followUpError } = await supabaseClient
       .from('interactions')
       .select(`
-        id,
-        title,
-        content,
-        follow_up_date,
-        contact_id,
+        id, title, content, follow_up_date, contact_id,
         contacts:contact_id (id, first_name, last_name)
       `)
       .eq('user_id', userId)
@@ -75,12 +55,10 @@ serve(async (req) => {
     if (followUpError) {
       console.error('Error fetching follow-ups:', followUpError);
     } else if (followUps) {
-      console.log(`Found ${followUps.length} follow-ups`);
-      
       for (const followUp of followUps) {
         const contactData = followUp.contacts as unknown;
         const contact = Array.isArray(contactData) ? contactData[0] : contactData;
-        const contactName = contact ? `${contact.first_name} ${contact.last_name}` : 'Contato';
+        const contactName = contact ? `${(contact as Record<string, string>).first_name} ${(contact as Record<string, string>).last_name}` : 'Contato';
         
         const followUpDate = new Date(followUp.follow_up_date);
         const isToday = followUpDate.toDateString() === today.toDateString();
@@ -97,10 +75,7 @@ serve(async (req) => {
           contactId: followUp.contact_id,
           contactName,
           dueDate: followUp.follow_up_date,
-          metadata: {
-            interactionId: followUp.id,
-            content: followUp.content
-          }
+          metadata: { interactionId: followUp.id, content: followUp.content }
         });
       }
     }
@@ -115,45 +90,30 @@ serve(async (req) => {
     if (contactsError) {
       console.error('Error fetching contacts:', contactsError);
     } else if (contacts) {
-      const month = today.getMonth() + 1;
-      const day = today.getDate();
-      
       for (const contact of contacts) {
         if (!contact.birthday) continue;
-        
         const birthday = new Date(contact.birthday);
         const birthMonth = birthday.getMonth() + 1;
         const birthDay = birthday.getDate();
         
-        // Check if birthday is within the next 7 days
         for (let i = 0; i <= 7; i++) {
           const checkDate = new Date(today);
           checkDate.setDate(checkDate.getDate() + i);
-          const checkMonth = checkDate.getMonth() + 1;
-          const checkDay = checkDate.getDate();
-          
-          if (birthMonth === checkMonth && birthDay === checkDay) {
-            const isToday = i === 0;
-            const isTomorrow = i === 1;
+          if (birthday.getMonth() === checkDate.getMonth() && birthDay === checkDate.getDate()) {
             const contactName = `${contact.first_name} ${contact.last_name}`;
-            
             reminders.push({
               id: `birthday-${contact.id}`,
               type: 'birthday',
-              priority: isToday ? 'high' : (isTomorrow ? 'high' : 'medium'),
-              title: isToday ? `🎂 Aniversário Hoje: ${contactName}` :
-                     isTomorrow ? `🎂 Aniversário Amanhã: ${contactName}` :
+              priority: i <= 1 ? 'high' : 'medium',
+              title: i === 0 ? `🎂 Aniversário Hoje: ${contactName}` :
+                     i === 1 ? `🎂 Aniversário Amanhã: ${contactName}` :
                      `🎂 Aniversário em ${i} dias: ${contactName}`,
-              description: isToday ? 
-                'Não esqueça de enviar uma mensagem de parabéns!' :
+              description: i === 0 ? 'Não esqueça de enviar uma mensagem de parabéns!' :
                 `Prepare-se para parabenizar ${contact.first_name}!`,
               contactId: contact.id,
               contactName,
               dueDate: checkDate.toISOString().split('T')[0],
-              metadata: {
-                daysUntil: i,
-                relationshipScore: contact.relationship_score
-              }
+              metadata: { daysUntil: i, relationshipScore: contact.relationship_score }
             });
             break;
           }
@@ -167,15 +127,13 @@ serve(async (req) => {
       .select('id, first_name, last_name, relationship_score, relationship_stage')
       .eq('user_id', userId);
 
-    if (allContactsError) {
-      console.error('Error fetching all contacts:', allContactsError);
-    } else if (allContacts) {
-      // Get last interaction for each contact
+    if (!allContactsError && allContacts) {
       for (const contact of allContacts) {
         const { data: lastInteraction } = await supabaseClient
           .from('interactions')
           .select('created_at')
           .eq('contact_id', contact.id)
+          .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -186,184 +144,107 @@ serve(async (req) => {
             (today.getTime() - lastInteractionDate.getTime()) / (1000 * 60 * 60 * 24)
           );
 
-          // Determine decay level based on days and relationship stage
-          let decayLevel: RelationshipDecay['decayLevel'] = 'warming';
+          const relationshipScore = contact.relationship_score || 50;
+          const decayThreshold = relationshipScore >= 70 ? 14 : relationshipScore >= 50 ? 21 : 30;
+
+          type DecayLevel = 'warming' | 'cooling' | 'cold' | 'frozen';
+          let decayLevel: DecayLevel = 'warming';
           let priority: SmartReminder['priority'] = 'low';
           let shouldAlert = false;
 
-          const contactName = `${contact.first_name} ${contact.last_name}`;
-          const relationshipScore = contact.relationship_score || 50;
-
-          // More important relationships decay faster
-          const decayThreshold = relationshipScore >= 70 ? 14 : 
-                                 relationshipScore >= 50 ? 21 : 30;
-
           if (daysSinceLastInteraction >= decayThreshold * 2) {
-            decayLevel = 'frozen';
-            priority = 'high';
-            shouldAlert = true;
+            decayLevel = 'frozen'; priority = 'high'; shouldAlert = true;
           } else if (daysSinceLastInteraction >= decayThreshold * 1.5) {
-            decayLevel = 'cold';
-            priority = 'high';
-            shouldAlert = true;
+            decayLevel = 'cold'; priority = 'high'; shouldAlert = true;
           } else if (daysSinceLastInteraction >= decayThreshold) {
-            decayLevel = 'cooling';
-            priority = 'medium';
-            shouldAlert = true;
-          } else if (daysSinceLastInteraction >= decayThreshold * 0.75) {
-            decayLevel = 'warming';
-            priority = 'low';
-            // Only alert for high-value relationships
-            if (relationshipScore >= 70) {
-              shouldAlert = true;
-            }
+            decayLevel = 'cooling'; priority = 'medium'; shouldAlert = true;
+          } else if (daysSinceLastInteraction >= decayThreshold * 0.75 && relationshipScore >= 70) {
+            decayLevel = 'warming'; shouldAlert = true;
           }
 
           if (shouldAlert) {
-            let suggestedAction = '';
-            let emoji = '';
-            
-            switch (decayLevel) {
-              case 'frozen':
-                emoji = '🥶';
-                suggestedAction = `Reconecte-se urgentemente! ${daysSinceLastInteraction} dias sem contato.`;
-                break;
-              case 'cold':
-                emoji = '❄️';
-                suggestedAction = `Relacionamento esfriando. Última interação há ${daysSinceLastInteraction} dias.`;
-                break;
-              case 'cooling':
-                emoji = '🌡️';
-                suggestedAction = `Considere fazer um check-in. ${daysSinceLastInteraction} dias desde o último contato.`;
-                break;
-              case 'warming':
-                emoji = '💛';
-                suggestedAction = `Mantenha o momentum. ${daysSinceLastInteraction} dias desde a última interação.`;
-                break;
-            }
+            const contactName = `${contact.first_name} ${contact.last_name}`;
+            const emojiMap: Record<DecayLevel, string> = { frozen: '🥶', cold: '❄️', cooling: '🌡️', warming: '💛' };
+            const descMap: Record<DecayLevel, string> = {
+              frozen: `Reconecte-se urgentemente! ${daysSinceLastInteraction} dias sem contato.`,
+              cold: `Relacionamento esfriando. Última interação há ${daysSinceLastInteraction} dias.`,
+              cooling: `Considere fazer um check-in. ${daysSinceLastInteraction} dias desde o último contato.`,
+              warming: `Mantenha o momentum. ${daysSinceLastInteraction} dias desde a última interação.`,
+            };
 
             reminders.push({
-              id: `decay-${contact.id}`,
-              type: 'decay',
-              priority,
-              title: `${emoji} Relacionamento Esfriando: ${contactName}`,
-              description: suggestedAction,
-              contactId: contact.id,
-              contactName,
-              dueDate: null,
-              metadata: {
-                daysSinceLastInteraction,
-                decayLevel,
-                relationshipScore,
-                relationshipStage: contact.relationship_stage
-              }
+              id: `decay-${contact.id}`, type: 'decay', priority,
+              title: `${emojiMap[decayLevel]} Relacionamento Esfriando: ${contactName}`,
+              description: descMap[decayLevel],
+              contactId: contact.id, contactName, dueDate: null,
+              metadata: { daysSinceLastInteraction, decayLevel, relationshipScore, relationshipStage: contact.relationship_stage }
             });
           }
         }
       }
     }
 
-    // 4. Check for relationship milestones
+    // 4. Milestones
     const { data: recentInteractions, error: recentError } = await supabaseClient
       .from('interactions')
-      .select(`
-        id,
-        title,
-        type,
-        contact_id,
-        created_at,
-        contacts:contact_id (id, first_name, last_name, relationship_score)
-      `)
+      .select(`id, title, type, contact_id, created_at, contacts:contact_id (id, first_name, last_name, relationship_score)`)
       .eq('user_id', userId)
       .gte('created_at', new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false });
 
     if (!recentError && recentInteractions) {
-      // Count interactions per contact
       const interactionCounts = new Map<string, number>();
-      
       for (const interaction of recentInteractions) {
-        const count = interactionCounts.get(interaction.contact_id) || 0;
-        interactionCounts.set(interaction.contact_id, count + 1);
+        interactionCounts.set(interaction.contact_id, (interactionCounts.get(interaction.contact_id) || 0) + 1);
       }
-
-      // Find contacts with significant engagement
       for (const [contactId, count] of interactionCounts) {
         if (count >= 10) {
           const contact = recentInteractions.find(i => i.contact_id === contactId)?.contacts;
-          if (contact) {
-            const contactData = Array.isArray(contact) ? contact[0] : contact;
-            if (contactData) {
-              reminders.push({
-                id: `milestone-${contactId}`,
-                type: 'milestone',
-                priority: 'low',
-                title: `🌟 Relacionamento Forte: ${contactData.first_name} ${contactData.last_name}`,
-                description: `${count} interações nos últimos 30 dias. Continue assim!`,
-                contactId,
-                contactName: `${contactData.first_name} ${contactData.last_name}`,
-                dueDate: null,
-                metadata: {
-                  interactionCount: count,
-                  relationshipScore: contactData.relationship_score
-                }
-              });
-            }
+          const contactData = Array.isArray(contact) ? contact[0] : contact;
+          if (contactData) {
+            const cd = contactData as Record<string, unknown>;
+            reminders.push({
+              id: `milestone-${contactId}`, type: 'milestone', priority: 'low',
+              title: `🌟 Relacionamento Forte: ${cd.first_name} ${cd.last_name}`,
+              description: `${count} interações nos últimos 30 dias. Continue assim!`,
+              contactId, contactName: `${cd.first_name} ${cd.last_name}`, dueDate: null,
+              metadata: { interactionCount: count, relationshipScore: cd.relationship_score }
+            });
           }
         }
       }
     }
 
-    // Sort reminders by priority and date
+    // Sort
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     reminders.sort((a, b) => {
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) return priorityDiff;
-      
-      if (a.dueDate && b.dueDate) {
-        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-      }
+      const diff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (diff !== 0) return diff;
+      if (a.dueDate && b.dueDate) return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       return 0;
     });
 
-    // Generate AI insights if there are decay alerts
+    // AI insights for decay
     const decayReminders = reminders.filter(r => r.type === 'decay');
     let aiInsights = null;
 
     if (action === 'analyze' && decayReminders.length > 0) {
       const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-      
       if (LOVABLE_API_KEY) {
         try {
-          const prompt = `Analise estes relacionamentos que estão esfriando e sugira ações específicas para reconectá-los:
-
-${decayReminders.slice(0, 5).map(r => `
-- ${r.contactName}: ${r.description}
-  - Score: ${r.metadata.relationshipScore}
-  - Dias sem contato: ${r.metadata.daysSinceLastInteraction}
-`).join('\n')}
-
-Forneça sugestões práticas e personalizadas para cada contato, considerando o tempo desde a última interação e a importância do relacionamento.`;
-
+          const prompt = `Analise estes relacionamentos que estão esfriando e sugira ações específicas:\n\n${decayReminders.slice(0, 5).map(r => `- ${r.contactName}: ${r.description}\n  - Score: ${r.metadata.relationshipScore}\n  - Dias sem contato: ${r.metadata.daysSinceLastInteraction}`).join('\n')}`;
           const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: 'google/gemini-2.5-flash',
               messages: [
-                {
-                  role: 'system',
-                  content: 'Você é um especialista em gestão de relacionamentos profissionais. Forneça insights práticos e acionáveis.'
-                },
+                { role: 'system', content: 'Você é um especialista em gestão de relacionamentos profissionais. Forneça insights práticos e acionáveis.' },
                 { role: 'user', content: prompt }
               ],
               max_tokens: 500
             }),
           });
-
           if (response.ok) {
             const data = await response.json();
             aiInsights = data.choices?.[0]?.message?.content;
@@ -374,7 +255,6 @@ Forneça sugestões práticas e personalizadas para cada contato, considerando o
       }
     }
 
-    // Calculate summary stats
     const summary = {
       total: reminders.length,
       byType: {
@@ -390,24 +270,10 @@ Forneça sugestões práticas e personalizadas para cada contato, considerando o
       }
     };
 
-    console.log(`Smart Reminders completed. Total: ${summary.total}`);
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        reminders,
-        summary,
-        aiInsights
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonOk({ success: true, reminders, summary, aiInsights });
 
   } catch (error: unknown) {
     console.error('Smart Reminders Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonError(error instanceof Error ? error.message : 'Unknown error', 500);
   }
 });
