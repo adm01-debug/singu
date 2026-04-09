@@ -188,9 +188,9 @@ const StakeholderCard = ({ stakeholder, index }: { stakeholder: LuxStakeholder; 
 
 function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const fiscal = record.fiscal_data || {};
-  const audience = record.audience_analysis || {};
-  const social = record.social_analysis || {};
+  const fiscal = (record.fiscal_data || {}) as LuxFiscalData;
+  const audience = (record.audience_analysis || {}) as LuxAudienceData;
+  const social = (record.social_analysis || {}) as LuxSocialData;
   const stakeholders = record.stakeholders || [];
   const socialProfiles = record.social_profiles || [];
 
