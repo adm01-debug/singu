@@ -39,7 +39,7 @@ async function fetchWithFallback<T>(
 
 export function ContactBehavioralTab({ contact }: Props) {
   const { user } = useAuth();
-  const [discHistory, setDiscHistory] = useState<any[]>([]);
+  const [discHistory, setDiscHistory] = useState<Tables<'disc_analysis_history'>[]>([]);
   const [eqAnalysis, setEqAnalysis] = useState<any>(null);
   const [biases, setBiases] = useState<any>(null);
   const [metaprograms, setMetaprograms] = useState<any>(null);
@@ -163,7 +163,7 @@ export function ContactBehavioralTab({ contact }: Props) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {discHistory.map((entry: any) => (
+                  {discHistory.map((entry) => (
                     <div key={entry.id} className="flex items-center justify-between rounded-lg border p-2 text-xs">
                       <div className="flex items-center gap-2">
                         <Badge className={cn('text-xs', DISC_LABELS[entry.primary_profile]?.color)}>
