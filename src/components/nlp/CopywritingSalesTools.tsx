@@ -4,6 +4,7 @@
 // ==============================================
 
 import React, { useState, useMemo, useCallback } from 'react';
+import { FABTemplate, CTATemplate, HeadlineFormula, StorytellingTemplate } from '@/types/copywriting';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -215,7 +216,7 @@ export default function CopywritingSalesTools({ contact }: CopywritingSalesTools
 
 // ---- Inline lightweight sections (kept here to avoid over-fragmentation) ----
 
-function StorySectionTab({ templates, copiedId, onCopy }: { templates: any[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
+function StorySectionTab({ templates, copiedId, onCopy }: { templates: StorytellingTemplate[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
   return (
     <div className="bg-muted/50 rounded-lg p-4">
       <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -223,7 +224,7 @@ function StorySectionTab({ templates, copiedId, onCopy }: { templates: any[]; co
         Estruturas de Storytelling
       </h4>
       <ScrollArea className="h-[400px]">
-        {templates.map((template: any) => (
+        {templates.map((template) => (
           <div key={template.id} className="bg-background rounded-lg p-4 mb-3 border">
             <div className="flex items-center justify-between mb-2">
               <h5 className="font-medium">{template.name}</h5>
@@ -231,7 +232,7 @@ function StorySectionTab({ templates, copiedId, onCopy }: { templates: any[]; co
             </div>
             <p className="text-sm text-muted-foreground mb-3">{template.description}</p>
             <div className="space-y-2 mb-3">
-              {template.elements.map((element: any, idx: number) => (
+              {template.elements.map((element, idx: number) => (
                 <div
                   key={element.id}
                   className={cn(
@@ -272,7 +273,7 @@ function StorySectionTab({ templates, copiedId, onCopy }: { templates: any[]; co
   );
 }
 
-function FabSectionTab({ templates }: { templates: any[] }) {
+function FabSectionTab({ templates }: { templates: FABTemplate[] }) {
   return (
     <div className="bg-muted/50 rounded-lg p-4">
       <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -280,7 +281,7 @@ function FabSectionTab({ templates }: { templates: any[] }) {
         Estrutura FAB (Feature → Advantage → Benefit)
       </h4>
       <ScrollArea className="h-[300px]">
-        {templates.map((template: any) => (
+        {templates.map((template) => (
           <div key={template.id} className="bg-background rounded-lg p-4 mb-3 border">
             <div className="flex items-center justify-between mb-2">
               <h5 className="font-medium">{template.name}</h5>
@@ -312,7 +313,7 @@ function FabSectionTab({ templates }: { templates: any[] }) {
   );
 }
 
-function CtaSectionTab({ discProfile, recommendedCTAs, copiedId, onCopy }: { discProfile: string; recommendedCTAs: any[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
+function CtaSectionTab({ discProfile, recommendedCTAs, copiedId, onCopy }: { discProfile: string; recommendedCTAs: CTATemplate[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
   return (
     <div className="bg-muted/50 rounded-lg p-4">
       <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -321,7 +322,7 @@ function CtaSectionTab({ discProfile, recommendedCTAs, copiedId, onCopy }: { dis
       </h4>
       <ScrollArea className="h-[300px]">
         <div className="grid gap-3">
-          {recommendedCTAs.map((cta: any) => (
+          {recommendedCTAs.map((cta) => (
             <div key={cta.id} className="bg-background rounded-lg p-4 border">
               <div className="flex items-center justify-between mb-2">
                 <Badge className={cn(
@@ -353,7 +354,7 @@ function CtaSectionTab({ discProfile, recommendedCTAs, copiedId, onCopy }: { dis
   );
 }
 
-function HeadlinesSectionTab({ headlineFormulas, copiedId, onCopy }: { headlineFormulas: any[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
+function HeadlinesSectionTab({ headlineFormulas, copiedId, onCopy }: { headlineFormulas: HeadlineFormula[]; copiedId: string | null; onCopy: (t: string, id: string) => void }) {
   return (
     <div className="bg-muted/50 rounded-lg p-4">
       <h4 className="font-medium mb-2 flex items-center gap-2">
@@ -361,7 +362,7 @@ function HeadlinesSectionTab({ headlineFormulas, copiedId, onCopy }: { headlineF
         Fórmulas de Headlines
       </h4>
       <ScrollArea className="h-[300px]">
-        {headlineFormulas.map((formula: any) => (
+        {headlineFormulas.map((formula) => (
           <div key={formula.id} className="bg-background rounded-lg p-4 mb-3 border">
             <div className="flex items-center justify-between mb-2">
               <Badge variant="outline">{formula.type.replace('_', ' ').toUpperCase()}</Badge>
