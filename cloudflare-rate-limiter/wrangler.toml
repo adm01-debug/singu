@@ -1,0 +1,27 @@
+name = "singu-rate-limiter"
+main = "src/index.ts"
+compatibility_date = "2026-04-09"
+
+# Variáveis de ambiente
+[vars]
+SUPABASE_REAL_URL = "https://rqodmqosrotmtrjnnjul.supabase.co"
+
+# KV namespace para counters de rate limit
+# Crie com: wrangler kv namespace create RATE_LIMIT_KV
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "<preencher após criar o KV>"
+
+# Custom domain (opcional)
+# routes = [
+#   { pattern = "api.singu.promobrindes.com.br/*", custom_domain = true }
+# ]
+
+# Deploy:
+#   wrangler deploy
+#
+# Test local:
+#   wrangler dev
+#
+# Logs em produção:
+#   wrangler tail

@@ -1,22 +1,12 @@
 // ==============================================
-// DISC Analyzer Edge Function
-// Powered by Lovable AI - Enterprise Level Analysis
+// DISC Analyzer Edge Function (HARDENED)
 // ==============================================
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
-interface DISCScores {
-  D: number;
-  I: number;
-  S: number;
-  C: number;
-}
+interface DISCScores { D: number; I: number; S: number; C: number }
 
 interface AnalysisResult {
   scores: DISCScores;
@@ -69,45 +59,42 @@ Analise o seguinte texto e identifique o perfil DISC da pessoa que escreveu/falo
 - Sob pressão: mais crítico, perfeccionista
 
 ## INSTRUÇÕES:
-
-1. Analise o tom, vocabulário, estrutura e conteúdo do texto
-2. Identifique padrões comportamentais e comunicacionais
-3. Atribua scores de 0-100 para cada dimensão
+1. Analise tom, vocabulário, estrutura e conteúdo
+2. Identifique padrões comportamentais
+3. Atribua scores 0-100 para cada dimensão
 4. Determine perfil primário e secundário
-5. Identifique como a pessoa se comporta sob pressão
+5. Identifique comportamento sob pressão
 6. Forneça insights acionáveis para vendas
 
-Retorne APENAS um JSON válido com a seguinte estrutura:
+Retorne APENAS um JSON válido com a estrutura:
 {
   "scores": { "D": 0-100, "I": 0-100, "S": 0-100, "C": 0-100 },
   "primaryProfile": "D|I|S|C",
   "secondaryProfile": "D|I|S|C|null",
-  "blendProfile": "string (ex: DI, SC, etc)",
+  "blendProfile": "string (ex: DI, SC)",
   "confidence": 0-100,
   "stressPrimary": "D|I|S|C|null",
   "stressSecondary": "D|I|S|C|null",
-  "behaviorIndicators": ["3-5 indicadores observados"],
+  "behaviorIndicators": ["3-5 indicadores"],
   "salesStrategies": {
-    "opening": ["2-3 estratégias de abertura"],
-    "presentation": ["2-3 dicas de apresentação"],
-    "objectionHandling": ["2-3 técnicas de objeção"],
-    "closing": ["2-3 técnicas de fechamento"]
+    "opening": ["2-3 estratégias"],
+    "presentation": ["2-3 dicas"],
+    "objectionHandling": ["2-3 técnicas"],
+    "closing": ["2-3 técnicas"]
   },
-  "communicationTips": ["3-5 dicas de comunicação"],
+  "communicationTips": ["3-5 dicas"],
   "avoidBehaviors": ["3-5 comportamentos a evitar"],
-  "profileSummary": "Resumo de 2-3 frases sobre o perfil"
+  "profileSummary": "Resumo de 2-3 frases"
 }`;
 
-function calculateBlendCode(D: number, I: number, S: number, C: number): { primary: string; secondary: string | null; blend: string } {
-  const scores: [string, number][] = [
-    ['D', D], ['I', I], ['S', S], ['C', C]
-  ];
+function calculateBlendCode(D: number, I: number, S: number, C: number): {
+  primary: string; secondary: string | null; blend: string;
+} {
+  const scores: [string, number][] = [["D", D], ["I", I], ["S", S], ["C", C]];
   scores.sort((a, b) => b[1] - a[1]);
-  
   const primary = scores[0][0];
   const secondary = scores[1][1] >= 40 ? scores[1][0] : null;
   const blend = secondary ? `${primary}${secondary}` : primary;
-  
   return { primary, secondary, blend };
 }
 
@@ -116,62 +103,51 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // 🔒 SECURITY: Authenticate user — userId comes from JWT, NOT from payload
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult; // ID autenticado, ignora qualquer userId do body
+
   try {
-    const { texts, contactId, interactionId, userId } = await req.json();
+    const { texts, contactId, interactionId } = await req.json();
 
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Textos são obrigatórios" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Textos são obrigatórios", 400);
     }
 
-    if (!contactId || !userId) {
-      return new Response(
-        JSON.stringify({ error: "contactId e userId são obrigatórios" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!contactId) {
+      return jsonError("contactId é obrigatório", 400);
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY não configurada" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("LOVABLE_API_KEY não configurada", 500);
     }
 
     const combinedText = texts.join("\n\n---\n\n");
-    
-    // Call Lovable AI
+
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: DISC_ANALYSIS_PROMPT },
-          { role: "user", content: `Analise o seguinte texto e determine o perfil DISC:\n\n${combinedText}` }
+          { role: "user", content: `Analise o seguinte texto e determine o perfil DISC:\n\n${combinedText}` },
         ],
-        temperature: 0.3
+        temperature: 0.3,
       }),
     });
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Tente novamente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("Rate limit exceeded. Tente novamente em alguns segundos.", 429);
       }
       if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("Créditos insuficientes. Adicione créditos ao workspace.", 402);
       }
       const errorText = await aiResponse.text();
       console.error("AI error:", errorText);
@@ -180,40 +156,32 @@ serve(async (req) => {
 
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "";
-    
-    // Parse JSON from response
+
     let analysisResult: AnalysisResult;
     try {
-      // Extract JSON from potential markdown code blocks
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || 
-                       content.match(/```\s*([\s\S]*?)\s*```/);
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) ||
+                        content.match(/```\s*([\s\S]*?)\s*```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
       analysisResult = JSON.parse(jsonStr.trim());
     } catch (parseErr) {
       console.error("Parse error:", parseErr, "Content:", content);
-      // Fallback to local analysis
       analysisResult = {
         scores: { D: 50, I: 50, S: 50, C: 50 },
-        primaryProfile: "I",
-        secondaryProfile: null,
-        blendProfile: "I",
-        confidence: 40,
-        stressPrimary: null,
-        stressSecondary: null,
+        primaryProfile: "I", secondaryProfile: null, blendProfile: "I",
+        confidence: 40, stressPrimary: null, stressSecondary: null,
         behaviorIndicators: ["Análise parcial - texto insuficiente"],
         salesStrategies: {
           opening: ["Abordagem balanceada recomendada"],
           presentation: ["Combine dados com entusiasmo"],
           objectionHandling: ["Ouça atentamente as preocupações"],
-          closing: ["Ofereça tempo para decisão"]
+          closing: ["Ofereça tempo para decisão"],
         },
         communicationTips: ["Adapte conforme feedback"],
         avoidBehaviors: ["Pressão excessiva"],
-        profileSummary: "Perfil indefinido - necessita mais dados de interação"
+        profileSummary: "Perfil indefinido - necessita mais dados de interação",
       };
     }
 
-    // Ensure valid blend calculation
     const { primary, secondary, blend } = calculateBlendCode(
       analysisResult.scores.D,
       analysisResult.scores.I,
@@ -221,10 +189,23 @@ serve(async (req) => {
       analysisResult.scores.C
     );
 
-    // Save to Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // 🔒 Verify the contact belongs to the authenticated user
+    const { data: contactCheck, error: contactCheckErr } = await supabase
+      .from("contacts")
+      .select("id, user_id")
+      .eq("id", contactId)
+      .maybeSingle();
+
+    if (contactCheckErr || !contactCheck) {
+      return jsonError("Contact not found", 404);
+    }
+    if (contactCheck.user_id !== userId) {
+      return jsonError("Forbidden: contact does not belong to user", 403);
+    }
 
     const { data: savedRecord, error: saveError } = await supabase
       .from("disc_analysis_history")
@@ -247,7 +228,7 @@ serve(async (req) => {
         detected_phrases: [],
         behavior_indicators: analysisResult.behaviorIndicators,
         analyzed_text: combinedText.slice(0, 5000),
-        profile_summary: analysisResult.profileSummary
+        profile_summary: analysisResult.profileSummary,
       })
       .select()
       .single();
@@ -257,12 +238,11 @@ serve(async (req) => {
       throw new Error(`Database save error: ${saveError.message}`);
     }
 
-    // Update contact behavior
     const { data: contactData } = await supabase
       .from("contacts")
       .select("behavior")
       .eq("id", contactId)
-      .single();
+      .maybeSingle();
 
     const currentBehavior = (contactData?.behavior as Record<string, unknown>) || {};
     await supabase
@@ -273,49 +253,39 @@ serve(async (req) => {
           discProfile: primary,
           discConfidence: analysisResult.confidence,
           discBlend: blend,
-          discLastAnalysis: new Date().toISOString()
-        }
+          discLastAnalysis: new Date().toISOString(),
+        },
       })
       .eq("id", contactId);
 
-    // Log communication for metrics
-    await supabase
-      .from("disc_communication_logs")
-      .insert({
-        user_id: userId,
-        contact_id: contactId,
-        contact_disc_profile: primary,
-        approach_adapted: false,
-        adaptation_tips_shown: analysisResult.salesStrategies
-      });
+    await supabase.from("disc_communication_logs").insert({
+      user_id: userId,
+      contact_id: contactId,
+      contact_disc_profile: primary,
+      approach_adapted: false,
+      adaptation_tips_shown: analysisResult.salesStrategies,
+    });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        analysis: {
-          id: savedRecord.id,
-          scores: analysisResult.scores,
-          primaryProfile: primary,
-          secondaryProfile: secondary,
-          blendProfile: blend,
-          confidence: analysisResult.confidence,
-          stressPrimary: analysisResult.stressPrimary,
-          stressSecondary: analysisResult.stressSecondary,
-          behaviorIndicators: analysisResult.behaviorIndicators,
-          salesStrategies: analysisResult.salesStrategies,
-          communicationTips: analysisResult.communicationTips,
-          avoidBehaviors: analysisResult.avoidBehaviors,
-          profileSummary: analysisResult.profileSummary
-        }
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
+    return jsonOk({
+      success: true,
+      analysis: {
+        id: savedRecord.id,
+        scores: analysisResult.scores,
+        primaryProfile: primary,
+        secondaryProfile: secondary,
+        blendProfile: blend,
+        confidence: analysisResult.confidence,
+        stressPrimary: analysisResult.stressPrimary,
+        stressSecondary: analysisResult.stressSecondary,
+        behaviorIndicators: analysisResult.behaviorIndicators,
+        salesStrategies: analysisResult.salesStrategies,
+        communicationTips: analysisResult.communicationTips,
+        avoidBehaviors: analysisResult.avoidBehaviors,
+        profileSummary: analysisResult.profileSummary,
+      },
+    });
   } catch (error) {
     console.error("DISC analyzer error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonError(error instanceof Error ? error.message : "Erro desconhecido", 500);
   }
 });
