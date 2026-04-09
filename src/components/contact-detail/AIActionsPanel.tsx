@@ -101,7 +101,7 @@ export function AIActionsPanel({ contactId, contactName, linkedinUrl, websiteUrl
             onClick={() => enrichLinkedIn(contactId, linkedinUrl)}
             disabled={loading['enrichlayer-linkedin']}
           >
-            {loading['enrichlayer-linkedin'] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Linkedin className="h-3.5 w-3.5 text-blue-500" />}
+            {loading['enrichlayer-linkedin'] ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Linkedin className="h-3.5 w-3.5 text-info" />}
             Enriquecer via LinkedIn
           </Button>
         )}
