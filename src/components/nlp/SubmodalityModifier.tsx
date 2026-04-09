@@ -103,14 +103,14 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
   };
 
   return (
-    <Card className={cn("border-fuchsia-500/30 bg-card", className)}>
+    <Card className={cn("border-accent/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Focus className="h-5 w-5 text-fuchsia-400" />
+            <Focus className="h-5 w-5 text-accent" />
             Submodality Modifier
           </CardTitle>
-          <Badge variant="outline" className="bg-fuchsia-500/20">
+          <Badge variant="outline" className="bg-accent/20">
             VAK: {vakType}
           </Badge>
         </div>
@@ -129,7 +129,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
               onClick={() => setSelectedCategory(cat)}
               className={cn(
                 "relative",
-                getRecommendedCategory() === cat && selectedCategory !== cat && 'ring-2 ring-fuchsia-500/50'
+                getRecommendedCategory() === cat && selectedCategory !== cat && 'ring-2 ring-accent/50'
               )}
             >
               {getCategoryIcon(cat)}
@@ -144,8 +144,8 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
         </div>
 
         {/* Recommendation */}
-        <div className="bg-fuchsia-500/10 rounded-lg p-2 text-xs flex items-center gap-2">
-          <Lightbulb className="h-3 w-3 text-fuchsia-400 shrink-0" />
+        <div className="bg-accent/10 rounded-lg p-2 text-xs flex items-center gap-2">
+          <Lightbulb className="h-3 w-3 text-accent shrink-0" />
           <span className="text-muted-foreground">
             {activeContact.firstName} é {vakType === 'V' ? 'Visual' : vakType === 'A' ? 'Auditivo' : vakType === 'K' ? 'Cinestésico' : 'Digital'} - 
             submodalidades {getRecommendedCategory() === 'visual' ? 'visuais' : getRecommendedCategory() === 'auditory' ? 'auditivas' : 'cinestésicas'} terão mais impacto.
@@ -160,7 +160,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
               layout
               className={cn(
                 "bg-muted/30 rounded-lg p-3 transition-all",
-                activeModification === sub.id && 'bg-fuchsia-500/20 ring-1 ring-fuchsia-500/50'
+                activeModification === sub.id && 'bg-accent/20 ring-1 ring-accent/50'
               )}
             >
               <div className="flex items-center justify-between mb-2">
@@ -192,9 +192,9 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-3 pt-3 border-t border-fuchsia-500/30"
+                  className="mt-3 pt-3 border-t border-accent/30"
                 >
-                  <div className="text-xs font-medium text-fuchsia-400 mb-1">Script de Modificação:</div>
+                  <div className="text-xs font-medium text-accent mb-1">Script de Modificação:</div>
                   <p className="text-xs italic text-muted-foreground">
                     "{sub.script}"
                   </p>
@@ -207,7 +207,7 @@ const SubmodalityModifier: React.FC<SubmodalityModifierProps> = ({
         {/* Usage Guide */}
         <div className="bg-muted/20 rounded-lg p-3 space-y-2">
           <div className="text-xs font-medium flex items-center gap-2">
-            <Lightbulb className="h-3 w-3 text-fuchsia-400" />
+            <Lightbulb className="h-3 w-3 text-accent" />
             Como Usar Submodalidades em Vendas
           </div>
           <div className="text-xs text-muted-foreground space-y-1">
