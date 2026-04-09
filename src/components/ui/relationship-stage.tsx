@@ -11,6 +11,8 @@ const stageColors: Record<RelationshipStage, string> = {
   customer: 'bg-success/12 text-success border-success/20',
   loyal_customer: 'bg-success/18 text-success border-success/30',
   advocate: 'bg-success/22 text-success border-success/35',
+  best_friend_forever: 'bg-primary/25 text-primary border-primary/40',
+  fan_club: 'bg-primary/35 text-primary border-primary/50',
   at_risk: 'bg-warning/12 text-warning border-warning/20',
   lost: 'bg-destructive/12 text-destructive border-destructive/20',
 };
@@ -24,6 +26,8 @@ const stageOrder: RelationshipStage[] = [
   'customer',
   'loyal_customer',
   'advocate',
+  'best_friend_forever',
+  'fan_club',
 ];
 
 interface RelationshipStageBadgeProps {
