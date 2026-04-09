@@ -39,7 +39,7 @@ export function SwipeableListItem({
   const deleteScale = useTransform(x, [-threshold * 2, -threshold, 0], [1.1, 1, 0.8]);
   const archiveScale = useTransform(x, [0, threshold, threshold * 2], [0.8, 1, 1.1]);
 
-  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
+  const handleDragEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const swipeX = info.offset.x;
     
     if (swipeX < -threshold && onDelete) {

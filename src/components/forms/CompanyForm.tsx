@@ -85,7 +85,7 @@ type CompanyFormData = z.infer<typeof companySchema>;
 
 interface CompanyFormProps {
   company?: Company | null;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
 }

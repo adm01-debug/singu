@@ -105,7 +105,7 @@ export function useAutomationRules() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       setRules((data ?? []) as unknown as AutomationRule[]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('Error fetching automation rules:', e);
     } finally {
       setLoading(false);
@@ -125,7 +125,7 @@ export function useAutomationRules() {
       const { data, error } = await query;
       if (error) throw error;
       setLogs((data ?? []) as unknown as AutomationLog[]);
-    } catch (e: any) {
+    } catch (e: unknown) {
       logger.error('Error fetching automation logs:', e);
     }
   }, [user]);
