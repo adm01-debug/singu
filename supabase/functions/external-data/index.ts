@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
 
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
-      const unique = [...new Set((data || []).map((r: Record<string, string>) => r[column]).filter(Boolean))].sort();
+      const unique = [...new Set((data || []).map((r: any) => r[column]).filter(Boolean))].sort();
       return jsonResponse({ values: unique, count: unique.length });
     }
 
