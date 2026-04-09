@@ -60,7 +60,7 @@ export function RelationshipFunnel({ currentStage, className }: RelationshipFunn
   return (
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center gap-1">
-        {stageOrder.slice(0, 6).map((stage, index) => {
+        {stageOrder.map((stage, index) => {
           const isPast = index < currentIndex;
           const isCurrent = stage === currentStage;
           const isFuture = index > currentIndex;
@@ -70,7 +70,7 @@ export function RelationshipFunnel({ currentStage, className }: RelationshipFunn
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
                 className={cn(
                   'h-2 flex-1 rounded-full transition-colors',
                   isPast && 'bg-success',
@@ -78,7 +78,7 @@ export function RelationshipFunnel({ currentStage, className }: RelationshipFunn
                   isFuture && 'bg-muted'
                 )}
               />
-              {index < 5 && (
+              {index < stageOrder.length - 1 && (
                 <div className={cn(
                   'w-1 h-1 rounded-full mx-0.5',
                   index < currentIndex ? 'bg-success' : 'bg-muted'
@@ -91,7 +91,8 @@ export function RelationshipFunnel({ currentStage, className }: RelationshipFunn
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>Prospect</span>
         <span>Cliente</span>
-        <span>Fiel</span>
+        <span>BFF</span>
+        <span>Fã Clube</span>
       </div>
     </div>
   );
