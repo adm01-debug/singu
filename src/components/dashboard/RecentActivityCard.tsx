@@ -1,5 +1,6 @@
 import { Clock, Phone, Mail, Video, MessageSquare, Globe, Send, AtSign, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import type { MotionStyle, Transition, TargetAndTransition } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -9,10 +10,16 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import type { DashboardStats } from '@/hooks/useDashboardStats';
 
+interface StaggerAnimation {
+  initial: TargetAndTransition;
+  animate: TargetAndTransition;
+  transition: Transition;
+  style: MotionStyle;
+}
+
 interface RecentActivityCardProps {
   activities: DashboardStats['recentActivities'];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
+  animations: StaggerAnimation[];
 }
 
 /** Map interaction type + channel to a specific icon and color */
