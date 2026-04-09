@@ -265,16 +265,16 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                 { key: 'natureza_juridica', label: 'Natureza Jurídica' },
                 { key: 'situacao_cadastral', label: 'Situação Cadastral' },
                 { key: 'cnae_principal', label: 'CNAE Principal' },
-              ].map(({ key, label }) => fiscal[key] && (
+              ].map(({ key, label }) => fiscal[key as keyof LuxFiscalData] && (
                 <div key={key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                   <span className="text-sm text-muted-foreground">{label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{fiscal[key]}</span>
+                    <span className="text-sm font-medium">{String(fiscal[key as keyof LuxFiscalData])}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => copyToClipboard(fiscal[key], key)}
+                      onClick={() => copyToClipboard(String(fiscal[key as keyof LuxFiscalData]), key)}
                     >
                       {copiedField === key ? (
                         <Check className="w-3 h-3 text-success" />

@@ -36,12 +36,12 @@ const RelatorioContato = () => {
 
       try {
         // Fetch contact - local first, then external
-        let contact: Tables<'contacts'> | Record<string, unknown> | null = null;
+        let contact: Tables<'contacts'> | null = null;
         const { data: localContact } = await supabase.from("contacts").select("*").eq("id", id).maybeSingle();
         if (localContact) {
           contact = localContact;
         } else {
-          const { data: extContact } = await queryExternalData({ table: 'contacts', filters: [{ type: 'eq', column: 'id', value: id }] });
+          const { data: extContact } = await queryExternalData<Tables<'contacts'>>({ table: 'contacts', filters: [{ type: 'eq', column: 'id', value: id }] });
           contact = extContact?.[0] || null;
         }
 
@@ -94,7 +94,7 @@ const RelatorioContato = () => {
   }
 
   const { contact, interactions, discHistory } = data;
-  const behavior = contact.behavior || {};
+  const behavior = (contact.behavior || {}) as ContactBehavior;
   const latestDisc = discHistory[0];
 
   const contactName = `${contact.first_name} ${contact.last_name}`.trim();
