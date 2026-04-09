@@ -1,14 +1,25 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+  jsonOk,
+} from "../_shared/auth.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface EnrichResult {
+  contactId: string;
+  name: string;
+  status: string;
+  details?: string;
+}
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
+
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult;
 
   try {
     const supabase = createClient(
@@ -25,10 +36,11 @@ Deno.serve(async (req) => {
 
     const externalSupabase = createClient(externalUrl, externalKey);
 
-    // Get local contacts that need enrichment (missing company_id or stage = unknown)
+    // Scope to authenticated user's contacts only
     const { data: localContacts, error: fetchError } = await supabase
       .from('contacts')
       .select('id, first_name, last_name, phone, whatsapp, company_id, email, role_title, relationship_stage')
+      .eq('user_id', userId)
       .or('company_id.is.null,relationship_stage.eq.unknown');
 
     if (fetchError) {
@@ -36,14 +48,14 @@ Deno.serve(async (req) => {
     }
 
     if (!localContacts || localContacts.length === 0) {
-      return jsonResponse({ status: 'success', message: 'No contacts to enrich', enriched: 0 });
+      return jsonOk({ status: 'success', message: 'No contacts to enrich', enriched: 0 });
     }
 
     console.log(`Found ${localContacts.length} contacts to enrich`);
 
     let enrichedCount = 0;
     let errorCount = 0;
-    const results: Array<{ contactId: string; name: string; status: string; details?: string }> = [];
+    const results: EnrichResult[] = [];
 
     for (const contact of localContacts) {
       try {
@@ -55,7 +67,6 @@ Deno.serve(async (req) => {
 
         const cleanPhone = phoneNumber.replace(/\D/g, '');
         
-        // Build phone variants
         const phoneVariants = [cleanPhone];
         if (cleanPhone.startsWith('55') && cleanPhone.length >= 12) {
           phoneVariants.push(cleanPhone.substring(2));
@@ -64,9 +75,8 @@ Deno.serve(async (req) => {
           phoneVariants.push('55' + cleanPhone);
         }
 
-        let extContact: any = null;
+        let extContact: Record<string, unknown> | null = null;
 
-        // Search external DB for each phone variant
         for (const variant of phoneVariants) {
           const { data: extResults, error: extError } = await externalSupabase
             .from('contacts')
@@ -80,7 +90,7 @@ Deno.serve(async (req) => {
           }
 
           if (extResults && extResults.length > 0) {
-            extContact = extResults[0];
+            extContact = extResults[0] as Record<string, unknown>;
             break;
           }
         }
@@ -90,42 +100,37 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Build update object with enriched data
-        const updates: Record<string, any> = {};
+        const updates: Record<string, unknown> = {};
 
-        // Update name if current is generic (WhatsApp + number)
         if (contact.first_name === 'WhatsApp' && extContact.first_name) {
           updates.first_name = extContact.first_name;
-          updates.last_name = extContact.last_name || '';
+          updates.last_name = (extContact.last_name as string) || '';
         }
 
-        // Update company_id if missing
         if (!contact.company_id && extContact.company_id) {
           updates.company_id = extContact.company_id;
         }
 
-        // Update email if missing
         if (!contact.email && extContact.email) {
           updates.email = extContact.email;
         }
 
-        // Update role_title from cargo
         if (!contact.role_title && extContact.cargo) {
           updates.role_title = extContact.cargo;
         }
 
-        // Update relationship stage from unknown
         if (contact.relationship_stage === 'unknown') {
           updates.relationship_stage = 'known';
         }
 
         updates.updated_at = new Date().toISOString();
 
-        if (Object.keys(updates).length > 1) { // more than just updated_at
+        if (Object.keys(updates).length > 1) {
           const { error: updateError } = await supabase
             .from('contacts')
             .update(updates)
-            .eq('id', contact.id);
+            .eq('id', contact.id)
+            .eq('user_id', userId); // double-check ownership
 
           if (updateError) {
             console.error(`Error updating contact ${contact.id}:`, updateError.message);
@@ -134,7 +139,7 @@ Deno.serve(async (req) => {
           } else {
             enrichedCount++;
             const enrichedFields = Object.keys(updates).filter(k => k !== 'updated_at');
-            results.push({ contactId: contact.id, name: extContact.first_name || contact.first_name, status: 'enriched', details: `Fields: ${enrichedFields.join(', ')}` });
+            results.push({ contactId: contact.id, name: (extContact.first_name as string) || contact.first_name, status: 'enriched', details: `Fields: ${enrichedFields.join(', ')}` });
             console.log(`Enriched contact ${contact.id}: ${enrichedFields.join(', ')}`);
           }
         } else {
@@ -151,7 +156,7 @@ Deno.serve(async (req) => {
 
     console.log(`Enrichment complete: ${enrichedCount} enriched, ${errorCount} errors, ${localContacts.length} total`);
 
-    return jsonResponse({
+    return jsonOk({
       status: 'success',
       total: localContacts.length,
       enriched: enrichedCount,
@@ -162,16 +167,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Enrich contacts error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonError(errorMessage, 500);
   }
 });
-
-function jsonResponse(data: any, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}

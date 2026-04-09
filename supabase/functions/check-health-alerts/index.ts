@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import {
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+  jsonOk,
+} from "../_shared/auth.ts";
 
 interface Contact {
   id: string;
@@ -52,19 +53,16 @@ function calculateHealthScore(
   const contactInteractions = interactions.filter(i => i.contact_id === contact.id);
   const now = new Date();
   
-  // Calculate days since last interaction
   let lastInteractionDays = 999;
   if (contactInteractions.length > 0) {
     const lastInteraction = new Date(contactInteractions[0].created_at);
     lastInteractionDays = Math.floor((now.getTime() - lastInteraction.getTime()) / (1000 * 60 * 60 * 24));
   }
   
-  // Calculate interaction frequency score (0-100)
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const recentInteractions = contactInteractions.filter(i => new Date(i.created_at) >= thirtyDaysAgo);
   const interactionFrequency = Math.min(100, recentInteractions.length * 20);
   
-  // Calculate sentiment score (0-100)
   const sentimentMap: Record<string, number> = {
     'very_positive': 100,
     'positive': 80,
@@ -78,10 +76,8 @@ function calculateHealthScore(
     sentimentScore = sentimentMap[contact.sentiment] || 50;
   }
   
-  // Calculate engagement level based on relationship score
   const engagementLevel = contact.relationship_score || 50;
   
-  // Calculate overall health score
   const weights = {
     interactionFrequency: 0.35,
     sentimentScore: 0.25,
@@ -120,9 +116,12 @@ function calculateHealthScore(
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
+
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -131,10 +130,11 @@ serve(async (req) => {
 
     console.log("Starting health alerts check...");
 
-    // Get all users with health alert settings
+    // Get settings for authenticated user only
     const { data: allSettings, error: settingsError } = await supabase
       .from("health_alert_settings")
-      .select("*");
+      .select("*")
+      .eq("user_id", userId);
 
     if (settingsError) {
       console.error("Error fetching settings:", settingsError);
@@ -142,26 +142,25 @@ serve(async (req) => {
     }
 
     const settings: HealthAlertSettings[] = allSettings || [];
-    console.log(`Found ${settings.length} users with health alert settings`);
+
+    if (settings.length === 0) {
+      return jsonOk({ success: true, alertsCreated: 0, notificationsSent: 0, message: 'No health alert settings configured' });
+    }
 
     const alertsCreated: string[] = [];
     const notificationsSent: string[] = [];
 
     for (const userSettings of settings) {
-      console.log(`Processing user ${userSettings.user_id}`);
-      
-      // Get user's contacts
       const { data: contacts, error: contactsError } = await supabase
         .from("contacts")
         .select("id, first_name, last_name, relationship_score, sentiment, user_id")
         .eq("user_id", userSettings.user_id);
 
       if (contactsError) {
-        console.error(`Error fetching contacts for user ${userSettings.user_id}:`, contactsError);
+        console.error(`Error fetching contacts:`, contactsError);
         continue;
       }
 
-      // Get user's interactions
       const { data: interactions, error: interactionsError } = await supabase
         .from("interactions")
         .select("contact_id, created_at, sentiment")
@@ -169,28 +168,23 @@ serve(async (req) => {
         .order("created_at", { ascending: false });
 
       if (interactionsError) {
-        console.error(`Error fetching interactions for user ${userSettings.user_id}:`, interactionsError);
+        console.error(`Error fetching interactions:`, interactionsError);
         continue;
       }
 
-      // Calculate health scores for all contacts
       for (const contact of contacts || []) {
         const healthScore = calculateHealthScore(contact, interactions || []);
         
-        // Check if we need to create an alert
         const shouldAlertCritical = userSettings.notify_on_critical && 
           healthScore.score <= userSettings.critical_threshold;
         const shouldAlertWarning = userSettings.notify_on_warning && 
           healthScore.score <= userSettings.warning_threshold &&
           healthScore.score > userSettings.critical_threshold;
 
-        if (!shouldAlertCritical && !shouldAlertWarning) {
-          continue;
-        }
+        if (!shouldAlertCritical && !shouldAlertWarning) continue;
 
         const alertType = shouldAlertCritical ? 'critical' : 'warning';
         
-        // Check if we already have a recent alert for this contact
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: existingAlerts } = await supabase
           .from("health_alerts")
@@ -201,12 +195,8 @@ serve(async (req) => {
           .gte("created_at", oneDayAgo)
           .limit(1);
 
-        if (existingAlerts && existingAlerts.length > 0) {
-          console.log(`Recent alert already exists for contact ${contact.id}`);
-          continue;
-        }
+        if (existingAlerts && existingAlerts.length > 0) continue;
 
-        // Create the alert
         const alertTitle = alertType === 'critical' 
           ? `⚠️ Saúde Crítica: ${healthScore.contactName}`
           : `⚡ Atenção: ${healthScore.contactName}`;
@@ -234,9 +224,7 @@ serve(async (req) => {
         }
 
         alertsCreated.push(healthScore.contactName);
-        console.log(`Created ${alertType} alert for ${healthScore.contactName}`);
 
-        // Send push notification if enabled
         if (userSettings.push_notifications) {
           try {
             const { error: pushError } = await supabase.functions.invoke("send-push-notification", {
@@ -262,10 +250,7 @@ serve(async (req) => {
           }
         }
 
-        // Send email notification if enabled and email is configured
         if (userSettings.email_notifications && userSettings.email_address) {
-          // Email sending would be implemented here with Resend
-          // For now, just log it
           console.log(`Would send email to ${userSettings.email_address} for ${healthScore.contactName}`);
           notificationsSent.push(`email:${healthScore.contactName}`);
         }
@@ -274,30 +259,18 @@ serve(async (req) => {
 
     console.log(`Health check complete. Created ${alertsCreated.length} alerts, sent ${notificationsSent.length} notifications`);
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        alertsCreated: alertsCreated.length,
-        notificationsSent: notificationsSent.length,
-        details: {
-          alerts: alertsCreated,
-          notifications: notificationsSent
-        }
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
+    return jsonOk({
+      success: true,
+      alertsCreated: alertsCreated.length,
+      notificationsSent: notificationsSent.length,
+      details: {
+        alerts: alertsCreated,
+        notifications: notificationsSent
       }
-    );
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error("Error in check-health-alerts:", error);
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders }
-      }
-    );
+    return jsonError(errorMessage, 500);
   }
 });
