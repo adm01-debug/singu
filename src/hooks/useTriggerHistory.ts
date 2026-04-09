@@ -165,7 +165,7 @@ export function useTriggerHistory(contactId?: string) {
           notes: input.notes || null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

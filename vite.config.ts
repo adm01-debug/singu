@@ -8,12 +8,23 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    hmr: {
-      overlay: false,
-    },
+    hmr: { overlay: false },
   },
   plugins: [
     react(),
+    // 🔧 lovable-tagger: APENAS em desenvolvimento (audit 2026-04-09)
+    // Não deve sair no bundle de produção.
+    mode === "development" &&
+      (() => {
+        try {
+          // dynamic require pra não quebrar build se o pacote sumir
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const { componentTagger } = require("lovable-tagger");
+          return componentTagger();
+        } catch {
+          return null;
+        }
+      })(),
     mode === "production" &&
       VitePWA({
         registerType: "autoUpdate",
@@ -29,22 +40,9 @@ export default defineConfig(({ mode }) => ({
           scope: "/",
           start_url: "/",
           icons: [
-            {
-              src: "/pwa-192x192.png",
-              sizes: "192x192",
-              type: "image/png",
-            },
-            {
-              src: "/pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-            },
-            {
-              src: "/pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "any maskable",
-            },
+            { src: "/pwa-192x192.png", sizes: "192x192", type: "image/png" },
+            { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
+            { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
           ],
         },
         workbox: {
@@ -56,10 +54,7 @@ export default defineConfig(({ mode }) => ({
               handler: "NetworkFirst",
               options: {
                 cacheName: "supabase-cache",
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24,
-                },
+                expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
               },
             },
           ],
@@ -67,40 +62,30 @@ export default defineConfig(({ mode }) => ({
       }),
   ].filter(Boolean),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: { "@": path.resolve(__dirname, "./src") },
   },
   build: {
     target: "es2022",
-    // Minification with esbuild (faster than terser, built-in)
     minify: "esbuild",
-    // Enable CSS minification and code splitting
     cssMinify: true,
     cssCodeSplit: true,
-    // Reduce source map size in production
-    sourcemap: false,
-    // Chunk size warning threshold (kB)
+    // 🔍 Source maps hidden em prod (audit 2026-04-09)
+    // Permite Sentry resolver stack traces sem expor source no browser.
+    sourcemap: mode === "production" ? "hidden" : true,
     chunkSizeWarningLimit: 600,
-    // Optimize asset inlining — inline assets < 8kB
     assetsInlineLimit: 8192,
     rollupOptions: {
       output: {
-        // Compact output format
         compact: true,
-        // Hashed filenames for long-term caching
         chunkFileNames: "assets/js/[name]-[hash].js",
         entryFileNames: "assets/js/[name]-[hash].js",
         assetFileNames: "assets/[ext]/[name]-[hash].[ext]",
         manualChunks: {
-          // Core vendor — loaded on every page
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           "vendor-query": ["@tanstack/react-query"],
           "vendor-supabase": ["@supabase/supabase-js"],
-          // Heavy UI libs — loaded on demand via lazy routes
           "vendor-charts": ["recharts"],
           "vendor-motion": ["framer-motion"],
-          // UI primitives shared across pages
           "vendor-radix": [
             "@radix-ui/react-dialog",
             "@radix-ui/react-popover",
@@ -110,24 +95,16 @@ export default defineConfig(({ mode }) => ({
             "@radix-ui/react-dropdown-menu",
             "@radix-ui/react-scroll-area",
           ],
-          // Form handling
-          "vendor-forms": [
-            "react-hook-form",
-            "@hookform/resolvers",
-            "zod",
-          ],
-          // Date utilities
+          "vendor-forms": ["react-hook-form", "@hookform/resolvers", "zod"],
           "vendor-date": ["date-fns"],
         },
       },
-      // Tree-shake more aggressively
       treeshake: {
         moduleSideEffects: "no-external",
         preset: "recommended",
       },
     },
   },
-  // Optimize dependency pre-bundling
   optimizeDeps: {
     include: [
       "react",

@@ -320,9 +320,15 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
         // Note: disc-analyzer is now authenticated. Service-role calls between
         // edge functions need to use the supabase.functions.invoke() WITH the
         // service role key in Authorization header, OR refactor to direct DB call.
+        // Server-to-server call: passa service_role + userId do contact dono
         supabase.functions
           .invoke("disc-analyzer", {
-            body: { texts: [messageContent], contactId, interactionId: interaction.id },
+            body: {
+              texts: [messageContent],
+              contactId,
+              interactionId: interaction.id,
+              userId, // service_role: caller fornece userId; disc-analyzer valida ownership
+            },
             headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
           })
           .catch((err: any) => console.error("DISC analyzer error:", err));

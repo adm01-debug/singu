@@ -102,7 +102,7 @@ export function useCognitiveBiasPersistence(contactId: string) {
           profile_summary: analysis.profileSummary
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

@@ -121,6 +121,50 @@ export function sanitizePhone(raw: string | null | undefined): string {
 }
 
 /**
+ * withAuthOrServiceRole — Accepts EITHER a user JWT OR the service_role key.
+ *
+ * Use this for edge functions that are called both by the frontend (with user JWT)
+ * AND by other edge functions server-to-server (with service_role).
+ *
+ * Returns:
+ *   - userId string when called with valid user JWT
+ *   - "__SERVICE_ROLE__" when called with service_role (caller must enforce
+ *     ownership/authorization separately, e.g. via explicit `userId` param)
+ *   - Response 401 on auth failure
+ */
+export async function withAuthOrServiceRole(
+  req: Request
+): Promise<string | Response> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return jsonError("Unauthorized", 401);
+  }
+  const token = authHeader.substring(7);
+
+  // Constant-time check against service_role key
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (serviceKey && token.length === serviceKey.length) {
+    let mismatch = 0;
+    for (let i = 0; i < token.length; i++) {
+      mismatch |= token.charCodeAt(i) ^ serviceKey.charCodeAt(i);
+    }
+    if (mismatch === 0) return "__SERVICE_ROLE__";
+  }
+
+  // Otherwise validate as user JWT
+  try {
+    return await authenticateRequest(req);
+  } catch {
+    return jsonError("Unauthorized", 401);
+  }
+}
+
+/** True if the result of withAuthOrServiceRole is the service-role marker. */
+export function isServiceRoleCaller(result: string): boolean {
+  return result === "__SERVICE_ROLE__";
+}
+
+/**
  * isAdmin — Uses the existing has_role(uuid, app_role) RPC.
  * The audit found that user_roles + has_role function already exist with
  * proper SECURITY DEFINER + search_path. Don't reinvent RBAC.

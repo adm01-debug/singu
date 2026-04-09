@@ -149,7 +149,7 @@ export function useAutomationRules() {
           actions: data.actions as unknown as Json,
         })
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
       setRules(prev => [created as unknown as AutomationRule, ...prev]);
       toast.success('Automação criada com sucesso!');

@@ -210,7 +210,7 @@ export function useMetaprogramAnalysis() {
           analyzed_text: analyzedText.substring(0, 1000)
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

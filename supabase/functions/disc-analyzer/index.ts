@@ -4,7 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
+import { corsHeaders, withAuthOrServiceRole, isServiceRoleCaller, jsonError, jsonOk } from "../_shared/auth.ts";
 
 interface DISCScores { D: number; I: number; S: number; C: number }
 
@@ -103,13 +103,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // 🔒 SECURITY: Authenticate user — userId comes from JWT, NOT from payload
-  const authResult = await withAuth(req);
+  // 🔒 SECURITY: Authenticate. Aceita JWT user OU service_role (chamadas S2S).
+  // Quando JWT user: userId vem SEMPRE do JWT (impersonação bloqueada).
+  // Quando service_role: userId precisa vir do body (caller sabe de quem é).
+  const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
-  const userId = authResult; // ID autenticado, ignora qualquer userId do body
 
   try {
-    const { texts, contactId, interactionId } = await req.json();
+    const body = await req.json();
+    const { texts, contactId, interactionId } = body;
 
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
       return jsonError("Textos são obrigatórios", 400);
@@ -117,6 +119,19 @@ serve(async (req) => {
 
     if (!contactId) {
       return jsonError("contactId é obrigatório", 400);
+    }
+
+    // Determine effective userId based on caller type
+    let userId: string;
+    if (isServiceRoleCaller(authResult)) {
+      // Server-to-server call (e.g., from evolution-webhook): userId comes from body
+      if (!body.userId || typeof body.userId !== "string") {
+        return jsonError("userId required for service-role calls", 400);
+      }
+      userId = body.userId;
+    } else {
+      // User JWT call: userId comes from JWT (NOT from body — impersonation blocked)
+      userId = authResult;
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -193,7 +208,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 🔒 Verify the contact belongs to the authenticated user
+    // 🔒 Verify the contact exists and (for user JWT calls) that it belongs to the user
     const { data: contactCheck, error: contactCheckErr } = await supabase
       .from("contacts")
       .select("id, user_id")
@@ -203,8 +218,13 @@ serve(async (req) => {
     if (contactCheckErr || !contactCheck) {
       return jsonError("Contact not found", 404);
     }
-    if (contactCheck.user_id !== userId) {
+    if (!isServiceRoleCaller(authResult) && contactCheck.user_id !== userId) {
       return jsonError("Forbidden: contact does not belong to user", 403);
+    }
+    // Service-role calls trust the caller to pass the correct userId
+    // (typically the contact's owner — sync from the contact record itself):
+    if (isServiceRoleCaller(authResult)) {
+      userId = contactCheck.user_id;
     }
 
     const { data: savedRecord, error: saveError } = await supabase

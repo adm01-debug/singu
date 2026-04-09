@@ -158,7 +158,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
           profile_summary: summary
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -391,7 +391,7 @@ export function useDISCAnalysis(contactId?: string): UseDISCAnalysisReturn {
           behavior_indicators: []
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

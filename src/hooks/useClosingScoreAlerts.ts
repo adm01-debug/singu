@@ -150,7 +150,7 @@ export function useClosingScoreAlerts() {
             dismissed: false
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
