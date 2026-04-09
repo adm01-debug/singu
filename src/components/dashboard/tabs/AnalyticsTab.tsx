@@ -2,6 +2,8 @@ import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 import { DISCConversionMetricsPanel } from '@/components/analytics/DISCConversionMetricsPanel';
+import { TriggerAnalyticsPanel } from '@/components/analytics/TriggerAnalyticsPanel';
+import { RFMSegmentDashboard } from '@/components/analytics/RFMSegmentDashboard';
 import { Button } from '@/components/ui/button';
 import { Typography } from '@/components/ui/typography';
 import { Surface } from '@/components/ui/surface';

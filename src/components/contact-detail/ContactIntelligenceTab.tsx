@@ -212,6 +212,15 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
       </Card>
       </div>
 
+      {/* Social Intelligence */}
+      <SocialIntelligencePanel contactId={contactId} />
+
+      {/* Communication Preferences + Score History */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <CommunicationPreferencesCard contactId={contactId} />
+        <ScoreHistoryPanel contactId={contactId} />
+      </div>
+
       {/* New panels: Emotional Anchors, Best Time, AI Actions */}
       <div className="grid gap-4 md:grid-cols-2">
         <EmotionalAnchorsPanel contactId={contactId} />
