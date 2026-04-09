@@ -21,7 +21,7 @@ const SCORE_TYPE_LABELS: Record<string, string> = {
 export function ScoreHistoryPanel({ contactId }: Props) {
   const { history, loading } = useScoreHistory(contactId);
 
-  if (loading || history.length === 0) return null;
+  if (!loading && history.length === 0) return null;
 
   return (
     <Card>
