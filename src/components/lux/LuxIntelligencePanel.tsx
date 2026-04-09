@@ -19,6 +19,37 @@ import { LuxHistoryTimeline } from './LuxHistoryTimeline';
 import type { LuxIntelligenceRecord, LuxSocialProfile, LuxStakeholder, LuxFilial, LuxEducation } from '@/hooks/useLuxIntelligence';
 import { toast } from 'sonner';
 
+// Typed interfaces for dynamic JSON data from edge functions
+interface LuxAudienceData {
+  target_audience?: string;
+  communication_style?: string;
+  brand_voice?: string;
+  content_themes?: string[];
+  [key: string]: unknown;
+}
+
+interface LuxSocialData {
+  personality_type?: string;
+  communication_style?: string;
+  content_themes?: string[];
+  [key: string]: unknown;
+}
+
+interface LuxProfileData {
+  current_position?: string;
+  company?: string;
+  tenure?: string;
+  specialties?: string[];
+  education?: LuxEducation[];
+  previous_companies?: string[];
+  hobbies?: string[];
+  interests?: string[];
+  travels?: string[];
+  bio?: string;
+  skills?: string[];
+  [key: string]: unknown;
+}
+
 interface LuxIntelligencePanelProps {
   record: LuxIntelligenceRecord | null;
   records?: LuxIntelligenceRecord[];
