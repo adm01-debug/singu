@@ -76,7 +76,7 @@ export function ContactBehavioralTab({ contact }: Props) {
         ),
       ]);
 
-      setDiscHistory((discRes as Record<string, unknown>[]) || []);
+      setDiscHistory((discRes as unknown as Tables<'disc_analysis_history'>[]) || []);
       setEqAnalysis((eqRes as Record<string, unknown>[])?.[0] || null);
       setBiases((biasRes as Record<string, unknown>[])?.[0] || null);
       setMetaprograms((metaRes as Record<string, unknown>[])?.[0] || null);
