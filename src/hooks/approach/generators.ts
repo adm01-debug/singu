@@ -115,7 +115,7 @@ export function generatePhases(ctx: ApproachContext): ApproachPhase[] {
 export function generateChannels(ctx: ApproachContext): CommunicationChannel[] {
   const { vakType, discProfile, contact } = ctx;
   const channels: CommunicationChannel[] = [];
-  const bestWindow = (contact.behavior as Record<string, unknown> | null)?.bestContactWindow as string || 'Manhã';
+  const bestWindow = (contact.behavior as unknown as Record<string, unknown> | null)?.bestContactWindow as string || 'Manhã';
 
   if (vakType === 'A' || discProfile === 'I') channels.push({ channel: 'Ligação telefônica', effectiveness: 90, reason: 'Perfil auditivo/influente valoriza comunicação verbal', bestTimeSlot: bestWindow, tips: ['Varie o tom de voz', 'Use pausas estratégicas', 'Demonstre entusiasmo'] });
   if (vakType === 'V' || discProfile === 'C') channels.push({ channel: 'E-mail detalhado', effectiveness: 85, reason: 'Perfil visual/analítico prefere conteúdo estruturado', bestTimeSlot: 'Início da manhã', tips: ['Use bullet points', 'Inclua gráficos', 'Forneça anexos detalhados'] });
