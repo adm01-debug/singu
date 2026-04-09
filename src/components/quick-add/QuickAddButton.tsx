@@ -68,7 +68,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     setActiveForm(null);
   };
 
-  const handleCreateContact = async (data: any) => {
+  const handleCreateContact = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createContact(data);
@@ -81,7 +81,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateCompany = async (data: any) => {
+  const handleCreateCompany = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createCompany(data);
@@ -94,7 +94,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateInteraction = async (data: any) => {
+  const handleCreateInteraction = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
     try {
       const result = await createInteraction(data);
