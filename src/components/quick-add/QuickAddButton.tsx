@@ -69,7 +69,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     setActiveForm(null);
   };
 
-  const handleCreateContact = async (data: Record<string, unknown>) => {
+  const handleCreateContact = async (data: Omit<Tables<'contacts'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createContact(data);
@@ -82,7 +82,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateCompany = async (data: Record<string, unknown>) => {
+  const handleCreateCompany = async (data: Omit<Tables<'companies'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createCompany(data);
@@ -95,7 +95,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateInteraction = async (data: Record<string, unknown>) => {
+  const handleCreateInteraction = async (data: Omit<Tables<'interactions'>, 'id' | 'created_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createInteraction(data);
