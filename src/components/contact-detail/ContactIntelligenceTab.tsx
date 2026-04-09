@@ -7,10 +7,16 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
+import { EmotionalAnchorsPanel } from '@/components/contact-detail/EmotionalAnchorsPanel';
+import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToContactCard';
+import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
   contactId: string;
+  contactName?: string;
+  linkedinUrl?: string | null;
+  websiteUrl?: string | null;
 }
 
 export function ContactIntelligenceTab({ contactId }: Props) {
