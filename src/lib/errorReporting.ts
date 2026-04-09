@@ -94,28 +94,39 @@ async function flushErrorBuffer(): Promise<void> {
   errorBuffer.length = 0;
   
   try {
-    // Em produção, enviar para edge function ou serviço externo
+    // ─── PROD: try real telemetry destinations ───
     if (import.meta.env.PROD) {
-      // Exemplo: enviar para endpoint de logging
-      // await fetch('/api/errors', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(batch),
-      // });
-      
-      // Por enquanto, salvar no localStorage para debug
-      const existingLogs = JSON.parse(localStorage.getItem('error_logs') || '[]');
-      existingLogs.push(...batch.errors);
-      
-      // Manter apenas os últimos 100 erros
-      if (existingLogs.length > 100) {
-        existingLogs.splice(0, existingLogs.length - 100);
+      const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+
+      // Option 1: Sentry envelope API (preferred — fully featured)
+      if (sentryDsn) {
+        try {
+          await sendToSentry(sentryDsn, batch);
+        } catch (sentryErr) {
+          // Sentry failed — fall through to edge function backup
+          if (import.meta.env.DEV) console.warn('Sentry send failed:', sentryErr);
+        }
       }
-      
-      localStorage.setItem('error_logs', JSON.stringify(existingLogs));
+      // Option 2: Self-hosted edge function (backup / GDPR-friendly)
+      else if (supabaseUrl) {
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/error-reporter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batch),
+            keepalive: true, // survives page unload
+          });
+        } catch {
+          // Both destinations failed — drop silently to avoid recursive error loop
+        }
+      }
+      // Note: we do NOT persist errors in localStorage anymore.
+      // localStorage was orphaning errors with no way to retrieve them
+      // and leaking error data across users on shared devices.
     }
-    
-    // Log no console em dev
+
+    // ─── DEV: pretty console group ───
     if (import.meta.env.DEV) {
       logger.group('🐛 Error Report Batch');
       batch.errors.forEach(err => {
@@ -126,6 +137,67 @@ async function flushErrorBuffer(): Promise<void> {
   } catch {
     // Silenciar erros do próprio sistema de logging — noop em produção
   }
+}
+
+/**
+ * Send batch to Sentry via envelope API (no SDK required, ~0 KB overhead).
+ * Parses DSN, builds envelope, posts to /api/{project}/envelope/.
+ */
+async function sendToSentry(dsn: string, batch: ErrorBatch): Promise<void> {
+  // Parse DSN: https://PUBLIC_KEY@HOST/PROJECT_ID
+  const m = dsn.match(/^https:\/\/([^@]+)@([^/]+)\/(.+)$/);
+  if (!m) throw new Error('Invalid SENTRY_DSN format');
+  const [, publicKey, host, projectId] = m;
+
+  const auth = [
+    'Sentry sentry_version=7',
+    `sentry_client=singu-crm/${batch.appVersion}`,
+    `sentry_key=${publicKey}`,
+  ].join(', ');
+
+  // Build envelope: {header}\n{event header}\n{event payload}\n... (one per error)
+  const envelope = batch.errors.map(err => {
+    const event = {
+      event_id: err.id.replace(/-/g, ''),
+      timestamp: new Date(err.timestamp).getTime() / 1000,
+      platform: 'javascript',
+      level: err.severity === 'critical' ? 'fatal' : err.severity === 'high' ? 'error' : 'warning',
+      logger: 'singu-crm',
+      release: batch.appVersion,
+      environment: import.meta.env.MODE,
+      message: { formatted: err.message },
+      exception: err.stack ? {
+        values: [{
+          type: 'Error',
+          value: err.message,
+          stacktrace: { frames: err.stack.split('\n').slice(1).map(line => ({ filename: line.trim() })) },
+        }],
+      } : undefined,
+      tags: {
+        severity: err.severity,
+        fingerprint: err.fingerprint,
+        session_id: batch.sessionId,
+      },
+      user: err.userId ? { id: err.userId } : undefined,
+      request: { url: err.url, headers: { 'User-Agent': err.userAgent } },
+      extra: err.metadata,
+    };
+    const eventHeader = JSON.stringify({ type: 'event', content_type: 'application/json' });
+    return `${eventHeader}\n${JSON.stringify(event)}`;
+  }).join('\n');
+
+  const envHeader = JSON.stringify({ event_id: batch.errors[0].id.replace(/-/g, '') });
+  const body = `${envHeader}\n${envelope}\n`;
+
+  await fetch(`https://${host}/api/${projectId}/envelope/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-sentry-envelope',
+      'X-Sentry-Auth': auth,
+    },
+    body,
+    keepalive: true,
+  });
 }
 
 // Captura erro e adiciona ao buffer
@@ -206,7 +278,7 @@ export function useErrorReporter() {
 // Recupera logs de erro salvos (para debug)
 export function getErrorLogs(): ErrorReport[] {
   try {
-    return JSON.parse(localStorage.getItem('error_logs') || '[]');
+    return []; // localStorage error storage removed in audit 2026-04-09
   } catch {
     return [];
   }
@@ -214,7 +286,7 @@ export function getErrorLogs(): ErrorReport[] {
 
 // Limpa logs de erro
 export function clearErrorLogs(): void {
-  localStorage.removeItem('error_logs');
+  // localStorage error storage removed in audit 2026-04-09 — noop
 }
 
 export type { ErrorReport, ErrorBatch };

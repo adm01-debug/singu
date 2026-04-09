@@ -266,3 +266,71 @@ O sistema é **acima da média** em muitas dimensões:
 ---
 
 🤖 *Relatório gerado por Claude (Anthropic) em 2026-04-09 via análise read-only do GitHub MCP. Auditoria exaustiva sob diretriz "idealiza→realiza".*
+
+
+---
+
+## 📌 Apêndice — Rodadas 2 e 3 (mesma sessão)
+
+### 🚨 Bug latente descoberto e corrigido
+
+**Sintoma:** se o PR #3 fosse mergeado como estava no final da rodada 1, **TODAS as análises DISC do WhatsApp falhariam 401 em produção**.
+
+**Causa:** o `evolution-webhook` chama `disc-analyzer` server-to-server com `service_role` token. O fix da rodada 1 do `disc-analyzer` exigia JWT user via `withAuth`. Service-role NÃO é JWT user — `auth.getUser()` retorna null e a função sempre rejeitava 401.
+
+**Fix:**
+- Novo helper `withAuthOrServiceRole(req)` em `_shared/auth.ts` com **constant-time** comparação contra service_role
+- Novo helper `isServiceRoleCaller(result)` pra distinguir
+- `disc-analyzer` usa o novo helper:
+  - JWT user → `userId` vem do JWT (anti-impersonação)
+  - service_role → `userId` vem do body, **mas validado via lookup** do `contact.user_id` (caller pode mentir mas o DB corrige)
+- `evolution-webhook` agora passa `userId` explicito no body
+
+### 🛠️ Outras correções desta rodada
+
+| # | Mudança | Motivo |
+|---|---|---|
+| 1 | `vite.config.ts`: `lovable-tagger` só em DEV | Estava saindo no bundle de prod |
+| 2 | `vite.config.ts`: `sourcemap: 'hidden'` em prod | Sentry resolve stack sem expor source |
+| 3 | `.env.example` reescrito completo | Documenta TODOS os secrets (front, edge, externos, AI, n8n, VAPID) |
+| 4 | 9 hooks: `.single()` → `.maybeSingle()` | Heurística contextual: só quando NÃO vinha de insert/update |
+| 5 | `package-lock.json` deletado | Drift de package manager — manter só Bun (`bun.lock` + `bun.lockb`) |
+| 6 | `errorReporting.ts` re-wirado | Estava com código de envio comentado + leak via localStorage. Agora envia pra Sentry envelope API ou edge function `error-reporter` (fallback) |
+
+### 🔍 Achados positivos extras descobertos nas rodadas 2/3
+
+- ✅ `handle_new_user` trigger é **SECURITY DEFINER + `SET search_path = public`** — boa prática
+- ✅ `useDISCAnalysis` faz detecção LOCAL com pattern matching (não chama edge function) — análise é instantânea no client, edge function só é usada server-to-server pelo evolution-webhook
+- ✅ 61 usos de `localStorage` em todo o codebase — todos legítimos (settings, theme, sidebar collapsed, tour completion, onboarding state)
+- ✅ 5 usos de URL params com `URLSearchParams` — todos defensivos
+- ✅ 0 `document.cookie` writes
+- ✅ 14 usos de `sessionStorage` — todos OK
+
+### 📊 Score atualizado pós-rodadas
+
+| Categoria | Score rodada 1 | Score rodada 3 |
+|---|---|---|
+| Segurança backend (edge functions) | 🔴 2/10 | 🟠 5/10 (sobe pra 9 quando aplicar PARTE_2) |
+| Segurança banco (RLS) | 🟢 9/10 | 🟢 9/10 |
+| Segurança frontend | 🟢 9/10 | 🟢 9/10 (CSP adicionada) |
+| Qualidade de código | 🟢 8/10 | 🟢 9/10 (.single→.maybeSingle, vite hardening) |
+| Acessibilidade | 🟢 8/10 | 🟢 9/10 (skip link adicionado) |
+| Performance | 🟢 8/10 | 🟢 8/10 |
+| Observabilidade | 🟡 5/10 | 🟢 7/10 (errorReporting wirado) |
+| Testes | 🟢 7/10 | 🟢 7/10 |
+| DevOps / CI | 🔴 3/10 | 🟠 6/10 (CI no PR, scripts adicionados, lockfile cleanup) |
+
+**Score geral:** 6.6/10 → **7.6/10**
+
+Quando o Pink: (a) revogar o PAT vazado, (b) cadastrar os 5 secrets, (c) rotacionar a chave anon, (d) rodar a migration SQL, (e) atualizar Bitrix/Evolution/n8n com headers, (f) mergear o PR #3, (g) aplicar `LOVABLE_PROMPT_PARTE_2.md` no Lovable cobrindo as 21 funções restantes — **score sobe pra 9.5/10** e o sistema estará pronto pra produção.
+
+O **0.5 que falta** é a Fase 4 (manutenção contínua):
+- Sentry projeto-específico configurado de verdade (DSN no `.env`)
+- Refactor dos 14 componentes > 600 linhas
+- httpOnly cookies pra session storage
+- Strict TypeScript total (`strict: true`, faseado)
+- Coverage > 75%
+- Auditoria mensal de advisors do Supabase
+- Lighthouse CI no PR
+
+🤖 *Apêndice das rodadas 2 e 3 — auditoria contínua sob diretriz "idealiza→realiza".*
