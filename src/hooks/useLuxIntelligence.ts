@@ -40,6 +40,8 @@ export interface LuxFiscalData {
 export interface LuxFilial {
   cnpj?: string;
   nome_fantasia?: string;
+  nome?: string;
+  endereco?: string;
   cidade?: string;
   uf?: string;
   situacao?: string;
