@@ -11,10 +11,18 @@ import { logger } from "@/lib/logger";
 
 import type { Tables } from '@/integrations/supabase/types';
 
+interface ContactBehavior {
+  preferredChannel?: string;
+  discProfile?: string;
+  discBlend?: string;
+  discConfidence?: number;
+  [key: string]: unknown;
+}
+
 interface ContactReport {
-  contact: Tables<'contacts'> | Record<string, unknown>;
-  interactions: (Tables<'interactions'> | Record<string, unknown>)[];
-  discHistory: (Tables<'disc_analysis_history'> | Record<string, unknown>)[];
+  contact: Tables<'contacts'>;
+  interactions: Tables<'interactions'>[];
+  discHistory: Tables<'disc_analysis_history'>[];
 }
 
 const RelatorioContato = () => {

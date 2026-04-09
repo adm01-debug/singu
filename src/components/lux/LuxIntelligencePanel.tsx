@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { LuxButton } from './LuxButton';
 import { LuxHistoryTimeline } from './LuxHistoryTimeline';
-import type { LuxIntelligenceRecord, LuxSocialProfile, LuxStakeholder, LuxFilial, LuxEducation } from '@/hooks/useLuxIntelligence';
+import type { LuxIntelligenceRecord, LuxSocialProfile, LuxStakeholder, LuxFiscalData, LuxFilial, LuxEducation } from '@/hooks/useLuxIntelligence';
 import { toast } from 'sonner';
 
 // Typed interfaces for dynamic JSON data from edge functions
@@ -394,8 +394,8 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 }
 
 function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
-  const profile = record.personal_profile || {};
-  const social = record.social_analysis || {};
+  const profile = (record.personal_profile || {}) as LuxProfileData;
+  const social = (record.social_analysis || {}) as LuxSocialData;
   const socialProfiles = record.social_profiles || [];
 
   return (
