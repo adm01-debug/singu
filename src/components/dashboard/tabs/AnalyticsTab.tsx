@@ -2,6 +2,8 @@ import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
 import { DISCConversionMetricsPanel } from '@/components/analytics/DISCConversionMetricsPanel';
+import { TriggerAnalyticsPanel } from '@/components/analytics/TriggerAnalyticsPanel';
+import { RFMSegmentDashboard } from '@/components/analytics/RFMSegmentDashboard';
 import { Button } from '@/components/ui/button';
 import { Typography } from '@/components/ui/typography';
 import { Surface } from '@/components/ui/surface';
@@ -79,6 +81,14 @@ export function AnalyticsTab({ prefersReducedMotion, tabDirection }: AnalyticsTa
 
       <DashboardErrorBoundary sectionName="Conversão por Perfil DISC">
         <DISCConversionMetricsPanel />
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Métricas RFM Avançadas">
+        <RFMSegmentDashboard />
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Analytics de Gatilhos">
+        <TriggerAnalyticsPanel />
       </DashboardErrorBoundary>
     </motion.div>
   );

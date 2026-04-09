@@ -1,0 +1,39 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import type { Tables } from '@/integrations/supabase/types';
+
+export function useSocialIntelligence(contactId: string) {
+  const { user } = useAuth();
+  const [profiles, setProfiles] = useState<Tables<'social_profiles'>[]>([]);
+  const [behaviorAnalysis, setBehaviorAnalysis] = useState<Tables<'social_behavior_analysis'> | null>(null);
+  const [lifeEvents, setLifeEvents] = useState<Tables<'social_life_events'>[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !contactId) return;
+    setLoading(true);
+
+    const fetchAll = async () => {
+      const [profRes, behavRes, eventsRes] = await Promise.all([
+        supabase.from('social_profiles').select('*').eq('contact_id', contactId).order('updated_at', { ascending: false }),
+        supabase.from('social_behavior_analysis').select('*').eq('contact_id', contactId).order('analysis_date', { ascending: false }).limit(1),
+        supabase.from('social_life_events').select('*').eq('contact_id', contactId).eq('dismissed', false).order('created_at', { ascending: false }).limit(20),
+      ]);
+
+      setProfiles(profRes.data || []);
+      setBehaviorAnalysis(behavRes.data?.[0] || null);
+      setLifeEvents(eventsRes.data || []);
+      setLoading(false);
+    };
+
+    fetchAll();
+  }, [user, contactId]);
+
+  const dismissEvent = async (eventId: string) => {
+    await supabase.from('social_life_events').update({ dismissed: true }).eq('id', eventId);
+    setLifeEvents(prev => prev.filter(e => e.id !== eventId));
+  };
+
+  return { profiles, behaviorAnalysis, lifeEvents, loading, dismissEvent };
+}

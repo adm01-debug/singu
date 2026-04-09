@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { WhatsAppDashboard } from '@/components/whatsapp/WhatsAppDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Mail, MessageSquare, Users, Video, FileText,
@@ -209,6 +210,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
           })}
         </div>
       )}
+
+      {/* WhatsApp Messages for this contact */}
+      <WhatsAppDashboard contactId={contact.id} />
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
