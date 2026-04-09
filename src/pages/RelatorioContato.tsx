@@ -49,7 +49,7 @@ const RelatorioContato = () => {
         const { data: localInteractions } = await supabase.from("interactions").select("*").eq("contact_id", id).order("created_at", { ascending: false });
         let interactions = localInteractions || [];
         if (interactions.length === 0) {
-          const { data: extInteractions } = await queryExternalData({ table: 'interactions', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'created_at', ascending: false } });
+          const { data: extInteractions } = await queryExternalData<Tables<'interactions'>>({ table: 'interactions', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'created_at', ascending: false } });
           interactions = extInteractions || [];
         }
 
@@ -57,7 +57,7 @@ const RelatorioContato = () => {
         const { data: localDisc } = await supabase.from("disc_analysis_history").select("*").eq("contact_id", id).order("analyzed_at", { ascending: false });
         let discHistory = localDisc || [];
         if (discHistory.length === 0) {
-          const { data: extDisc } = await queryExternalData({ table: 'disc_analysis_history', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'analyzed_at', ascending: false } });
+          const { data: extDisc } = await queryExternalData<Tables<'disc_analysis_history'>>({ table: 'disc_analysis_history', filters: [{ type: 'eq', column: 'contact_id', value: id }], order: { column: 'analyzed_at', ascending: false } });
           discHistory = extDisc || [];
         }
 
