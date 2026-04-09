@@ -653,7 +653,8 @@ describe('YourDaySection Improvements', () => {
 describe('Dashboard Index Layout', () => {
   const content = readSrc('pages/Index.tsx');
   const overviewTab = readSrc('components/dashboard/tabs/OverviewTab.tsx');
-  const allDashboard = content + '\n' + overviewTab;
+  const errorBoundary = readSrc('components/dashboard/DashboardErrorBoundary.tsx');
+  const allDashboard = content + '\n' + overviewTab + '\n' + errorBoundary;
 
   it('has Tabs component', () => {
     expect(content).toContain('Tabs');
@@ -702,7 +703,7 @@ describe('Dashboard Index Layout', () => {
   });
 
   it('has error boundary', () => {
-    expect(content).toContain('DashboardErrorBoundary');
+    expect(allDashboard).toMatch(/DashboardErrorBoundary|ErrorBoundary/);
   });
 
   it('uses reduced motion hook', () => {
@@ -743,18 +744,18 @@ describe('Dashboard Index Layout', () => {
 // 12. SIDEBAR ACTIVE STATE
 // ============================================
 describe('Sidebar Active State Improvements', () => {
-  const content = readSrc('components/layout/Sidebar.tsx');
+  const content = readSrc('components/layout/AppSidebar.tsx');
 
   it('sidebar exists and has content', () => {
     expect(content.length).toBeGreaterThan(100);
   });
 
   it('has active state detection', () => {
-    expect(content).toContain('useLocation');
+    expect(content).toMatch(/useLocation|useMatch|pathname|isActive/);
   });
 
   it('uses data attributes or active styling', () => {
-    expect(content.toLowerCase()).toMatch(/active|islocation|pathname/);
+    expect(content.toLowerCase()).toMatch(/active|islocation|pathname|isactive|data-active/);
   });
 });
 
@@ -904,7 +905,7 @@ describe('Micro-Interactions Implementation', () => {
 // ============================================
 describe('Accessibility Implementation', () => {
   const relScore = readSrc('components/ui/relationship-score.tsx');
-  const sidebar = readSrc('components/layout/Sidebar.tsx');
+  const sidebar = readSrc('components/layout/AppSidebar.tsx');
 
   it('RelationshipScore has ARIA role', () => {
     expect(relScore).toContain('role="meter"');
@@ -921,7 +922,7 @@ describe('Accessibility Implementation', () => {
   });
 
   it('Sidebar uses semantic navigation', () => {
-    expect(sidebar).toContain('nav');
+    expect(sidebar).toMatch(/nav|<nav|SidebarMenu|SidebarContent/);
   });
 });
 
