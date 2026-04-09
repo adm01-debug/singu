@@ -385,7 +385,7 @@ export default function Automacoes() {
             <AnimatePresence>
               {rules.map((rule, index) => {
                 const trigger = TRIGGER_OPTIONS.find(t => t.value === rule.trigger_type);
-                const actionLabels = (Array.isArray(rule.actions) ? rule.actions : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
+                const actionLabels = (Array.isArray(rule.actions) ? rule.actions : []).map((a: { type: string }) => ACTION_OPTIONS.find(o => o.value === a.type)?.label ?? a.type);
 
                 return (
                   <motion.div
@@ -541,7 +541,7 @@ export default function Automacoes() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium">
-                        {(Array.isArray(log.actions_executed) ? log.actions_executed : []).map((a: any) => ACTION_OPTIONS.find(o => o.value === a.type)?.label).filter(Boolean).join(', ') || 'Ação executada'}
+                        {(Array.isArray(log.actions_executed) ? log.actions_executed : []).map((a: { type: string }) => ACTION_OPTIONS.find(o => o.value === a.type)?.label).filter(Boolean).join(', ') || 'Ação executada'}
                       </p>
                       {log.error_message && (
                         <p className="text-xs text-destructive truncate">{log.error_message}</p>

@@ -77,7 +77,7 @@ const DataCard = ({
   </motion.div>
 );
 
-const SocialProfileCard = ({ profile }: { profile: any }) => {
+const SocialProfileCard = ({ profile }: { profile: LuxSocialProfile }) => {
   const platformIcons: Record<string, typeof Linkedin> = {
     linkedin: Linkedin,
     instagram: Instagram,
@@ -118,7 +118,7 @@ const SocialProfileCard = ({ profile }: { profile: any }) => {
   );
 };
 
-const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: number }) => (
+const StakeholderCard = ({ stakeholder, index }: { stakeholder: LuxStakeholder; index: number }) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}

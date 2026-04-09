@@ -9,10 +9,12 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { logger } from "@/lib/logger";
 
+import type { Tables } from '@/integrations/supabase/types';
+
 interface ContactReport {
-  contact: any;
-  interactions: any[];
-  discHistory: any[];
+  contact: Tables<'contacts'> | Record<string, unknown>;
+  interactions: (Tables<'interactions'> | Record<string, unknown>)[];
+  discHistory: (Tables<'disc_analysis_history'> | Record<string, unknown>)[];
 }
 
 const RelatorioContato = () => {
@@ -26,7 +28,7 @@ const RelatorioContato = () => {
 
       try {
         // Fetch contact - local first, then external
-        let contact: any = null;
+        let contact: Tables<'contacts'> | Record<string, unknown> | null = null;
         const { data: localContact } = await supabase.from("contacts").select("*").eq("id", id).maybeSingle();
         if (localContact) {
           contact = localContact;

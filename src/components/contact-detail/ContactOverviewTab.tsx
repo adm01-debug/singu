@@ -37,13 +37,13 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
     if (!user || !contact.id) return;
 
     const fetchWithFallback = async <T,>(
-      localFn: () => Promise<{ data: T | null; error: any }>,
+      localFn: () => Promise<{ data: T | null; error: unknown }>,
       extTable: string,
-      filters: Array<{ type: 'eq'; column: string; value: any }>,
+      filters: Array<{ type: 'eq'; column: string; value: string }>,
     ): Promise<T | null> => {
       const { data: local } = await localFn();
       if (local && (Array.isArray(local) ? local.length > 0 : true)) return local;
-      const { data: ext } = await queryExternalData<any>({ table: extTable, filters });
+      const { data: ext } = await queryExternalData<T>({ table: extTable, filters });
       if (Array.isArray(ext) && ext.length > 0) return ext as unknown as T;
       if (ext && !Array.isArray(ext)) return ext as unknown as T;
       return Array.isArray(local) ? ([] as unknown as T) : null;

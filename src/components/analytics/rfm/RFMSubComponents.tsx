@@ -139,7 +139,14 @@ export function PriorityBadge({ priority }: { priority: string }) {
   return <Badge className={`${cfg.color} border-0`}>{cfg.label}</Badge>;
 }
 
-export function ContactRFMCard({ summary }: { summary: any }) {
+interface ContactRFMSummary {
+  contactId: string;
+  contactName: string;
+  avatarUrl?: string;
+  rfmAnalysis: RFMAnalysis;
+}
+
+export function ContactRFMCard({ summary }: { summary: ContactRFMSummary }) {
   const rfm = summary.rfmAnalysis;
   if (!rfm) return null;
   const segment = RFM_SEGMENTS[rfm.segment];
@@ -213,7 +220,7 @@ export function ScoreCard({ label, score, detail, color, trend }: {
 }
 
 export function ContactRFMDetail({ rfm, history, onRefresh, analyzing }: {
-  rfm: RFMAnalysis; history: any[]; onRefresh: () => void; analyzing: boolean;
+  rfm: RFMAnalysis; history: RFMAnalysis[]; onRefresh: () => void; analyzing: boolean;
 }) {
   const segment = RFM_SEGMENTS[rfm.segment];
   const historyChartData = useMemo(() => {
@@ -325,9 +332,10 @@ export function ContactRFMDetail({ rfm, history, onRefresh, analyzing }: {
 
 export function ActionsOverview({ rfmData }: { rfmData: RFMAnalysis[] }) {
   const actionsByPriority = useMemo(() => {
-    const urgent: any[] = [];
-    const high: any[] = [];
-    const medium: any[] = [];
+    interface ActionItem { contactId: string; segment: string; actions: RFMAnalysis['recommendedActions']; priority: string; }
+    const urgent: ActionItem[] = [];
+    const high: ActionItem[] = [];
+    const medium: ActionItem[] = [];
     rfmData.forEach(rfm => {
       const item = { contactId: rfm.contactId, segment: rfm.segment, actions: rfm.recommendedActions, priority: rfm.communicationPriority };
       if (rfm.communicationPriority === 'urgent') urgent.push(item);
