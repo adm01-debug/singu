@@ -1,5 +1,6 @@
 import { Users, ArrowRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import type { MotionStyle, Transition, TargetAndTransition } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
@@ -16,10 +17,16 @@ import { cn } from '@/lib/utils';
 import type { ContactRole } from '@/types';
 import type { DashboardStats } from '@/hooks/useDashboardStats';
 
+interface StaggerAnimation {
+  initial: TargetAndTransition;
+  animate: TargetAndTransition;
+  transition: Transition;
+  style: MotionStyle;
+}
+
 interface TopContactsCardProps {
   contacts: DashboardStats['topContacts'];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  animations: Array<{ initial: any; animate: any; transition: any; style: any }>;
+  animations: StaggerAnimation[];
 }
 
 /** Semantic score colors and labels */

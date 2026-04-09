@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
+import type { MotionStyle, Transition, TargetAndTransition } from 'framer-motion';
 import { Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -14,15 +15,20 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
 
+interface StaggerAnimation {
+  initial: TargetAndTransition;
+  animate: TargetAndTransition;
+  transition: Transition;
+  style: MotionStyle;
+}
+
 interface OverviewTabProps {
   stats: DashboardStats;
   briefingOpen: boolean;
   setBriefingOpen: (open: boolean) => void;
   prefersReducedMotion: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recentActivityAnimations: Array<{ initial: any; animate: any; transition: any; style: any }>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  topContactAnimations: Array<{ initial: any; animate: any; transition: any; style: any }>;
+  recentActivityAnimations: StaggerAnimation[];
+  topContactAnimations: StaggerAnimation[];
   tabDirection: number;
 }
 
