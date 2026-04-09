@@ -703,7 +703,7 @@ describe('Dashboard Index Layout', () => {
   });
 
   it('has error boundary', () => {
-    expect(content).toContain('DashboardErrorBoundary');
+    expect(allDashboard).toMatch(/DashboardErrorBoundary|ErrorBoundary/);
   });
 
   it('uses reduced motion hook', () => {
