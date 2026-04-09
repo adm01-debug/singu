@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Minus, ShoppingBag, BarChart3, AlertCircle } 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -148,7 +149,11 @@ export function ContactCommercialTab({ contactId }: Props) {
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">Análise RFM ainda não realizada</p>
+            <InlineEmptyState
+              icon={BarChart3}
+              title="Análise RFM pendente"
+              description="Execute a análise para segmentar este contato por Recência, Frequência e Valor"
+            />
           )}
         </CardContent>
       </Card>
@@ -187,7 +192,11 @@ export function ContactCommercialTab({ contactId }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">Nenhuma compra registrada</p>
+            <InlineEmptyState
+              icon={ShoppingBag}
+              title="Sem histórico de compras"
+              description="O histórico aparecerá automaticamente quando compras forem registradas"
+            />
           )}
         </CardContent>
       </Card>
