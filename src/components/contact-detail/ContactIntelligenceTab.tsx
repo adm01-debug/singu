@@ -10,6 +10,9 @@ import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import { EmotionalAnchorsPanel } from '@/components/contact-detail/EmotionalAnchorsPanel';
 import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToContactCard';
 import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
+import { SocialIntelligencePanel } from '@/components/contact-detail/SocialIntelligencePanel';
+import { ScoreHistoryPanel } from '@/components/contact-detail/ScoreHistoryPanel';
+import { CommunicationPreferencesCard } from '@/components/contact-detail/CommunicationPreferencesCard';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
