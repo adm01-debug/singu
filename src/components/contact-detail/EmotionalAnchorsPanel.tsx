@@ -124,6 +124,7 @@ export function EmotionalAnchorsPanel({ contactId }: Props) {
         ) : (
           <p className="text-xs text-muted-foreground italic">Nenhuma âncora emocional registrada</p>
         )}
+        </>)}
       </CardContent>
     </Card>
   );
