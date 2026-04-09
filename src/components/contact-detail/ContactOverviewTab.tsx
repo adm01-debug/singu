@@ -53,19 +53,19 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
 
       const [relData, eventsData, cadenceData, prefData] = await Promise.all([
-        fetchWithFallback<any[]>(
+        fetchWithFallback<Tables<'contact_relatives'>[]>(
           async () => supabase.from('contact_relatives').select('*').eq('contact_id', contact.id).order('name'),
           'contact_relatives', contactFilter,
         ),
-        fetchWithFallback<any[]>(
+        fetchWithFallback<Tables<'life_events'>[]>(
           async () => supabase.from('life_events').select('*').eq('contact_id', contact.id).order('event_date', { ascending: false }),
           'life_events', contactFilter,
         ),
-        fetchWithFallback<any>(
+        fetchWithFallback<Tables<'contact_cadence'> | null>(
           async () => supabase.from('contact_cadence').select('*').eq('contact_id', contact.id).maybeSingle(),
           'contact_cadence', contactFilter,
         ),
-        fetchWithFallback<any>(
+        fetchWithFallback<Tables<'contact_preferences'> | null>(
           async () => supabase.from('contact_preferences').select('*').eq('contact_id', contact.id).maybeSingle(),
           'contact_preferences', contactFilter,
         ),

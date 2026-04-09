@@ -23,7 +23,7 @@ interface ExternalQueryOptions {
   };
 }
 
-async function callExternalData(body: Record<string, any>): Promise<any> {
+async function callExternalData(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const url = `${supabaseUrl}/functions/v1/external-data`;
 

@@ -41,9 +41,9 @@ async function fetchWithFallback<T>(
 export function ContactBehavioralTab({ contact }: Props) {
   const { user } = useAuth();
   const [discHistory, setDiscHistory] = useState<Tables<'disc_analysis_history'>[]>([]);
-  const [eqAnalysis, setEqAnalysis] = useState<any>(null);
-  const [biases, setBiases] = useState<any>(null);
-  const [metaprograms, setMetaprograms] = useState<any>(null);
+  const [eqAnalysis, setEqAnalysis] = useState<Record<string, unknown> | null>(null);
+  const [biases, setBiases] = useState<Record<string, unknown> | null>(null);
+  const [metaprograms, setMetaprograms] = useState<Record<string, unknown> | null>(null);
 
   const behavior = contact.behavior as Record<string, unknown> | null;
 
@@ -54,7 +54,7 @@ export function ContactBehavioralTab({ contact }: Props) {
 
     const fetchData = async () => {
       const [discRes, eqRes, biasRes, metaRes] = await Promise.all([
-        fetchWithFallback<any[]>(
+        fetchWithFallback<Tables<'disc_analysis_history'>[]>(
           async () => supabase.from('disc_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(5),
           'disc_analysis_history', contactFilter,
           { order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 4 } },

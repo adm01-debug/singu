@@ -24,7 +24,7 @@ export function AIActionsPanel({ contactId, contactName, linkedinUrl, websiteUrl
     firecrawlScrape,
   } = useEdgeFunctionActions();
 
-  const [nextAction, setNextAction] = useState<any>(null);
+  const [nextAction, setNextAction] = useState<{ action?: string; suggestion?: string } | null>(null);
   const [scrapeUrl, setScrapeUrl] = useState('');
 
   const handleSuggestNextAction = useCallback(async () => {

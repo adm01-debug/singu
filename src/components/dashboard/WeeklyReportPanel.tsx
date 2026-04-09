@@ -62,7 +62,7 @@ export function WeeklyReportPanel() {
     include_recommendations: true,
     include_performance_metrics: true
   });
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     if (settings) {

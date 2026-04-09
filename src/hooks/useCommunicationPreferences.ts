@@ -37,7 +37,7 @@ export function useCommunicationPreferences(contactId: string) {
     } else {
       const { data, error } = await supabase
         .from('communication_preferences')
-        .insert({ contact_id: contactId, user_id: user.id, ...updates } as any)
+        .insert({ contact_id: contactId, user_id: user.id, preferred_channel: 'email', ...updates })
         .select()
         .single();
       if (error) { toast.error('Erro ao criar preferências'); return; }
