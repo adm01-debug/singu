@@ -67,6 +67,11 @@ export function EmotionalAnchorsPanel({ contactId }: Props) {
         </div>
       </CardHeader>
       <CardContent>
+        {loading && anchors.length === 0 ? (
+          <div className="flex items-center justify-center py-6 text-muted-foreground text-xs gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" /> Carregando âncoras...
+          </div>
+        ) : (<>
         {showForm && (
           <div className="space-y-2 mb-3 p-3 rounded-lg border bg-muted/30">
             <Input placeholder="Palavra-gatilho" value={triggerWord} onChange={e => setTriggerWord(e.target.value)} className="text-sm" />
