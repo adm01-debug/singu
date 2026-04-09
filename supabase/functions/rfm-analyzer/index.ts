@@ -1,16 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface RFMScore {
-  recency: number;
-  frequency: number;
-  monetary: number;
-}
+import {
+  handleCorsAndMethod,
+  withAuth,
+  jsonError,
+  jsonOk,
+} from "../_shared/auth.ts";
 
 interface ContactMetrics {
   contactId: string;
@@ -23,60 +18,55 @@ interface ContactMetrics {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const guard = handleCorsAndMethod(req);
+  if (guard) return guard;
+
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { userId, contactId } = await req.json();
-
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'userId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    let requestBody: { contactId?: string } = {};
+    try {
+      requestBody = await req.json();
+    } catch {
+      // no body
     }
+    const { contactId } = requestBody;
 
     console.log(`Running RFM analysis for user: ${userId}`);
 
-    // Get all contacts
     let contactsQuery = supabase
       .from('contacts')
       .select('id, first_name, last_name, company_id')
       .eq('user_id', userId);
     
-    if (contactId) {
+    if (contactId && contactId !== 'all') {
       contactsQuery = contactsQuery.eq('id', contactId);
     }
 
     const { data: contacts, error: contactsError } = await contactsQuery;
-
     if (contactsError) throw contactsError;
 
-    // Get purchase history
     const { data: purchases, error: purchasesError } = await supabase
       .from('purchase_history')
       .select('*')
       .eq('user_id', userId);
-
     if (purchasesError) throw purchasesError;
 
-    // Get interactions
     const { data: interactions, error: interactionsError } = await supabase
       .from('interactions')
       .select('id, contact_id, created_at')
       .eq('user_id', userId);
-
     if (interactionsError) throw interactionsError;
 
     const now = new Date();
     const contactMetrics: Map<string, ContactMetrics> = new Map();
 
-    // Calculate metrics for each contact
     for (const contact of contacts || []) {
       const contactPurchases = (purchases || []).filter(p => p.contact_id === contact.id);
       const contactInteractions = (interactions || []).filter(i => i.contact_id === contact.id);
@@ -89,7 +79,7 @@ serve(async (req) => {
         ? new Date(Math.max(...contactInteractions.map(i => new Date(i.created_at).getTime())))
         : null;
 
-      const totalValue = contactPurchases.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+      const totalValue = contactPurchases.reduce((sum: number, p: Record<string, unknown>) => sum + (Number(p.amount) || 0), 0);
 
       contactMetrics.set(contact.id, {
         contactId: contact.id,
@@ -106,7 +96,6 @@ serve(async (req) => {
       });
     }
 
-    // Calculate percentiles for scoring
     const allMetrics = Array.from(contactMetrics.values());
     const recencyValues = allMetrics.map(m => m.daysSinceLastPurchase).sort((a, b) => a - b);
     const frequencyValues = allMetrics.map(m => m.totalPurchases).sort((a, b) => a - b);
@@ -127,7 +116,7 @@ serve(async (req) => {
     const frequencyPercentiles = getPercentiles(frequencyValues);
     const monetaryPercentiles = getPercentiles(monetaryValues);
 
-    const calculateScore = (value: number, percentiles: number[], isRecency: boolean = false): number => {
+    const calculateScore = (value: number, percentiles: number[], isRecency = false): number => {
       if (isRecency) {
         if (value <= percentiles[0]) return 5;
         if (value <= percentiles[1]) return 4;
@@ -135,7 +124,6 @@ serve(async (req) => {
         if (value <= percentiles[3]) return 2;
         return 1;
       }
-      
       if (value >= percentiles[3]) return 5;
       if (value >= percentiles[2]) return 4;
       if (value >= percentiles[1]) return 3;
@@ -174,33 +162,28 @@ serve(async (req) => {
 
     const results = [];
 
-    for (const [contactId, metrics] of contactMetrics) {
+    for (const [cId, metrics] of contactMetrics) {
       const recencyScore = calculateScore(metrics.daysSinceLastPurchase, recencyPercentiles, true);
       const frequencyScore = calculateScore(metrics.totalPurchases, frequencyPercentiles);
       const monetaryScore = calculateScore(metrics.totalValue, monetaryPercentiles);
       
       const segment = determineSegment(recencyScore, frequencyScore, monetaryScore);
       
-      // Calculate churn probability
       let churnProbability = (6 - recencyScore) * 15;
       churnProbability -= (frequencyScore - 1) * 5;
       if (metrics.daysSinceLastPurchase > 90) churnProbability += 20;
       else if (metrics.daysSinceLastPurchase > 60) churnProbability += 10;
       churnProbability = Math.max(0, Math.min(100, churnProbability));
 
-      // Determine communication priority
       let communicationPriority = 'medium';
       if (['cant_lose', 'at_risk'].includes(segment) || churnProbability > 70) {
         communicationPriority = 'urgent';
       } else if (['about_to_sleep', 'needing_attention'].includes(segment) || churnProbability > 50) {
         communicationPriority = 'high';
-      } else if (['champions', 'loyal_customers', 'potential_loyalists'].includes(segment)) {
-        communicationPriority = 'medium';
-      } else {
+      } else if (!['champions', 'loyal_customers', 'potential_loyalists'].includes(segment)) {
         communicationPriority = 'low';
       }
 
-      // Predict next purchase
       const avgCycle = metrics.totalPurchases > 1 
         ? Math.round(metrics.daysSinceLastPurchase / metrics.totalPurchases)
         : 30;
@@ -211,7 +194,7 @@ serve(async (req) => {
 
       const rfmResult = {
         user_id: userId,
-        contact_id: contactId,
+        contact_id: cId,
         recency_score: recencyScore,
         frequency_score: frequencyScore,
         monetary_score: monetaryScore,
@@ -233,7 +216,6 @@ serve(async (req) => {
         analyzed_at: now.toISOString()
       };
 
-      // Upsert RFM analysis
       const { error: upsertError } = await supabase
         .from('rfm_analysis')
         .upsert(rfmResult, { onConflict: 'user_id,contact_id' });
@@ -242,10 +224,9 @@ serve(async (req) => {
         console.error('Error upserting RFM:', upsertError);
       }
 
-      // Save to history
       await supabase.from('rfm_history').insert({
         user_id: userId,
-        contact_id: contactId,
+        contact_id: cId,
         recency_score: recencyScore,
         frequency_score: frequencyScore,
         monetary_score: monetaryScore,
@@ -258,22 +239,16 @@ serve(async (req) => {
 
     console.log(`RFM analysis completed for ${results.length} contacts`);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        analyzed: results.length,
-        results 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonOk({ 
+      success: true, 
+      analyzed: results.length,
+      results 
+    });
 
   } catch (error: unknown) {
     console.error('RFM analysis error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonError(errorMessage, 500);
   }
 });
 
