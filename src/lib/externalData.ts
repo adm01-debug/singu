@@ -23,7 +23,7 @@ interface ExternalQueryOptions {
   };
 }
 
-async function callExternalData(body: Record<string, any>): Promise<any> {
+async function callExternalData(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const url = `${supabaseUrl}/functions/v1/external-data`;
 
@@ -51,30 +51,30 @@ async function callExternalData(body: Record<string, any>): Promise<any> {
   return result;
 }
 
-export async function queryExternalData<T = any>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
+export async function queryExternalData<T = Record<string, unknown>>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'select', ...options });
-    return { data: result?.data || [], count: result?.count || 0, error: null };
+    return { data: (result?.data as T[]) || [], count: (result?.count as number) || 0, error: null };
   } catch (err) {
     logger.error('Error querying external data:', err);
     return { data: null, count: null, error: err as Error };
   }
 }
 
-export async function insertExternalData<T = any>(table: string, record: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function insertExternalData<T = Record<string, unknown>>(table: string, record: Record<string, unknown>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'insert', table, record });
-    return { data: result?.data || null, error: null };
+    return { data: (result?.data as T) || null, error: null };
   } catch (err) {
     logger.error('Error inserting external data:', err);
     return { data: null, error: err as Error };
   }
 }
 
-export async function updateExternalData<T = any>(table: string, id: string, updates: Record<string, any>): Promise<{ data: T | null; error: Error | null }> {
+export async function updateExternalData<T = Record<string, unknown>>(table: string, id: string, updates: Record<string, unknown>): Promise<{ data: T | null; error: Error | null }> {
   try {
     const result = await callExternalData({ action: 'update', table, id, updates });
-    return { data: result?.data || null, error: null };
+    return { data: (result?.data as T) || null, error: null };
   } catch (err) {
     logger.error('Error updating external data:', err);
     return { data: null, error: err as Error };
