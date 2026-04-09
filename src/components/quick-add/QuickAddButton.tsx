@@ -18,6 +18,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { Tables } from '@/integrations/supabase/types';
 
 type QuickAddType = 'contact' | 'company' | 'interaction' | null;
 
@@ -68,7 +69,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     setActiveForm(null);
   };
 
-  const handleCreateContact = async (data: any) => {
+  const handleCreateContact = async (data: Omit<Tables<'contacts'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createContact(data);
@@ -81,7 +82,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateCompany = async (data: any) => {
+  const handleCreateCompany = async (data: Omit<Tables<'companies'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createCompany(data);
@@ -94,7 +95,7 @@ export const QuickAddButton = React.forwardRef<HTMLDivElement, QuickAddButtonPro
     }
   };
 
-  const handleCreateInteraction = async (data: any) => {
+  const handleCreateInteraction = async (data: Omit<Tables<'interactions'>, 'id' | 'created_at' | 'user_id'>) => {
     setIsSubmitting(true);
     try {
       const result = await createInteraction(data);

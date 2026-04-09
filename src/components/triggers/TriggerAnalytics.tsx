@@ -106,12 +106,12 @@ const RESULT_COLORS: Record<TriggerResult, string> = {
 };
 
 // Custom Tooltip
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ color: string; name: string; value: number | string; dataKey?: string }>; label?: string }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-card border border-border rounded-lg p-3 shadow-sm">
         <p className="font-medium text-foreground mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <p key={index} className="text-sm text-muted-foreground">
             <span style={{ color: entry.color }} className="font-medium">
               {entry.name}:
