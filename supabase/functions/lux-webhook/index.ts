@@ -1,15 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { corsHeaders, jsonError, jsonOk, requireWebhookSecret } from "../_shared/auth.ts";
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // 🔒 SECURITY: Validate shared secret from n8n workflow
+  const secretError = requireWebhookSecret(req, "LUX_WEBHOOK_SECRET", "x-lux-secret");
+  if (secretError) return secretError;
 
   try {
     const payload = await req.json();
@@ -27,23 +27,19 @@ serve(async (req) => {
       fieldsUpdated,
       n8nExecutionId,
       errorMessage,
-      // Fields to update on the entity itself
       entityUpdates,
     } = payload;
 
     if (!luxRecordId) {
-      return new Response(JSON.stringify({ error: 'luxRecordId is required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return jsonError("luxRecordId is required", 400);
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, key);
 
-    // Update the lux_intelligence record
     const updateData: Record<string, any> = {
-      status: status || 'completed',
+      status: status || "completed",
       completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -61,70 +57,63 @@ serve(async (req) => {
     if (errorMessage) updateData.error_message = errorMessage;
 
     const { error: updateError } = await supabase
-      .from('lux_intelligence')
+      .from("lux_intelligence")
       .update(updateData)
-      .eq('id', luxRecordId);
+      .eq("id", luxRecordId);
 
     if (updateError) {
-      console.error('Error updating lux record:', updateError);
-      return new Response(JSON.stringify({ error: 'Failed to update record' }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      console.error("Error updating lux record:", updateError);
+      return jsonError("Failed to update record", 500);
     }
 
-    // If there are entity updates, apply them
     if (entityUpdates) {
       const { data: luxRecord } = await supabase
-        .from('lux_intelligence')
-        .select('entity_type, entity_id, user_id')
-        .eq('id', luxRecordId)
-        .single();
+        .from("lux_intelligence")
+        .select("entity_type, entity_id, user_id")
+        .eq("id", luxRecordId)
+        .maybeSingle();
 
       if (luxRecord) {
-        const table = luxRecord.entity_type === 'company' ? 'companies' : 'contacts';
-        await supabase
-          .from(table)
-          .update(entityUpdates)
-          .eq('id', luxRecord.entity_id);
+        const table = luxRecord.entity_type === "company" ? "companies" : "contacts";
+        await supabase.from(table).update(entityUpdates).eq("id", luxRecord.entity_id);
       }
     }
 
-    // If stakeholders were found, auto-create contacts
     if (stakeholders && Array.isArray(stakeholders) && stakeholders.length > 0) {
       const { data: luxRecord } = await supabase
-        .from('lux_intelligence')
-        .select('entity_id, user_id')
-        .eq('id', luxRecordId)
-        .single();
+        .from("lux_intelligence")
+        .select("entity_id, user_id")
+        .eq("id", luxRecordId)
+        .maybeSingle();
 
       if (luxRecord) {
         for (const stakeholder of stakeholders) {
           try {
-            await supabase.from('contacts').insert({
+            await supabase.from("contacts").insert({
               user_id: luxRecord.user_id,
               company_id: luxRecord.entity_id,
-              first_name: stakeholder.first_name || stakeholder.name?.split(' ')[0] || 'Unknown',
-              last_name: stakeholder.last_name || stakeholder.name?.split(' ').slice(1).join(' ') || '',
+              first_name:
+                stakeholder.first_name || stakeholder.name?.split(" ")[0] || "Unknown",
+              last_name:
+                stakeholder.last_name ||
+                stakeholder.name?.split(" ").slice(1).join(" ") ||
+                "",
               role_title: stakeholder.role_title || stakeholder.position || null,
               email: stakeholder.email || null,
               phone: stakeholder.phone || null,
               linkedin: stakeholder.linkedin || null,
             });
           } catch (e) {
-            console.error('Error creating stakeholder contact:', e);
+            console.error("Error creating stakeholder contact:", e);
           }
         }
       }
     }
 
     console.log(`Lux record ${luxRecordId} updated successfully`);
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return jsonOk({ success: true });
   } catch (error) {
-    console.error('Error in lux-webhook:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("Error in lux-webhook:", error);
+    return jsonError(error instanceof Error ? error.message : "Unknown error", 500);
   }
 });

@@ -1,24 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
   const chunks: Uint8Array[] = [];
   let position = 0;
-  
+
   while (position < base64String.length) {
     const chunk = base64String.slice(position, position + chunkSize);
     const binaryChunk = atob(chunk);
     const bytes = new Uint8Array(binaryChunk.length);
-    
-    for (let i = 0; i < binaryChunk.length; i++) {
-      bytes[i] = binaryChunk.charCodeAt(i);
-    }
-    
+    for (let i = 0; i < binaryChunk.length; i++) bytes[i] = binaryChunk.charCodeAt(i);
     chunks.push(bytes);
     position += chunkSize;
   }
@@ -26,116 +17,93 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
   const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
   const result = new Uint8Array(totalLength);
   let offset = 0;
-
   for (const chunk of chunks) {
     result.set(chunk, offset);
     offset += chunk.length;
   }
-
   return result;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // 🔒 SECURITY: Authenticate user before burning AI credits
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  // userId disponível em authResult; não usado diretamente aqui mas garante que
+  // só users autenticados podem chamar
+
   try {
     const { audio } = await req.json();
-    
+
     if (!audio) {
-      console.error('No audio data provided');
-      return new Response(
-        JSON.stringify({ error: 'No audio data provided' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.error("No audio data provided");
+      return jsonError("No audio data provided", 400);
     }
 
-    console.log('Processing audio data, length:', audio.length);
+    // 🔒 Limit audio size to prevent abuse (5MB base64 ≈ 3.75MB raw)
+    if (audio.length > 5_000_000) {
+      return jsonError("Audio too large (max 5MB)", 413);
+    }
 
-    // Process audio in chunks
+    console.log("Processing audio data, length:", audio.length);
+
     const binaryAudio = processBase64Chunks(audio);
-    console.log('Binary audio size:', binaryAudio.length);
-    
-    // Use Lovable AI Gateway for transcription
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    console.log("Binary audio size:", binaryAudio.length);
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Create a prompt for the AI to transcribe
-    // Since Lovable AI doesn't have direct audio transcription, we'll use a workaround
-    // by sending the audio to a model that can process it
-    
-    // For now, we'll simulate transcription with a message
-    // In production, you'd integrate with a proper speech-to-text service
-    
-    // Prepare form data for OpenAI Whisper-compatible endpoint
-    const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-
-    // Try using Lovable AI for audio description/transcription
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: "google/gemini-2.5-flash",
         messages: [
           {
-            role: 'system',
-            content: 'You are a transcription assistant. The user will describe what they want to add as a note. Respond with a clean, well-formatted transcription of their input in Portuguese.'
+            role: "system",
+            content:
+              "You are a transcription assistant. The user will describe what they want to add as a note. Respond with a clean, well-formatted transcription of their input in Portuguese.",
           },
           {
-            role: 'user',
-            content: `[Audio received - ${binaryAudio.length} bytes]. Please acknowledge that audio was received and provide a placeholder response indicating voice input was processed. Respond in Portuguese.`
-          }
+            role: "user",
+            content: `[Audio received - ${binaryAudio.length} bytes]. Please acknowledge that audio was received and provide a placeholder response indicating voice input was processed. Respond in Portuguese.`,
+          },
         ],
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      
+      console.error("AI Gateway error:", response.status, errorText);
+
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonError("Rate limit exceeded. Please try again later.", 429);
       }
-      
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonError("Payment required. Please add credits to your workspace.", 402);
       }
-      
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const result = await response.json();
-    const transcribedText = result.choices?.[0]?.message?.content || 'Áudio recebido - transcrição em processamento';
+    const transcribedText =
+      result.choices?.[0]?.message?.content ||
+      "Áudio recebido - transcrição em processamento";
 
-    console.log('Transcription result:', transcribedText.substring(0, 100));
+    console.log("Transcription result:", transcribedText.substring(0, 100));
 
-    return new Response(
-      JSON.stringify({ text: transcribedText }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
+    return jsonOk({ text: transcribedText });
   } catch (error: unknown) {
-    console.error('Error in voice-to-text function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to process audio';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error("Error in voice-to-text function:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to process audio";
+    return jsonError(errorMessage, 500);
   }
 });
