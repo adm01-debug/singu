@@ -211,6 +211,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
         </div>
       )}
 
+      {/* WhatsApp Messages for this contact */}
+      <WhatsAppDashboard contactId={contact.id} />
+
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <InteractionForm
