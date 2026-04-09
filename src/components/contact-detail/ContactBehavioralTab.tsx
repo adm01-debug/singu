@@ -183,6 +183,7 @@ export function ContactBehavioralTab({ contact }: Props) {
             </Card>
           )}
         </div>
+        <DISCCommunicationLogsPanel contactId={contact.id} />
       </TabsContent>
 
       {/* VAK Tab */}
