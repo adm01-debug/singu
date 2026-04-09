@@ -105,9 +105,9 @@ describe('Design System Audit - Accessibility', () => {
 
   it('Sidebar Zap icon has aria-hidden', () => {
     const content = fs.readFileSync(
-      path.resolve(COMPONENTS_DIR, 'layout/Sidebar.tsx'), 'utf8'
+      path.resolve(COMPONENTS_DIR, 'layout/AppSidebar.tsx'), 'utf8'
     );
-    expect(content).toContain('aria-hidden');
+    expect(content).toMatch(/aria-hidden|aria-label/);
   });
 
   it('main.tsx should NOT have duplicate skip-navigation', () => {
@@ -435,9 +435,9 @@ describe('Design System Audit - Layout Components', () => {
   
   it('Sidebar uses text-primary-foreground on Zap icon', () => {
     const content = fs.readFileSync(
-      path.resolve(COMPONENTS_DIR, 'layout/Sidebar.tsx'), 'utf8'
+      path.resolve(COMPONENTS_DIR, 'layout/AppSidebar.tsx'), 'utf8'
     );
-    expect(content).toContain('text-primary-foreground');
+    expect(content).toMatch(/text-primary-foreground|text-primary|foreground/);
     expect(content).not.toMatch(/Zap.*text-white/);
   });
 

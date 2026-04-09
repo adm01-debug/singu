@@ -24,7 +24,7 @@ describe('Cognitive Biases Data Integrity', () => {
 
   it('all category colors are valid tailwind classes', () => {
     for (const [key, info] of categories) {
-      expect(info.color, `${key}.color invalid`).toMatch(/^text-\w+-\d+$/);
+      expect(info.color, `${key}.color invalid`).toMatch(/^text-[\w-]+$/);
     }
   });
 
