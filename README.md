@@ -1,73 +1,111 @@
-# Welcome to your Lovable project
+# SINGU CRM
 
-## Project info
+> **Sistema de Inteligência Relacional** — CRM enterprise com módulos avançados de análise comportamental, PNL, neuromarketing e automação de relacionamento.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## 📌 Sobre
 
-There are several ways of editing your application.
+SINGU é um CRM construído para equipes que tratam relacionamento como ativo estratégico. Vai além do CRM tradicional ao combinar gestão de contatos com análise comportamental profunda, frameworks de inteligência emocional e automações de comunicação.
 
-**Use Lovable**
+## 🧩 Módulos principais
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+| Módulo | O que faz |
+|---|---|
+| **Empresas & Contatos** | Cadastro completo com saúde financeira, score de relacionamento, sentimento, eventos de vida, parentes, preferências e cadência de contato |
+| **Interações** | Registro multimídia (texto, áudio, anexos) com análise automática de emoção e sugestão de follow-up |
+| **DISC Enterprise** | Análise DISC automática, evolução temporal, geração de scripts de venda, alertas de compatibilidade, métricas de conversão |
+| **PNL/NLP Enterprise** | Rapport em tempo real, detecção de incongruência, calibração Miltoniana, posições perceptuais, modelo TOTE, hierarquia de critérios, âncoras emocionais, padrão Swish |
+| **Neuromarketing** | NeuroScore, mapas de gatilhos, decision path, A/B testing comportamental, heatmap de calendário, handler de objeções |
+| **Carnegie Enterprise** | 11 componentes baseados nos princípios de Dale Carnegie |
+| **Stakeholder Analysis** | Mapeamento de coalizões, simulador de stakeholders, alertas |
+| **Lux Intelligence** | Scan automatizado via webhook n8n com polling em tempo real |
+| **RFM Analysis** | Segmentação clássica de clientes |
+| **Sistema de Alertas** | Health alerts, compatibility alerts, behavior alerts, stakeholder alerts |
+| **Network Graph** | Visualização de rede de relacionamentos |
+| **Mapa de Empresas** | Geolocalização via Leaflet |
+| **Dashboard & Insights** | Estatísticas, gráficos, relatórios semanais, portfolio health |
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Stack
 
-**Use your preferred IDE**
+- **Frontend**: Vite 5 + React 18 + TypeScript 5.8 + Tailwind 3 + shadcn/ui (Radix)
+- **State**: TanStack Query 5 + Zustand 5
+- **Forms**: React Hook Form + Zod
+- **Backend**: Supabase (Postgres + Auth + Storage + Edge Functions)
+- **PWA**: Workbox via vite-plugin-pwa
+- **Testes**: Vitest + Testing Library
+- **Charts**: Recharts
+- **Mapas**: Leaflet + react-leaflet
+- **Animação**: Framer Motion
+- **Voz**: ElevenLabs
+- **Integrações**: Bitrix24, Evolution API (WhatsApp), Firecrawl, EnrichLayer (LinkedIn)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Como rodar localmente
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# 1. Clone o repo
+git clone https://github.com/adm01-debug/singu.git
+cd singu
 
-Follow these steps:
+# 2. Instale dependências (escolha um — npm OU bun, não os dois)
+npm install
+# ou
+bun install
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# edite .env com os valores do seu projeto Supabase
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Rode em modo dev
 npm run dev
+# abre em http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+## 📜 Scripts disponíveis
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento (Vite) na porta 8080 |
+| `npm run build` | Build de produção |
+| `npm run build:dev` | Build em modo development (mais rápido, menos otimizado) |
+| `npm run lint` | Roda ESLint |
+| `npm run preview` | Preview do build de produção |
 
-**Use GitHub Codespaces**
+## 🗂️ Estrutura do projeto
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+singu/
+├── src/
+│   ├── App.tsx                  # Roteamento principal + providers
+│   ├── main.tsx                 # Bootstrap React
+│   ├── pages/                   # Páginas (lazy loaded)
+│   ├── components/              # Componentes reutilizáveis
+│   ├── hooks/                   # Hooks customizados (1 hook por feature)
+│   ├── integrations/
+│   │   └── supabase/            # Client + tipos gerados
+│   ├── lib/                     # Utilities, externalData, helpers
+│   ├── stores/                  # Zustand stores
+│   ├── contexts/                # React contexts
+│   └── types/                   # TypeScript types compartilhados
+├── supabase/
+│   ├── config.toml              # Configuração das edge functions
+│   ├── functions/               # 28 Edge Functions (Deno)
+│   └── migrations/              # ~50 migrations SQL versionadas
+├── docs/                        # Documentação adicional
+└── public/                      # Assets estáticos + PWA icons
+```
 
-## What technologies are used for this project?
+## 🔐 Segurança
 
-This project is built with:
+- **NUNCA** commite o arquivo `.env`. O `.gitignore` já protege.
+- A `VITE_SUPABASE_PUBLISHABLE_KEY` é a chave **anon** — segura para frontend, mas **depende totalmente do RLS estar ativo** em todas as tabelas.
+- Edge Functions com `verify_jwt = false` precisam validar autenticação manualmente no código.
+- Webhooks públicos (Bitrix24, Evolution) devem usar **secret compartilhado** no header.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🤝 Contribuindo
 
-## How can I deploy this project?
+Este projeto é mantido com auxílio de IA via [Lovable](https://lovable.dev). Mudanças podem vir tanto via Lovable quanto via PR direto no GitHub — ambos sincronizam automaticamente.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## 📄 Licença
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Proprietário — todos os direitos reservados.
