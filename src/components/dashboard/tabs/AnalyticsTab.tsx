@@ -82,6 +82,14 @@ export function AnalyticsTab({ prefersReducedMotion, tabDirection }: AnalyticsTa
       <DashboardErrorBoundary sectionName="Conversão por Perfil DISC">
         <DISCConversionMetricsPanel />
       </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Métricas RFM Avançadas">
+        <RFMSegmentDashboard />
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Analytics de Gatilhos">
+        <TriggerAnalyticsPanel />
+      </DashboardErrorBoundary>
     </motion.div>
   );
 }
