@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { LuxButton } from './LuxButton';
 import { LuxHistoryTimeline } from './LuxHistoryTimeline';
-import type { LuxIntelligenceRecord } from '@/hooks/useLuxIntelligence';
+import type { LuxIntelligenceRecord, LuxSocialProfile, LuxStakeholder, LuxFilial, LuxEducation } from '@/hooks/useLuxIntelligence';
 import { toast } from 'sonner';
 
 interface LuxIntelligencePanelProps {
