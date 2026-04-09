@@ -19,7 +19,7 @@ interface Props {
   websiteUrl?: string | null;
 }
 
-export function ContactIntelligenceTab({ contactId }: Props) {
+export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, websiteUrl }: Props) {
   const { user } = useAuth();
   const [objections, setObjections] = useState<Tables<'hidden_objections'>[]>([]);
   const [criteria, setCriteria] = useState<Tables<'decision_criteria'>[]>([]);
