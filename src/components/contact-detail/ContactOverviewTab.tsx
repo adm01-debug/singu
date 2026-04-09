@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
   Heart, Users, Clock, Star, Gift, MapPin, Target,
-  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle
+  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle, PenLine
 } from 'lucide-react';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -196,7 +197,11 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
           {!contact.notes && !contact.personal_notes && !contact.family_info && 
            (!contact.hobbies || contact.hobbies.length === 0) && 
            (!contact.interests || contact.interests.length === 0) && (
-            <p className="text-muted-foreground text-xs italic">Nenhuma informação pessoal registrada</p>
+            <InlineEmptyState
+              icon={PenLine}
+              title="Sem informações pessoais"
+              description="Adicione notas, hobbies ou interesses para personalizar o relacionamento"
+            />
           )}
         </CardContent>
       </Card>
@@ -236,7 +241,11 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
               )}
             </>
           ) : (
-            <p className="text-muted-foreground text-xs italic">Sem cadência configurada</p>
+            <InlineEmptyState
+              icon={Clock}
+              title="Sem cadência configurada"
+              description="Defina uma frequência ideal de contato"
+            />
           )}
 
           {preferences && (
@@ -295,7 +304,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-xs italic">Nenhum relacionado registrado</p>
+          <InlineEmptyState icon={Users} title="Nenhum relacionado" description="Adicione familiares ou contatos próximos" />
         )}
       </CollapsibleSection>
 
@@ -324,7 +333,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-xs italic">Nenhum evento de vida registrado</p>
+          <InlineEmptyState icon={Calendar} title="Nenhum evento de vida" description="Registre aniversários, promoções ou marcos importantes" />
         )}
       </CollapsibleSection>
     </div>
