@@ -178,7 +178,7 @@ Deno.serve(async (req) => {
 
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
-      const unique = [...new Set((data || []).map((r: Record<string, string>) => r[column]).filter(Boolean))].sort();
+      const unique = [...new Set((data || []).map((r: any) => r[column]).filter(Boolean))].sort();
       return jsonResponse({ values: unique, count: unique.length });
     }
 
@@ -193,7 +193,8 @@ Deno.serve(async (req) => {
       const { filters, select, order, range, search } = body;
 
       const result = await withRetry(async () => {
-        let query = client.from(table).select(select || '*', { count: 'exact' });
+        // Use 'any' for dynamic external DB queries to avoid TS2589 deep type instantiation
+        let query: any = client.from(table).select(select || '*', { count: 'exact' });
 
         if (search?.term && typeof search.term === 'string' && search.term.trim()) {
           const term = `%${search.term.trim()}%`;
@@ -208,8 +209,8 @@ Deno.serve(async (req) => {
             if (!f.column || !f.type) continue;
             switch (f.type) {
               case 'eq': query = query.eq(f.column, f.value); break;
-              case 'ilike': query = query.ilike(f.column, f.value); break;
-              case 'in': query = query.in(f.column, f.value); break;
+              case 'ilike': query = query.ilike(f.column, f.value as string); break;
+              case 'in': query = query.in(f.column, f.value as string[]); break;
               case 'neq': query = query.neq(f.column, f.value); break;
               case 'is': query = query.is(f.column, f.value); break;
               case 'gt': query = query.gt(f.column, f.value); break;
@@ -225,7 +226,7 @@ Deno.serve(async (req) => {
         query = query.range(clamped.from, clamped.to);
 
         const { data, error, count } = await query;
-        if (error) throw new Error(`Select failed: ${error.message}`);
+        if (error) throw new Error(`Select failed: ${(error as any).message}`);
         return { data: data || [], count };
       });
 
