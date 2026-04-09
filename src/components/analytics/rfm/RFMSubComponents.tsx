@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import type { RFMHistory } from '@/types/rfm';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -220,7 +221,7 @@ export function ScoreCard({ label, score, detail, color, trend }: {
 }
 
 export function ContactRFMDetail({ rfm, history, onRefresh, analyzing }: {
-  rfm: RFMAnalysis; history: RFMAnalysis[]; onRefresh: () => void; analyzing: boolean;
+  rfm: RFMAnalysis; history: RFMHistory[]; onRefresh: () => void; analyzing: boolean;
 }) {
   const segment = RFM_SEGMENTS[rfm.segment];
   const historyChartData = useMemo(() => {
