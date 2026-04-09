@@ -2,7 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-bitrix-secret, x-evolution-secret, x-lux-secret, x-cron-secret",
 };
 
 /**
@@ -64,4 +65,74 @@ export async function withAuth(req: Request): Promise<string | Response> {
   } catch {
     return jsonError("Unauthorized", 401);
   }
+}
+
+/**
+ * requireWebhookSecret — Validates a shared secret in a custom header for
+ * third-party webhooks (Bitrix24, Evolution API, n8n, etc.).
+ * Constant-time comparison prevents timing attacks.
+ */
+export function requireWebhookSecret(
+  req: Request,
+  envVarName: string,
+  headerName: string
+): Response | null {
+  const expected = Deno.env.get(envVarName);
+  if (!expected) {
+    console.error(`[security] ${envVarName} not configured — webhook is OPEN`);
+    return jsonError("Webhook secret not configured on server", 503);
+  }
+  const got = req.headers.get(headerName) ?? "";
+  if (!constantTimeEqual(got, expected)) {
+    console.warn(`[security] Invalid webhook secret on ${headerName}`);
+    return jsonError("Invalid webhook secret", 401);
+  }
+  return null;
+}
+
+/**
+ * requireCronSecret — Validates CRON_SECRET header for scheduled functions.
+ */
+export function requireCronSecret(req: Request): Response | null {
+  return requireWebhookSecret(req, "CRON_SECRET", "x-cron-secret");
+}
+
+/** Constant-time string comparison to mitigate timing attacks. */
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+/**
+ * sanitizePhone — Strips all non-digits and limits to E.164 length.
+ * Returns empty string if result is too short to be valid.
+ */
+export function sanitizePhone(raw: string | null | undefined): string {
+  if (!raw) return "";
+  let phone = String(raw).replace(/\D/g, "").slice(0, 15);
+  if (phone.startsWith("55") && phone.length > 11) {
+    phone = phone.substring(2);
+  }
+  return phone.length >= 8 ? phone : "";
+}
+
+/**
+ * isAdmin — Checks if the user has is_admin=true in profiles table.
+ * Used to gate write operations to external_data and audit_log access.
+ */
+export async function isAdmin(userId: string): Promise<boolean> {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+  const { data } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", userId)
+    .maybeSingle();
+  return data?.is_admin === true;
 }
