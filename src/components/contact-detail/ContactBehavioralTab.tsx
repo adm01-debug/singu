@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
+import { DISCCommunicationLogsPanel } from '@/components/contact-detail/DISCCommunicationLogsPanel';
 import type { Contact } from '@/hooks/useContactDetail';
 
 const DISC_LABELS: Record<string, { name: string; color: string }> = {
@@ -182,6 +183,7 @@ export function ContactBehavioralTab({ contact }: Props) {
             </Card>
           )}
         </div>
+        <DISCCommunicationLogsPanel contactId={contact.id} />
       </TabsContent>
 
       {/* VAK Tab */}

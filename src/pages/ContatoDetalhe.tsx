@@ -198,7 +198,12 @@ const ContatoDetalhe = () => {
           </TabsContent>
 
           <TabsContent value="inteligencia">
-            <ContactIntelligenceTab contactId={contact.id} />
+            <ContactIntelligenceTab
+              contactId={contact.id}
+              contactName={formatContactName(contact.first_name, contact.last_name)}
+              linkedinUrl={contact.linkedin}
+              websiteUrl={company?.website}
+            />
           </TabsContent>
 
           <TabsContent value="comercial">

@@ -7,13 +7,19 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
+import { EmotionalAnchorsPanel } from '@/components/contact-detail/EmotionalAnchorsPanel';
+import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToContactCard';
+import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
   contactId: string;
+  contactName?: string;
+  linkedinUrl?: string | null;
+  websiteUrl?: string | null;
 }
 
-export function ContactIntelligenceTab({ contactId }: Props) {
+export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, websiteUrl }: Props) {
   const { user } = useAuth();
   const [objections, setObjections] = useState<Tables<'hidden_objections'>[]>([]);
   const [criteria, setCriteria] = useState<Tables<'decision_criteria'>[]>([]);
@@ -202,6 +208,19 @@ export function ContactIntelligenceTab({ contactId }: Props) {
         </CardContent>
       </Card>
       </div>
+
+      {/* New panels: Emotional Anchors, Best Time, AI Actions */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <EmotionalAnchorsPanel contactId={contactId} />
+        <BestTimeToContactCard contactId={contactId} />
+      </div>
+
+      <AIActionsPanel
+        contactId={contactId}
+        contactName={contactName || 'Contato'}
+        linkedinUrl={linkedinUrl}
+        websiteUrl={websiteUrl}
+      />
     </div>
   );
 }

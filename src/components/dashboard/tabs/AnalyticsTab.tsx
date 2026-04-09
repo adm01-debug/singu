@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar } from 'lucide-react';
+import { DISCConversionMetricsPanel } from '@/components/analytics/DISCConversionMetricsPanel';
 import { Button } from '@/components/ui/button';
 import { Typography } from '@/components/ui/typography';
 import { Surface } from '@/components/ui/surface';
@@ -74,6 +75,10 @@ export function AnalyticsTab({ prefersReducedMotion, tabDirection }: AnalyticsTa
             <SentimentChart period={period} />
           </div>
         </Suspense>
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Conversão por Perfil DISC">
+        <DISCConversionMetricsPanel />
       </DashboardErrorBoundary>
     </motion.div>
   );
