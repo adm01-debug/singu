@@ -508,23 +508,34 @@ const Contatos = () => {
                     updateContact,
                   }}
                   style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
-                  rowComponent={({ index, style, contacts, getCompanyName, getLastInteractionDate, selectedIds, selectedIndex, selectionMode, handleSelect, setEditingContact, setDeletingContact, updateContact }: { index: number; style: React.CSSProperties; contacts: typeof filteredAndSortedContacts; getCompanyName: (id: string | null) => string; getLastInteractionDate: (id: string) => string | null; selectedIds: Set<string>; selectedIndex: number; selectionMode: boolean; handleSelect: (id: string, selected: boolean) => void; setEditingContact: (contact: typeof filteredAndSortedContacts[0]) => void; setDeletingContact: (contact: typeof filteredAndSortedContacts[0]) => void; updateContact: typeof import('@/hooks/useContacts').useContacts extends () => infer R ? R extends { updateContact: infer U } ? U : never : never; }) => {
+                  rowComponent={(rowProps: Record<string, unknown> & { index: number; style: React.CSSProperties }) => {
+                    const { index, style } = rowProps;
+                    const contacts = rowProps.contacts as typeof filteredAndSortedContacts;
                     const contact = contacts[index];
                     if (!contact) return null;
+                    const getCompanyNameFn = rowProps.getCompanyName as (id: string | null) => string;
+                    const getLastInteractionDateFn = rowProps.getLastInteractionDate as (id: string) => string | null;
+                    const ids = rowProps.selectedIds as Set<string>;
+                    const selIdx = rowProps.selectedIndex as number;
+                    const selMode = rowProps.selectionMode as boolean;
+                    const onSelect = rowProps.handleSelect as (id: string, selected: boolean) => void;
+                    const onEdit = rowProps.setEditingContact as typeof setEditingContact;
+                    const onDelete = rowProps.setDeletingContact as typeof setDeletingContact;
+                    const onUpdate = rowProps.updateContact as typeof updateContact;
                     return (
                       <div style={style} className="pb-2">
                         <ContactCardWithContext
                           contact={contact}
-                          companyName={getCompanyName(contact.company_id)}
-                          lastInteraction={getLastInteractionDate(contact.id)}
+                          companyName={getCompanyNameFn(contact.company_id)}
+                          lastInteraction={getLastInteractionDateFn(contact.id)}
                           index={index}
-                          isSelected={selectedIds.has(contact.id)}
-                          isHighlighted={selectedIndex === index}
-                          selectionMode={selectionMode}
-                          onSelect={handleSelect}
-                          onEdit={setEditingContact}
-                          onDelete={setDeletingContact}
-                          onUpdate={updateContact}
+                          isSelected={ids.has(contact.id)}
+                          isHighlighted={selIdx === index}
+                          selectionMode={selMode}
+                          onSelect={onSelect}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                          onUpdate={onUpdate}
                           viewMode="list"
                         />
                       </div>
