@@ -121,18 +121,22 @@ export function sanitizePhone(raw: string | null | undefined): string {
 }
 
 /**
- * isAdmin — Checks if the user has is_admin=true in profiles table.
- * Used to gate write operations to external_data and audit_log access.
+ * isAdmin — Uses the existing has_role(uuid, app_role) RPC.
+ * The audit found that user_roles + has_role function already exist with
+ * proper SECURITY DEFINER + search_path. Don't reinvent RBAC.
  */
 export async function isAdmin(userId: string): Promise<boolean> {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
-  const { data } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", userId)
-    .maybeSingle();
-  return data?.is_admin === true;
+  const { data, error } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  });
+  if (error) {
+    console.error("[auth] has_role check failed:", error.message);
+    return false;
+  }
+  return data === true;
 }

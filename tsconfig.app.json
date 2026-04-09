@@ -24,6 +24,12 @@
     },
     "skipLibCheck": true,
     "strict": false,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
     "target": "ES2022",
     "useDefineForClassFields": true
   },

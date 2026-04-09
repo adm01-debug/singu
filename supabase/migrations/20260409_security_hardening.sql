@@ -1,21 +1,15 @@
 -- ============================================================================
--- SINGU CRM — Hardening de Segurança — Migration 2026-04-09
+-- SINGU CRM — Hardening de Segurança — Migration 2026-04-09 (v2 corrigida)
+-- 
+-- DEPOIS DA AUDITORIA EXAUSTIVA: usa o sistema de RBAC já existente
+-- (user_roles + has_role function) ao invés de criar coluna is_admin redundante.
+-- 
 -- Rode esse SQL no Supabase Dashboard → SQL Editor → New Query → Run
 -- Projeto: rqodmqosrotmtrjnnjul
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
--- 1. Adicionar coluna is_admin em profiles (se ainda não existir)
--- ----------------------------------------------------------------------------
-ALTER TABLE public.profiles
-ADD COLUMN IF NOT EXISTS is_admin boolean NOT NULL DEFAULT false;
-
-COMMENT ON COLUMN public.profiles.is_admin IS
-'Admin role flag. Used by external-data edge function to gate write operations.';
-
--- ----------------------------------------------------------------------------
--- 2. Tabela de auditoria do external-data (CRÍTICO: rastreia INSERT/UPDATE/DELETE
---    no banco externo)
+-- 1. Tabela de auditoria do external-data 
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.external_data_audit_log (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,6 +18,8 @@ CREATE TABLE IF NOT EXISTS public.external_data_audit_log (
   table_name  text NOT NULL,
   payload     jsonb,
   outcome     text NOT NULL CHECK (outcome IN ('success','denied','error')),
+  ip_address  inet,
+  user_agent  text,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -34,33 +30,61 @@ CREATE INDEX IF NOT EXISTS idx_external_data_audit_outcome
   ON public.external_data_audit_log (outcome, created_at DESC)
   WHERE outcome IN ('denied','error');
 
+CREATE INDEX IF NOT EXISTS idx_external_data_audit_table
+  ON public.external_data_audit_log (table_name, operation, created_at DESC);
+
 ALTER TABLE public.external_data_audit_log ENABLE ROW LEVEL SECURITY;
 
--- Apenas admins podem ler o audit log
+-- ----------------------------------------------------------------------------
+-- 2. RLS — só admins (via has_role já existente) podem ler o audit
+-- ----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "admin_only_select_audit" ON public.external_data_audit_log;
 CREATE POLICY "admin_only_select_audit"
   ON public.external_data_audit_log
   FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid() AND is_admin = true
-    )
-  );
+  TO authenticated
+  USING (public.has_role(auth.uid(), 'admin'));
+
+-- INSERTs vêm da edge function via service_role (bypass RLS), então não precisamos
+-- de policy de INSERT. Bloqueamos UPDATE e DELETE explicitamente:
+DROP POLICY IF EXISTS "no_update_audit" ON public.external_data_audit_log;
+CREATE POLICY "no_update_audit"
+  ON public.external_data_audit_log
+  FOR UPDATE
+  TO authenticated
+  USING (false);
+
+DROP POLICY IF EXISTS "no_delete_audit" ON public.external_data_audit_log;
+CREATE POLICY "no_delete_audit"
+  ON public.external_data_audit_log
+  FOR DELETE
+  TO authenticated
+  USING (false);
 
 -- ----------------------------------------------------------------------------
--- 3. Marcar SEU usuário como admin (SUBSTITUA O E-MAIL ABAIXO)
+-- 3. Marcar SEU usuário como admin (substitua o e-mail abaixo)
 -- ----------------------------------------------------------------------------
 -- ⚠️ IMPORTANTE: troque 'SEU_EMAIL@dominio.com' pelo seu e-mail real antes de rodar
-UPDATE public.profiles
-SET is_admin = true
-WHERE id IN (
-  SELECT id FROM auth.users
-  WHERE email = 'SEU_EMAIL@dominio.com'
-);
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin'::app_role
+FROM auth.users
+WHERE email = 'SEU_EMAIL@dominio.com'
+ON CONFLICT (user_id, role) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 4. AUDITORIA: tabelas em public SEM RLS habilitado
+-- 4. Verificação rápida — quem é admin agora?
+-- ----------------------------------------------------------------------------
+SELECT 
+  u.email,
+  ur.role,
+  ur.id AS role_id,
+  '✅ admin ativo' AS status
+FROM public.user_roles ur
+JOIN auth.users u ON u.id = ur.user_id
+WHERE ur.role = 'admin';
+
+-- ----------------------------------------------------------------------------
+-- 5. AUDITORIA: tabelas em public sem RLS habilitado (CRÍTICO)
 -- ----------------------------------------------------------------------------
 SELECT
   schemaname,
@@ -72,8 +96,7 @@ WHERE schemaname = 'public'
 ORDER BY tablename;
 
 -- ----------------------------------------------------------------------------
--- 5. AUDITORIA: tabelas com RLS habilitado mas SEM nenhuma policy
---    (todas queries serão silenciosamente bloqueadas — pode ser intencional ou bug)
+-- 6. AUDITORIA: tabelas com RLS habilitado mas SEM nenhuma policy
 -- ----------------------------------------------------------------------------
 SELECT
   t.tablename,
@@ -89,7 +112,7 @@ HAVING COUNT(p.policyname) = 0
 ORDER BY t.tablename;
 
 -- ----------------------------------------------------------------------------
--- 6. AUDITORIA: extensions instaladas em public (boa prática: mover para schema dedicado)
+-- 7. AUDITORIA: extensions instaladas em public
 -- ----------------------------------------------------------------------------
 SELECT
   extname,
@@ -100,15 +123,15 @@ JOIN pg_namespace n ON n.oid = e.extnamespace
 ORDER BY nspname, extname;
 
 -- ----------------------------------------------------------------------------
--- 7. AUDITORIA: contagem total de policies por tabela (verificação de cobertura)
+-- 8. AUDITORIA: contagem de policies por tabela
 -- ----------------------------------------------------------------------------
 SELECT
   tablename,
-  COUNT(*) FILTER (WHERE cmd = 'SELECT') AS select_policies,
-  COUNT(*) FILTER (WHERE cmd = 'INSERT') AS insert_policies,
-  COUNT(*) FILTER (WHERE cmd = 'UPDATE') AS update_policies,
-  COUNT(*) FILTER (WHERE cmd = 'DELETE') AS delete_policies,
-  COUNT(*) AS total_policies
+  COUNT(*) FILTER (WHERE cmd = 'SELECT') AS sel,
+  COUNT(*) FILTER (WHERE cmd = 'INSERT') AS ins,
+  COUNT(*) FILTER (WHERE cmd = 'UPDATE') AS upd,
+  COUNT(*) FILTER (WHERE cmd = 'DELETE') AS del,
+  COUNT(*) AS total
 FROM pg_policies
 WHERE schemaname = 'public'
 GROUP BY tablename

@@ -2,7 +2,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   corsHeaders,
   withAuth,
-  isAdmin,
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
@@ -72,25 +71,50 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 1): Promise<T> {
   throw lastError;
 }
 
+/**
+ * isAdmin — Uses the existing has_role(uuid, app_role) RPC instead of a
+ * redundant column. This was a fix from the exhaustive audit.
+ */
+async function isAdmin(userId: string): Promise<boolean> {
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+  const { data, error } = await supabase.rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  });
+  if (error) {
+    console.error("[external-data] has_role check failed:", error.message);
+    return false;
+  }
+  return data === true;
+}
+
 async function logAudit(
   callerUserId: string,
   operation: string,
   table: string,
   payload: unknown,
-  outcome: "success" | "denied" | "error"
+  outcome: "success" | "denied" | "error",
+  req?: Request
 ) {
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+    const ipAddress = req?.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+                      req?.headers.get("x-real-ip") || null;
+    const userAgent = req?.headers.get("user-agent") || null;
     await supabase.from("external_data_audit_log").insert({
       user_id: callerUserId,
       operation,
       table_name: table,
       payload,
       outcome,
-      created_at: new Date().toISOString(),
+      ip_address: ipAddress,
+      user_agent: userAgent?.slice(0, 500),
     });
   } catch (err) {
     console.error("[audit] Failed to write audit log:", err);
@@ -114,11 +138,11 @@ Deno.serve(async (req) => {
     const { action, table } = body;
     const operation = action || "select";
 
-    // 🔒 SECURITY: Write operations require admin role
+    // 🔒 SECURITY: Write operations require admin role (via existing has_role RPC)
     if ((WRITE_OPERATIONS as readonly string[]).includes(operation)) {
       const admin = await isAdmin(callerUserId);
       if (!admin) {
-        await logAudit(callerUserId, operation, table || "(no table)", body, "denied");
+        await logAudit(callerUserId, operation, table || "(no table)", body, "denied", req);
         return jsonError("Forbidden: write operations require admin role", 403);
       }
     } else if (!(READ_OPERATIONS as readonly string[]).includes(operation)) {
@@ -174,18 +198,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      let functions: string[] = [];
-      try {
-        const rpcResp = await fetch(`${extUrl}/rest/v1/rpc/`, {
-          headers: { apikey: extKey, Authorization: `Bearer ${extKey}` },
-        });
-        if (rpcResp.ok) {
-          const rpcData = await rpcResp.json();
-          functions = Array.isArray(rpcData) ? rpcData : Object.keys(rpcData || {});
-        }
-      } catch (_) { /* ignore */ }
-
-      return jsonOk({ tableCount: Object.keys(tables).length, tables, functions });
+      return jsonOk({ tableCount: Object.keys(tables).length, tables, functions: [] });
     }
 
     // ─── DISTINCT ───
@@ -272,10 +285,10 @@ Deno.serve(async (req) => {
 
       const { data, error } = await client.from(table).insert(record).select().single();
       if (error) {
-        await logAudit(callerUserId, "insert", table, body, "error");
+        await logAudit(callerUserId, "insert", table, body, "error", req);
         throw new Error(`Insert failed: ${error.message}`);
       }
-      await logAudit(callerUserId, "insert", table, { id: data?.id }, "success");
+      await logAudit(callerUserId, "insert", table, { id: data?.id }, "success", req);
       return jsonOk({ data });
     }
 
@@ -287,10 +300,10 @@ Deno.serve(async (req) => {
 
       const { data, error } = await client.from(table).update(updates).eq("id", id).select().single();
       if (error) {
-        await logAudit(callerUserId, "update", table, body, "error");
+        await logAudit(callerUserId, "update", table, body, "error", req);
         throw new Error(`Update failed: ${error.message}`);
       }
-      await logAudit(callerUserId, "update", table, { id, fields: Object.keys(updates) }, "success");
+      await logAudit(callerUserId, "update", table, { id, fields: Object.keys(updates) }, "success", req);
       return jsonOk({ data });
     }
 
@@ -301,10 +314,10 @@ Deno.serve(async (req) => {
 
       const { error } = await client.from(table).delete().eq("id", id);
       if (error) {
-        await logAudit(callerUserId, "delete", table, body, "error");
+        await logAudit(callerUserId, "delete", table, body, "error", req);
         throw new Error(`Delete failed: ${error.message}`);
       }
-      await logAudit(callerUserId, "delete", table, { id }, "success");
+      await logAudit(callerUserId, "delete", table, { id }, "success", req);
       return jsonOk({ success: true });
     }
 

@@ -4,7 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    
+
+    <!-- 🛡️ SECURITY HEADERS (auditoria 2026-04-09) -->
+    <!-- Content-Security-Policy: bloqueia injeção de scripts externos -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co https://*.lovable.dev;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' data: https://fonts.gstatic.com;
+      img-src 'self' data: blob: https: ;
+      connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.openai.com https://ai.gateway.lovable.dev https://*.elevenlabs.io https://*.lovable.dev https://fonts.googleapis.com https://fonts.gstatic.com;
+      media-src 'self' blob:;
+      worker-src 'self' blob:;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+      object-src 'none';
+      upgrade-insecure-requests;
+    ">
+    <!-- Anti-clickjacking -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <!-- Anti-MIME-sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <!-- Restrict permissions -->
+    <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()" />
+
     <title>SINGU - CRM Inteligente</title>
     <meta name="description" content="Sistema de Inteligência Relacional para gestão de contatos e relacionamentos empresariais">
     <meta name="author" content="SINGU" />
@@ -26,14 +50,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="SINGU" />
-    
+
     <!-- PWA Icons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Open Graph -->
-    
-    
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/359e9e44-5559-456d-9292-7e506b0785dc/id-preview-98b99045--08cba815-22fa-42db-9361-0cffd81afd61.lovable.app-1774569018629.png">
 
@@ -41,9 +63,9 @@
     <meta name="twitter:site" content="@SINGU" />
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/359e9e44-5559-456d-9292-7e506b0785dc/id-preview-98b99045--08cba815-22fa-42db-9361-0cffd81afd61.lovable.app-1774569018629.png">
     <meta property="og:title" content="SINGU - CRM Inteligente">
-  <meta name="twitter:title" content="SINGU - CRM Inteligente">
-  <meta property="og:description" content="Sistema de Inteligência Relacional para gestão de contatos e relacionamentos empresariais">
-  <meta name="twitter:description" content="Sistema de Inteligência Relacional para gestão de contatos e relacionamentos empresariais">
+    <meta name="twitter:title" content="SINGU - CRM Inteligente">
+    <meta property="og:description" content="Sistema de Inteligência Relacional para gestão de contatos e relacionamentos empresariais">
+    <meta name="twitter:description" content="Sistema de Inteligência Relacional para gestão de contatos e relacionamentos empresariais">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -61,9 +83,13 @@
       }
     }
     </script>
-</head>
+  </head>
 
   <body>
+    <!-- 🦮 Acessibilidade: skip link pra navegação por teclado -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded">
+      Pular para o conteúdo principal
+    </a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
