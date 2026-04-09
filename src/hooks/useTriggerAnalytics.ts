@@ -16,25 +16,27 @@ export function useTriggerAnalytics(contactId?: string) {
     setLoading(true);
 
     const fetchAll = async () => {
-      const baseQuery = (table: string) => {
-        let q = supabase.from(table as any).select('*');
-        if (contactId) q = q.eq('contact_id', contactId);
-        return q.order('created_at', { ascending: false }).limit(50);
-      };
+      const abQuery = contactId
+        ? supabase.from('trigger_ab_tests').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(50)
+        : supabase.from('trigger_ab_tests').select('*').order('created_at', { ascending: false }).limit(50);
+
+      const chQuery = contactId
+        ? supabase.from('trigger_channel_effectiveness').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(50)
+        : supabase.from('trigger_channel_effectiveness').select('*').order('created_at', { ascending: false }).limit(50);
 
       const [abRes, chRes, buRes, intRes] = await Promise.all([
-        baseQuery('trigger_ab_tests'),
-        baseQuery('trigger_channel_effectiveness'),
+        abQuery,
+        chQuery,
         supabase.from('trigger_bundles').select('*').order('success_rate', { ascending: false }).limit(20),
         contactId
           ? supabase.from('trigger_intensity_history').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(30)
-          : Promise.resolve({ data: [] }),
+          : Promise.resolve({ data: [] as Tables<'trigger_intensity_history'>[] }),
       ]);
 
-      setAbTests(abRes.data || []);
-      setChannelEffectiveness(chRes.data || []);
-      setBundles(buRes.data || []);
-      setIntensityHistory(intRes.data || []);
+      setAbTests((abRes.data || []) as Tables<'trigger_ab_tests'>[]);
+      setChannelEffectiveness((chRes.data || []) as Tables<'trigger_channel_effectiveness'>[]);
+      setBundles((buRes.data || []) as Tables<'trigger_bundles'>[]);
+      setIntensityHistory((intRes.data || []) as Tables<'trigger_intensity_history'>[]);
       setLoading(false);
     };
 
