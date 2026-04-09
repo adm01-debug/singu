@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { WhatsAppDashboard } from '@/components/whatsapp/WhatsAppDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Mail, MessageSquare, Users, Video, FileText,
