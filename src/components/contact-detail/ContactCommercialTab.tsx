@@ -169,7 +169,7 @@ export function ContactCommercialTab({ contactId }: Props) {
         <CardContent>
           {purchases.length > 0 ? (
             <div className="space-y-2">
-              {purchases.map((p: any) => (
+              {purchases.map((p) => (
                 <div key={p.id} className="flex items-center justify-between rounded-lg border p-2.5 text-sm">
                   <div>
                     <p className="font-medium text-foreground">{p.product_name}</p>

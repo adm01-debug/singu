@@ -69,7 +69,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <CardContent>
           {unresolvedObjections.length > 0 ? (
             <div className="space-y-2">
-              {unresolvedObjections.map((obj: any) => (
+              {unresolvedObjections.map((obj) => (
                 <div key={obj.id} className="rounded-lg border p-2.5 text-sm">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-foreground">{obj.objection_type}</span>
@@ -118,7 +118,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <CardContent>
           {criteria.length > 0 ? (
             <div className="space-y-2">
-              {criteria.map((c: any) => (
+              {criteria.map((c) => (
                 <div key={c.id} className="flex items-start justify-between rounded-lg border p-2.5 text-sm">
                   <div>
                     <p className="font-medium text-foreground">{c.name}</p>
@@ -148,7 +148,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <CardContent>
           {values.length > 0 ? (
             <div className="space-y-2">
-              {values.map((v: any) => (
+              {values.map((v) => (
                 <div key={v.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
                   <div>
                     <p className="font-medium text-foreground">{v.value_name}</p>
@@ -180,7 +180,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <CardContent>
           {offers.length > 0 ? (
             <div className="space-y-2">
-              {offers.map((o: any) => {
+              {offers.map((o) => {
                 const statusConfig: Record<string, string> = {
                   pending: 'bg-warning text-warning',
                   presented: 'bg-info text-info',
