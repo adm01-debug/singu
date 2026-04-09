@@ -1,9 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { handleCorsAndMethod, withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 interface ContactProfile {
   firstName: string;
@@ -73,6 +69,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Auth guard ──
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+
   try {
     const { contact, recentInteractions, messageType, customContext, tone }: RequestPayload = await req.json();
     
@@ -81,18 +81,15 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build DISC-aware system prompt
     const discStyle = contact.discProfile ? DISC_COMMUNICATION_STYLES[contact.discProfile] : null;
     
-    // Build interaction history context
     const interactionContext = recentInteractions.length > 0 
       ? recentInteractions.slice(0, 5).map(i => 
           `- ${i.type} (${i.sentiment}): ${i.content?.substring(0, 100) || 'Sem conteúdo'}...`
         ).join('\n')
       : 'Sem interações recentes registradas.';
 
-    // Build personal context
-    const personalContext = [];
+    const personalContext: string[] = [];
     if (contact.hobbies?.length) personalContext.push(`Hobbies: ${contact.hobbies.join(', ')}`);
     if (contact.interests?.length) personalContext.push(`Interesses: ${contact.interests.join(', ')}`);
     if (contact.primaryMotivation) personalContext.push(`Motivação principal: ${contact.primaryMotivation}`);
@@ -189,16 +186,10 @@ ${interactionContext}
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns minutos." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return jsonError("Limite de requisições excedido. Tente novamente em alguns minutos.", 429);
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos na sua conta Lovable." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return jsonError("Créditos insuficientes. Adicione créditos na sua conta Lovable.", 402);
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
@@ -207,7 +198,6 @@ ${interactionContext}
 
     const data = await response.json();
     
-    // Extract tool call result
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
       throw new Error("No tool call response received");
@@ -215,18 +205,10 @@ ${interactionContext}
 
     const result = JSON.parse(toolCall.function.arguments);
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonOk(result);
   } catch (error) {
     console.error("AI Writing Assistant error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Erro ao gerar sugestões" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return jsonError(error instanceof Error ? error.message : "Erro ao gerar sugestões", 500);
   }
 });
 

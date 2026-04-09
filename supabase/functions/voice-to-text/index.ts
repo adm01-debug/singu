@@ -1,11 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Process base64 in chunks to prevent memory issues
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
   const chunks: Uint8Array[] = [];
   let position = 0;
@@ -36,48 +31,28 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // ── Auth guard ──
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
     const { audio } = await req.json();
     
     if (!audio) {
-      console.error('No audio data provided');
-      return new Response(
-        JSON.stringify({ error: 'No audio data provided' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return jsonError('No audio data provided', 400);
     }
 
-    console.log('Processing audio data, length:', audio.length);
-
-    // Process audio in chunks
     const binaryAudio = processBase64Chunks(audio);
-    console.log('Binary audio size:', binaryAudio.length);
     
-    // Use Lovable AI Gateway for transcription
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Create a prompt for the AI to transcribe
-    // Since Lovable AI doesn't have direct audio transcription, we'll use a workaround
-    // by sending the audio to a model that can process it
-    
-    // For now, we'll simulate transcription with a message
-    // In production, you'd integrate with a proper speech-to-text service
-    
-    // Prepare form data for OpenAI Whisper-compatible endpoint
-    const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-
-    // Try using Lovable AI for audio description/transcription
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -100,42 +75,22 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonError('Rate limit exceeded. Please try again later.', 429);
       }
-      
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonError('Payment required. Please add credits to your workspace.', 402);
       }
-      
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const result = await response.json();
     const transcribedText = result.choices?.[0]?.message?.content || 'Áudio recebido - transcrição em processamento';
 
-    console.log('Transcription result:', transcribedText.substring(0, 100));
-
-    return new Response(
-      JSON.stringify({ text: transcribedText }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonOk({ text: transcribedText });
 
   } catch (error: unknown) {
     console.error('Error in voice-to-text function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to process audio';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return jsonError(error instanceof Error ? error.message : 'Failed to process audio', 500);
   }
 });

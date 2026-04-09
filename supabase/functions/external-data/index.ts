@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
+import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 const ALLOWED_TABLES = [
   'companies', 'contacts', 'interactions', 'insights', 'alerts',
@@ -19,7 +15,6 @@ const ALLOWED_TABLES = [
   'favorite_templates', 'lux_intelligence', 'metaprogram_analysis',
   'vak_analysis_history', 'rfm_analysis', 'offer_suggestions',
   'trigger_bundles', 'trigger_intensity_history',
-  // Company normalized tables
   'company_phones', 'company_emails', 'company_addresses',
   'company_social_media', 'company_cnaes', 'company_rfm_scores',
   'company_stakeholder_map',
@@ -51,20 +46,6 @@ function clampRange(range?: { from: number; to: number }): { from: number; to: n
   return { from, to };
 }
 
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
-
-function errorResponse(message: string, status = 400) {
-  return new Response(
-    JSON.stringify({ error: message }),
-    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
-
 async function withRetry<T>(fn: () => Promise<T>, retries = 1): Promise<T> {
   let lastError: Error | null = null;
   for (let i = 0; i <= retries; i++) {
@@ -87,6 +68,10 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Auth guard ──
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+
   const startTime = performance.now();
 
   try {
@@ -107,7 +92,7 @@ Deno.serve(async (req) => {
         : swagger?.paths
           ? Object.keys(swagger.paths).map((p: string) => p.replace('/', ''))
           : [];
-      return jsonResponse({ tables: tableNames });
+      return jsonOk({ tables: tableNames });
     }
 
     // ─── FULL SCHEMA INTROSPECTION ───
@@ -140,7 +125,6 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Also try to get functions via rpc endpoint
       let functions: string[] = [];
       try {
         const rpcResp = await fetch(`${extUrl}/rest/v1/rpc/`, {
@@ -152,22 +136,17 @@ Deno.serve(async (req) => {
         }
       } catch (_) { /* ignore */ }
 
-      return jsonResponse({ 
-        tableCount: Object.keys(tables).length,
-        tables,
-        functions,
-      });
+      return jsonOk({ tableCount: Object.keys(tables).length, tables, functions });
     }
 
     // ─── DISTINCT VALUES ───
     if (operation === 'distinct') {
       const { column } = body;
-      if (!table || !isAllowedTable(table)) return errorResponse('Invalid table');
-      if (!column || typeof column !== 'string') return errorResponse('Missing "column" for distinct');
+      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400);
+      if (!column || typeof column !== 'string') return jsonError('Missing "column" for distinct', 400);
 
       const client = getExternalClient();
-      // Fetch up to 1000 rows of just that column, then dedupe client-side
-      let query = client
+      const query = client
         .from(table)
         .select(column)
         .not(column, 'is', null)
@@ -178,12 +157,12 @@ Deno.serve(async (req) => {
 
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
-      const unique = [...new Set((data || []).map((r: any) => r[column]).filter(Boolean))].sort();
-      return jsonResponse({ values: unique, count: unique.length });
+      const unique = [...new Set((data || []).map((r: Record<string, unknown>) => r[column]).filter(Boolean))].sort();
+      return jsonOk({ values: unique, count: unique.length });
     }
 
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
-      return errorResponse(`Invalid table "${table}". Only allowed tables are permitted.`);
+      return jsonError(`Invalid table "${table}". Only allowed tables are permitted.`, 400);
     }
 
     const client = getExternalClient();
@@ -194,39 +173,32 @@ Deno.serve(async (req) => {
 
       const result = await withRetry(async () => {
         // Use 'any' for dynamic external DB queries to avoid TS2589 deep type instantiation
-        let query: any = client.from(table).select(select || '*', { count: 'exact' });
+        let query: Record<string, CallableFunction> = client.from(table).select(select || '*', { count: 'exact' });
 
         if (search?.term && typeof search.term === 'string' && search.term.trim()) {
           const term = `%${search.term.trim()}%`;
           const columns: string[] = Array.isArray(search.columns) ? search.columns : [];
           if (columns.length > 0) {
-            query = query.or(columns.map((col: string) => `${col}.ilike.${term}`).join(','));
+            query = (query as Record<string, CallableFunction>).or(columns.map((col: string) => `${col}.ilike.${term}`).join(','));
           }
         }
 
         if (Array.isArray(filters)) {
           for (const f of filters) {
             if (!f.column || !f.type) continue;
-            switch (f.type) {
-              case 'eq': query = query.eq(f.column, f.value); break;
-              case 'ilike': query = query.ilike(f.column, f.value as string); break;
-              case 'in': query = query.in(f.column, f.value as string[]); break;
-              case 'neq': query = query.neq(f.column, f.value); break;
-              case 'is': query = query.is(f.column, f.value); break;
-              case 'gt': query = query.gt(f.column, f.value); break;
-              case 'gte': query = query.gte(f.column, f.value); break;
-              case 'lt': query = query.lt(f.column, f.value); break;
-              case 'lte': query = query.lte(f.column, f.value); break;
+            const fn = (query as Record<string, CallableFunction>)[f.type];
+            if (typeof fn === 'function') {
+              query = fn.call(query, f.column, f.value);
             }
           }
         }
 
-        if (order?.column) query = query.order(order.column, { ascending: order.ascending ?? false });
+        if (order?.column) query = (query as Record<string, CallableFunction>).order(order.column, { ascending: order.ascending ?? false });
         const clamped = clampRange(range);
-        query = query.range(clamped.from, clamped.to);
+        query = (query as Record<string, CallableFunction>).range(clamped.from, clamped.to);
 
-        const { data, error, count } = await query;
-        if (error) throw new Error(`Select failed: ${(error as any).message}`);
+        const { data, error, count } = await query as unknown as { data: unknown[]; error: { message: string } | null; count: number };
+        if (error) throw new Error(`Select failed: ${error.message}`);
         return { data: data || [], count };
       });
 
@@ -235,48 +207,47 @@ Deno.serve(async (req) => {
         console.warn(`[external-data] Slow query: ${table} took ${elapsed}ms`);
       }
 
-      return jsonResponse(result);
+      return jsonOk(result);
     }
 
     // ─── INSERT (create) ───
     if (operation === 'insert') {
       const { record } = body;
-      if (!record || typeof record !== 'object') return errorResponse('Missing or invalid "record" for insert');
+      if (!record || typeof record !== 'object') return jsonError('Missing or invalid "record" for insert', 400);
 
       const { data, error } = await client.from(table).insert(record).select().single();
       if (error) throw new Error(`Insert failed: ${error.message}`);
-      return jsonResponse({ data });
+      return jsonOk({ data });
     }
 
     // ─── UPDATE ───
     if (operation === 'update') {
       const { id, updates } = body;
-      if (!id) return errorResponse('Missing "id" for update');
-      if (!updates || typeof updates !== 'object') return errorResponse('Missing or invalid "updates" for update');
+      if (!id) return jsonError('Missing "id" for update', 400);
+      if (!updates || typeof updates !== 'object') return jsonError('Missing or invalid "updates" for update', 400);
 
       const { data, error } = await client.from(table).update(updates).eq('id', id).select().single();
       if (error) throw new Error(`Update failed: ${error.message}`);
-      return jsonResponse({ data });
+      return jsonOk({ data });
     }
 
     // ─── DELETE ───
     if (operation === 'delete') {
       const { id } = body;
-      if (!id) return errorResponse('Missing "id" for delete');
+      if (!id) return jsonError('Missing "id" for delete', 400);
 
       const { error } = await client.from(table).delete().eq('id', id);
       if (error) throw new Error(`Delete failed: ${error.message}`);
-      return jsonResponse({ success: true });
+      return jsonOk({ success: true });
     }
 
-    return errorResponse(`Unknown action: ${operation}`);
+    return jsonError(`Unknown action: ${operation}`, 400);
 
   } catch (error) {
     const elapsed = Math.round(performance.now() - startTime);
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[external-data] Error after ${elapsed}ms:`, message);
-
     const status = message.includes('timeout') ? 504 : 500;
-    return errorResponse(message, status);
+    return jsonError(message, status);
   }
 });

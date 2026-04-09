@@ -5,11 +5,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 interface DISCScores {
   D: number;
@@ -116,34 +112,29 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Auth guard: use JWT user_id, ignore body userId ──
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+  const userId = authResult; // from JWT
+
   try {
-    const { texts, contactId, interactionId, userId } = await req.json();
+    const { texts, contactId, interactionId } = await req.json();
 
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return new Response(
-        JSON.stringify({ error: "Textos são obrigatórios" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("Textos são obrigatórios", 400);
     }
 
-    if (!contactId || !userId) {
-      return new Response(
-        JSON.stringify({ error: "contactId e userId são obrigatórios" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (!contactId) {
+      return jsonError("contactId é obrigatório", 400);
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY não configurada" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonError("LOVABLE_API_KEY não configurada", 500);
     }
 
     const combinedText = texts.join("\n\n---\n\n");
     
-    // Call Lovable AI
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -162,16 +153,10 @@ serve(async (req) => {
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Tente novamente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("Rate limit exceeded. Tente novamente em alguns segundos.", 429);
       }
       if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return jsonError("Créditos insuficientes. Adicione créditos ao workspace.", 402);
       }
       const errorText = await aiResponse.text();
       console.error("AI error:", errorText);
@@ -181,17 +166,14 @@ serve(async (req) => {
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "";
     
-    // Parse JSON from response
     let analysisResult: AnalysisResult;
     try {
-      // Extract JSON from potential markdown code blocks
       const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || 
                        content.match(/```\s*([\s\S]*?)\s*```/);
       const jsonStr = jsonMatch ? jsonMatch[1] : content;
       analysisResult = JSON.parse(jsonStr.trim());
     } catch (parseErr) {
       console.error("Parse error:", parseErr, "Content:", content);
-      // Fallback to local analysis
       analysisResult = {
         scores: { D: 50, I: 50, S: 50, C: 50 },
         primaryProfile: "I",
@@ -213,7 +195,6 @@ serve(async (req) => {
       };
     }
 
-    // Ensure valid blend calculation
     const { primary, secondary, blend } = calculateBlendCode(
       analysisResult.scores.D,
       analysisResult.scores.I,
@@ -221,7 +202,7 @@ serve(async (req) => {
       analysisResult.scores.C
     );
 
-    // Save to Supabase
+    // Save to Supabase — scoped to JWT userId
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -257,28 +238,31 @@ serve(async (req) => {
       throw new Error(`Database save error: ${saveError.message}`);
     }
 
-    // Update contact behavior
-    const { data: contactData } = await supabase
+    // Verify contact belongs to this user before updating
+    const { data: contactOwnership } = await supabase
       .from("contacts")
-      .select("behavior")
+      .select("id, behavior")
       .eq("id", contactId)
+      .eq("user_id", userId)
       .single();
 
-    const currentBehavior = (contactData?.behavior as Record<string, unknown>) || {};
-    await supabase
-      .from("contacts")
-      .update({
-        behavior: {
-          ...currentBehavior,
-          discProfile: primary,
-          discConfidence: analysisResult.confidence,
-          discBlend: blend,
-          discLastAnalysis: new Date().toISOString()
-        }
-      })
-      .eq("id", contactId);
+    if (contactOwnership) {
+      const currentBehavior = (contactOwnership.behavior as Record<string, unknown>) || {};
+      await supabase
+        .from("contacts")
+        .update({
+          behavior: {
+            ...currentBehavior,
+            discProfile: primary,
+            discConfidence: analysisResult.confidence,
+            discBlend: blend,
+            discLastAnalysis: new Date().toISOString()
+          }
+        })
+        .eq("id", contactId)
+        .eq("user_id", userId);
+    }
 
-    // Log communication for metrics
     await supabase
       .from("disc_communication_logs")
       .insert({
@@ -289,33 +273,27 @@ serve(async (req) => {
         adaptation_tips_shown: analysisResult.salesStrategies
       });
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        analysis: {
-          id: savedRecord.id,
-          scores: analysisResult.scores,
-          primaryProfile: primary,
-          secondaryProfile: secondary,
-          blendProfile: blend,
-          confidence: analysisResult.confidence,
-          stressPrimary: analysisResult.stressPrimary,
-          stressSecondary: analysisResult.stressSecondary,
-          behaviorIndicators: analysisResult.behaviorIndicators,
-          salesStrategies: analysisResult.salesStrategies,
-          communicationTips: analysisResult.communicationTips,
-          avoidBehaviors: analysisResult.avoidBehaviors,
-          profileSummary: analysisResult.profileSummary
-        }
-      }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonOk({
+      success: true,
+      analysis: {
+        id: savedRecord.id,
+        scores: analysisResult.scores,
+        primaryProfile: primary,
+        secondaryProfile: secondary,
+        blendProfile: blend,
+        confidence: analysisResult.confidence,
+        stressPrimary: analysisResult.stressPrimary,
+        stressSecondary: analysisResult.stressSecondary,
+        behaviorIndicators: analysisResult.behaviorIndicators,
+        salesStrategies: analysisResult.salesStrategies,
+        communicationTips: analysisResult.communicationTips,
+        avoidBehaviors: analysisResult.avoidBehaviors,
+        profileSummary: analysisResult.profileSummary
+      }
+    });
 
   } catch (error) {
     console.error("DISC analyzer error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonError(error instanceof Error ? error.message : "Erro desconhecido", 500);
   }
 });
