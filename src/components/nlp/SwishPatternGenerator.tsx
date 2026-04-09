@@ -142,14 +142,14 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
   ];
 
   return (
-    <Card className={cn("border-lime-500/30 bg-card", className)}>
+    <Card className={cn("border-success/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Zap className="h-5 w-5 text-lime-400" />
+            <Zap className="h-5 w-5 text-success" />
             Swish Pattern Generator
           </CardTitle>
-          <Badge variant="outline" className="bg-lime-500/20">
+          <Badge variant="outline" className="bg-success/20">
             VAK: {vakType}
           </Badge>
         </div>
@@ -184,7 +184,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
         {/* Pattern Builder */}
         <div className="bg-muted/30 rounded-lg p-4 space-y-4">
           <div className="text-sm font-medium flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-lime-400" />
+            <AlertTriangle className="h-4 w-4 text-success" />
             Criar Novo Padrão Swish
           </div>
 
@@ -274,7 +274,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="bg-lime-500/10 rounded-lg p-3 border border-lime-500/30"
+                  className="bg-success/10 rounded-lg p-3 border border-success/30"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ const SwishPatternGenerator: React.FC<SwishPatternGeneratorProps> = ({
 
         {/* How It Works */}
         <div className="bg-muted/20 rounded-lg p-3 text-xs text-muted-foreground">
-          <div className="font-medium text-lime-400 mb-2">💡 Como Funciona o Swish Pattern</div>
+          <div className="font-medium text-success mb-2">💡 Como Funciona o Swish Pattern</div>
           <ol className="list-decimal list-inside space-y-1">
             <li>Identifique o gatilho que dispara a objeção</li>
             <li>Crie uma imagem do estado desejado</li>

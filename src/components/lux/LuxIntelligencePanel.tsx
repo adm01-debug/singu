@@ -514,7 +514,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             )}
 
             {profile.travels && profile.travels.length > 0 && (
-              <DataCard title="Viagens Recentes" icon={Plane} iconColor="bg-sky-100 dark:bg-sky-900/30 text-sky-600">
+              <DataCard title="Viagens Recentes" icon={Plane} iconColor="bg-info/10 dark:bg-info/20 text-info">
                 <div className="flex flex-wrap gap-1.5">
                   {profile.travels.map((t: string, i: number) => (
                     <Badge key={i} variant="secondary" className="text-xs">
@@ -545,7 +545,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         )}
 
         {Object.keys(social).length > 0 && (
-          <DataCard title="Análise de Comportamento Social" icon={BarChart3} iconColor="bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-600">
+          <DataCard title="Análise de Comportamento Social" icon={BarChart3} iconColor="bg-accent/10 dark:bg-accent/20 text-accent">
             <div className="space-y-3">
               {social.personality_type && (
                 <div>

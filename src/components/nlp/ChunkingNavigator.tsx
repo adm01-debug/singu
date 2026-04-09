@@ -133,15 +133,15 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
   };
 
   return (
-    <Card className={cn("border-sky-500/30 bg-card", className)}>
+    <Card className={cn("border-info/30 bg-card", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Layers className="h-5 w-5 text-sky-400" />
+            <Layers className="h-5 w-5 text-info" />
             Chunking Navigator
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-sky-500/20">
+            <Badge variant="outline" className="bg-info/20">
               Meta: {metaChunk === 'general' ? 'Geral' : metaChunk === 'specific' ? 'Específico' : 'Equilibrado'}
             </Badge>
             <Badge variant="outline" className="bg-secondary/20">
@@ -224,11 +224,11 @@ const ChunkingNavigator: React.FC<ChunkingNavigatorProps> = ({
         </motion.div>
 
         {/* Recommendation */}
-        <div className="bg-sky-500/10 rounded-lg p-3 border border-sky-500/30">
+        <div className="bg-info/10 rounded-lg p-3 border border-info/30">
           <div className="flex items-start gap-2">
-            <Lightbulb className="h-4 w-4 text-sky-400 mt-0.5 shrink-0" />
+            <Lightbulb className="h-4 w-4 text-info mt-0.5 shrink-0" />
             <div>
-              <div className="text-sm font-medium text-sky-400 mb-1">
+              <div className="text-sm font-medium text-info mb-1">
                 Recomendação para {activeContact.firstName}
               </div>
               <p className="text-xs text-muted-foreground mb-2">
