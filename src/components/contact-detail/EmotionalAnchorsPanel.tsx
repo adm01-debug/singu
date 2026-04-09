@@ -1,4 +1,4 @@
-import { Anchor, Trash2, Plus, Sparkles } from 'lucide-react';
+import { Anchor, Trash2, Plus, Sparkles, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
