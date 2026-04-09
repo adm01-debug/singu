@@ -16,8 +16,39 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { LuxButton } from './LuxButton';
 import { LuxHistoryTimeline } from './LuxHistoryTimeline';
-import type { LuxIntelligenceRecord } from '@/hooks/useLuxIntelligence';
+import type { LuxIntelligenceRecord, LuxSocialProfile, LuxStakeholder, LuxFiscalData, LuxFilial, LuxEducation } from '@/hooks/useLuxIntelligence';
 import { toast } from 'sonner';
+
+// Typed interfaces for dynamic JSON data from edge functions
+interface LuxAudienceData {
+  target_audience?: string;
+  communication_style?: string;
+  brand_voice?: string;
+  content_themes?: string[];
+  [key: string]: unknown;
+}
+
+interface LuxSocialData {
+  personality_type?: string;
+  communication_style?: string;
+  content_themes?: string[];
+  [key: string]: unknown;
+}
+
+interface LuxProfileData {
+  current_position?: string;
+  company?: string;
+  tenure?: string;
+  specialties?: string[];
+  education?: LuxEducation[];
+  previous_companies?: string[];
+  hobbies?: string[];
+  interests?: string[];
+  travels?: string[];
+  bio?: string;
+  skills?: string[];
+  [key: string]: unknown;
+}
 
 interface LuxIntelligencePanelProps {
   record: LuxIntelligenceRecord | null;
@@ -77,7 +108,7 @@ const DataCard = ({
   </motion.div>
 );
 
-const SocialProfileCard = ({ profile }: { profile: any }) => {
+const SocialProfileCard = ({ profile }: { profile: LuxSocialProfile }) => {
   const platformIcons: Record<string, typeof Linkedin> = {
     linkedin: Linkedin,
     instagram: Instagram,
@@ -118,7 +149,7 @@ const SocialProfileCard = ({ profile }: { profile: any }) => {
   );
 };
 
-const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: number }) => (
+const StakeholderCard = ({ stakeholder, index }: { stakeholder: LuxStakeholder; index: number }) => (
   <motion.div
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
@@ -157,9 +188,9 @@ const StakeholderCard = ({ stakeholder, index }: { stakeholder: any; index: numb
 
 function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const fiscal = record.fiscal_data || {};
-  const audience = record.audience_analysis || {};
-  const social = record.social_analysis || {};
+  const fiscal = (record.fiscal_data || {}) as LuxFiscalData;
+  const audience = (record.audience_analysis || {}) as LuxAudienceData;
+  const social = (record.social_analysis || {}) as LuxSocialData;
   const stakeholders = record.stakeholders || [];
   const socialProfiles = record.social_profiles || [];
 
@@ -234,16 +265,16 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                 { key: 'natureza_juridica', label: 'Natureza Jurídica' },
                 { key: 'situacao_cadastral', label: 'Situação Cadastral' },
                 { key: 'cnae_principal', label: 'CNAE Principal' },
-              ].map(({ key, label }) => fiscal[key] && (
+              ].map(({ key, label }) => fiscal[key as keyof LuxFiscalData] && (
                 <div key={key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                   <span className="text-sm text-muted-foreground">{label}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{fiscal[key]}</span>
+                    <span className="text-sm font-medium">{String(fiscal[key as keyof LuxFiscalData])}</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => copyToClipboard(fiscal[key], key)}
+                      onClick={() => copyToClipboard(String(fiscal[key as keyof LuxFiscalData]), key)}
                     >
                       {copiedField === key ? (
                         <Check className="w-3 h-3 text-success" />
@@ -262,7 +293,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
                     Filiais ({fiscal.filiais.length})
                   </p>
                   <div className="space-y-2">
-                    {fiscal.filiais.map((f: any, i: number) => (
+                    {fiscal.filiais.map((f: LuxFilial, i: number) => (
                       <div key={i} className="text-xs text-muted-foreground p-2 rounded-lg bg-muted/50 flex items-center gap-2">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         <span className="truncate">{f.endereco || f.nome || `Filial ${i + 1}`}</span>
@@ -329,7 +360,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {socialProfiles.length > 0 ? (
           <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-success dark:bg-success/30 text-success">
             <div className="space-y-2">
-              {socialProfiles.map((profile: any, i: number) => (
+              {socialProfiles.map((profile: LuxSocialProfile, i: number) => (
                 <SocialProfileCard key={i} profile={profile} />
               ))}
             </div>
@@ -346,7 +377,7 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {stakeholders.length > 0 ? (
           <DataCard title={`Stakeholders Identificados (${stakeholders.length})`} icon={Users} iconColor="bg-primary dark:bg-primary/30 text-primary">
             <div className="space-y-2">
-              {stakeholders.map((s: any, i: number) => (
+              {stakeholders.map((s: LuxStakeholder, i: number) => (
                 <StakeholderCard key={i} stakeholder={s} index={i} />
               ))}
             </div>
@@ -363,8 +394,8 @@ function CompanyIntelligence({ record }: { record: LuxIntelligenceRecord }) {
 }
 
 function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
-  const profile = record.personal_profile || {};
-  const social = record.social_analysis || {};
+  const profile = (record.personal_profile || {}) as LuxProfileData;
+  const social = (record.social_analysis || {}) as LuxSocialData;
   const socialProfiles = record.social_profiles || [];
 
   return (
@@ -454,7 +485,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
             {profile.education && profile.education.length > 0 && (
               <DataCard title="Formação" icon={GraduationCap} iconColor="bg-success dark:bg-success/30 text-success">
                 <div className="space-y-3">
-                  {profile.education.map((e: any, i: number) => (
+                  {profile.education.map((e: LuxEducation, i: number) => (
                     <div key={i} className="p-3 rounded-lg bg-muted/50">
                       <p className="text-sm font-medium">
                         {typeof e === 'string' ? e : e.degree}
@@ -537,7 +568,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
         {socialProfiles.length > 0 && (
           <DataCard title="Redes Sociais" icon={Globe} iconColor="bg-success dark:bg-success/30 text-success">
             <div className="space-y-2">
-              {socialProfiles.map((p: any, i: number) => (
+              {socialProfiles.map((p: LuxSocialProfile, i: number) => (
                 <SocialProfileCard key={i} profile={p} />
               ))}
             </div>

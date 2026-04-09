@@ -354,9 +354,9 @@ const Contatos = () => {
       if (result.enriched > 0) {
         window.location.reload();
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       logger.error('Enrichment error:', err);
-      toast.error('Erro ao enriquecer contatos: ' + (err.message || 'Erro desconhecido'));
+      toast.error('Erro ao enriquecer contatos: ' + (err instanceof Error ? err.message : 'Erro desconhecido'));
     } finally {
       setIsEnriching(false);
     }
@@ -508,7 +508,7 @@ const Contatos = () => {
                     updateContact,
                   }}
                   style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
-                  rowComponent={({ index, style, ...props }: any) => {
+                  rowComponent={({ index, style, ...props }) => {
                     const contact = props.contacts[index];
                     if (!contact) return null;
                     return (

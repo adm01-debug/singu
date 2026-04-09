@@ -4,6 +4,64 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
 
+export interface LuxSocialProfile {
+  platform?: string;
+  username?: string;
+  url?: string;
+  followers?: number | string;
+  bio?: string;
+}
+
+export interface LuxStakeholder {
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  role_title?: string;
+  position?: string;
+  email?: string;
+  linkedin?: string;
+  phone?: string;
+}
+
+export interface LuxFiscalData {
+  cnpj?: string;
+  razao_social?: string;
+  nome_fantasia?: string;
+  situacao_cadastral?: string;
+  data_abertura?: string;
+  capital_social?: number;
+  natureza_juridica?: string;
+  porte?: string;
+  atividade_principal?: string;
+  filiais?: LuxFilial[];
+  [key: string]: unknown;
+}
+
+export interface LuxFilial {
+  cnpj?: string;
+  nome_fantasia?: string;
+  nome?: string;
+  endereco?: string;
+  cidade?: string;
+  uf?: string;
+  situacao?: string;
+  [key: string]: unknown;
+}
+
+export interface LuxPersonalProfile {
+  education?: LuxEducation[];
+  bio?: string;
+  skills?: string[];
+  [key: string]: unknown;
+}
+
+export interface LuxEducation {
+  institution?: string;
+  degree?: string;
+  field?: string;
+  year?: string | number;
+}
+
 export interface LuxIntelligenceRecord {
   id: string;
   user_id: string;
@@ -11,15 +69,15 @@ export interface LuxIntelligenceRecord {
   entity_id: string;
   status: 'pending' | 'processing' | 'completed' | 'error';
   request_type: string;
-  social_profiles: any[];
-  social_analysis: any;
-  fiscal_data: any;
-  stakeholders: any[];
-  audience_analysis: any;
-  personal_profile: any;
+  social_profiles: LuxSocialProfile[];
+  social_analysis: Record<string, unknown> | null;
+  fiscal_data: LuxFiscalData | null;
+  stakeholders: LuxStakeholder[];
+  audience_analysis: Record<string, unknown> | null;
+  personal_profile: LuxPersonalProfile | null;
   ai_report: string | null;
   ai_summary: string | null;
-  fields_updated: any[];
+  fields_updated: Record<string, unknown>[];
   error_message: string | null;
   n8n_execution_id: string | null;
   started_at: string | null;
@@ -69,7 +127,7 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
     return () => clearInterval(interval);
   }, [latestRecord?.status, fetchRecords]);
 
-  const triggerLux = useCallback(async (entityData: any) => {
+  const triggerLux = useCallback(async (entityData: Record<string, unknown>) => {
     if (!user || !entityId) return null;
     setTriggering(true);
     try {

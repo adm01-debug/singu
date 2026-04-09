@@ -25,14 +25,14 @@ interface Props {
 }
 
 async function fetchWithFallback<T>(
-  localFn: () => Promise<{ data: T | null; error: any }>,
+  localFn: () => Promise<{ data: T | null; error: unknown }>,
   extTable: string,
-  filters: Array<{ type: 'eq'; column: string; value: any }>,
+  filters: Array<{ type: 'eq'; column: string; value: string }>,
   options?: { order?: { column: string; ascending?: boolean }; range?: { from: number; to: number } },
 ): Promise<T | null> {
   const { data: local } = await localFn();
   if (local && (Array.isArray(local) ? local.length > 0 : true)) return local;
-  const { data: ext } = await queryExternalData<any>({ table: extTable, filters, ...options });
+  const { data: ext } = await queryExternalData<T>({ table: extTable, filters, ...options });
   if (Array.isArray(ext) && ext.length > 0) return ext as unknown as T;
   if (ext && !Array.isArray(ext)) return ext as unknown as T;
   return Array.isArray(local) ? ([] as unknown as T) : null;

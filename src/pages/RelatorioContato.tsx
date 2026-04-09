@@ -9,10 +9,20 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { logger } from "@/lib/logger";
 
+import type { Tables } from '@/integrations/supabase/types';
+
+interface ContactBehavior {
+  preferredChannel?: string;
+  discProfile?: string;
+  discBlend?: string;
+  discConfidence?: number;
+  [key: string]: unknown;
+}
+
 interface ContactReport {
-  contact: any;
-  interactions: any[];
-  discHistory: any[];
+  contact: Tables<'contacts'>;
+  interactions: Tables<'interactions'>[];
+  discHistory: Tables<'disc_analysis_history'>[];
 }
 
 const RelatorioContato = () => {
@@ -26,12 +36,12 @@ const RelatorioContato = () => {
 
       try {
         // Fetch contact - local first, then external
-        let contact: any = null;
+        let contact: Tables<'contacts'> | null = null;
         const { data: localContact } = await supabase.from("contacts").select("*").eq("id", id).maybeSingle();
         if (localContact) {
           contact = localContact;
         } else {
-          const { data: extContact } = await queryExternalData({ table: 'contacts', filters: [{ type: 'eq', column: 'id', value: id }] });
+          const { data: extContact } = await queryExternalData<Tables<'contacts'>>({ table: 'contacts', filters: [{ type: 'eq', column: 'id', value: id }] });
           contact = extContact?.[0] || null;
         }
 
@@ -84,7 +94,7 @@ const RelatorioContato = () => {
   }
 
   const { contact, interactions, discHistory } = data;
-  const behavior = contact.behavior || {};
+  const behavior = (contact.behavior || {}) as ContactBehavior;
   const latestDisc = discHistory[0];
 
   const contactName = `${contact.first_name} ${contact.last_name}`.trim();
@@ -457,7 +467,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
             </h2>
             
             <div className="space-y-3">
-              {interactions.slice(0, 5).map((interaction: any, i: number) => (
+              {interactions.slice(0, 5).map((interaction, i: number) => (
                 <div key={i} className="border p-3 rounded-lg">
                   <div className="flex justify-between items-start mb-1">
                     <span className="font-medium text-sm">{interaction.title}</span>
