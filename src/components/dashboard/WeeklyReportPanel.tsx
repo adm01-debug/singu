@@ -354,8 +354,19 @@ function ContentToggle({ icon, label, description, checked, onCheckedChange }: C
   );
 }
 
+interface WeeklyReportData {
+  stats?: {
+    totalInteractions?: number;
+    newContacts?: number;
+    upcomingBirthdays?: number;
+    atRiskContacts?: number;
+  };
+  highlights?: string[];
+  recommendations?: string[];
+}
+
 interface ReportPreviewProps {
-  data: any;
+  data: WeeklyReportData | null;
   generating: boolean;
 }
 

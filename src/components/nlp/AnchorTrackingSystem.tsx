@@ -92,7 +92,7 @@ const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
     setShowAddForm(false);
   };
 
-  const addFromSuggestion = (type: 'positive' | 'negative', item: any) => {
+  const addFromSuggestion = (type: 'positive' | 'negative', item: { word: string; emotion: string }) => {
     const anchor: AnchorRecord = {
       id: `anchor-${Date.now()}`,
       type,

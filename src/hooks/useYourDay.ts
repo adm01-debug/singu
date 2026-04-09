@@ -126,8 +126,8 @@ export function useYourDay(): YourDayData & { refresh: () => Promise<void> } {
           : Promise.resolve({ data: [] }),
       ]);
 
-      const contactMap = new Map((contactsForFollowUps.data || []).map((c: any) => [c.id, c as Contact]));
-      const companyMap = new Map((companiesBatch.data || []).map((c: any) => [c.id, c as Company]));
+      const contactMap = new Map((contactsForFollowUps.data || []).map((c) => [c.id, c as Contact]));
+      const companyMap = new Map((companiesBatch.data || []).map((c) => [c.id, c as Company]));
 
       // Process follow-ups
       const todayFollowUps: FollowUp[] = [];
