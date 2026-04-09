@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/lib/logger';
 import type { Tables } from '@/integrations/supabase/types';
 
 export function useScoreHistory(contactId: string) {
@@ -9,7 +10,10 @@ export function useScoreHistory(contactId: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !contactId) return;
+    if (!user || !contactId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     supabase
@@ -18,7 +22,10 @@ export function useScoreHistory(contactId: string) {
       .eq('contact_id', contactId)
       .order('calculated_at', { ascending: false })
       .limit(50)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          logger.error('Error fetching score history:', error);
+        }
         setHistory(data || []);
         setLoading(false);
       });
