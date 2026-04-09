@@ -173,21 +173,28 @@ export function AppSidebar() {
                       ? location.pathname === "/"
                       : location.pathname.startsWith(item.url);
                     return (
-                      <SidebarMenuItem key={item.url}>
+                      <SidebarMenuItem key={item.url} className="relative">
+                        {/* Discord-style active indicator bar */}
+                        {isActive && (
+                          <span
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary transition-all duration-200"
+                            aria-hidden="true"
+                          />
+                        )}
                         <SidebarMenuButton
                           asChild
                           isActive={isActive}
                           tooltip={item.title}
                           className={cn(
-                            "rounded-md transition-colors duration-150 h-9",
+                            "rounded-md transition-all duration-150 h-9 ml-0.5",
                             isActive
-                              ? "text-foreground font-medium bg-muted"
+                              ? "text-foreground font-medium bg-primary/10 dark:bg-primary/8"
                               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           )}
                         >
                           <Link to={item.url} aria-current={isActive ? "page" : undefined}>
                             <item.icon className={cn(
-                              "h-4 w-4 shrink-0",
+                              "h-4 w-4 shrink-0 transition-colors",
                               isActive ? "text-primary" : ""
                             )} />
                             <span className="text-sm">{item.title}</span>

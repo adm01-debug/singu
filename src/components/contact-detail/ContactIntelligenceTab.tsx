@@ -3,6 +3,7 @@ import { AlertTriangle, Target, Heart, Gift } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -101,7 +102,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">Nenhuma objeção oculta detectada</p>
+            <InlineEmptyState icon={AlertTriangle} title="Nenhuma objeção detectada" description="A IA identificará objeções ocultas conforme interações são analisadas" />
           )}
         </CardContent>
       </Card>
@@ -131,7 +132,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">Nenhum critério de decisão registrado</p>
+            <InlineEmptyState icon={Target} title="Sem critérios registrados" description="Critérios de decisão serão detectados automaticamente" />
           )}
         </CardContent>
       </Card>
@@ -163,7 +164,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">Nenhum valor detectado</p>
+            <InlineEmptyState icon={Heart} title="Nenhum valor detectado" description="Valores serão identificados nas conversas" />
           )}
         </CardContent>
       </Card>
@@ -206,7 +207,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
               })}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">Nenhuma sugestão de oferta</p>
+            <InlineEmptyState icon={Gift} title="Sem sugestões de oferta" description="Use o painel de IA para gerar sugestões personalizadas" />
           )}
         </CardContent>
       </Card>

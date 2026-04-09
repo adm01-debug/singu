@@ -300,6 +300,41 @@ export function EmptyState({
   );
 }
 
+/** Compact inline empty state for use inside cards */
+export function InlineEmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description?: string;
+  action?: { label: string; onClick: () => void };
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center py-6 px-3 text-center">
+      <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center mb-2.5">
+        <Icon className="h-5 w-5 text-muted-foreground/50" />
+      </div>
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      {description && (
+        <p className="text-xs text-muted-foreground/60 mt-0.5 max-w-[220px]">{description}</p>
+      )}
+      {action && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-3 h-7 text-xs px-3"
+          onClick={action.onClick}
+        >
+          {action.label}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function SearchEmptyState({
   searchTerm,
   onClearSearch,
