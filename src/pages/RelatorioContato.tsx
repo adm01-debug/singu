@@ -467,7 +467,7 @@ Posso montar o orçamento formal pra você? Me passa só a quantidade aproximada
             </h2>
             
             <div className="space-y-3">
-              {interactions.slice(0, 5).map((interaction: any, i: number) => (
+              {interactions.slice(0, 5).map((interaction, i: number) => (
                 <div key={i} className="border p-3 rounded-lg">
                   <div className="flex justify-between items-start mb-1">
                     <span className="font-medium text-sm">{interaction.title}</span>
