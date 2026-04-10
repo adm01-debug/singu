@@ -473,6 +473,7 @@ export function CompanyCardWithContext({
                           </Badge>
                         )}
                       </div>
+                    </div>
 
                     {/* Intelligence Strip */}
                     <IntelligenceStrip company={company} />
