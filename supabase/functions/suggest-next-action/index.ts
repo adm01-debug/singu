@@ -1,43 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // 🔒 Authenticate — userId from JWT
+  const authResult = await withAuth(req);
+  if (authResult instanceof Response) return authResult;
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
-    }
-
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "No authorization header" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Get user from token
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
     }
 
     const { contact, interactions, company } = await req.json();
@@ -101,35 +78,13 @@ Com base nestes dados, qual é a melhor próxima ação a ser tomada com este co
                     enum: ["call", "email", "whatsapp", "meeting", "social", "gift", "follow_up"],
                     description: "Tipo de ação sugerida"
                   },
-                  title: {
-                    type: "string",
-                    description: "Título curto da ação (max 60 caracteres)"
-                  },
-                  description: {
-                    type: "string",
-                    description: "Descrição detalhada da ação e porque ela é recomendada"
-                  },
-                  suggested_message: {
-                    type: "string",
-                    description: "Exemplo de mensagem ou script para a interação (opcional)"
-                  },
-                  urgency: {
-                    type: "string",
-                    enum: ["low", "medium", "high", "critical"],
-                    description: "Nível de urgência da ação"
-                  },
-                  best_time: {
-                    type: "string",
-                    description: "Melhor horário ou dia para realizar a ação"
-                  },
-                  reasoning: {
-                    type: "string",
-                    description: "Explicação de por que esta ação é a melhor escolha"
-                  },
-                  confidence: {
-                    type: "number",
-                    description: "Nível de confiança na sugestão (0-100)"
-                  }
+                  title: { type: "string", description: "Título curto da ação (max 60 caracteres)" },
+                  description: { type: "string", description: "Descrição detalhada da ação e porque ela é recomendada" },
+                  suggested_message: { type: "string", description: "Exemplo de mensagem ou script para a interação (opcional)" },
+                  urgency: { type: "string", enum: ["low", "medium", "high", "critical"], description: "Nível de urgência da ação" },
+                  best_time: { type: "string", description: "Melhor horário ou dia para realizar a ação" },
+                  reasoning: { type: "string", description: "Explicação de por que esta ação é a melhor escolha" },
+                  confidence: { type: "number", description: "Nível de confiança na sugestão (0-100)" }
                 },
                 required: ["action_type", "title", "description", "urgency", "reasoning", "confidence"],
                 additionalProperties: false
@@ -144,30 +99,16 @@ Com base nestes dados, qual é a melhor próxima ação a ser tomada com este co
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns minutos." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos em Configurações > Workspace > Uso." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
+      if (response.status === 429) return jsonError("Limite de requisições excedido. Tente novamente em alguns minutos.", 429);
+      if (response.status === 402) return jsonError("Créditos insuficientes. Adicione créditos em Configurações > Workspace > Uso.", 402);
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Erro ao gerar sugestão" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonError("Erro ao gerar sugestão", 500);
     }
 
     const aiResponse = await response.json();
     console.log("AI Response received:", JSON.stringify(aiResponse, null, 2));
 
-    // Extract the tool call result
     let suggestion = null;
     const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
     
@@ -180,15 +121,9 @@ Com base nestes dados, qual é a melhor próxima ação a ser tomada com este co
       }
     }
 
-    return new Response(JSON.stringify({ suggestion }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
+    return jsonOk({ suggestion });
   } catch (error) {
     console.error("suggest-next-action error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonError(error instanceof Error ? error.message : "Erro desconhecido", 500);
   }
 });
