@@ -237,6 +237,10 @@ export function CompaniesTableView({
                 <TableCell className="hidden lg:table-cell">
                   {health ? (
                     <span className={cn('text-sm font-medium', health.className)}>{health.label}</span>
+                  ) : company.porte_rf && porteLabel[company.porte_rf.toUpperCase()] ? (
+                    <span className={cn('text-xs', porteLabel[company.porte_rf.toUpperCase()].className)}>
+                      {porteLabel[company.porte_rf.toUpperCase()].label}
+                    </span>
                   ) : (
                     <span className="text-sm text-muted-foreground/50">—</span>
                   )}
