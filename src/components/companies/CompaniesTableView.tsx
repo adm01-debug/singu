@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowUpDown, Banknote, Network, Globe } from 'lucide-react';
+import { MapPin, Users, ArrowUpDown, Banknote, Network } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -17,12 +17,61 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase, formatCapitalSocial, formatCnpj } from '@/lib/formatters';
 
+/** Visual activity pulse indicator based on last interaction days */
+function ActivityPulse({ days }: { days: number | null }) {
+  if (days === null) {
+    return (
+      <div className="flex items-center justify-center gap-0.5">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="w-2 h-3 rounded-sm bg-muted/20" />
+        ))}
+      </div>
+    );
+  }
+
+  // 4 bars: each represents a "week zone"
+  // Week 1 (0-7d), Week 2 (8-14d), Week 3 (15-21d), Week 4+ (22+d)
+  const getBarColor = (weekIndex: number) => {
+    const threshold = weekIndex * 7;
+    if (days <= threshold + 7) {
+      if (weekIndex === 0) return 'bg-success';
+      if (weekIndex === 1) return 'bg-success/60';
+      if (weekIndex === 2) return 'bg-warning/60';
+      return 'bg-destructive/60';
+    }
+    return 'bg-muted/20';
+  };
+
+  // Active bars = how many weeks ago the last interaction was
+  const activeBars = Math.min(4, Math.max(1, Math.ceil(days / 7)));
+  const pulseColor = days <= 7 ? 'text-success' : days <= 14 ? 'text-warning' : 'text-destructive';
+
+  return (
+    <div className="flex items-center justify-center gap-0.5" title={`Última interação: ${days}d atrás`}>
+      {[0, 1, 2, 3].map(i => (
+        <div
+          key={i}
+          className={cn(
+            'w-2 rounded-sm transition-colors',
+            i < activeBars ? (
+              i === 0 && days <= 7 ? 'bg-success h-4' :
+              i <= 1 && days <= 14 ? 'bg-warning h-3' :
+              'bg-destructive/60 h-2'
+            ) : 'bg-muted/20 h-2'
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface CompaniesTableViewProps {
   companies: Company[];
   selectionMode: boolean;
   selectedIds: Set<string>;
   onSelect: (id: string, selected: boolean) => void;
   contactCountMap: Map<string, number>;
+  lastInteractionMap: Map<string, number>;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   onSortChange: (field: string) => void;
@@ -41,6 +90,7 @@ export function CompaniesTableView({
   selectedIds,
   onSelect,
   contactCountMap,
+  lastInteractionMap,
   sortBy,
   sortOrder,
   onSortChange,
@@ -68,6 +118,7 @@ export function CompaniesTableView({
             <TableHead className="hidden xl:table-cell">CAPITAL</TableHead>
             <TableHead className="hidden xl:table-cell">GRUPO</TableHead>
             <TableHead className="hidden lg:table-cell">SAÚDE</TableHead>
+            <TableHead className="hidden md:table-cell text-center">PULSO</TableHead>
             <TableHead><SortButton field="updated_at">ATUALIZAÇÃO</SortButton></TableHead>
           </TableRow>
         </TableHeader>
@@ -177,6 +228,9 @@ export function CompaniesTableView({
                   ) : (
                     <span className="text-sm text-muted-foreground/50">—</span>
                   )}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <ActivityPulse days={lastInteractionMap.get(company.id) ?? null} />
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground tabular-nums">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
