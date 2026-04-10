@@ -180,7 +180,7 @@ export function CompaniesTableView({
                       <span className="font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
                         {toTitleCase(company.name)}
                       </span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <Badge
                           variant="outline"
                           className={cn(
@@ -192,6 +192,26 @@ export function CompaniesTableView({
                         >
                           {company.is_customer ? 'Cliente' : 'Prospect'}
                         </Badge>
+                        {company.is_matriz !== null && company.is_matriz !== undefined && (
+                          <Badge variant="outline" className="text-[9px] font-medium border-accent/40 text-accent-foreground bg-accent/10">
+                            {company.is_matriz ? 'Matriz' : 'Filial'}
+                          </Badge>
+                        )}
+                        {company.tipo_cooperativa && (
+                          <Badge variant="outline" className="text-[9px] font-medium border-warning/30 text-warning bg-warning/10">
+                            {company.tipo_cooperativa}
+                          </Badge>
+                        )}
+                        {company.is_carrier && (
+                          <Badge variant="outline" className="text-[9px] font-medium border-sky-500/30 text-sky-400 bg-sky-500/10">
+                            Transp.
+                          </Badge>
+                        )}
+                        {company.is_supplier && (
+                          <Badge variant="outline" className="text-[9px] font-medium border-orange-500/30 text-orange-400 bg-orange-500/10">
+                            Fornec.
+                          </Badge>
+                        )}
                         {cnpjFormatted && (
                           <span className="text-[10px] text-muted-foreground/50 tabular-nums hidden xl:inline">
                             {cnpjFormatted}
@@ -202,7 +222,12 @@ export function CompaniesTableView({
                   </Link>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
-                  {company.industry || company.nicho_cliente || '—'}
+                  <div className="min-w-0">
+                    <span className="line-clamp-1">{company.ramo_atividade || company.nicho_cliente || '—'}</span>
+                    {company.ramo_atividade && company.nicho_cliente && company.nicho_cliente !== company.ramo_atividade && (
+                      <span className="text-[10px] text-muted-foreground/50 line-clamp-1">{company.nicho_cliente}</span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
                   {location ? (
