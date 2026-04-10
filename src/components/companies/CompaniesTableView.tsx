@@ -42,6 +42,7 @@ export function CompaniesTableView({
   selectedIds,
   onSelect,
   contactCountMap,
+  lastInteractionMap,
   sortBy,
   sortOrder,
   onSortChange,
