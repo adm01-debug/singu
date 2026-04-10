@@ -110,7 +110,21 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
     .filter(e => !existingEmails.has(e.toLowerCase()))
     .map((e, i) => ({ icon: Mail, value: e, label: `Email ${i + 2}`, href: `mailto:${e}` }));
 
-  const contactChannels = [...baseChannels, ...extraPhoneChannels, ...extraEmailChannels];
+  // Add social media from external table
+  const platformIconMap: Record<string, typeof Globe> = {
+    linkedin: Linkedin, instagram: Instagram, twitter: Twitter, x: Twitter,
+  };
+  const existingSocials = new Set([contact.linkedin, contact.instagram, contact.twitter].filter(Boolean));
+  const extraSocialChannels = socialMedia
+    .filter(s => s.url && !existingSocials.has(s.url))
+    .map(s => ({
+      icon: platformIconMap[s.plataforma] || Globe,
+      value: s.handle || s.url || s.plataforma,
+      label: s.plataforma.charAt(0).toUpperCase() + s.plataforma.slice(1),
+      href: s.url || '#',
+    }));
+
+  const contactChannels = [...baseChannels, ...extraPhoneChannels, ...extraEmailChannels, ...extraSocialChannels];
 
   return (
     <motion.div
