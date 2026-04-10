@@ -140,38 +140,40 @@ function IntelligenceStrip({ company }: { company: Company }) {
   if (!hasData) return null;
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap mt-2">
+    <div className="flex items-center gap-1.5 flex-wrap mt-2 pt-2 border-t border-border/10">
       {company.situacao_rf && <RfStatusDot situacao={company.situacao_rf} />}
       
       {capital && (
-        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 rounded px-1.5 py-0.5">
+        <span className="inline-flex items-center gap-1 text-[10px] text-success/80 bg-success/8 border border-success/15 rounded-md px-1.5 py-0.5">
           <Banknote className="w-3 h-3" />
           {capital}
         </span>
       )}
       
       {company.grupo_economico && (
-        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 rounded px-1.5 py-0.5 max-w-[120px] truncate">
+        <span className="inline-flex items-center gap-1 text-[10px] text-info/80 bg-info/8 border border-info/15 rounded-md px-1.5 py-0.5 max-w-[130px] truncate">
           <Network className="w-3 h-3 shrink-0" />
           {company.grupo_economico}
         </span>
       )}
       
       {company.nicho_cliente && !company.industry && (
-        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground bg-muted/30 rounded px-1.5 py-0.5 max-w-[100px] truncate">
+        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-muted/20 border border-border/20 rounded-md px-1.5 py-0.5 max-w-[110px] truncate">
           {company.nicho_cliente}
         </span>
       )}
 
       {company.is_carrier && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] text-info bg-info/10 rounded px-1.5 py-0.5">
+        <span className="inline-flex items-center gap-1 text-[10px] text-info bg-info/10 border border-info/20 rounded-md px-1.5 py-0.5">
           <Truck className="w-3 h-3" />
+          Transp.
         </span>
       )}
 
       {company.is_supplier && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] text-warning bg-warning/10 rounded px-1.5 py-0.5">
+        <span className="inline-flex items-center gap-1 text-[10px] text-warning bg-warning/10 border border-warning/20 rounded-md px-1.5 py-0.5">
           <Package className="w-3 h-3" />
+          Fornec.
         </span>
       )}
       
@@ -181,7 +183,7 @@ function IntelligenceStrip({ company }: { company: Company }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="text-muted-foreground/50 hover:text-primary transition-colors"
+          className="text-muted-foreground/40 hover:text-primary transition-colors"
         >
           <Globe className="w-3 h-3" />
         </a>
