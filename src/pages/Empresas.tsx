@@ -50,103 +50,15 @@ import { CompanyListItem } from '@/components/companies/CompanyListItem';
 import { CompaniesTableView } from '@/components/companies/CompaniesTableView';
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
+import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
-import { useExternalLookup } from '@/hooks/useExternalLookup';
+import { useCompanyFilterOptions, companySortOptions } from '@/hooks/useCompanyFilterOptions';
+import type { SearchPreset } from '@/hooks/useSearchPresets';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { useCompanyGroups, GroupHeader, useGroupExpansion } from '@/components/companies/CompanyGrouping';
 import { CompaniesInlineMap } from '@/components/companies/CompaniesInlineMap';
-
-/** Build dynamic filter configs from external DB lookups */
-function useDynamicFilters() {
-  const { data: ramoValues } = useExternalLookup('companies', 'ramo_atividade');
-  const { data: grupoValues } = useExternalLookup('companies', 'grupo_economico');
-  const { data: nichoValues } = useExternalLookup('companies', 'nicho_cliente');
-
-  return useMemo(() => {
-    const filters: FilterConfig[] = [
-      {
-        key: 'is_customer',
-        label: 'Tipo',
-        multiple: false,
-        options: [
-          { value: 'true', label: 'Clientes' },
-          { value: 'false', label: 'Prospects' },
-        ],
-      },
-      {
-        key: 'industry',
-        label: 'Segmento',
-        multiple: true,
-        options: (ramoValues && ramoValues.length > 0)
-          ? ramoValues.slice(0, 20).map(v => ({ value: v, label: v }))
-          : [
-              { value: 'Tecnologia', label: 'Tecnologia', icon: Cpu },
-              { value: 'Saúde', label: 'Saúde', icon: HeartPulse },
-              { value: 'Educação', label: 'Educação', icon: GraduationCap },
-              { value: 'Varejo', label: 'Varejo', icon: ShoppingCart },
-              { value: 'Financeiro', label: 'Financeiro', icon: Landmark },
-              { value: 'Indústria', label: 'Indústria', icon: Factory },
-              { value: 'Serviços', label: 'Serviços', icon: Briefcase },
-            ],
-      },
-    ];
-
-    // Grupo Econômico filter (if data available)
-    if (grupoValues && grupoValues.length > 0) {
-      filters.push({
-        key: 'grupo_economico',
-        label: 'Grupo Econômico',
-        multiple: true,
-        options: grupoValues.slice(0, 15).map(v => ({ value: v, label: v })),
-      });
-    }
-
-    // Nicho filter (if data available)
-    if (nichoValues && nichoValues.length > 0) {
-      filters.push({
-        key: 'nicho_cliente',
-        label: 'Nicho',
-        multiple: true,
-        options: nichoValues.slice(0, 15).map(v => ({ value: v, label: v })),
-      });
-    }
-
-    // Classification filters
-    filters.push(
-      {
-        key: 'is_carrier',
-        label: 'Classificação',
-        multiple: true,
-        options: [
-          { value: 'carrier', label: 'Transportadora', icon: Truck },
-          { value: 'supplier', label: 'Fornecedor', icon: Package },
-        ],
-      },
-      {
-        key: 'financial_health',
-        label: 'Saúde Financeira',
-        multiple: false,
-        options: [
-          { value: 'excellent', label: 'Excelente', icon: TrendingUp },
-          { value: 'good', label: 'Boa', icon: TrendingUp },
-          { value: 'average', label: 'Regular', icon: Minus },
-          { value: 'poor', label: 'Ruim', icon: TrendingDown },
-          { value: 'unknown', label: 'Desconhecida' },
-        ],
-      },
-    );
-
-    return filters;
-  }, [ramoValues, grupoValues, nichoValues]);
-}
-const sortOptions: SortOption[] = [
-  { value: 'name', label: 'Nome' },
-  { value: 'created_at', label: 'Data de Criação' },
-  { value: 'updated_at', label: 'Última Atualização' },
-  { value: 'industry', label: 'Segmento' },
-];
 
 const Empresas = () => {
   usePageTitle('Empresas');
@@ -155,7 +67,7 @@ const Empresas = () => {
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
   const { contacts } = useContacts();
   const { interactions } = useInteractions();
-  const dynamicFilters = useDynamicFilters();
+  const dynamicFilters = useCompanyFilterOptions();
 
   // Pre-compute contact counts and last interaction per company
   const companyMetrics = useMemo(() => {
@@ -242,20 +154,19 @@ const Empresas = () => {
     let result = companies.filter(company => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
-        
-        // Special handling for classification filter (carrier/supplier)
-        if (key === 'is_carrier') {
-          const matchCarrier = values.includes('carrier') && company.is_carrier;
-          const matchSupplier = values.includes('supplier') && company.is_supplier;
-          if (!matchCarrier && !matchSupplier) return false;
+
+        const companyValue = company[key as keyof Company];
+
+        if (typeof companyValue === 'boolean') {
+          if (!values.includes(String(companyValue))) return false;
           continue;
         }
-        
-        const companyValue = company[key as keyof Company];
-        const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
-        if (!values.includes(strValue)) {
+
+        if (companyValue === null || companyValue === undefined || companyValue === '') {
           return false;
         }
+
+        if (!values.includes(String(companyValue))) return false;
       }
       return true;
     });
@@ -379,7 +290,7 @@ const Empresas = () => {
     <AppLayout>
       <Header 
         title="Empresas" 
-        subtitle={filteredAndSortedCompanies.length === companies.length ? `${companies.length} empresas` : `${filteredAndSortedCompanies.length} de ${companies.length} empresas`}
+        subtitle={filteredAndSortedCompanies.length === (activeSearch ? totalCount : companies.length) ? `${activeSearch ? totalCount : companies.length} empresas` : `${filteredAndSortedCompanies.length} de ${activeSearch ? totalCount : companies.length} empresas`}
         showAddButton
         addButtonLabel="Nova Empresa"
         onAddClick={() => setIsFormOpen(true)}
@@ -415,6 +326,24 @@ const Empresas = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <SearchPresetsMenu
+              context="companies"
+              buttonLabel="Listas"
+              title="Listas salvas"
+              description="Salve combinações de filtros para segmentar empresas em um clique."
+              currentFilters={activeFilters}
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              currentSearchTerm={localSearch}
+              onApplyPreset={(preset: SearchPreset) => {
+                setActiveFilters(preset.filters);
+                setSortBy(preset.sortBy);
+                setSortOrder(preset.sortOrder);
+                const nextSearch = preset.searchTerm || '';
+                setLocalSearch(nextSearch);
+                triggerSearch(nextSearch);
+              }}
+            />
             <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
             
             <Button
@@ -432,7 +361,7 @@ const Empresas = () => {
         {/* Advanced Filters */}
         <AdvancedFilters
           filters={dynamicFilters}
-          sortOptions={sortOptions}
+          sortOptions={companySortOptions}
           activeFilters={activeFilters}
           onFiltersChange={setActiveFilters}
           sortBy={sortBy}

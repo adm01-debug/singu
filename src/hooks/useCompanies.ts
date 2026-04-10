@@ -24,9 +24,22 @@ interface ExternalRow extends Record<string, unknown> {
   razao_social?: string;
   ramo_atividade?: string;
   tags_array?: string[];
+  id?: string;
 }
 
 interface CompaniesPage { companies: Company[]; count: number }
+
+const COMPANIES_PAGE_SIZE = 100;
+const COMPANY_SEARCH_COLUMNS = [
+  'nome_crm',
+  'nome_fantasia',
+  'razao_social',
+  'ramo_atividade',
+  'nicho_cliente',
+  'grupo_economico',
+  'tipo_cooperativa',
+  'cnpj',
+] as const;
 
 /** Extract city/state from nome_crm patterns like "PAC Xerém - RJ - Duque de Caxias/RJ" */
 function extractLocationFromName(name: string): { city: string | null; state: string | null } {
@@ -112,17 +125,56 @@ function stripLocal(input: Record<string, unknown>): Record<string, unknown> {
 }
 
 async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
-  const options: Parameters<typeof queryExternalData>[0] = {
+  const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
     table: 'companies',
     order: { column: 'updated_at', ascending: false },
-    range: { from: 0, to: 99 },
+    range,
+    ...(search && search.trim().length >= 2
+      ? {
+          search: {
+            term: search.trim(),
+            columns: [...COMPANY_SEARCH_COLUMNS],
+          },
+        }
+      : {}),
+  });
+
+  const fetchBatch = async (range: { from: number; to: number }) => {
+    const { data, count, error } = await queryExternalData<ExternalRow>(buildOptions(range));
+    if (error) throw error;
+    return { rows: data || [], count: count || 0 };
   };
-  if (search && search.trim().length >= 2) {
-    options.search = { term: search.trim(), columns: ['nome_crm', 'nome_fantasia', 'razao_social', 'ramo_atividade'] };
+
+  const firstBatch = await fetchBatch({ from: 0, to: COMPANIES_PAGE_SIZE - 1 });
+  const totalCount = firstBatch.count || firstBatch.rows.length;
+
+  let allRows = [...firstBatch.rows];
+
+  if (totalCount > firstBatch.rows.length) {
+    const pendingRanges: Array<{ from: number; to: number }> = [];
+    for (let from = firstBatch.rows.length; from < totalCount; from += COMPANIES_PAGE_SIZE) {
+      pendingRanges.push({
+        from,
+        to: Math.min(from + COMPANIES_PAGE_SIZE - 1, totalCount - 1),
+      });
+    }
+
+    for (let index = 0; index < pendingRanges.length; index += 3) {
+      const slice = pendingRanges.slice(index, index + 3);
+      const batches = await Promise.all(slice.map((range) => fetchBatch(range)));
+      allRows = allRows.concat(batches.flatMap((batch) => batch.rows));
+    }
   }
-  const { data, count, error } = await queryExternalData<ExternalRow>(options);
-  if (error) throw error;
-  return { companies: (data || []).map(mapCompany), count: count || 0 };
+
+  const seen = new Set<string>();
+  const uniqueRows = allRows.filter((row) => {
+    if (!row.id) return false;
+    if (seen.has(row.id)) return false;
+    seen.add(row.id);
+    return true;
+  });
+
+  return { companies: uniqueRows.map(mapCompany), count: totalCount };
 }
 
 export function useCompanies() {
@@ -161,7 +213,9 @@ export function useCompanies() {
       if (error) throw error;
       if (data) {
         queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
-          prev ? { ...prev, companies: [mapCompany(data as unknown as ExternalRow), ...prev.companies] } : { companies: [mapCompany(data as unknown as ExternalRow)], count: 1 }
+          prev
+            ? { ...prev, companies: [mapCompany(data as unknown as ExternalRow), ...prev.companies], count: prev.count + 1 }
+            : { companies: [mapCompany(data as unknown as ExternalRow)], count: 1 }
         );
       }
       const companyName = (data as Record<string, unknown>)?.nome_crm || 'Empresa';
@@ -205,7 +259,7 @@ export function useCompanies() {
   const deleteCompany = async (id: string) => {
     const previous = queryClient.getQueryData<CompaniesPage>(queryKey);
     queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
-      prev ? { ...prev, companies: prev.companies.filter(c => c.id !== id) } : prev
+      prev ? { ...prev, companies: prev.companies.filter(c => c.id !== id), count: Math.max(0, prev.count - 1) } : prev
     );
     try {
       const { success, error } = await deleteExternalData('companies', id);
