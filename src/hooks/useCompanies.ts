@@ -28,13 +28,39 @@ interface ExternalRow extends Record<string, unknown> {
 
 interface CompaniesPage { companies: Company[]; count: number }
 
+/** Extract city/state from nome_crm patterns like "PAC Xerém - RJ - Duque de Caxias/RJ" */
+function extractLocationFromName(name: string): { city: string | null; state: string | null } {
+  // Pattern: "... - City/UF" at end
+  const slashMatch = name.match(/[-–—]\s*([^-–—/]+)\/([A-Z]{2})\s*$/);
+  if (slashMatch) return { city: slashMatch[1].trim(), state: slashMatch[2] };
+  // Pattern: "... - UF" at end (2-letter state)
+  const ufMatch = name.match(/[-–—]\s*([A-Z]{2})\s*$/);
+  if (ufMatch) return { city: null, state: ufMatch[1] };
+  return { city: null, state: null };
+}
+
 function mapCompany(ext: ExternalRow): Company {
+  const rawName = ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome';
+  
+  // Extract location from name when city/state are missing
+  const extCity = ext.city as string | null;
+  const extState = ext.state as string | null;
+  let city = extCity || null;
+  let state = extState || null;
+  
+  if (!city && !state) {
+    const parsed = extractLocationFromName(rawName);
+    city = parsed.city;
+    state = parsed.state;
+  }
+
   return {
     ...ext,
-    name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
-    industry: ext.ramo_atividade || null,
+    name: rawName,
+    industry: ext.ramo_atividade || ext.nicho_cliente as string || null,
     tags: ext.tags_array || [],
-    // Map additional fields that already exist in the Company type
+    city,
+    state,
     capital_social: ext.capital_social as number | null ?? null,
     grupo_economico: ext.grupo_economico as string | null ?? null,
     nicho_cliente: ext.nicho_cliente as string | null ?? null,
@@ -46,6 +72,9 @@ function mapCompany(ext: ExternalRow): Company {
     is_supplier: ext.is_supplier as boolean | null ?? false,
     porte_rf: ext.porte_rf as string | null ?? null,
     data_fundacao: ext.data_fundacao as string | null ?? null,
+    financial_health: ext.financial_health as string | null ?? null,
+    annual_revenue: ext.annual_revenue as string | null ?? null,
+    employee_count: ext.employee_count as string | null ?? null,
   } as Company;
 }
 

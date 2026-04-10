@@ -80,8 +80,19 @@ interface CompaniesTableViewProps {
 const healthLabel: Record<string, { label: string; className: string }> = {
   excellent: { label: 'Excelente', className: 'text-success' },
   good: { label: 'Boa', className: 'text-success' },
+  growing: { label: 'Crescendo', className: 'text-success' },
+  stable: { label: 'Estável', className: 'text-primary' },
   average: { label: 'Regular', className: 'text-warning' },
+  cutting: { label: 'Retração', className: 'text-destructive' },
   poor: { label: 'Ruim', className: 'text-destructive' },
+};
+
+const porteLabel: Record<string, { label: string; className: string }> = {
+  'GRANDE': { label: 'Grande', className: 'text-primary' },
+  'MEDIO': { label: 'Médio', className: 'text-primary' },
+  'PEQUENO': { label: 'Pequeno', className: 'text-muted-foreground' },
+  'MICRO': { label: 'Micro', className: 'text-muted-foreground' },
+  'MEI': { label: 'MEI', className: 'text-muted-foreground' },
 };
 
 export function CompaniesTableView({
@@ -126,7 +137,8 @@ export function CompaniesTableView({
           {companies.map((company) => {
             const count = contactCountMap.get(company.id) || 0;
             const health = healthLabel[company.financial_health || ''];
-            const location = [company.city, company.state].filter(Boolean).join(', ');
+            const rawLocation = [company.city, company.state].filter(Boolean).join(', ');
+            const location = rawLocation ? toTitleCase(rawLocation) : '';
             const capital = formatCapitalSocial(company.capital_social);
             const cnpjFormatted = formatCnpj(company.cnpj);
             
@@ -225,6 +237,10 @@ export function CompaniesTableView({
                 <TableCell className="hidden lg:table-cell">
                   {health ? (
                     <span className={cn('text-sm font-medium', health.className)}>{health.label}</span>
+                  ) : company.porte_rf && porteLabel[company.porte_rf.toUpperCase()] ? (
+                    <span className={cn('text-xs', porteLabel[company.porte_rf.toUpperCase()].className)}>
+                      {porteLabel[company.porte_rf.toUpperCase()].label}
+                    </span>
                   ) : (
                     <span className="text-sm text-muted-foreground/50">—</span>
                   )}
