@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Users } from 'lucide-react';
+import { MapPin, Users, Banknote, Network, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
-import { toTitleCase } from '@/lib/formatters';
+import { toTitleCase, formatCapitalSocial } from '@/lib/formatters';
 
 interface CompanyListItemProps {
   company: Company;
@@ -26,6 +26,7 @@ export function CompanyListItem({
   onSelect,
 }: CompanyListItemProps) {
   const location = [company.city, company.state].filter(Boolean).join(', ');
+  const capital = formatCapitalSocial(company.capital_social);
 
   return (
     <Link
@@ -42,11 +43,19 @@ export function CompanyListItem({
           onClick={(e) => e.stopPropagation()}
         />
       )}
-      <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center text-sm font-semibold text-muted-foreground shrink-0">
-        {company.logo_url ? (
-          <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
-        ) : (
-          ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
+      <div className="relative w-10 h-10 shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center text-sm font-semibold text-muted-foreground">
+          {company.logo_url ? (
+            <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+          ) : (
+            ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
+          )}
+        </div>
+        {company.situacao_rf && (
+          <span className={cn(
+            'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background',
+            company.situacao_rf.toUpperCase() === 'ATIVA' ? 'bg-success' : 'bg-destructive'
+          )} />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -66,7 +75,7 @@ export function CompanyListItem({
             {company.is_customer ? 'Cliente' : 'Prospect'}
           </Badge>
         </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
           {company.industry && <span>{company.industry}</span>}
           {location && (
             <span className="flex items-center gap-1">
@@ -78,6 +87,18 @@ export function CompanyListItem({
             <Users className="w-3 h-3" />
             {contactCount}
           </span>
+          {capital && (
+            <span className="flex items-center gap-1 tabular-nums">
+              <Banknote className="w-3 h-3" />
+              {capital}
+            </span>
+          )}
+          {company.grupo_economico && (
+            <span className="flex items-center gap-1 max-w-[120px] truncate">
+              <Network className="w-3 h-3 shrink-0" />
+              {company.grupo_economico}
+            </span>
+          )}
         </div>
       </div>
       <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground shrink-0">
