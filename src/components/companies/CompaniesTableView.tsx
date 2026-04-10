@@ -222,7 +222,12 @@ export function CompaniesTableView({
                   </Link>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
-                  {company.industry || company.nicho_cliente || '—'}
+                  <div className="min-w-0">
+                    <span className="line-clamp-1">{company.ramo_atividade || company.nicho_cliente || '—'}</span>
+                    {company.ramo_atividade && company.nicho_cliente && company.nicho_cliente !== company.ramo_atividade && (
+                      <span className="text-[10px] text-muted-foreground/50 line-clamp-1">{company.nicho_cliente}</span>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
                   {location ? (
