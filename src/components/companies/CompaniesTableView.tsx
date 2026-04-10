@@ -181,6 +181,9 @@ export function CompaniesTableView({
                     <span className="text-sm text-muted-foreground/50">—</span>
                   )}
                 </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <ActivityPulse days={lastInteractionMap.get(company.id) ?? null} />
+                </TableCell>
                 <TableCell className="text-xs text-muted-foreground tabular-nums">
                   {formatDistanceToNow(new Date(company.updated_at), { locale: ptBR, addSuffix: true })}
                 </TableCell>
