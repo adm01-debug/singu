@@ -302,7 +302,15 @@ const EmpresaDetalhe = () => {
                   <ContactsTabContent contacts={contacts} />
                 </TabsContent>
 
-                <TabsContent value="stakeholders" className="mt-4">
+                <TabsContent value="data" className="mt-4">
+                  <CompanyDataTab
+                    cnaes={cnaesHook.data}
+                    rfmScores={rfmHook.data}
+                    stakeholders={stakeholdersHook.data}
+                    loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
+                  />
+                </TabsContent>
+
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <StakeholderMap contacts={contacts} interactions={interactions} companyId={id} />
                   </motion.div>
