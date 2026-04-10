@@ -281,6 +281,10 @@ const Empresas = () => {
 
   useKeyboardShortcutsEnhanced();
 
+  // Company grouping
+  const { groups, hasGroups } = useCompanyGroups(filteredAndSortedCompanies);
+  const { toggle: toggleGroup, isExpanded: isGroupExpanded } = useGroupExpansion(groups);
+
   const { celebrate } = useSuccessCelebration();
 
   const handleCreate = async (data: Parameters<typeof createCompany>[0]) => {
