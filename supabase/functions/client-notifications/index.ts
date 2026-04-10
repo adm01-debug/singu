@@ -64,7 +64,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Checking for notification triggers...');
+    console.log('Checking for notification triggers (cron)...');
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -73,112 +73,50 @@ serve(async (req) => {
 
     const alertsSent: AlertData[] = [];
 
-    // 1. Check for birthdays today and in next 7 days — scoped to authenticated user
-    const { data: contacts } = await supabase
+    // Get all distinct user_ids from contacts
+    const { data: allContacts } = await supabase
       .from('contacts')
-      .select('id, first_name, last_name, birthday, relationship_score')
-      .eq('user_id', userId)
+      .select('id, first_name, last_name, birthday, relationship_score, user_id')
       .not('birthday', 'is', null);
 
-    for (const contact of contacts || []) {
-      if (!contact.birthday) continue;
-
-      const birthday = new Date(contact.birthday);
-      const thisYearBday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
-      
-      if (thisYearBday < today) {
-        thisYearBday.setFullYear(today.getFullYear() + 1);
-      }
-
-      const daysUntil = Math.ceil((thisYearBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysUntil === 0) {
-        const alert: AlertData = {
-          type: 'birthday',
-          title: `🎂 Aniversário Hoje!`,
-          body: `${contact.first_name} ${contact.last_name} faz aniversário hoje!`,
-          url: `/contatos/${contact.id}`,
-          contactId: contact.id,
-          userId,
-        };
-        await sendPushToUser(supabase, userId, alert);
-        alertsSent.push(alert);
-      } else if (daysUntil === 7) {
-        const alert: AlertData = {
-          type: 'birthday',
-          title: `🎂 Aniversário em 7 dias`,
-          body: `${contact.first_name} ${contact.last_name} fará aniversário em uma semana`,
-          url: `/contatos/${contact.id}`,
-          contactId: contact.id,
-          userId,
-        };
-        await sendPushToUser(supabase, userId, alert);
-        alertsSent.push(alert);
-      }
+    // Group contacts by user_id
+    const userContactsMap = new Map<string, typeof allContacts>();
+    for (const contact of allContacts || []) {
+      const existing = userContactsMap.get(contact.user_id) || [];
+      existing.push(contact);
+      userContactsMap.set(contact.user_id, existing);
     }
 
-    // 2. Check for upcoming renewals
-    const { data: renewals } = await supabase
-      .from('purchase_history')
-      .select(`
-        id, product_name, renewal_date, contact_id,
-        contacts!inner (first_name, last_name)
-      `)
-      .eq('user_id', userId)
-      .not('renewal_date', 'is', null)
-      .gte('renewal_date', today.toISOString())
-      .lte('renewal_date', sevenDaysFromNow.toISOString());
+    for (const [userId, contacts] of userContactsMap) {
+      // 1. Check for birthdays
+      for (const contact of contacts) {
+        if (!contact.birthday) continue;
 
-    for (const renewal of renewals || []) {
-      const contact = renewal.contacts as unknown as { first_name: string; last_name: string };
-      const renewalDate = new Date(renewal.renewal_date!);
-      const daysUntil = Math.ceil((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const birthday = new Date(contact.birthday);
+        const thisYearBday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
+        
+        if (thisYearBday < today) {
+          thisYearBday.setFullYear(today.getFullYear() + 1);
+        }
 
-      if (daysUntil <= 7) {
-        const alert: AlertData = {
-          type: 'renewal',
-          title: `🔄 Renovação em ${daysUntil} dia(s)`,
-          body: `${renewal.product_name} de ${contact.first_name} ${contact.last_name}`,
-          url: `/contatos/${renewal.contact_id}`,
-          contactId: renewal.contact_id,
-          userId,
-        };
-        await sendPushToUser(supabase, userId, alert);
-        alertsSent.push(alert);
-      }
-    }
+        const daysUntil = Math.ceil((thisYearBday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    // 3. Check for at-risk contacts (no contact in 30+ days, high score)
-    const { data: recentInteractions } = await supabase
-      .from('interactions')
-      .select('contact_id')
-      .eq('user_id', userId)
-      .gte('created_at', thirtyDaysAgo.toISOString());
-
-    const recentContactIds = new Set((recentInteractions || []).map(i => i.contact_id));
-
-    const { data: highValueContacts } = await supabase
-      .from('contacts')
-      .select('id, first_name, last_name, relationship_score')
-      .eq('user_id', userId)
-      .gte('relationship_score', 60);
-
-    for (const contact of highValueContacts || []) {
-      if (!recentContactIds.has(contact.id)) {
-        const { data: recentAlert } = await supabase
-          .from('alerts')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('contact_id', contact.id)
-          .eq('type', 'at_risk')
-          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-          .limit(1);
-
-        if (!recentAlert?.length) {
+        if (daysUntil === 0) {
           const alert: AlertData = {
-            type: 'at_risk',
-            title: `⚠️ Cliente em Risco`,
-            body: `${contact.first_name} ${contact.last_name} está há mais de 30 dias sem contato`,
+            type: 'birthday',
+            title: `🎂 Aniversário Hoje!`,
+            body: `${contact.first_name} ${contact.last_name} faz aniversário hoje!`,
+            url: `/contatos/${contact.id}`,
+            contactId: contact.id,
+            userId,
+          };
+          await sendPushToUser(supabase, userId, alert);
+          alertsSent.push(alert);
+        } else if (daysUntil === 7) {
+          const alert: AlertData = {
+            type: 'birthday',
+            title: `🎂 Aniversário em 7 dias`,
+            body: `${contact.first_name} ${contact.last_name} fará aniversário em uma semana`,
             url: `/contatos/${contact.id}`,
             contactId: contact.id,
             userId,
@@ -187,47 +125,119 @@ serve(async (req) => {
           alertsSent.push(alert);
         }
       }
-    }
 
-    // 4. Check for upcoming life events
-    const { data: lifeEvents } = await supabase
-      .from('life_events')
-      .select(`
-        id, title, event_date, event_type, reminder_days_before, last_reminded_at, contact_id,
-        contacts!inner (first_name, last_name)
-      `)
-      .eq('user_id', userId)
-      .gte('event_date', today.toISOString())
-      .lte('event_date', sevenDaysFromNow.toISOString());
+      // 2. Check for upcoming renewals
+      const { data: renewals } = await supabase
+        .from('purchase_history')
+        .select(`
+          id, product_name, renewal_date, contact_id,
+          contacts!inner (first_name, last_name)
+        `)
+        .eq('user_id', userId)
+        .not('renewal_date', 'is', null)
+        .gte('renewal_date', today.toISOString())
+        .lte('renewal_date', sevenDaysFromNow.toISOString());
 
-    for (const event of lifeEvents || []) {
-      const contact = event.contacts as unknown as { first_name: string; last_name: string };
-      const eventDate = new Date(event.event_date);
-      const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      const reminderDays = event.reminder_days_before || 7;
+      for (const renewal of renewals || []) {
+        const contact = renewal.contacts as unknown as { first_name: string; last_name: string };
+        const renewalDate = new Date(renewal.renewal_date!);
+        const daysUntil = Math.ceil((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-      if (daysUntil <= reminderDays) {
-        if (event.last_reminded_at) {
-          const lastReminded = new Date(event.last_reminded_at);
-          const daysSinceReminder = (today.getTime() - lastReminded.getTime()) / (1000 * 60 * 60 * 24);
-          if (daysSinceReminder < 1) continue;
+        if (daysUntil <= 7) {
+          const alert: AlertData = {
+            type: 'renewal',
+            title: `🔄 Renovação em ${daysUntil} dia(s)`,
+            body: `${renewal.product_name} de ${contact.first_name} ${contact.last_name}`,
+            url: `/contatos/${renewal.contact_id}`,
+            contactId: renewal.contact_id,
+            userId,
+          };
+          await sendPushToUser(supabase, userId, alert);
+          alertsSent.push(alert);
         }
+      }
 
-        const alert: AlertData = {
-          type: 'life_event',
-          title: daysUntil === 0 ? `📅 Evento Hoje!` : `📅 Evento em ${daysUntil} dia(s)`,
-          body: `${event.title} - ${contact.first_name} ${contact.last_name}`,
-          url: `/contatos/${event.contact_id}`,
-          contactId: event.contact_id,
-          userId,
-        };
-        await sendPushToUser(supabase, userId, alert);
-        alertsSent.push(alert);
+      // 3. Check for at-risk contacts (no contact in 30+ days, high score)
+      const { data: recentInteractions } = await supabase
+        .from('interactions')
+        .select('contact_id')
+        .eq('user_id', userId)
+        .gte('created_at', thirtyDaysAgo.toISOString());
 
-        await supabase
-          .from('life_events')
-          .update({ last_reminded_at: now.toISOString() })
-          .eq('id', event.id);
+      const recentContactIds = new Set((recentInteractions || []).map(i => i.contact_id));
+
+      const { data: highValueContacts } = await supabase
+        .from('contacts')
+        .select('id, first_name, last_name, relationship_score')
+        .eq('user_id', userId)
+        .gte('relationship_score', 60);
+
+      for (const contact of highValueContacts || []) {
+        if (!recentContactIds.has(contact.id)) {
+          const { data: recentAlert } = await supabase
+            .from('alerts')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('contact_id', contact.id)
+            .eq('type', 'at_risk')
+            .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+            .limit(1);
+
+          if (!recentAlert?.length) {
+            const alert: AlertData = {
+              type: 'at_risk',
+              title: `⚠️ Cliente em Risco`,
+              body: `${contact.first_name} ${contact.last_name} está há mais de 30 dias sem contato`,
+              url: `/contatos/${contact.id}`,
+              contactId: contact.id,
+              userId,
+            };
+            await sendPushToUser(supabase, userId, alert);
+            alertsSent.push(alert);
+          }
+        }
+      }
+
+      // 4. Check for upcoming life events
+      const { data: lifeEvents } = await supabase
+        .from('life_events')
+        .select(`
+          id, title, event_date, event_type, reminder_days_before, last_reminded_at, contact_id,
+          contacts!inner (first_name, last_name)
+        `)
+        .eq('user_id', userId)
+        .gte('event_date', today.toISOString())
+        .lte('event_date', sevenDaysFromNow.toISOString());
+
+      for (const event of lifeEvents || []) {
+        const contact = event.contacts as unknown as { first_name: string; last_name: string };
+        const eventDate = new Date(event.event_date);
+        const daysUntil = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const reminderDays = event.reminder_days_before || 7;
+
+        if (daysUntil <= reminderDays) {
+          if (event.last_reminded_at) {
+            const lastReminded = new Date(event.last_reminded_at);
+            const daysSinceReminder = (today.getTime() - lastReminded.getTime()) / (1000 * 60 * 60 * 24);
+            if (daysSinceReminder < 1) continue;
+          }
+
+          const alert: AlertData = {
+            type: 'life_event',
+            title: daysUntil === 0 ? `📅 Evento Hoje!` : `📅 Evento em ${daysUntil} dia(s)`,
+            body: `${event.title} - ${contact.first_name} ${contact.last_name}`,
+            url: `/contatos/${event.contact_id}`,
+            contactId: event.contact_id,
+            userId,
+          };
+          await sendPushToUser(supabase, userId, alert);
+          alertsSent.push(alert);
+
+          await supabase
+            .from('life_events')
+            .update({ last_reminded_at: now.toISOString() })
+            .eq('id', event.id);
+        }
       }
     }
 
