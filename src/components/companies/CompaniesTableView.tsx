@@ -85,7 +85,6 @@ const healthLabel: Record<string, { label: string; className: string }> = {
   average: { label: 'Regular', className: 'text-warning' },
   cutting: { label: 'Retração', className: 'text-destructive' },
   poor: { label: 'Ruim', className: 'text-destructive' },
-  unknown: { label: 'Desconhecido', className: 'text-muted-foreground' },
 };
 
 const porteLabel: Record<string, { label: string; className: string }> = {
