@@ -15,7 +15,7 @@ export type CompanyUpdate = TablesUpdate<'companies'>;
 const LOCAL_ONLY = new Set([
   'name', 'industry', 'tags', 'notes', 'phone', 'email', 'address',
   'city', 'state', 'instagram', 'linkedin', 'facebook',
-  'youtube', 'twitter', 'tiktok',
+  'youtube', 'twitter', 'tiktok', 'merge_notes',
 ]);
 
 interface ExternalRow extends Record<string, unknown> {

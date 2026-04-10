@@ -294,8 +294,8 @@ export function CompanyCardWithContext({
   };
 
   const displayName = toTitleCase(company.name);
-  const subtitle = company.industry
-    ? company.industry
+  const subtitle = company.ramo_atividade || company.nicho_cliente || company.industry
+    ? (company.ramo_atividade || company.nicho_cliente || company.industry)
     : (company.city || company.state)
     ? [company.city, company.state].filter(Boolean).join(', ')
     : null;
