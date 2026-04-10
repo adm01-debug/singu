@@ -1,8 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  handleCorsAndMethod,
-  withAuth,
+  corsHeaders,
+  withAuthOrServiceRole,
+  isServiceRoleCaller,
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
@@ -18,25 +19,33 @@ interface ContactMetrics {
 }
 
 serve(async (req) => {
-  const guard = handleCorsAndMethod(req);
-  if (guard) return guard;
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-  const authResult = await withAuth(req);
+  const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
-  const userId = authResult;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let requestBody: { contactId?: string } = {};
+    let requestBody: { contactId?: string; userId?: string } = {};
     try {
       requestBody = await req.json();
     } catch {
       // no body
     }
     const { contactId } = requestBody;
+
+    let userId: string;
+    if (isServiceRoleCaller(authResult)) {
+      if (!requestBody.userId) return jsonError("userId required for service-role calls", 400);
+      userId = requestBody.userId;
+    } else {
+      userId = authResult;
+    }
 
     console.log(`Running RFM analysis for user: ${userId}`);
 

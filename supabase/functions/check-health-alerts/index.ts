@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
-  handleCorsAndMethod,
-  withAuth,
+  corsHeaders,
+  requireCronSecret,
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
@@ -116,12 +116,13 @@ function calculateHealthScore(
 }
 
 serve(async (req) => {
-  const guard = handleCorsAndMethod(req);
-  if (guard) return guard;
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-  const authResult = await withAuth(req);
-  if (authResult instanceof Response) return authResult;
-  const userId = authResult;
+  // 🔒 Cron secret validation
+  const cronError = requireCronSecret(req);
+  if (cronError) return cronError;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -130,11 +131,10 @@ serve(async (req) => {
 
     console.log("Starting health alerts check...");
 
-    // Get settings for authenticated user only
+    // Get all users' health alert settings (cron iterates all)
     const { data: allSettings, error: settingsError } = await supabase
       .from("health_alert_settings")
-      .select("*")
-      .eq("user_id", userId);
+      .select("*");
 
     if (settingsError) {
       console.error("Error fetching settings:", settingsError);

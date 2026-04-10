@@ -2,8 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   corsHeaders,
-  handleCorsAndMethod,
-  withAuth,
+  requireCronSecret,
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
@@ -52,12 +51,13 @@ async function sendPushToUser(supabase: ReturnType<typeof createClient>, userId:
 }
 
 serve(async (req) => {
-  const guard = handleCorsAndMethod(req);
-  if (guard) return guard;
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
 
-  const authResult = await withAuth(req);
-  if (authResult instanceof Response) return authResult;
-  const userId = authResult;
+  // 🔒 Cron secret validation
+  const cronError = requireCronSecret(req);
+  if (cronError) return cronError;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
