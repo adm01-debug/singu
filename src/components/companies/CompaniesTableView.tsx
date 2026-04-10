@@ -70,6 +70,7 @@ export function CompaniesTableView({
             <TableHead className="hidden xl:table-cell">CAPITAL</TableHead>
             <TableHead className="hidden xl:table-cell">GRUPO</TableHead>
             <TableHead className="hidden lg:table-cell">SAÚDE</TableHead>
+            <TableHead className="hidden md:table-cell text-center">PULSO</TableHead>
             <TableHead><SortButton field="updated_at">ATUALIZAÇÃO</SortButton></TableHead>
           </TableRow>
         </TableHeader>
