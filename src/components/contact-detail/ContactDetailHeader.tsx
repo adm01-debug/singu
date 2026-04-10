@@ -241,6 +241,22 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
             </div>
           )}
 
+          {/* Addresses from external DB */}
+          {addresses.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {addresses.map((addr, i) => {
+                const parts = [addr.logradouro, addr.numero, addr.bairro, addr.cidade, addr.estado].filter(Boolean).join(', ');
+                return parts ? (
+                  <span key={i} className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
+                    <MapPin className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate max-w-[250px]">{parts}</span>
+                    {addr.cep && <span className="text-muted-foreground/60">CEP {addr.cep}</span>}
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+
           {/* Tags */}
           {contact.tags && contact.tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
