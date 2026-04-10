@@ -65,3 +65,72 @@ export async function withAuth(req: Request): Promise<string | Response> {
     return jsonError("Unauthorized", 401);
   }
 }
+
+// ─── Sentinel value for service-role callers ───
+const SERVICE_ROLE_SENTINEL = "__SERVICE_ROLE__" as const;
+
+/**
+ * isServiceRoleCaller — checks if the auth result came from a service-role key.
+ */
+export function isServiceRoleCaller(authResult: string): boolean {
+  return authResult === SERVICE_ROLE_SENTINEL;
+}
+
+/**
+ * withAuthOrServiceRole — Accepts either a user JWT or the service_role key.
+ * If the Authorization header carries the service_role key, returns the sentinel.
+ * Otherwise delegates to withAuth (user JWT).
+ */
+export async function withAuthOrServiceRole(req: Request): Promise<string | Response> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return jsonError("Unauthorized", 401);
+  }
+  const token = authHeader.replace("Bearer ", "");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceRoleKey && token === serviceRoleKey) {
+    return SERVICE_ROLE_SENTINEL;
+  }
+  return withAuth(req);
+}
+
+/**
+ * requireCronSecret — Validates `x-cron-secret` header against CRON_SECRET env.
+ * Returns a 401 Response on failure, or null to continue.
+ */
+export function requireCronSecret(req: Request): Response | null {
+  const secret = Deno.env.get("CRON_SECRET");
+  if (!secret) {
+    console.error("CRON_SECRET not configured");
+    return jsonError("Server misconfigured", 500);
+  }
+  const provided = req.headers.get("x-cron-secret");
+  if (provided !== secret) {
+    return jsonError("Unauthorized", 401);
+  }
+  return null;
+}
+
+/**
+ * requireWebhookSecret — Validates a custom header against an env secret.
+ * @param req        The incoming request
+ * @param envName    Name of the env var holding the secret (e.g. "EVOLUTION_API_SECRET")
+ * @param headerName Name of the header to check (e.g. "x-evolution-secret")
+ * Returns a 401 Response on failure, or null to continue.
+ */
+export function requireWebhookSecret(
+  req: Request,
+  envName: string,
+  headerName: string,
+): Response | null {
+  const secret = Deno.env.get(envName);
+  if (!secret) {
+    console.error(`${envName} not configured`);
+    return jsonError("Server misconfigured", 500);
+  }
+  const provided = req.headers.get(headerName);
+  if (provided !== secret) {
+    return jsonError("Unauthorized", 401);
+  }
+  return null;
+}

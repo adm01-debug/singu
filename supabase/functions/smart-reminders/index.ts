@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+import { withAuthOrServiceRole, isServiceRoleCaller, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 interface SmartReminder {
   id: string;
@@ -19,18 +19,28 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // ── Auth guard: use JWT user_id ──
-  const authResult = await withAuth(req);
+  // 🔒 Dual auth: user JWT or service-role
+  const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
-  const userId = authResult;
 
   try {
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* empty body is OK */ }
+
+    let userId: string;
+    if (isServiceRoleCaller(authResult)) {
+      if (!body.userId || typeof body.userId !== 'string') return jsonError('userId required for service-role calls', 400);
+      userId = body.userId;
+    } else {
+      userId = authResult;
+    }
+
+    const action = body.action as string | undefined;
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const { action } = await req.json();
 
     const reminders: SmartReminder[] = [];
     const today = new Date();

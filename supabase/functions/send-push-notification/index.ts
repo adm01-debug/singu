@@ -2,7 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   handleCorsAndMethod,
-  withAuth,
+  withAuthOrServiceRole,
+  isServiceRoleCaller,
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
@@ -67,9 +68,8 @@ serve(async (req) => {
   const guard = handleCorsAndMethod(req);
   if (guard) return guard;
 
-  const authResult = await withAuth(req);
+  const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
-  const authenticatedUserId = authResult;
 
   try {
     const supabaseClient = createClient(
@@ -88,10 +88,17 @@ serve(async (req) => {
       return jsonError('Title and body are required', 400);
     }
 
-    // Only allow sending to self — prevent cross-user notification abuse
-    const targetUserId = payload.userId || authenticatedUserId;
-    if (targetUserId !== authenticatedUserId) {
-      return jsonError('Cannot send notifications to other users', 403);
+    let targetUserId: string;
+    if (isServiceRoleCaller(authResult)) {
+      // Service-role callers (crons) must specify userId
+      if (!payload.userId) return jsonError('userId required for service-role calls', 400);
+      targetUserId = payload.userId;
+    } else {
+      // User JWT — only allow sending to self
+      targetUserId = authResult;
+      if (payload.userId && payload.userId !== authResult) {
+        return jsonError('Cannot send notifications to other users', 403);
+      }
     }
 
     const { data: subscriptions, error } = await supabaseClient
