@@ -411,7 +411,7 @@ const Empresas = () => {
 
         {/* Advanced Filters */}
         <AdvancedFilters
-          filters={filterConfigs}
+          filters={dynamicFilters}
           sortOptions={sortOptions}
           activeFilters={activeFilters}
           onFiltersChange={setActiveFilters}
