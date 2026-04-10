@@ -54,6 +54,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useExternalLookup } from '@/hooks/useExternalLookup';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
+import { useCompanyGroups, GroupHeader, useGroupExpansion } from '@/components/companies/CompanyGrouping';
 
 /** Build dynamic filter configs from external DB lookups */
 function useDynamicFilters() {
