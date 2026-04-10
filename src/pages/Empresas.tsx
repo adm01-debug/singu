@@ -152,6 +152,7 @@ const Empresas = () => {
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
   const { contacts } = useContacts();
   const { interactions } = useInteractions();
+  const dynamicFilters = useDynamicFilters();
 
   // Pre-compute contact counts and last interaction per company
   const companyMetrics = useMemo(() => {
