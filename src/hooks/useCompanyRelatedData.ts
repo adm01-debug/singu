@@ -144,6 +144,44 @@ function useCompanyRelated<T extends { id?: string; company_id: string }>(
   return { data: query.data || [], isLoading: query.isLoading, upsert, remove, refetch: query.refetch };
 }
 
+// ─── Additional Types ──────────────────────────────────────────
+
+export interface CompanyCnae {
+  id?: string;
+  company_id: string;
+  codigo: string;
+  descricao?: string;
+  is_principal?: boolean;
+  ordem?: number;
+}
+
+export interface CompanyRfmScore {
+  id?: string;
+  company_id: string;
+  recency_score?: number;
+  frequency_score?: number;
+  monetary_score?: number;
+  rfm_segment?: string;
+  total_score?: number;
+  last_purchase_date?: string;
+  total_purchases?: number;
+  total_revenue?: number;
+  calculated_at?: string;
+}
+
+export interface CompanyStakeholder {
+  id?: string;
+  company_id: string;
+  contact_id?: string;
+  nome?: string;
+  cargo?: string;
+  departamento?: string;
+  nivel_influencia?: number;
+  nivel_decisao?: number;
+  papel?: string;
+  observacoes?: string;
+}
+
 // ─── Exported hooks ────────────────────────────────────────────
 
 export function useCompanyPhones(companyId?: string) {
@@ -160,4 +198,16 @@ export function useCompanyAddresses(companyId?: string) {
 
 export function useCompanySocialMedia(companyId?: string) {
   return useCompanyRelated<CompanySocialMedia>('company_social_media', companyId, 'rede social');
+}
+
+export function useCompanyCnaes(companyId?: string) {
+  return useCompanyRelated<CompanyCnae>('company_cnaes', companyId, 'CNAE');
+}
+
+export function useCompanyRfmScores(companyId?: string) {
+  return useCompanyRelated<CompanyRfmScore>('company_rfm_scores', companyId, 'RFM');
+}
+
+export function useCompanyStakeholders(companyId?: string) {
+  return useCompanyRelated<CompanyStakeholder>('company_stakeholder_map', companyId, 'stakeholder');
 }

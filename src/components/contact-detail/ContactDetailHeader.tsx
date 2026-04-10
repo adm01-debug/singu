@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
-  Building2, Briefcase, Calendar, Edit2, ExternalLink, Copy, Check
+  Building2, Briefcase, Calendar, Edit2, ExternalLink, Copy, Check,
+  MapPin, Globe
 } from 'lucide-react';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,8 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [extraPhones, setExtraPhones] = useState<string[]>([]);
   const [extraEmails, setExtraEmails] = useState<string[]>([]);
+  const [addresses, setAddresses] = useState<{ logradouro?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; cep?: string }[]>([]);
+  const [socialMedia, setSocialMedia] = useState<{ plataforma: string; url?: string; handle?: string }[]>([]);
   const fullName = formatContactName(contact.first_name, contact.last_name);
   const stage = STAGE_CONFIG[contact.relationship_stage || 'unknown'] || STAGE_CONFIG.unknown;
   const behavior = contact.behavior as Record<string, unknown> | null;
@@ -65,12 +68,16 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
   useEffect(() => {
     const fetchNormalized = async () => {
       const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
-      const [phonesRes, emailsRes] = await Promise.all([
+      const [phonesRes, emailsRes, addrRes, socialRes] = await Promise.all([
         queryExternalData<{ phone: string; label?: string }>({ table: 'contact_phones', filters: contactFilter }),
         queryExternalData<{ email: string; label?: string }>({ table: 'contact_emails', filters: contactFilter }),
+        queryExternalData<{ logradouro?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; cep?: string }>({ table: 'contact_addresses', filters: contactFilter }),
+        queryExternalData<{ plataforma: string; url?: string; handle?: string }>({ table: 'contact_social_media', filters: contactFilter }),
       ]);
       if (phonesRes.data) setExtraPhones(phonesRes.data.map(p => p.phone).filter(Boolean));
       if (emailsRes.data) setExtraEmails(emailsRes.data.map(e => e.email).filter(Boolean));
+      if (addrRes.data) setAddresses(addrRes.data);
+      if (socialRes.data) setSocialMedia(socialRes.data);
     };
     fetchNormalized();
   }, [contact.id]);
@@ -103,7 +110,21 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
     .filter(e => !existingEmails.has(e.toLowerCase()))
     .map((e, i) => ({ icon: Mail, value: e, label: `Email ${i + 2}`, href: `mailto:${e}` }));
 
-  const contactChannels = [...baseChannels, ...extraPhoneChannels, ...extraEmailChannels];
+  // Add social media from external table
+  const platformIconMap: Record<string, typeof Globe> = {
+    linkedin: Linkedin, instagram: Instagram, twitter: Twitter, x: Twitter,
+  };
+  const existingSocials = new Set([contact.linkedin, contact.instagram, contact.twitter].filter(Boolean));
+  const extraSocialChannels = socialMedia
+    .filter(s => s.url && !existingSocials.has(s.url))
+    .map(s => ({
+      icon: platformIconMap[s.plataforma] || Globe,
+      value: s.handle || s.url || s.plataforma,
+      label: s.plataforma.charAt(0).toUpperCase() + s.plataforma.slice(1),
+      href: s.url || '#',
+    }));
+
+  const contactChannels = [...baseChannels, ...extraPhoneChannels, ...extraEmailChannels, ...extraSocialChannels];
 
   return (
     <motion.div
@@ -217,6 +238,22 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                   </Tooltip>
                 ))}
               </TooltipProvider>
+            </div>
+          )}
+
+          {/* Addresses from external DB */}
+          {addresses.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {addresses.map((addr, i) => {
+                const parts = [addr.logradouro, addr.numero, addr.bairro, addr.cidade, addr.estado].filter(Boolean).join(', ');
+                return parts ? (
+                  <span key={i} className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
+                    <MapPin className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate max-w-[250px]">{parts}</span>
+                    {addr.cep && <span className="text-muted-foreground/60">CEP {addr.cep}</span>}
+                  </span>
+                ) : null;
+              })}
             </div>
           )}
 

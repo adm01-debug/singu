@@ -5,11 +5,11 @@ import { queryExternalData, updateExternalData } from '@/lib/externalData';
 import { toTitleCase } from '@/lib/formatters';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
-import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
+import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia, useCompanyCnaes, useCompanyRfmScores, useCompanyStakeholders } from '@/hooks/useCompanyRelatedData';
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
-  Network, BarChart3, Sparkles
+  Network, BarChart3, Sparkles, Database
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 import { CompanyProfileCard } from '@/components/company-detail/CompanyProfileCard';
 import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsTab';
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
+import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
@@ -65,6 +66,9 @@ const EmpresaDetalhe = () => {
   const emailsHook = useCompanyEmails(id);
   const addressesHook = useCompanyAddresses(id);
   const socialMediaHook = useCompanySocialMedia(id);
+  const cnaesHook = useCompanyCnaes(id);
+  const rfmHook = useCompanyRfmScores(id);
+  const stakeholdersHook = useCompanyStakeholders(id);
 
   const fetchCompanyData = useCallback(async () => {
     setLoading(true);
@@ -265,11 +269,15 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Contatos ({contacts.length})</span>
                     <span className="sm:hidden">{contacts.length}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="data" className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    <span className="hidden sm:inline">Dados</span>
                   </TabsTrigger>
                   <TabsTrigger value="stakeholders" className="flex items-center gap-2">
                     <Network className="w-4 h-4" />
@@ -292,6 +300,15 @@ const EmpresaDetalhe = () => {
 
                 <TabsContent value="contacts" className="mt-4">
                   <ContactsTabContent contacts={contacts} />
+                </TabsContent>
+
+                <TabsContent value="data" className="mt-4">
+                  <CompanyDataTab
+                    cnaes={cnaesHook.data}
+                    rfmScores={rfmHook.data}
+                    stakeholders={stakeholdersHook.data}
+                    loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
+                  />
                 </TabsContent>
 
                 <TabsContent value="stakeholders" className="mt-4">
