@@ -20,10 +20,9 @@ export function CompaniesInlineMap({ companies, className }: CompaniesInlineMapP
     [companies]
   );
 
-  if (geoCompanies.length === 0) return null;
-
   // Calculate center from average of all points
   const center = useMemo(() => {
+    if (geoCompanies.length === 0) return { lat: -15.77, lng: -47.92 };
     const sumLat = geoCompanies.reduce((s, c) => s + (c.lat || 0), 0);
     const sumLng = geoCompanies.reduce((s, c) => s + (c.lng || 0), 0);
     return {
@@ -31,6 +30,8 @@ export function CompaniesInlineMap({ companies, className }: CompaniesInlineMapP
       lng: sumLng / geoCompanies.length,
     };
   }, [geoCompanies]);
+
+  if (geoCompanies.length === 0) return null;
 
   if (!isVisible) {
     return (
