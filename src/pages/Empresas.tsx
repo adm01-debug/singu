@@ -239,6 +239,15 @@ const Empresas = () => {
     let result = companies.filter(company => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
+        
+        // Special handling for classification filter (carrier/supplier)
+        if (key === 'is_carrier') {
+          const matchCarrier = values.includes('carrier') && company.is_carrier;
+          const matchSupplier = values.includes('supplier') && company.is_supplier;
+          if (!matchCarrier && !matchSupplier) return false;
+          continue;
+        }
+        
         const companyValue = company[key as keyof Company];
         const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
         if (!values.includes(strValue)) {
