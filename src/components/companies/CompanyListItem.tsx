@@ -59,7 +59,7 @@ export function CompanyListItem({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
             {toTitleCase(company.name)}
           </span>
@@ -74,9 +74,31 @@ export function CompanyListItem({
           >
             {company.is_customer ? 'Cliente' : 'Prospect'}
           </Badge>
+          {company.is_matriz !== null && company.is_matriz !== undefined && (
+            <Badge variant="outline" className="text-[9px] font-medium border-accent/40 text-accent-foreground bg-accent/10">
+              {company.is_matriz ? 'Matriz' : 'Filial'}
+            </Badge>
+          )}
+          {company.tipo_cooperativa && (
+            <Badge variant="outline" className="text-[9px] font-medium border-warning/30 text-warning bg-warning/10">
+              {company.tipo_cooperativa}
+            </Badge>
+          )}
+          {company.is_carrier && (
+            <Badge variant="outline" className="text-[9px] font-medium border-sky-500/30 text-sky-400 bg-sky-500/10">
+              Transp.
+            </Badge>
+          )}
+          {company.is_supplier && (
+            <Badge variant="outline" className="text-[9px] font-medium border-orange-500/30 text-orange-400 bg-orange-500/10">
+              Fornec.
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-          {company.industry && <span>{company.industry}</span>}
+          {(company.ramo_atividade || company.nicho_cliente || company.industry) && (
+            <span>{company.ramo_atividade || company.nicho_cliente || company.industry}</span>
+          )}
           {location && (
             <span className="flex items-center gap-1">
               <MapPin className="w-3 h-3" />

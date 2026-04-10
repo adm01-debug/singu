@@ -294,8 +294,8 @@ export function CompanyCardWithContext({
   };
 
   const displayName = toTitleCase(company.name);
-  const subtitle = company.industry
-    ? company.industry
+  const subtitle = company.ramo_atividade || company.nicho_cliente || company.industry
+    ? (company.ramo_atividade || company.nicho_cliente || company.industry)
     : (company.city || company.state)
     ? [company.city, company.state].filter(Boolean).join(', ')
     : null;
@@ -455,17 +455,24 @@ export function CompanyCardWithContext({
                         )}
                       </div>
 
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'text-[10px] font-semibold shrink-0',
-                          company.is_customer
-                            ? 'border-success/40 text-success bg-success/10'
-                            : 'border-primary/40 text-primary bg-primary/10'
+                      <div className="flex items-center gap-1 flex-wrap shrink-0">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            'text-[10px] font-semibold',
+                            company.is_customer
+                              ? 'border-success/40 text-success bg-success/10'
+                              : 'border-primary/40 text-primary bg-primary/10'
+                          )}
+                        >
+                          {company.is_customer ? 'Cliente' : 'Prospect'}
+                        </Badge>
+                        {company.is_matriz !== null && company.is_matriz !== undefined && (
+                          <Badge variant="outline" className="text-[9px] font-medium border-accent/40 text-accent-foreground bg-accent/10">
+                            {company.is_matriz ? 'Matriz' : 'Filial'}
+                          </Badge>
                         )}
-                      >
-                        {company.is_customer ? 'Cliente' : 'Prospect'}
-                      </Badge>
+                      </div>
                     </div>
 
                     {/* Intelligence Strip */}
