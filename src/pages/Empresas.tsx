@@ -18,7 +18,9 @@ import {
   GraduationCap,
   Plus,
   CheckSquare,
-  X
+  X,
+  Truck,
+  Package,
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { CompaniesStatsBar } from '@/components/companies/CompaniesStatsBar';
@@ -50,61 +52,92 @@ import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useContacts } from '@/hooks/useContacts';
 import { useInteractions } from '@/hooks/useInteractions';
+import { useExternalLookup } from '@/hooks/useExternalLookup';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 
-const filterConfigs: FilterConfig[] = [
-  {
-    key: 'is_customer',
-    label: 'Tipo',
-    multiple: false,
-    options: [
-      { value: 'true', label: 'Clientes' },
-      { value: 'false', label: 'Prospects' },
-    ],
-  },
-  {
-    key: 'industry',
-    label: 'Segmento',
-    multiple: true,
-    options: [
-      { value: 'Tecnologia', label: 'Tecnologia', icon: Cpu },
-      { value: 'Saúde', label: 'Saúde', icon: HeartPulse },
-      { value: 'Educação', label: 'Educação', icon: GraduationCap },
-      { value: 'Varejo', label: 'Varejo', icon: ShoppingCart },
-      { value: 'Financeiro', label: 'Financeiro', icon: Landmark },
-      { value: 'Indústria', label: 'Indústria', icon: Factory },
-      { value: 'Serviços', label: 'Serviços', icon: Briefcase },
-    ],
-  },
-  {
-    key: 'financial_health',
-    label: 'Saúde Financeira',
-    multiple: false,
-    options: [
-      { value: 'excellent', label: 'Excelente', icon: TrendingUp },
-      { value: 'good', label: 'Boa', icon: TrendingUp },
-      { value: 'average', label: 'Regular', icon: Minus },
-      { value: 'poor', label: 'Ruim', icon: TrendingDown },
-      { value: 'unknown', label: 'Desconhecida' },
-    ],
-  },
-  {
-    key: 'state',
-    label: 'Estado',
-    multiple: true,
-    options: [
-      { value: 'SP', label: 'São Paulo' },
-      { value: 'RJ', label: 'Rio de Janeiro' },
-      { value: 'MG', label: 'Minas Gerais' },
-      { value: 'RS', label: 'Rio Grande do Sul' },
-      { value: 'PR', label: 'Paraná' },
-      { value: 'SC', label: 'Santa Catarina' },
-      { value: 'BA', label: 'Bahia' },
-      { value: 'DF', label: 'Distrito Federal' },
-    ],
-  },
-];
+/** Build dynamic filter configs from external DB lookups */
+function useDynamicFilters() {
+  const { data: ramoValues } = useExternalLookup('companies', 'ramo_atividade');
+  const { data: grupoValues } = useExternalLookup('companies', 'grupo_economico');
+  const { data: nichoValues } = useExternalLookup('companies', 'nicho_cliente');
 
+  return useMemo(() => {
+    const filters: FilterConfig[] = [
+      {
+        key: 'is_customer',
+        label: 'Tipo',
+        multiple: false,
+        options: [
+          { value: 'true', label: 'Clientes' },
+          { value: 'false', label: 'Prospects' },
+        ],
+      },
+      {
+        key: 'industry',
+        label: 'Segmento',
+        multiple: true,
+        options: (ramoValues && ramoValues.length > 0)
+          ? ramoValues.slice(0, 20).map(v => ({ value: v, label: v }))
+          : [
+              { value: 'Tecnologia', label: 'Tecnologia', icon: Cpu },
+              { value: 'Saúde', label: 'Saúde', icon: HeartPulse },
+              { value: 'Educação', label: 'Educação', icon: GraduationCap },
+              { value: 'Varejo', label: 'Varejo', icon: ShoppingCart },
+              { value: 'Financeiro', label: 'Financeiro', icon: Landmark },
+              { value: 'Indústria', label: 'Indústria', icon: Factory },
+              { value: 'Serviços', label: 'Serviços', icon: Briefcase },
+            ],
+      },
+    ];
+
+    // Grupo Econômico filter (if data available)
+    if (grupoValues && grupoValues.length > 0) {
+      filters.push({
+        key: 'grupo_economico',
+        label: 'Grupo Econômico',
+        multiple: true,
+        options: grupoValues.slice(0, 15).map(v => ({ value: v, label: v })),
+      });
+    }
+
+    // Nicho filter (if data available)
+    if (nichoValues && nichoValues.length > 0) {
+      filters.push({
+        key: 'nicho_cliente',
+        label: 'Nicho',
+        multiple: true,
+        options: nichoValues.slice(0, 15).map(v => ({ value: v, label: v })),
+      });
+    }
+
+    // Classification filters
+    filters.push(
+      {
+        key: 'is_carrier',
+        label: 'Classificação',
+        multiple: true,
+        options: [
+          { value: 'carrier', label: 'Transportadora', icon: Truck },
+          { value: 'supplier', label: 'Fornecedor', icon: Package },
+        ],
+      },
+      {
+        key: 'financial_health',
+        label: 'Saúde Financeira',
+        multiple: false,
+        options: [
+          { value: 'excellent', label: 'Excelente', icon: TrendingUp },
+          { value: 'good', label: 'Boa', icon: TrendingUp },
+          { value: 'average', label: 'Regular', icon: Minus },
+          { value: 'poor', label: 'Ruim', icon: TrendingDown },
+          { value: 'unknown', label: 'Desconhecida' },
+        ],
+      },
+    );
+
+    return filters;
+  }, [ramoValues, grupoValues, nichoValues]);
+}
 const sortOptions: SortOption[] = [
   { value: 'name', label: 'Nome' },
   { value: 'created_at', label: 'Data de Criação' },
@@ -119,6 +152,7 @@ const Empresas = () => {
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
   const { contacts } = useContacts();
   const { interactions } = useInteractions();
+  const dynamicFilters = useDynamicFilters();
 
   // Pre-compute contact counts and last interaction per company
   const companyMetrics = useMemo(() => {
@@ -205,6 +239,15 @@ const Empresas = () => {
     let result = companies.filter(company => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
+        
+        // Special handling for classification filter (carrier/supplier)
+        if (key === 'is_carrier') {
+          const matchCarrier = values.includes('carrier') && company.is_carrier;
+          const matchSupplier = values.includes('supplier') && company.is_supplier;
+          if (!matchCarrier && !matchSupplier) return false;
+          continue;
+        }
+        
         const companyValue = company[key as keyof Company];
         const strValue = typeof companyValue === 'boolean' ? String(companyValue) : (companyValue ? String(companyValue) : 'false');
         if (!values.includes(strValue)) {
@@ -377,7 +420,7 @@ const Empresas = () => {
 
         {/* Advanced Filters */}
         <AdvancedFilters
-          filters={filterConfigs}
+          filters={dynamicFilters}
           sortOptions={sortOptions}
           activeFilters={activeFilters}
           onFiltersChange={setActiveFilters}
