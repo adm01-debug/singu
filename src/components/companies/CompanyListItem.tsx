@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Users, Banknote, Network, Globe } from 'lucide-react';
+import { MapPin, Users, Banknote, Network } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDistanceToNow } from 'date-fns';

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowUpDown, Banknote, Network, Globe } from 'lucide-react';
+import { MapPin, Users, ArrowUpDown, Banknote, Network } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
