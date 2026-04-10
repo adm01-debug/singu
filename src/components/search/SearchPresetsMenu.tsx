@@ -17,6 +17,9 @@ interface SearchPresetsMenuProps {
   currentSortOrder: 'asc' | 'desc';
   currentSearchTerm?: string;
   onApplyPreset: (preset: SearchPreset) => void;
+  buttonLabel?: string;
+  title?: string;
+  description?: string;
 }
 
 export function SearchPresetsMenu({
@@ -26,6 +29,9 @@ export function SearchPresetsMenu({
   currentSortOrder,
   currentSearchTerm,
   onApplyPreset,
+  buttonLabel = 'Presets',
+  title = 'Presets de Busca',
+  description = 'Salve e reutilize combinações de filtros',
 }: SearchPresetsMenuProps) {
   const { presets, savePreset, deletePreset } = useSearchPresets(context);
   const [isNaming, setIsNaming] = useState(false);
@@ -58,7 +64,7 @@ export function SearchPresetsMenu({
           aria-label="Presets de busca salvos"
         >
           <Bookmark className="w-4 h-4" />
-          <span className="hidden sm:inline">Presets</span>
+          <span className="hidden sm:inline">{buttonLabel}</span>
           {presets.length > 0 && (
             <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5">
               {presets.length}
@@ -68,9 +74,9 @@ export function SearchPresetsMenu({
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="end">
         <div className="p-3 border-b border-border">
-          <h4 className="font-medium text-sm text-foreground">Presets de Busca</h4>
+          <h4 className="font-medium text-sm text-foreground">{title}</h4>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Salve e reutilize combinações de filtros
+            {description}
           </p>
         </div>
 
