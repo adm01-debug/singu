@@ -23,23 +23,24 @@ serve(async (req) => {
   const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
 
-  let userId: string;
-  if (isServiceRoleCaller(authResult)) {
-    let body: Record<string, unknown> = {};
-    try { body = await req.json(); } catch { /* empty */ }
-    if (!body.userId || typeof body.userId !== 'string') return jsonError('userId required for service-role calls', 400);
-    userId = body.userId;
-  } else {
-    userId = authResult;
-  }
-
   try {
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* empty body is OK */ }
+
+    let userId: string;
+    if (isServiceRoleCaller(authResult)) {
+      if (!body.userId || typeof body.userId !== 'string') return jsonError('userId required for service-role calls', 400);
+      userId = body.userId;
+    } else {
+      userId = authResult;
+    }
+
+    const action = body.action as string | undefined;
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-
-    const { action } = await req.json();
 
     const reminders: SmartReminder[] = [];
     const today = new Date();
