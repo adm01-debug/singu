@@ -5,11 +5,11 @@ import { queryExternalData, updateExternalData } from '@/lib/externalData';
 import { toTitleCase } from '@/lib/formatters';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
-import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia } from '@/hooks/useCompanyRelatedData';
+import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia, useCompanyCnaes, useCompanyRfmScores, useCompanyStakeholders } from '@/hooks/useCompanyRelatedData';
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
-  Network, BarChart3, Sparkles
+  Network, BarChart3, Sparkles, Database
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 import { CompanyProfileCard } from '@/components/company-detail/CompanyProfileCard';
 import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsTab';
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
+import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
@@ -65,6 +66,9 @@ const EmpresaDetalhe = () => {
   const emailsHook = useCompanyEmails(id);
   const addressesHook = useCompanyAddresses(id);
   const socialMediaHook = useCompanySocialMedia(id);
+  const cnaesHook = useCompanyCnaes(id);
+  const rfmHook = useCompanyRfmScores(id);
+  const stakeholdersHook = useCompanyStakeholders(id);
 
   const fetchCompanyData = useCallback(async () => {
     setLoading(true);
