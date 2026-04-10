@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
 });
 
 // Helper: Find contact by phone number — local DB → external DB → create
-async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
+async function findContactByPhone(supabase: any, phoneNumber: string, instanceName: string): Promise<{
   contactId: string | null;
   userId: string | null;
   companyId: string | null;
@@ -136,7 +136,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
 
         return {
           contactId: extContact.id,
-          userId: defaultUserId,
+          userId: ownerUserId,
           companyId: extContact.company_id,
           source: "external",
         };
@@ -146,21 +146,30 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
     console.log("External DB credentials not configured, skipping external search");
   }
 
-  // 3. Create new local contact
-  console.log(`Contact not found for phone ${cleanPhone}, creating new local contact`);
+  // 3. Create new local contact — but ONLY if instance is mapped to a user
+  // (audit 2026-04-09 round 4: was assigning ALL new contacts to profiles[0],
+  // breaking multi-tenancy and enabling spam pollution when function was open)
+  console.log(`Contact not found for ${cleanPhone}, looking up instance owner`);
 
-  const { data: profiles } = await supabase.from("profiles").select("id").limit(1);
-  const defaultUserId = profiles?.[0]?.id || null;
+  const { data: instanceRow } = await supabase
+    .from("whatsapp_instances")
+    .select("user_id")
+    .eq("instance_name", instanceName)
+    .maybeSingle();
+  const ownerUserId = instanceRow?.user_id || null;
 
-  if (!defaultUserId) {
-    console.error("No user found to create contact");
+  if (!ownerUserId) {
+    console.warn(
+      `No user_id mapped for instance "${instanceName}". ` +
+      `Refusing to create orphan contact. Map whatsapp_instances.user_id first.`
+    );
     return { contactId: null, userId: null, companyId: null, source: null };
   }
 
   const { data: newContact, error: createError } = await supabase
     .from("contacts")
     .insert({
-      user_id: defaultUserId,
+      user_id: ownerUserId,
       first_name: "WhatsApp",
       last_name: cleanPhone,
       whatsapp: cleanPhone,
@@ -174,13 +183,13 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
 
   if (createError) {
     console.error("Error creating contact:", createError.message);
-    return { contactId: null, userId: defaultUserId, companyId: null, source: null };
+    return { contactId: null, userId: ownerUserId, companyId: null, source: null };
   }
 
   console.log(`Created new local contact: ${newContact.id}`);
   return {
     contactId: newContact.id,
-    userId: defaultUserId,
+    userId: ownerUserId,
     companyId: null,
     source: "created",
   };
@@ -240,7 +249,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
   else if (data.status === "ERROR") status = "error";
   else if (data.status === "PENDING") status = "pending";
 
-  const { contactId, userId, companyId, source } = await findContactByPhone(supabase, phoneNumber || "");
+  const { contactId, userId, companyId, source } = await findContactByPhone(supabase, phoneNumber || "", instance);
 
   if (userId) {
     const messageData = {
@@ -437,7 +446,7 @@ async function handleCall(supabase: any, payload: any, _instance: string) {
   console.log(`Call from ${phoneNumber}, isVideo: ${data?.isVideo}`);
 
   if (phoneNumber) {
-    const { contactId, userId, companyId } = await findContactByPhone(supabase, phoneNumber);
+    const { contactId, userId, companyId } = await findContactByPhone(supabase, phoneNumber, instance);
 
     if (contactId && userId) {
       await supabase.from("interactions").insert({
