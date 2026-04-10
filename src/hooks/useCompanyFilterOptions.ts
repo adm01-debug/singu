@@ -134,6 +134,7 @@ export function useCompanyFilterOptions() {
   const { data: porteValues = [] } = useExternalLookup('companies', 'porte_rf');
   const { data: healthValues = [] } = useExternalLookup('companies', 'financial_health');
   const { data: employeeCountValues = [] } = useExternalLookup('companies', 'employee_count');
+  const { data: cityValues = [] } = useExternalLookup('companies', 'city');
   const { data: stateValues = [] } = useExternalLookup('companies', 'state');
 
   return useMemo<FilterConfig[]>(() => {
@@ -208,11 +209,21 @@ export function useCompanyFilterOptions() {
         options: buildLookupOptions(employeeCountValues, employeeCountFallback),
       },
       {
-        key: 'state',
-        label: 'UF',
+        key: 'city',
+        label: 'Cidade',
         multiple: true,
-        options: buildLookupOptions(stateValues).map((option) => ({ ...option, icon: MapPin })),
+        options: buildLookupOptions(cityValues).map((option) => ({ ...option, icon: MapPin })),
       },
+      ...(stateValues.length > 0
+        ? [
+            {
+              key: 'state' as const,
+              label: 'UF',
+              multiple: true,
+              options: buildLookupOptions(stateValues).map((option) => ({ ...option, icon: MapPin })),
+            },
+          ]
+        : []),
       {
         key: 'is_supplier',
         label: 'Fornecedor',
@@ -253,6 +264,7 @@ export function useCompanyFilterOptions() {
     porteValues,
     ramoValues,
     situacaoValues,
+    cityValues,
     stateValues,
     statusValues,
   ]);
