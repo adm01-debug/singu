@@ -447,30 +447,58 @@ const Empresas = () => {
           <>
             {/* Companies Grid */}
             {viewMode === 'grid' && (
-              <div className={`grid grid-cols-1 gap-4 ${
-                gridColumns === 2 ? 'md:grid-cols-2' :
-                gridColumns === 3 ? 'md:grid-cols-2 lg:grid-cols-3' :
-                gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
-                gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
-                'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
-              }`}>
-                {filteredAndSortedCompanies.map((company, index) => (
-                  <CompanyCardWithContext
-                    key={company.id}
-                    company={company}
-                    index={index}
-                    isSelected={selectedIds.has(company.id)}
-                    isHighlighted={selectedIndex === index}
-                    selectionMode={selectionMode}
-                    contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
-                    lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
-                    compact={gridColumns >= 5}
-                    onSelect={handleSelect}
-                    onEdit={setEditingCompany}
-                    onDelete={setDeletingCompany}
-                    onUpdate={updateCompany}
-                  />
-                ))}
+              <div className="space-y-4">
+                {(hasGroups ? groups : [{ name: '', companies: filteredAndSortedCompanies }]).map((group) => {
+                  const expanded = isGroupExpanded(group.name);
+                  let indexOffset = 0;
+                  // Calculate offset for highlighting
+                  for (const g of groups) {
+                    if (g.name === group.name) break;
+                    indexOffset += g.companies.length;
+                  }
+
+                  return (
+                    <div key={group.name || '__ungrouped'}>
+                      {group.name && (
+                        <GroupHeader
+                          name={group.name}
+                          count={group.companies.length}
+                          isExpanded={expanded}
+                          onToggle={() => toggleGroup(group.name)}
+                        />
+                      )}
+                      {expanded && (
+                        <div className={cn(
+                          `grid grid-cols-1 gap-4`,
+                          gridColumns === 2 ? 'md:grid-cols-2' :
+                          gridColumns === 3 ? 'md:grid-cols-2 lg:grid-cols-3' :
+                          gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+                          gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
+                          'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6',
+                          group.name && 'mt-2 ml-2 border-l-2 border-primary/20 pl-3'
+                        )}>
+                          {group.companies.map((company, i) => (
+                            <CompanyCardWithContext
+                              key={company.id}
+                              company={company}
+                              index={indexOffset + i}
+                              isSelected={selectedIds.has(company.id)}
+                              isHighlighted={selectedIndex === indexOffset + i}
+                              selectionMode={selectionMode}
+                              contactCount={companyMetrics.contactCountMap.get(company.id) || 0}
+                              lastInteractionDays={companyMetrics.lastInteractionMap.get(company.id) ?? null}
+                              compact={gridColumns >= 5}
+                              onSelect={handleSelect}
+                              onEdit={setEditingCompany}
+                              onDelete={setDeletingCompany}
+                              onUpdate={updateCompany}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
