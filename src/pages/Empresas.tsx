@@ -7,21 +7,9 @@ import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Search,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Factory,
-  Briefcase,
-  ShoppingCart,
-  Landmark,
-  Cpu,
-  HeartPulse,
-  GraduationCap,
   Plus,
   CheckSquare,
   X,
-  Truck,
-  Package,
 } from 'lucide-react';
 import { CompaniesGridSkeleton } from '@/components/skeletons/PageSkeletons';
 import { CompaniesStatsBar } from '@/components/companies/CompaniesStatsBar';
@@ -157,11 +145,19 @@ const Empresas = () => {
 
         const companyValue = company[key as keyof Company];
 
+        // Boolean fields: null/undefined treated as 'false'
+        if (key === 'is_customer' || key === 'is_supplier' || key === 'is_carrier' || key === 'is_matriz') {
+          const boolStr = String(companyValue ?? false);
+          if (!values.includes(boolStr)) return false;
+          continue;
+        }
+
         if (typeof companyValue === 'boolean') {
           if (!values.includes(String(companyValue))) return false;
           continue;
         }
 
+        // Null/empty → exclude from filtered results
         if (companyValue === null || companyValue === undefined || companyValue === '') {
           return false;
         }

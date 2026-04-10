@@ -30,6 +30,7 @@ interface ExternalRow extends Record<string, unknown> {
 interface CompaniesPage { companies: Company[]; count: number }
 
 const COMPANIES_PAGE_SIZE = 100;
+const MAX_COMPANIES_TOTAL = 2000;
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
   'nome_fantasia',
@@ -147,15 +148,16 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
 
   const firstBatch = await fetchBatch({ from: 0, to: COMPANIES_PAGE_SIZE - 1 });
   const totalCount = firstBatch.count || firstBatch.rows.length;
+  const cappedTotal = Math.min(totalCount, MAX_COMPANIES_TOTAL);
 
   let allRows = [...firstBatch.rows];
 
-  if (totalCount > firstBatch.rows.length) {
+  if (cappedTotal > firstBatch.rows.length) {
     const pendingRanges: Array<{ from: number; to: number }> = [];
-    for (let from = firstBatch.rows.length; from < totalCount; from += COMPANIES_PAGE_SIZE) {
+    for (let from = firstBatch.rows.length; from < cappedTotal; from += COMPANIES_PAGE_SIZE) {
       pendingRanges.push({
         from,
-        to: Math.min(from + COMPANIES_PAGE_SIZE - 1, totalCount - 1),
+        to: Math.min(from + COMPANIES_PAGE_SIZE - 1, cappedTotal - 1),
       });
     }
 
