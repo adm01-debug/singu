@@ -56,6 +56,7 @@ import { useInteractions } from '@/hooks/useInteractions';
 import { useExternalLookup } from '@/hooks/useExternalLookup';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { useCompanyGroups, GroupHeader, useGroupExpansion } from '@/components/companies/CompanyGrouping';
+import { CompaniesInlineMap } from '@/components/companies/CompaniesInlineMap';
 
 /** Build dynamic filter configs from external DB lookups */
 function useDynamicFilters() {
