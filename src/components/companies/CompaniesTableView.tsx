@@ -17,6 +17,54 @@ import type { Company } from '@/hooks/useCompanies';
 import { cn } from '@/lib/utils';
 import { toTitleCase, formatCapitalSocial, formatCnpj } from '@/lib/formatters';
 
+/** Visual activity pulse indicator based on last interaction days */
+function ActivityPulse({ days }: { days: number | null }) {
+  if (days === null) {
+    return (
+      <div className="flex items-center justify-center gap-0.5">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="w-2 h-3 rounded-sm bg-muted/20" />
+        ))}
+      </div>
+    );
+  }
+
+  // 4 bars: each represents a "week zone"
+  // Week 1 (0-7d), Week 2 (8-14d), Week 3 (15-21d), Week 4+ (22+d)
+  const getBarColor = (weekIndex: number) => {
+    const threshold = weekIndex * 7;
+    if (days <= threshold + 7) {
+      if (weekIndex === 0) return 'bg-success';
+      if (weekIndex === 1) return 'bg-success/60';
+      if (weekIndex === 2) return 'bg-warning/60';
+      return 'bg-destructive/60';
+    }
+    return 'bg-muted/20';
+  };
+
+  // Active bars = how many weeks ago the last interaction was
+  const activeBars = Math.min(4, Math.max(1, Math.ceil(days / 7)));
+  const pulseColor = days <= 7 ? 'text-success' : days <= 14 ? 'text-warning' : 'text-destructive';
+
+  return (
+    <div className="flex items-center justify-center gap-0.5" title={`Última interação: ${days}d atrás`}>
+      {[0, 1, 2, 3].map(i => (
+        <div
+          key={i}
+          className={cn(
+            'w-2 rounded-sm transition-colors',
+            i < activeBars ? (
+              i === 0 && days <= 7 ? 'bg-success h-4' :
+              i <= 1 && days <= 14 ? 'bg-warning h-3' :
+              'bg-destructive/60 h-2'
+            ) : 'bg-muted/20 h-2'
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface CompaniesTableViewProps {
   companies: Company[];
   selectionMode: boolean;
