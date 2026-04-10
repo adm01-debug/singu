@@ -138,7 +138,8 @@ export function CompaniesTableView({
           {companies.map((company) => {
             const count = contactCountMap.get(company.id) || 0;
             const health = healthLabel[company.financial_health || ''];
-            const location = [company.city, company.state].filter(Boolean).join(', ');
+            const rawLocation = [company.city, company.state].filter(Boolean).join(', ');
+            const location = rawLocation ? toTitleCase(rawLocation) : '';
             const capital = formatCapitalSocial(company.capital_social);
             const cnpjFormatted = formatCnpj(company.cnpj);
             
