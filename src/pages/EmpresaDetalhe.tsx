@@ -269,11 +269,15 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Contatos ({contacts.length})</span>
                     <span className="sm:hidden">{contacts.length}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="data" className="flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    <span className="hidden sm:inline">Dados</span>
                   </TabsTrigger>
                   <TabsTrigger value="stakeholders" className="flex items-center gap-2">
                     <Network className="w-4 h-4" />
