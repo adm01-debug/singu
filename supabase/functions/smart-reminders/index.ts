@@ -19,10 +19,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // ── Auth guard: use JWT user_id ──
-  const authResult = await withAuth(req);
+  // 🔒 Dual auth: user JWT or service-role
+  const authResult = await withAuthOrServiceRole(req);
   if (authResult instanceof Response) return authResult;
-  const userId = authResult;
+
+  let userId: string;
+  if (isServiceRoleCaller(authResult)) {
+    let body: Record<string, unknown> = {};
+    try { body = await req.json(); } catch { /* empty */ }
+    if (!body.userId || typeof body.userId !== 'string') return jsonError('userId required for service-role calls', 400);
+    userId = body.userId;
+  } else {
+    userId = authResult;
+  }
 
   try {
     const supabaseClient = createClient(
