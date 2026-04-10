@@ -203,3 +203,37 @@ export function getRelationshipScoreColor(score: number): string {
   if (score <= 80) return 'text-success';
   return 'text-success';
 }
+
+/**
+ * Format capital social value to compact Brazilian currency.
+ * 460000000 → "R$ 460M"
+ * 1500000 → "R$ 1,5M"
+ * 350000 → "R$ 350K"
+ * 1200 → "R$ 1.200"
+ */
+export function formatCapitalSocial(value: number | null | undefined): string | null {
+  if (value === null || value === undefined || value === 0) return null;
+  if (value >= 1_000_000_000) {
+    const v = value / 1_000_000_000;
+    return `R$ ${v % 1 === 0 ? v.toFixed(0) : v.toFixed(1).replace('.', ',')}B`;
+  }
+  if (value >= 1_000_000) {
+    const v = value / 1_000_000;
+    return `R$ ${v % 1 === 0 ? v.toFixed(0) : v.toFixed(1).replace('.', ',')}M`;
+  }
+  if (value >= 1_000) {
+    const v = value / 1_000;
+    return `R$ ${v % 1 === 0 ? v.toFixed(0) : v.toFixed(1).replace('.', ',')}K`;
+  }
+  return `R$ ${value.toLocaleString('pt-BR')}`;
+}
+
+/**
+ * Format CNPJ with mask: 00.000.000/0000-00
+ */
+export function formatCnpj(cnpj: string | null | undefined): string | null {
+  if (!cnpj) return null;
+  const digits = cnpj.replace(/\D/g, '');
+  if (digits.length !== 14) return cnpj;
+  return `${digits.slice(0,2)}.${digits.slice(2,5)}.${digits.slice(5,8)}/${digits.slice(8,12)}-${digits.slice(12)}`;
+}

@@ -34,6 +34,18 @@ function mapCompany(ext: ExternalRow): Company {
     name: ext.nome_crm || ext.nome_fantasia || ext.razao_social || 'Sem nome',
     industry: ext.ramo_atividade || null,
     tags: ext.tags_array || [],
+    // Map additional fields that already exist in the Company type
+    capital_social: ext.capital_social as number | null ?? null,
+    grupo_economico: ext.grupo_economico as string | null ?? null,
+    nicho_cliente: ext.nicho_cliente as string | null ?? null,
+    website: ext.website as string | null ?? null,
+    situacao_rf: ext.situacao_rf as string | null ?? null,
+    cnpj: ext.cnpj as string | null ?? null,
+    razao_social: ext.razao_social as string | null ?? null,
+    is_carrier: ext.is_carrier as boolean | null ?? false,
+    is_supplier: ext.is_supplier as boolean | null ?? false,
+    porte_rf: ext.porte_rf as string | null ?? null,
+    data_fundacao: ext.data_fundacao as string | null ?? null,
   } as Company;
 }
 
