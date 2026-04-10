@@ -80,8 +80,20 @@ interface CompaniesTableViewProps {
 const healthLabel: Record<string, { label: string; className: string }> = {
   excellent: { label: 'Excelente', className: 'text-success' },
   good: { label: 'Boa', className: 'text-success' },
+  growing: { label: 'Crescendo', className: 'text-success' },
+  stable: { label: 'Estável', className: 'text-primary' },
   average: { label: 'Regular', className: 'text-warning' },
+  cutting: { label: 'Retração', className: 'text-destructive' },
   poor: { label: 'Ruim', className: 'text-destructive' },
+  unknown: { label: 'Desconhecido', className: 'text-muted-foreground' },
+};
+
+const porteLabel: Record<string, { label: string; className: string }> = {
+  'GRANDE': { label: 'Grande', className: 'text-primary' },
+  'MEDIO': { label: 'Médio', className: 'text-primary' },
+  'PEQUENO': { label: 'Pequeno', className: 'text-muted-foreground' },
+  'MICRO': { label: 'Micro', className: 'text-muted-foreground' },
+  'MEI': { label: 'MEI', className: 'text-muted-foreground' },
 };
 
 export function CompaniesTableView({
