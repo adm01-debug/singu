@@ -23,6 +23,7 @@ interface CompaniesTableViewProps {
   selectedIds: Set<string>;
   onSelect: (id: string, selected: boolean) => void;
   contactCountMap: Map<string, number>;
+  lastInteractionMap: Map<string, number>;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
   onSortChange: (field: string) => void;
