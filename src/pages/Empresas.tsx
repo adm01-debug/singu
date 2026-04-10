@@ -528,6 +528,7 @@ const Empresas = () => {
                 selectedIds={selectedIds}
                 onSelect={handleSelect}
                 contactCountMap={companyMetrics.contactCountMap}
+                lastInteractionMap={companyMetrics.lastInteractionMap}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSortChange={handleTableSort}
