@@ -222,6 +222,38 @@ const Contatos = () => {
     });
   }, [contacts, fuzzyResults, searchTerm, activeFilters, sortBy, sortOrder]);
 
+  // Progressive rendering for grid view
+  const RENDER_BATCH = 60;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(RENDER_BATCH);
+  }, [activeFilters, sortBy, sortOrder, searchTerm]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => {
+            setVisibleCount(prev => prev + RENDER_BATCH);
+          });
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedContacts.length]);
+
+  const visibleContacts = useMemo(
+    () => filteredAndSortedContacts.slice(0, visibleCount),
+    [filteredAndSortedContacts, visibleCount]
+  );
+  const hasMoreContacts = visibleCount < filteredAndSortedContacts.length;
+
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedContacts, {
     onOpen: (contact) => navigate(`/contatos/${contact.id}`),
