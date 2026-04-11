@@ -76,8 +76,15 @@ Deno.serve(async (req) => {
   const startTime = performance.now();
 
   try {
-    const body = await req.json();
-    const { action, table } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return jsonError('Invalid JSON body', 400);
+    }
+
+    const action = typeof body.action === 'string' ? body.action : undefined;
+    const table = typeof body.table === 'string' ? body.table : undefined;
     const operation = action || 'select';
 
     // ─── LIST TABLES (schema discovery) ───
