@@ -98,6 +98,11 @@ const Empresas = () => {
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Progressive rendering — show 60 initially, load 60 more as user scrolls
+  const RENDER_BATCH = 60;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
