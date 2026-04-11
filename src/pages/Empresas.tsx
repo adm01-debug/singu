@@ -232,7 +232,7 @@ const Empresas = () => {
   const hasMore = visibleCount < filteredAndSortedCompanies.length;
 
   // Keyboard navigation
-  const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
+  const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies as Array<{ id: string }>, {
     onOpen: (company) => navigate(`/empresas/${company.id}`),
     onSelect: () => {},
   });
