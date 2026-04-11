@@ -192,6 +192,36 @@ const Empresas = () => {
     return result;
   }, [companies, activeFilters, sortBy, sortOrder]);
 
+  // Reset visible count when filter/sort changes
+  useEffect(() => {
+    setVisibleCount(RENDER_BATCH);
+  }, [activeFilters, sortBy, sortOrder, activeSearch]);
+
+  // Intersection observer for progressive loading
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => {
+            setVisibleCount(prev => prev + RENDER_BATCH);
+          });
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedCompanies.length]);
+
+  // Slice for rendering
+  const visibleCompanies = useMemo(
+    () => filteredAndSortedCompanies.slice(0, visibleCount),
+    [filteredAndSortedCompanies, visibleCount]
+  );
+  const hasMore = visibleCount < filteredAndSortedCompanies.length;
+
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
     onOpen: (company) => navigate(`/empresas/${company.id}`),
