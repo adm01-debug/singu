@@ -262,18 +262,33 @@ const Contatos = () => {
 
   useKeyboardShortcutsEnhanced();
 
-  const getCompanyName = useCallback((companyId: string | null) => {
-    if (!companyId) return null;
-    const company = companies.find(c => c.id === companyId);
-    return company?.name || null;
+  const companyNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of companies) {
+      map.set(c.id, c.name);
+    }
+    return map;
   }, [companies]);
 
-  const getLastInteractionDate = useCallback((contactId: string): string | null => {
-    const contactInteractions = interactions
-      .filter(i => i.contact_id === contactId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    return contactInteractions[0]?.created_at || null;
+  const lastInteractionMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const i of interactions) {
+      const existing = map.get(i.contact_id);
+      if (!existing || i.created_at > existing) {
+        map.set(i.contact_id, i.created_at);
+      }
+    }
+    return map;
   }, [interactions]);
+
+  const getCompanyName = useCallback((companyId: string | null) => {
+    if (!companyId) return null;
+    return companyNameMap.get(companyId) || null;
+  }, [companyNameMap]);
+
+  const getLastInteractionDate = useCallback((contactId: string): string | null => {
+    return lastInteractionMap.get(contactId) || null;
+  }, [lastInteractionMap]);
 
   const handleCreate = async (data: Parameters<typeof createContact>[0], event?: React.MouseEvent) => {
     setIsSubmitting(true);
