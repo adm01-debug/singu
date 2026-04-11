@@ -72,6 +72,11 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Rate limit guard ──
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
+
   // ── Auth guard ──
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
