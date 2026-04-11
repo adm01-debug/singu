@@ -46,29 +46,38 @@ async function getAccessToken(): Promise<string> {
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-data`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+const externalDbBreaker = getCircuitBreaker('external-db', {
+  failureThreshold: 3,
+  resetTimeoutMs: 30_000,
+});
+
 async function callExternalData(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const accessToken = await getAccessToken();
+  return externalDbBreaker.call(async () => {
+    const accessToken = await getAccessToken();
 
-  const response = await fetch(EDGE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-      'apikey': ANON_KEY,
-    },
-    body: JSON.stringify(body),
+    const response = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+        'apikey': ANON_KEY,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Edge function error [${response.status}]: ${errorText}`);
+    }
+
+    const result = await response.json();
+    if (result?.error) throw new Error(result.error);
+
+    return result;
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Edge function error [${response.status}]: ${errorText}`);
-  }
-
-  const result = await response.json();
-  if (result?.error) throw new Error(result.error);
-
-  return result;
 }
+
+export { CircuitOpenError };
 
 export async function queryExternalData<T = Record<string, unknown>>(options: ExternalQueryOptions): Promise<{ data: T[] | null; count: number | null; error: Error | null }> {
   try {
