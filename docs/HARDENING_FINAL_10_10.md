@@ -14,37 +14,35 @@
               🏆 10/10 🏆
 ```
 
-| Componente | Antes | Depois | Status |
-|------------|-------|--------|--------|
-| Tabelas com RLS | ?/116 | 116/116 | ✅ 100% |
-| Views security_invoker | 0/113 | 113/113 | ✅ 100% |
-| Policies anon | 7 | 0 | ✅ Eliminadas |
-| Edge Functions hardenadas | 0/45 | 45/45 | ✅ 100% |
-| Triggers updated_at | ?/71 | 71/71 | ✅ 100% |
-| Índices | N/A | 485 | ✅ |
-| Check Constraints | N/A | 112 | ✅ |
-| Funções | N/A | 337 | ✅ |
+| Componente | Valor Final | Status |
+|------------|-------------|--------|
+| Tabelas com RLS | 117/117 | ✅ 100% |
+| Views security_invoker | 113/113 | ✅ 100% |
+| Policies anon | 0 | ✅ Eliminadas |
+| Edge Functions hardenadas | 45/45 | ✅ 100% |
+| Índices | 490 | ✅ |
+| Triggers | 181 | ✅ |
+| Check Constraints | 113 | ✅ |
+| Funções | 338 | ✅ |
 
 ---
 
-## 🗄️ BANCO DE DADOS
-
-### Estatísticas Finais
+## 🗄️ BANCO DE DADOS - ESTATÍSTICAS FINAIS
 
 | Métrica | Valor |
 |---------|-------|
-| Tabelas | 116 |
+| Tabelas | 117 |
 | Views | 113 |
 | Policies | 372 |
-| Índices | 485 |
-| Triggers | 71 |
-| Funções | 337 |
-| Constraints | 112 |
+| Índices | 490 |
+| Triggers | 181 |
+| Funções | 338 |
+| Constraints | 113 |
 | FKs | 128 |
 
 ### Hardening Aplicado
 
-1. **RLS em 100% das tabelas** - 116 tabelas
+1. **RLS em 100% das tabelas** - 117 tabelas
 2. **security_invoker em 100% das views** - 113 views
 3. **Policies anon eliminadas** - 7 policies removidas
 4. **auth.uid() otimizado** - 132 policies com InitPlan
@@ -55,6 +53,26 @@
 9. **Defaults** - Valores padrão em colunas críticas
 10. **Documentação** - Comentários em tabelas principais
 11. **Funções utilitárias** - sanitize/format para CNPJ/CPF/telefone
+12. **Auditoria** - Tabela audit_log + triggers em tabelas críticas
+
+---
+
+## 📝 SISTEMA DE AUDITORIA
+
+Tabela `audit_log` com triggers automáticos em:
+- companies
+- contacts
+- customers
+- oauth_tokens
+- salespeople
+
+```sql
+-- Consultar alterações recentes
+SELECT table_name, action, changed_fields, created_at
+FROM audit_log
+ORDER BY created_at DESC
+LIMIT 50;
+```
 
 ---
 
@@ -125,7 +143,7 @@
 
 ---
 
-## 🛠️ FUNÇÕES UTILITÁRIAS CRIADAS
+## 🛠️ FUNÇÕES UTILITÁRIAS
 
 ```sql
 -- Sanitização (remove formatação)
@@ -169,43 +187,6 @@ SELECT format_phone('11999998888');          -- '(11) 99999-8888'
 
 ### 🟢 AUTH
 - [ ] Dashboard → Auth → Providers → Email → leaked_password_protection
-
----
-
-## 🔐 PADRÃO DE HARDENING S2S
-
-```typescript
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-}
-
-function requireWebhookSecret(
-  req: Request, 
-  headerName: string, 
-  envKey: string
-): Response | null {
-  const secret = Deno.env.get(envKey);
-  if (!secret) {
-    return new Response(
-      JSON.stringify({ error: `${envKey} not configured` }), 
-      { status: 500 }
-    );
-  }
-  const provided = req.headers.get(headerName);
-  if (!provided || !constantTimeEqual(provided, secret)) {
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized' }), 
-      { status: 401 }
-    );
-  }
-  return null;
-}
-```
 
 ---
 
