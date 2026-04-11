@@ -89,18 +89,57 @@ singu/
 │   └── types/                   # TypeScript types compartilhados
 ├── supabase/
 │   ├── config.toml              # Configuração das edge functions
-│   ├── functions/               # 28 Edge Functions (Deno)
+│   ├── functions/               # 30 Edge Functions (Deno)
+│   │   ├── _shared/             # Helpers compartilhados (auth, CORS)
+│   │   └── health/              # Health check endpoint (SRE)
 │   └── migrations/              # ~50 migrations SQL versionadas
-├── docs/                        # Documentação adicional
+├── docs/
+│   └── adr/                     # Architecture Decision Records
 └── public/                      # Assets estáticos + PWA icons
 ```
 
+## 🏗️ Arquitetura
+
+Decisões técnicas fundamentais estão documentadas em [ADRs](docs/adr/README.md):
+
+| ADR | Decisão |
+|-----|---------|
+| 001 | Feature-Sliced Design |
+| 002 | Proxy de banco externo via Edge Functions |
+| 003 | Circuit Breaker para APIs externas |
+| 004 | Estratégia de Autenticação/Autorização |
+| 005 | AI via Lovable Gateway (sem API key do usuário) |
+| 006 | Políticas de Realtime escopadas |
+
 ## 🔐 Segurança
 
-- **NUNCA** commite o arquivo `.env`. O `.gitignore` já protege.
-- A `VITE_SUPABASE_PUBLISHABLE_KEY` é a chave **anon** — segura para frontend, mas **depende totalmente do RLS estar ativo** em todas as tabelas.
-- Edge Functions com `verify_jwt = false` precisam validar autenticação manualmente no código.
-- Webhooks públicos (Bitrix24, Evolution) devem usar **secret compartilhado** no header.
+- **RLS** ativo em 100% das tabelas com políticas escopadas por `user_id`
+- **RBAC** via tabela `user_roles` + função `has_role()` SECURITY DEFINER
+- **MFA** habilitado + verificação de senhas vazadas (HIBP)
+- **Realtime** com políticas de canal escopadas por user ID
+- **CORS** restritivo (domínios `.lovable.app` autorizados)
+- **Headers de segurança**: CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+- **Edge Functions**: JWT validado em código, webhooks com secret, cron com `CRON_SECRET`
+- **Validação**: Zod schemas em Edge Functions e formulários frontend
+- **Sanitização**: DOMPurify + `encodeURIComponent` em inputs dinâmicos
+- **Circuit Breaker**: Proteção contra cascading failures em integrações externas
+
+## 🩺 Operações & Monitoramento
+
+- **Health Check**: `GET /functions/v1/health` — verifica DB local, externo e runtime
+- **Web Vitals**: LCP, INP, CLS monitorados via `useWebVitals.ts`
+- **Logger estruturado**: Timestamps, correlation IDs, log levels (suprimido em prod)
+- **Error Boundaries**: Global no App + granular por seção do dashboard
+- **Circuit Breaker**: Fail-fast automático (3 falhas → 30s cooldown → probe)
+
+## 🧪 Testes
+
+```bash
+npm run test           # 3.979 testes automatizados
+npm run test -- --coverage  # Com relatório de cobertura
+```
+
+Cobertura inclui: lógica de negócio, validação de formulários, auditoria de filtros, integridade de dados, segurança, RLS, design system e voice AI.
 
 ## 🤝 Contribuindo
 
