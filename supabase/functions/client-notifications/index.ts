@@ -16,7 +16,8 @@ interface AlertData {
   userId: string;
 }
 
-async function sendPushToUser(supabase: ReturnType<typeof createClient>, userId: string, alert: AlertData) {
+// deno-lint-ignore no-explicit-any
+async function sendPushToUser(supabase: any, userId: string, alert: AlertData) {
   const { data: subscriptions, error: subError } = await supabase
     .from('push_subscriptions')
     .select('*')
@@ -31,7 +32,7 @@ async function sendPushToUser(supabase: ReturnType<typeof createClient>, userId:
 
   for (const _sub of subscriptions) {
     try {
-      await supabase.from('alerts').insert({
+      await (supabase as any).from('alerts').insert({
         user_id: userId,
         title: alert.title,
         description: alert.body,
@@ -89,7 +90,7 @@ serve(async (req) => {
 
     for (const [userId, contacts] of userContactsMap) {
       // 1. Check for birthdays
-      for (const contact of contacts) {
+      for (const contact of (contacts || [])) {
         if (!contact.birthday) continue;
 
         const birthday = new Date(contact.birthday);

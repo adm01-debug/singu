@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
 
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
-      const unique = [...new Set((data || []).map((r: Record<string, unknown>) => r[column]).filter(Boolean))].sort();
+      const unique = [...new Set((data as any[] || []).map((r: any) => r[column]).filter(Boolean))].sort();
       return jsonOk({ values: unique, count: unique.length });
     }
 
@@ -173,29 +173,29 @@ Deno.serve(async (req) => {
 
       const result = await withRetry(async () => {
         // Use 'any' for dynamic external DB queries to avoid TS2589 deep type instantiation
-        let query: Record<string, CallableFunction> = client.from(table).select(select || '*', { count: 'exact' });
+        let query: any = client.from(table).select(select || '*', { count: 'exact' });
 
         if (search?.term && typeof search.term === 'string' && search.term.trim()) {
           const term = `%${search.term.trim()}%`;
           const columns: string[] = Array.isArray(search.columns) ? search.columns : [];
           if (columns.length > 0) {
-            query = (query as Record<string, CallableFunction>).or(columns.map((col: string) => `${col}.ilike.${term}`).join(','));
+            query = query.or(columns.map((col: string) => `${col}.ilike.${term}`).join(','));
           }
         }
 
         if (Array.isArray(filters)) {
           for (const f of filters) {
             if (!f.column || !f.type) continue;
-            const fn = (query as Record<string, CallableFunction>)[f.type];
+            const fn = query[f.type];
             if (typeof fn === 'function') {
               query = fn.call(query, f.column, f.value);
             }
           }
         }
 
-        if (order?.column) query = (query as Record<string, CallableFunction>).order(order.column, { ascending: order.ascending ?? false });
+        if (order?.column) query = query.order(order.column, { ascending: order.ascending ?? false });
         const clamped = clampRange(range);
-        query = (query as Record<string, CallableFunction>).range(clamped.from, clamped.to);
+        query = query.range(clamped.from, clamped.to);
 
         const { data, error, count } = await query as unknown as { data: unknown[]; error: { message: string } | null; count: number };
         if (error) throw new Error(`Select failed: ${error.message}`);
