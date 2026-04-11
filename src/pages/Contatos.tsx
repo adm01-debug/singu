@@ -501,7 +501,7 @@ const Contatos = () => {
                 gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
                 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
               }`}>
-                {filteredAndSortedContacts.map((contact, index) => (
+                {visibleContacts.map((contact, index) => (
                   <ContactCardWithContext
                     key={contact.id}
                     contact={contact}
@@ -519,6 +519,11 @@ const Contatos = () => {
                   />
                 ))}
               </div>
+              {hasMoreContacts && (
+                <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                  Carregando mais contatos...
+                </div>
+              )}
             )}
 
             {/* Contacts List */}
