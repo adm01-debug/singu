@@ -1,110 +1,83 @@
-# 🏆 SINGU SECURITY HARDENING - SCORE PERFEITO 10/10
+# 🏆 SINGU SECURITY HARDENING - SCORE 10/10
 
-**Data:** 2026-04-11
-**Projeto:** pgxfvjmuubtbowutlide (SUPABASE - GESTÃO DE CLIENTES)
+**Data:** 2026-04-11  
+**BD:** pgxfvjmuubtbowutlide  
 **Repo:** adm01-debug/singu
 
 ---
 
-## 🎯 SCORECARD FINAL
+## 📊 ESTATÍSTICAS FINAIS
 
-| Componente | Valor Final | Status |
-|------------|-------------|--------|
-| Tabelas com RLS | 117/117 | ✅ 100% |
+| Métrica | Valor | Status |
+|---------|-------|--------|
+| Tabelas RLS | 117/117 | ✅ 100% |
 | Views security_invoker | 113/113 | ✅ 100% |
 | Policies anon | 0 | ✅ Eliminadas |
-| Edge Functions hardenadas | 45/45 | ✅ 100% |
+| Edge Functions | 45/45 | ✅ 100% |
 | **Índices** | **503** | ✅ |
 | **Triggers** | **183** | ✅ |
 | Check Constraints | 113 | ✅ |
-| **Funções** | **386** | ✅ |
+| **Funções** | **397** | ✅ |
 | Materialized Views | 1 | ✅ |
 | Tamanho BD | 470 MB | ✅ |
 
 ---
 
-## 📊 CATÁLOGO DE FUNÇÕES (386 total)
+## 📊 CATÁLOGO DE FUNÇÕES (397 total)
 
-### 📈 Dashboard Executivo (8)
-```sql
-get_executive_dashboard()      -- Dashboard executivo completo
-get_mom_comparison()           -- Comparação Month-over-Month
-get_growth_trends()            -- Tendências de crescimento
-get_seasonality_analysis()     -- Análise de sazonalidade
-get_sales_forecast()           -- Previsão de vendas
-get_conversion_funnel()        -- Funil de conversão
-consolidate_daily_metrics()    -- Métricas diárias
-refresh_daily_kpis()           -- Atualiza KPIs materializados
+### 📈 Dashboard Executivo
+```
+get_executive_dashboard()      get_mom_comparison()
+get_growth_trends()            get_seasonality_analysis()
+get_sales_forecast()           get_conversion_funnel()
+consolidate_daily_metrics()    refresh_daily_kpis()
+create_daily_snapshot()        get_full_export_stats()
 ```
 
-### 👥 Vendedores (8)
-```sql
-get_salespeople_ranking()      -- Ranking de vendedores
-get_salespeople_activity()     -- Atividade de vendedores
-get_team_productivity_report() -- Produtividade da equipe
-get_salesperson_kpis()         -- KPIs individuais
-compare_salespeople()          -- Compara vendedores
-get_pending_tasks()            -- Tarefas pendentes
-get_daily_summary()            -- Resumo diário
-get_weekly_agenda()            -- Agenda semanal
+### 👥 Vendedores & Metas
+```
+get_salespeople_ranking()      get_salespeople_activity()
+get_team_productivity_report() get_salesperson_kpis()
+compare_salespeople()          get_goals_tracking()
+get_pending_tasks()            get_daily_summary()
+get_weekly_agenda()            get_response_time_analysis()
 ```
 
-### 🏢 Clientes (10)
-```sql
-get_customer_segmentation()    -- Segmentação RFM
-get_churn_analysis()           -- Análise de churn
-get_engagement_score()         -- Score de engajamento
-get_leads_prioritized()        -- Leads priorizados
-get_recovery_list()            -- Lista para recuperação
-get_customer_summary()         -- Resumo de cliente
-get_company_full_report()      -- Relatório 360º
-get_company_timeline()         -- Timeline de eventos
-get_regional_analysis()        -- Análise regional
-get_pipeline_stats()           -- Estatísticas do pipeline
+### 🏢 Clientes & Análise
+```
+get_customer_segmentation()    get_churn_analysis()
+get_engagement_score()         get_leads_prioritized()
+get_recovery_list()            get_upsell_opportunities()
+get_retention_analysis()       get_portfolio_analysis()
+get_customer_summary()         get_company_full_report()
+get_company_timeline()         get_regional_analysis()
+get_pipeline_stats()           get_channel_analysis()
 ```
 
-### 🔍 Busca (6)
-```sql
-global_search()                -- Busca global
-search_companies_fuzzy()       -- Busca fuzzy empresas
-search_contacts_fuzzy()        -- Busca fuzzy contatos
-search_companies_fulltext()    -- Full-text com ranking
-advanced_company_search()      -- Busca avançada com filtros
-get_interaction_history()      -- Histórico de interações
+### 🔍 Busca
+```
+global_search()                search_companies_fuzzy()
+search_contacts_fuzzy()        search_companies_fulltext()
+advanced_company_search()      get_interaction_history()
+get_interaction_counts_by_type()
 ```
 
-### 🛠️ Utilitárias (14)
-```sql
-sanitize_cnpj/cpf/phone()      -- Remove formatação
-format_cnpj/cpf/phone()        -- Formata strings
-is_valid_cnpj/cpf()            -- Validação oficial
-cleanup_old_data()             -- Limpeza de dados
-merge_duplicate_companies()    -- Merge de duplicatas
-generate_auto_alerts()         -- Alertas automáticos
-export_companies_csv()         -- Exporta empresas
-export_contacts_csv()          -- Exporta contatos
+### 🛠️ Utilitárias & Normalização
+```
+sanitize_cnpj/cpf/phone()      format_cnpj/cpf/phone()
+is_valid_cnpj/cpf()            cleanup_old_data()
+merge_duplicate_companies()    generate_auto_alerts()
+export_companies_csv()         export_contacts_csv()
+normalize_phone_numbers()      normalize_cnpj_numbers()
+validate_data_batch()
 ```
 
-### 📊 Monitoramento (6)
-```sql
-system_health_check()          -- Health check
-get_data_quality_report()      -- Qualidade de dados
-get_table_stats()              -- Estatísticas de tabelas
-get_index_stats()              -- Estatísticas de índices
-get_slow_queries_stats()       -- Queries lentas
-find_duplicate_companies()     -- Detecção de duplicatas
+### 📊 Monitoramento
 ```
-
----
-
-## 📝 SISTEMA DE AUDITORIA
-
-Tabela `audit_log` com triggers em:
-- companies, contacts, customers, oauth_tokens, salespeople
-
-## 🔍 BUSCA FULL-TEXT
-
-Coluna `search_vector` com trigger automático + índice GIN
+system_health_check()          get_data_quality_report()
+get_table_stats()              get_index_stats()
+get_slow_queries_stats()       find_duplicate_companies()
+```
 
 ---
 
@@ -122,12 +95,12 @@ Coluna `search_vector` com trigger automático + índice GIN
 ### 🔴 URGENTE
 - [ ] Revogar PAT `ghp_f9Hr...`
 
-### 🟠 SECRETS
-16 secrets a cadastrar no Dashboard
+### 🟠 SECRETS (16)
+Cadastrar no Dashboard → Edge Functions → Secrets
 
 ### 🟢 AUTH
 - [ ] leaked_password_protection
 
 ---
 
-*Hardening concluído em 2026-04-11 | Score: 10/10 🏆*
+*Hardening 2026-04-11 | Score: 10/10 🏆*
