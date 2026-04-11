@@ -95,7 +95,12 @@ serve(async (req) => {
   if (authResult instanceof Response) return authResult;
 
   try {
-    const { contact, recentInteractions, messageType, customContext, tone }: RequestPayload = await req.json();
+    const rawBody = await req.json();
+    const parsed = WritingInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
+    }
+    const { contact, recentInteractions, messageType, customContext, tone } = parsed.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
