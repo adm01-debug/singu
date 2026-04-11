@@ -21,8 +21,9 @@
 | Policies anon | 7 | 0 | ✅ Eliminadas |
 | Edge Functions hardenadas | 0/45 | 45/45 | ✅ 100% |
 | Triggers updated_at | ?/71 | 71/71 | ✅ 100% |
-| Índices de performance | N/A | 481 | ✅ |
-| auth.uid() otimizado | 0/132 | 132/132 | ✅ 100% |
+| Índices | N/A | 485 | ✅ |
+| Check Constraints | N/A | 112 | ✅ |
+| Funções | N/A | 337 | ✅ |
 
 ---
 
@@ -35,21 +36,25 @@
 | Tabelas | 116 |
 | Views | 113 |
 | Policies | 372 |
-| Índices | 481 |
+| Índices | 485 |
 | Triggers | 71 |
-| Funções | 182 |
+| Funções | 337 |
+| Constraints | 112 |
 | FKs | 128 |
 
 ### Hardening Aplicado
 
-1. **RLS em 100% das tabelas** - Todas as 116 tabelas
-2. **security_invoker em 100% das views** - Todas as 113 views
+1. **RLS em 100% das tabelas** - 116 tabelas
+2. **security_invoker em 100% das views** - 113 views
 3. **Policies anon eliminadas** - 7 policies removidas
 4. **auth.uid() otimizado** - 132 policies com InitPlan
 5. **search_path em funções** - 182 funções
 6. **Triggers updated_at** - 71 tabelas
-7. **Índices de performance** - CNPJ, created_at, soft delete
-8. **Estatísticas atualizadas** - ANALYZE nas tabelas principais
+7. **Índices de performance** - CNPJ, created_at, soft delete, parciais
+8. **Check constraints** - Validação de CPF, scores, valores
+9. **Defaults** - Valores padrão em colunas críticas
+10. **Documentação** - Comentários em tabelas principais
+11. **Funções utilitárias** - sanitize/format para CNPJ/CPF/telefone
 
 ---
 
@@ -120,6 +125,22 @@
 
 ---
 
+## 🛠️ FUNÇÕES UTILITÁRIAS CRIADAS
+
+```sql
+-- Sanitização (remove formatação)
+SELECT sanitize_cnpj('12.345.678/0001-90'); -- '12345678000190'
+SELECT sanitize_cpf('123.456.789-00');       -- '12345678900'
+SELECT sanitize_phone('(11) 99999-8888');    -- '11999998888'
+
+-- Formatação
+SELECT format_cnpj('12345678000190');        -- '12.345.678/0001-90'
+SELECT format_cpf('12345678900');            -- '123.456.789-00'
+SELECT format_phone('11999998888');          -- '(11) 99999-8888'
+```
+
+---
+
 ## 📋 CHECKLIST PARA PINK
 
 ### 🔴 URGENTE
@@ -151,7 +172,7 @@
 
 ---
 
-## 🔐 PADRÃO DE HARDENING
+## 🔐 PADRÃO DE HARDENING S2S
 
 ```typescript
 function constantTimeEqual(a: string, b: string): boolean {
