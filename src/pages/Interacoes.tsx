@@ -198,8 +198,43 @@ const Interacoes = () => {
     });
   }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
 
+  // Progressive rendering
+  const RENDER_BATCH = 40;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setVisibleCount(RENDER_BATCH); }, [activeFilters, sortBy, sortOrder]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => setVisibleCount(prev => prev + RENDER_BATCH));
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedInteractions.length]);
+
+  const visibleInteractions = useMemo(
+    () => filteredAndSortedInteractions.slice(0, visibleCount),
+    [filteredAndSortedInteractions, visibleCount]
+  );
+  const hasMore = visibleCount < filteredAndSortedInteractions.length;
+
+  // O(1) contact lookup
+  const contactMap = useMemo(() => {
+    const map = new Map<string, typeof contacts[0]>();
+    for (const c of contacts) map.set(c.id, c);
+    return map;
+  }, [contacts]);
+
   const getContactInfo = (contactId: string) => {
-    return contacts.find(c => c.id === contactId);
+    return contactMap.get(contactId);
   };
 
   const handleCreate = async (data: Parameters<typeof createInteraction>[0], event?: React.MouseEvent) => {
