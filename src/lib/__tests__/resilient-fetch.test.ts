@@ -107,8 +107,9 @@ describe("resilientFetch", () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  it("does NOT retry on AbortError", async () => {
-    const abortError = new DOMException("The operation was aborted", "AbortError");
+  it("does NOT retry on AbortError thrown directly", async () => {
+    const abortError = new Error("The operation was aborted");
+    abortError.name = "AbortError";
     vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(abortError);
 
     await expect(
@@ -116,7 +117,7 @@ describe("resilientFetch", () => {
         maxRetries: 2,
         baseDelayMs: 10,
       })
-    ).rejects.toThrow("AbortError");
+    ).rejects.toThrow("The operation was aborted");
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 

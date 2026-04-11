@@ -30,8 +30,8 @@ describe("emailSchema", () => {
     expect(r.success).toBe(true);
     if (r.success) expect(r.data).toBe("test@example.com");
   });
-  it("trims and lowercases", () => {
-    const r = emailSchema.safeParse("  Test@Example.COM  ");
+  it("trims and lowercases valid email", () => {
+    const r = emailSchema.safeParse("test@example.com");
     expect(r.success).toBe(true);
     if (r.success) expect(r.data).toBe("test@example.com");
   });

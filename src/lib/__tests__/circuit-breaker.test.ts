@@ -72,13 +72,10 @@ describe("CircuitBreaker", () => {
 
     await new Promise((r) => setTimeout(r, 150));
 
-    // Probe fails — should re-enter OPEN
+    // Probe fails — count increments from previous failures (not reset on transition)
     await expect(breaker.call(async () => { throw new Error("still broken"); })).rejects.toThrow();
-    // Need 2 more failures to reach threshold again from HALF_OPEN (count was reset to 0 at transition)
-    // Actually after the probe fail, failureCount is 1, which is < 3, so stays HALF_OPEN? 
-    // No — after HALF_OPEN the call tries and fails, onFailure increments, but state doesn't re-open until threshold.
-    // The breaker transitions to HALF_OPEN, probe fails, count goes to 1 (not enough for OPEN).
-    expect(breaker.getFailureCount()).toBe(1);
+    // After HALF_OPEN probe failure the circuit re-opens (count > threshold)
+    expect(breaker.getState()).toBe("OPEN");
   });
 
   it("resets manually", async () => {
