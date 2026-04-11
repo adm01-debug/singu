@@ -134,8 +134,9 @@ export function useCompanyFilterOptions() {
   const { data: porteValues = [] } = useExternalLookup('companies', 'porte_rf');
   const { data: healthValues = [] } = useExternalLookup('companies', 'financial_health');
   const { data: employeeCountValues = [] } = useExternalLookup('companies', 'employee_count');
-  const { data: cityValues = [] } = useExternalLookup('companies', 'city');
-  const { data: stateValues = [] } = useExternalLookup('companies', 'state');
+  // city/state are derived client-side from nome_crm, not columns in the external DB
+  const cityValues: string[] = [];
+  const stateValues: string[] = [];
 
   return useMemo<FilterConfig[]>(() => {
     const filters: FilterConfig[] = [
