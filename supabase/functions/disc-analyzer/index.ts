@@ -125,15 +125,12 @@ serve(async (req) => {
   const userId = authResult; // from JWT
 
   try {
-    const { texts, contactId, interactionId } = await req.json();
-
-    if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return jsonError("Textos são obrigatórios", 400);
+    const rawBody = await req.json();
+    const parsed = DiscAnalyzerInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
     }
-
-    if (!contactId) {
-      return jsonError("contactId é obrigatório", 400);
-    }
+    const { texts, contactId, interactionId } = parsed.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
