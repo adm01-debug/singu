@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { logger } from "@/lib/logger";
+import { getCircuitBreaker, CircuitOpenError } from "@/lib/circuitBreaker";
 
 interface ExternalQueryOptions {
   table: string;
