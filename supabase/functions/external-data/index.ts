@@ -225,6 +225,11 @@ Deno.serve(async (req) => {
         if (Array.isArray(filters)) {
           for (const f of filters) {
             if (!f.column || !f.type) continue;
+            // Guard: skip filters with non-primitive values (objects/arrays except for 'in')
+            if (f.type !== 'in' && typeof f.value === 'object' && f.value !== null) {
+              console.warn(`[external-data] Skipping filter with object value: ${f.column} ${f.type}`);
+              continue;
+            }
             const fn = query[f.type];
             if (typeof fn === 'function') {
               query = fn.call(query, f.column, f.value);
