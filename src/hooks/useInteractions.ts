@@ -29,7 +29,7 @@ async function fetchInteractionsPage(contactId?: string, companyId?: string) {
   return data || [];
 }
 
-export function useInteractions(contactId?: string, companyId?: string) {
+export function useInteractions(contactId?: string, companyId?: string, options?: { enabled?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { logActivity } = useActivityLogger();
@@ -37,11 +37,12 @@ export function useInteractions(contactId?: string, companyId?: string) {
   const queryClient = useQueryClient();
 
   const queryKey = ['interactions', contactId ?? '__all__', companyId ?? '__all__'];
+  const externalEnabled = options?.enabled ?? true;
 
   const { data: interactions = [], isLoading: loading } = useQuery({
     queryKey,
     queryFn: () => fetchInteractionsPage(contactId, companyId),
-    enabled: !!user,
+    enabled: !!user && externalEnabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,

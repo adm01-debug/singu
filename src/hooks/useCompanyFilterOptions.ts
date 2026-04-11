@@ -122,9 +122,9 @@ export const companySortOptions: SortOption[] = [
   { value: 'employee_count', label: 'Faixa de Funcionários' },
 ];
 
-export function useCompanyFilterOptions() {
-  // Lazy: only fetch when hook is used — staleTime ensures it's cached
-  const { data: batchData = {} } = useExternalBatchLookup('companies', [...LOOKUP_COLUMNS]);
+export function useCompanyFilterOptions(options?: { enabled?: boolean }) {
+  const externalEnabled = options?.enabled ?? true;
+  const { data: batchData = {} } = useExternalBatchLookup('companies', [...LOOKUP_COLUMNS], externalEnabled);
 
   return useMemo<FilterConfig[]>(() => {
     const v = (col: string) => batchData[col] || [];
