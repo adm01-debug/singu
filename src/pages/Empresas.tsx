@@ -53,10 +53,19 @@ const Empresas = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
-  // Defer contacts/interactions — they're only for optional metrics, not for rendering
-  const { contacts } = useContacts();
-  const { interactions } = useInteractions();
-  const dynamicFilters = useCompanyFilterOptions();
+
+  // Defer secondary data — only load after companies are ready (non-blocking)
+  const [secondaryReady, setSecondaryReady] = useState(false);
+  useEffect(() => {
+    if (!loading && companies.length > 0) {
+      const t = setTimeout(() => setSecondaryReady(true), 300);
+      return () => clearTimeout(t);
+    }
+  }, [loading, companies.length]);
+
+  const { contacts } = useContacts({ enabled: secondaryReady });
+  const { interactions } = useInteractions({ enabled: secondaryReady });
+  const dynamicFilters = useCompanyFilterOptions({ enabled: secondaryReady });
 
   // Pre-compute contact counts and last interaction per company (non-blocking)
   const companyMetrics = useMemo(() => {
