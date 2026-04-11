@@ -1,5 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
+
+const InsightsInput = z.object({
+  contacts: z.array(z.record(z.unknown())).optional().default([]),
+  interactions: z.array(z.record(z.unknown())).optional().default([]),
+  companies: z.array(z.record(z.unknown())).optional().default([]),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -16,7 +23,12 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { contacts, interactions, companies } = await req.json();
+    const rawBody = await req.json();
+    const parsed = InsightsInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
+    }
+    const { contacts, interactions, companies } = parsed.data;
 
     const systemPrompt = `Você é um assistente especializado em análise de relacionamentos comerciais e CRM. Sua função é analisar dados de contatos, empresas e interações para gerar insights acionáveis.
 
