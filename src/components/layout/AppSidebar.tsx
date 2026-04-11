@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { usePrefetch } from "@/components/navigation/PrefetchLink";
 import {
   LayoutDashboard, Building2, Users, MessageSquare, Lightbulb, Settings,
   Zap, LogOut, CalendarDays, Bell, ChevronDown, BarChart3, Share2,
@@ -69,6 +70,7 @@ export function AppSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { prefetch } = usePrefetch();
   const { user, signOut } = useAuth();
   const [sectionCollapsed, setSectionCollapsed] = useState<Record<string, boolean>>(getInitialCollapsed);
 
@@ -192,7 +194,7 @@ export function AppSidebar() {
                               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           )}
                         >
-                          <Link to={item.url} aria-current={isActive ? "page" : undefined}>
+                          <Link to={item.url} aria-current={isActive ? "page" : undefined} onMouseEnter={() => prefetch(item.url)}>
                             <item.icon className={cn(
                               "h-4 w-4 shrink-0 transition-colors",
                               isActive ? "text-primary" : ""

@@ -123,7 +123,7 @@ export const companySortOptions: SortOption[] = [
 ];
 
 export function useCompanyFilterOptions() {
-  // Single batch call instead of 10 separate Edge Function calls
+  // Lazy: only fetch when hook is used — staleTime ensures it's cached
   const { data: batchData = {} } = useExternalBatchLookup('companies', [...LOOKUP_COLUMNS]);
 
   return useMemo<FilterConfig[]>(() => {

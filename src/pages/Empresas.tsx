@@ -53,28 +53,33 @@ const Empresas = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
+  // Defer contacts/interactions — they're only for optional metrics, not for rendering
   const { contacts } = useContacts();
   const { interactions } = useInteractions();
   const dynamicFilters = useCompanyFilterOptions();
 
-  // Pre-compute contact counts and last interaction per company
+  // Pre-compute contact counts and last interaction per company (non-blocking)
   const companyMetrics = useMemo(() => {
     const contactCountMap = new Map<string, number>();
     const lastInteractionMap = new Map<string, number>();
     
-    for (const c of contacts) {
-      if (c.company_id) {
-        contactCountMap.set(c.company_id, (contactCountMap.get(c.company_id) || 0) + 1);
+    if (contacts.length > 0) {
+      for (const c of contacts) {
+        if (c.company_id) {
+          contactCountMap.set(c.company_id, (contactCountMap.get(c.company_id) || 0) + 1);
+        }
       }
     }
     
-    const now = Date.now();
-    for (const i of interactions) {
-      if (i.company_id) {
-        const days = Math.floor((now - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24));
-        const current = lastInteractionMap.get(i.company_id);
-        if (current === undefined || days < current) {
-          lastInteractionMap.set(i.company_id, days);
+    if (interactions.length > 0) {
+      const now = Date.now();
+      for (const i of interactions) {
+        if (i.company_id) {
+          const days = Math.floor((now - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24));
+          const current = lastInteractionMap.get(i.company_id);
+          if (current === undefined || days < current) {
+            lastInteractionMap.set(i.company_id, days);
+          }
         }
       }
     }
