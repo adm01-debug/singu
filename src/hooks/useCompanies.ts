@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,7 @@ interface CompaniesPage { companies: Company[]; count: number }
 
 const COMPANIES_PAGE_SIZE = 500;
 const MAX_COMPANIES_TOTAL = 2000;
+const INITIAL_FAST_LOAD = 500;
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
   'nome_fantasia',
@@ -146,30 +147,12 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
     return { rows: data || [], count: count || 0 };
   };
 
-  const firstBatch = await fetchBatch({ from: 0, to: COMPANIES_PAGE_SIZE - 1 });
+  // Fast initial load — just the first batch
+  const firstBatch = await fetchBatch({ from: 0, to: INITIAL_FAST_LOAD - 1 });
   const totalCount = firstBatch.count || firstBatch.rows.length;
-  const cappedTotal = Math.min(totalCount, MAX_COMPANIES_TOTAL);
-
-  let allRows = [...firstBatch.rows];
-
-  if (cappedTotal > firstBatch.rows.length) {
-    const pendingRanges: Array<{ from: number; to: number }> = [];
-    for (let from = firstBatch.rows.length; from < cappedTotal; from += COMPANIES_PAGE_SIZE) {
-      pendingRanges.push({
-        from,
-        to: Math.min(from + COMPANIES_PAGE_SIZE - 1, cappedTotal - 1),
-      });
-    }
-
-    for (let index = 0; index < pendingRanges.length; index += 3) {
-      const slice = pendingRanges.slice(index, index + 3);
-      const batches = await Promise.all(slice.map((range) => fetchBatch(range)));
-      allRows = allRows.concat(batches.flatMap((batch) => batch.rows));
-    }
-  }
 
   const seen = new Set<string>();
-  const uniqueRows = allRows.filter((row) => {
+  const uniqueRows = firstBatch.rows.filter((row) => {
     if (!row.id) return false;
     if (seen.has(row.id)) return false;
     seen.add(row.id);
@@ -177,6 +160,62 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
   });
 
   return { companies: uniqueRows.map(mapCompany), count: totalCount };
+}
+
+/** Load remaining companies beyond initial fast load (called lazily) */
+async function fetchRemainingCompanies(search?: string): Promise<Company[]> {
+  const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
+    table: 'companies',
+    order: { column: 'updated_at', ascending: false },
+    range,
+    ...(search && search.trim().length >= 2
+      ? {
+          search: {
+            term: search.trim(),
+            columns: [...COMPANY_SEARCH_COLUMNS],
+          },
+        }
+      : {}),
+  });
+
+  // First, get total count
+  const { count } = await queryExternalData<ExternalRow>({
+    ...buildOptions({ from: 0, to: 0 }),
+    select: 'id',
+  });
+  const totalCount = count || 0;
+  const cappedTotal = Math.min(totalCount, MAX_COMPANIES_TOTAL);
+
+  if (cappedTotal <= INITIAL_FAST_LOAD) return [];
+
+  const pendingRanges: Array<{ from: number; to: number }> = [];
+  for (let from = INITIAL_FAST_LOAD; from < cappedTotal; from += COMPANIES_PAGE_SIZE) {
+    pendingRanges.push({
+      from,
+      to: Math.min(from + COMPANIES_PAGE_SIZE - 1, cappedTotal - 1),
+    });
+  }
+
+  let allRows: ExternalRow[] = [];
+  for (let index = 0; index < pendingRanges.length; index += 3) {
+    const slice = pendingRanges.slice(index, index + 3);
+    const batches = await Promise.all(slice.map(async (range) => {
+      const { data, error } = await queryExternalData<ExternalRow>(buildOptions(range));
+      if (error) throw error;
+      return data || [];
+    }));
+    allRows = allRows.concat(batches.flat());
+  }
+
+  const seen = new Set<string>();
+  return allRows
+    .filter((row) => {
+      if (!row.id) return false;
+      if (seen.has(row.id)) return false;
+      seen.add(row.id);
+      return true;
+    })
+    .map(mapCompany);
 }
 
 export function useCompanies() {
@@ -197,7 +236,25 @@ export function useCompanies() {
     placeholderData: (prev) => prev,
   });
 
-  const companies = data?.companies ?? [];
+  // Background-load remaining companies after initial fast load
+  const remainingKey = ['companies-remaining', searchTerm || '__all__'];
+  const { data: remainingCompanies } = useQuery({
+    queryKey: remainingKey,
+    queryFn: () => fetchRemainingCompanies(searchTerm || undefined),
+    enabled: !!user && !!data && data.count > INITIAL_FAST_LOAD,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const companies = useMemo(() => {
+    const initial = data?.companies ?? [];
+    if (!remainingCompanies || remainingCompanies.length === 0) return initial;
+    // Merge & deduplicate
+    const seen = new Set(initial.map(c => c.id));
+    const extra = remainingCompanies.filter(c => !seen.has(c.id));
+    return [...initial, ...extra];
+  }, [data?.companies, remainingCompanies]);
+
   const totalCount = data?.count ?? 0;
 
   const fetchCompanies = useCallback(async (search?: string) => {
