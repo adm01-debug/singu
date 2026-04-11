@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { handleCorsAndMethod, withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
+
+const limiter = rateLimit({ windowMs: 60_000, max: 10, message: "Rate limit exceeded for AI writing. Please wait." });
 
 interface ContactProfile {
   firstName: string;
