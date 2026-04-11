@@ -194,7 +194,7 @@ export function AppSidebar() {
                               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           )}
                         >
-                          <Link to={item.url} aria-current={isActive ? "page" : undefined}>
+                          <Link to={item.url} aria-current={isActive ? "page" : undefined} onMouseEnter={() => prefetch(item.url)}>
                             <item.icon className={cn(
                               "h-4 w-4 shrink-0 transition-colors",
                               isActive ? "text-primary" : ""
