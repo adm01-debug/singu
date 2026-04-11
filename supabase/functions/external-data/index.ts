@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 const ALLOWED_TABLES = [
