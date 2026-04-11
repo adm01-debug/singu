@@ -524,6 +524,7 @@ const Contatos = () => {
                   Carregando mais contatos...
                 </div>
               )}
+            </>
             )}
 
             {/* Contacts List */}
