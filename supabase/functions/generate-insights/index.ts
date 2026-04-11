@@ -16,6 +16,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // ── Rate limit ──
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
+
   // 🔒 Authenticate — userId from JWT
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
