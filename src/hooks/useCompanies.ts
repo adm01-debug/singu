@@ -236,7 +236,25 @@ export function useCompanies() {
     placeholderData: (prev) => prev,
   });
 
-  const companies = data?.companies ?? [];
+  // Background-load remaining companies after initial fast load
+  const remainingKey = ['companies-remaining', searchTerm || '__all__'];
+  const { data: remainingCompanies } = useQuery({
+    queryKey: remainingKey,
+    queryFn: () => fetchRemainingCompanies(searchTerm || undefined),
+    enabled: !!user && !!data && data.count > INITIAL_FAST_LOAD,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
+
+  const companies = useMemo(() => {
+    const initial = data?.companies ?? [];
+    if (!remainingCompanies || remainingCompanies.length === 0) return initial;
+    // Merge & deduplicate
+    const seen = new Set(initial.map(c => c.id));
+    const extra = remainingCompanies.filter(c => !seen.has(c.id));
+    return [...initial, ...extra];
+  }, [data?.companies, remainingCompanies]);
+
   const totalCount = data?.count ?? 0;
 
   const fetchCompanies = useCallback(async (search?: string) => {
