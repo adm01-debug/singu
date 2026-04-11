@@ -419,7 +419,7 @@ const Empresas = () => {
             {/* Companies Grid */}
             {viewMode === 'grid' && (
               <div className="space-y-4">
-                {(hasGroups ? groups : [{ name: '', companies: filteredAndSortedCompanies }]).map((group) => {
+                {(hasGroups ? groups : [{ name: '', companies: visibleCompanies }]).map((group) => {
                   const expanded = isGroupExpanded(group.name);
                   let indexOffset = 0;
                   // Calculate offset for highlighting
@@ -476,7 +476,7 @@ const Empresas = () => {
             {/* Companies List */}
             {viewMode === 'list' && (
               <div className="space-y-2">
-                {filteredAndSortedCompanies.map((company) => (
+                {visibleCompanies.map((company) => (
                   <CompanyListItem
                     key={company.id}
                     company={company}
@@ -493,7 +493,7 @@ const Empresas = () => {
             {/* Companies Table */}
             {viewMode === 'table' && (
               <CompaniesTableView
-                companies={filteredAndSortedCompanies}
+                companies={visibleCompanies}
                 selectionMode={selectionMode}
                 selectedIds={selectedIds}
                 onSelect={handleSelect}
@@ -534,6 +534,13 @@ const Empresas = () => {
                   ]}
                 />
               )
+            )}
+
+            {/* Progressive loading sentinel */}
+            {hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Carregando mais {Math.min(RENDER_BATCH, filteredAndSortedCompanies.length - visibleCount)} empresas...
+              </div>
             )}
           </>
         )}
