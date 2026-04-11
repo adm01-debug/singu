@@ -494,37 +494,38 @@ const Contatos = () => {
           <>
             {/* Contacts Grid */}
             {viewMode === 'grid' && (
-              <div className={`grid grid-cols-1 gap-5 ${
-                gridColumns === 2 ? 'md:grid-cols-2' :
-                gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' :
-                gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
-                gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
-                'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
-              }`}>
-                {visibleContacts.map((contact, index) => (
-                  <ContactCardWithContext
-                    key={contact.id}
-                    contact={contact}
-                    companyName={getCompanyName(contact.company_id)}
-                    lastInteraction={getLastInteractionDate(contact.id)}
-                    index={index}
-                    isSelected={selectedIds.has(contact.id)}
-                    isHighlighted={selectedIndex === index}
-                    selectionMode={selectionMode}
-                    onSelect={handleSelect}
-                    onEdit={setEditingContact}
-                    onDelete={setDeletingContact}
-                    onUpdate={updateContact}
-                    viewMode="grid"
-                  />
-                ))}
-              </div>
-              {hasMoreContacts && (
-                <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                  Carregando mais contatos...
+              <>
+                <div className={`grid grid-cols-1 gap-5 ${
+                  gridColumns === 2 ? 'md:grid-cols-2' :
+                  gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' :
+                  gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+                  gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
+                  'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+                }`}>
+                  {visibleContacts.map((contact, index) => (
+                    <ContactCardWithContext
+                      key={contact.id}
+                      contact={contact}
+                      companyName={getCompanyName(contact.company_id)}
+                      lastInteraction={getLastInteractionDate(contact.id)}
+                      index={index}
+                      isSelected={selectedIds.has(contact.id)}
+                      isHighlighted={selectedIndex === index}
+                      selectionMode={selectionMode}
+                      onSelect={handleSelect}
+                      onEdit={setEditingContact}
+                      onDelete={setDeletingContact}
+                      onUpdate={updateContact}
+                      viewMode="grid"
+                    />
+                  ))}
                 </div>
-              )}
-            </>
+                {hasMoreContacts && (
+                  <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                    Carregando mais contatos...
+                  </div>
+                )}
+              </>
             )}
 
             {/* Contacts List */}
