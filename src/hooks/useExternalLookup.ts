@@ -44,7 +44,7 @@ export function useExternalBatchLookup(table: string, columns: string[], enabled
     queryKey: ['external-batch-lookup', table, ...columns],
     queryFn: () => fetchBatchDistinct(table, columns),
     enabled,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 30 * 60 * 1000, // 30 min — filter options rarely change
+    gcTime: 60 * 60 * 1000, // 1 hour
   });
 }

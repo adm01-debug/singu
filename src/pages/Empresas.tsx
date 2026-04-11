@@ -58,7 +58,7 @@ const Empresas = () => {
   const [secondaryReady, setSecondaryReady] = useState(false);
   useEffect(() => {
     if (!loading && companies.length > 0) {
-      const t = setTimeout(() => setSecondaryReady(true), 300);
+      const t = setTimeout(() => setSecondaryReady(true), 800);
       return () => clearTimeout(t);
     }
   }, [loading, companies.length]);
