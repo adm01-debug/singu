@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
       return jsonOk({ tableCount: Object.keys(tables).length, tables, functions });
     }
 
-    // ─── DISTINCT VALUES ───
+    // ─── DISTINCT VALUES (single column) ───
     if (operation === 'distinct') {
       const { column } = body;
       if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400);
@@ -159,6 +159,45 @@ Deno.serve(async (req) => {
 
       const unique = [...new Set((data as any[] || []).map((r: any) => r[column]).filter(Boolean))].sort();
       return jsonOk({ values: unique, count: unique.length });
+    }
+
+    // ─── BATCH DISTINCT VALUES (multiple columns in one call) ───
+    if (operation === 'batch_distinct') {
+      const { columns } = body;
+      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400);
+      if (!Array.isArray(columns) || columns.length === 0) return jsonError('Missing "columns" array for batch_distinct', 400);
+      if (columns.length > 20) return jsonError('Max 20 columns per batch', 400);
+
+      const client = getExternalClient();
+      const results: Record<string, string[]> = {};
+
+      // Run all distinct queries in parallel
+      const promises = columns.map(async (col: string) => {
+        try {
+          const { data, error } = await client
+            .from(table)
+            .select(col)
+            .not(col, 'is', null)
+            .order(col, { ascending: true })
+            .limit(5000);
+          if (error) {
+            console.warn(`[batch_distinct] Column ${col} failed: ${error.message}`);
+            return { col, values: [] };
+          }
+          const unique = [...new Set((data as any[] || []).map((r: any) => r[col]).filter(Boolean))].sort();
+          return { col, values: unique };
+        } catch (err) {
+          console.warn(`[batch_distinct] Column ${col} error:`, err);
+          return { col, values: [] };
+        }
+      });
+
+      const settled = await Promise.all(promises);
+      for (const { col, values } of settled) {
+        results[col] = values;
+      }
+
+      return jsonOk({ results });
     }
 
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
