@@ -37,18 +37,19 @@ async function fetchContactsPage(companyId?: string) {
   return data || [];
 }
 
-export function useContacts(companyId?: string) {
+export function useContacts(companyId?: string, options?: { enabled?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { logActivity } = useActivityLogger();
   const queryClient = useQueryClient();
 
   const queryKey = ['contacts', companyId ?? '__all__'];
+  const externalEnabled = options?.enabled ?? true;
 
   const { data: contacts = [], isLoading: loading } = useQuery({
     queryKey,
     queryFn: () => fetchContactsPage(companyId),
-    enabled: !!user,
+    enabled: !!user && externalEnabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,
