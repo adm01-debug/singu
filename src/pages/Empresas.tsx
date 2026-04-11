@@ -63,8 +63,8 @@ const Empresas = () => {
     }
   }, [loading, companies.length]);
 
-  const { contacts } = useContacts({ enabled: secondaryReady });
-  const { interactions } = useInteractions({ enabled: secondaryReady });
+  const { contacts } = useContacts(undefined, { enabled: secondaryReady });
+  const { interactions } = useInteractions(undefined, undefined, { enabled: secondaryReady });
   const dynamicFilters = useCompanyFilterOptions({ enabled: secondaryReady });
 
   // Pre-compute contact counts and last interaction per company (non-blocking)
