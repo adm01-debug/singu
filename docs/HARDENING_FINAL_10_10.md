@@ -20,10 +20,10 @@
 | Views security_invoker | 113/113 | ✅ 100% |
 | Policies anon | 0 | ✅ Eliminadas |
 | Edge Functions hardenadas | 45/45 | ✅ 100% |
-| Índices | 490 | ✅ |
+| Índices | 497 | ✅ |
 | Triggers | 181 | ✅ |
 | Check Constraints | 113 | ✅ |
-| Funções | 338 | ✅ |
+| Funções | 350 | ✅ |
 
 ---
 
@@ -33,12 +33,12 @@
 |---------|-------|
 | Tabelas | 117 |
 | Views | 113 |
-| Policies | 372 |
-| Índices | 490 |
+| Policies | 373 |
+| Índices | 497 |
 | Triggers | 181 |
-| Funções | 338 |
+| Funções | 350 |
 | Constraints | 113 |
-| FKs | 128 |
+| Tamanho BD | 461 MB |
 
 ### Hardening Aplicado
 
@@ -46,14 +46,93 @@
 2. **security_invoker em 100% das views** - 113 views
 3. **Policies anon eliminadas** - 7 policies removidas
 4. **auth.uid() otimizado** - 132 policies com InitPlan
-5. **search_path em funções** - 182 funções
+5. **search_path em funções** - Todas as funções
 6. **Triggers updated_at** - 71 tabelas
-7. **Índices de performance** - CNPJ, created_at, soft delete, parciais
+7. **Índices de performance** - CNPJ, created_at, soft delete, parciais, GIN trigram
 8. **Check constraints** - Validação de CPF, scores, valores
 9. **Defaults** - Valores padrão em colunas críticas
 10. **Documentação** - Comentários em tabelas principais
-11. **Funções utilitárias** - sanitize/format para CNPJ/CPF/telefone
+11. **Funções utilitárias** - sanitize/format/validate CNPJ/CPF/telefone
 12. **Auditoria** - Tabela audit_log + triggers em tabelas críticas
+13. **Busca fuzzy** - Funções search_*_fuzzy com índices GIN trigram
+14. **Funções de negócio** - KPIs, resumos, health check
+
+---
+
+## 📊 HEALTH CHECK
+
+```sql
+SELECT system_health_check();
+```
+
+Retorna:
+```json
+{
+  "database": {
+    "db_size": "461 MB",
+    "total_tables": 117,
+    "total_views": 113,
+    "total_indexes": 497,
+    "total_functions": 350
+  },
+  "security": {
+    "anon_policies": 0,
+    "total_policies": 373,
+    "tables_with_rls": 117,
+    "views_with_invoker": 113
+  },
+  "data_counts": {
+    "companies": 57728,
+    "contacts": 4747,
+    "customers": 48623,
+    "interactions": 10457
+  }
+}
+```
+
+---
+
+## 🛠️ FUNÇÕES UTILITÁRIAS
+
+### Sanitização e Formatação
+```sql
+-- Sanitização (remove formatação)
+SELECT sanitize_cnpj('12.345.678/0001-90'); -- '12345678000190'
+SELECT sanitize_cpf('123.456.789-00');       -- '12345678900'
+SELECT sanitize_phone('(11) 99999-8888');    -- '11999998888'
+
+-- Formatação
+SELECT format_cnpj('12345678000190');        -- '12.345.678/0001-90'
+SELECT format_cpf('12345678900');            -- '123.456.789-00'
+SELECT format_phone('11999998888');          -- '(11) 99999-8888'
+```
+
+### Validação
+```sql
+SELECT is_valid_cnpj('12345678000190');  -- true/false
+SELECT is_valid_cpf('12345678900');      -- true/false
+```
+
+### Busca Fuzzy
+```sql
+SELECT * FROM search_companies_fuzzy('promobrindes', 10);
+SELECT * FROM search_contacts_fuzzy('joao silva', 10);
+```
+
+### KPIs e Resumos
+```sql
+SELECT get_customer_summary('uuid-da-empresa');
+SELECT get_salesperson_kpis(123, 30);  -- vendedor_id, dias
+```
+
+### Manutenção
+```sql
+-- Preview de limpeza (dry_run = true)
+SELECT cleanup_old_data('connector_log', 'created_at', 90, true);
+
+-- Executar limpeza
+SELECT cleanup_old_data('connector_log', 'created_at', 90, false);
+```
 
 ---
 
@@ -67,7 +146,6 @@ Tabela `audit_log` com triggers automáticos em:
 - salespeople
 
 ```sql
--- Consultar alterações recentes
 SELECT table_name, action, changed_fields, created_at
 FROM audit_log
 ORDER BY created_at DESC
@@ -79,83 +157,11 @@ LIMIT 50;
 ## ⚡ EDGE FUNCTIONS (45/45)
 
 ### AI User-Facing (verify_jwt=true) — 20 edges
-
-| Edge | Versão |
-|------|--------|
-| nlp-pipeline | v6 |
-| guardrails-ml | v4 |
-| smart-model-router | v4 |
-| agent-card-generator | v2 |
-| rag-embed-v2 | v2 |
-| rag-rerank-v2 | v2 |
-| eval-engine-v2 | v2 |
-| cost-calculator | v2 |
-| health-monitor | v3 |
-| smolagent-runtime-v2 | v3 |
-| doc-layout-analyzer | v3 |
-| sentence-similarity | v3 |
-| context-optimizer | v3 |
-| product-description-gen | v2 |
-| ai-compliance | v2 |
-| hf-space-tool | v2 |
-| synthetic-data-gen | v2 |
-| media-pipeline | v2 |
-| hf-toolbox | v2 |
-| autotrain-config-generator | v2 |
-
 ### S2S Proxies (header secret) — 22 edges
-
-| Edge | Header | Secret |
-|------|--------|--------|
-| bitrix24-proxy | x-bitrix-secret | BITRIX24_WEBHOOK_SECRET |
-| evolution-proxy | x-evolution-secret | EVOLUTION_WEBHOOK_SECRET |
-| bigquery-proxy | x-bigquery-secret | BIGQUERY_WEBHOOK_SECRET |
-| bigquery-cnpj-proxy | x-bigquery-secret | BIGQUERY_WEBHOOK_SECRET |
-| xbz-api-proxy | x-xbz-secret | XBZ_WEBHOOK_SECRET |
-| xbz-unified | x-xbz-secret | XBZ_WEBHOOK_SECRET |
-| lalamove-uapi-proxy | x-lalamove-secret | LALAMOVE_WEBHOOK_SECRET |
-| lalamove-v3-proxy | x-lalamove-secret | LALAMOVE_WEBHOOK_SECRET |
-| lalamove-unified | x-lalamove-secret | LALAMOVE_WEBHOOK_SECRET |
-| spot-unified | x-spot-secret | SPOT_WEBHOOK_SECRET |
-| fornecedores-proxy | x-fornecedores-secret | FORNECEDORES_WEBHOOK_SECRET |
-| comtele-proxy | x-comtele-secret | COMTELE_WEBHOOK_SECRET |
-| cloudflare-proxy | x-cloudflare-secret | CLOUDFLARE_WEBHOOK_SECRET |
-| lusha-proxy | x-lusha-secret | LUSHA_WEBHOOK_SECRET |
-| mapbox-proxy | x-mapbox-secret | MAPBOX_WEBHOOK_SECRET |
-| phantombuster-proxy | x-phantombuster-secret | PHANTOMBUSTER_WEBHOOK_SECRET |
-| bling-proxy | x-bling-secret | BLING_WEBHOOK_SECRET |
-| rodonaves-unified | x-rodonaves-secret | RODONAVES_WEBHOOK_SECRET |
-| leadcontact-proxy | x-leadcontact-secret | LEADCONTACT_WEBHOOK_SECRET |
-
 ### Cron/Job — 3 edges
-
-| Edge | Header | Secret |
-|------|--------|--------|
-| coop003-executor | x-cron-secret | CRON_SECRET |
-| coop004-pacs-report | x-cron-secret | CRON_SECRET |
-| bitrix-extract-companies | x-cron-secret | CRON_SECRET |
-
 ### Connector Bidirecional — 1 edge
 
-| Edge | Versão | Auth |
-|------|--------|------|
-| evolution-bitrix-connector | v6 | Híbrido |
-
----
-
-## 🛠️ FUNÇÕES UTILITÁRIAS
-
-```sql
--- Sanitização (remove formatação)
-SELECT sanitize_cnpj('12.345.678/0001-90'); -- '12345678000190'
-SELECT sanitize_cpf('123.456.789-00');       -- '12345678900'
-SELECT sanitize_phone('(11) 99999-8888');    -- '11999998888'
-
--- Formatação
-SELECT format_cnpj('12345678000190');        -- '12.345.678/0001-90'
-SELECT format_cpf('12345678900');            -- '123.456.789-00'
-SELECT format_phone('11999998888');          -- '(11) 99999-8888'
-```
+*(Ver tabelas detalhadas na versão anterior)*
 
 ---
 
@@ -165,25 +171,7 @@ SELECT format_phone('11999998888');          -- '(11) 99999-8888'
 - [ ] Revogar PAT `ghp_f9Hr...` em https://github.com/settings/tokens
 
 ### 🟠 SECRETS (Dashboard → Edge Functions → Secrets)
-
-| Nome | Uso |
-|------|-----|
-| BITRIX24_WEBHOOK_SECRET | bitrix24-proxy |
-| EVOLUTION_WEBHOOK_SECRET | evolution-*, connector |
-| CRON_SECRET | coop*, bitrix-extract |
-| SPOT_WEBHOOK_SECRET | spot-unified |
-| FORNECEDORES_WEBHOOK_SECRET | fornecedores-proxy |
-| COMTELE_WEBHOOK_SECRET | comtele-proxy |
-| BIGQUERY_WEBHOOK_SECRET | bigquery-* |
-| CLOUDFLARE_WEBHOOK_SECRET | cloudflare-proxy |
-| LUSHA_WEBHOOK_SECRET | lusha-proxy |
-| MAPBOX_WEBHOOK_SECRET | mapbox-proxy |
-| PHANTOMBUSTER_WEBHOOK_SECRET | phantombuster-proxy |
-| BLING_WEBHOOK_SECRET | bling-proxy |
-| RODONAVES_WEBHOOK_SECRET | rodonaves-unified |
-| LEADCONTACT_WEBHOOK_SECRET | leadcontact-proxy |
-| XBZ_WEBHOOK_SECRET | xbz-* |
-| LALAMOVE_WEBHOOK_SECRET | lalamove-* |
+16 secrets a cadastrar (ver lista na versão anterior)
 
 ### 🟢 AUTH
 - [ ] Dashboard → Auth → Providers → Email → leaked_password_protection
