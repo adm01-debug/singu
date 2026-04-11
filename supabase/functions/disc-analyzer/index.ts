@@ -5,7 +5,14 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+
+const DiscAnalyzerInput = z.object({
+  texts: z.array(z.string().min(1)).min(1, 'Pelo menos 1 texto é necessário').max(50),
+  contactId: z.string().uuid('contactId deve ser UUID válido'),
+  interactionId: z.string().uuid().optional(),
+});
 
 interface DISCScores {
   D: number;
