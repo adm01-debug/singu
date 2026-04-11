@@ -22,7 +22,7 @@ const ALLOWED_TABLES = [
 
 type AllowedTable = typeof ALLOWED_TABLES[number];
 
-const MAX_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 500;
 const DEFAULT_PAGE_SIZE = 50;
 const STATEMENT_TIMEOUT_MS = 15000;
 
