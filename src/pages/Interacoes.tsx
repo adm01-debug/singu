@@ -377,7 +377,7 @@ const Interacoes = () => {
                       key={interaction.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
                       className="relative pl-16 group"
                     >
                       <div className={`absolute left-2 top-4 w-10 h-10 rounded-full flex items-center justify-center ${interactionColors[interaction.type]} border-4 border-background z-10`}>
