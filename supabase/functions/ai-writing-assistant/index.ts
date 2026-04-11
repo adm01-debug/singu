@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { handleCorsAndMethod, withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 interface ContactProfile {
@@ -25,13 +26,33 @@ interface InteractionSummary {
   createdAt: string;
 }
 
-interface RequestPayload {
-  contact: ContactProfile;
-  recentInteractions: InteractionSummary[];
-  messageType: 'follow_up' | 'introduction' | 'proposal' | 'check_in' | 'thank_you' | 'meeting_request' | 'custom';
-  customContext?: string;
-  tone?: 'formal' | 'casual' | 'friendly';
-}
+const WritingInput = z.object({
+  contact: z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    roleTitle: z.string().optional(),
+    companyName: z.string().optional(),
+    discProfile: z.enum(['D', 'I', 'S', 'C']).nullable().optional(),
+    discNotes: z.string().optional(),
+    preferredChannel: z.string().optional(),
+    messageStyle: z.string().optional(),
+    formalityLevel: z.number().min(1).max(10).optional(),
+    primaryMotivation: z.string().optional(),
+    primaryFear: z.string().optional(),
+    communicationStyle: z.string().optional(),
+    hobbies: z.array(z.string()).optional(),
+    interests: z.array(z.string()).optional(),
+  }),
+  recentInteractions: z.array(z.object({
+    type: z.string(),
+    sentiment: z.string(),
+    content: z.string().optional(),
+    createdAt: z.string(),
+  })).default([]),
+  messageType: z.enum(['follow_up', 'introduction', 'proposal', 'check_in', 'thank_you', 'meeting_request', 'custom']),
+  customContext: z.string().max(2000).optional(),
+  tone: z.enum(['formal', 'casual', 'friendly']).optional(),
+});
 
 const DISC_COMMUNICATION_STYLES = {
   D: {
@@ -74,7 +95,12 @@ serve(async (req) => {
   if (authResult instanceof Response) return authResult;
 
   try {
-    const { contact, recentInteractions, messageType, customContext, tone }: RequestPayload = await req.json();
+    const rawBody = await req.json();
+    const parsed = WritingInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
+    }
+    const { contact, recentInteractions, messageType, customContext, tone } = parsed.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {

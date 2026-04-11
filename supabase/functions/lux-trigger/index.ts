@@ -1,14 +1,27 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-serve(async (req) => {
+const LuxTriggerSchema = z.object({
+  entityType: z.enum(['contact', 'company']),
+  entityId: z.string().uuid('entityId must be a valid UUID'),
+  entityData: z.record(z.unknown()).optional(),
+  webhookUrl: z.string().url().optional(),
+});
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -34,13 +47,19 @@ serve(async (req) => {
       });
     }
 
-    const { entityType, entityId, entityData, webhookUrl } = await req.json();
-
-    if (!entityType || !entityId) {
-      return new Response(JSON.stringify({ error: 'entityType and entityId are required' }), {
+    // Validate input with Zod
+    const rawBody = await req.json();
+    const parsed = LuxTriggerSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid input',
+        details: parsed.error.flatten().fieldErrors,
+      }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const { entityType, entityId, entityData, webhookUrl } = parsed.data;
 
     // Create lux_intelligence record
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
@@ -86,7 +105,6 @@ serve(async (req) => {
         console.log('n8n webhook triggered successfully');
       } catch (webhookError) {
         console.error('Error triggering n8n webhook:', webhookError);
-        // Update status to error
         await serviceClient
           .from('lux_intelligence')
           .update({ status: 'error', error_message: 'Failed to trigger n8n workflow' })

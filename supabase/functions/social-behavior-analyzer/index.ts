@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 
-interface AnalyzeRequest {
-  contactId: string;
-}
+const SocialBehaviorInput = z.object({
+  contactId: z.string().uuid('contactId deve ser UUID válido'),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,11 +29,12 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get("Authorization")! } } }
     );
 
-    const { contactId }: AnalyzeRequest = await req.json();
-
-    if (!contactId) {
-      return jsonError("Contact ID is required", 400);
+    const rawBody = await req.json();
+    const parsed = SocialBehaviorInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
     }
+    const { contactId } = parsed.data;
 
     const { data: socialProfiles, error: profilesError } = await supabaseClient
       .from("social_profiles").select("*").eq("contact_id", contactId);

@@ -5,7 +5,14 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+
+const DiscAnalyzerInput = z.object({
+  texts: z.array(z.string().min(1)).min(1, 'Pelo menos 1 texto é necessário').max(50),
+  contactId: z.string().uuid('contactId deve ser UUID válido'),
+  interactionId: z.string().uuid().optional(),
+});
 
 interface DISCScores {
   D: number;
@@ -118,15 +125,12 @@ serve(async (req) => {
   const userId = authResult; // from JWT
 
   try {
-    const { texts, contactId, interactionId } = await req.json();
-
-    if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return jsonError("Textos são obrigatórios", 400);
+    const rawBody = await req.json();
+    const parsed = DiscAnalyzerInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Input inválido: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
     }
-
-    if (!contactId) {
-      return jsonError("contactId é obrigatório", 400);
-    }
+    const { texts, contactId, interactionId } = parsed.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
