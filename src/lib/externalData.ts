@@ -23,19 +23,37 @@ interface ExternalQueryOptions {
   };
 }
 
+// Cached auth token to avoid calling getSession() on every request
+let _cachedToken: string | null = null;
+let _tokenExpiresAt = 0;
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  _cachedToken = session?.access_token ?? null;
+  _tokenExpiresAt = session?.expires_at ? session.expires_at * 1000 : 0;
+});
+
+async function getAccessToken(): Promise<string> {
+  if (_cachedToken && Date.now() < _tokenExpiresAt - 30_000) {
+    return _cachedToken;
+  }
+  const { data } = await supabase.auth.getSession();
+  _cachedToken = data?.session?.access_token ?? null;
+  _tokenExpiresAt = data?.session?.expires_at ? data.session.expires_at * 1000 : 0;
+  return _cachedToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+}
+
+const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-data`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
 async function callExternalData(body: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const url = `${supabaseUrl}/functions/v1/external-data`;
+  const accessToken = await getAccessToken();
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  const accessToken = sessionData?.session?.access_token;
-
-  const response = await fetch(url, {
+  const response = await fetch(EDGE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      'Authorization': `Bearer ${accessToken}`,
+      'apikey': ANON_KEY,
     },
     body: JSON.stringify(body),
   });

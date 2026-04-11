@@ -31,6 +31,7 @@ interface CompaniesPage { companies: Company[]; count: number }
 
 const COMPANIES_PAGE_SIZE = 500;
 const MAX_COMPANIES_TOTAL = 2000;
+const INITIAL_FAST_LOAD = 500;
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
   'nome_fantasia',
