@@ -274,8 +274,12 @@ Deno.serve(async (req) => {
 
     // ─── UPDATE ───
     if (operation === 'update') {
-      const { id, updates } = body;
-      if (!id) return jsonError('Missing "id" for update', 400);
+      const id = body.id;
+      const updates = body.updates;
+      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for update', 400);
+      // Validate UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) return jsonError('Invalid UUID format for "id"', 400);
       if (!updates || typeof updates !== 'object') return jsonError('Missing or invalid "updates" for update', 400);
 
       const { data, error } = await client.from(table).update(updates).eq('id', id).select().single();
@@ -285,8 +289,10 @@ Deno.serve(async (req) => {
 
     // ─── DELETE ───
     if (operation === 'delete') {
-      const { id } = body;
-      if (!id) return jsonError('Missing "id" for delete', 400);
+      const id = body.id;
+      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for delete', 400);
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id as string)) return jsonError('Invalid UUID format for "id"', 400);
 
       const { error } = await client.from(table).delete().eq('id', id);
       if (error) throw new Error(`Delete failed: ${error.message}`);
