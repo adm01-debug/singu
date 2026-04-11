@@ -192,7 +192,9 @@ export function useCompanies() {
     queryKey,
     queryFn: () => fetchCompaniesPage(searchTerm || undefined),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const companies = data?.companies ?? [];

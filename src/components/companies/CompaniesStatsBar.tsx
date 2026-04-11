@@ -29,9 +29,9 @@ export function CompaniesStatsBar({ companies, contactCountMap, className }: Com
   }, [companies, contactCountMap]);
 
   return (
-    <div className={cn('space-y-3', className)}>
-      {/* Main stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+    <div className={cn('space-y-3 min-h-[120px]', className)}>
+      {/* Main stats row — fixed grid to prevent CLS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 min-h-[52px]">
         <StatCard icon={Building2} label="Total" value={stats.total} color="text-primary" />
         <StatCard icon={CheckCircle2} label="Clientes" value={stats.customers} color="text-success" />
         <StatCard icon={Users} label="Contatos" value={stats.totalContacts} color="text-info" />
