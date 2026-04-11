@@ -49,7 +49,9 @@ export function useContacts(companyId?: string) {
     queryKey,
     queryFn: () => fetchContactsPage(companyId),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const fetchContacts = useCallback(async () => {

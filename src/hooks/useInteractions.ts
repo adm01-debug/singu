@@ -42,7 +42,9 @@ export function useInteractions(contactId?: string, companyId?: string) {
     queryKey,
     queryFn: () => fetchInteractionsPage(contactId, companyId),
     enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const hasMore = interactions.length >= PAGE_SIZE;
