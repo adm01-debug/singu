@@ -1,9 +1,35 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Allowed origins for CORS — restrict to known app domains
+const ALLOWED_ORIGINS = [
+  "https://dialogue-diamond.lovable.app",
+  "https://id-preview--08cba815-22fa-42db-9361-0cffd81afd61.lovable.app",
+];
+
+function getOrigin(req?: Request): string {
+  if (!req) return ALLOWED_ORIGINS[0];
+  const origin = req.headers.get("Origin") || "";
+  // Allow lovable preview subdomains dynamically
+  if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith(".lovable.app")) {
+    return origin;
+  }
+  return ALLOWED_ORIGINS[0];
+}
+
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+/** Returns CORS headers scoped to the request's origin */
+export function scopedCorsHeaders(req: Request) {
+  return {
+    "Access-Control-Allow-Origin": getOrigin(req),
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
 
 /**
  * authenticateRequest — Validates JWT from the Authorization header.
