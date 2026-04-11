@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -103,11 +103,14 @@ export function AppSidebar() {
     toast.success('Até logo!');
   };
 
-  const userInitials = user?.user_metadata?.first_name && user?.user_metadata?.last_name
-    ? `${(user.user_metadata.first_name as string)[0]}${(user.user_metadata.last_name as string)[0]}`
-    : user?.email?.[0]?.toUpperCase() || 'U';
+  const userInitials = useMemo(() => {
+    if (user?.user_metadata?.first_name && user?.user_metadata?.last_name) {
+      return `${(user.user_metadata.first_name as string)[0]}${(user.user_metadata.last_name as string)[0]}`;
+    }
+    return user?.email?.[0]?.toUpperCase() || 'U';
+  }, [user?.user_metadata?.first_name, user?.user_metadata?.last_name, user?.email]);
 
-  const userName = (() => {
+  const userName = useMemo(() => {
     if (user?.user_metadata?.first_name && user?.user_metadata?.last_name) {
       return `${user.user_metadata.first_name} ${user.user_metadata.last_name}`;
     }
@@ -116,7 +119,7 @@ export function AppSidebar() {
     const cleaned = emailPrefix.replace(/[0-9_\-.]+/g, ' ').trim();
     if (!cleaned || cleaned.length < 4) return 'Minha Conta';
     return cleaned.split(/\s+/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-  })();
+  }, [user?.user_metadata?.first_name, user?.user_metadata?.last_name, user?.user_metadata?.full_name, user?.email]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border" aria-label="Navegação principal">

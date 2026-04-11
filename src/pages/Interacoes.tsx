@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, startTransition } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
@@ -198,8 +198,43 @@ const Interacoes = () => {
     });
   }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
 
+  // Progressive rendering
+  const RENDER_BATCH = 40;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setVisibleCount(RENDER_BATCH); }, [activeFilters, sortBy, sortOrder]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => setVisibleCount(prev => prev + RENDER_BATCH));
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedInteractions.length]);
+
+  const visibleInteractions = useMemo(
+    () => filteredAndSortedInteractions.slice(0, visibleCount),
+    [filteredAndSortedInteractions, visibleCount]
+  );
+  const hasMore = visibleCount < filteredAndSortedInteractions.length;
+
+  // O(1) contact lookup
+  const contactMap = useMemo(() => {
+    const map = new Map<string, typeof contacts[0]>();
+    for (const c of contacts) map.set(c.id, c);
+    return map;
+  }, [contacts]);
+
   const getContactInfo = (contactId: string) => {
-    return contacts.find(c => c.id === contactId);
+    return contactMap.get(contactId);
   };
 
   const handleCreate = async (data: Parameters<typeof createInteraction>[0], event?: React.MouseEvent) => {
@@ -333,7 +368,7 @@ const Interacoes = () => {
               <div className="absolute left-[27px] top-0 bottom-0 w-0.5 bg-border" />
               
               <div className="space-y-4">
-                {filteredAndSortedInteractions.map((interaction, index) => {
+                {visibleInteractions.map((interaction, index) => {
                   const contact = getContactInfo(interaction.contact_id);
                   const Icon = interactionIcons[interaction.type] || MessageSquare;
                   
@@ -342,7 +377,7 @@ const Interacoes = () => {
                       key={interaction.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }}
                       className="relative pl-16 group"
                     >
                       <div className={`absolute left-2 top-4 w-10 h-10 rounded-full flex items-center justify-center ${interactionColors[interaction.type]} border-4 border-background z-10`}>
@@ -447,6 +482,12 @@ const Interacoes = () => {
                 })}
               </div>
             </div>
+
+            {hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Carregando mais interações...
+              </div>
+            )}
 
             {filteredAndSortedInteractions.length === 0 && !loading && (
               isSearching || Object.keys(activeFilters).length > 0 ? (

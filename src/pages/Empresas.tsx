@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, startTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { hapticSuccess, hapticHeavy } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
@@ -98,6 +98,11 @@ const Empresas = () => {
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Progressive rendering — show 60 initially, load 60 more as user scrolls
+  const RENDER_BATCH = 60;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  
   // Selection state for bulk actions
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -186,6 +191,36 @@ const Empresas = () => {
 
     return result;
   }, [companies, activeFilters, sortBy, sortOrder]);
+
+  // Reset visible count when filter/sort changes
+  useEffect(() => {
+    setVisibleCount(RENDER_BATCH);
+  }, [activeFilters, sortBy, sortOrder, activeSearch]);
+
+  // Intersection observer for progressive loading
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => {
+            setVisibleCount(prev => prev + RENDER_BATCH);
+          });
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedCompanies.length]);
+
+  // Slice for rendering
+  const visibleCompanies = useMemo(
+    () => filteredAndSortedCompanies.slice(0, visibleCount),
+    [filteredAndSortedCompanies, visibleCount]
+  );
+  const hasMore = visibleCount < filteredAndSortedCompanies.length;
 
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedCompanies, {
@@ -384,7 +419,7 @@ const Empresas = () => {
             {/* Companies Grid */}
             {viewMode === 'grid' && (
               <div className="space-y-4">
-                {(hasGroups ? groups : [{ name: '', companies: filteredAndSortedCompanies }]).map((group) => {
+                {(hasGroups ? groups : [{ name: '', companies: visibleCompanies }]).map((group) => {
                   const expanded = isGroupExpanded(group.name);
                   let indexOffset = 0;
                   // Calculate offset for highlighting
@@ -441,7 +476,7 @@ const Empresas = () => {
             {/* Companies List */}
             {viewMode === 'list' && (
               <div className="space-y-2">
-                {filteredAndSortedCompanies.map((company) => (
+                {visibleCompanies.map((company) => (
                   <CompanyListItem
                     key={company.id}
                     company={company}
@@ -458,7 +493,7 @@ const Empresas = () => {
             {/* Companies Table */}
             {viewMode === 'table' && (
               <CompaniesTableView
-                companies={filteredAndSortedCompanies}
+                companies={visibleCompanies}
                 selectionMode={selectionMode}
                 selectedIds={selectedIds}
                 onSelect={handleSelect}
@@ -499,6 +534,13 @@ const Empresas = () => {
                   ]}
                 />
               )
+            )}
+
+            {/* Progressive loading sentinel */}
+            {hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Carregando mais {Math.min(RENDER_BATCH, filteredAndSortedCompanies.length - visibleCount)} empresas...
+              </div>
             )}
           </>
         )}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, startTransition } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
@@ -222,6 +222,38 @@ const Contatos = () => {
     });
   }, [contacts, fuzzyResults, searchTerm, activeFilters, sortBy, sortOrder]);
 
+  // Progressive rendering for grid view
+  const RENDER_BATCH = 60;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(RENDER_BATCH);
+  }, [activeFilters, sortBy, sortOrder, searchTerm]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          startTransition(() => {
+            setVisibleCount(prev => prev + RENDER_BATCH);
+          });
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedContacts.length]);
+
+  const visibleContacts = useMemo(
+    () => filteredAndSortedContacts.slice(0, visibleCount),
+    [filteredAndSortedContacts, visibleCount]
+  );
+  const hasMoreContacts = visibleCount < filteredAndSortedContacts.length;
+
   // Keyboard navigation
   const { selectedIndex, setSelectedIndex } = useListNavigation(filteredAndSortedContacts, {
     onOpen: (contact) => navigate(`/contatos/${contact.id}`),
@@ -230,18 +262,33 @@ const Contatos = () => {
 
   useKeyboardShortcutsEnhanced();
 
-  const getCompanyName = useCallback((companyId: string | null) => {
-    if (!companyId) return null;
-    const company = companies.find(c => c.id === companyId);
-    return company?.name || null;
+  const companyNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of companies) {
+      map.set(c.id, c.name);
+    }
+    return map;
   }, [companies]);
 
-  const getLastInteractionDate = useCallback((contactId: string): string | null => {
-    const contactInteractions = interactions
-      .filter(i => i.contact_id === contactId)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    return contactInteractions[0]?.created_at || null;
+  const lastInteractionMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const i of interactions) {
+      const existing = map.get(i.contact_id);
+      if (!existing || i.created_at > existing) {
+        map.set(i.contact_id, i.created_at);
+      }
+    }
+    return map;
   }, [interactions]);
+
+  const getCompanyName = useCallback((companyId: string | null) => {
+    if (!companyId) return null;
+    return companyNameMap.get(companyId) || null;
+  }, [companyNameMap]);
+
+  const getLastInteractionDate = useCallback((contactId: string): string | null => {
+    return lastInteractionMap.get(contactId) || null;
+  }, [lastInteractionMap]);
 
   const handleCreate = async (data: Parameters<typeof createContact>[0], event?: React.MouseEvent) => {
     setIsSubmitting(true);
@@ -462,31 +509,38 @@ const Contatos = () => {
           <>
             {/* Contacts Grid */}
             {viewMode === 'grid' && (
-              <div className={`grid grid-cols-1 gap-5 ${
-                gridColumns === 2 ? 'md:grid-cols-2' :
-                gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' :
-                gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
-                gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
-                'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
-              }`}>
-                {filteredAndSortedContacts.map((contact, index) => (
-                  <ContactCardWithContext
-                    key={contact.id}
-                    contact={contact}
-                    companyName={getCompanyName(contact.company_id)}
-                    lastInteraction={getLastInteractionDate(contact.id)}
-                    index={index}
-                    isSelected={selectedIds.has(contact.id)}
-                    isHighlighted={selectedIndex === index}
-                    selectionMode={selectionMode}
-                    onSelect={handleSelect}
-                    onEdit={setEditingContact}
-                    onDelete={setDeletingContact}
-                    onUpdate={updateContact}
-                    viewMode="grid"
-                  />
-                ))}
-              </div>
+              <>
+                <div className={`grid grid-cols-1 gap-5 ${
+                  gridColumns === 2 ? 'md:grid-cols-2' :
+                  gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' :
+                  gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' :
+                  gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' :
+                  'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+                }`}>
+                  {visibleContacts.map((contact, index) => (
+                    <ContactCardWithContext
+                      key={contact.id}
+                      contact={contact}
+                      companyName={getCompanyName(contact.company_id)}
+                      lastInteraction={getLastInteractionDate(contact.id)}
+                      index={index}
+                      isSelected={selectedIds.has(contact.id)}
+                      isHighlighted={selectedIndex === index}
+                      selectionMode={selectionMode}
+                      onSelect={handleSelect}
+                      onEdit={setEditingContact}
+                      onDelete={setDeletingContact}
+                      onUpdate={updateContact}
+                      viewMode="grid"
+                    />
+                  ))}
+                </div>
+                {hasMoreContacts && (
+                  <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                    Carregando mais contatos...
+                  </div>
+                )}
+              </>
             )}
 
             {/* Contacts List */}

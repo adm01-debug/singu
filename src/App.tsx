@@ -126,7 +126,7 @@ const DeferredAppChrome = () => {
 
     const timer = window.setTimeout(() => {
       setIsReady(true);
-    }, 1500);
+    }, 800);
 
     return () => window.clearTimeout(timer);
   }, [location.pathname]);
