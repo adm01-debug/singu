@@ -1,9 +1,22 @@
 import { useMemo } from 'react';
 import { Building2, HeartPulse, Landmark, MapPin, Package, Truck, Users } from 'lucide-react';
 import type { FilterConfig, SortOption } from '@/components/filters/AdvancedFilters';
-import { useExternalLookup } from '@/hooks/useExternalLookup';
+import { useExternalBatchLookup } from '@/hooks/useExternalLookup';
 
 const MAX_LOOKUP_OPTIONS = 60;
+
+const LOOKUP_COLUMNS = [
+  'ramo_atividade',
+  'nicho_cliente',
+  'grupo_economico',
+  'tipo_cooperativa',
+  'natureza_juridica_desc',
+  'status',
+  'situacao_rf',
+  'porte_rf',
+  'financial_health',
+  'employee_count',
+] as const;
 
 const statusFallback = [
   { value: 'ativo', label: 'Ativo' },
@@ -48,37 +61,23 @@ const employeeCountFallback = [
 ];
 
 const healthLabels: Record<string, string> = {
-  excellent: 'Excelente',
-  good: 'Boa',
-  growing: 'Em Crescimento',
-  stable: 'Estável',
-  average: 'Regular',
-  cutting: 'Em Retração',
-  poor: 'Ruim',
-  unknown: 'Desconhecida',
+  excellent: 'Excelente', good: 'Boa', growing: 'Em Crescimento',
+  stable: 'Estável', average: 'Regular', cutting: 'Em Retração',
+  poor: 'Ruim', unknown: 'Desconhecida',
 };
 
 const statusLabels: Record<string, string> = {
-  ativo: 'Ativo',
-  inativo: 'Inativo',
-  suspenso: 'Suspenso',
+  ativo: 'Ativo', inativo: 'Inativo', suspenso: 'Suspenso',
 };
 
 const situacaoRfLabels: Record<string, string> = {
-  ATIVA: 'Ativa',
-  BAIXADA: 'Baixada',
-  INAPTA: 'Inapta',
-  SUSPENSA: 'Suspensa',
-  NULA: 'Nula',
+  ATIVA: 'Ativa', BAIXADA: 'Baixada', INAPTA: 'Inapta',
+  SUSPENSA: 'Suspensa', NULA: 'Nula',
 };
 
 const porteRfLabels: Record<string, string> = {
-  MEI: 'MEI',
-  ME: 'ME - Microempresa',
-  EPP: 'EPP - Pequeno Porte',
-  MEDIO: 'Médio Porte',
-  GRANDE: 'Grande Porte',
-  DEMAIS: 'Demais',
+  MEI: 'MEI', ME: 'ME - Microempresa', EPP: 'EPP - Pequeno Porte',
+  MEDIO: 'Médio Porte', GRANDE: 'Grande Porte', DEMAIS: 'Demais',
 };
 
 function normalizeLookupValues(values?: string[]) {
@@ -124,21 +123,12 @@ export const companySortOptions: SortOption[] = [
 ];
 
 export function useCompanyFilterOptions() {
-  const { data: ramoValues = [] } = useExternalLookup('companies', 'ramo_atividade');
-  const { data: nichoValues = [] } = useExternalLookup('companies', 'nicho_cliente');
-  const { data: grupoValues = [] } = useExternalLookup('companies', 'grupo_economico');
-  const { data: cooperativaValues = [] } = useExternalLookup('companies', 'tipo_cooperativa');
-  const { data: naturezaValues = [] } = useExternalLookup('companies', 'natureza_juridica_desc');
-  const { data: statusValues = [] } = useExternalLookup('companies', 'status');
-  const { data: situacaoValues = [] } = useExternalLookup('companies', 'situacao_rf');
-  const { data: porteValues = [] } = useExternalLookup('companies', 'porte_rf');
-  const { data: healthValues = [] } = useExternalLookup('companies', 'financial_health');
-  const { data: employeeCountValues = [] } = useExternalLookup('companies', 'employee_count');
-  // city/state are derived client-side from nome_crm, not columns in the external DB
-  const cityValues: string[] = [];
-  const stateValues: string[] = [];
+  // Single batch call instead of 10 separate Edge Function calls
+  const { data: batchData = {} } = useExternalBatchLookup('companies', [...LOOKUP_COLUMNS]);
 
   return useMemo<FilterConfig[]>(() => {
+    const v = (col: string) => batchData[col] || [];
+
     const filters: FilterConfig[] = [
       {
         key: 'is_customer',
@@ -153,78 +143,62 @@ export function useCompanyFilterOptions() {
         key: 'status',
         label: 'Status',
         multiple: true,
-        options: buildLookupOptions(statusValues, statusFallback, statusLabels),
+        options: buildLookupOptions(v('status'), statusFallback, statusLabels),
       },
       {
         key: 'ramo_atividade',
         label: 'Ramo',
         multiple: true,
-        options: buildLookupOptions(ramoValues),
+        options: buildLookupOptions(v('ramo_atividade')),
       },
       {
         key: 'nicho_cliente',
         label: 'Nicho',
         multiple: true,
-        options: buildLookupOptions(nichoValues),
+        options: buildLookupOptions(v('nicho_cliente')),
       },
       {
         key: 'grupo_economico',
         label: 'Grupo Econômico',
         multiple: true,
-        options: buildLookupOptions(grupoValues),
+        options: buildLookupOptions(v('grupo_economico')),
       },
       {
         key: 'tipo_cooperativa',
         label: 'Cooperativa',
         multiple: true,
-        options: buildLookupOptions(cooperativaValues),
+        options: buildLookupOptions(v('tipo_cooperativa')),
       },
       {
         key: 'natureza_juridica_desc',
         label: 'Natureza Jurídica',
         multiple: true,
-        options: buildLookupOptions(naturezaValues),
+        options: buildLookupOptions(v('natureza_juridica_desc')),
       },
       {
         key: 'situacao_rf',
         label: 'Situação RF',
         multiple: true,
-        options: buildLookupOptions(situacaoValues, situacaoRfFallback, situacaoRfLabels),
+        options: buildLookupOptions(v('situacao_rf'), situacaoRfFallback, situacaoRfLabels),
       },
       {
         key: 'porte_rf',
         label: 'Porte RF',
         multiple: true,
-        options: buildLookupOptions(porteValues, porteRfFallback, porteRfLabels),
+        options: buildLookupOptions(v('porte_rf'), porteRfFallback, porteRfLabels),
       },
       {
         key: 'financial_health',
         label: 'Saúde Financeira',
         multiple: true,
-        options: buildLookupOptions(healthValues, financialHealthFallback, healthLabels),
+        options: buildLookupOptions(v('financial_health'), financialHealthFallback, healthLabels),
       },
       {
         key: 'employee_count',
         label: 'Funcionários',
         multiple: true,
-        options: buildLookupOptions(employeeCountValues, employeeCountFallback),
+        options: buildLookupOptions(v('employee_count'), employeeCountFallback),
       },
-      {
-        key: 'city',
-        label: 'Cidade',
-        multiple: true,
-        options: buildLookupOptions(cityValues).map((option) => ({ ...option, icon: MapPin })),
-      },
-      ...(stateValues.length > 0
-        ? [
-            {
-              key: 'state' as const,
-              label: 'UF',
-              multiple: true,
-              options: buildLookupOptions(stateValues).map((option) => ({ ...option, icon: MapPin })),
-            },
-          ]
-        : []),
       {
         key: 'is_supplier',
         label: 'Fornecedor',
@@ -255,18 +229,5 @@ export function useCompanyFilterOptions() {
     ];
 
     return filters.filter((filter) => filter.options.length > 0);
-  }, [
-    cooperativaValues,
-    employeeCountValues,
-    grupoValues,
-    healthValues,
-    naturezaValues,
-    nichoValues,
-    porteValues,
-    ramoValues,
-    situacaoValues,
-    cityValues,
-    stateValues,
-    statusValues,
-  ]);
+  }, [batchData]);
 }
