@@ -483,6 +483,12 @@ const Interacoes = () => {
               </div>
             </div>
 
+            {hasMore && (
+              <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                Carregando mais interações...
+              </div>
+            )}
+
             {filteredAndSortedInteractions.length === 0 && !loading && (
               isSearching || Object.keys(activeFilters).length > 0 ? (
                 <SearchEmptyState
