@@ -368,7 +368,7 @@ const Interacoes = () => {
               <div className="absolute left-[27px] top-0 bottom-0 w-0.5 bg-border" />
               
               <div className="space-y-4">
-                {filteredAndSortedInteractions.map((interaction, index) => {
+                {visibleInteractions.map((interaction, index) => {
                   const contact = getContactInfo(interaction.contact_id);
                   const Icon = interactionIcons[interaction.type] || MessageSquare;
                   
