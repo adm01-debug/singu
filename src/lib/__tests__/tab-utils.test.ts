@@ -37,7 +37,10 @@ describe('createTabHandler', () => {
     const handler = createTabHandler(setter, ['a', 'b'] as const);
     handler('invalid');
     expect(setter).not.toHaveBeenCalled();
-    expect(consoleSpy).toHaveBeenCalledWith('Invalid tab value: invalid');
+    // Logger formats with timestamp prefix, so check that the message is included in the call args
+    expect(consoleSpy).toHaveBeenCalled();
+    const callArgs = consoleSpy.mock.calls[0].join(' ');
+    expect(callArgs).toContain('Invalid tab value: invalid');
     consoleSpy.mockRestore();
   });
 
