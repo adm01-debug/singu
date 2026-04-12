@@ -3,18 +3,18 @@ import { queryExternalData } from '@/lib/externalData';
 
 export interface ContactDeal {
   id: string;
-  contact_id: string;
+  contact_id: string | null;
   company_id?: string;
-  title: string;
-  value?: number;
-  currency?: string;
-  stage?: string;
+  titulo: string;
+  valor?: number;
   status?: string;
-  probability?: number;
-  expected_close_date?: string;
-  actual_close_date?: string;
-  lost_reason?: string;
-  notes?: string;
+  pipeline_stage?: string;
+  probabilidade?: number;
+  previsao_fechamento?: string;
+  closed_at?: string;
+  motivo_perda?: string;
+  notas?: string;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at?: string;
 }
