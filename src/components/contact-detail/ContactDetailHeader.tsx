@@ -325,7 +325,7 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
 
           {/* Tags */}
           {(() => {
-            const tags = contact.tags || (contact as Record<string, unknown>).tags_array as string[] | undefined;
+            const tags = contact.tags || contactExt.tags_array as string[] | undefined;
             return tags && tags.length > 0 ? (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {tags.map(tag => (
