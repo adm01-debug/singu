@@ -156,13 +156,13 @@ describe('Graceful Degradation', () => {
   it('should prefer fresh data over cache', async () => {
     let cache = { data: 'old', ts: Date.now() - 60000 };
 
-    const fetchWithCache = async <T extends { ts: number }>(
-      fetcher: () => Promise<T>,
-      cached: T,
-    ): Promise<T> => {
+    const fetchWithCache = async (
+      fetcher: () => Promise<{ data: string; ts: number }>,
+      cached: { data: string; ts: number },
+    ): Promise<{ data: string; ts: number }> => {
       try {
         const fresh = await fetcher();
-        cache = fresh as typeof cache;
+        cache = fresh;
         return fresh;
       } catch {
         return cached;

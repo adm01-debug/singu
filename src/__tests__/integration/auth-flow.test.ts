@@ -20,7 +20,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       getSession: () => mockGetSession(),
       getUser: () => mockGetUser(),
       signOut: () => mockSignOut(),
-      signInWithPassword: (creds: unknown) => mockSignInWithPassword(creds),
+      signInWithPassword: (creds: Record<string, unknown>) => mockSignInWithPassword(creds),
       refreshSession: () => mockRefreshSession(),
       onAuthStateChange: (cb: unknown) => mockOnAuthStateChange(cb),
     },
