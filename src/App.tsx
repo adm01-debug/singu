@@ -219,6 +219,11 @@ const AnimatedRoutes = () => {
           <LazyPage fallback={<InteractionsPageSkeleton />}><Interacoes /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/pipeline" element={
+        <RequireAuth>
+          <LazyPage><PipelinePage /></LazyPage>
+        </RequireAuth>
+      } />
       <Route path="/insights" element={
         <RequireAuth>
           <LazyPage fallback={<InsightsPageSkeleton />}><Insights /></LazyPage>
