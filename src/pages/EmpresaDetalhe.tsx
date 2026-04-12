@@ -76,6 +76,22 @@ const EmpresaDetalhe = () => {
   const cnaesHook = useCompanyCnaes(id);
   const rfmHook = useCompanyRfmScores(id);
   const stakeholdersHook = useCompanyStakeholders(id);
+  const { data: companySummary } = useCompanySummaryView(id);
+
+  const isDeleted = !!(company as Record<string, unknown>)?.deleted_at;
+  const leadScore = companySummary?.lead_score ?? (company as Record<string, unknown>)?.lead_score as number | null;
+  const leadStatus = companySummary?.lead_status ?? (company as Record<string, unknown>)?.lead_status as string | null;
+
+  const handleRestore = async () => {
+    if (!id) return;
+    try {
+      await updateExternalData('companies', id, { deleted_at: null, deleted_by: null });
+      toast({ title: 'Empresa restaurada', description: 'A empresa foi reativada com sucesso.' });
+      fetchCompanyData();
+    } catch {
+      toast({ title: 'Erro ao restaurar', variant: 'destructive' });
+    }
+  };
 
   const fetchCompanyData = useCallback(async () => {
     setLoading(true);
