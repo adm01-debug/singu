@@ -191,7 +191,7 @@ export function CompanyDataTab({ cnaes, rfmScores, stakeholders, loading, compan
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {Object.entries(statistics as Record<string, unknown>).slice(0, 8).map(([key, value]) => (
+                {Object.entries(statistics as unknown as Record<string, unknown>).slice(0, 8).map(([key, value]) => (
                   <div key={key} className="rounded-lg bg-muted/30 p-2.5 text-center">
                     <p className="text-xs text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</p>
                     <p className="text-sm font-bold">{String(value ?? '—')}</p>
