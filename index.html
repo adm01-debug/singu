@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <!-- X-Frame-Options must be set via HTTP header, not meta tag -->
     <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none';" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(self), geolocation=(self), payment=()" />
     
@@ -17,11 +17,11 @@
     <!-- Preconnect to critical origins -->
     <link rel="preconnect" href="https://rqodmqosrotmtrjnnjul.supabase.co" crossorigin />
 
-    <!-- Nexus Fonts -->
+    <!-- Fonts — single consolidated request -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" as="style" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="dns-prefetch" href="https://rqodmqosrotmtrjnnjul.supabase.co" />
 
     <!-- PWA Meta Tags -->

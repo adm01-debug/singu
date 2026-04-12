@@ -57,7 +57,7 @@ interface EmotionalDataPoint {
 }
 
 const VAK_COLORS = {
-  visual: '#8b5cf6',
+  visual: '#06b6d4',
   auditory: '#3b82f6',
   kinesthetic: '#22c55e',
   digital: '#64748b'

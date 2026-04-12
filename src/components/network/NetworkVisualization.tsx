@@ -186,7 +186,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillStyle = node.type === 'you' ? '#3b82f6' : 
-                    node.type === 'company' ? '#8b5cf6' : '#64748b';
+                    node.type === 'company' ? '#3b82f6' : '#64748b';
     
     // Background for text
     const textWidth = ctx.measureText(label).width;
@@ -206,7 +206,7 @@ export const NetworkVisualization = ({ className, height = 600 }: NetworkVisuali
 
   // Link styling
   const linkColor = (link: GraphLink) => {
-    if (link.type === 'works_at') return '#8b5cf680';
+    if (link.type === 'works_at') return '#3b82f680';
     if (link.type === 'interacted') return '#3b82f680';
     return '#94a3b840';
   };
