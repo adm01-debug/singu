@@ -57,6 +57,10 @@ const ALLOWED_TABLES = [
   'company_phones', 'company_emails', 'company_addresses',
   'company_social_media', 'company_cnaes', 'company_rfm_scores',
   'company_stakeholder_map',
+  // ── WhatsApp & Sales ──
+  'whatsapp_messages', 'sales_activities',
+  // ── Materialized views & KPIs ──
+  'mv_daily_kpis', 'mv_daily_stats', 'v_daily_kpis',
   // ── Contact intelligence & analytics ──
   'churn_predictions', 'deal_velocity_analysis',
   'relationship_score_history', 'workspace_accounts',
