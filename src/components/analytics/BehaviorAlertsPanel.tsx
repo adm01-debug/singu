@@ -29,7 +29,7 @@ import { useBehaviorAlerts, AlertType, AlertSeverity } from '@/hooks/useBehavior
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const ALERT_ICONS: Record<AlertType, any> = {
+const ALERT_ICONS: Record<AlertType, React.ComponentType<{ className?: string }>> = {
   sentiment_drop: TrendingDown,
   engagement_drop: TrendingDown,
   churn_risk: AlertTriangle,
