@@ -421,7 +421,7 @@ export function CompanyInsightsTab({
       <InteractionHistoryWidget companyId={companyId} />
     </Suspense>
     <Suspense fallback={<Skeleton className="h-20 rounded-lg" />}>
-      <CreateDealWidget companyId={companyId} companyName={company?.name} />
+      <CreateDealWidget companyId={companyId} />
     </Suspense>
     </>
   );

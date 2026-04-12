@@ -15,6 +15,7 @@ import { MetaprogramsSubTab } from './behavioral-tab/MetaprogramsSubTab';
 import { PersonalitySubTab } from './behavioral-tab/PersonalitySubTab';
 const CommunicationIntelWidget = lazy(() => import('./CommunicationIntelWidget'));
 const EmotionalTrendWidget = lazy(() => import('./EmotionalTrendWidget'));
+const EmotionalTrendByContactWidget = lazy(() => import('./EmotionalTrendByContactWidget'));
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -166,6 +167,10 @@ export function ContactBehavioralTab({ contact }: Props) {
         <EmotionalTrendWidget contactId={contact.id} />
       </Suspense>
     </div>
+
+    <Suspense fallback={<Skeleton className="h-12 rounded-lg" />}>
+      <EmotionalTrendByContactWidget contactId={contact.id} />
+    </Suspense>
 
     {/* Relationship Score Evolution Chart */}
     <RelationshipScoreChart contactId={contact.id} />
