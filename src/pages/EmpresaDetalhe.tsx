@@ -8,10 +8,12 @@ import { toTitleCase } from '@/lib/formatters';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
 import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySocialMedia, useCompanyCnaes, useCompanyRfmScores, useCompanyStakeholders } from '@/hooks/useCompanyRelatedData';
+import { useCompanySummaryView } from '@/hooks/useCompanyViews';
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
-  Network, BarChart3, Sparkles, Database, ShoppingCart
+  Network, BarChart3, Sparkles, Database, ShoppingCart,
+  AlertTriangle, RotateCcw, Target,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
