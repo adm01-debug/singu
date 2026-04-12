@@ -58,7 +58,7 @@ async function fetchContactsPage(companyId?: string) {
     ? [{ type: 'eq' as const, column: 'company_id', value: companyId }]
     : undefined;
 
-  const { data, error } = await queryExternalData<Contact>({
+  const { data, error } = await queryExternalData<Record<string, unknown>>({
     table: 'contacts',
     order: { column: 'updated_at', ascending: false },
     range: { from: 0, to: PAGE_SIZE - 1 },
@@ -66,7 +66,7 @@ async function fetchContactsPage(companyId?: string) {
   });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(normalizeExternalContact);
 }
 
 export function useContacts(companyId?: string, options?: { enabled?: boolean }) {
