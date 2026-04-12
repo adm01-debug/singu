@@ -43,7 +43,7 @@ const LISTING_SELECT = [
   'capital_social', 'porte_rf', 'situacao_rf', 'situacao_rf_data',
   'natureza_juridica', 'natureza_juridica_desc', 'data_fundacao',
   'website', 'logo_url',
-  'city', 'state', 'updated_at', 'created_at', 'user_id',
+  'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
 ].join(',');
