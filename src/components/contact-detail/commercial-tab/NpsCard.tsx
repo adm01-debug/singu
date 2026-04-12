@@ -30,8 +30,8 @@ export function NpsCard({ contactId }: Props) {
       error={error}
       onRetry={refetch}
       hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
+      hasData={false}
       emptyMessage="Nenhuma pesquisa NPS"
-      badge={surveys?.length ? `${surveys.length}` : undefined}
     >
       {latestScore != null && (
         <div className="mb-3 p-2 rounded-lg bg-muted/50 flex items-center justify-between">

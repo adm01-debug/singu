@@ -17,8 +17,8 @@ export function MeetingsCard({ contactId }: Props) {
       error={error}
       onRetry={refetch}
       hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
+      hasData={false}
       emptyMessage="Nenhuma reunião registrada"
-      badge={meetings?.length ? `${meetings.length}` : undefined}
     >
       <div className="space-y-2 max-h-60 overflow-y-auto">
         {meetings?.map(m => (

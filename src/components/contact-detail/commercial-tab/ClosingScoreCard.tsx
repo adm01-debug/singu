@@ -21,6 +21,7 @@ export function ClosingScoreCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       hasData={!!data}
+      hasData={false}
       emptyMessage="Sem dados de score de fechamento"
       onRetry={refetch}
     >

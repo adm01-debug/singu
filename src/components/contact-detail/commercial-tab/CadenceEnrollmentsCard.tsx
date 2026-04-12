@@ -23,8 +23,8 @@ export function CadenceEnrollmentsCard({ contactId }: Props) {
       error={error}
       onRetry={refetch}
       hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
+      hasData={false}
       emptyMessage="Não inscrito em cadências"
-      badge={enrollments?.length ? `${enrollments.length}` : undefined}
     >
       <div className="space-y-2 max-h-48 overflow-y-auto">
         {enrollments?.map(e => (

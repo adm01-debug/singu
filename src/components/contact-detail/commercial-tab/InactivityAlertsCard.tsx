@@ -25,8 +25,8 @@ export function InactivityAlertsCard({ contactId }: Props) {
       error={error}
       onRetry={refetch}
       hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
+      hasData={false}
       emptyMessage="Nenhum alerta de inatividade"
-      badge={active.length ? `${active.length}` : undefined}
     >
       <div className="space-y-2 max-h-48 overflow-y-auto">
         {alerts?.map(alert => (

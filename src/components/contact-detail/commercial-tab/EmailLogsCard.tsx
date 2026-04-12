@@ -21,8 +21,8 @@ export function EmailLogsCard({ contactId }: Props) {
       error={error}
       onRetry={refetch}
       hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
+      hasData={false}
       emptyMessage="Nenhum e-mail registrado"
-      badge={emails?.length ? `${emails.length}` : undefined}
     >
       {emails && emails.length > 0 && (
         <div className="flex items-center gap-3 mb-3 p-2 rounded-lg bg-muted/50 text-[10px]">

@@ -27,6 +27,7 @@ export function SatisfactionCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       hasData={!!data}
+      hasData={false}
       emptyMessage="Sem dados de satisfação disponíveis"
       onRetry={refetch}
     >
