@@ -229,8 +229,36 @@ const EmpresaDetalhe = () => {
           <PageHeader backTo="/empresas" backLabel="Empresas" title={toTitleCase(company.name)} />
         </div>
         
+        {/* Soft-delete banner */}
+        {isDeleted && (
+          <div className="mx-4 md:mx-6 mt-2 mb-2 px-4 py-3 bg-destructive/10 border border-destructive/30 rounded-xl flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Empresa excluída</p>
+                <p className="text-xs opacity-80">Esta empresa foi removida e não aparece na listagem.</p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="border-destructive/40 text-destructive hover:bg-destructive/10" onClick={handleRestore}>
+              <RotateCcw className="w-4 h-4 mr-1.5" />
+              Restaurar
+            </Button>
+          </div>
+        )}
+
         {/* Header gradient */}
         <div className="h-56 bg-gradient-primary relative z-0 overflow-hidden rounded-2xl mx-4 md:mx-6 mt-2">
+          {/* Lead score badge in header */}
+          {(leadScore || leadStatus) && (
+            <div className="absolute top-4 left-4 z-10">
+              <div className="flex items-center gap-2 bg-primary-foreground/15 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                <Target className="w-4 h-4 text-primary-foreground/80" />
+                <span className="text-xs font-medium text-primary-foreground">
+                  Lead{leadScore ? ` ${leadScore}/100` : ''}{leadStatus ? ` · ${leadStatus}` : ''}
+                </span>
+              </div>
+            </div>
+          )}
           <div className="absolute top-4 right-4 flex items-center gap-2">
             <LuxButton
               onClick={() => triggerLux({
