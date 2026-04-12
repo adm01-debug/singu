@@ -17,6 +17,7 @@ const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBr
 const PendingFollowupsWidget = lazy(() => import('@/components/dashboard/widgets/PendingFollowupsWidget').then(m => ({ default: m.PendingFollowupsWidget })));
 const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.TodaysRemindersWidget })));
 const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
+const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityWidget').then(m => ({ default: m.DataQualityWidget })));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -120,6 +121,13 @@ export function OverviewTab({
           </Suspense>
         </DashboardErrorBoundary>
       </div>
+
+      {/* 3c. Data Quality */}
+      <DashboardErrorBoundary sectionName="Qualidade de Dados">
+        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+          <DataQualityWidget />
+        </Suspense>
+      </DashboardErrorBoundary>
 
       {/* 4. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
