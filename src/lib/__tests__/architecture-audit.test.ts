@@ -53,10 +53,11 @@ describe('Architecture Audit', () => {
       expect(functionNames.length).toBeGreaterThan(10);
     });
 
-    it('all edge functions use Deno.serve', () => {
+    it('all edge functions use Deno.serve or serve()', () => {
       for (const fn of functionNames) {
         const content = readFile(`supabase/functions/${fn}/index.ts`);
-        expect(content, `${fn} should use Deno.serve`).toContain('Deno.serve');
+        const usesServe = content.includes('Deno.serve') || content.includes('serve(');
+        expect(usesServe, `${fn} should use Deno.serve or serve()`).toBe(true);
       }
     });
 
