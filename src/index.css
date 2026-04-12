@@ -293,7 +293,7 @@
     --sidebar-accent: 232 28% 12%;
     --sidebar-accent-foreground: 220 30% 94%;
     --sidebar-border: 232 22% 16%;
-    --sidebar-ring: 263 84% 58%;
+    --sidebar-ring: 214 100% 65%;
 
     /* Shadows — subtle navy glow */
     --shadow-sm: 0 1px 2px 0 hsl(232 40% 4% / 0.3);
@@ -408,7 +408,7 @@
     --sidebar-accent: 232 28% 12%;
     --sidebar-accent-foreground: 220 30% 94%;
     --sidebar-border: 232 22% 16%;
-    --sidebar-ring: 263 84% 58%;
+    --sidebar-ring: 214 100% 65%;
 
     --shadow-sm: 0 1px 2px 0 hsl(232 40% 4% / 0.3);
     --shadow-md: 0 4px 12px -2px hsl(232 40% 4% / 0.4);
