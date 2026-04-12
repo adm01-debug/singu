@@ -14,6 +14,7 @@ import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
 import { SkipNav } from "@/components/navigation/SkipNav";
 import { useWebVitals } from "@/hooks/useWebVitals";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
@@ -177,7 +178,11 @@ const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?
 // Routes wrapper
 const AnimatedRoutes = () => {
   useWebVitals();
-  
+  const { isOnline } = useOnlineStatus({
+    onOffline: () => import('sonner').then(m => m.toast.warning('Conexão perdida', { description: 'Você está offline.' })),
+    onOnline: () => import('sonner').then(m => m.toast.success('Conexão restaurada')),
+  });
+
   return (
     <Routes>
       {/* Public routes */}
