@@ -20,6 +20,9 @@ import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 import { ContactIntelligenceWidget } from './ContactIntelligenceWidget';
 import { BestContactTimeWidget } from './BestContactTimeWidget';
+import { EngagementScoreWidget } from './EngagementScoreWidget';
+import { EffectivenessWidget } from './EffectivenessWidget';
+import { ContactStatisticsWidget } from './ContactStatisticsWidget';
 
 interface Props {
   contact: Contact;
@@ -477,7 +480,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ContactIntelligenceWidget contactId={contact.id} />
         <BestContactTimeWidget contactId={contact.id} />
+        <EngagementScoreWidget contactId={contact.id} />
+        <EffectivenessWidget contactId={contact.id} />
       </div>
+
+      {/* Statistics Widget — full width */}
+      <ContactStatisticsWidget contactId={contact.id} />
     </div>
   );
 }
