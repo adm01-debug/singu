@@ -24,10 +24,12 @@ export type ContactListItem = Pick<Contact,
  * These must be stripped before any insert/update to the external DB to avoid column-not-found errors.
  */
 const LOCAL_ONLY_FIELDS = new Set([
-  'tags', 'interests', 'hobbies', 'twitter', 'avatar_url', 'family_info',
-  'email', 'phone', 'whatsapp', 'linkedin', 'instagram',       // live in contact_phones / contact_emails / contact_social_media
-  'life_events',                                                  // JSONB managed separately
+  'tags', 'interests',                                            // local schema uses 'tags'/'interests'; external uses 'tags_array'/'interests_array'
+  'twitter', 'avatar_url',                                        // not columns in external contacts table
+  'email', 'phone', 'whatsapp', 'linkedin', 'instagram',         // live in contact_phones / contact_emails / contact_social_media
+  'life_events',                                                  // JSONB managed separately via life_events table
   'id',                                                           // never send id on updates
+  'role_title',                                                   // local-only; external uses 'cargo'
 ]);
 
 const PAGE_SIZE = 50;
