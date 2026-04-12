@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   corsHeaders,
   handleCorsAndMethod,
@@ -8,7 +7,7 @@ import {
 
 const VOICE_ID_REGEX = /^[a-zA-Z0-9]{10,30}$/;
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const guard = handleCorsAndMethod(req);
   if (guard) return guard;
 

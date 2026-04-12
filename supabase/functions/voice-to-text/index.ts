@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
 
 function processBase64Chunks(base64String: string, chunkSize = 32768) {
@@ -30,7 +29,7 @@ function processBase64Chunks(base64String: string, chunkSize = 32768) {
   return result;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

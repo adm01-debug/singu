@@ -3,7 +3,6 @@
 // Powered by Lovable AI - Enterprise Level Analysis
 // ==============================================
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
@@ -114,7 +113,7 @@ function calculateBlendCode(D: number, I: number, S: number, C: number): { prima
   return { primary, secondary, blend };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
