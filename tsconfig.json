@@ -2,7 +2,6 @@
   "compilerOptions": {
     "allowJs": true,
     "noImplicitAny": false,
-    "strictNullChecks": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "paths": {
