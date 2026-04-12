@@ -263,13 +263,13 @@ function generateRecommendedActions(segment: RFMSegment): RFMAction[] {
 function generateRecommendedOffers(segment: RFMSegment, metrics: PurchaseData): RFMOffer[] {
   const offers: RFMOffer[] = [];
   if (['champions', 'loyal_customers'].includes(segment)) {
-    offers.push({ id: '1', type: 'loyalty', name: 'Programa VIP', description: 'Acesso antecipado + descontos exclusivos', estimatedValue: metrics.averageOrderValue * 0.1, validUntil: '30 dias', targetSegments: [segment] });
+    offers.push({ id: '1', offerType: 'loyalty', description: 'Acesso antecipado + descontos exclusivos', discountPercent: 10, validDays: 30, reason: 'Cliente fiel merece reconhecimento' });
   }
   if (['at_risk', 'about_to_sleep', 'cant_lose'].includes(segment)) {
-    offers.push({ id: '2', type: 'win_back', name: 'Oferta Especial de Reativação', description: 'Desconto progressivo baseado no histórico', estimatedValue: metrics.averageOrderValue * 0.2, validUntil: '7 dias', targetSegments: [segment] });
+    offers.push({ id: '2', offerType: 'win_back', description: 'Desconto progressivo baseado no histórico', discountPercent: 20, validDays: 7, reason: 'Reativar cliente em risco' });
   }
   if (['promising', 'potential_loyalists', 'recent_customers'].includes(segment)) {
-    offers.push({ id: '3', type: 'upsell', name: 'Upgrade de Categoria', description: 'Trial gratuito do plano premium', estimatedValue: metrics.averageOrderValue * 0.5, validUntil: '14 dias', targetSegments: [segment] });
+    offers.push({ id: '3', offerType: 'upsell', description: 'Trial gratuito do plano premium', discountPercent: 50, validDays: 14, reason: 'Acelerar crescimento do cliente' });
   }
   return offers;
 }
