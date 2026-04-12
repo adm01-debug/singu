@@ -15,6 +15,7 @@ import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
 import { SkipNav } from "@/components/navigation/SkipNav";
 import { useWebVitals } from "@/hooks/useWebVitals";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { useCircuitBreakerHandler } from "@/hooks/useCircuitBreakerHandler";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
@@ -182,6 +183,7 @@ const AnimatedRoutes = () => {
     onOffline: () => import('sonner').then(m => m.toast.warning('Conexão perdida', { description: 'Você está offline.' })),
     onOnline: () => import('sonner').then(m => m.toast.success('Conexão restaurada')),
   });
+  useCircuitBreakerHandler();
 
   return (
     <Routes>

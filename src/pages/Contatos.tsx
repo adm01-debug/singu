@@ -73,6 +73,7 @@ import { logger } from "@/lib/logger";
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
@@ -158,6 +159,7 @@ const Contatos = () => {
   // Table density
   const { density, toggle: toggleDensity } = useTableDensity();
   const { celebrate } = useSuccessCelebration();
+  const { logActivity } = useActivityLogger();
   
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -300,6 +302,7 @@ const Contatos = () => {
     if (result) {
       setIsFormOpen(false);
       hapticSuccess();
+      logActivity({ type: 'created', entityType: 'contact', entityId: result.id || '', entityName: `${data.first_name} ${data.last_name}`.trim() });
       // First contact celebration
       if (contacts.length === 0) {
         celebrate('confetti');
@@ -337,6 +340,7 @@ const Contatos = () => {
     const success = await deleteContact(contactToDelete.id);
     if (success) {
       accessibleToast.success(`${contactToDelete.first_name} excluído com sucesso`);
+      logActivity({ type: 'deleted', entityType: 'contact', entityId: contactToDelete.id, entityName: contactToDelete.first_name });
     }
   };
 
