@@ -546,5 +546,9 @@ export function ContactBehavioralTab({ contact }: Props) {
         </div>
       </TabsContent>
     </Tabs>
+
+    {/* Relationship Score Evolution Chart */}
+    <RelationshipScoreChart contactId={contact.id} />
+  </>
   );
 }
