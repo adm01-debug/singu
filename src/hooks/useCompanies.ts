@@ -132,6 +132,10 @@ function mapCompany(ext: ExternalRow): Company {
     bitrix_company_id: ext.bitrix_company_id as number | null ?? null,
     extra_data_rf: ext.extra_data_rf ?? null,
     cores_marca: ext.cores_marca as string | null ?? null,
+    lead_score: ext.lead_score as number | null ?? null,
+    lead_status: ext.lead_status as string | null ?? null,
+    deleted_at: ext.deleted_at as string | null ?? null,
+    deleted_by: ext.deleted_by as string | null ?? null,
   } as Company;
 }
 
