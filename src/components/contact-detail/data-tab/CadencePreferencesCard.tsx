@@ -196,76 +196,150 @@ export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cad
           <p className="text-xs text-muted-foreground text-center py-2">Sem cadência configurada</p>
         )}
 
-        {preferences && (
-          <>
-            <Separator />
-            <div className="space-y-2">
-              {preferences.preferred_channel && (
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Canal preferido</span>
-                  <Badge variant="outline" className="text-xs capitalize">{preferences.preferred_channel}</Badge>
-                </div>
-              )}
-              {(preferences.preferred_days?.length ?? 0) > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Dias preferidos</span>
-                  <div className="mt-0.5 flex gap-1 flex-wrap">
-                    {preferences.preferred_days?.map((d: string) => (
-                      <Badge key={d} variant="secondary" className="text-[10px]">{d}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {(preferences.preferred_times?.length ?? 0) > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Horários preferidos</span>
-                  <div className="mt-0.5 flex gap-1 flex-wrap">
-                    {preferences.preferred_times?.map((t: string) => (
-                      <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {(preferences.avoid_days?.length ?? 0) > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Dias a evitar</span>
-                  <div className="mt-0.5 flex gap-1 flex-wrap">
-                    {preferences.avoid_days?.map((d: string) => (
-                      <Badge key={d} variant="outline" className="text-[10px] border-destructive/30 text-destructive">{d}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {(preferences.avoid_times?.length ?? 0) > 0 && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Horários a evitar</span>
-                  <div className="mt-0.5 flex gap-1 flex-wrap">
-                    {preferences.avoid_times?.map((t: string) => (
-                      <Badge key={t} variant="outline" className="text-[10px] border-destructive/30 text-destructive">{t}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {preferences.restrictions && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Restrições</span>
-                  <p className="text-xs text-foreground">{preferences.restrictions}</p>
-                </div>
-              )}
-              {preferences.communication_tips && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Dicas de comunicação</span>
-                  <p className="text-xs text-foreground">{preferences.communication_tips}</p>
-                </div>
-              )}
-              {preferences.personal_notes && (
-                <div>
-                  <span className="text-xs text-muted-foreground">Notas pessoais</span>
-                  <p className="text-xs text-foreground italic">{preferences.personal_notes}</p>
-                </div>
+        {/* Preferences Section */}
+        <Separator />
+        {editingPrefs ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Preferências do Contato</span>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setEditingPrefs(false)}>
+                  <X className="h-3 w-3" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-primary" onClick={handleSavePrefs}>
+                  <Save className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Canal preferido</label>
+              <Select value={prefsForm.preferred_channel} onValueChange={v => setPrefsForm(p => ({ ...p, preferred_channel: v }))}>
+                <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {['whatsapp', 'email', 'phone', 'linkedin', 'instagram', 'meeting'].map(ch => (
+                    <SelectItem key={ch} value={ch} className="text-xs capitalize">{ch}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Dias preferidos</label>
+              <div className="flex gap-1 flex-wrap mt-1">
+                {DAYS_LIST.map(d => (
+                  <Badge
+                    key={d}
+                    variant={prefsForm.preferred_days.includes(d) ? 'default' : 'outline'}
+                    className="cursor-pointer text-[10px]"
+                    onClick={() => setPrefsForm(p => ({ ...p, preferred_days: toggleDayInList(d, p.preferred_days) }))}
+                  >
+                    {DAY_LABELS[d]}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Dias a evitar</label>
+              <div className="flex gap-1 flex-wrap mt-1">
+                {DAYS_LIST.map(d => (
+                  <Badge
+                    key={d}
+                    variant={prefsForm.avoid_days.includes(d) ? 'destructive' : 'outline'}
+                    className="cursor-pointer text-[10px]"
+                    onClick={() => setPrefsForm(p => ({ ...p, avoid_days: toggleDayInList(d, p.avoid_days) }))}
+                  >
+                    {DAY_LABELS[d]}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Dicas de comunicação</label>
+              <Input
+                value={prefsForm.communication_tips}
+                onChange={e => setPrefsForm(p => ({ ...p, communication_tips: e.target.value }))}
+                className="h-7 text-xs"
+                placeholder="Ex: Prefere ligações breves"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Restrições</label>
+              <Input
+                value={prefsForm.restrictions}
+                onChange={e => setPrefsForm(p => ({ ...p, restrictions: e.target.value }))}
+                className="h-7 text-xs"
+                placeholder="Ex: Não ligar após 18h"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground">Notas pessoais</label>
+              <Input
+                value={prefsForm.personal_notes}
+                onChange={e => setPrefsForm(p => ({ ...p, personal_notes: e.target.value }))}
+                className="h-7 text-xs"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">Preferências do Contato</span>
+              {onSavePreferences && (
+                <Button variant="ghost" size="sm" className="h-5 px-1.5 text-[10px]" onClick={startEditingPrefs}>
+                  <Edit2 className="h-3 w-3 mr-0.5" />{preferences ? 'Editar' : 'Definir'}
+                </Button>
               )}
             </div>
-          </>
+            {preferences ? (
+              <>
+                {preferences.preferred_channel && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Canal preferido</span>
+                    <Badge variant="outline" className="text-xs capitalize">{preferences.preferred_channel}</Badge>
+                  </div>
+                )}
+                {(preferences.preferred_days?.length ?? 0) > 0 && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Dias preferidos</span>
+                    <div className="mt-0.5 flex gap-1 flex-wrap">
+                      {preferences.preferred_days?.map((d: string) => (
+                        <Badge key={d} variant="secondary" className="text-[10px]">{DAY_LABELS[d] || d}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(preferences.avoid_days?.length ?? 0) > 0 && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Dias a evitar</span>
+                    <div className="mt-0.5 flex gap-1 flex-wrap">
+                      {preferences.avoid_days?.map((d: string) => (
+                        <Badge key={d} variant="outline" className="text-[10px] border-destructive/30 text-destructive">{DAY_LABELS[d] || d}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {preferences.restrictions && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Restrições</span>
+                    <p className="text-xs text-foreground">{preferences.restrictions}</p>
+                  </div>
+                )}
+                {preferences.communication_tips && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Dicas de comunicação</span>
+                    <p className="text-xs text-foreground">{preferences.communication_tips}</p>
+                  </div>
+                )}
+                {preferences.personal_notes && (
+                  <div>
+                    <span className="text-xs text-muted-foreground">Notas pessoais</span>
+                    <p className="text-xs text-foreground italic">{preferences.personal_notes}</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-1">Sem preferências definidas</p>
+            )}
+          </div>
         )}
 
         {commPreferences && (
