@@ -32,17 +32,9 @@ const ALLOWED_RPCS = [
   'generate_pre_contact_briefing', 'suggest_triggers_for_contact',
   'export_contacts_csv', 'get_birthday_contacts',
   // ── Company CRUD ──
-  'create_company', 'update_company', 'soft_delete_company',
-  'merge_companies',
-  // ── Company Search ──
-  'search_companies', 'search_companies_advanced',
-  'list_companies_paginated',
+  'soft_delete_company',
   // ── Company Intelligence ──
-  'get_company_360', 'get_company_intelligence',
-  'get_company_statistics', 'get_company_timeline',
   'get_company_health_score',
-  // ── Company Quality ──
-  'get_duplicate_companies',
   // ── Company Upserts ──
   'upsert_company_email', 'upsert_company_phone', 'upsert_company_social_media', 'upsert_company_address',
 ] as const;

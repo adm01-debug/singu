@@ -46,7 +46,8 @@ const LISTING_SELECT = [
   'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
-  'lead_score', 'lead_status',
+  'lead_score', 'lead_status', 'lead_score_updated_at',
+  'bitrix_created_at', 'bitrix_updated_at', 'created_by_id',
   'deleted_at', 'deleted_by',
 ].join(',');
 const COMPANY_SEARCH_COLUMNS = [
@@ -134,6 +135,10 @@ function mapCompany(ext: ExternalRow): Company {
     cores_marca: ext.cores_marca as string | null ?? null,
     lead_score: ext.lead_score as number | null ?? null,
     lead_status: ext.lead_status as string | null ?? null,
+    lead_score_updated_at: ext.lead_score_updated_at as string | null ?? null,
+    bitrix_created_at: ext.bitrix_created_at as string | null ?? null,
+    bitrix_updated_at: ext.bitrix_updated_at as string | null ?? null,
+    created_by_id: ext.created_by_id as string | null ?? null,
     deleted_at: ext.deleted_at as string | null ?? null,
     deleted_by: ext.deleted_by as string | null ?? null,
   } as unknown as Company;
