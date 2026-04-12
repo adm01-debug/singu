@@ -6,13 +6,21 @@ const ALLOWED_ORIGINS = [
   "https://id-preview--08cba815-22fa-42db-9361-0cffd81afd61.lovable.app",
 ];
 
+const ALLOWED_ORIGIN_SUFFIXES = [
+  ".lovable.app",
+  ".lovableproject.com",
+];
+
 function getOrigin(req?: Request): string {
   if (!req) return ALLOWED_ORIGINS[0];
   const origin = req.headers.get("Origin") || "";
-  // Allow lovable preview subdomains dynamically
-  if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith(".lovable.app")) {
+  const isKnownOrigin = ALLOWED_ORIGINS.includes(origin);
+  const isAllowedPreviewOrigin = ALLOWED_ORIGIN_SUFFIXES.some((suffix) => origin.endsWith(suffix));
+
+  if (isKnownOrigin || isAllowedPreviewOrigin) {
     return origin;
   }
+
   return ALLOWED_ORIGINS[0];
 }
 
