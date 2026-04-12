@@ -30,7 +30,7 @@ export function useDuplicateContacts(enabled = true) {
         }
         return (Array.isArray(data) ? data : []) as DuplicateContact[];
       } catch (e) {
-        console.warn('[DuplicateContacts] Fetch failed:', e);
+        logger.warn('[DuplicateContacts] Fetch failed:', e);
         return [] as DuplicateContact[];
       }
     },
