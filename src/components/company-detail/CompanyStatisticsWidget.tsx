@@ -28,7 +28,7 @@ export const CompanyStatisticsWidget = React.memo(function CompanyStatisticsWidg
       <CardContent>
         <div className="grid grid-cols-3 gap-2">
           {stats.map(({ key, label, icon: Icon, color, isCurrency }) => {
-            const value = (data as Record<string, unknown>)[key] as number | undefined;
+            const value = (data as unknown as Record<string, unknown>)[key] as number | undefined;
             const display = isCurrency ? `R$ ${(value || 0).toLocaleString('pt-BR')}` : String(value ?? '-');
             return (
               <div key={key} className="rounded-lg bg-muted/30 p-2 text-center">
