@@ -145,6 +145,7 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
   const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
     table: 'companies',
     select: LISTING_SELECT,
+    countMethod: 'planned',
     order: { column: 'updated_at', ascending: false },
     range,
     ...(search && search.trim().length >= 2
