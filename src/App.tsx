@@ -58,6 +58,7 @@ const EmpresaDetalhe = lazy(() => import("./pages/EmpresaDetalhe"));
 const Contatos = lazy(() => import("./pages/Contatos"));
 const ContatoDetalhe = lazy(() => import("./pages/ContatoDetalhe"));
 const Interacoes = lazy(() => import("./pages/Interacoes"));
+const PipelinePage = lazy(() => import("./pages/Pipeline"));
 const Insights = lazy(() => import("./pages/Insights"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Calendario = lazy(() => import("./pages/Calendario"));
