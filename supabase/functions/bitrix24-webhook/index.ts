@@ -1,9 +1,18 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+function getScopedOrigin(req: Request): string {
+  const origin = req.headers.get("Origin") || "";
+  if (origin.endsWith(".lovable.app")) return origin;
+  return "https://dialogue-diamond.lovable.app";
+}
+
+function makeCors(req: Request) {
+  return {
+    "Access-Control-Allow-Origin": getScopedOrigin(req),
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
 
 interface BitrixCallEvent {
   event: string;
