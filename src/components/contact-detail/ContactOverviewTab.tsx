@@ -53,8 +53,26 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
 
   const behavior = contact.behavior as Record<string, unknown> | null;
 
+  const criticalError = relError || eventsError;
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Critical Error Banner */}
+      {criticalError && (
+        <Card className="md:col-span-2 lg:col-span-3 border-destructive/30">
+          <CardContent className="py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <p className="text-sm text-foreground">Alguns dados podem estar indisponíveis</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { relRefetch(); eventsRefetch(); }}>
+              <RefreshCw className="h-3 w-3 mr-1.5" />
+              Tentar novamente
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Alerts */}
       {alerts.length > 0 && (
         <Card className="md:col-span-2 lg:col-span-3 border-accent/30 dark:border-accent/30">
