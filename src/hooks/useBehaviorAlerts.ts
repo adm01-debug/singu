@@ -310,64 +310,28 @@ export function useBehaviorAlerts() {
   }, [user, fetchAlerts, toast]);
 
   const dismissAlert = useCallback(async (alertId: string) => {
-    const previousAlerts = alerts;
-    setAlerts(prev => prev.filter(a => a.id !== alertId));
-
     try {
-      const { error } = await supabase
-        .from('alerts')
-        .update({ dismissed: true })
-        .eq('id', alertId);
-
+      const { error } = await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId);
       if (error) throw error;
-
-      toast({
-        title: 'Alerta dispensado',
-        description: 'O alerta foi removido da sua lista.',
-      });
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: 'Alerta dispensado', description: 'O alerta foi removido da sua lista.' });
     } catch (error) {
-      setAlerts(previousAlerts);
       logger.error('Error dismissing alert:', error);
-      toast({
-        title: 'Erro ao dispensar alerta',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao dispensar alerta', variant: 'destructive' });
     }
-  }, [toast, alerts]);
+  }, [toast, queryClient, queryKey]);
 
   const markActionTaken = useCallback(async (alertId: string) => {
-    const previousAlerts = alerts;
-    setAlerts(prev => prev.map(a => 
-      a.id === alertId 
-        ? { ...a, actionTaken: true, actionTakenAt: new Date().toISOString() }
-        : a
-    ));
-
     try {
-      const { error } = await supabase
-        .from('alerts')
-        .update({ dismissed: true })
-        .eq('id', alertId);
-
+      const { error } = await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId);
       if (error) throw error;
-
-      toast({
-        title: 'Ação registrada',
-        description: 'A ação foi marcada como concluída.',
-      });
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: 'Ação registrada', description: 'A ação foi marcada como concluída.' });
     } catch (error) {
-      setAlerts(previousAlerts);
       logger.error('Error marking action taken:', error);
-      toast({
-        title: 'Erro ao registrar ação',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao registrar ação', variant: 'destructive' });
     }
-  }, [toast, alerts]);
-
-  useEffect(() => {
-    fetchAlerts();
-  }, [fetchAlerts]);
+  }, [toast, queryClient, queryKey]);
 
   // Stats
   const stats = useMemo(() => {
