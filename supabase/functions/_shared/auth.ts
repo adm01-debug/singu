@@ -103,7 +103,7 @@ export async function withAuth(req: Request): Promise<string | Response> {
   try {
     return await authenticateRequest(req);
   } catch {
-    return jsonError("Unauthorized", 401);
+    return jsonError("Unauthorized", 401, req);
   }
 }
 
