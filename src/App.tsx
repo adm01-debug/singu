@@ -71,6 +71,7 @@ const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
+const Metas = lazy(() => import("./pages/Metas"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 
@@ -267,6 +268,11 @@ const AnimatedRoutes = () => {
       <Route path="/mapa-empresas" element={
         <RequireAuth>
           <LazyPage><MapaEmpresas /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/metas" element={
+        <RequireAuth>
+          <LazyPage><Metas /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={
