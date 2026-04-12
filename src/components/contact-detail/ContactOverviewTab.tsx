@@ -1,8 +1,9 @@
 import {
   Heart, Users, Clock, Star, Gift, MapPin, Target,
   MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle, PenLine,
-  Phone, Mail, Building2, Cake
+  Phone, Mail, Building2, Cake, AlertCircle, RefreshCw
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
