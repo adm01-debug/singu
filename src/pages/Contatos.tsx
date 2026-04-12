@@ -462,25 +462,7 @@ const Contatos = () => {
             </Button>
             <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
 
-            {/* Secondary actions in overflow menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-9 w-9" aria-label="Mais ações">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem onClick={handleEnrichContacts} disabled={isEnriching} className="gap-2">
-                  {isEnriching ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />}
-                  {isEnriching ? 'Enriquecendo...' : 'Enriquecer dados'}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2 p-0">
-                  <div className="w-full">
-                    <AdvancedDataExporter entityType="contacts" />
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Enriquecer e Exportar removidos — acesso restrito a admin master */}
           </div>
         </div>
 
