@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef, startTransition } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, startTransition, lazy, Suspense } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
