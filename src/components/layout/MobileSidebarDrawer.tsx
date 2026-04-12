@@ -18,7 +18,8 @@ import {
   User,
   Zap,
   Workflow,
-  MapPin
+  MapPin,
+  Trophy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,6 +44,7 @@ const navItems = [
   { icon: Bell, label: 'Notificações', path: '/notificacoes', section: 'Ferramentas' },
   { icon: Network, label: 'Network', path: '/network', section: 'Ferramentas' },
   { icon: Workflow, label: 'Automações', path: '/automacoes', section: 'Ferramentas' },
+  { icon: Trophy, label: 'Metas', path: '/metas', section: 'Ferramentas' },
   { icon: Settings, label: 'Configurações', path: '/configuracoes', section: 'Sistema' },
 ];
 
