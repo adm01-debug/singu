@@ -29,6 +29,9 @@ import {
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
 
+const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
+const ContactTimelineWidget = lazy(() => import('@/components/contact-detail/ContactTimelineWidget'));
+
 const ContactDetailSkeleton = () => (
   <AppLayout>
     <div className="min-h-screen p-4 md:p-6 space-y-4">
