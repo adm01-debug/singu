@@ -77,6 +77,8 @@ import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 
+const DuplicateContactsPanel = lazy(() => import('@/components/contacts/DuplicateContactsPanel'));
+
 const filterConfigs: FilterConfig[] = [
   {
     key: 'role',
