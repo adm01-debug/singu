@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       };
     }
 
-    console.log('Bitrix24 webhook received:', JSON.stringify(payload, null, 2));
+    // Bitrix24 webhook received
 
     // Handle call finish events
     const validEvents = ['ONVOXIMPLANTCALLEND', 'ONEXTERNALCALLFINISH', 'ONCRMCALLEND'];
