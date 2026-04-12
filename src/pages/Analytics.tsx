@@ -147,8 +147,9 @@ const Analytics = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-7xl grid-cols-10">
+          <TabsList className="grid w-full max-w-7xl grid-cols-11">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+            <TabsTrigger value="reports" className="gap-1"><BarChart3 className="w-3.5 h-3.5" />Relatórios</TabsTrigger>
             <TabsTrigger value="advanced" className="gap-1"><BarChart3 className="w-3.5 h-3.5" />Avançado</TabsTrigger>
             <TabsTrigger value="disc" className="gap-1"><Brain className="w-3.5 h-3.5" />DISC</TabsTrigger>
             <TabsTrigger value="neuro" className="gap-1"><Zap className="w-3.5 h-3.5" />Neuro</TabsTrigger>
