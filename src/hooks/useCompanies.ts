@@ -42,8 +42,8 @@ const LISTING_SELECT = [
   'matriz_id', 'central_id', 'singular_id', 'confederacao_id',
   'capital_social', 'porte_rf', 'situacao_rf', 'situacao_rf_data',
   'natureza_juridica', 'natureza_juridica_desc', 'data_fundacao',
-  'website', 'logo_url', 'lat', 'lng',
-  'city', 'state', 'updated_at', 'created_at', 'user_id',
+  'website', 'logo_url',
+  'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
 ].join(',');
