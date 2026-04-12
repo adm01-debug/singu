@@ -61,6 +61,8 @@ const contactSchema = z.object({
   assinatura_contato: z.string().trim().max(500).optional().or(z.literal('')),
   tags_array: z.string().trim().max(500).optional().or(z.literal('')),
   interests_array: z.string().trim().max(500).optional().or(z.literal('')),
+  hobbies: z.string().trim().max(500).optional().or(z.literal('')),
+  family_info: z.string().trim().max(2000).optional().or(z.literal('')),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
