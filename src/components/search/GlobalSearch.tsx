@@ -43,6 +43,8 @@ import { toTitleCase } from '@/lib/formatters';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
+import { queryExternalData } from '@/lib/externalData';
+import type { SearchContact } from '@/hooks/useSearchContactsView';
 
 const LazyVoiceOverlay = lazy(() => import("./VoiceSearchOverlayConnected"));
 
@@ -359,14 +361,41 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
       const companies = companiesResponse.data;
       const interactions = interactionsResponse.data;
 
+      // Merge with external search for richer results
+      let externalContacts: SearchResult[] = [];
+      try {
+        const { data: extResults } = await queryExternalData<SearchContact>({
+          table: 'vw_search_contacts',
+          search: { term: searchTermTrimmed, columns: ['full_name', 'nome_tratamento', 'email', 'phone'] },
+          range: { from: 0, to: 4 },
+        });
+        if (extResults && extResults.length > 0) {
+          const localIds = new Set(contacts?.map(c => c.id) || []);
+          externalContacts = extResults
+            .filter(e => !localIds.has(e.id))
+            .map(e => ({
+              id: e.id,
+              type: 'contact' as const,
+              title: e.full_name,
+              subtitle: e.company || e.email || undefined,
+              meta: e.phone || undefined,
+            }));
+        }
+      } catch {
+        // External search is best-effort
+      }
+
       setResults({
-        contacts: contacts?.map(c => ({
-          id: c.id,
-          type: 'contact' as const,
-          title: `${c.first_name} ${c.last_name}`,
-          subtitle: c.role_title || c.email,
-          meta: c.phone,
-        })) || [],
+        contacts: [
+          ...(contacts?.map(c => ({
+            id: c.id,
+            type: 'contact' as const,
+            title: `${c.first_name} ${c.last_name}`,
+            subtitle: c.role_title || c.email,
+            meta: c.phone,
+          })) || []),
+          ...externalContacts,
+        ],
         companies: companies?.map(c => ({
           id: c.id,
           type: 'company' as const,

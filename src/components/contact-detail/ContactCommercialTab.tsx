@@ -2,6 +2,7 @@ import { TrendingUp, TrendingDown, Minus, ShoppingBag, BarChart3, AlertCircle } 
 import { BestClosingMomentsCard } from './commercial-tab/BestClosingMomentsCard';
 import { ChurnRiskCard } from './commercial-tab/ChurnRiskCard';
 import { ClosingScoreCard } from './commercial-tab/ClosingScoreCard';
+import { ClosingScoreAlertsCard } from './commercial-tab/ClosingScoreAlertsCard';
 import { DealVelocityCard } from './commercial-tab/DealVelocityCard';
 import { SatisfactionCard } from './commercial-tab/SatisfactionCard';
 import { DealsLeadsPipelineCard } from './commercial-tab/DealsLeadsPipelineCard';
@@ -77,6 +78,7 @@ export function ContactCommercialTab({ contactId }: Props) {
       <BestClosingMomentsCard contactId={contactId} />
       <ChurnRiskCard contactId={contactId} />
       <ClosingScoreCard contactId={contactId} />
+      <ClosingScoreAlertsCard contactId={contactId} />
       <DealVelocityCard contactId={contactId} />
       <SatisfactionCard contactId={contactId} />
 
