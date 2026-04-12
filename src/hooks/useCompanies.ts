@@ -136,7 +136,7 @@ function mapCompany(ext: ExternalRow): Company {
     lead_status: ext.lead_status as string | null ?? null,
     deleted_at: ext.deleted_at as string | null ?? null,
     deleted_by: ext.deleted_by as string | null ?? null,
-  } as Company;
+  } as unknown as Company;
 }
 
 function stripLocal(input: Record<string, unknown>): Record<string, unknown> {
