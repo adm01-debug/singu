@@ -5,14 +5,14 @@ import { useCompleteDashboard, type CompleteDashboardData } from '@/hooks/useCom
 import { Building2, Users, MessageSquare, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const kpis = [
+const kpis: Array<{ key: string; label: string; icon: typeof Building2; color: string; isCurrency?: boolean; isPercent?: boolean }> = [
   { key: 'total_companies', label: 'Empresas', icon: Building2, color: 'text-primary' },
   { key: 'total_contacts', label: 'Contatos', icon: Users, color: 'text-info' },
   { key: 'total_interactions', label: 'Interações', icon: MessageSquare, color: 'text-success' },
   { key: 'total_deals', label: 'Deals', icon: TrendingUp, color: 'text-warning' },
   { key: 'active_deals_value', label: 'Valor Ativo', icon: DollarSign, color: 'text-accent-foreground', isCurrency: true },
   { key: 'conversion_rate', label: 'Conversão', icon: BarChart3, color: 'text-primary', isPercent: true },
-] as const;
+];
 
 export const CompleteDashboardWidget = React.memo(function CompleteDashboardWidget() {
   const { data, isLoading } = useCompleteDashboard();
