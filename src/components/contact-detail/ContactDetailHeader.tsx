@@ -170,15 +170,15 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                 )}
               </h1>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                {(contact.role_title || (contact as Record<string, unknown>).cargo) && (
+                {(contact.role_title || contactExt.cargo) && (
                   <span className="flex items-center gap-1">
                     <Briefcase className="h-3.5 w-3.5" />
-                    {contact.role_title || (contact as Record<string, unknown>).cargo as string}
+                    {contact.role_title || contactExt.cargo as string}
                   </span>
                 )}
-                {(contact as Record<string, unknown>).departamento && (
+                {contactExt.departamento && (
                   <Badge variant="outline" className="text-xs">
-                    {(contact as Record<string, unknown>).departamento as string}
+                    {contactExt.departamento as string}
                   </Badge>
                 )}
                 {company && (
@@ -192,9 +192,9 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                     {ROLE_CONFIG[contact.role]}
                   </Badge>
                 )}
-                {(contact as Record<string, unknown>).source && (
+                {contactExt.source && (
                   <Badge variant="secondary" className="text-xs">
-                    Fonte: {(contact as Record<string, unknown>).source as string}
+                    Fonte: {contactExt.source as string}
                   </Badge>
                 )}
               </div>
