@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
