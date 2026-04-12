@@ -71,6 +71,7 @@ export function ContactCommercialTab({ contactId }: Props) {
     <div className="grid gap-4 md:grid-cols-2">
       {/* Best Closing Moments — from external view */}
       <BestClosingMomentsCard contactId={contactId} />
+      <ChurnRiskCard contactId={contactId} />
 
       {/* RFM Analysis */}
       <Card className="md:col-span-2">
