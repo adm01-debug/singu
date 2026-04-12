@@ -281,6 +281,19 @@ const Analytics = () => {
                 </Card>
               </motion.div>
             </div>
+
+            {/* External Intelligence Widgets */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <DataHealthWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <UsageKpisWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                <DiscDashboardWidget />
+              </motion.div>
+            </div>
           </TabsContent>
 
           {/* Engagement Tab */}
