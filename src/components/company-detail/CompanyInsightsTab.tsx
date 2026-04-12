@@ -100,10 +100,10 @@ export function CompanyInsightsTab({
           <Card>
             <CardContent className="p-4 text-center">
               <HeartPulse className="h-5 w-5 text-primary mx-auto mb-2" />
-              <div className={`text-3xl font-bold ${healthScore >= 70 ? 'text-success' : healthScore >= 40 ? 'text-warning' : 'text-destructive'}`}>
-                {typeof healthScore === 'object' ? (healthScore as Record<string, number>).score ?? 0 : healthScore}%
+              <div className={`text-3xl font-bold ${healthScore.score >= 70 ? 'text-success' : healthScore.score >= 40 ? 'text-warning' : 'text-destructive'}`}>
+                {healthScore.score}%
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Health Score</p>
+              <p className="text-xs text-muted-foreground mt-1">Health Score · {healthScore.level}</p>
             </CardContent>
           </Card>
         )}
@@ -112,7 +112,7 @@ export function CompanyInsightsTab({
             <CardContent className="p-4 text-center">
               <Target className="h-5 w-5 text-primary mx-auto mb-2" />
               <div className="text-3xl font-bold text-primary">
-                {typeof propensity === 'object' ? (propensity as Record<string, number>).score?.toFixed(0) ?? '—' : Number(propensity).toFixed(0)}%
+                {typeof propensity === 'object' ? ((propensity as { score?: number }).score?.toFixed(0) ?? '—') : Number(propensity).toFixed(0)}%
               </div>
               <p className="text-xs text-muted-foreground mt-1">Propensão de Compra</p>
             </CardContent>
@@ -125,23 +125,21 @@ export function CompanyInsightsTab({
                 <Gauge className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Plano de Conta</span>
               </div>
-              {typeof accountPlan === 'object' && (
-                <div className="space-y-1.5">
-                  {(accountPlan as Record<string, unknown>).objective && (
-                    <p className="text-xs text-muted-foreground">🎯 {String((accountPlan as Record<string, unknown>).objective)}</p>
-                  )}
-                  {(accountPlan as Record<string, unknown>).strategy && (
-                    <p className="text-xs text-muted-foreground">📋 {String((accountPlan as Record<string, unknown>).strategy)}</p>
-                  )}
-                  {(accountPlan as Record<string, unknown>).next_steps && Array.isArray((accountPlan as Record<string, unknown>).next_steps) && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {((accountPlan as Record<string, unknown>).next_steps as string[]).slice(0, 3).map((step, i) => (
-                        <Badge key={i} variant="outline" className="text-[10px]">{step}</Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="space-y-1.5">
+                {accountPlan.objectives?.length > 0 && (
+                  <p className="text-xs text-muted-foreground">🎯 {accountPlan.objectives[0]}</p>
+                )}
+                {accountPlan.risks?.length > 0 && (
+                  <p className="text-xs text-muted-foreground">⚠️ {accountPlan.risks[0]}</p>
+                )}
+                {accountPlan.next_steps?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {accountPlan.next_steps.slice(0, 3).map((step, i) => (
+                      <Badge key={i} variant="outline" className="text-[10px]">{step}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
