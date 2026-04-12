@@ -70,6 +70,25 @@ export function RapportCard({ contactId }: Props) {
                 <ul className="space-y-0.5">{data.improvement_suggestions.slice(0, 3).map((s, i) => <li key={i} className="text-xs text-muted-foreground">• {s}</li>)}</ul>
               </div>
             )}
+
+            {rapportIntel && (
+              <div className="border-t pt-2 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Heart className="h-3 w-3" /> Intel de Rapport</p>
+                {rapportIntel.top_values && rapportIntel.top_values.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {rapportIntel.top_values.map((v, i) => <Badge key={i} variant="secondary" className="text-[10px]">💎 {v}</Badge>)}
+                  </div>
+                )}
+                {rapportIntel.positive_anchors && rapportIntel.positive_anchors.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {rapportIntel.positive_anchors.map((a, i) => <Badge key={i} variant="outline" className="text-[10px] text-success">⚓ {a}</Badge>)}
+                  </div>
+                )}
+                {rapportIntel.upcoming_events && rapportIntel.upcoming_events.length > 0 && (
+                  <div className="text-xs text-primary">📅 {rapportIntel.upcoming_events[0]}</div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
