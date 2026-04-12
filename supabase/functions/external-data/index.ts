@@ -29,6 +29,7 @@ const ALLOWED_TABLES = [
   // ── Commercial & CRM ──
   'deals', 'proposals', 'meetings', 'tasks',
   'email_logs', 'nps_surveys', 'cadence_enrollments', 'inactivity_alerts',
+  'purchase_history', 'whatsapp_messages',
   // ── Views (read-only, pre-computed intelligence) ──
   'vw_active_alerts', 'vw_best_closing_moments', 'vw_churn_risk_ranking',
   'vw_closing_score_alerts', 'vw_closing_score_ranking',
