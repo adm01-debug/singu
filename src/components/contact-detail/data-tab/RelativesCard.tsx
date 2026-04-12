@@ -73,6 +73,10 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
             <Input placeholder="Profissão" value={form.occupation} onChange={(e) => setForm(p => ({ ...p, occupation: e.target.value }))} />
             <Input placeholder="Empresa" value={form.company} onChange={(e) => setForm(p => ({ ...p, company: e.target.value }))} />
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="number" placeholder="Idade" min={0} max={150} value={form.age} onChange={(e) => setForm(p => ({ ...p, age: e.target.value }))} />
+            <Input type="date" placeholder="Data Nascimento" value={form.birthday} onChange={(e) => setForm(p => ({ ...p, birthday: e.target.value }))} />
+          </div>
           <Input placeholder="Notas" value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} />
           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
             <input type="checkbox" checked={form.is_decision_influencer} onChange={(e) => setForm(p => ({ ...p, is_decision_influencer: e.target.checked }))} className="rounded" />
