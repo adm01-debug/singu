@@ -18,11 +18,11 @@ export function useDailySummary(date?: string) {
   return useQuery({
     queryKey: ['daily-summary', date],
     queryFn: async () => {
-      const params: Record<string, unknown> = {};
-      if (date) params.p_date = date;
+      // Always pass p_date to disambiguate the overloaded function
+      const targetDate = date || new Date().toISOString().split('T')[0];
       const { data, error } = await callExternalRpc<DailySummary>(
         'get_daily_summary',
-        params
+        { p_date: targetDate }
       );
       if (error) throw error;
       return data;
