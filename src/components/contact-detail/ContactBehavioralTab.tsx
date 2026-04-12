@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RelationshipScoreChart } from './behavioral-tab/RelationshipScoreChart';
+import { DiscCompatibilityCard } from './behavioral-tab/DiscCompatibilityCard';
 import { RapportCard } from './behavioral-tab/RapportCard';
 import { EmotionalTrendCard } from './behavioral-tab/EmotionalTrendCard';
 import { CommunicationDashboardCard } from './behavioral-tab/CommunicationDashboardCard';
