@@ -7,9 +7,9 @@ import { Crown, Medal, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const rankIcons: Record<number, React.ReactNode> = {
-  1: <Crown className="h-4 w-4 text-yellow-500" />,
-  2: <Medal className="h-4 w-4 text-gray-400" />,
-  3: <Medal className="h-4 w-4 text-amber-600" />,
+  1: <Crown className="h-4 w-4 text-warning" />,
+  2: <Medal className="h-4 w-4 text-muted-foreground" />,
+  3: <Medal className="h-4 w-4 text-accent" />,
 };
 
 function LeaderboardWidget() {

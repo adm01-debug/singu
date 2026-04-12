@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Skeleton } from '@/components/ui/skeleton';
-import AppLayout from '@/components/layout/AppLayout';
+import { AppLayout } from '@/components/layout/AppLayout';
 
 const GoalsDashboardWidget = lazy(() => import('@/components/gamification/GoalsDashboardWidget'));
 const QuotaStatusWidget = lazy(() => import('@/components/gamification/QuotaStatusWidget'));
