@@ -517,6 +517,15 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="hobbies" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Hobbies</FormLabel>
+                  <FormControl><Input placeholder="Ex: Futebol, Leitura, Viagens (separadas por vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>Separar por vírgula</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas</FormLabel>
@@ -531,9 +540,20 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas Pessoais</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Preferências pessoais, hobbies, família..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                    <Textarea placeholder="Preferências pessoais, observações privadas..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormDescription>Informações pessoais para rapport</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="family_info" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Informações Familiares</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Cônjuge, filhos, aniversários da família..." className="min-h-[60px]" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormDescription>Informações sobre família para rapport e lembretes</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
