@@ -15,6 +15,8 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
 const PendingFollowupsWidget = lazy(() => import('@/components/dashboard/widgets/PendingFollowupsWidget').then(m => ({ default: m.PendingFollowupsWidget })));
+const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.TodaysRemindersWidget })));
+const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -104,6 +106,20 @@ export function OverviewTab({
           </CollapsibleContent>
         </Collapsible>
       </DashboardErrorBoundary>
+
+      {/* 3b. Today's Reminders + Active Alerts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <DashboardErrorBoundary sectionName="Lembretes">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <TodaysRemindersWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Alertas">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <ActiveAlertsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
 
       {/* 4. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

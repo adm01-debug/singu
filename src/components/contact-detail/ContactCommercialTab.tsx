@@ -1,6 +1,9 @@
 import { TrendingUp, TrendingDown, Minus, ShoppingBag, BarChart3, AlertCircle } from 'lucide-react';
 import { BestClosingMomentsCard } from './commercial-tab/BestClosingMomentsCard';
 import { ChurnRiskCard } from './commercial-tab/ChurnRiskCard';
+import { ClosingScoreCard } from './commercial-tab/ClosingScoreCard';
+import { DealVelocityCard } from './commercial-tab/DealVelocityCard';
+import { SatisfactionCard } from './commercial-tab/SatisfactionCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -69,9 +72,12 @@ export function ContactCommercialTab({ contactId }: Props) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* Best Closing Moments — from external view */}
+      {/* Intelligence from external views */}
       <BestClosingMomentsCard contactId={contactId} />
       <ChurnRiskCard contactId={contactId} />
+      <ClosingScoreCard contactId={contactId} />
+      <DealVelocityCard contactId={contactId} />
+      <SatisfactionCard contactId={contactId} />
 
       {/* RFM Analysis */}
       <Card className="md:col-span-2">

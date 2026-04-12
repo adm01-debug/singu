@@ -1,5 +1,9 @@
 import { Brain, Eye, Activity, Zap, Target, Shield } from 'lucide-react';
 import { RelationshipScoreChart } from './behavioral-tab/RelationshipScoreChart';
+import { DiscCompatibilityCard } from './behavioral-tab/DiscCompatibilityCard';
+import { RapportCard } from './behavioral-tab/RapportCard';
+import { EmotionalTrendCard } from './behavioral-tab/EmotionalTrendCard';
+import { CommunicationDashboardCard } from './behavioral-tab/CommunicationDashboardCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -547,6 +551,14 @@ export function ContactBehavioralTab({ contact }: Props) {
         </div>
       </TabsContent>
     </Tabs>
+
+    {/* Intelligence from external views */}
+    <div className="grid gap-4 md:grid-cols-2 mt-4">
+      <DiscCompatibilityCard contactId={contact.id} />
+      <RapportCard contactId={contact.id} />
+      <EmotionalTrendCard contactId={contact.id} />
+      <CommunicationDashboardCard contactId={contact.id} />
+    </div>
 
     {/* Relationship Score Evolution Chart */}
     <RelationshipScoreChart contactId={contact.id} />
