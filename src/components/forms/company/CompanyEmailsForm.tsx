@@ -49,9 +49,11 @@ export function CompanyEmailsForm({ companyId, emails, onSave, onDelete, isLoadi
 
   const addItem = () => setItems(prev => [...prev, emptyEmail(companyId)]);
 
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSave = async (idx: number) => {
     const item = items[idx];
-    if (!item.email?.trim()) return;
+    if (!item.email?.trim() || !isValidEmail(item.email)) return;
     setSavingIdx(idx);
     try {
       await onSave({ ...item, email_normalizado: item.email.toLowerCase().trim() });
