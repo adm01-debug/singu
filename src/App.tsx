@@ -12,6 +12,7 @@ import { AriaLiveProvider } from "@/components/feedback/AriaLiveRegion";
 import { ErrorBoundary } from "@/components/feedback/ErrorBoundary";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { RouteAnnouncer } from "@/components/navigation/RouteAnnouncer";
+import { SkipNav } from "@/components/navigation/SkipNav";
 import { useWebVitals } from "@/hooks/useWebVitals";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
@@ -296,6 +297,7 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <SkipNav />
                 <AuthProvider>
                   <NavigationStackProvider>
                     <ScrollToTop />

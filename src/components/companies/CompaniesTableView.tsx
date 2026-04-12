@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users, ArrowUpDown, Banknote, Network } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +96,7 @@ const porteLabel: Record<string, { label: string; className: string }> = {
   'MEI': { label: 'MEI', className: 'text-muted-foreground' },
 };
 
-export function CompaniesTableView({
+export const CompaniesTableView = React.memo(function CompaniesTableView({
   companies,
   selectionMode,
   selectedIds,
@@ -117,8 +118,8 @@ export function CompaniesTableView({
   );
 
   return (
-    <div className="border border-border/60 rounded-lg overflow-hidden">
-      <Table>
+    <div className="border border-border/60 rounded-lg overflow-hidden" role="region" aria-label="Tabela de empresas">
+      <Table aria-label="Lista de empresas">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/40">
             {selectionMode && <TableHead className="w-10" />}
@@ -283,4 +284,4 @@ export function CompaniesTableView({
       </Table>
     </div>
   );
-}
+});
