@@ -2,14 +2,17 @@ import React, { lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Users, DollarSign, Target, AlertTriangle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts';
+import { TrendingUp, TrendingDown, Minus, Users, DollarSign, Target, AlertTriangle, Sun, Building2, Radio } from 'lucide-react';
 import {
   useConversionFunnel,
   useParetoCustomers,
   useLossReasonAnalysis,
   useComparePeriods,
   useTrendAnalysis,
+  useSeasonalityAnalysis,
+  useIndustryAnalysis,
+  useChannelAnalysis,
 } from '@/hooks/useReportsAnalytics';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--info))', 'hsl(var(--muted-foreground))'];
