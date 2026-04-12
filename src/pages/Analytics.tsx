@@ -51,6 +51,9 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { DataHealthWidget } from '@/components/analytics/DataHealthWidget';
 import { UsageKpisWidget } from '@/components/analytics/UsageKpisWidget';
 import { DiscDashboardWidget } from '@/components/analytics/DiscDashboardWidget';
+import { PendingNotificationsWidget } from '@/components/analytics/PendingNotificationsWidget';
+import { CommunicationIntelWidget } from '@/components/analytics/CommunicationIntelWidget';
+import { RapportIntelWidget } from '@/components/analytics/RapportIntelWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
 // Extracted data & shared components
