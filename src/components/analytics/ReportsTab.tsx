@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +13,8 @@ import {
 } from '@/hooks/useReportsAnalytics';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--info))', 'hsl(var(--muted-foreground))'];
+
+const CohortAnalysisWidget = lazy(() => import('@/components/analytics/CohortAnalysisWidget'));
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(v);
@@ -192,6 +194,9 @@ export default function ReportsTab() {
         <LossReasonsChart />
       </div>
       <TrendChart />
+      <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
+        <CohortAnalysisWidget />
+      </Suspense>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ParetoList />
       </div>
