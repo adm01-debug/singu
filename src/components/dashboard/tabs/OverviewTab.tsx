@@ -25,6 +25,8 @@ const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/Ex
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
 const DailyInsightsWidget = lazy(() => import('@/components/dashboard/widgets/DailyInsightsWidget'));
 const CompleteDashboardWidget = lazy(() => import('@/components/dashboard/widgets/CompleteDashboardWidget'));
+const DailyKpisWidget = lazy(() => import('@/components/dashboard/widgets/DailyKpisWidget'));
+const CadenceAlertWidget = lazy(() => import('@/components/contact-detail/CadenceAlertWidget'));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
