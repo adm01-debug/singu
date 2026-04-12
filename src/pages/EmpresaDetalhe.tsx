@@ -11,7 +11,7 @@ import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySoci
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
-  Network, BarChart3, Sparkles, Database
+  Network, BarChart3, Sparkles, Database, ShoppingCart
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
