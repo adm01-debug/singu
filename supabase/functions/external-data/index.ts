@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
-import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+import { withAuth, jsonError, jsonOk, handleCorsAndMethod } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
 
 const limiter = rateLimit({ windowMs: 60_000, max: 60 });
@@ -71,8 +71,9 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 1): Promise<T> {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  const corsResponse = handleCorsAndMethod(req);
+  if (corsResponse) {
+    return corsResponse;
   }
 
   // ── Rate limit guard ──
@@ -91,7 +92,7 @@ Deno.serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return jsonError('Invalid JSON body', 400);
+      return jsonError('Invalid JSON body', 400, req);
     }
 
     const action = typeof body.action === 'string' ? body.action : undefined;
@@ -111,7 +112,7 @@ Deno.serve(async (req) => {
         : swagger?.paths
           ? Object.keys(swagger.paths).map((p: string) => p.replace('/', ''))
           : [];
-      return jsonOk({ tables: tableNames });
+      return jsonOk({ tables: tableNames }, req);
     }
 
     // ─── FULL SCHEMA INTROSPECTION ───
@@ -155,14 +156,14 @@ Deno.serve(async (req) => {
         }
       } catch (_) { /* ignore */ }
 
-      return jsonOk({ tableCount: Object.keys(tables).length, tables, functions });
+      return jsonOk({ tableCount: Object.keys(tables).length, tables, functions }, req);
     }
 
     // ─── DISTINCT VALUES (single column) ───
     if (operation === 'distinct') {
       const { column } = body;
-      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400);
-      if (!column || typeof column !== 'string') return jsonError('Missing "column" for distinct', 400);
+      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400, req);
+      if (!column || typeof column !== 'string') return jsonError('Missing "column" for distinct', 400, req);
 
       const client = getExternalClient();
       const query = client
@@ -177,15 +178,15 @@ Deno.serve(async (req) => {
       if (error) throw new Error(`Distinct failed: ${error.message}`);
 
       const unique = [...new Set((data as any[] || []).map((r: any) => r[column]).filter(Boolean))].sort();
-      return jsonOk({ values: unique, count: unique.length });
+      return jsonOk({ values: unique, count: unique.length }, req);
     }
 
     // ─── BATCH DISTINCT VALUES (multiple columns in one call) ───
     if (operation === 'batch_distinct') {
       const { columns } = body;
-      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400);
-      if (!Array.isArray(columns) || columns.length === 0) return jsonError('Missing "columns" array for batch_distinct', 400);
-      if (columns.length > 20) return jsonError('Max 20 columns per batch', 400);
+      if (!table || !isAllowedTable(table)) return jsonError('Invalid table', 400, req);
+      if (!Array.isArray(columns) || columns.length === 0) return jsonError('Missing "columns" array for batch_distinct', 400, req);
+      if (columns.length > 20) return jsonError('Max 20 columns per batch', 400, req);
 
       const client = getExternalClient();
       const results: Record<string, string[]> = {};
@@ -216,11 +217,11 @@ Deno.serve(async (req) => {
         results[col] = values;
       }
 
-      return jsonOk({ results });
+      return jsonOk({ results }, req);
     }
 
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
-      return jsonError(`Invalid table "${table}". Only allowed tables are permitted.`, 400);
+      return jsonError(`Invalid table "${table}". Only allowed tables are permitted.`, 400, req);
     }
 
     const client = getExternalClient();
@@ -271,53 +272,53 @@ Deno.serve(async (req) => {
         console.warn(`[external-data] Slow query: ${table} took ${elapsed}ms`);
       }
 
-      return jsonOk(result);
+      return jsonOk(result, req);
     }
 
     // ─── INSERT (create) ───
     if (operation === 'insert') {
       const { record } = body;
-      if (!record || typeof record !== 'object') return jsonError('Missing or invalid "record" for insert', 400);
+      if (!record || typeof record !== 'object') return jsonError('Missing or invalid "record" for insert', 400, req);
 
       const { data, error } = await client.from(table).insert(record).select().single();
       if (error) throw new Error(`Insert failed: ${error.message}`);
-      return jsonOk({ data });
+      return jsonOk({ data }, req);
     }
 
     // ─── UPDATE ───
     if (operation === 'update') {
       const id = body.id;
       const updates = body.updates;
-      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for update', 400);
+      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for update', 400, req);
       // Validate UUID format
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(id)) return jsonError('Invalid UUID format for "id"', 400);
-      if (!updates || typeof updates !== 'object') return jsonError('Missing or invalid "updates" for update', 400);
+      if (!uuidRegex.test(id)) return jsonError('Invalid UUID format for "id"', 400, req);
+      if (!updates || typeof updates !== 'object') return jsonError('Missing or invalid "updates" for update', 400, req);
 
       const { data, error } = await client.from(table).update(updates).eq('id', id).select().single();
       if (error) throw new Error(`Update failed: ${error.message}`);
-      return jsonOk({ data });
+      return jsonOk({ data }, req);
     }
 
     // ─── DELETE ───
     if (operation === 'delete') {
       const id = body.id;
-      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for delete', 400);
+      if (!id || typeof id !== 'string') return jsonError('Missing or invalid "id" for delete', 400, req);
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(id as string)) return jsonError('Invalid UUID format for "id"', 400);
+      if (!uuidRegex.test(id as string)) return jsonError('Invalid UUID format for "id"', 400, req);
 
       const { error } = await client.from(table).delete().eq('id', id);
       if (error) throw new Error(`Delete failed: ${error.message}`);
-      return jsonOk({ success: true });
+      return jsonOk({ success: true }, req);
     }
 
-    return jsonError(`Unknown action: ${operation}`, 400);
+    return jsonError(`Unknown action: ${operation}`, 400, req);
 
   } catch (error) {
     const elapsed = Math.round(performance.now() - startTime);
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[external-data] Error after ${elapsed}ms:`, message);
     const status = message.includes('timeout') ? 504 : 500;
-    return jsonError(message, status);
+    return jsonError(message, status, req);
   }
 });
