@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Generated ${topSuggestions.length} offer suggestions`);
+    // Offer suggestions generated
 
     return jsonOk({ 
       success: true, 

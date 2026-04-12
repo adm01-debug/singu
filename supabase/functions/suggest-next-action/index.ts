@@ -116,7 +116,7 @@ Com base nestes dados, qual é a melhor próxima ação a ser tomada com este co
     }
 
     const aiResponse = await response.json();
-    console.log("AI Response received:", JSON.stringify(aiResponse, null, 2));
+    // AI response received
 
     let suggestion = null;
     const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
@@ -124,7 +124,7 @@ Com base nestes dados, qual é a melhor próxima ação a ser tomada com este co
     if (toolCall?.function?.arguments) {
       try {
         suggestion = JSON.parse(toolCall.function.arguments);
-        console.log("Parsed suggestion:", suggestion);
+        // suggestion parsed successfully
       } catch (parseError) {
         console.error("Error parsing tool call arguments:", parseError);
       }

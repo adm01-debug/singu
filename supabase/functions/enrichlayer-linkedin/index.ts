@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       return jsonError("EnrichLayer API key not configured", 500);
     }
 
-    console.log("Enriching LinkedIn profile:", linkedinUrl);
+    // Enriching LinkedIn profile
 
     const apiUrl = `https://enrichlayer.com/api/v2/profile?url=${encodeURIComponent(linkedinUrl)}`;
     
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     });
 
     const responseText = await enrichResponse.text();
-    console.log("EnrichLayer response status:", enrichResponse.status);
+    // EnrichLayer responded
 
     if (!enrichResponse.ok) {
       console.error("EnrichLayer API error:", enrichResponse.status, responseText);
