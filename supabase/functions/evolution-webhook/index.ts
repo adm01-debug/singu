@@ -98,7 +98,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
     phoneVariants.push('55' + cleanPhone);
   }
 
-  console.log(`Searching contact for phone variants: ${phoneVariants.join(', ')}`);
+  // Searching contact for phone variants
 
   // 1. Search in LOCAL contacts table
   for (const variant of phoneVariants) {
