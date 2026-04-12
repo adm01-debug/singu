@@ -51,9 +51,8 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { DataHealthWidget } from '@/components/analytics/DataHealthWidget';
 import { UsageKpisWidget } from '@/components/analytics/UsageKpisWidget';
 import { DiscDashboardWidget } from '@/components/analytics/DiscDashboardWidget';
-import { PendingNotificationsWidget } from '@/components/analytics/PendingNotificationsWidget';
-import { CommunicationIntelWidget } from '@/components/analytics/CommunicationIntelWidget';
-import { RapportIntelWidget } from '@/components/analytics/RapportIntelWidget';
+import { BirthdayContactsWidget } from '@/components/analytics/BirthdayContactsWidget';
+import { OrphanContactsWidget } from '@/components/analytics/OrphanContactsWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
 // Extracted data & shared components
@@ -201,11 +200,6 @@ const Analytics = () => {
                 <BestTimeToContactPanel />
                 <DealVelocityPanel />
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <PendingNotificationsWidget />
-                <CommunicationIntelWidget />
-                <RapportIntelWidget />
-              </div>
             </motion.div>
           </TabsContent>
 
@@ -300,6 +294,16 @@ const Analytics = () => {
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
                 <DiscDashboardWidget />
+              </motion.div>
+            </div>
+
+            {/* Contact Quality Widgets */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                <BirthdayContactsWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+                <OrphanContactsWidget />
               </motion.div>
             </div>
           </TabsContent>

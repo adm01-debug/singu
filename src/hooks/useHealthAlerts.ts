@@ -1,5 +1,4 @@
-import { useMemo, useCallback } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -50,56 +49,74 @@ const DEFAULT_SETTINGS: Omit<HealthAlertSettings, 'id' | 'user_id'> = {
   check_frequency_hours: 24,
   notify_on_critical: true,
   notify_on_warning: false,
-  email_address: null,
+  email_address: null
 };
 
-export function useHealthAlerts() {
-  const { user } = useAuth();
-  const userId = user?.id;
-  const queryClient = useQueryClient();
+function useHealthAlertsFetch(userId?: string) {
+  const [alerts, setAlerts] = useState<HealthAlert[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ─── Alerts query ───
-  const { data: alerts = [], isLoading: loading } = useQuery({
-    queryKey: ['health-alerts', userId],
-    queryFn: async () => {
+  const fetchAlerts = useCallback(async () => {
+    if (!userId) return;
+    try {
       const { data, error } = await supabase
         .from('health_alerts')
         .select('*, contact:contacts(first_name, last_name)')
-        .eq('user_id', userId!)
+        .eq('user_id', userId)
         .eq('dismissed', false)
         .order('created_at', { ascending: false })
         .limit(20);
       if (error) throw error;
-      return (data || []) as unknown as HealthAlert[];
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
-  });
+      setAlerts((data || []) as unknown as HealthAlert[]);
+    } catch (error) {
+      logger.error('Error fetching health alerts:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
-  // ─── Settings query ───
-  const { data: settings = null, isLoading: settingsLoading } = useQuery({
-    queryKey: ['health-alert-settings', userId],
-    queryFn: async () => {
+  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
+
+  return { alerts, setAlerts, loading, fetchAlerts };
+}
+
+function useHealthAlertSettingsFetch(userId?: string) {
+  const [settings, setSettings] = useState<HealthAlertSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSettings = useCallback(async () => {
+    if (!userId) return;
+    try {
       const { data, error } = await supabase
         .from('health_alert_settings')
         .select('*')
-        .eq('user_id', userId!)
+        .eq('user_id', userId)
         .maybeSingle();
       if (error) throw error;
-      return (data as HealthAlertSettings | null);
-    },
-    enabled: !!userId,
-    staleTime: 10 * 60 * 1000,
-  });
+      setSettings(data as HealthAlertSettings | null);
+    } catch (error) {
+      logger.error('Error fetching health alert settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
-  const invalidateAlerts = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['health-alerts', userId] });
-  }, [queryClient, userId]);
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+
+  return { settings, setSettings, loading, fetchSettings };
+}
+
+export function useHealthAlerts() {
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  const { alerts, setAlerts, loading, fetchAlerts } = useHealthAlertsFetch(userId);
+  const { settings, setSettings, loading: settingsLoading, fetchSettings } = useHealthAlertSettingsFetch(userId);
 
   const dismissAlert = useCallback(async (alertId: string) => {
     if (!userId) return;
-    // Optimistic update
-    queryClient.setQueryData<HealthAlert[]>(['health-alerts', userId], old => (old || []).filter(a => a.id !== alertId));
+    const previous = alerts;
+    setAlerts(prev => prev.filter(a => a.id !== alertId));
     try {
       const { error } = await supabase
         .from('health_alerts')
@@ -109,15 +126,16 @@ export function useHealthAlerts() {
       if (error) throw error;
       toast.success('Alerta dispensado');
     } catch (error) {
-      invalidateAlerts();
+      setAlerts(previous);
       logger.error('Error dismissing alert:', error);
       toast.error('Erro ao dispensar alerta');
     }
-  }, [userId, queryClient, invalidateAlerts]);
+  }, [userId, alerts, setAlerts]);
 
   const dismissAllAlerts = useCallback(async () => {
     if (!userId) return;
-    queryClient.setQueryData<HealthAlert[]>(['health-alerts', userId], () => []);
+    const previous = alerts;
+    setAlerts([]);
     try {
       const { error } = await supabase
         .from('health_alerts')
@@ -127,11 +145,11 @@ export function useHealthAlerts() {
       if (error) throw error;
       toast.success('Todos os alertas foram dispensados');
     } catch (error) {
-      invalidateAlerts();
+      setAlerts(previous);
       logger.error('Error dismissing all alerts:', error);
       toast.error('Erro ao dispensar alertas');
     }
-  }, [userId, queryClient, invalidateAlerts]);
+  }, [userId, alerts, setAlerts]);
 
   const saveSettings = useCallback(async (newSettings: Partial<HealthAlertSettings>) => {
     if (!userId) return;
@@ -143,13 +161,13 @@ export function useHealthAlerts() {
         .select()
         .single();
       if (error) throw error;
-      queryClient.setQueryData(['health-alert-settings', userId], data);
+      setSettings(data as HealthAlertSettings);
       toast.success('Configurações salvas');
     } catch (error) {
       logger.error('Error saving settings:', error);
       toast.error('Erro ao salvar configurações');
     }
-  }, [userId, settings, queryClient]);
+  }, [userId, settings, setSettings]);
 
   const checkHealthNow = useCallback(async () => {
     try {
@@ -158,7 +176,7 @@ export function useHealthAlerts() {
       if (error) throw error;
       if (data.alertsCreated > 0) {
         toast.success(`${data.alertsCreated} novo(s) alerta(s) criado(s)!`);
-        invalidateAlerts();
+        fetchAlerts();
       } else {
         toast.info('Nenhum cliente com saúde crítica encontrado');
       }
@@ -166,7 +184,7 @@ export function useHealthAlerts() {
       logger.error('Error checking health:', error);
       toast.error('Erro ao verificar saúde dos clientes');
     }
-  }, [invalidateAlerts]);
+  }, [fetchAlerts]);
 
   const criticalAlerts = useMemo(() => alerts.filter(a => a.alert_type === 'critical'), [alerts]);
   const warningAlerts = useMemo(() => alerts.filter(a => a.alert_type === 'warning'), [alerts]);
@@ -182,6 +200,6 @@ export function useHealthAlerts() {
     dismissAllAlerts,
     saveSettings,
     checkHealthNow,
-    refreshAlerts: invalidateAlerts,
+    refreshAlerts: fetchAlerts
   };
 }

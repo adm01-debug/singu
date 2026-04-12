@@ -18,6 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
+import { ContactIntelligenceWidget } from './ContactIntelligenceWidget';
+import { BestContactTimeWidget } from './BestContactTimeWidget';
 
 interface Props {
   contact: Contact;
@@ -470,6 +472,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
           <InlineEmptyState icon={Calendar} title="Nenhum evento de vida" description="Registre aniversários, promoções ou marcos importantes" />
         )}
       </CollapsibleSection>
+
+      {/* Intelligence & Timing Widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ContactIntelligenceWidget contactId={contact.id} />
+        <BestContactTimeWidget contactId={contact.id} />
+      </div>
     </div>
   );
 }
