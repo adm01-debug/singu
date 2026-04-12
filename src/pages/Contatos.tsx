@@ -424,6 +424,10 @@ const Contatos = () => {
       />
 
       <div className="p-4 md:p-6 space-y-5">
+        {/* Duplicate Contacts Alert */}
+        <Suspense fallback={null}>
+          <DuplicateContactsPanel />
+        </Suspense>
         {/* Stats Summary Bar */}
         <ContactsStatsBar contacts={contacts} />
         {/* Search and View Toggle */}
