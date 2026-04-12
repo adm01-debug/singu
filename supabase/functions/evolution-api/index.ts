@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
         return jsonError(`Unknown action: ${action}`, 400);
     }
 
-    console.log(`Evolution API call: ${method} ${baseUrl}${endpoint}`);
+    // Evolution API call logged;
 
     const response = await fetch(`${baseUrl}${endpoint}`, {
       method,
