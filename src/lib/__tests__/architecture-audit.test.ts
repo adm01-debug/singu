@@ -139,9 +139,10 @@ describe('Architecture Audit', () => {
       expect(html).toContain('nosniff');
     });
 
-    it('has X-Frame-Options DENY', () => {
-      expect(html).toContain('X-Frame-Options');
-      expect(html).toContain('DENY');
+    it('has frame protection via CSP frame-ancestors (X-Frame-Options must be HTTP header)', () => {
+      // X-Frame-Options should NOT be a meta tag (browsers ignore it there)
+      // Frame protection is handled by CSP frame-ancestors 'none'
+      expect(html).toContain("frame-ancestors 'none'");
     });
 
     it('has Content-Security-Policy frame-ancestors', () => {
