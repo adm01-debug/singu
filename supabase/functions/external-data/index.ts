@@ -26,6 +26,9 @@ const ALLOWED_TABLES = [
   // ── Contact intelligence & analytics ──
   'churn_predictions', 'deal_velocity_analysis',
   'relationship_score_history', 'workspace_accounts',
+  // ── Commercial & CRM ──
+  'deals', 'proposals', 'meetings', 'tasks',
+  'email_logs', 'nps_surveys', 'cadence_enrollments', 'inactivity_alerts',
   // ── Views (read-only, pre-computed intelligence) ──
   'vw_active_alerts', 'vw_best_closing_moments', 'vw_churn_risk_ranking',
   'vw_closing_score_alerts', 'vw_closing_score_ranking',
@@ -39,6 +42,9 @@ const ALLOWED_TABLES = [
   'vw_search_contacts', 'vw_singu_communication_intel',
   'vw_singu_contact_360', 'vw_singu_emotional_trend',
   'vw_singu_rapport_intel', 'vw_todays_reminders',
+  // ── Extended views ──
+  'vw_companies_completo', 'vw_companies_duplicatas',
+  'vw_singu_data_health', 'vw_singu_disc_dashboard', 'vw_singu_usage_kpis',
 ] as const;
 
 type AllowedTable = typeof ALLOWED_TABLES[number];
