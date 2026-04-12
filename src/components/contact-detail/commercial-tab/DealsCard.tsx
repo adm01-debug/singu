@@ -8,18 +8,19 @@ import { format } from 'date-fns';
 interface Props { contactId: string; }
 
 const stageColors: Record<string, string> = {
-  prospecting: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  qualification: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  proposal: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  negotiation: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  won: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  lost: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  prospeccao: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  qualificacao: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  proposta: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  negociacao: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  fechamento: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  ganho: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  perdido: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 };
 
 export function DealsCard({ contactId }: Props) {
   const { data: deals, isLoading, error, refetch } = useContactDeals(contactId);
-  const totalValue = deals?.reduce((sum, d) => sum + (d.value || 0), 0) || 0;
-  const wonDeals = deals?.filter(d => d.status === 'won' || d.stage === 'won') || [];
+  const totalValue = deals?.reduce((sum, d) => sum + (d.valor || 0), 0) || 0;
+  const wonDeals = deals?.filter(d => d.status === 'ganho') || [];
 
   return (
     <ExternalDataCard title="Negócios" icon={<DollarSign className="h-4 w-4" />} isLoading={isLoading} error={error} onRetry={refetch} hasData={!!deals?.length} emptyMessage="Nenhum negócio vinculado">
@@ -42,13 +43,13 @@ export function DealsCard({ contactId }: Props) {
             {deals?.map(deal => (
               <div key={deal.id} className="flex items-center justify-between p-2 rounded-md border border-border/50 hover:bg-muted/30 transition-colors">
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium truncate">{deal.title}</p>
+                  <p className="text-xs font-medium truncate">{deal.titulo}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {deal.value != null && <span className="text-[10px] text-muted-foreground">R$ {deal.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
-                    {deal.expected_close_date && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{format(new Date(deal.expected_close_date), 'dd/MM/yy')}</span>}
+                    {deal.valor != null && <span className="text-[10px] text-muted-foreground">R$ {deal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
+                    {deal.previsao_fechamento && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{format(new Date(deal.previsao_fechamento), 'dd/MM/yy')}</span>}
                   </div>
                 </div>
-                {deal.stage && <Badge className={`text-[9px] ml-2 ${stageColors[deal.stage] || 'bg-muted text-muted-foreground'}`}>{deal.stage}</Badge>}
+                {deal.pipeline_stage && <Badge className={`text-[9px] ml-2 ${stageColors[deal.pipeline_stage] || 'bg-muted text-muted-foreground'}`}>{deal.pipeline_stage}</Badge>}
               </div>
             ))}
           </div>
