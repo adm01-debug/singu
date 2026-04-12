@@ -1,24 +1,93 @@
-import { memo } from 'react';
-import { Phone, MessageSquare, Copy, Check } from 'lucide-react';
+import { memo, useState } from 'react';
+import { Phone, MessageSquare, Copy, Check, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { ExternalPhone } from '@/hooks/useContactRelationalData';
 import { PHONE_TYPE_LABELS, formatPhoneDisplay } from './helpers';
 import { ConfidenceBadge, PrimaryBadge, VerifiedBadge, SourceBadge } from './shared-badges';
+
+const PHONE_TYPES = ['celular', 'fixo', 'comercial', 'whatsapp', 'recado', 'outro'];
+
+function AddPhoneDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) => void }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    numero: '', phone_type: 'celular', is_primary: false, is_whatsapp: false,
+    contexto: '', observacao: '',
+  });
+
+  const handleSubmit = () => {
+    if (!form.numero.trim()) return;
+    onAdd({
+      ...form,
+      numero: form.numero.trim(),
+      contexto: form.contexto || undefined,
+      observacao: form.observacao || undefined,
+    });
+    setForm({ numero: '', phone_type: 'celular', is_primary: false, is_whatsapp: false, contexto: '', observacao: '' });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+          <Plus className="h-3 w-3 mr-1" />Adicionar
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle className="text-sm">Novo Telefone</DialogTitle></DialogHeader>
+        <div className="grid gap-3">
+          <Input placeholder="Número *" value={form.numero} onChange={(e) => setForm(p => ({ ...p, numero: e.target.value }))} />
+          <Select value={form.phone_type} onValueChange={(v) => setForm(p => ({ ...p, phone_type: v }))}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {PHONE_TYPES.map((t) => (
+                <SelectItem key={t} value={t}>{PHONE_TYPE_LABELS[t] || t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox checked={form.is_primary} onCheckedChange={(v) => setForm(p => ({ ...p, is_primary: !!v }))} />
+              Primário
+            </label>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox checked={form.is_whatsapp} onCheckedChange={(v) => setForm(p => ({ ...p, is_whatsapp: !!v }))} />
+              WhatsApp
+            </label>
+          </div>
+          <Input placeholder="Contexto (ex: pessoal, trabalho)" value={form.contexto} onChange={(e) => setForm(p => ({ ...p, contexto: e.target.value }))} />
+          <Input placeholder="Observação" value={form.observacao} onChange={(e) => setForm(p => ({ ...p, observacao: e.target.value }))} />
+          <Button size="sm" onClick={handleSubmit} disabled={!form.numero.trim()}>Salvar</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 interface Props {
   phones: ExternalPhone[];
   copiedField: string | null;
   onCopy: (text: string, field: string) => void;
+  onAdd?: (data: Record<string, unknown>) => void;
+  onDelete?: (id: string) => void;
 }
 
-export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy }: Props) {
+export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy, onAdd, onDelete }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium">
-          <Phone className="h-4 w-4 text-primary" />
-          Telefones ({phones.length})
+        <CardTitle className="flex items-center justify-between text-sm font-medium">
+          <span className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-primary" />
+            Telefones ({phones.length})
+          </span>
+          {onAdd && <AddPhoneDialog onAdd={onAdd} />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -52,12 +121,23 @@ export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy
               {p.contexto && <p className="text-[10px] text-muted-foreground">{p.contexto}</p>}
               {p.observacao && <p className="text-[10px] text-muted-foreground italic">{p.observacao}</p>}
             </div>
-            <button
-              onClick={() => onCopy(formatPhoneDisplay(p), `phone-${p.id}`)}
-              className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors flex-shrink-0"
-            >
-              {copiedField === `phone-${p.id}` ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
-            </button>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => onCopy(formatPhoneDisplay(p), `phone-${p.id}`)}
+                className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                {copiedField === `phone-${p.id}` ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
+              </button>
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(p.id)}
+                  aria-label={`Remover telefone ${p.numero}`}
+                  className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
         )) : (
           <p className="text-xs text-muted-foreground text-center py-4">Nenhum telefone registrado</p>

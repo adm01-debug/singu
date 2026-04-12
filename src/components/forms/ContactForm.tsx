@@ -1,7 +1,8 @@
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { ContactAvatarUpload } from '@/components/forms/ContactAvatarUpload';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,6 +55,8 @@ const contactSchema = z.object({
   whatsapp: z.string().trim().max(20, 'Máximo 20 caracteres').optional(),
   linkedin: z.string().trim().max(200, 'Máximo 200 caracteres').optional(),
   instagram: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
+  twitter: z.string().trim().max(50, 'Máximo 50 caracteres').optional().or(z.literal('')),
+  avatar_url: z.string().trim().max(500).optional().or(z.literal('').transform(() => undefined)),
 
   // Detalhes
   notes: z.string().trim().max(2000, 'Máximo 2000 caracteres').optional(),
@@ -141,6 +144,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       whatsapp: getField(c, 'whatsapp'),
       linkedin: getField(c, 'linkedin'),
       instagram: getField(c, 'instagram'),
+      twitter: getField(c, 'twitter'),
       notes: getField(c, 'notes'),
       personal_notes: getField(c, 'personal_notes'),
       assinatura_contato: getField(c, 'assinatura_contato'),
@@ -148,6 +152,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       interests_array: Array.isArray(c?.interests_array) ? (c.interests_array as string[]).join(', ') : '',
       hobbies: Array.isArray(c?.hobbies) ? (c.hobbies as string[]).join(', ') : getField(c, 'hobbies'),
       family_info: getField(c, 'family_info'),
+      avatar_url: getField(c, 'avatar_url'),
     },
   });
 
@@ -216,9 +221,11 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-primary" />
-          </div>
+          <ContactAvatarUpload
+            avatarUrl={form.watch('avatar_url') || null}
+            onAvatarChange={(url) => form.setValue('avatar_url', url || '', { shouldDirty: true })}
+            contactId={(contact as Record<string, unknown>)?.id as string | undefined}
+          />
           <div>
             <h3 className="font-semibold">
               {contact ? 'Editar Contato' : 'Novo Contato'}
@@ -480,6 +487,14 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 <FormItem>
                   <FormLabel>Instagram</FormLabel>
                   <FormControl><Input placeholder="@joaosilva" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="twitter" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>X (Twitter)</FormLabel>
+                  <FormControl><Input placeholder="@joaosilva" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />

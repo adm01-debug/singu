@@ -1,8 +1,12 @@
-import { memo } from 'react';
-import { Clock } from 'lucide-react';
+import { memo, useState } from 'react';
+import { Clock, Edit2, Save, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables, Json } from '@/integrations/supabase/types';
@@ -33,19 +37,90 @@ interface Props {
   cadence: Tables<'contact_cadence'> | null;
   preferences: Tables<'contact_preferences'> | null;
   commPreferences: Tables<'communication_preferences'> | null;
+  contactId?: string;
+  onSaveCadence?: (data: Record<string, unknown>) => void;
+  onSavePreferences?: (data: Record<string, unknown>) => void;
 }
 
-export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cadence, preferences, commPreferences }: Props) {
+export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cadence, preferences, commPreferences, onSaveCadence }: Props) {
+  const [editingCadence, setEditingCadence] = useState(false);
+  const [cadenceForm, setCadenceForm] = useState({
+    cadence_days: cadence?.cadence_days ?? 14,
+    priority: cadence?.priority ?? 'medium',
+    auto_remind: cadence?.auto_remind ?? true,
+    notes: cadence?.notes ?? '',
+  });
+
+  const handleSaveCadence = () => {
+    if (onSaveCadence) {
+      onSaveCadence({
+        cadence_days: cadenceForm.cadence_days,
+        priority: cadenceForm.priority,
+        auto_remind: cadenceForm.auto_remind,
+        notes: cadenceForm.notes || null,
+      });
+    }
+    setEditingCadence(false);
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium">
-          <Clock className="h-4 w-4 text-info" />
-          Cadência & Preferências
+        <CardTitle className="flex items-center justify-between text-sm font-medium">
+          <span className="flex items-center gap-2">
+            <Clock className="h-4 w-4 text-info" />
+            Cadência & Preferências
+          </span>
+          {onSaveCadence && !editingCadence && (
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={() => {
+              setCadenceForm({
+                cadence_days: cadence?.cadence_days ?? 14,
+                priority: cadence?.priority ?? 'medium',
+                auto_remind: cadence?.auto_remind ?? true,
+                notes: cadence?.notes ?? '',
+              });
+              setEditingCadence(true);
+            }}>
+              <Edit2 className="h-3 w-3 mr-1" />{cadence ? 'Editar' : 'Criar'}
+            </Button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        {cadence ? (
+        {editingCadence ? (
+          <div className="space-y-3 p-2 border rounded-lg bg-muted/30">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-muted-foreground">Frequência (dias)</label>
+                <Input type="number" min={1} max={365} value={cadenceForm.cadence_days} onChange={(e) => setCadenceForm(p => ({ ...p, cadence_days: parseInt(e.target.value) || 14 }))} className="h-8 text-xs" />
+              </div>
+              <div>
+                <label className="text-[10px] text-muted-foreground">Prioridade</label>
+                <Select value={cadenceForm.priority} onValueChange={(v) => setCadenceForm(p => ({ ...p, priority: v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Baixa</SelectItem>
+                    <SelectItem value="medium">Média</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox checked={cadenceForm.auto_remind} onCheckedChange={(v) => setCadenceForm(p => ({ ...p, auto_remind: !!v }))} />
+              Auto-lembrete
+            </label>
+            <Input placeholder="Notas" value={cadenceForm.notes} onChange={(e) => setCadenceForm(p => ({ ...p, notes: e.target.value }))} className="h-8 text-xs" />
+            <div className="flex gap-2">
+              <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSaveCadence}>
+                <Save className="h-3 w-3 mr-1" />Salvar
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setEditingCadence(false)}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        ) : cadence ? (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Frequência</span>
@@ -178,7 +253,7 @@ export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cad
           </>
         )}
 
-        {!cadence && !preferences && !commPreferences && (
+        {!cadence && !preferences && !commPreferences && !editingCadence && (
           <p className="text-xs text-muted-foreground text-center py-2">Sem preferências configuradas</p>
         )}
       </CardContent>

@@ -26,6 +26,7 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
   const [form, setForm] = useState({
     name: '', relationship_type: 'conjuge', phone: '', email: '',
     occupation: '', company: '', notes: '', is_decision_influencer: false,
+    age: '' as string, birthday: '',
   });
 
   const handleSubmit = () => {
@@ -38,8 +39,10 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
       occupation: form.occupation || undefined,
       company: form.company || undefined,
       notes: form.notes || undefined,
+      age: form.age ? parseInt(form.age, 10) : undefined,
+      birthday: form.birthday || undefined,
     });
-    setForm({ name: '', relationship_type: 'conjuge', phone: '', email: '', occupation: '', company: '', notes: '', is_decision_influencer: false });
+    setForm({ name: '', relationship_type: 'conjuge', phone: '', email: '', occupation: '', company: '', notes: '', is_decision_influencer: false, age: '', birthday: '' });
     setOpen(false);
   };
 
@@ -69,6 +72,10 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
           <div className="grid grid-cols-2 gap-2">
             <Input placeholder="Profissão" value={form.occupation} onChange={(e) => setForm(p => ({ ...p, occupation: e.target.value }))} />
             <Input placeholder="Empresa" value={form.company} onChange={(e) => setForm(p => ({ ...p, company: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Input type="number" placeholder="Idade" min={0} max={150} value={form.age} onChange={(e) => setForm(p => ({ ...p, age: e.target.value }))} />
+            <Input type="date" placeholder="Data Nascimento" value={form.birthday} onChange={(e) => setForm(p => ({ ...p, birthday: e.target.value }))} />
           </div>
           <Input placeholder="Notas" value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} />
           <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
