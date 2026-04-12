@@ -14,6 +14,7 @@ import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
 import { SocialIntelligencePanel } from '@/components/contact-detail/SocialIntelligencePanel';
 import { ScoreHistoryPanel } from '@/components/contact-detail/ScoreHistoryPanel';
 import { CommunicationPreferencesCard } from '@/components/contact-detail/CommunicationPreferencesCard';
+import { WorkspaceAccountsCard } from '@/components/contact-detail/WorkspaceAccountsCard';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
@@ -232,6 +233,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
       <div className="grid gap-4 md:grid-cols-2">
         <CommunicationPreferencesCard contactId={contactId} />
         <ScoreHistoryPanel contactId={contactId} />
+        <WorkspaceAccountsCard contactId={contactId} />
       </div>
 
       {/* New panels: Emotional Anchors, Best Time, AI Actions */}
