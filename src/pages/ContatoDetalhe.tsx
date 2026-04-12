@@ -22,6 +22,7 @@ import {
   ContactBehavioralTab,
   ContactIntelligenceTab,
   ContactCommercialTab,
+  ContactDataTab,
 } from '@/components/contact-detail';
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
@@ -158,6 +159,7 @@ const ContatoDetalhe = () => {
         <Tabs defaultValue="resumo" className="space-y-4">
           <TabsList className="w-full overflow-x-auto scrollbar-hide flex h-auto gap-1 bg-muted/50 p-1 md:flex-wrap">
             <TabsTrigger value="resumo" className="text-xs sm:text-sm">Resumo</TabsTrigger>
+            <TabsTrigger value="dados" className="text-xs sm:text-sm">Dados</TabsTrigger>
             <TabsTrigger value="interacoes" className="text-xs sm:text-sm">
               {pluralize(interactions.length, 'Interação', 'Interações')}
             </TabsTrigger>
@@ -182,6 +184,10 @@ const ContatoDetalhe = () => {
                 contact={contact}
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="dados">
+            <ContactDataTab contact={contact} />
           </TabsContent>
 
           <TabsContent value="interacoes">

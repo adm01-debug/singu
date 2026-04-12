@@ -4,3 +4,4 @@ export { ContactInteractionsTab } from './ContactInteractionsTab';
 export { ContactBehavioralTab } from './ContactBehavioralTab';
 export { ContactIntelligenceTab } from './ContactIntelligenceTab';
 export { ContactCommercialTab } from './ContactCommercialTab';
+export { ContactDataTab } from './ContactDataTab';
