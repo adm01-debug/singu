@@ -25,7 +25,7 @@ export const ChurnPredictionsWidget = React.memo(function ChurnPredictionsWidget
       </CardHeader>
       <CardContent className="space-y-2">
         {predictions.map((pred, i) => {
-          const prob = pred.probability != null ? Math.round(pred.probability * 100) : null;
+          const prob = pred.churn_probability != null ? Math.round(pred.churn_probability * 100) : null;
           const color = prob != null ? (prob >= 70 ? 'text-destructive' : prob >= 40 ? 'text-warning' : 'text-success') : 'text-muted-foreground';
           return (
             <div key={pred.id || i} className="p-2 rounded-lg bg-muted/30 space-y-1">
@@ -34,7 +34,7 @@ export const ChurnPredictionsWidget = React.memo(function ChurnPredictionsWidget
                 {pred.created_at && <span className="text-[9px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(pred.created_at), "dd/MM", { locale: ptBR })}</span>}
               </div>
               {prob != null && <Progress value={prob} className="h-1.5" />}
-              {pred.reason && <p className="text-[10px] text-muted-foreground line-clamp-1">{pred.reason}</p>}
+              {pred.confidence_level && <p className="text-[10px] text-muted-foreground line-clamp-1">Confiança: {pred.confidence_level}</p>}
             </div>
           );
         })}

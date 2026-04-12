@@ -24,10 +24,9 @@ export const OptimalContactWindowsWidget = React.memo(function OptimalContactWin
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {windows.slice(0, 6).map((w, i) => {
-            const win = w as Record<string, unknown>;
-            const day = DAY_LABELS[win.day_of_week as number] || String(win.day_of_week ?? '');
-            const hour = win.hour != null ? `${String(win.hour).padStart(2, '0')}:00` : '';
-            const score = win.success_rate != null ? Math.round(Number(win.success_rate) * 100) : null;
+            const day = DAY_LABELS[w.day_of_week] || String(w.day_of_week ?? '');
+            const hour = w.hour != null ? `${String(w.hour).padStart(2, '0')}:00` : '';
+            const score = w.success_rate != null ? Math.round(w.success_rate * 100) : null;
             return (
               <div key={i} className={cn("rounded-lg p-2 text-center border", i === 0 ? "bg-primary/5 border-primary/20" : "bg-muted/30 border-transparent")}>
                 {i === 0 && <Star className="h-3 w-3 text-primary mx-auto mb-0.5" />}
