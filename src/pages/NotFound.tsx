@@ -1,4 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
+import { SEOHead } from '@/components/seo/SEOHead';
 import { logger } from "@/lib/logger";
 import { useEffect } from "react";
 import { Home, ArrowLeft } from "lucide-react";

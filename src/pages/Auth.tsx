@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
