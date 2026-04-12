@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import { EmotionalAnchorsPanel } from '@/components/contact-detail/EmotionalAnchorsPanel';
 import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToContactCard';
