@@ -250,6 +250,11 @@ const Interacoes = () => {
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      logActivity({ type: 'created', entityType: 'interaction', entityId: result.id || '', entityName: data.title, description: `Tipo: ${data.type}` });
+      // Auto NLP analysis for qualifying interactions
+      if (result.id && data.contact_id) {
+        triggerAnalysis(data.contact_id, result.id, data.content || null, null, data.type);
+      }
       // Trigger celebration
       if (event) {
         celebration.trigger(event, { variant: 'success', message: 'Interação criada!' });
