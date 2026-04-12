@@ -28,6 +28,7 @@ const mainNavItems = [
 ];
 
 const moreNavItems = [
+  { icon: Kanban, label: 'Pipeline', path: '/pipeline' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics' },
   { icon: Lightbulb, label: 'Insights', path: '/insights' },
   { icon: Calendar, label: 'Calendário', path: '/calendario' },
