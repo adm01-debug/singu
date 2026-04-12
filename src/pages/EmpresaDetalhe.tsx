@@ -367,6 +367,7 @@ const EmpresaDetalhe = () => {
                       rfmScores={rfmHook.data}
                       stakeholders={stakeholdersHook.data}
                       loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
+                      companyId={id}
                     />
                   </DashboardErrorBoundary>
                   <DashboardErrorBoundary sectionName="Dados Enriquecidos">
