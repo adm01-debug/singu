@@ -480,7 +480,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ContactIntelligenceWidget contactId={contact.id} />
         <BestContactTimeWidget contactId={contact.id} />
+        <EngagementScoreWidget contactId={contact.id} />
+        <EffectivenessWidget contactId={contact.id} />
       </div>
+
+      {/* Statistics Widget — full width */}
+      <ContactStatisticsWidget contactId={contact.id} />
     </div>
   );
 }
