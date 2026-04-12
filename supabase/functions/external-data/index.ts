@@ -5,6 +5,40 @@ import { rateLimit } from "../_shared/rate-limit.ts";
 
 const limiter = rateLimit({ windowMs: 60_000, max: 60 });
 
+const ALLOWED_RPCS = [
+  // ── CRUD ──
+  'create_contact', 'update_contact', 'soft_delete_contact',
+  'merge_contacts', 'merge_duplicate_contacts',
+  // ── Search ──
+  'search_contacts', 'search_contacts_advanced', 'search_contacts_fuzzy',
+  'list_contacts_paginated', 'find_contacts_by_role',
+  'get_contacts_by_role', 'find_decision_makers',
+  // ── Intelligence ──
+  'get_contact_360_by_phone', 'get_contact_intelligence',
+  'get_contact_intelligence_by_phone', 'get_contact_disc_profile',
+  'get_contact_effectiveness', 'get_contact_engagement_score',
+  'get_contact_statistics', 'get_contact_timeline',
+  // ── Timing ──
+  'get_best_contact_time', 'get_best_contact_times',
+  'suggest_next_contact_channel', 'get_days_without_contact',
+  'get_last_contact_date',
+  // ── Quality ──
+  'get_duplicate_contacts', 'get_orphan_contacts',
+  'detect_inactive_contacts', 'get_contacts_without_interaction',
+  'get_companies_without_contacts',
+  // ── Upserts ──
+  'upsert_contact_email', 'upsert_contact_phone', 'upsert_contact_social_media',
+  // ── Outros ──
+  'generate_pre_contact_briefing', 'suggest_triggers_for_contact',
+  'export_contacts_csv', 'get_birthday_contacts',
+] as const;
+
+type AllowedRpc = typeof ALLOWED_RPCS[number];
+
+function isAllowedRpc(name: string): name is AllowedRpc {
+  return ALLOWED_RPCS.includes(name as AllowedRpc);
+}
+
 const ALLOWED_TABLES = [
   // ── Core tables ──
   'companies', 'contacts', 'interactions', 'insights', 'alerts',
