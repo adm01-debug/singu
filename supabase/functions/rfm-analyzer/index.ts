@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import {
   corsHeaders,
   withAuthOrServiceRole,
@@ -6,6 +7,11 @@ import {
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
+
+const RfmInput = z.object({
+  contactId: z.string().uuid("contactId deve ser UUID válido").optional(),
+  userId: z.string().uuid("userId deve ser UUID válido").optional(),
+});
 
 interface ContactMetrics {
   contactId: string;
@@ -30,11 +36,14 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let requestBody: { contactId?: string; userId?: string } = {};
+    let requestBody: z.infer<typeof RfmInput> = {};
     try {
-      requestBody = await req.json();
+      const raw = await req.json();
+      const parsed = RfmInput.safeParse(raw);
+      if (!parsed.success) return jsonError(`Entrada inválida: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
+      requestBody = parsed.data;
     } catch {
-      // no body
+      // no body — run for all contacts
     }
     const { contactId } = requestBody;
 

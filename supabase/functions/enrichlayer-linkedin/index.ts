@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://esm.sh/zod@3.23.8";
 import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 
 // EnrichLayer returns the profile data directly
@@ -64,11 +65,15 @@ Deno.serve(async (req) => {
   const userId = authResult;
 
   try {
-    const { linkedinUrl, contactId } = await req.json();
-
-    if (!linkedinUrl) {
-      return jsonError("LinkedIn URL is required", 400);
+    const InputSchema = z.object({
+      linkedinUrl: z.string().url("LinkedIn URL inválida").min(1),
+      contactId: z.string().uuid("contactId deve ser UUID válido").optional(),
+    });
+    const parsed = InputSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return jsonError(`Entrada inválida: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
     }
+    const { linkedinUrl, contactId } = parsed.data;
 
     const apiKey = Deno.env.get("ENRICHLAYER_API_KEY");
     if (!apiKey) {
