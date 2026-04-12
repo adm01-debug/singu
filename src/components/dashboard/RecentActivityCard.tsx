@@ -59,7 +59,7 @@ function deduplicateActivities(activities: DashboardStats['recentActivities']): 
   return result;
 }
 
-export function RecentActivityCard({ activities, animations }: RecentActivityCardProps) {
+export const RecentActivityCard = React.memo(function RecentActivityCard({ activities, animations }: RecentActivityCardProps) {
   const dedupedActivities = deduplicateActivities(activities);
   
   return (
