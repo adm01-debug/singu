@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, startTransition } from 'react';
+import { useState, useMemo, useRef, useEffect, startTransition, lazy, Suspense } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { sortArray } from '@/lib/sorting-utils';
@@ -324,6 +324,11 @@ const Interacoes = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Activity Heatmap */}
+        <Suspense fallback={<Card className="border-border/50"><CardContent className="p-4"><div className="h-48 animate-pulse bg-muted/30 rounded-lg" /></CardContent></Card>}>
+          <ActivityHeatmapChart />
+        </Suspense>
 
         {/* Search */}
         <div className="relative max-w-md">
