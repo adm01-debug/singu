@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -86,15 +87,12 @@ const ALERT_TYPE_CONFIG: Record<AlertType, {
 export function useBehaviorAlerts() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [alerts, setAlerts] = useState<BehaviorAlert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ['behavior-alerts', user?.id];
 
-  const fetchAlerts = useCallback(async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      // Fetch existing alerts from alerts table
+  const { data: alerts = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: async () => {
       const { data: existingAlerts, error } = await supabase
         .from('alerts')
         .select(`
@@ -109,13 +107,12 @@ export function useBehaviorAlerts() {
 
       if (error) throw error;
 
-      const formattedAlerts: BehaviorAlert[] = (existingAlerts || []).map(alert => {
+      return (existingAlerts || []).map(alert => {
         const contact = alert.contacts;
         const contactName = contact 
           ? `${contact.first_name} ${contact.last_name}` 
           : 'Contato Desconhecido';
 
-        // Map alert type
         let alertType: AlertType = 'communication_gap';
         if (alert.type.includes('sentiment')) alertType = 'sentiment_drop';
         else if (alert.type.includes('churn')) alertType = 'churn_risk';
@@ -137,16 +134,17 @@ export function useBehaviorAlerts() {
           detectedAt: alert.created_at,
           recommendedAction: alert.action_url || 'Entrar em contato para entender a situação',
           dismissed: alert.dismissed || false
-        };
+        } as BehaviorAlert;
       });
+    },
+    enabled: !!user,
+    staleTime: 3 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-      setAlerts(formattedAlerts);
-    } catch (error) {
-      logger.error('Error fetching behavior alerts:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  const fetchAlerts = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey });
+  }, [queryClient, queryKey]);
 
   const detectNewAlerts = useCallback(async () => {
     if (!user) return;
@@ -312,64 +310,28 @@ export function useBehaviorAlerts() {
   }, [user, fetchAlerts, toast]);
 
   const dismissAlert = useCallback(async (alertId: string) => {
-    const previousAlerts = alerts;
-    setAlerts(prev => prev.filter(a => a.id !== alertId));
-
     try {
-      const { error } = await supabase
-        .from('alerts')
-        .update({ dismissed: true })
-        .eq('id', alertId);
-
+      const { error } = await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId);
       if (error) throw error;
-
-      toast({
-        title: 'Alerta dispensado',
-        description: 'O alerta foi removido da sua lista.',
-      });
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: 'Alerta dispensado', description: 'O alerta foi removido da sua lista.' });
     } catch (error) {
-      setAlerts(previousAlerts);
       logger.error('Error dismissing alert:', error);
-      toast({
-        title: 'Erro ao dispensar alerta',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao dispensar alerta', variant: 'destructive' });
     }
-  }, [toast, alerts]);
+  }, [toast, queryClient, queryKey]);
 
   const markActionTaken = useCallback(async (alertId: string) => {
-    const previousAlerts = alerts;
-    setAlerts(prev => prev.map(a => 
-      a.id === alertId 
-        ? { ...a, actionTaken: true, actionTakenAt: new Date().toISOString() }
-        : a
-    ));
-
     try {
-      const { error } = await supabase
-        .from('alerts')
-        .update({ dismissed: true })
-        .eq('id', alertId);
-
+      const { error } = await supabase.from('alerts').update({ dismissed: true }).eq('id', alertId);
       if (error) throw error;
-
-      toast({
-        title: 'Ação registrada',
-        description: 'A ação foi marcada como concluída.',
-      });
+      queryClient.invalidateQueries({ queryKey });
+      toast({ title: 'Ação registrada', description: 'A ação foi marcada como concluída.' });
     } catch (error) {
-      setAlerts(previousAlerts);
       logger.error('Error marking action taken:', error);
-      toast({
-        title: 'Erro ao registrar ação',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao registrar ação', variant: 'destructive' });
     }
-  }, [toast, alerts]);
-
-  useEffect(() => {
-    fetchAlerts();
-  }, [fetchAlerts]);
+  }, [toast, queryClient, queryKey]);
 
   // Stats
   const stats = useMemo(() => {

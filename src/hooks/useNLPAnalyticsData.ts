@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/lib/logger';
@@ -65,76 +66,70 @@ function buildTrend(data: { created_at: string; emotional_state: string }[] | nu
 
 export function useNLPAnalyticsData() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<PeriodFilter>('30d');
-  const [stats, setStats] = useState<NLPStats>(EMPTY);
 
   const dateFilter = useMemo(() => {
     const d = new Date(); d.setDate(d.getDate() - getPeriodDays(period));
     return d.toISOString();
   }, [period]);
 
-  const refresh = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const [emRes, vakRes, cRes, vRes, oRes] = await Promise.all([
-        supabase.from('emotional_states_history').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
-        supabase.from('vak_analysis_history' as 'emotional_states_history').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
-        supabase.from('contacts').select('behavior').eq('user_id', user.id),
-        supabase.from('client_values').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
-        supabase.from('hidden_objections').select('*').eq('user_id', user.id).gte('created_at', dateFilter),
-      ]);
+  const { data: stats = EMPTY, isLoading: loading, refetch: refresh } = useQuery({
+    queryKey: ['nlp-analytics', period, user?.id],
+    queryFn: async () => {
+      try {
+        const [emRes, vakRes, cRes, vRes, oRes] = await Promise.all([
+          supabase.from('emotional_states_history').select('*').eq('user_id', user!.id).gte('created_at', dateFilter),
+          supabase.from('vak_analysis_history' as 'emotional_states_history').select('*').eq('user_id', user!.id).gte('created_at', dateFilter),
+          supabase.from('contacts').select('behavior').eq('user_id', user!.id),
+          supabase.from('client_values').select('*').eq('user_id', user!.id).gte('created_at', dateFilter),
+          supabase.from('hidden_objections').select('*').eq('user_id', user!.id).gte('created_at', dateFilter),
+        ]);
 
-      const emotionalData = emRes.data;
-      const vakData = vakRes.data as { visual_score?: number; auditory_score?: number; kinesthetic_score?: number; digital_score?: number }[] | null;
+        const emotionalData = emRes.data;
+        const vakData = vakRes.data as { visual_score?: number; auditory_score?: number; kinesthetic_score?: number; digital_score?: number }[] | null;
 
-      // Emotional states
-      const emMap = new Map<string, { count: number; tc: number }>();
-      emotionalData?.forEach(e => {
-        const c = emMap.get(e.emotional_state) || { count: 0, tc: 0 };
-        emMap.set(e.emotional_state, { count: c.count + 1, tc: c.tc + (e.confidence || 0) });
-      });
-      const emotionalStates = Array.from(emMap.entries())
-        .map(([state, d]) => ({ state, count: d.count, avgConfidence: Math.round(d.tc / d.count) }))
-        .sort((a, b) => b.count - a.count);
+        const emMap = new Map<string, { count: number; tc: number }>();
+        emotionalData?.forEach(e => {
+          const c = emMap.get(e.emotional_state) || { count: 0, tc: 0 };
+          emMap.set(e.emotional_state, { count: c.count + 1, tc: c.tc + (e.confidence || 0) });
+        });
+        const emotionalStates = Array.from(emMap.entries())
+          .map(([state, d]) => ({ state, count: d.count, avgConfidence: Math.round(d.tc / d.count) }))
+          .sort((a, b) => b.count - a.count);
 
-      // VAK
-      const vt = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
-      vakData?.forEach(v => { vt.visual += v.visual_score || 0; vt.auditory += v.auditory_score || 0; vt.kinesthetic += v.kinesthetic_score || 0; vt.digital += v.digital_score || 0; });
-      const vc = vakData?.length || 1;
-      const vakDistribution = { visual: Math.round(vt.visual / vc), auditory: Math.round(vt.auditory / vc), kinesthetic: Math.round(vt.kinesthetic / vc), digital: Math.round(vt.digital / vc) };
+        const vt = { visual: 0, auditory: 0, kinesthetic: 0, digital: 0 };
+        vakData?.forEach(v => { vt.visual += v.visual_score || 0; vt.auditory += v.auditory_score || 0; vt.kinesthetic += v.kinesthetic_score || 0; vt.digital += v.digital_score || 0; });
+        const vc = vakData?.length || 1;
+        const vakDistribution = { visual: Math.round(vt.visual / vc), auditory: Math.round(vt.auditory / vc), kinesthetic: Math.round(vt.kinesthetic / vc), digital: Math.round(vt.digital / vc) };
 
-      // DISC
-      const disc = { D: 0, I: 0, S: 0, C: 0 };
-      cRes.data?.forEach(c => {
-        const b = c.behavior as { disc_profile?: string } | null;
-        const p = b?.disc_profile?.toUpperCase();
-        if (p && p in disc) disc[p as keyof typeof disc]++;
-      });
+        const disc = { D: 0, I: 0, S: 0, C: 0 };
+        cRes.data?.forEach(c => {
+          const b = c.behavior as { disc_profile?: string } | null;
+          const p = b?.disc_profile?.toUpperCase();
+          if (p && p in disc) disc[p as keyof typeof disc]++;
+        });
 
-      // Values
-      const vm = new Map<string, { count: number; ti: number }>();
-      vRes.data?.forEach(v => { const c = vm.get(v.value_name) || { count: 0, ti: 0 }; vm.set(v.value_name, { count: c.count + 1, ti: c.ti + (v.importance || 0) }); });
-      const topValues = Array.from(vm.entries()).map(([name, d]) => ({ name, count: d.count, avgImportance: Math.round(d.ti / d.count) })).sort((a, b) => b.count - a.count).slice(0, 8);
+        const vm = new Map<string, { count: number; ti: number }>();
+        vRes.data?.forEach(v => { const c = vm.get(v.value_name) || { count: 0, ti: 0 }; vm.set(v.value_name, { count: c.count + 1, ti: c.ti + (v.importance || 0) }); });
+        const topValues = Array.from(vm.entries()).map(([name, d]) => ({ name, count: d.count, avgImportance: Math.round(d.ti / d.count) })).sort((a, b) => b.count - a.count).slice(0, 8);
 
-      // Objections
-      const om = new Map<string, { count: number; resolved: number }>();
-      oRes.data?.forEach(o => { const c = om.get(o.objection_type) || { count: 0, resolved: 0 }; om.set(o.objection_type, { count: c.count + 1, resolved: c.resolved + (o.resolved ? 1 : 0) }); });
-      const objectionTypes = Array.from(om.entries()).map(([type, d]) => ({ type, ...d })).sort((a, b) => b.count - a.count);
+        const om = new Map<string, { count: number; resolved: number }>();
+        oRes.data?.forEach(o => { const c = om.get(o.objection_type) || { count: 0, resolved: 0 }; om.set(o.objection_type, { count: c.count + 1, resolved: c.resolved + (o.resolved ? 1 : 0) }); });
+        const objectionTypes = Array.from(om.entries()).map(([type, d]) => ({ type, ...d })).sort((a, b) => b.count - a.count);
 
-      const emotionalTrend = buildTrend(emotionalData, period);
-      const totalAnalyses = (emotionalData?.length || 0) + (vakData?.length || 0) + (vRes.data?.length || 0) + (oRes.data?.length || 0);
+        const emotionalTrend = buildTrend(emotionalData, period);
+        const totalAnalyses = (emotionalData?.length || 0) + (vakData?.length || 0) + (vRes.data?.length || 0) + (oRes.data?.length || 0);
 
-      setStats({ totalAnalyses, emotionalStates, vakDistribution, discDistribution: disc, topValues, objectionTypes, emotionalTrend });
-    } catch (error) {
-      logger.error('Error fetching NLP stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, dateFilter]);
+        return { totalAnalyses, emotionalStates, vakDistribution, discDistribution: disc, topValues, objectionTypes, emotionalTrend } as NLPStats;
+      } catch (error) {
+        logger.error('Error fetching NLP stats:', error);
+        return EMPTY;
+      }
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-  useEffect(() => { refresh(); }, [refresh]);
-
-  return { stats, loading, period, setPeriod, refresh };
+  return { stats, loading, period, setPeriod, refresh: () => { refresh(); } };
 }
