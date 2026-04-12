@@ -11,6 +11,8 @@ import { SocialsCard } from './data-tab/SocialsCard';
 import { RelativesCard } from './data-tab/RelativesCard';
 import { CadencePreferencesCard } from './data-tab/CadencePreferencesCard';
 import { TimeHeatmapCard } from './data-tab/TimeHeatmapCard';
+import { SocialMediaExternalCard } from './data-tab/SocialMediaExternalCard';
+import { ContactEnrichedCard } from './data-tab/ContactEnrichedCard';
 
 interface Props {
   contact: Contact;
@@ -66,6 +68,8 @@ export function ContactDataTab({ contact }: Props) {
         />
         <CadencePreferencesCard cadence={cadence} preferences={preferences} commPreferences={commPreferences} />
         <TimeHeatmapCard data={timeAnalysis} />
+        <SocialMediaExternalCard contactId={contact.id} />
+        <ContactEnrichedCard contactId={contact.id} />
       </div>
     </div>
   );
