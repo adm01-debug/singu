@@ -16,7 +16,6 @@
     "noFallthroughCasesInSwitch": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
-    "noImplicitReturns": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
