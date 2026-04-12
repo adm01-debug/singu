@@ -36,8 +36,8 @@ export const EmotionalTrendByContactWidget = React.memo(function EmotionalTrendB
             <Badge variant="outline" className={cn("text-[9px]", color)}>{label}</Badge>
           </div>
         </div>
-        {data.emotional_score != null && (
-          <span className="text-lg font-bold tabular-nums">{Math.round(data.emotional_score)}</span>
+        {data.confidence != null && (
+          <span className="text-lg font-bold tabular-nums">{Math.round(data.confidence * 100)}%</span>
         )}
       </CardContent>
     </Card>
