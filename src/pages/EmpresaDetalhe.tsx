@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { queryExternalData, updateExternalData } from '@/lib/externalData';
 import { toTitleCase } from '@/lib/formatters';
