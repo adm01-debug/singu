@@ -25,7 +25,7 @@ export function useDuplicateContacts(enabled = true) {
           {}
         );
         if (error) {
-          console.warn('[DuplicateContacts] RPC error (known schema issue):', error);
+          logger.warn('[DuplicateContacts] RPC error (known schema issue):', error);
           return [] as DuplicateContact[];
         }
         return (Array.isArray(data) ? data : []) as DuplicateContact[];
