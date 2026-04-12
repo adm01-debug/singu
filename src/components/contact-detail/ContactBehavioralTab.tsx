@@ -1,4 +1,5 @@
 import { Brain, Eye, Activity, Zap, Target, Shield } from 'lucide-react';
+import { RelationshipScoreChart } from './behavioral-tab/RelationshipScoreChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -104,6 +105,7 @@ export function ContactBehavioralTab({ contact }: Props) {
   const latestDisc = discHistory[0];
 
   return (
+    <>
     <Tabs defaultValue="disc" className="space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <TabsList className="flex-wrap h-auto gap-1">
@@ -545,5 +547,9 @@ export function ContactBehavioralTab({ contact }: Props) {
         </div>
       </TabsContent>
     </Tabs>
+
+    {/* Relationship Score Evolution Chart */}
+    <RelationshipScoreChart contactId={contact.id} />
+  </>
   );
 }

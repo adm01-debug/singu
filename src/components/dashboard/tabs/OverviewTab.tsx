@@ -14,6 +14,7 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
+const PendingFollowupsWidget = lazy(() => import('@/components/dashboard/widgets/PendingFollowupsWidget').then(m => ({ default: m.PendingFollowupsWidget })));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -58,12 +59,19 @@ export function OverviewTab({
       {/* 1. Stats Grid — most important at-a-glance info */}
       <DashboardStatsGrid stats={stats} prefersReducedMotion={prefersReducedMotion} />
 
-      {/* 2. Your Day */}
-      <DashboardErrorBoundary sectionName="Seu Dia">
-        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
-          <YourDaySection />
-        </Suspense>
-      </DashboardErrorBoundary>
+      {/* 2. Your Day + Pending Followups */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <DashboardErrorBoundary sectionName="Seu Dia">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <YourDaySection />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Follow-ups">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <PendingFollowupsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
 
       {/* 3. Pre-Contact Briefing */}
       <DashboardErrorBoundary sectionName="Briefing">

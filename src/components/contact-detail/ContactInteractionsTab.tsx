@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { WhatsAppDashboard } from '@/components/whatsapp/WhatsAppDashboard';
+import { ExternalInteractionsTimeline } from './interactions-tab/ExternalInteractionsTimeline';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Phone, Mail, MessageSquare, Users, Video, FileText,
@@ -226,6 +227,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
           />
         </DialogContent>
       </Dialog>
+
+      {/* External enriched timeline */}
+      <ExternalInteractionsTimeline contactId={contact.id} />
     </div>
   );
 }
