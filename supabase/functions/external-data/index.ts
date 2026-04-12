@@ -6,6 +6,10 @@ import { rateLimit } from "../_shared/rate-limit.ts";
 const limiter = rateLimit({ windowMs: 60_000, max: 60 });
 
 const ALLOWED_RPCS = [
+  // ── Dashboard & KPIs ──
+  'get_complete_dashboard', 'get_executive_dashboard', 'get_instant_kpis',
+  'get_mini_dashboard', 'get_seller_dashboard', 'get_business_alerts',
+  'get_daily_summary', 'get_weekly_summary',
   // ── Contact CRUD ──
   'create_contact', 'update_contact', 'soft_delete_contact',
   'merge_contacts', 'merge_duplicate_contacts',
