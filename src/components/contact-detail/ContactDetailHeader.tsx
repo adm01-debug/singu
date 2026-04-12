@@ -153,10 +153,20 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
             <div>
               <h1 className="text-2xl font-bold text-foreground">
                 {fullName}
-                {(contact as Record<string, unknown>).apelido && (
+                {contactExt.apelido && (
                   <span className="ml-2 text-lg font-normal text-muted-foreground">
-                    ({(contact as Record<string, unknown>).apelido as string})
+                    ({contactExt.apelido as string})
                   </span>
+                )}
+                {isDuplicate && (
+                  <Badge variant="destructive" className="ml-2 text-[10px] align-middle">
+                    <AlertTriangle className="h-3 w-3 mr-0.5" /> Duplicado
+                  </Badge>
+                )}
+                {isDeleted && (
+                  <Badge variant="destructive" className="ml-2 text-[10px] align-middle bg-destructive/20 text-destructive">
+                    <Trash2 className="h-3 w-3 mr-0.5" /> Excluído
+                  </Badge>
                 )}
               </h1>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
