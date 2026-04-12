@@ -1,3 +1,5 @@
+import { lazy, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { RelationshipScoreChart } from './behavioral-tab/RelationshipScoreChart';
 import { DiscCompatibilityCard } from './behavioral-tab/DiscCompatibilityCard';
 import { RapportCard } from './behavioral-tab/RapportCard';
@@ -155,6 +157,12 @@ export function ContactBehavioralTab({ contact }: Props) {
       <CommunicationDashboardCard contactId={contact.id} />
       <EqEvolutionCard contactId={contact.id} />
       <EqDashboardCard contactId={contact.id} />
+      <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+        <CommunicationIntelWidget contactId={contact.id} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+        <EmotionalTrendWidget contactId={contact.id} />
+      </Suspense>
     </div>
 
     {/* Relationship Score Evolution Chart */}
