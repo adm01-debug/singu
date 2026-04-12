@@ -28,6 +28,7 @@ interface Props {
 
 export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, websiteUrl }: Props) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data } = useQuery({
     queryKey: ['contact-intelligence', contactId, user?.id],
@@ -49,6 +50,21 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
     enabled: !!contactId && !!user,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+  });
+
+  const updateOfferStatus = useMutation({
+    mutationFn: async ({ offerId, status }: { offerId: string; status: string }) => {
+      const { error } = await supabase
+        .from('offer_suggestions')
+        .update({ status })
+        .eq('id', offerId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contact-intelligence', contactId] });
+      toast.success('Status da oferta atualizado');
+    },
+    onError: () => toast.error('Erro ao atualizar status'),
   });
 
   const objections = data?.objections || [];
