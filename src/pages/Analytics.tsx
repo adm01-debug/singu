@@ -60,6 +60,7 @@ import type { PeriodFilter } from '@/lib/tab-utils';
 const BehavioralIntelSummaryWidget = lazy(() => import('@/components/analytics/BehavioralIntelSummaryWidget'));
 const DailyStatsWidget = lazy(() => import('@/components/analytics/DailyStatsWidget'));
 const TagCloudWidget = lazy(() => import('@/components/analytics/TagCloudWidget'));
+const TagExplorerWidget = lazy(() => import('@/components/analytics/TagExplorerWidget'));
 
 // Extracted data & shared components
 import {
@@ -121,6 +122,9 @@ const Analytics = () => {
         </Suspense>
         <Suspense fallback={<Skeleton className="h-20 rounded-lg" />}>
           <TagCloudWidget />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+          <TagExplorerWidget />
         </Suspense>
 
         {/* Header Actions */}

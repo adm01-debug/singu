@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useButtonHaptic } from '@/hooks/useHapticFeedback';
 
 interface QuickAction {
   id: string;
@@ -39,6 +40,7 @@ export function FloatingQuickActions({
 }: FloatingQuickActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { onPress } = useButtonHaptic();
 
   const actions: QuickAction[] = [
     {
@@ -106,8 +108,9 @@ export function FloatingQuickActions({
   ];
 
   const toggleMenu = useCallback(() => {
+    onPress();
     setIsOpen(prev => !prev);
-  }, []);
+  }, [onPress]);
 
   // Animation variants
   const menuVariants = {

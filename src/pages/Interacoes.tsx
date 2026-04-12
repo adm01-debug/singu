@@ -55,6 +55,8 @@ import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
+import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { SentimentType } from '@/types';
@@ -153,6 +155,8 @@ const Interacoes = () => {
   
   // Mini celebration hook
   const celebration = useMiniCelebration();
+  const { triggerAnalysis } = useNLPAutoAnalysis();
+  const { logActivity } = useActivityLogger();
   
   // Advanced filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
@@ -246,6 +250,11 @@ const Interacoes = () => {
     setIsSubmitting(false);
     if (result) {
       setIsFormOpen(false);
+      logActivity({ type: 'created', entityType: 'interaction', entityId: result.id || '', entityName: data.title, description: `Tipo: ${data.type}` });
+      // Auto NLP analysis for qualifying interactions
+      if (result.id && data.contact_id) {
+        triggerAnalysis(data.contact_id, result.id, data.content || null, null, data.type);
+      }
       // Trigger celebration
       if (event) {
         celebration.trigger(event, { variant: 'success', message: 'Interação criada!' });
