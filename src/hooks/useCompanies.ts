@@ -31,7 +31,22 @@ interface CompaniesPage { companies: Company[]; count: number }
 
 const COMPANIES_PAGE_SIZE = 500;
 const MAX_COMPANIES_TOTAL = 2000;
-const INITIAL_FAST_LOAD = 500;
+const INITIAL_FAST_LOAD = 100;
+
+/** Columns needed for listing — avoids SELECT * which is slow on wide tables */
+const LISTING_SELECT = [
+  'id', 'nome_crm', 'nome_fantasia', 'razao_social', 'cnpj', 'cnpj_base',
+  'ramo_atividade', 'nicho_cliente', 'tags_array', 'status',
+  'is_customer', 'is_carrier', 'is_supplier', 'is_matriz',
+  'grupo_economico', 'grupo_economico_id', 'tipo_cooperativa', 'numero_cooperativa',
+  'matriz_id', 'central_id', 'singular_id', 'confederacao_id',
+  'capital_social', 'porte_rf', 'situacao_rf', 'situacao_rf_data',
+  'natureza_juridica', 'natureza_juridica_desc', 'data_fundacao',
+  'website', 'logo_url', 'lat', 'lng',
+  'city', 'state', 'updated_at', 'created_at', 'user_id',
+  'financial_health', 'annual_revenue', 'employee_count',
+  'bitrix_company_id', 'cores_marca',
+].join(',');
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
   'nome_fantasia',
@@ -129,6 +144,8 @@ function stripLocal(input: Record<string, unknown>): Record<string, unknown> {
 async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
   const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
     table: 'companies',
+    select: LISTING_SELECT,
+    countMethod: 'planned',
     order: { column: 'updated_at', ascending: false },
     range,
     ...(search && search.trim().length >= 2
@@ -166,6 +183,7 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
 async function fetchRemainingCompanies(search?: string): Promise<Company[]> {
   const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
     table: 'companies',
+    select: LISTING_SELECT,
     order: { column: 'updated_at', ascending: false },
     range,
     ...(search && search.trim().length >= 2

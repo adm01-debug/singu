@@ -22,6 +22,8 @@ interface ExternalQueryOptions {
     from: number;
     to: number;
   };
+  /** Use 'planned' for faster approximate counts */
+  countMethod?: 'exact' | 'planned';
 }
 
 // Cached auth token to avoid calling getSession() on every request

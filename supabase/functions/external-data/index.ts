@@ -224,11 +224,12 @@ Deno.serve(async (req) => {
 
     // ─── SELECT (read) ───
     if (operation === 'select') {
-      const { filters, select, order, range, search } = body;
+      const { filters, select, order, range, search, countMethod } = body;
 
       const result = await withRetry(async () => {
         // Use 'any' for dynamic external DB queries to avoid TS2589 deep type instantiation
-        let query: any = client.from(table).select(select || '*', { count: 'exact' });
+        const countMode = countMethod === 'planned' ? 'planned' : 'exact';
+        let query: any = client.from(table).select(select || '*', { count: countMode });
 
         if (search?.term && typeof search.term === 'string' && search.term.trim()) {
           const term = `%${search.term.trim()}%`;
