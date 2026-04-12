@@ -23,6 +23,7 @@ const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityW
 const StrategicAccountsWidget = lazy(() => import('@/components/dashboard/widgets/StrategicAccountsWidget'));
 const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/ExecutiveKpisWidget').then(m => ({ default: m.ExecutiveKpisWidget })));
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
+const DailyInsightsWidget = lazy(() => import('@/components/dashboard/widgets/DailyInsightsWidget'));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -160,12 +161,19 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 3c. Data Quality */}
-      <DashboardErrorBoundary sectionName="Qualidade de Dados">
-        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
-          <DataQualityWidget />
-        </Suspense>
-      </DashboardErrorBoundary>
+      {/* 3c. Daily Insights + Data Quality */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <DashboardErrorBoundary sectionName="Insights do Dia">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <DailyInsightsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Qualidade de Dados">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <DataQualityWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
 
       {/* 4. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
