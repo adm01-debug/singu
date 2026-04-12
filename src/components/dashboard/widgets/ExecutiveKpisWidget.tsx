@@ -9,14 +9,13 @@ const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
 
 const kpiConfig = [
-  { key: 'open_deals_value', label: 'Pipeline Aberto', icon: DollarSign, format: 'currency' },
-  { key: 'revenue_month', label: 'Receita Mês', icon: TrendingUp, format: 'currency' },
-  { key: 'deals_won_month', label: 'Deals Ganhos', icon: Target, format: 'number' },
-  { key: 'interactions_today', label: 'Interações Hoje', icon: MessageSquare, format: 'number' },
-  { key: 'pending_followups', label: 'Follow-ups', icon: Clock, format: 'number' },
-  { key: 'overdue_tasks', label: 'Atrasados', icon: AlertTriangle, format: 'number', warn: true },
-] as const type KpiKey = typeof kpiConfig[number]['key'];
-const warnKeys = new Set<string>(['overdue_tasks']);
+  { key: 'open_deals_value' as const, label: 'Pipeline Aberto', icon: DollarSign, format: 'currency' as const, warn: false },
+  { key: 'revenue_month' as const, label: 'Receita Mês', icon: TrendingUp, format: 'currency' as const, warn: false },
+  { key: 'deals_won_month' as const, label: 'Deals Ganhos', icon: Target, format: 'number' as const, warn: false },
+  { key: 'interactions_today' as const, label: 'Interações Hoje', icon: MessageSquare, format: 'number' as const, warn: false },
+  { key: 'pending_followups' as const, label: 'Follow-ups', icon: Clock, format: 'number' as const, warn: false },
+  { key: 'overdue_tasks' as const, label: 'Atrasados', icon: AlertTriangle, format: 'number' as const, warn: true },
+];
 
 export const ExecutiveKpisWidget = React.memo(function ExecutiveKpisWidget() {
   const { data: kpis, isLoading, error } = useInstantKpis();
