@@ -220,11 +220,22 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
                 };
                 return (
                   <div key={o.id} className="rounded-lg border p-2.5 text-sm">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-foreground">{o.offer_name}</p>
-                      <Badge className={cn('text-xs', statusConfig[o.status || 'pending'])}>
-                        {o.status || 'pending'}
-                      </Badge>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-foreground flex-1">{o.offer_name}</p>
+                      <Select
+                        value={o.status || 'pending'}
+                        onValueChange={(val) => updateOfferStatus.mutate({ offerId: o.id, status: val })}
+                      >
+                        <SelectTrigger className="h-7 w-[120px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">⏳ Pendente</SelectItem>
+                          <SelectItem value="presented">📋 Apresentada</SelectItem>
+                          <SelectItem value="accepted">✅ Aceita</SelectItem>
+                          <SelectItem value="rejected">❌ Rejeitada</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{o.reason}</p>
                     {o.confidence_score && (
