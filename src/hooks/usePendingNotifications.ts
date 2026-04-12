@@ -21,7 +21,7 @@ export function usePendingNotifications(limit = 20) {
     queryFn: async () => {
       const { data, error } = await queryExternalData<PendingNotification>({
         table: 'vw_pending_notifications',
-        order: { column: 'due_at', ascending: true },
+        order: { column: 'created_at', ascending: false },
         range: { from: 0, to: limit - 1 },
       });
       if (error) throw error;

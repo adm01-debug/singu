@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { callExternalRpc } from '@/lib/externalData';
+import { logger } from '@/lib/logger';
 
 export interface InstantKpis {
   total_companies: number;
@@ -21,10 +22,15 @@ export function useInstantKpis() {
         'get_instant_kpis',
         {}
       );
-      if (error) throw error;
+      // Gracefully degrade if external DB has schema issues
+      if (error) {
+        logger.warn('get_instant_kpis unavailable, falling back to null', error);
+        return null;
+      }
       return data;
     },
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: 1,
   });
 }
