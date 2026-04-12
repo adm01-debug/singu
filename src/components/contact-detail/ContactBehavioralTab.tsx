@@ -5,6 +5,7 @@ import { RapportCard } from './behavioral-tab/RapportCard';
 import { EmotionalTrendCard } from './behavioral-tab/EmotionalTrendCard';
 import { CommunicationDashboardCard } from './behavioral-tab/CommunicationDashboardCard';
 import { EqEvolutionCard } from './behavioral-tab/EqEvolutionCard';
+import { EqDashboardCard } from './behavioral-tab/EqDashboardCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -560,6 +561,7 @@ export function ContactBehavioralTab({ contact }: Props) {
       <EmotionalTrendCard contactId={contact.id} />
       <CommunicationDashboardCard contactId={contact.id} />
       <EqEvolutionCard contactId={contact.id} />
+      <EqDashboardCard contactId={contact.id} />
     </div>
 
     {/* Relationship Score Evolution Chart */}
