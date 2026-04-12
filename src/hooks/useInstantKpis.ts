@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { callExternalRpc } from '@/lib/externalData';
+import { logger } from '@/lib/logger';
 
 export interface InstantKpis {
   total_companies: number;
