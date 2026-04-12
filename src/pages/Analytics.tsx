@@ -32,6 +32,7 @@ import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
 import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
 import AdvancedAnalyticsTab from '@/components/analytics/AdvancedAnalyticsTab';
+import ReportsTab from '@/components/analytics/ReportsTab';
 import { DISCTrainingMode, DISCConversionMetrics } from '@/components/disc';
 import {
   NLPTrainingMode, NLPConversionMetrics,
