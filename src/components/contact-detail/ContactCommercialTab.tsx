@@ -6,6 +6,14 @@ import { ClosingScoreAlertsCard } from './commercial-tab/ClosingScoreAlertsCard'
 import { DealVelocityCard } from './commercial-tab/DealVelocityCard';
 import { SatisfactionCard } from './commercial-tab/SatisfactionCard';
 import { DealsLeadsPipelineCard } from './commercial-tab/DealsLeadsPipelineCard';
+import { DealsCard } from './commercial-tab/DealsCard';
+import { ProposalsCard } from './commercial-tab/ProposalsCard';
+import { MeetingsCard } from './commercial-tab/MeetingsCard';
+import { TasksCard } from './commercial-tab/TasksCard';
+import { EmailLogsCard } from './commercial-tab/EmailLogsCard';
+import { NpsCard } from './commercial-tab/NpsCard';
+import { CadenceEnrollmentsCard } from './commercial-tab/CadenceEnrollmentsCard';
+import { InactivityAlertsCard } from './commercial-tab/InactivityAlertsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -98,6 +106,16 @@ export function ContactCommercialTab({ contactId }: Props) {
       <ClosingScoreAlertsCard contactId={contactId} />
       <DealVelocityCard contactId={contactId} />
       <SatisfactionCard contactId={contactId} />
+
+      {/* New commercial cards */}
+      <DealsCard contactId={contactId} />
+      <ProposalsCard contactId={contactId} />
+      <MeetingsCard contactId={contactId} />
+      <TasksCard contactId={contactId} />
+      <EmailLogsCard contactId={contactId} />
+      <NpsCard contactId={contactId} />
+      <CadenceEnrollmentsCard contactId={contactId} />
+      <InactivityAlertsCard contactId={contactId} />
 
       {/* Deals & Leads Pipeline — full-width */}
       <div className="md:col-span-2">
