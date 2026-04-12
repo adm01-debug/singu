@@ -19,6 +19,8 @@ const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/
 const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
 const BusinessAlertsWidget = lazy(() => import('@/components/dashboard/widgets/BusinessAlertsWidget').then(m => ({ default: m.BusinessAlertsWidget })));
 const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityWidget').then(m => ({ default: m.DataQualityWidget })));
+const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/ExecutiveKpisWidget').then(m => ({ default: m.ExecutiveKpisWidget })));
+const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -62,6 +64,20 @@ export function OverviewTab({
     >
       {/* 1. Stats Grid — most important at-a-glance info */}
       <DashboardStatsGrid stats={stats} prefersReducedMotion={prefersReducedMotion} />
+
+      {/* 1b. Executive KPIs + Weekly Summary */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <DashboardErrorBoundary sectionName="KPIs Executivos">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <ExecutiveKpisWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Resumo Semanal">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <WeeklySummaryWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
 
       {/* 2. Your Day + Pending Followups */}
       <div className="grid gap-4 md:grid-cols-2">

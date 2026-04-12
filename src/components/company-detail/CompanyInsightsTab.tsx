@@ -5,9 +5,9 @@ import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { ExternalDataCard } from '@/components/ui/external-data-card';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
-import { useCompanyTimeline, useCompany360 } from '@/hooks/useCompanyIntelligence';
+import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk } from '@/hooks/useCompanyIntelligence';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle } from 'lucide-react';
+import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
@@ -42,6 +42,10 @@ export function CompanyInsightsTab({
 }: CompanyInsightsTabProps) {
   const { data: timeline = [], isLoading: timelineLoading, error: timelineError, refetch: refetchTimeline } = useCompanyTimeline(companyId);
   const { data: company360, isLoading: c360Loading, error: c360Error, refetch: refetch360 } = useCompany360(companyId);
+  const { data: nextAction } = useNextBestAction(companyId);
+  const { data: touchpoints } = useTouchpointSummary(companyId);
+  const { data: churnRisk } = useChurnRisk(companyId);
+  const { data: keyContacts = [] } = useKeyContacts(companyId);
 
   return (
     <motion.div
@@ -51,6 +55,41 @@ export function CompanyInsightsTab({
       className="space-y-6"
     >
       <AccountChurnPredictionPanel companyId={companyId} />
+
+      {/* Next Best Action */}
+      {nextAction && (
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Lightbulb className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-semibold">Próxima Ação Recomendada</span>
+                  <Badge variant="outline" className="text-[10px]">{nextAction.priority}</Badge>
+                </div>
+                <p className="text-sm text-foreground/80">{nextAction.description}</p>
+                {nextAction.reason && (
+                  <p className="text-xs text-muted-foreground mt-1">💡 {nextAction.reason}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Churn Risk inline */}
+      {churnRisk && (
+        <Card className={`border-l-4 ${churnRisk === 'alto' || churnRisk === 'crítico' ? 'border-l-destructive' : churnRisk === 'médio' ? 'border-l-warning' : 'border-l-success'}`}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <AlertTriangle className={`h-5 w-5 ${churnRisk === 'alto' || churnRisk === 'crítico' ? 'text-destructive' : churnRisk === 'médio' ? 'text-warning' : 'text-success'}`} />
+            <div>
+              <p className="text-sm font-medium">Risco de Churn: <span className="capitalize">{churnRisk}</span></p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Company 360 Intelligence Card */}
       <ExternalDataCard 
@@ -222,6 +261,71 @@ export function CompanyInsightsTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* Touchpoint Summary */}
+      {touchpoints && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Phone className="w-4 h-4 text-primary" />
+              Resumo de Touchpoints
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <div className="text-lg font-bold">{touchpoints.total_touchpoints}</div>
+                <div className="text-[10px] text-muted-foreground">Total</div>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <div className="text-lg font-bold">{touchpoints.avg_gap_days?.toFixed(0) || 0}d</div>
+                <div className="text-[10px] text-muted-foreground">Gap Médio</div>
+              </div>
+              <div className="text-center p-2 rounded-lg bg-muted/50">
+                <div className="text-sm font-medium">{touchpoints.last_touchpoint ? new Date(touchpoints.last_touchpoint).toLocaleDateString('pt-BR') : '—'}</div>
+                <div className="text-[10px] text-muted-foreground">Último</div>
+              </div>
+            </div>
+            {touchpoints.by_channel && (
+              <div className="flex flex-wrap gap-1.5">
+                {Object.entries(touchpoints.by_channel).map(([channel, count]) => (
+                  <Badge key={channel} variant="outline" className="text-[10px]">
+                    {channel}: {count as number}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Key Contacts from RPC */}
+      {keyContacts.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              Contatos Estratégicos
+              <Badge variant="outline" className="text-[10px] ml-auto">{keyContacts.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {keyContacts.slice(0, 5).map((kc) => (
+                <div key={kc.id} className="flex items-center justify-between py-1.5 border-b border-border/50 last:border-0">
+                  <div>
+                    <p className="text-sm font-medium">{kc.name}</p>
+                    {kc.role && <p className="text-[10px] text-muted-foreground">{kc.role}</p>}
+                  </div>
+                  <Badge variant={kc.importance_score >= 70 ? 'default' : 'secondary'} className="text-[10px]">
+                    {kc.importance_score}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Company Timeline */}
       <ExternalDataCard 
