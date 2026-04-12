@@ -1,3 +1,4 @@
+import React from 'react';
 import { Building2, Users, MessageSquare, TrendingUp } from 'lucide-react';
 import { StatCard } from '@/components/ui/stat-card';
 import type { DashboardStats } from '@/hooks/useDashboardStats';
@@ -21,7 +22,7 @@ function getInteractionLabel(count: number): string {
   return 'Engajamento intenso 🔥';
 }
 
-export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardStatsGridProps) {
+export const DashboardStatsGrid = React.memo(function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardStatsGridProps) {
   const companyChangeType = stats.companyChange?.startsWith('+') && stats.companyChange !== '+0' ? 'positive' as const : 'neutral' as const;
   const contactChangeType = stats.contactChange?.startsWith('+') && stats.contactChange !== '+0' ? 'positive' as const : 'neutral' as const;
   const interactionChangeType = stats.weeklyInteractions > 0 ? 'positive' as const : 'neutral' as const;
@@ -78,4 +79,4 @@ export function DashboardStatsGrid({ stats, prefersReducedMotion }: DashboardSta
       ))}
     </div>
   );
-}
+});
