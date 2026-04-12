@@ -126,6 +126,7 @@ export function ContactDataTab({ contact }: Props) {
           contactId={contact.id}
           onSaveCadence={(d) => cadenceMutation.mutate(d as any)}
           onSavePreferences={(d) => preferencesMutation.mutate(d as any)}
+        />
         <TimeHeatmapCard data={timeAnalysis} />
         <SocialMediaExternalCard contactId={contact.id} />
         <ContactEnrichedCard contactId={contact.id} />
