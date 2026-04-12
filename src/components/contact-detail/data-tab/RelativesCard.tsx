@@ -53,7 +53,7 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle className="text-sm">Novo Relacionado</DialogTitle></DialogHeader>
         <div className="grid gap-3">
-          <Input placeholder="Nome *" value={form.name} onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))} />
+          <Input placeholder="Nome *" aria-label="Nome do relacionado" value={form.name} onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))} />
           <Select value={form.relationship_type} onValueChange={(v) => setForm(p => ({ ...p, relationship_type: v }))}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -110,6 +110,7 @@ export function RelativesCard({ relatives, onAdd, onDelete }: Props) {
                 <Badge variant="secondary" className="text-[10px] capitalize">{rel.relationship_type}</Badge>
                 <button
                   onClick={() => onDelete(rel.id)}
+                  aria-label={`Remover ${rel.name}`}
                   className="rounded p-0.5 text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="h-3 w-3" />

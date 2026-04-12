@@ -50,9 +50,11 @@ export function CompanyPhonesForm({ companyId, phones, onSave, onDelete, isLoadi
 
   const addItem = () => setItems(prev => [...prev, emptyPhone(companyId)]);
 
+  const isValidPhone = (num: string) => num.replace(/\D/g, '').length >= 8;
+
   const handleSave = async (idx: number) => {
     const item = items[idx];
-    if (!item.numero?.trim()) return;
+    if (!item.numero?.trim() || !isValidPhone(item.numero)) return;
     setSavingIdx(idx);
     try {
       await onSave({

@@ -49,9 +49,11 @@ export function CompanyEmailsForm({ companyId, emails, onSave, onDelete, isLoadi
 
   const addItem = () => setItems(prev => [...prev, emptyEmail(companyId)]);
 
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSave = async (idx: number) => {
     const item = items[idx];
-    if (!item.email?.trim()) return;
+    if (!item.email?.trim() || !isValidEmail(item.email)) return;
     setSavingIdx(idx);
     try {
       await onSave({ ...item, email_normalizado: item.email.toLowerCase().trim() });
@@ -89,7 +91,7 @@ export function CompanyEmailsForm({ companyId, emails, onSave, onDelete, isLoadi
               Email {idx + 1}
             </div>
             <div className="flex items-center gap-2">
-              <Button type="button" size="sm" variant="outline" onClick={() => handleSave(idx)} disabled={savingIdx === idx || !email.email?.trim()}>
+              <Button type="button" size="sm" variant="outline" onClick={() => handleSave(idx)} disabled={savingIdx === idx || !email.email?.trim() || !isValidEmail(email.email || '')}>
                 {savingIdx === idx ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
               </Button>
               {items.length > 1 && (
