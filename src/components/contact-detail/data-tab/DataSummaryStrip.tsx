@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Phone, Mail, MapPin, Globe, Users, BarChart3, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -14,7 +15,7 @@ interface Props {
   };
 }
 
-export function DataSummaryStrip({ counts }: Props) {
+export const DataSummaryStrip = memo(function DataSummaryStrip({ counts }: Props) {
   const items = [
     { icon: Phone, label: 'Telefones', count: counts.phones, color: 'text-primary' },
     { icon: Mail, label: 'Emails', count: counts.emails, color: 'text-info' },
@@ -52,4 +53,4 @@ export function DataSummaryStrip({ counts }: Props) {
       </CardContent>
     </Card>
   );
-}
+});

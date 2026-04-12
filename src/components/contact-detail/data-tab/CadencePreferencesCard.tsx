@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,7 @@ interface Props {
   commPreferences: Tables<'communication_preferences'> | null;
 }
 
-export function CadencePreferencesCard({ cadence, preferences, commPreferences }: Props) {
+export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cadence, preferences, commPreferences }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -183,4 +184,4 @@ export function CadencePreferencesCard({ cadence, preferences, commPreferences }
       </CardContent>
     </Card>
   );
-}
+});

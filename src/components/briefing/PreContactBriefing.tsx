@@ -280,6 +280,8 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
               <div>
                 <button
                   onClick={() => toggleSection('tips')}
+                  aria-expanded={expandedSections.has('tips')}
+                  aria-label="Expandir Dicas de Abertura"
                   className="flex items-center justify-between w-full text-left"
                 >
                   <div className="flex items-center gap-2">
@@ -320,6 +322,8 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
               <div>
                 <button
                   onClick={() => toggleSection('words')}
+                  aria-expanded={expandedSections.has('words')}
+                  aria-label="Expandir Palavras Mágicas"
                   className="flex items-center justify-between w-full text-left"
                 >
                   <div className="flex items-center gap-2">
@@ -351,6 +355,7 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
                               <button
                                 key={idx}
                                 onClick={() => handleCopy(word, `use-${idx}`)}
+                                aria-label={`Copiar palavra: ${word}`}
                                 className="text-xs px-2 py-1 rounded-full bg-success/10 text-success hover:bg-success/20 transition-colors flex items-center gap-1"
                               >
                                 {word}
@@ -390,6 +395,8 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
               <div>
                 <button
                   onClick={() => toggleSection('values')}
+                  aria-expanded={expandedSections.has('values')}
+                  aria-label="Expandir Valores Importantes"
                   className="flex items-center justify-between w-full text-left"
                 >
                   <div className="flex items-center gap-2">

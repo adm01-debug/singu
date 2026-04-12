@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Phone, MessageSquare, Copy, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,7 @@ interface Props {
   onCopy: (text: string, field: string) => void;
 }
 
-export function PhonesCard({ phones, copiedField, onCopy }: Props) {
+export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -64,4 +65,4 @@ export function PhonesCard({ phones, copiedField, onCopy }: Props) {
       </CardContent>
     </Card>
   );
-}
+});
