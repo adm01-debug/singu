@@ -28,7 +28,6 @@ export function ChurnRiskCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       hasData={!!data}
-      hasData={false}
       emptyMessage="Sem dados de previsão de churn"
       onRetry={refetch}
     >

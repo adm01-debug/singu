@@ -41,7 +41,6 @@ export function DealsLeadsPipelineCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       hasData={deals.length > 0 || leads.length > 0}
-      hasData={false}
       emptyMessage="Nenhum deal ou lead encontrado"
       onRetry={refetch}
     >

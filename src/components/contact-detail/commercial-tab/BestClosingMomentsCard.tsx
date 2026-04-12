@@ -30,7 +30,6 @@ export function BestClosingMomentsCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       hasData={!!data}
-      hasData={false}
       emptyMessage="Dados insuficientes para análise de timing"
       onRetry={refetch}
     >
