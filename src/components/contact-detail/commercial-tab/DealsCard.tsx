@@ -1,5 +1,6 @@
 import { useContactDeals } from '@/hooks/useContactDeals';
 import { ExternalDataCard } from '@/components/ui/external-data-card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
@@ -17,61 +18,42 @@ const stageColors: Record<string, string> = {
 
 export function DealsCard({ contactId }: Props) {
   const { data: deals, isLoading, error, refetch } = useContactDeals(contactId);
-
   const totalValue = deals?.reduce((sum, d) => sum + (d.value || 0), 0) || 0;
   const wonDeals = deals?.filter(d => d.status === 'won' || d.stage === 'won') || [];
 
   return (
-    <ExternalDataCard
-      title="Negócios"
-      icon={<DollarSign className="h-4 w-4" />}
-      isLoading={isLoading}
-      error={error}
-      onRetry={refetch}
-      hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
-      hasData={false}
-      emptyMessage="Nenhum negócio vinculado"
-    >
-      {totalValue > 0 && (
-        <div className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-muted/50">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-xs font-medium">
-            Pipeline: R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </span>
-          {wonDeals.length > 0 && (
-            <Badge variant="outline" className="ml-auto text-[10px]">
-              {wonDeals.length} ganho(s)
-            </Badge>
-          )}
-        </div>
-      )}
-      <div className="space-y-2 max-h-60 overflow-y-auto">
-        {deals?.map(deal => (
-          <div key={deal.id} className="flex items-center justify-between p-2 rounded-md border border-border/50 hover:bg-muted/30 transition-colors">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate">{deal.title}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                {deal.value != null && (
-                  <span className="text-[10px] text-muted-foreground">
-                    R$ {deal.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                )}
-                {deal.expected_close_date && (
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                    <Calendar className="h-2.5 w-2.5" />
-                    {format(new Date(deal.expected_close_date), 'dd/MM/yy')}
-                  </span>
-                )}
-              </div>
+    <ExternalDataCard title="Negócios" icon={<DollarSign className="h-4 w-4" />} isLoading={isLoading} error={error} onRetry={refetch} hasData={!!deals?.length} emptyMessage="Nenhum negócio vinculado">
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center justify-between text-sm font-medium">
+            <span className="flex items-center gap-2"><DollarSign className="h-4 w-4" /> Negócios</span>
+            <Badge variant="outline" className="text-[10px]">{deals?.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {totalValue > 0 && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium">Pipeline: R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              {wonDeals.length > 0 && <Badge variant="outline" className="ml-auto text-[10px]">{wonDeals.length} ganho(s)</Badge>}
             </div>
-            {deal.stage && (
-              <Badge className={`text-[9px] ml-2 ${stageColors[deal.stage] || 'bg-muted text-muted-foreground'}`}>
-                {deal.stage}
-              </Badge>
-            )}
+          )}
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {deals?.map(deal => (
+              <div key={deal.id} className="flex items-center justify-between p-2 rounded-md border border-border/50 hover:bg-muted/30 transition-colors">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium truncate">{deal.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {deal.value != null && <span className="text-[10px] text-muted-foreground">R$ {deal.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>}
+                    {deal.expected_close_date && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Calendar className="h-2.5 w-2.5" />{format(new Date(deal.expected_close_date), 'dd/MM/yy')}</span>}
+                  </div>
+                </div>
+                {deal.stage && <Badge className={`text-[9px] ml-2 ${stageColors[deal.stage] || 'bg-muted text-muted-foreground'}`}>{deal.stage}</Badge>}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </CardContent>
+      </Card>
     </ExternalDataCard>
   );
 }
