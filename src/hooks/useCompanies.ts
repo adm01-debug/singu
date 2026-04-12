@@ -46,7 +46,8 @@ const LISTING_SELECT = [
   'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
-  'lead_score', 'lead_status',
+  'lead_score', 'lead_status', 'lead_score_updated_at',
+  'bitrix_created_at', 'bitrix_updated_at', 'created_by_id',
   'deleted_at', 'deleted_by',
 ].join(',');
 const COMPANY_SEARCH_COLUMNS = [
