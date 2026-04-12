@@ -17,6 +17,7 @@ const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBr
 const PendingFollowupsWidget = lazy(() => import('@/components/dashboard/widgets/PendingFollowupsWidget').then(m => ({ default: m.PendingFollowupsWidget })));
 const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.TodaysRemindersWidget })));
 const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
+const BusinessAlertsWidget = lazy(() => import('@/components/dashboard/widgets/BusinessAlertsWidget').then(m => ({ default: m.BusinessAlertsWidget })));
 const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityWidget').then(m => ({ default: m.DataQualityWidget })));
 
 interface StaggerAnimation {
