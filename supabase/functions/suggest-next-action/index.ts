@@ -1,9 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
+import { z } from "https://esm.sh/zod@3.23.8";
+import { scopedCorsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
+
+const InputSchema = z.object({
+  contact: z.record(z.unknown()).optional(),
+  interactions: z.array(z.record(z.unknown())).optional(),
+  company: z.record(z.unknown()).optional(),
+});
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: scopedCorsHeaders(req) });
   }
 
   // 🔒 Authenticate — userId from JWT
@@ -16,9 +23,12 @@ Deno.serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const { contact, interactions, company } = await req.json();
-
-    console.log("Generating next action suggestion for contact:", contact?.id);
+    const rawBody = await req.json();
+    const parsed = InputSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Invalid input: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400, req);
+    }
+    const { contact, interactions, company } = parsed.data;
 
     const systemPrompt = `Você é um assistente especializado em relacionamentos comerciais e CRM. Sua função é analisar o perfil de um contato, seu histórico de interações e sugerir a melhor próxima ação a ser tomada.
 
