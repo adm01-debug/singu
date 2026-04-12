@@ -48,6 +48,9 @@ import {
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { DataHealthWidget } from '@/components/analytics/DataHealthWidget';
+import { UsageKpisWidget } from '@/components/analytics/UsageKpisWidget';
+import { DiscDashboardWidget } from '@/components/analytics/DiscDashboardWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
 // Extracted data & shared components
