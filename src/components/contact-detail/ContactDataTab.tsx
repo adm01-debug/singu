@@ -116,7 +116,7 @@ export function ContactDataTab({ contact }: Props) {
         <RelativesCard
           relatives={relatives}
           contactId={contact.id}
-          onAdd={(d) => addRelative.mutate(d as any)}
+          onAdd={(d) => addRelative.mutate(d as Parameters<typeof addRelative.mutate>[0])}
           onDelete={(id) => deleteRelative.mutate(id)}
         />
         <CadencePreferencesCard
@@ -124,8 +124,8 @@ export function ContactDataTab({ contact }: Props) {
           preferences={preferences}
           commPreferences={commPreferences}
           contactId={contact.id}
-          onSaveCadence={(d) => cadenceMutation.mutate(d as any)}
-          onSavePreferences={(d) => preferencesMutation.mutate(d as any)}
+          onSaveCadence={(d) => cadenceMutation.mutate(d as Parameters<typeof cadenceMutation.mutate>[0])}
+          onSavePreferences={(d) => preferencesMutation.mutate(d as Parameters<typeof preferencesMutation.mutate>[0])}
         />
         <TimeHeatmapCard data={timeAnalysis} />
         <SocialMediaExternalCard contactId={contact.id} />
