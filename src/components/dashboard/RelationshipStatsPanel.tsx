@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Clock,
@@ -131,7 +132,7 @@ const MiniSparkline = ({ data, color }: { data: number[]; color: string }) => {
   );
 };
 
-export function RelationshipStatsPanel({ className, compact = false }: RelationshipStatsPanelProps) {
+export const RelationshipStatsPanel = React.memo(function RelationshipStatsPanel({ className, compact = false }: RelationshipStatsPanelProps) {
   const stats = getRelationshipStats();
   
   const mainMetrics: StatMetric[] = [

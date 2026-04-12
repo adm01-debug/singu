@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, User, Users, MessageSquare, Building2, X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -24,7 +24,7 @@ interface OnboardingChecklistProps {
   hasInteractions: boolean;
 }
 
-export function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, hasInteractions }: OnboardingChecklistProps) {
+export const OnboardingChecklist = React.memo(function OnboardingChecklist({ hasProfile, hasContacts, hasCompanies, hasInteractions }: OnboardingChecklistProps) {
   const [dismissed, setDismissed] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
