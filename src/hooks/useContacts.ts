@@ -19,6 +19,17 @@ export type ContactListItem = Pick<Contact,
   | 'updated_at' | 'created_at'
 >;
 
+/**
+ * Fields that exist only in the LOCAL Supabase schema (types.ts) but NOT in the external DB.
+ * These must be stripped before any insert/update to the external DB to avoid column-not-found errors.
+ */
+const LOCAL_ONLY_FIELDS = new Set([
+  'tags', 'interests', 'hobbies', 'twitter', 'avatar_url', 'family_info',
+  'email', 'phone', 'whatsapp', 'linkedin', 'instagram',       // live in contact_phones / contact_emails / contact_social_media
+  'life_events',                                                  // JSONB managed separately
+  'id',                                                           // never send id on updates
+]);
+
 const PAGE_SIZE = 50;
 
 async function fetchContactsPage(companyId?: string) {

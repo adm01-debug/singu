@@ -22,6 +22,9 @@ const ALLOWED_TABLES = [
   'company_phones', 'company_emails', 'company_addresses',
   'company_social_media', 'company_cnaes', 'company_rfm_scores',
   'company_stakeholder_map',
+  // Contact intelligence & analytics
+  'churn_predictions', 'deal_velocity_analysis',
+  'relationship_score_history', 'workspace_accounts',
 ] as const;
 
 type AllowedTable = typeof ALLOWED_TABLES[number];
