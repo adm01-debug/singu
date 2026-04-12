@@ -23,6 +23,7 @@ import { BestContactTimeWidget } from './BestContactTimeWidget';
 import { EngagementScoreWidget } from './EngagementScoreWidget';
 import { EffectivenessWidget } from './EffectivenessWidget';
 import { ContactStatisticsWidget } from './ContactStatisticsWidget';
+import { ContactTimelineWidget } from './ContactTimelineWidget';
 
 interface Props {
   contact: Contact;
