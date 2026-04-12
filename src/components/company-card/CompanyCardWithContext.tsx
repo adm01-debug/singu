@@ -132,16 +132,48 @@ function TimeAgo({ date }: { date: string }) {
   );
 }
 
+/* ── Lead Score indicator ── */
+function LeadScoreBadge({ score, status }: { score: number | null | undefined; status: string | null | undefined }) {
+  if (!score && !status) return null;
+  
+  const numScore = typeof score === 'number' ? score : null;
+  const color = numScore !== null
+    ? numScore >= 80 ? 'text-success bg-success/10 border-success/20'
+    : numScore >= 50 ? 'text-warning bg-warning/10 border-warning/20'
+    : 'text-muted-foreground bg-muted/10 border-border/20'
+    : 'text-muted-foreground bg-muted/10 border-border/20';
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn('inline-flex items-center gap-0.5 text-[10px] font-medium rounded-md px-1.5 py-0.5 border', color)}>
+            {numScore !== null ? `${numScore}` : '–'}
+            {status && <span className="opacity-70">·{status}</span>}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          Lead Score{numScore !== null ? `: ${numScore}/100` : ''}{status ? ` — ${status}` : ''}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 /* ── Intelligence Strip ── */
 function IntelligenceStrip({ company }: { company: Company }) {
   const capital = formatCapitalSocial(company.capital_social);
-  const hasData = capital || company.grupo_economico || company.nicho_cliente || company.website || company.situacao_rf || company.is_carrier || company.is_supplier;
+  const leadScore = (company as Record<string, unknown>).lead_score as number | null;
+  const leadStatus = (company as Record<string, unknown>).lead_status as string | null;
+  const hasData = capital || company.grupo_economico || company.nicho_cliente || company.website || company.situacao_rf || company.is_carrier || company.is_supplier || leadScore || leadStatus;
   
   if (!hasData) return null;
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap mt-2 pt-2 border-t border-border/10">
       {company.situacao_rf && <RfStatusDot situacao={company.situacao_rf} />}
+      
+      {(leadScore || leadStatus) && <LeadScoreBadge score={leadScore} status={leadStatus} />}
       
       {capital && (
         <span className="inline-flex items-center gap-1 text-[10px] text-success/80 bg-success/8 border border-success/15 rounded-md px-1.5 py-0.5">
