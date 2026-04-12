@@ -1,4 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2, AlertTriangle, Gauge } from 'lucide-react';
@@ -274,23 +276,29 @@ export default function Pipeline() {
 
   if (dealsLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <AppLayout title="Pipeline">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
     );
   }
 
   if (dealsError) {
     return (
-      <div className="text-center py-20 text-destructive">
-        <p>Erro ao carregar pipeline</p>
-        <p className="text-sm text-muted-foreground mt-1">{(dealsError as Error).message}</p>
-      </div>
+      <AppLayout title="Pipeline">
+        <div className="text-center py-20 text-destructive">
+          <p>Erro ao carregar pipeline</p>
+          <p className="text-sm text-muted-foreground mt-1">{(dealsError as Error).message}</p>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <AppLayout title="Pipeline">
+      <SEOHead title="Pipeline de Vendas" description="Gerencie seus deals com drag & drop" />
+      <div className="space-y-6 p-4 md:p-6">
       <div>
         <h1 className="text-2xl font-bold">Pipeline de Vendas</h1>
         <p className="text-muted-foreground text-sm">Gerencie seus deals com drag & drop</p>
@@ -309,11 +317,12 @@ export default function Pipeline() {
         ))}
       </div>
 
-      {/* Velocity & Stalled Deals */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <VelocityPanel />
-        <StalledDealsPanel />
+        {/* Velocity & Stalled Deals */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <VelocityPanel />
+          <StalledDealsPanel />
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
