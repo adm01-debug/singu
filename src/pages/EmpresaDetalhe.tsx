@@ -275,7 +275,7 @@ const EmpresaDetalhe = () => {
               </motion.div>
 
               <Tabs defaultValue="contacts" className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="flex w-full overflow-x-auto gap-1">
                   <TabsTrigger value="contacts" className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     <span className="hidden sm:inline">Contatos ({contacts.length})</span>

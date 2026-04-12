@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { DISCBadge } from '@/components/ui/disc-badge';
+import { ExternalDataCard } from '@/components/ui/external-data-card';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
+import { useCompanyTimeline, useCompany360 } from '@/hooks/useCompanyIntelligence';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, BarChart3 } from 'lucide-react';
+import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DISCProfile } from '@/types';
 
@@ -21,10 +26,23 @@ interface CompanyInsightsTabProps {
   pendingFollowUps: number;
 }
 
+const eventTypeIcons: Record<string, string> = {
+  interaction: '💬',
+  deal: '💰',
+  meeting: '📅',
+  task: '✅',
+  proposal: '📄',
+  contact: '👤',
+  alert: '⚠️',
+};
+
 export function CompanyInsightsTab({ 
   companyId, contacts, avgRelationshipScore, 
   totalInteractions, positiveInteractions, pendingFollowUps 
 }: CompanyInsightsTabProps) {
+  const { data: timeline = [], isLoading: timelineLoading, error: timelineError, refetch: refetchTimeline } = useCompanyTimeline(companyId);
+  const { data: company360, isLoading: c360Loading, error: c360Error, refetch: refetch360 } = useCompany360(companyId);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -33,6 +51,75 @@ export function CompanyInsightsTab({
       className="space-y-6"
     >
       <AccountChurnPredictionPanel companyId={companyId} />
+
+      {/* Company 360 Intelligence Card */}
+      <ExternalDataCard 
+        title="Inteligência 360°" 
+        icon={<Brain className="h-4 w-4" />} 
+        isLoading={c360Loading} 
+        error={c360Error} 
+        onRetry={refetch360} 
+        hasData={!!company360}
+        emptyMessage="Dados de inteligência ainda não disponíveis"
+      >
+        {company360 && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Brain className="h-4 w-4 text-primary" /> Visão 360°
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {company360.health_score != null && (
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <div className={`text-2xl font-bold ${company360.health_score >= 70 ? 'text-success' : company360.health_score >= 40 ? 'text-warning' : 'text-destructive'}`}>
+                      {company360.health_score}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">Saúde</div>
+                  </div>
+                )}
+                {company360.rfm_segment && (
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <div className="text-sm font-semibold text-foreground">{company360.rfm_segment}</div>
+                    <div className="text-xs text-muted-foreground">Segmento RFM</div>
+                  </div>
+                )}
+                {company360.total_revenue != null && (
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <div className="text-lg font-bold text-foreground">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(company360.total_revenue)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Receita Total</div>
+                  </div>
+                )}
+                {company360.churn_risk != null && (
+                  <div className="text-center p-3 rounded-lg bg-muted/50">
+                    <div className={`text-2xl font-bold ${company360.churn_risk <= 30 ? 'text-success' : company360.churn_risk <= 60 ? 'text-warning' : 'text-destructive'}`}>
+                      {company360.churn_risk}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">Risco Churn</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Top contacts from 360 */}
+              {company360.top_contacts && company360.top_contacts.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Contatos Principais</p>
+                  <div className="flex flex-wrap gap-2">
+                    {company360.top_contacts.slice(0, 5).map((c) => (
+                      <Badge key={c.id} variant="outline" className="text-xs">
+                        {c.name} {c.score != null && `(${c.score}%)`}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </ExternalDataCard>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Relationship Health */}
@@ -135,6 +222,53 @@ export function CompanyInsightsTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* Company Timeline */}
+      <ExternalDataCard 
+        title="Timeline da Empresa" 
+        icon={<Clock className="h-4 w-4" />} 
+        isLoading={timelineLoading} 
+        error={timelineError} 
+        onRetry={refetchTimeline} 
+        hasData={timeline.length > 0}
+        emptyMessage="Nenhum evento na timeline"
+      >
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center justify-between text-sm font-medium">
+              <span className="flex items-center gap-2"><Activity className="h-4 w-4" /> Timeline</span>
+              <Badge variant="outline" className="text-[10px]">{timeline.length}</Badge>
+            </CardTitle>
+            <CardDescription className="text-xs">Eventos recentes da empresa</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="relative space-y-0 max-h-80 overflow-y-auto">
+              {/* Vertical line */}
+              <div className="absolute left-3.5 top-2 bottom-2 w-px bg-border" />
+              
+              {timeline.map((event, i) => (
+                <div key={`${event.event_date}-${i}`} className="relative pl-9 pb-4">
+                  {/* Dot */}
+                  <div className="absolute left-2 top-1.5 w-3 h-3 rounded-full border-2 border-primary bg-card z-10" />
+                  
+                  <div className="p-2 rounded-md hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">{eventTypeIcons[event.event_type] || '📌'}</span>
+                      <span className="text-sm font-medium truncate">{event.title}</span>
+                    </div>
+                    {event.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{event.description}</p>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {format(new Date(event.event_date), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </ExternalDataCard>
     </motion.div>
   );
 }
