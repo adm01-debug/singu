@@ -1,11 +1,14 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { lazy, Suspense } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { motion } from 'framer-motion';
-import { MessageSquare, Phone, Mail, Globe, Users, Edit, Plus, Clock } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Globe, Users, Edit, Plus, Clock, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useInteractionHistory } from '@/hooks/useInteractionsRpc';
 import type { Tables } from '@/integrations/supabase/types';
 import type { SentimentType } from '@/types';
 
@@ -31,9 +34,11 @@ const interactionColors: Record<string, string> = {
 
 interface CompanyInteractionsTabProps {
   interactions: Interaction[];
+  companyId?: string;
 }
 
-export function CompanyInteractionsTab({ interactions }: CompanyInteractionsTabProps) {
+export function CompanyInteractionsTab({ interactions, companyId }: CompanyInteractionsTabProps) {
+  const { data: externalHistory } = useInteractionHistory(companyId);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
