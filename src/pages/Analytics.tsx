@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { motion } from 'framer-motion';
 import {
@@ -57,6 +57,8 @@ import { BirthdayContactsWidget } from '@/components/analytics/BirthdayContactsW
 import { OrphanContactsWidget } from '@/components/analytics/OrphanContactsWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
+const BehavioralIntelSummaryWidget = lazy(() => import('@/components/analytics/BehavioralIntelSummaryWidget'));
+
 // Extracted data & shared components
 import {
   periodOptions, calcChange, getMetricsStats,
@@ -109,7 +111,10 @@ const Analytics = () => {
       
       <div className="p-6 space-y-6">
         <SmartBreadcrumbs />
-        
+        <Suspense fallback={<Skeleton className="h-28 rounded-lg" />}>
+          <BehavioralIntelSummaryWidget />
+        </Suspense>
+
         {/* Header Actions */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
