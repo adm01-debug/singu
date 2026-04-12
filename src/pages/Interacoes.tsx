@@ -155,6 +155,8 @@ const Interacoes = () => {
   
   // Mini celebration hook
   const celebration = useMiniCelebration();
+  const { triggerAnalysis } = useNLPAutoAnalysis();
+  const { logActivity } = useActivityLogger();
   
   // Advanced filters state
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
