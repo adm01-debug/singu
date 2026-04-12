@@ -221,9 +221,11 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="flex items-center gap-3 pb-4 border-b border-border">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <User className="w-5 h-5 text-primary" />
-          </div>
+          <ContactAvatarUpload
+            avatarUrl={form.watch('avatar_url') || null}
+            onAvatarChange={(url) => form.setValue('avatar_url', url || '', { shouldDirty: true })}
+            contactId={(contact as Record<string, unknown>)?.id as string | undefined}
+          />
           <div>
             <h3 className="font-semibold">
               {contact ? 'Editar Contato' : 'Novo Contato'}
