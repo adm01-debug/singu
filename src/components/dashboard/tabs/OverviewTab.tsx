@@ -20,6 +20,7 @@ const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/
 const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
 const BusinessAlertsWidget = lazy(() => import('@/components/dashboard/widgets/BusinessAlertsWidget').then(m => ({ default: m.BusinessAlertsWidget })));
 const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityWidget').then(m => ({ default: m.DataQualityWidget })));
+const StrategicAccountsWidget = lazy(() => import('@/components/dashboard/widgets/StrategicAccountsWidget'));
 const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/ExecutiveKpisWidget').then(m => ({ default: m.ExecutiveKpisWidget })));
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
 
@@ -145,12 +146,19 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 3c. Business Alerts from External DB */}
-      <DashboardErrorBoundary sectionName="Alertas de Negócio">
-        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
-          <BusinessAlertsWidget />
-        </Suspense>
-      </DashboardErrorBoundary>
+      {/* 3c. Business Alerts + Strategic Accounts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <DashboardErrorBoundary sectionName="Alertas de Negócio">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <BusinessAlertsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Contas Estratégicas">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <StrategicAccountsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
 
       {/* 3c. Data Quality */}
       <DashboardErrorBoundary sectionName="Qualidade de Dados">
