@@ -187,6 +187,9 @@ const ContatoDetalhe = () => {
                   interactions={interactions}
                   contact={contact}
                 />
+                <Suspense fallback={<Skeleton className="h-48 rounded-lg" />}>
+                  <ContactTimelineWidget contactId={contact.id} />
+                </Suspense>
               </div>
             </DashboardErrorBoundary>
           </TabsContent>
