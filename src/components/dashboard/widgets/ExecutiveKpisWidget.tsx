@@ -52,7 +52,7 @@ export const ExecutiveKpisWidget = React.memo(function ExecutiveKpisWidget() {
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {kpiConfig.map(({ key, label, icon: Icon, format, warn }) => {
-            const value = (kpis as Record<string, number>)[key] ?? 0;
+            const value = kpis[key] ?? 0;
             const isWarn = warn && value > 0;
             return (
               <div
