@@ -29,6 +29,7 @@ import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
+import RfmExternalDashboard from '@/components/analytics/RfmExternalDashboard';
 import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
 import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
 import AdvancedAnalyticsTab from '@/components/analytics/AdvancedAnalyticsTab';
@@ -190,7 +191,8 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="rfm" className="space-y-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+              <RfmExternalDashboard />
               <RFMAnalysisPanel />
             </motion.div>
           </TabsContent>
