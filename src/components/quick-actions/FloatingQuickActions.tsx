@@ -40,6 +40,7 @@ export function FloatingQuickActions({
 }: FloatingQuickActionsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { onPress } = useButtonHaptic();
 
   const actions: QuickAction[] = [
     {
