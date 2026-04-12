@@ -5,9 +5,9 @@ import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { ExternalDataCard } from '@/components/ui/external-data-card';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
-import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk } from '@/hooks/useCompanyIntelligence';
+import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk, useAccountPlan, usePropensityScore, useCompanyHealthScore } from '@/hooks/useCompanyIntelligence';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone } from 'lucide-react';
+import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone, Target, Gauge, HeartPulse } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
@@ -46,6 +46,9 @@ export function CompanyInsightsTab({
   const { data: touchpoints } = useTouchpointSummary(companyId);
   const { data: churnRisk } = useChurnRisk(companyId);
   const { data: keyContacts = [] } = useKeyContacts(companyId);
+  const { data: accountPlan } = useAccountPlan(companyId);
+  const { data: propensity } = usePropensityScore(companyId);
+  const { data: healthScore } = useCompanyHealthScore(companyId);
 
   return (
     <motion.div
