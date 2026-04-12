@@ -15,7 +15,6 @@
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
