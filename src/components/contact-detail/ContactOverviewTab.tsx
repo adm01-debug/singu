@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { 
+import {
   Heart, Users, Clock, Star, Gift, MapPin, Target,
-  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle, PenLine
+  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle, PenLine,
+  Phone, Mail, Building2, Cake
 } from 'lucide-react';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, differenceInYears } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useContactRelationalData } from '@/hooks/useContactRelationalData';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { queryExternalData } from '@/lib/externalData';
 import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 
@@ -28,57 +29,26 @@ interface Props {
 
 export function ContactOverviewTab({ contact, company, insights, alerts, onDismissAlert, onDismissInsight }: Props) {
   const { user } = useAuth();
-  const [relatives, setRelatives] = useState<Tables<'contact_relatives'>[]>([]);
-  const [lifeEvents, setLifeEvents] = useState<Tables<'life_events'>[]>([]);
-  const [cadence, setCadence] = useState<Tables<'contact_cadence'> | null>(null);
-  const [preferences, setPreferences] = useState<Tables<'contact_preferences'> | null>(null);
+  // Use shared React Query hook instead of raw useEffect
+  const { data: relData } = useContactRelationalData(contact.id);
 
-  useEffect(() => {
-    if (!user || !contact.id) return;
+  const { data: lifeEvents = [] } = useQuery({
+    queryKey: ['life-events', contact.id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('life_events')
+        .select('*')
+        .eq('contact_id', contact.id)
+        .order('event_date', { ascending: false });
+      return data || [];
+    },
+    enabled: !!contact.id && !!user,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const fetchWithFallback = async <T,>(
-      localFn: () => Promise<{ data: T | null; error: unknown }>,
-      extTable: string,
-      filters: Array<{ type: 'eq'; column: string; value: string }>,
-    ): Promise<T | null> => {
-      const { data: local } = await localFn();
-      if (local && (Array.isArray(local) ? local.length > 0 : true)) return local;
-      const { data: ext } = await queryExternalData<T>({ table: extTable, filters });
-      if (Array.isArray(ext) && ext.length > 0) return ext as unknown as T;
-      if (ext && !Array.isArray(ext)) return ext as unknown as T;
-      return Array.isArray(local) ? ([] as unknown as T) : null;
-    };
-
-    const fetchData = async () => {
-      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
-
-      const [relData, eventsData, cadenceData, prefData] = await Promise.all([
-        fetchWithFallback<Tables<'contact_relatives'>[]>(
-          async () => supabase.from('contact_relatives').select('*').eq('contact_id', contact.id).order('name'),
-          'contact_relatives', contactFilter,
-        ),
-        fetchWithFallback<Tables<'life_events'>[]>(
-          async () => supabase.from('life_events').select('*').eq('contact_id', contact.id).order('event_date', { ascending: false }),
-          'life_events', contactFilter,
-        ),
-        fetchWithFallback<Tables<'contact_cadence'> | null>(
-          async () => supabase.from('contact_cadence').select('*').eq('contact_id', contact.id).maybeSingle(),
-          'contact_cadence', contactFilter,
-        ),
-        fetchWithFallback<Tables<'contact_preferences'> | null>(
-          async () => supabase.from('contact_preferences').select('*').eq('contact_id', contact.id).maybeSingle(),
-          'contact_preferences', contactFilter,
-        ),
-      ]);
-
-      setRelatives(relData || []);
-      setLifeEvents(eventsData || []);
-      setCadence(cadenceData);
-      setPreferences(prefData);
-    };
-
-    fetchData();
-  }, [user, contact.id]);
+  const relatives = relData?.relatives || [];
+  const cadence = relData?.cadence || null;
+  const preferences = relData?.preferences || null;
 
   const behavior = contact.behavior as Record<string, unknown> | null;
 
@@ -156,7 +126,6 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          {/* Extended fields from external DB */}
           {(() => {
             const c = contact as Record<string, unknown>;
             const extFields = [
@@ -274,6 +243,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                 <span className="text-muted-foreground">Prioridade</span>
                 <Badge variant="outline" className="text-xs capitalize">{cadence.priority || 'medium'}</Badge>
               </div>
+              {cadence.auto_remind && (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Auto-lembrete</span>
+                  <Badge variant="secondary" className="text-xs">Ativo</Badge>
+                </div>
+              )}
               {cadence.next_contact_due && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Próximo contato</span>
@@ -286,6 +261,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                   <span className="text-xs">
                     {formatDistanceToNow(new Date(cadence.last_contact_at), { addSuffix: true, locale: ptBR })}
                   </span>
+                </div>
+              )}
+              {cadence.notes && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Notas da cadência</span>
+                  <p className="text-xs text-foreground">{cadence.notes}</p>
                 </div>
               )}
             </>
@@ -310,16 +291,58 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                 <div>
                   <span className="text-xs text-muted-foreground">Dias preferidos</span>
                   <div className="mt-1 flex gap-1">
-                    {preferences.preferred_days.map((d: string) => (
+                    {preferences.preferred_days!.map((d: string) => (
                       <Badge key={d} variant="secondary" className="text-xs">{d}</Badge>
                     ))}
                   </div>
+                </div>
+              )}
+              {(preferences.preferred_times?.length ?? 0) > 0 && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Horários preferidos</span>
+                  <div className="mt-1 flex gap-1">
+                    {preferences.preferred_times!.map((t: string) => (
+                      <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(preferences.avoid_days?.length ?? 0) > 0 && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Dias a evitar</span>
+                  <div className="mt-1 flex gap-1">
+                    {preferences.avoid_days!.map((d: string) => (
+                      <Badge key={d} variant="destructive" className="text-xs">{d}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {(preferences.avoid_times?.length ?? 0) > 0 && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Horários a evitar</span>
+                  <div className="mt-1 flex gap-1">
+                    {preferences.avoid_times!.map((t: string) => (
+                      <Badge key={t} variant="destructive" className="text-xs">{t}</Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {preferences.restrictions && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Restrições</span>
+                  <p className="text-xs text-foreground">{preferences.restrictions}</p>
                 </div>
               )}
               {preferences.communication_tips && (
                 <div>
                   <span className="text-xs text-muted-foreground">Dicas de comunicação</span>
                   <p className="text-xs text-foreground">{preferences.communication_tips}</p>
+                </div>
+              )}
+              {preferences.personal_notes && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Notas pessoais</span>
+                  <p className="text-xs text-foreground">{preferences.personal_notes}</p>
                 </div>
               )}
             </>
@@ -338,17 +361,52 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
         {relatives.length > 0 ? (
           <div className="space-y-2">
             {relatives.map((rel) => (
-              <div key={rel.id} className="flex items-center justify-between rounded-lg border p-2 text-sm">
-                <div>
-                  <p className="font-medium text-foreground">{rel.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{rel.relationship_type}</p>
+              <div key={rel.id} className="rounded-lg border p-2.5 text-sm space-y-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-foreground">{rel.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{rel.relationship_type}</p>
+                  </div>
+                  <div className="text-right text-xs text-muted-foreground space-y-0.5">
+                    {rel.occupation && <p>{rel.occupation}</p>}
+                    {rel.company && (
+                      <span className="flex items-center gap-1 justify-end">
+                        <Building2 className="h-3 w-3" />
+                        {rel.company}
+                      </span>
+                    )}
+                    {rel.is_decision_influencer && (
+                      <Badge variant="outline" className="text-xs text-warning">Influenciador</Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right text-xs text-muted-foreground">
-                  {rel.occupation && <p>{rel.occupation}</p>}
-                  {rel.is_decision_influencer && (
-                    <Badge variant="outline" className="text-xs text-warning">Influenciador</Badge>
+                {/* Extended relative info */}
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  {rel.age && (
+                    <span>{rel.age} anos</span>
+                  )}
+                  {rel.birthday && (
+                    <span className="flex items-center gap-0.5">
+                      <Cake className="h-3 w-3" />
+                      {format(new Date(rel.birthday), "dd/MM")}
+                    </span>
+                  )}
+                  {rel.phone && (
+                    <a href={`tel:${rel.phone}`} className="flex items-center gap-0.5 hover:text-foreground">
+                      <Phone className="h-3 w-3" />
+                      {rel.phone}
+                    </a>
+                  )}
+                  {rel.email && (
+                    <a href={`mailto:${rel.email}`} className="flex items-center gap-0.5 hover:text-foreground">
+                      <Mail className="h-3 w-3" />
+                      <span className="truncate max-w-[120px]">{rel.email}</span>
+                    </a>
                   )}
                 </div>
+                {rel.notes && (
+                  <p className="text-xs text-muted-foreground italic">{rel.notes}</p>
+                )}
               </div>
             ))}
           </div>
@@ -369,14 +427,22 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
         {lifeEvents.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {lifeEvents.map((event) => (
-              <div key={event.id} className="flex items-center gap-2 rounded-lg border p-2.5 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div key={event.id} className="flex items-start gap-2 rounded-lg border p-2.5 text-sm">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="font-medium text-foreground">{event.title}</p>
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(event.event_date), "dd/MM/yyyy")} · {event.event_type}
                     {event.recurring && ' · Recorrente'}
                   </p>
+                  {event.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{event.description}</p>
+                  )}
+                  {event.reminder_days_before != null && (
+                    <Badge variant="outline" className="text-[10px] mt-1">
+                      Lembrete: {event.reminder_days_before}d antes
+                    </Badge>
+                  )}
                 </div>
               </div>
             ))}

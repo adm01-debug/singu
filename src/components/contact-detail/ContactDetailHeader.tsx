@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
@@ -13,8 +13,8 @@ import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { queryExternalData } from '@/lib/externalData';
 import { formatContactName, pluralize } from '@/lib/formatters';
+import { useContactRelationalData } from '@/hooks/useContactRelationalData';
 import type { Contact, Company } from '@/hooks/useContactDetail';
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -55,32 +55,19 @@ interface Props {
 
 export function ContactDetailHeader({ contact, company, interactionCount, onEdit }: Props) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [extraPhones, setExtraPhones] = useState<string[]>([]);
-  const [extraEmails, setExtraEmails] = useState<string[]>([]);
-  const [addresses, setAddresses] = useState<{ logradouro?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; cep?: string }[]>([]);
-  const [socialMedia, setSocialMedia] = useState<{ plataforma: string; url?: string; handle?: string }[]>([]);
+  
+  // Use shared React Query hook — eliminates duplicate fetches, leverages cache
+  const { data: relData } = useContactRelationalData(contact.id);
+  
+  const extraPhones = relData?.phones || [];
+  const extraEmails = relData?.emails || [];
+  const addresses = relData?.addresses || [];
+  const socialMedia = relData?.socials || [];
+
   const fullName = formatContactName(contact.first_name, contact.last_name);
   const stage = STAGE_CONFIG[contact.relationship_stage || 'unknown'] || STAGE_CONFIG.unknown;
   const behavior = contact.behavior as Record<string, unknown> | null;
   const discProfile = behavior?.discProfile as string | null;
-
-  // Fetch normalized phones/emails from external DB
-  useEffect(() => {
-    const fetchNormalized = async () => {
-      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
-      const [phonesRes, emailsRes, addrRes, socialRes] = await Promise.all([
-        queryExternalData<{ phone: string; label?: string }>({ table: 'contact_phones', filters: contactFilter }),
-        queryExternalData<{ email: string; label?: string }>({ table: 'contact_emails', filters: contactFilter }),
-        queryExternalData<{ logradouro?: string; numero?: string; bairro?: string; cidade?: string; estado?: string; cep?: string }>({ table: 'contact_addresses', filters: contactFilter }),
-        queryExternalData<{ plataforma: string; url?: string; handle?: string }>({ table: 'contact_social_media', filters: contactFilter }),
-      ]);
-      if (phonesRes.data) setExtraPhones(phonesRes.data.map(p => p.phone).filter(Boolean));
-      if (emailsRes.data) setExtraEmails(emailsRes.data.map(e => e.email).filter(Boolean));
-      if (addrRes.data) setAddresses(addrRes.data);
-      if (socialRes.data) setSocialMedia(socialRes.data);
-    };
-    fetchNormalized();
-  }, [contact.id]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -103,12 +90,14 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
   const existingEmails = new Set([contact.email].filter(Boolean).map(e => e!.toLowerCase()));
 
   const extraPhoneChannels = extraPhones
-    .filter(p => !existingPhones.has(p.replace(/\D/g, '')))
-    .map((p, i) => ({ icon: Phone, value: p, label: `Tel ${i + 2}`, href: `tel:${p}` }));
+    .filter(p => !existingPhones.has((p.numero || '').replace(/\D/g, '')))
+    .slice(0, 3)
+    .map((p, i) => ({ icon: Phone, value: p.numero, label: `Tel ${i + 2}`, href: `tel:${p.numero}` }));
 
   const extraEmailChannels = extraEmails
-    .filter(e => !existingEmails.has(e.toLowerCase()))
-    .map((e, i) => ({ icon: Mail, value: e, label: `Email ${i + 2}`, href: `mailto:${e}` }));
+    .filter(e => !existingEmails.has((e.email || '').toLowerCase()))
+    .slice(0, 3)
+    .map((e, i) => ({ icon: Mail, value: e.email, label: `Email ${i + 2}`, href: `mailto:${e.email}` }));
 
   // Add social media from external table
   const platformIconMap: Record<string, typeof Globe> = {
