@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useContactRelationalData, useRelativeMutations, useCadenceMutation } from '@/hooks/useContactRelationalData';
+import { useContactRelationalData, useRelativeMutations, useCadenceMutation, usePreferencesMutation } from '@/hooks/useContactRelationalData';
 import { useExternalRelationalMutations } from '@/hooks/useExternalRelationalMutations';
 import type { Contact } from '@/hooks/useContactDetail';
 
@@ -29,6 +29,7 @@ export function ContactDataTab({ contact }: Props) {
   const addressMutations = useExternalRelationalMutations(contact.id, 'contact_addresses', 'Endereço');
   const socialMutations = useExternalRelationalMutations(contact.id, 'contact_social_media', 'Rede social');
   const cadenceMutation = useCadenceMutation(contact.id);
+  const preferencesMutation = usePreferencesMutation(contact.id);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, field: string) => {
@@ -124,7 +125,7 @@ export function ContactDataTab({ contact }: Props) {
           commPreferences={commPreferences}
           contactId={contact.id}
           onSaveCadence={(d) => cadenceMutation.mutate(d as any)}
-        />
+          onSavePreferences={(d) => preferencesMutation.mutate(d as any)}
         <TimeHeatmapCard data={timeAnalysis} />
         <SocialMediaExternalCard contactId={contact.id} />
         <ContactEnrichedCard contactId={contact.id} />
