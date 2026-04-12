@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { callExternalRpc } from '@/lib/externalData';
+import { logger } from '@/lib/logger';
 
 interface DuplicateContact {
   id?: string;
@@ -24,12 +25,12 @@ export function useDuplicateContacts(enabled = true) {
           {}
         );
         if (error) {
-          console.warn('[DuplicateContacts] RPC error (known schema issue):', error);
+          logger.warn('[DuplicateContacts] RPC error (known schema issue):', error);
           return [] as DuplicateContact[];
         }
         return (Array.isArray(data) ? data : []) as DuplicateContact[];
       } catch (e) {
-        console.warn('[DuplicateContacts] Fetch failed:', e);
+        logger.warn('[DuplicateContacts] Fetch failed:', e);
         return [] as DuplicateContact[];
       }
     },
