@@ -42,8 +42,9 @@ interface Props {
   onSavePreferences?: (data: Record<string, unknown>) => void;
 }
 
-export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cadence, preferences, commPreferences, onSaveCadence }: Props) {
+export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cadence, preferences, commPreferences, onSaveCadence, onSavePreferences }: Props) {
   const [editingCadence, setEditingCadence] = useState(false);
+  const [editingPrefs, setEditingPrefs] = useState(false);
   const [cadenceForm, setCadenceForm] = useState({
     cadence_days: cadence?.cadence_days ?? 14,
     priority: cadence?.priority ?? 'medium',
