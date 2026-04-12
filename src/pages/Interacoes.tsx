@@ -55,6 +55,8 @@ import { useInteractions, type Interaction } from '@/hooks/useInteractions';
 import { useContacts } from '@/hooks/useContacts';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
+import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { SentimentType } from '@/types';
