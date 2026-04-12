@@ -161,9 +161,9 @@ describe('Auth Flow Integration', () => {
   });
 
   describe('Auth State Change Listener', () => {
-    it('should set up auth state listener', () => {
+    it('should set up auth state listener', async () => {
       const callback = vi.fn();
-      const { supabase } = require('@/integrations/supabase/client');
+      const { supabase } = await import('@/integrations/supabase/client');
       const { data } = supabase.auth.onAuthStateChange(callback);
       
       expect(data.subscription).toBeDefined();
