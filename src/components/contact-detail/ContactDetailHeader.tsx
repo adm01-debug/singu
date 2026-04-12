@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DuplicateManagementPanel } from './DuplicateManagementPanel';
+import { SoftDeletePanel } from './SoftDeletePanel';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
@@ -199,12 +201,25 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                 )}
               </div>
             </div>
-            {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit} className="flex-shrink-0">
-                <Edit2 className="mr-1.5 h-3.5 w-3.5" />
-                Editar
-              </Button>
-            )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <DuplicateManagementPanel
+                  contactId={contact.id}
+                  contactName={fullName}
+                  isDuplicate={isDuplicate}
+                  duplicateOfId={contactExt.duplicate_of as string | null}
+                />
+                <SoftDeletePanel
+                  contactId={contact.id}
+                  contactName={fullName}
+                  deletedAt={contactExt.deleted_at as string | null}
+                />
+                {onEdit && (
+                  <Button variant="outline" size="sm" onClick={onEdit}>
+                    <Edit2 className="mr-1.5 h-3.5 w-3.5" />
+                    Editar
+                  </Button>
+                )}
+              </div>
           </div>
 
           {/* Metrics row */}
