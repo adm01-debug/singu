@@ -294,6 +294,10 @@ const EmpresaDetalhe = () => {
                     <span className="hidden sm:inline">Histórico ({stats.total})</span>
                     <span className="sm:hidden">{stats.total}</span>
                   </TabsTrigger>
+                  <TabsTrigger value="commercial" className="flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    <span className="hidden sm:inline">Comercial</span>
+                  </TabsTrigger>
                   <TabsTrigger value="insights" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
                     <span className="hidden sm:inline">Insights</span>
