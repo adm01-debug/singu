@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useContactRelationalData, useRelativeMutations } from '@/hooks/useContactRelationalData';
 import type { Contact } from '@/hooks/useContactDetail';
 
@@ -19,7 +21,7 @@ interface Props {
 }
 
 export function ContactDataTab({ contact }: Props) {
-  const { data, isLoading } = useContactRelationalData(contact.id);
+  const { data, isLoading, error, refetch } = useContactRelationalData(contact.id);
   const { addRelative, deleteRelative } = useRelativeMutations(contact.id);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -29,7 +31,7 @@ export function ContactDataTab({ contact }: Props) {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -41,6 +43,28 @@ export function ContactDataTab({ contact }: Props) {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <Card className="border-destructive/30">
+        <CardContent className="py-8 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Erro ao carregar dados relacionais</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {error instanceof Error ? error.message : 'Tente novamente em alguns instantes'}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="h-3 w-3 mr-1.5" />
+            Tentar novamente
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data) return null;
 
   const { phones, emails, addresses, socials, relatives, cadence, preferences, commPreferences, timeAnalysis } = data;
 
