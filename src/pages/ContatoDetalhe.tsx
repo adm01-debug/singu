@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
@@ -28,6 +28,8 @@ import {
 } from '@/components/contact-detail';
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
+
+const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
@@ -205,6 +207,13 @@ const ContatoDetalhe = () => {
                 companyId={contact.company_id}
                 onInteractionAdded={refetch}
               />
+              {contact.company_id && (
+                <div className="mt-4">
+                  <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+                    <UnifiedCommunicationHistory contactId={contact.company_id} />
+                  </Suspense>
+                </div>
+              )}
             </DashboardErrorBoundary>
           </TabsContent>
 
