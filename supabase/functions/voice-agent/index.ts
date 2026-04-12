@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   corsHeaders,
   handleCorsAndMethod,
@@ -85,7 +84,7 @@ const TOOL_SCHEMA = {
   },
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   const guard = handleCorsAndMethod(req);
   if (guard) return guard;
 
