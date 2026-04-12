@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useButtonHaptic } from '@/hooks/useHapticFeedback';
 
 interface QuickAction {
   id: string;
