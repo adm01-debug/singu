@@ -29,6 +29,8 @@ import { CompanyProfileCard } from '@/components/company-detail/CompanyProfileCa
 import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsTab';
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
 import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
+import { CompanyEnrichedCard } from '@/components/company-detail/CompanyEnrichedCard';
+import { CompanyDuplicatesPanel } from '@/components/company-detail/CompanyDuplicatesPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
