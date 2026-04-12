@@ -275,15 +275,18 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
           )}
 
           {/* Tags */}
-          {contact.tags && contact.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {contact.tags.map(tag => (
-                <Badge key={tag} variant="secondary" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
+          {(() => {
+            const tags = contact.tags || (contact as Record<string, unknown>).tags_array as string[] | undefined;
+            return tags && tags.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {tags.map(tag => (
+                  <Badge key={tag} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            ) : null;
+          })()}
         </div>
       </div>
     </motion.div>
