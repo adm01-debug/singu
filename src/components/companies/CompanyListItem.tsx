@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users, Banknote, Network } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +18,7 @@ interface CompanyListItemProps {
   onSelect: (id: string, selected: boolean) => void;
 }
 
-export function CompanyListItem({
+export const CompanyListItem = React.memo(function CompanyListItem({
   company,
   contactCount,
   lastInteractionDays,
@@ -135,4 +136,4 @@ export function CompanyListItem({
       </div>
     </Link>
   );
-}
+});

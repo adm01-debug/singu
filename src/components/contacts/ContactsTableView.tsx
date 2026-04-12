@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Building2, ArrowUpDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,7 +29,7 @@ interface ContactsTableViewProps {
   onSortChange: (field: string) => void;
 }
 
-export function ContactsTableView({
+export const ContactsTableView = React.memo(function ContactsTableView({
   contacts,
   selectionMode,
   selectedIds,
@@ -131,4 +132,4 @@ export function ContactsTableView({
       </Table>
     </div>
   );
-}
+});
