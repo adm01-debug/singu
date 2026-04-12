@@ -23,6 +23,7 @@ const LuxTriggerSchema = z.object({
 });
 
 Deno.serve(async (req) => {
+  const corsHeaders = makeCors(req);
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
