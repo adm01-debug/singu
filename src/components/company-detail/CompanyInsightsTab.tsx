@@ -22,6 +22,9 @@ const PropensityScoreWidget = lazy(() => import('./PropensityScoreWidget'));
 const CompanyDuplicatesWidget = lazy(() => import('./CompanyDuplicatesWidget'));
 const OptimalContactWindowsWidget = lazy(() => import('./OptimalContactWindowsWidget'));
 const QuickActionsWidget = lazy(() => import('./QuickActionsWidget'));
+const CompanyViewsWidget = lazy(() => import('./CompanyViewsWidget'));
+const InteractionHistoryWidget = lazy(() => import('./InteractionHistoryWidget'));
+const CreateDealWidget = lazy(() => import('@/components/pipeline/CreateDealWidget'));
 
 type Contact = Tables<'contacts'>;
 
@@ -410,6 +413,15 @@ export function CompanyInsightsTab({
 
     <Suspense fallback={<Skeleton className="h-16 rounded-lg" />}>
       <QuickActionsWidget companyId={companyId} />
+    </Suspense>
+    <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+      <CompanyViewsWidget companyId={companyId} />
+    </Suspense>
+    <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+      <InteractionHistoryWidget companyId={companyId} />
+    </Suspense>
+    <Suspense fallback={<Skeleton className="h-20 rounded-lg" />}>
+      <CreateDealWidget companyId={companyId} companyName={company?.name} />
     </Suspense>
     </>
   );
