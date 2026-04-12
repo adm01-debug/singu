@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUnifiedCommunicationHistory } from '@/hooks/useInteractionsRpc';
+import { useUnifiedCommunicationHistory, type InteractionHistoryItem } from '@/hooks/useInteractionsRpc';
 import { MessageSquare, Phone, Mail, Globe, Users, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -53,31 +53,30 @@ export const UnifiedCommunicationHistory = React.memo(function UnifiedCommunicat
       </CardHeader>
       <CardContent>
         <div className="space-y-2 max-h-[350px] overflow-y-auto">
-          {history.map((item, i) => {
-            const channel = String((item as Record<string, unknown>).channel || (item as Record<string, unknown>).type || 'note');
+          {history.map((item: InteractionHistoryItem) => {
+            const channel = item.channel || item.type || 'note';
             const Icon = channelIcons[channel] || MessageSquare;
             const colorClass = channelColors[channel] || channelColors.note;
-            const dateStr = String((item as Record<string, unknown>).data_interacao || (item as Record<string, unknown>).created_at || '');
 
             return (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors border border-border/30">
+              <div key={item.id} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors border border-border/30">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${colorClass}`}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">
-                    {String((item as Record<string, unknown>).resumo || (item as Record<string, unknown>).title || channel)}
+                    {item.resumo || item.type}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Badge variant="outline" className="text-[9px]">{channel}</Badge>
-                    {(item as Record<string, unknown>).direction && (
+                    {item.direction && (
                       <span className="text-[9px] text-muted-foreground">
-                        {String((item as Record<string, unknown>).direction) === 'inbound' ? '← Recebido' : '→ Enviado'}
+                        {item.direction === 'inbound' ? '← Recebido' : '→ Enviado'}
                       </span>
                     )}
-                    {dateStr && (
+                    {item.data_interacao && (
                       <span className="text-[9px] text-muted-foreground ml-auto">
-                        {format(new Date(dateStr), "dd/MM/yy HH:mm", { locale: ptBR })}
+                        {format(new Date(item.data_interacao), "dd/MM/yy HH:mm", { locale: ptBR })}
                       </span>
                     )}
                   </div>
