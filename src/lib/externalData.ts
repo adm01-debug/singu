@@ -120,3 +120,17 @@ export async function deleteExternalData(table: string, id: string): Promise<{ s
     return { success: false, error: err as Error };
   }
 }
+
+/** Call an RPC (database function) on the external database */
+export async function callExternalRpc<T = unknown>(
+  functionName: string,
+  params: Record<string, unknown> = {}
+): Promise<{ data: T | null; error: Error | null }> {
+  try {
+    const result = await callExternalData({ action: 'rpc', functionName, params });
+    return { data: (result?.data as T) ?? null, error: null };
+  } catch (err) {
+    logger.error(`Error calling external RPC ${functionName}:`, err);
+    return { data: null, error: err as Error };
+  }
+}
