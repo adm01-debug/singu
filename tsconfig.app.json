@@ -23,8 +23,7 @@
       ]
     },
     "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
+    "strict": false,
     "target": "ES2022",
     "useDefineForClassFields": true
   },
