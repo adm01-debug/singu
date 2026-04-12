@@ -4,6 +4,7 @@ import { ChurnRiskCard } from './commercial-tab/ChurnRiskCard';
 import { ClosingScoreCard } from './commercial-tab/ClosingScoreCard';
 import { DealVelocityCard } from './commercial-tab/DealVelocityCard';
 import { SatisfactionCard } from './commercial-tab/SatisfactionCard';
+import { DealsLeadsPipelineCard } from './commercial-tab/DealsLeadsPipelineCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -78,6 +79,11 @@ export function ContactCommercialTab({ contactId }: Props) {
       <ClosingScoreCard contactId={contactId} />
       <DealVelocityCard contactId={contactId} />
       <SatisfactionCard contactId={contactId} />
+
+      {/* Deals & Leads Pipeline — full-width */}
+      <div className="md:col-span-2">
+        <DealsLeadsPipelineCard contactId={contactId} />
+      </div>
 
       {/* RFM Analysis */}
       <Card className="md:col-span-2">
