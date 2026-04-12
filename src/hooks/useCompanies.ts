@@ -135,6 +135,10 @@ function mapCompany(ext: ExternalRow): Company {
     cores_marca: ext.cores_marca as string | null ?? null,
     lead_score: ext.lead_score as number | null ?? null,
     lead_status: ext.lead_status as string | null ?? null,
+    lead_score_updated_at: ext.lead_score_updated_at as string | null ?? null,
+    bitrix_created_at: ext.bitrix_created_at as string | null ?? null,
+    bitrix_updated_at: ext.bitrix_updated_at as string | null ?? null,
+    created_by_id: ext.created_by_id as string | null ?? null,
     deleted_at: ext.deleted_at as string | null ?? null,
     deleted_by: ext.deleted_by as string | null ?? null,
   } as unknown as Company;
