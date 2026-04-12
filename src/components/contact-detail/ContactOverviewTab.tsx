@@ -23,6 +23,8 @@ import { BestContactTimeWidget } from './BestContactTimeWidget';
 import { EngagementScoreWidget } from './EngagementScoreWidget';
 import { EffectivenessWidget } from './EffectivenessWidget';
 import { ContactStatisticsWidget } from './ContactStatisticsWidget';
+import { WhatsappMessagesWidget } from './WhatsappMessagesWidget';
+import { SalesActivitiesWidget } from './SalesActivitiesWidget';
 
 interface Props {
   contact: Contact;
