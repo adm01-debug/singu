@@ -1,20 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 
 export function useWhatsAppData(contactId?: string) {
   const { user } = useAuth();
-  const [instances, setInstances] = useState<Tables<'whatsapp_instances'>[]>([]);
-  const [messages, setMessages] = useState<Tables<'whatsapp_messages'>[]>([]);
-  const [kpis, setKpis] = useState<Tables<'whatsapp_kpis'> | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    setLoading(true);
-
-    const fetchAll = async () => {
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['whatsapp-data', contactId, user?.id],
+    queryFn: async () => {
       const [instRes, kpiRes, msgRes] = await Promise.all([
         supabase.from('whatsapp_instances').select('*').order('created_at', { ascending: false }),
         supabase.from('whatsapp_kpis').select('*').order('created_at', { ascending: false }).limit(1),
@@ -23,14 +17,21 @@ export function useWhatsAppData(contactId?: string) {
           : supabase.from('whatsapp_messages').select('*').order('timestamp', { ascending: false }).limit(50),
       ]);
 
-      setInstances(instRes.data || []);
-      setKpis(kpiRes.data?.[0] || null);
-      setMessages(msgRes.data || []);
-      setLoading(false);
-    };
+      return {
+        instances: instRes.data || [],
+        kpis: (kpiRes.data?.[0] || null) as Tables<'whatsapp_kpis'> | null,
+        messages: msgRes.data || [],
+      };
+    },
+    enabled: !!user,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
 
-    fetchAll();
-  }, [user, contactId]);
-
-  return { instances, messages, kpis, loading };
+  return {
+    instances: data?.instances || [],
+    messages: data?.messages || [],
+    kpis: data?.kpis || null,
+    loading,
+  };
 }

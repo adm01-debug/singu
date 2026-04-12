@@ -1,21 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 
 export function useTriggerAnalytics(contactId?: string) {
   const { user } = useAuth();
-  const [abTests, setAbTests] = useState<Tables<'trigger_ab_tests'>[]>([]);
-  const [channelEffectiveness, setChannelEffectiveness] = useState<Tables<'trigger_channel_effectiveness'>[]>([]);
-  const [bundles, setBundles] = useState<Tables<'trigger_bundles'>[]>([]);
-  const [intensityHistory, setIntensityHistory] = useState<Tables<'trigger_intensity_history'>[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-    setLoading(true);
-
-    const fetchAll = async () => {
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ['trigger-analytics', contactId, user?.id],
+    queryFn: async () => {
       const abQuery = contactId
         ? supabase.from('trigger_ab_tests').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(50)
         : supabase.from('trigger_ab_tests').select('*').order('created_at', { ascending: false }).limit(50);
@@ -33,15 +26,23 @@ export function useTriggerAnalytics(contactId?: string) {
           : Promise.resolve({ data: [] as Tables<'trigger_intensity_history'>[] }),
       ]);
 
-      setAbTests((abRes.data || []) as Tables<'trigger_ab_tests'>[]);
-      setChannelEffectiveness((chRes.data || []) as Tables<'trigger_channel_effectiveness'>[]);
-      setBundles((buRes.data || []) as Tables<'trigger_bundles'>[]);
-      setIntensityHistory((intRes.data || []) as Tables<'trigger_intensity_history'>[]);
-      setLoading(false);
-    };
+      return {
+        abTests: (abRes.data || []) as Tables<'trigger_ab_tests'>[],
+        channelEffectiveness: (chRes.data || []) as Tables<'trigger_channel_effectiveness'>[],
+        bundles: (buRes.data || []) as Tables<'trigger_bundles'>[],
+        intensityHistory: (intRes.data || []) as Tables<'trigger_intensity_history'>[],
+      };
+    },
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-    fetchAll();
-  }, [user, contactId]);
-
-  return { abTests, channelEffectiveness, bundles, intensityHistory, loading };
+  return {
+    abTests: data?.abTests || [],
+    channelEffectiveness: data?.channelEffectiveness || [],
+    bundles: data?.bundles || [],
+    intensityHistory: data?.intensityHistory || [],
+    loading,
+  };
 }
