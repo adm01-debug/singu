@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -374,5 +375,21 @@ export function CompanyInsightsTab({
         </Card>
       </ExternalDataCard>
     </motion.div>
+
+    {/* Intelligence Widgets */}
+    <div className="grid gap-4 md:grid-cols-2 mt-4">
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <CompanyHealthScoreWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <CompanyStatisticsWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <PropensityScoreWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <AccountPlanWidget companyId={companyId} />
+      </Suspense>
+    </div>
   );
 }
