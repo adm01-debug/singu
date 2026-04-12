@@ -73,6 +73,7 @@ import { logger } from "@/lib/logger";
 import { useTableDensity } from '@/hooks/useTableDensity';
 import { hapticHeavy, hapticSuccess } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
+import { useActivityLogger } from '@/hooks/useActivityLogger';
 
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
