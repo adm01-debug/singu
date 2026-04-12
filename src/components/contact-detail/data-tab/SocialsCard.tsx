@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import {
   Globe, ExternalLink, Copy, Check, MessageSquare,
   Linkedin, Instagram, Facebook, Twitter, Youtube,
@@ -19,7 +20,7 @@ interface Props {
   onCopy: (text: string, field: string) => void;
 }
 
-export function SocialsCard({ socials, copiedField, onCopy }: Props) {
+export const SocialsCard = memo(function SocialsCard({ socials, copiedField, onCopy }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -74,4 +75,4 @@ export function SocialsCard({ socials, copiedField, onCopy }: Props) {
       </CardContent>
     </Card>
   );
-}
+});

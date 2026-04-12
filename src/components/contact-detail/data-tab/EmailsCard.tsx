@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Mail, Copy, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +12,7 @@ interface Props {
   onCopy: (text: string, field: string) => void;
 }
 
-export function EmailsCard({ emails, copiedField, onCopy }: Props) {
+export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -56,4 +57,4 @@ export function EmailsCard({ emails, copiedField, onCopy }: Props) {
       </CardContent>
     </Card>
   );
-}
+});

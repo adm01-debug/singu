@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { MapPin, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +9,7 @@ interface Props {
   addresses: ExternalAddress[];
 }
 
-export function AddressesCard({ addresses }: Props) {
+export const AddressesCard = memo(function AddressesCard({ addresses }: Props) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -57,4 +58,4 @@ export function AddressesCard({ addresses }: Props) {
       </CardContent>
     </Card>
   );
-}
+});

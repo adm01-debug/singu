@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DAY_LABELS } from './helpers';
@@ -14,7 +15,7 @@ interface Props {
   data: TimeData[];
 }
 
-export function TimeHeatmapCard({ data }: Props) {
+export const TimeHeatmapCard = memo(function TimeHeatmapCard({ data }: Props) {
   if (data.length === 0) return null;
 
   const hours = Array.from({ length: 17 }, (_, i) => i + 6);
@@ -94,4 +95,4 @@ export function TimeHeatmapCard({ data }: Props) {
       </CardContent>
     </Card>
   );
-}
+});
