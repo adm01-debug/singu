@@ -108,8 +108,9 @@ export function FloatingQuickActions({
   ];
 
   const toggleMenu = useCallback(() => {
+    onPress();
     setIsOpen(prev => !prev);
-  }, []);
+  }, [onPress]);
 
   // Animation variants
   const menuVariants = {
