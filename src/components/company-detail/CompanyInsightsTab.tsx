@@ -13,6 +13,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DISCProfile } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const CompanyHealthScoreWidget = lazy(() => import('./CompanyHealthScoreWidget'));
+const CompanyStatisticsWidget = lazy(() => import('./CompanyStatisticsWidget'));
+const AccountPlanWidget = lazy(() => import('./AccountPlanWidget'));
+const PropensityScoreWidget = lazy(() => import('./PropensityScoreWidget'));
 
 type Contact = Tables<'contacts'>;
 
