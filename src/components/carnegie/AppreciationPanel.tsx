@@ -30,7 +30,7 @@ interface AppreciationPanelProps {
   className?: string;
 }
 
-const TYPE_ICONS: Record<AppreciationType, any> = {
+const TYPE_ICONS: Record<AppreciationType, React.ComponentType<{ className?: string }>> = {
   sincere_compliment: Heart,
   specific_recognition: Star,
   effort_acknowledgment: TrendingUp,

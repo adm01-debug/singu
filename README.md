@@ -89,7 +89,7 @@ singu/
 │   └── types/                   # TypeScript types compartilhados
 ├── supabase/
 │   ├── config.toml              # Configuração das edge functions
-│   ├── functions/               # 30 Edge Functions (Deno)
+│   ├── functions/               # 31 Edge Functions (Deno)
 │   │   ├── _shared/             # Helpers compartilhados (auth, CORS)
 │   │   └── health/              # Health check endpoint (SRE)
 │   └── migrations/              # ~50 migrations SQL versionadas
@@ -135,7 +135,7 @@ Decisões técnicas fundamentais estão documentadas em [ADRs](docs/adr/README.m
 ## 🧪 Testes
 
 ```bash
-npm run test           # 3.979 testes automatizados
+npm run test           # 4.470 testes automatizados
 npm run test -- --coverage  # Com relatório de cobertura
 ```
 
