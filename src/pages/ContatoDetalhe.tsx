@@ -186,6 +186,10 @@ const ContatoDetalhe = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="dados">
+            <ContactDataTab contact={contact} />
+          </TabsContent>
+
           <TabsContent value="interacoes">
             <ContactInteractionsTab
               interactions={interactions}
