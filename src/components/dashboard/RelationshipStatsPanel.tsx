@@ -392,4 +392,4 @@ export const RelationshipStatsPanel = React.memo(function RelationshipStatsPanel
       </div>
     </motion.div>
   );
-}
+});

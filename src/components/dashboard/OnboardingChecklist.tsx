@@ -153,4 +153,4 @@ export const OnboardingChecklist = React.memo(function OnboardingChecklist({ has
       </Collapsible>
     </motion.div>
   );
-}
+});
