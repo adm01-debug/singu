@@ -59,11 +59,17 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
   
   // Use shared React Query hook — eliminates duplicate fetches, leverages cache
   const { data: relData } = useContactRelationalData(contact.id);
+  const { data: view360 } = useContactView360(contact.id);
   
   const extraPhones = relData?.phones || [];
   const extraEmails = relData?.emails || [];
   const addresses = relData?.addresses || [];
   const socialMedia = relData?.socials || [];
+
+  // Duplicate & soft-delete flags from external DB
+  const contactExt = contact as Record<string, unknown>;
+  const isDuplicate = contactExt.is_duplicate === true;
+  const isDeleted = !!contactExt.deleted_at;
 
   const fullName = formatContactName(contact.first_name, contact.last_name);
   const stage = STAGE_CONFIG[contact.relationship_stage || 'unknown'] || STAGE_CONFIG.unknown;
