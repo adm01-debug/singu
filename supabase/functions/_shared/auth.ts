@@ -31,6 +31,12 @@ export function scopedCorsHeaders(req: Request) {
   };
 }
 
+/** Resolve CORS headers — scoped when req is provided, static fallback otherwise */
+function resolveCors(req?: Request) {
+  if (req) return scopedCorsHeaders(req);
+  return corsHeaders;
+}
+
 /**
  * authenticateRequest — Validates JWT from the Authorization header.
  * Returns the authenticated user ID or throws "UNAUTHORIZED".
@@ -50,19 +56,19 @@ export async function authenticateRequest(req: Request): Promise<string> {
   return user.id;
 }
 
-/** Standard JSON error response with CORS headers. */
-export function jsonError(message: string, status: number): Response {
+/** Standard JSON error response with CORS headers (scoped when req provided). */
+export function jsonError(message: string, status: number, req?: Request): Response {
   return new Response(
     JSON.stringify({ error: message }),
-    { status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { status, headers: { ...resolveCors(req), "Content-Type": "application/json" } }
   );
 }
 
-/** Standard JSON success response with CORS headers. */
-export function jsonOk(data: unknown): Response {
+/** Standard JSON success response with CORS headers (scoped when req provided). */
+export function jsonOk(data: unknown, req?: Request): Response {
   return new Response(
     JSON.stringify(data),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    { headers: { ...resolveCors(req), "Content-Type": "application/json" } }
   );
 }
 
@@ -71,11 +77,12 @@ export function jsonOk(data: unknown): Response {
  * Returns a Response to send immediately, or null to continue processing.
  */
 export function handleCorsAndMethod(req: Request): Response | null {
+  const headers = scopedCorsHeaders(req);
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
   if (req.method !== "POST") {
-    return jsonError("Method not allowed", 405);
+    return jsonError("Method not allowed", 405, req);
   }
   return null;
 }
