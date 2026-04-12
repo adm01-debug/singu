@@ -81,10 +81,15 @@ export function OverviewTab({
       </div>
 
       {/* 2. Your Day + Pending Followups */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <DashboardErrorBoundary sectionName="Seu Dia">
           <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
             <YourDaySection />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Resumo Diário">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+            <DailySummaryWidget />
           </Suspense>
         </DashboardErrorBoundary>
         <DashboardErrorBoundary sectionName="Follow-ups">
