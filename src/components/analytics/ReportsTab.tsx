@@ -300,6 +300,14 @@ export default function ReportsTab() {
         <IndustryChart />
       </div>
       <ChannelChart />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
+          <YoyComparisonWidget />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
+          <MonthlyReportWidget />
+        </Suspense>
+      </div>
       <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
         <CohortAnalysisWidget />
       </Suspense>
