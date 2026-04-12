@@ -146,6 +146,8 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       assinatura_contato: getField(c, 'assinatura_contato'),
       tags_array: Array.isArray(c?.tags_array) ? (c.tags_array as string[]).join(', ') : '',
       interests_array: Array.isArray(c?.interests_array) ? (c.interests_array as string[]).join(', ') : '',
+      hobbies: Array.isArray(c?.hobbies) ? (c.hobbies as string[]).join(', ') : getField(c, 'hobbies'),
+      family_info: getField(c, 'family_info'),
     },
   });
 
@@ -205,6 +207,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
     // Convert comma-separated strings to arrays
     cleaned.tags_array = parseCommaSeparated(data.tags_array);
     cleaned.interests_array = parseCommaSeparated(data.interests_array);
+    cleaned.hobbies = parseCommaSeparated(data.hobbies);
     await onSubmit(cleaned);
     clearDraft();
   };
