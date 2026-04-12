@@ -16,6 +16,7 @@ import { CadencePreferencesCard } from './data-tab/CadencePreferencesCard';
 import { TimeHeatmapCard } from './data-tab/TimeHeatmapCard';
 import { SocialMediaExternalCard } from './data-tab/SocialMediaExternalCard';
 import { ContactEnrichedCard } from './data-tab/ContactEnrichedCard';
+import { ExtraDataCard, BitrixIntegrationCard } from './data-tab/ExtraDataCards';
 
 interface Props {
   contact: Contact;
