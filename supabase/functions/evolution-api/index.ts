@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { z } from "https://esm.sh/zod@3.23.8";
 import {
   handleCorsAndMethod,
   withAuth,
@@ -50,18 +51,27 @@ Deno.serve(async (req) => {
       'apikey': evolutionKey,
     };
 
-    let requestBody: EvolutionRequest;
+    const EvolutionInput = z.object({
+      action: z.string().min(1).refine(a => ALLOWED_ACTIONS.has(a), { message: "Ação desconhecida ou não permitida" }),
+      instanceName: z.string().optional(),
+      remoteJid: z.string().optional(),
+      message: z.string().optional(),
+      phoneNumber: z.string().optional(),
+      limit: z.number().int().min(1).max(500).default(20),
+      body: z.record(z.unknown()).optional(),
+    });
+
+    let rawBody: unknown;
     try {
-      requestBody = await req.json();
+      rawBody = await req.json();
     } catch {
       return jsonError('Invalid JSON body', 400);
     }
-
-    const { action, instanceName, remoteJid, message, phoneNumber, limit = 20, body: extraBody } = requestBody;
-
-    if (!action || !ALLOWED_ACTIONS.has(action)) {
-      return jsonError(`Unknown or disallowed action: ${action}`, 400);
+    const parsed = EvolutionInput.safeParse(rawBody);
+    if (!parsed.success) {
+      return jsonError(`Entrada inválida: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`, 400);
     }
+    const { action, instanceName, remoteJid, message, phoneNumber, limit, body: extraBody } = parsed.data;
 
     let endpoint = '';
     let method = 'GET';
