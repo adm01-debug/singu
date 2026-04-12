@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import { FileBarChart, Hash, Star, TrendingUp, Users2, Loader2 } from 'lucide-react';
+import { FileBarChart, Hash, Star, TrendingUp, Users2, Loader2, BarChart3, Copy } from 'lucide-react';
+import { useCompanyStatistics, useCompanyDuplicates } from '@/hooks/useCompanyIntelligence';
 import type { CompanyCnae, CompanyRfmScore, CompanyStakeholder } from '@/hooks/useCompanyRelatedData';
 
 interface CompanyDataTabProps {
@@ -9,6 +10,7 @@ interface CompanyDataTabProps {
   rfmScores: CompanyRfmScore[];
   stakeholders: CompanyStakeholder[];
   loading?: boolean;
+  companyId?: string;
 }
 
 function RfmScoreBar({ label, value }: { label: string; value?: number }) {
@@ -30,7 +32,9 @@ function RfmScoreBar({ label, value }: { label: string; value?: number }) {
   );
 }
 
-export function CompanyDataTab({ cnaes, rfmScores, stakeholders, loading }: CompanyDataTabProps) {
+export function CompanyDataTab({ cnaes, rfmScores, stakeholders, loading, companyId }: CompanyDataTabProps) {
+  const { data: statistics } = useCompanyStatistics(companyId);
+  const { data: duplicates } = useCompanyDuplicates(companyId);
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -167,6 +171,60 @@ export function CompanyDataTab({ cnaes, rfmScores, stakeholders, loading }: Comp
                         </Badge>
                       )}
                     </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Company Statistics */}
+      {statistics && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Estatísticas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {Object.entries(statistics as Record<string, unknown>).slice(0, 8).map(([key, value]) => (
+                  <div key={key} className="rounded-lg bg-muted/30 p-2.5 text-center">
+                    <p className="text-xs text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</p>
+                    <p className="text-sm font-bold">{String(value ?? '—')}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Company Duplicates */}
+      {duplicates && Array.isArray(duplicates) && duplicates.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+          <Card className="border-warning/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Copy className="h-4 w-4 text-warning" />
+                Possíveis Duplicatas
+                <Badge variant="outline" className="text-[10px] ml-auto text-warning">{duplicates.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {(duplicates as Array<Record<string, unknown>>).map((dup, i) => (
+                  <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-warning/5 border border-warning/10">
+                    <div>
+                      <p className="text-sm font-medium">{String(dup.name || dup.razao_social || 'N/A')}</p>
+                      {dup.cnpj && <p className="text-xs text-muted-foreground">CNPJ: {String(dup.cnpj)}</p>}
+                    </div>
+                    {dup.similarity_score != null && (
+                      <Badge variant="outline" className="text-[10px]">{Number(dup.similarity_score).toFixed(0)}% similar</Badge>
+                    )}
                   </div>
                 ))}
               </div>
