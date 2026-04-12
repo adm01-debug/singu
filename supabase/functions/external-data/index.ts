@@ -32,11 +32,36 @@ const ALLOWED_RPCS = [
   // ── Contact Outros ──
   'export_contacts_csv', 'get_birthday_contacts',
   // ── Company CRUD ──
-  'soft_delete_company',
+  'soft_delete_company', 'create_company',
   // ── Company Intelligence ──
-  'get_company_health_score',
+  'get_company_health_score', 'get_company_360_view', 'advanced_company_search',
+  'get_company_timeline', 'calculate_company_health_score',
+  'get_next_best_action', 'get_account_plan',
+  'calculate_churn_risk', 'calculate_propensity_score',
+  'get_key_contacts', 'get_touchpoint_summary',
+  'get_strategic_accounts',
+  // ── Company Tags ──
+  'get_all_tags', 'add_company_tag', 'get_companies_by_tag',
   // ── Company Upserts ──
   'upsert_company_email', 'upsert_company_phone', 'upsert_company_social_media', 'upsert_company_address',
+  // ── Deals / Pipeline ──
+  'create_deal', 'get_deals_pipeline', 'get_pipeline_summary',
+  'get_weighted_forecast', 'get_stage_velocity', 'get_stalled_deals',
+  'get_velocity_metrics', 'move_deal_to_stage', 'mark_deal_lost',
+  'predict_close_date',
+  // ── Interactions ──
+  'create_quick_interaction', 'get_interaction_history', 'get_pending_followups',
+  'complete_followup', 'get_activity_heatmap', 'get_optimal_contact_windows',
+  'get_unified_communication_history', 'add_quick_note',
+  // ── Reports & Analytics ──
+  'get_rfm_dashboard', 'get_rfm_segments', 'get_cohort_analysis',
+  'get_seasonality_analysis', 'compare_periods', 'get_yoy_comparison',
+  'get_conversion_funnel', 'get_pareto_customers', 'get_pareto_summary',
+  'generate_monthly_report', 'get_trend_analysis',
+  'get_loss_reason_analysis', 'analyze_loss_patterns',
+  'get_industry_analysis', 'get_channel_analysis',
+  'get_churn_risk_report', 'generate_daily_insights',
+  'generate_seller_report', 'generate_pipeline_report',
 ] as const;
 
 type AllowedRpc = typeof ALLOWED_RPCS[number];
