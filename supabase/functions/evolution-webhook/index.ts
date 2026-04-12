@@ -109,7 +109,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
       .limit(1);
 
     if (localContacts && localContacts.length > 0) {
-      console.log(`Found contact in LOCAL DB: ${localContacts[0].id} (phone: ${variant})`);
+      // Found contact in local DB;
       return {
         contactId: localContacts[0].id,
         userId: localContacts[0].user_id,
@@ -141,7 +141,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
 
       if (extContacts && extContacts.length > 0) {
         const extContact = extContacts[0];
-        console.log(`Found contact in EXTERNAL DB: ${extContact.id} (${extContact.first_name} ${extContact.last_name})`);
+        // Found contact in external DB;
 
         // Get the default user (first user in profiles) to assign interaction
         const { data: profiles } = await supabase
@@ -169,7 +169,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
   }
 
   // 3. Not found anywhere - create a local contact
-  console.log(`Contact not found for phone ${cleanPhone}, creating new local contact`);
+  // Creating new contact for unmatched phone;
 
   // Get default user
   const { data: profiles } = await supabase
