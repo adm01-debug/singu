@@ -19,6 +19,19 @@ export type ContactListItem = Pick<Contact,
   | 'updated_at' | 'created_at'
 >;
 
+/**
+ * Fields that exist only in the LOCAL Supabase schema (types.ts) but NOT in the external DB.
+ * These must be stripped before any insert/update to the external DB to avoid column-not-found errors.
+ */
+const LOCAL_ONLY_FIELDS = new Set([
+  'tags', 'interests',                                            // local schema uses 'tags'/'interests'; external uses 'tags_array'/'interests_array'
+  'twitter', 'avatar_url',                                        // not columns in external contacts table
+  'email', 'phone', 'whatsapp', 'linkedin', 'instagram',         // live in contact_phones / contact_emails / contact_social_media
+  'life_events',                                                  // JSONB managed separately via life_events table
+  'id',                                                           // never send id on updates
+  'role_title',                                                   // local-only; external uses 'cargo'
+]);
+
 const PAGE_SIZE = 50;
 
 async function fetchContactsPage(companyId?: string) {
@@ -69,7 +82,10 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
     if (!user) return null;
     try {
       // Strip local-only fields that don't exist in the external DB
-      const { tags, interests, hobbies, twitter, avatar_url, family_info, ...externalFields } = contact as Record<string, unknown>;
+      const externalFields: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(contact as Record<string, unknown>)) {
+        if (!LOCAL_ONLY_FIELDS.has(k)) externalFields[k] = v;
+      }
       const { data, error } = await insertExternalData<Contact>('contacts', { ...externalFields, user_id: user.id });
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
@@ -91,7 +107,10 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
 
     try {
       // Strip local-only fields
-      const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
+      const cleanUpdates: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(updates as Record<string, unknown>)) {
+        if (!LOCAL_ONLY_FIELDS.has(k)) cleanUpdates[k] = v;
+      }
       const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) {

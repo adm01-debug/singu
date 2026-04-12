@@ -61,6 +61,8 @@ const contactSchema = z.object({
   assinatura_contato: z.string().trim().max(500).optional().or(z.literal('')),
   tags_array: z.string().trim().max(500).optional().or(z.literal('')),
   interests_array: z.string().trim().max(500).optional().or(z.literal('')),
+  hobbies: z.string().trim().max(500).optional().or(z.literal('')),
+  family_info: z.string().trim().max(2000).optional().or(z.literal('')),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -144,6 +146,8 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       assinatura_contato: getField(c, 'assinatura_contato'),
       tags_array: Array.isArray(c?.tags_array) ? (c.tags_array as string[]).join(', ') : '',
       interests_array: Array.isArray(c?.interests_array) ? (c.interests_array as string[]).join(', ') : '',
+      hobbies: Array.isArray(c?.hobbies) ? (c.hobbies as string[]).join(', ') : getField(c, 'hobbies'),
+      family_info: getField(c, 'family_info'),
     },
   });
 
@@ -203,6 +207,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
     // Convert comma-separated strings to arrays
     cleaned.tags_array = parseCommaSeparated(data.tags_array);
     cleaned.interests_array = parseCommaSeparated(data.interests_array);
+    cleaned.hobbies = parseCommaSeparated(data.hobbies);
     await onSubmit(cleaned);
     clearDraft();
   };
@@ -512,6 +517,15 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 </FormItem>
               )} />
 
+              <FormField control={form.control} name="hobbies" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Hobbies</FormLabel>
+                  <FormControl><Input placeholder="Ex: Futebol, Leitura, Viagens (separadas por vírgula)" {...field} value={field.value ?? ''} /></FormControl>
+                  <FormDescription>Separar por vírgula</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
               <FormField control={form.control} name="notes" render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas</FormLabel>
@@ -526,9 +540,20 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 <FormItem className="md:col-span-2">
                   <FormLabel>Notas Pessoais</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Preferências pessoais, hobbies, família..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
+                    <Textarea placeholder="Preferências pessoais, observações privadas..." className="min-h-[80px]" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormDescription>Informações pessoais para rapport</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="family_info" render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Informações Familiares</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Cônjuge, filhos, aniversários da família..." className="min-h-[60px]" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormDescription>Informações sobre família para rapport e lembretes</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
