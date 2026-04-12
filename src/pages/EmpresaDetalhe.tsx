@@ -309,7 +309,7 @@ const EmpresaDetalhe = () => {
                   </DashboardErrorBoundary>
                 </TabsContent>
 
-                <TabsContent value="data" className="mt-4">
+                <TabsContent value="data" className="mt-4 space-y-4">
                   <DashboardErrorBoundary sectionName="Dados">
                     <CompanyDataTab
                       cnaes={cnaesHook.data}
@@ -317,6 +317,12 @@ const EmpresaDetalhe = () => {
                       stakeholders={stakeholdersHook.data}
                       loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
                     />
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Dados Enriquecidos">
+                    <CompanyEnrichedCard companyId={id!} />
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Duplicatas">
+                    <CompanyDuplicatesPanel />
                   </DashboardErrorBoundary>
                 </TabsContent>
 
