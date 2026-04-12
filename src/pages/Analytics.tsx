@@ -123,6 +123,9 @@ const Analytics = () => {
         <Suspense fallback={<Skeleton className="h-20 rounded-lg" />}>
           <TagCloudWidget />
         </Suspense>
+        <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+          <TagExplorerWidget />
+        </Suspense>
 
         {/* Header Actions */}
         <motion.div
