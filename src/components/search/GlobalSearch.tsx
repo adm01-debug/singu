@@ -43,6 +43,8 @@ import { toTitleCase } from '@/lib/formatters';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from "@/lib/logger";
+import { queryExternalData } from '@/lib/externalData';
+import type { SearchContact } from '@/hooks/useSearchContactsView';
 
 const LazyVoiceOverlay = lazy(() => import("./VoiceSearchOverlayConnected"));
 
