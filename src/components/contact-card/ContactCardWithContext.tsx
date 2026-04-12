@@ -116,9 +116,10 @@ export function ContactCardWithContext({
 
   const displayName = formatContactName(contact.first_name, contact.last_name);
   const isGenericName = displayName === 'Contato';
-  const subtitle = contact.role_title && companyName 
-    ? `${contact.role_title} · ${toTitleCase(companyName)}`
-    : contact.role_title || (companyName ? toTitleCase(companyName) : null);
+  const cargoOrTitle = contact.role_title || (contact as Record<string, unknown>).cargo as string | undefined;
+  const subtitle = cargoOrTitle && companyName 
+    ? `${cargoOrTitle} · ${toTitleCase(companyName)}`
+    : cargoOrTitle || (companyName ? toTitleCase(companyName) : null);
 
   const quickActionsWrapper = (children: React.ReactNode) => (
     <QuickActionsMenu

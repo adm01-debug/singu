@@ -27,10 +27,29 @@ const LOCAL_ONLY_FIELDS = new Set([
   'tags', 'interests',                                            // local schema uses 'tags'/'interests'; external uses 'tags_array'/'interests_array'
   'twitter', 'avatar_url',                                        // not columns in external contacts table
   'email', 'phone', 'whatsapp', 'linkedin', 'instagram',         // live in contact_phones / contact_emails / contact_social_media
-  'life_events',                                                  // JSONB managed separately via life_events table
   'id',                                                           // never send id on updates
   'role_title',                                                   // local-only; external uses 'cargo'
 ]);
+
+/**
+ * Normalize external DB column names to local schema names.
+ * External uses tags_array/interests_array, local uses tags/interests.
+ * External uses cargo, local uses role_title.
+ */
+function normalizeExternalContact(raw: Record<string, unknown>): Contact {
+  const normalized = { ...raw } as Record<string, unknown>;
+  // Map external → local field names
+  if ('tags_array' in normalized && !('tags' in normalized)) {
+    normalized.tags = normalized.tags_array;
+  }
+  if ('interests_array' in normalized && !('interests' in normalized)) {
+    normalized.interests = normalized.interests_array;
+  }
+  if ('cargo' in normalized && !normalized.role_title) {
+    normalized.role_title = normalized.cargo;
+  }
+  return normalized as unknown as Contact;
+}
 
 const PAGE_SIZE = 50;
 
@@ -39,7 +58,7 @@ async function fetchContactsPage(companyId?: string) {
     ? [{ type: 'eq' as const, column: 'company_id', value: companyId }]
     : undefined;
 
-  const { data, error } = await queryExternalData<Contact>({
+  const { data, error } = await queryExternalData<Record<string, unknown>>({
     table: 'contacts',
     order: { column: 'updated_at', ascending: false },
     range: { from: 0, to: PAGE_SIZE - 1 },
@@ -47,7 +66,7 @@ async function fetchContactsPage(companyId?: string) {
   });
 
   if (error) throw error;
-  return data || [];
+  return (data || []).map(normalizeExternalContact);
 }
 
 export function useContacts(companyId?: string, options?: { enabled?: boolean }) {
