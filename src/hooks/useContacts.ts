@@ -80,7 +80,10 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
     if (!user) return null;
     try {
       // Strip local-only fields that don't exist in the external DB
-      const { tags, interests, hobbies, twitter, avatar_url, family_info, ...externalFields } = contact as Record<string, unknown>;
+      const externalFields: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(contact as Record<string, unknown>)) {
+        if (!LOCAL_ONLY_FIELDS.has(k)) externalFields[k] = v;
+      }
       const { data, error } = await insertExternalData<Contact>('contacts', { ...externalFields, user_id: user.id });
       if (error) throw error;
       if (data) queryClient.setQueryData<Contact[]>(queryKey, prev => prev ? [data, ...prev] : [data]);
@@ -102,7 +105,10 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
 
     try {
       // Strip local-only fields
-      const { tags, interests, hobbies, twitter, avatar_url, family_info, id: _id, ...cleanUpdates } = updates as Record<string, unknown>;
+      const cleanUpdates: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(updates as Record<string, unknown>)) {
+        if (!LOCAL_ONLY_FIELDS.has(k)) cleanUpdates[k] = v;
+      }
       const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) {
