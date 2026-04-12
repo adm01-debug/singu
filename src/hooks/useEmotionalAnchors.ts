@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -9,60 +10,74 @@ export type EmotionalAnchor = Tables<'emotional_anchors'>;
 
 export function useEmotionalAnchors(contactId?: string) {
   const { user } = useAuth();
-  const [anchors, setAnchors] = useState<EmotionalAnchor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ['emotional-anchors', contactId, user?.id];
 
-  const fetchAnchors = useCallback(async () => {
-    if (!user || !contactId) return;
-    try {
+  const { data: anchors = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('emotional_anchors')
         .select('*')
-        .eq('contact_id', contactId)
-        .eq('user_id', user.id)
+        .eq('contact_id', contactId!)
+        .eq('user_id', user!.id)
         .order('strength', { ascending: false });
       if (error) throw error;
-      setAnchors(data || []);
-    } catch (err) {
-      logger.error('Error fetching emotional anchors:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, contactId]);
+      return data || [];
+    },
+    enabled: !!user && !!contactId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-  useEffect(() => { fetchAnchors(); }, [fetchAnchors]);
-
-  const createAnchor = useCallback(async (anchor: Omit<TablesInsert<'emotional_anchors'>, 'user_id'>) => {
-    if (!user) return null;
-    try {
+  const createMutation = useMutation({
+    mutationFn: async (anchor: Omit<TablesInsert<'emotional_anchors'>, 'user_id'>) => {
       const { data, error } = await supabase
         .from('emotional_anchors')
-        .insert({ ...anchor, user_id: user.id })
+        .insert({ ...anchor, user_id: user!.id })
         .select()
         .single();
       if (error) throw error;
-      setAnchors(prev => [data, ...prev]);
-      toast.success('Âncora emocional registrada');
       return data;
-    } catch (err) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success('Âncora emocional registrada');
+    },
+    onError: (err) => {
       logger.error('Error creating emotional anchor:', err);
       toast.error('Erro ao criar âncora emocional');
-      return null;
-    }
-  }, [user]);
+    },
+  });
 
-  const deleteAnchor = useCallback(async (id: string) => {
-    if (!user) return;
-    setAnchors(prev => prev.filter(a => a.id !== id));
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase.from('emotional_anchors').delete().eq('id', id);
       if (error) throw error;
-      toast.success('Âncora removida');
-    } catch (err) {
+    },
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey });
+      const prev = queryClient.getQueryData<EmotionalAnchor[]>(queryKey);
+      queryClient.setQueryData<EmotionalAnchor[]>(queryKey, old => old?.filter(a => a.id !== id) || []);
+      return { prev };
+    },
+    onError: (err, _id, context) => {
       logger.error('Error deleting anchor:', err);
-      fetchAnchors();
-    }
-  }, [user, fetchAnchors]);
+      if (context?.prev) queryClient.setQueryData(queryKey, context.prev);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success('Âncora removida');
+    },
+  });
 
-  return { anchors, loading, createAnchor, deleteAnchor, refresh: fetchAnchors };
+  const createAnchor = useCallback(async (anchor: Omit<TablesInsert<'emotional_anchors'>, 'user_id'>) => {
+    return createMutation.mutateAsync(anchor);
+  }, [createMutation]);
+
+  const deleteAnchor = useCallback(async (id: string) => {
+    deleteMutation.mutate(id);
+  }, [deleteMutation]);
+
+  return { anchors, loading, createAnchor, deleteAnchor, refresh: () => queryClient.invalidateQueries({ queryKey }) };
 }

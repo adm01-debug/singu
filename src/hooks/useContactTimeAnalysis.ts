@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { logger } from '@/lib/logger';
 import type { Tables } from '@/integrations/supabase/types';
 
 export type ContactTimeAnalysis = Tables<'contact_time_analysis'>;
@@ -20,27 +19,22 @@ export interface BestTimeSlot {
 
 export function useContactTimeAnalysis(contactId?: string) {
   const { user } = useAuth();
-  const [timeData, setTimeData] = useState<ContactTimeAnalysis[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
-    if (!user || !contactId) return;
-    try {
+  const { data: timeData = [], isLoading: loading } = useQuery({
+    queryKey: ['contact-time-analysis', contactId, user?.id],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('contact_time_analysis')
         .select('*')
-        .eq('contact_id', contactId)
-        .eq('user_id', user.id);
+        .eq('contact_id', contactId!)
+        .eq('user_id', user!.id);
       if (error) throw error;
-      setTimeData(data || []);
-    } catch (err) {
-      logger.error('Error fetching contact time analysis:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, contactId]);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+      return data || [];
+    },
+    enabled: !!user && !!contactId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
   const bestTimes: BestTimeSlot[] = timeData
     .filter(t => (t.total_attempts || 0) > 0)
@@ -67,5 +61,5 @@ export function useContactTimeAnalysis(contactId?: string) {
     }),
   }));
 
-  return { timeData, bestTimes, heatmapData, loading, refresh: fetchData };
+  return { timeData, bestTimes, heatmapData, loading, refresh: () => {} };
 }
