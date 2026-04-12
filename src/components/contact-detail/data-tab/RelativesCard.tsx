@@ -26,6 +26,7 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
   const [form, setForm] = useState({
     name: '', relationship_type: 'conjuge', phone: '', email: '',
     occupation: '', company: '', notes: '', is_decision_influencer: false,
+    age: '' as string, birthday: '',
   });
 
   const handleSubmit = () => {
@@ -38,8 +39,10 @@ function AddRelativeDialog({ onAdd }: { onAdd: (data: Record<string, unknown>) =
       occupation: form.occupation || undefined,
       company: form.company || undefined,
       notes: form.notes || undefined,
+      age: form.age ? parseInt(form.age, 10) : undefined,
+      birthday: form.birthday || undefined,
     });
-    setForm({ name: '', relationship_type: 'conjuge', phone: '', email: '', occupation: '', company: '', notes: '', is_decision_influencer: false });
+    setForm({ name: '', relationship_type: 'conjuge', phone: '', email: '', occupation: '', company: '', notes: '', is_decision_influencer: false, age: '', birthday: '' });
     setOpen(false);
   };
 
