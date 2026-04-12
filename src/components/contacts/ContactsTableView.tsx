@@ -50,8 +50,8 @@ export const ContactsTableView = React.memo(function ContactsTableView({
   );
 
   return (
-    <div className="border border-border/60 rounded-lg overflow-hidden">
-      <Table>
+    <div className="border border-border/60 rounded-lg overflow-hidden" role="region" aria-label="Tabela de contatos">
+      <Table aria-label="Lista de contatos">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/40">
             {selectionMode && <TableHead className="w-10" />}

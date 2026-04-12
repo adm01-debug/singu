@@ -118,8 +118,8 @@ export const CompaniesTableView = React.memo(function CompaniesTableView({
   );
 
   return (
-    <div className="border border-border/60 rounded-lg overflow-hidden">
-      <Table>
+    <div className="border border-border/60 rounded-lg overflow-hidden" role="region" aria-label="Tabela de empresas">
+      <Table aria-label="Lista de empresas">
         <TableHeader>
           <TableRow className="hover:bg-transparent border-border/40">
             {selectionMode && <TableHead className="w-10" />}
