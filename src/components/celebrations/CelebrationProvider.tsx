@@ -59,7 +59,7 @@ const celebrationStyles: Record<CelebrationType, {
   'goal-achieved': {
     icon: Target,
     gradient: 'from-secondary to-secondary',
-    confettiColors: ['#8B5CF6', '#A78BFA', '#C4B5FD', '#7C3AED', '#6D28D9'],
+    confettiColors: ['#3B82F6', '#60A5FA', '#93C5FD', '#2563EB', '#1D4ED8'],
     emoji: '🎯',
   },
   'birthday-wished': {
