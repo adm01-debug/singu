@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useContactRelationalData, useRelativeMutations } from '@/hooks/useContactRelationalData';
+import { useContactRelationalData, useRelativeMutations, useCadenceMutation } from '@/hooks/useContactRelationalData';
 import { useExternalRelationalMutations } from '@/hooks/useExternalRelationalMutations';
 import type { Contact } from '@/hooks/useContactDetail';
 
