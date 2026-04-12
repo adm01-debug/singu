@@ -105,6 +105,7 @@ export function ContactBehavioralTab({ contact }: Props) {
   const latestDisc = discHistory[0];
 
   return (
+    <>
     <Tabs defaultValue="disc" className="space-y-4">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <TabsList className="flex-wrap h-auto gap-1">
