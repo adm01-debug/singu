@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DISCProfile } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const CompanyHealthScoreWidget = lazy(() => import('./CompanyHealthScoreWidget'));
+const CompanyStatisticsWidget = lazy(() => import('./CompanyStatisticsWidget'));
+const AccountPlanWidget = lazy(() => import('./AccountPlanWidget'));
+const PropensityScoreWidget = lazy(() => import('./PropensityScoreWidget'));
 
 type Contact = Tables<'contacts'>;
 
@@ -48,6 +55,7 @@ export function CompanyInsightsTab({
   const { data: keyContacts = [] } = useKeyContacts(companyId);
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -374,5 +382,22 @@ export function CompanyInsightsTab({
         </Card>
       </ExternalDataCard>
     </motion.div>
+
+    {/* Intelligence Widgets */}
+    <div className="grid gap-4 md:grid-cols-2 mt-4">
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <CompanyHealthScoreWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <CompanyStatisticsWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <PropensityScoreWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <AccountPlanWidget companyId={companyId} />
+      </Suspense>
+    </div>
+    </>
   );
 }

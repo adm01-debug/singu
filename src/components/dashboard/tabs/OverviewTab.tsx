@@ -26,6 +26,9 @@ const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/We
 const CompleteDashboardWidget = lazy(() => import('@/components/dashboard/widgets/CompleteDashboardWidget'));
 const DailyKpisWidget = lazy(() => import('@/components/dashboard/widgets/DailyKpisWidget'));
 const CadenceAlertWidget = lazy(() => import('@/components/contact-detail/CadenceAlertWidget'));
+const PendingNotificationsWidget = lazy(() => import('@/components/dashboard/widgets/PendingNotificationsWidget'));
+const DailyInsightsWidget = lazy(() => import('@/components/dashboard/widgets/DailyInsightsWidget'));
+const ChurnRiskReportWidget = lazy(() => import('@/components/dashboard/widgets/ChurnRiskReportWidget'));
 interface StaggerAnimation {
   initial: TargetAndTransition;
   animate: TargetAndTransition;
@@ -190,7 +193,26 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 5. Recent Activity + Top Contacts */}
+      {/* 5. Notificações + Insights + Churn */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <DashboardErrorBoundary sectionName="Notificações">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <PendingNotificationsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Insights Diários">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <DailyInsightsWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Relatório Churn">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <ChurnRiskReportWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
+
+      {/* 6. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
