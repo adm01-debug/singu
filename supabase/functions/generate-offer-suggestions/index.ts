@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
 
     const { contactId } = requestBody;
 
-    console.log('Generating offer suggestions...');
+    // Generating offer suggestions — scoped to authenticated user
 
     // Build query for contacts — always scoped to authenticated user
     let contactsQuery = supabase.from('contacts').select('*').eq('user_id', userId);
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Generated ${topSuggestions.length} offer suggestions`);
+    // Offer suggestions generated
 
     return jsonOk({ 
       success: true, 

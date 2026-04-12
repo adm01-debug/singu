@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       userId = authResult;
     }
 
-    console.log(`Running RFM analysis for user: ${userId}`);
+    // Running RFM analysis
 
     let contactsQuery = supabase
       .from('contacts')
@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       results.push(rfmResult);
     }
 
-    console.log(`RFM analysis completed for ${results.length} contacts`);
+    // RFM analysis completed
 
     return jsonOk({ 
       success: true, 
