@@ -161,6 +161,8 @@ const Analytics = () => {
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="reports" className="space-y-6"><ReportsTab /></TabsContent>
+
           <TabsContent value="advanced" className="space-y-6"><AdvancedAnalyticsTab /></TabsContent>
 
           <TabsContent value="neuro" className="space-y-6">
