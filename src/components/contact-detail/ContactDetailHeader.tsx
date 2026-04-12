@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { DuplicateManagementPanel } from './DuplicateManagementPanel';
+import { SoftDeletePanel } from './SoftDeletePanel';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
