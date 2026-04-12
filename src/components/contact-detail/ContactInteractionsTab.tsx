@@ -227,6 +227,9 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
           />
         </DialogContent>
       </Dialog>
+
+      {/* External enriched timeline */}
+      <ExternalInteractionsTimeline contactId={contact.id} />
     </div>
   );
 }
