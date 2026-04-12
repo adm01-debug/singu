@@ -1,7 +1,8 @@
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { ContactAvatarUpload } from '@/components/forms/ContactAvatarUpload';
 import { useFormDraft } from '@/hooks/useFormDraft';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,7 @@ const contactSchema = z.object({
   linkedin: z.string().trim().max(200, 'Máximo 200 caracteres').optional(),
   instagram: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
   twitter: z.string().trim().max(50, 'Máximo 50 caracteres').optional().or(z.literal('')),
+  avatar_url: z.string().trim().max(500).optional().or(z.literal('').transform(() => undefined)),
 
   // Detalhes
   notes: z.string().trim().max(2000, 'Máximo 2000 caracteres').optional(),
