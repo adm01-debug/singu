@@ -401,6 +401,9 @@ export function ContactDataTab({ contact }: Props) {
                     <ConfidenceBadge value={e.confiabilidade} />
                     <SourceBadge fonte={e.fonte} />
                   </div>
+                  {e.email_normalizado && e.email_normalizado !== e.email && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Normalizado: {e.email_normalizado}</p>
+                  )}
                   {e.contexto && <p className="text-[10px] text-muted-foreground mt-0.5">{e.contexto}</p>}
                 </div>
                 <button
@@ -432,6 +435,7 @@ export function ContactDataTab({ contact }: Props) {
                 <div key={a.id} className="rounded-lg border p-2.5 text-sm space-y-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <PrimaryBadge isPrimary={a.is_primary} />
+                    {a.tipo_logradouro && <Badge variant="outline" className="text-[10px]">{a.tipo_logradouro}</Badge>}
                     {a.tipo && <Badge variant="secondary" className="text-[10px] capitalize">{a.tipo}</Badge>}
                     <SourceBadge fonte={a.fonte || a.origem} />
                   </div>
@@ -450,6 +454,9 @@ export function ContactDataTab({ contact }: Props) {
                       <a href={a.google_maps_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline flex items-center gap-0.5">
                         <ExternalLink className="h-2.5 w-2.5" />Google Maps
                       </a>
+                    )}
+                    {a.google_place_id && (
+                      <span className="text-[10px] text-muted-foreground">Place: {a.google_place_id.substring(0, 12)}…</span>
                     )}
                   </div>
                 </div>
