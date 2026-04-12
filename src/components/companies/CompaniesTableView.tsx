@@ -164,7 +164,7 @@ export const CompaniesTableView = React.memo(function CompaniesTableView({
                     <div className="relative">
                       <div className="w-8 h-8 rounded-lg bg-muted/40 flex items-center justify-center text-xs font-semibold text-muted-foreground shrink-0">
                         {company.logo_url ? (
-                          <img src={company.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                          <img src={company.logo_url} alt={company.name} className="w-8 h-8 rounded-lg object-cover" loading="lazy" decoding="async" />
                         ) : (
                           ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
                         )}

@@ -47,7 +47,7 @@ export const CompanyListItem = React.memo(function CompanyListItem({
       <div className="relative w-10 h-10 shrink-0">
         <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center text-sm font-semibold text-muted-foreground">
           {company.logo_url ? (
-            <img src={company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+            <img src={company.logo_url} alt={company.name} className="w-10 h-10 rounded-lg object-cover" loading="lazy" decoding="async" />
           ) : (
             ((company.name || 'E').replace(/^\d+\s*[-–—]\s*/, '')[0] || 'E').toUpperCase()
           )}
