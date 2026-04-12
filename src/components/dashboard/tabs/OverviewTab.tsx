@@ -23,7 +23,9 @@ const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityW
 const StrategicAccountsWidget = lazy(() => import('@/components/dashboard/widgets/StrategicAccountsWidget'));
 const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/ExecutiveKpisWidget').then(m => ({ default: m.ExecutiveKpisWidget })));
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
-
+const CompleteDashboardWidget = lazy(() => import('@/components/dashboard/widgets/CompleteDashboardWidget'));
+const DailyKpisWidget = lazy(() => import('@/components/dashboard/widgets/DailyKpisWidget'));
+const CadenceAlertWidget = lazy(() => import('@/components/contact-detail/CadenceAlertWidget'));
 interface StaggerAnimation {
   initial: TargetAndTransition;
   animate: TargetAndTransition;
@@ -167,7 +169,28 @@ export function OverviewTab({
         </Suspense>
       </DashboardErrorBoundary>
 
-      {/* 4. Recent Activity + Top Contacts */}
+      {/* 4a. Painel Executivo */}
+      <DashboardErrorBoundary sectionName="Painel Executivo">
+        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+          <CompleteDashboardWidget />
+        </Suspense>
+      </DashboardErrorBoundary>
+
+      {/* 4b. KPIs Diários + Cadência */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DashboardErrorBoundary sectionName="KPIs Diários">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <DailyKpisWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Cadência">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <CadenceAlertWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
+
+      {/* 5. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
