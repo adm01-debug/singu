@@ -15,6 +15,7 @@ import type { DashboardStats } from '@/hooks/useDashboardStats';
 const YourDaySection = lazy(() => import('@/components/dashboard/YourDaySection').then(m => ({ default: m.YourDaySection })));
 const PreContactBriefing = lazy(() => import('@/components/briefing/PreContactBriefing').then(m => ({ default: m.PreContactBriefing })));
 const PendingFollowupsWidget = lazy(() => import('@/components/dashboard/widgets/PendingFollowupsWidget').then(m => ({ default: m.PendingFollowupsWidget })));
+const DailySummaryWidget = lazy(() => import('@/components/dashboard/widgets/DailySummaryWidget').then(m => ({ default: m.DailySummaryWidget })));
 const TodaysRemindersWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.TodaysRemindersWidget })));
 const ActiveAlertsWidget = lazy(() => import('@/components/dashboard/widgets/IntelligenceWidgets').then(m => ({ default: m.ActiveAlertsWidget })));
 const BusinessAlertsWidget = lazy(() => import('@/components/dashboard/widgets/BusinessAlertsWidget').then(m => ({ default: m.BusinessAlertsWidget })));
