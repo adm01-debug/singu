@@ -154,6 +154,9 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
     countMethod: 'planned',
     order: { column: 'updated_at', ascending: false },
     range,
+    filters: [
+      { type: 'is', column: 'deleted_at', value: null },
+    ],
     ...(search && search.trim().length >= 2
       ? {
           search: {
@@ -192,6 +195,9 @@ async function fetchRemainingCompanies(search?: string): Promise<Company[]> {
     select: LISTING_SELECT,
     order: { column: 'updated_at', ascending: false },
     range,
+    filters: [
+      { type: 'is', column: 'deleted_at', value: null },
+    ],
     ...(search && search.trim().length >= 2
       ? {
           search: {
