@@ -15,7 +15,8 @@ const kpiConfig = [
   { key: 'interactions_today', label: 'Interações Hoje', icon: MessageSquare, format: 'number' },
   { key: 'pending_followups', label: 'Follow-ups', icon: Clock, format: 'number' },
   { key: 'overdue_tasks', label: 'Atrasados', icon: AlertTriangle, format: 'number', warn: true },
-] as const;
+] as const type KpiKey = typeof kpiConfig[number]['key'];
+const warnKeys = new Set<string>(['overdue_tasks']);
 
 export const ExecutiveKpisWidget = React.memo(function ExecutiveKpisWidget() {
   const { data: kpis, isLoading, error } = useInstantKpis();
