@@ -156,6 +156,31 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
+          {/* Extended fields from external DB */}
+          {(() => {
+            const c = contact as Record<string, unknown>;
+            const extFields = [
+              { label: 'Apelido', value: c.apelido },
+              { label: 'Nome de Tratamento', value: c.nome_tratamento },
+              { label: 'CPF', value: c.cpf },
+              { label: 'Sexo', value: c.sexo === 'M' ? 'Masculino' : c.sexo === 'F' ? 'Feminino' : c.sexo === 'NB' ? 'Não-binário' : c.sexo },
+              { label: 'Cargo', value: c.cargo || contact.role_title },
+              { label: 'Departamento', value: c.departamento },
+              { label: 'Fonte', value: c.source },
+              { label: 'Assinatura', value: c.assinatura_contato },
+            ].filter(f => f.value);
+            return extFields.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {extFields.map(f => (
+                  <div key={f.label}>
+                    <span className="text-xs font-medium text-muted-foreground">{f.label}</span>
+                    <p className="text-foreground">{f.value as string}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null;
+          })()}
+
           {contact.notes && (
             <div>
               <span className="text-xs font-medium text-muted-foreground">Notas</span>
@@ -184,19 +209,43 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
               </div>
             </div>
           )}
-          {contact.interests && contact.interests.length > 0 && (
-            <div>
-              <span className="text-xs font-medium text-muted-foreground">Interesses</span>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {contact.interests.map(i => (
-                  <Badge key={i} variant="secondary" className="text-xs">{i}</Badge>
-                ))}
+          {(() => {
+            const interests = contact.interests || (contact as Record<string, unknown>).interests_array as string[] | undefined;
+            return interests && interests.length > 0 ? (
+              <div>
+                <span className="text-xs font-medium text-muted-foreground">Interesses</span>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {interests.map(i => (
+                    <Badge key={i} variant="secondary" className="text-xs">{i}</Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            ) : null;
+          })()}
+
+          {/* Extra data from external DB */}
+          {(() => {
+            const extraData = (contact as Record<string, unknown>).extra_data as Record<string, unknown> | null;
+            if (!extraData || Object.keys(extraData).length === 0) return null;
+            return (
+              <div>
+                <span className="text-xs font-medium text-muted-foreground">Dados Extras</span>
+                <div className="mt-1 grid grid-cols-2 gap-1.5">
+                  {Object.entries(extraData).map(([key, val]) => val ? (
+                    <div key={key} className="rounded border px-2 py-1 text-xs">
+                      <span className="text-muted-foreground">{key.replace(/_/g, ' ')}: </span>
+                      <span className="text-foreground">{String(val)}</span>
+                    </div>
+                  ) : null)}
+                </div>
+              </div>
+            );
+          })()}
+
           {!contact.notes && !contact.personal_notes && !contact.family_info && 
            (!contact.hobbies || contact.hobbies.length === 0) && 
-           (!contact.interests || contact.interests.length === 0) && (
+           (!contact.interests || (contact.interests as string[]).length === 0) &&
+           !(contact as Record<string, unknown>).apelido && !(contact as Record<string, unknown>).cpf && (
             <InlineEmptyState
               icon={PenLine}
               title="Sem informações pessoais"

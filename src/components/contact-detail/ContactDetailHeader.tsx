@@ -155,13 +155,25 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{fullName}</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                {fullName}
+                {(contact as Record<string, unknown>).apelido && (
+                  <span className="ml-2 text-lg font-normal text-muted-foreground">
+                    ({(contact as Record<string, unknown>).apelido as string})
+                  </span>
+                )}
+              </h1>
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                {contact.role_title && (
+                {(contact.role_title || (contact as Record<string, unknown>).cargo) && (
                   <span className="flex items-center gap-1">
                     <Briefcase className="h-3.5 w-3.5" />
-                    {contact.role_title}
+                    {contact.role_title || (contact as Record<string, unknown>).cargo as string}
                   </span>
+                )}
+                {(contact as Record<string, unknown>).departamento && (
+                  <Badge variant="outline" className="text-xs">
+                    {(contact as Record<string, unknown>).departamento as string}
+                  </Badge>
                 )}
                 {company && (
                   <span className="flex items-center gap-1">
@@ -172,6 +184,11 @@ export function ContactDetailHeader({ contact, company, interactionCount, onEdit
                 {contact.role && ROLE_CONFIG[contact.role] && (
                   <Badge variant="outline" className="text-xs">
                     {ROLE_CONFIG[contact.role]}
+                  </Badge>
+                )}
+                {(contact as Record<string, unknown>).source && (
+                  <Badge variant="secondary" className="text-xs">
+                    Fonte: {(contact as Record<string, unknown>).source as string}
                   </Badge>
                 )}
               </div>
