@@ -1,8 +1,9 @@
-import { Handshake, TrendingUp, MessageSquare } from 'lucide-react';
+import { Handshake, TrendingUp, MessageSquare, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ExternalDataCard } from '@/components/ui/external-data-card';
 import { useRapportPoints } from '@/hooks/useRapportPoints';
+import { useRapportIntel } from '@/hooks/useRapportIntelView';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -15,6 +16,7 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export function RapportCard({ contactId }: Props) {
   const { data, isLoading, error, refetch } = useRapportPoints(contactId);
+  const { data: rapportIntel } = useRapportIntel(contactId);
   const icon = <Handshake className="h-4 w-4 text-success" />;
 
   return (
