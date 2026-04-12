@@ -1,9 +1,10 @@
 import React, { useMemo, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2 } from 'lucide-react';
-import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal, type PipelineDeal, type WeightedForecast } from '@/hooks/usePipeline';
+import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2, AlertTriangle, Gauge } from 'lucide-react';
+import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal, useStageVelocity, useStalledDeals, useVelocityMetrics, type PipelineDeal, type WeightedForecast } from '@/hooks/usePipeline';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const STAGES = [
   { id: 'lead', name: 'Novo Lead', probability: 10, color: 'bg-muted' },
