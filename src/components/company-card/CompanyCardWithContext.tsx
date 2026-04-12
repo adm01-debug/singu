@@ -228,7 +228,9 @@ function IntelligenceStrip({ company }: { company: Company }) {
 function ScorecardTooltip({ company, children }: { company: Company; children: React.ReactNode }) {
   const cnpjFormatted = formatCnpj(company.cnpj);
   const capital = formatCapitalSocial(company.capital_social);
-  const hasExtra = cnpjFormatted || company.razao_social || capital || company.situacao_rf || company.porte_rf;
+  const leadScore = (company as Record<string, unknown>).lead_score as number | null;
+  const leadStatus = (company as Record<string, unknown>).lead_status as string | null;
+  const hasExtra = cnpjFormatted || company.razao_social || capital || company.situacao_rf || company.porte_rf || leadScore || leadStatus;
   
   if (!hasExtra) return <>{children}</>;
 
@@ -268,6 +270,14 @@ function ScorecardTooltip({ company, children }: { company: Company; children: R
           {company.grupo_economico && (
             <p className="text-xs text-muted-foreground">
               <span className="text-foreground font-medium">Grupo:</span> {company.grupo_economico}
+            </p>
+          )}
+          {(leadScore || leadStatus) && (
+            <p className="text-xs text-muted-foreground">
+              <span className="text-foreground font-medium">Lead Score:</span>{' '}
+              <span className={leadScore && leadScore >= 80 ? 'text-success' : leadScore && leadScore >= 50 ? 'text-warning' : ''}>
+                {leadScore ? `${leadScore}/100` : '–'}{leadStatus ? ` (${leadStatus})` : ''}
+              </span>
             </p>
           )}
         </TooltipContent>
