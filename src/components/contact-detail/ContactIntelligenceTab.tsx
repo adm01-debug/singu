@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
 import { AlertTriangle, Target, Heart, Gift } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
@@ -25,15 +25,10 @@ interface Props {
 
 export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, websiteUrl }: Props) {
   const { user } = useAuth();
-  const [objections, setObjections] = useState<Tables<'hidden_objections'>[]>([]);
-  const [criteria, setCriteria] = useState<Tables<'decision_criteria'>[]>([]);
-  const [values, setValues] = useState<Tables<'client_values'>[]>([]);
-  const [offers, setOffers] = useState<Tables<'offer_suggestions'>[]>([]);
 
-  useEffect(() => {
-    if (!user || !contactId) return;
-
-    const fetchData = async () => {
+  const { data } = useQuery({
+    queryKey: ['contact-intelligence', contactId, user?.id],
+    queryFn: async () => {
       const [objRes, critRes, valRes, offRes] = await Promise.all([
         supabase.from('hidden_objections').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }),
         supabase.from('decision_criteria').select('*').eq('contact_id', contactId).order('priority', { ascending: false }),
@@ -41,15 +36,22 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         supabase.from('offer_suggestions').select('*').eq('contact_id', contactId).order('created_at', { ascending: false }),
       ]);
 
-      setObjections(objRes.data || []);
-      setCriteria(critRes.data || []);
-      setValues(valRes.data || []);
-      setOffers(offRes.data || []);
-    };
+      return {
+        objections: objRes.data || [],
+        criteria: critRes.data || [],
+        values: valRes.data || [],
+        offers: offRes.data || [],
+      };
+    },
+    enabled: !!contactId && !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-    fetchData();
-  }, [user, contactId]);
-
+  const objections = data?.objections || [];
+  const criteria = data?.criteria || [];
+  const values = data?.values || [];
+  const offers = data?.offers || [];
   const unresolvedObjections = objections.filter(o => !o.resolved);
 
   return (
@@ -126,6 +128,9 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
                     {c.how_to_address && (
                       <p className="text-xs text-primary mt-1">→ {c.how_to_address}</p>
                     )}
+                    {c.detected_from && (
+                      <p className="text-[10px] text-muted-foreground/60 mt-0.5">Fonte: {c.detected_from}</p>
+                    )}
                   </div>
                   <Badge variant="outline" className="text-xs">P{c.priority || 1}</Badge>
                 </div>
@@ -153,6 +158,13 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
                   <div>
                     <p className="font-medium text-foreground">{v.value_name}</p>
                     <p className="text-xs text-muted-foreground capitalize">{v.category}</p>
+                    {v.detected_phrases && v.detected_phrases.length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {v.detected_phrases.slice(0, 3).map((p, i) => (
+                          <span key={i} className="text-[10px] text-muted-foreground/60 italic">"{p}"</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="text-right">
                     <span className="text-xs text-muted-foreground">Importância: {v.importance}/10</span>
