@@ -367,6 +367,7 @@ const EmpresaDetalhe = () => {
                       rfmScores={rfmHook.data}
                       stakeholders={stakeholdersHook.data}
                       loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
+                      companyId={id}
                     />
                   </DashboardErrorBoundary>
                   <DashboardErrorBoundary sectionName="Dados Enriquecidos">
@@ -387,7 +388,7 @@ const EmpresaDetalhe = () => {
 
                 <TabsContent value="interactions" className="mt-4">
                   <DashboardErrorBoundary sectionName="Interações">
-                    <CompanyInteractionsTab interactions={interactions} />
+                    <CompanyInteractionsTab interactions={interactions} companyId={id} />
                   </DashboardErrorBoundary>
                 </TabsContent>
 

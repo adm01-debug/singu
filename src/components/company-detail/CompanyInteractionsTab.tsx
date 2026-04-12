@@ -1,11 +1,14 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { lazy, Suspense } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SentimentIndicator } from '@/components/ui/sentiment-indicator';
 import { motion } from 'framer-motion';
-import { MessageSquare, Phone, Mail, Globe, Users, Edit, Plus, Clock } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Globe, Users, Edit, Plus, Clock, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useInteractionHistory } from '@/hooks/useInteractionsRpc';
 import type { Tables } from '@/integrations/supabase/types';
 import type { SentimentType } from '@/types';
 
@@ -31,9 +34,11 @@ const interactionColors: Record<string, string> = {
 
 interface CompanyInteractionsTabProps {
   interactions: Interaction[];
+  companyId?: string;
 }
 
-export function CompanyInteractionsTab({ interactions }: CompanyInteractionsTabProps) {
+export function CompanyInteractionsTab({ interactions, companyId }: CompanyInteractionsTabProps) {
+  const { data: externalHistory } = useInteractionHistory(companyId);
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -107,6 +112,36 @@ export function CompanyInteractionsTab({ interactions }: CompanyInteractionsTabP
               <Plus className="w-4 h-4 mr-2" />
               Registrar Interação
             </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* External interaction history from RPC */}
+      {externalHistory && externalHistory.length > 0 && (
+        <Card className="mt-4">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <History className="h-4 w-4 text-primary" />
+              Histórico Externo
+              <Badge variant="outline" className="text-[10px] ml-auto">{externalHistory.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {externalHistory.map((item) => (
+                <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30 border border-border/50">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{item.resumo || item.type}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.channel} · {item.contact_name || 'N/A'}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground shrink-0">
+                    {format(new Date(item.data_interacao), "dd/MM/yy", { locale: ptBR })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
