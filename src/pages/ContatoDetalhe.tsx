@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -114,6 +115,7 @@ const ContatoDetalhe = () => {
   return (
     <>
     <AppLayout>
+      <SEOHead title={formatContactName(contact.first_name, contact.last_name)} description={`Detalhes do contato ${formatContactName(contact.first_name, contact.last_name)}`} />
       <div className="min-h-screen p-4 md:p-6 space-y-4">
         {/* Breadcrumb + Lux */}
         <PageHeader

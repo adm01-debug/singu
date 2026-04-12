@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { queryExternalData, updateExternalData } from '@/lib/externalData';
 import { toTitleCase } from '@/lib/formatters';
@@ -200,6 +202,7 @@ const EmpresaDetalhe = () => {
   return (
     <>
     <AppLayout>
+      <SEOHead title={toTitleCase(company.name)} description={`Detalhes da empresa ${toTitleCase(company.name)}`} />
       <div className="min-h-screen pt-2 md:pt-4">
         <div className="px-4 md:px-6 pt-3 md:pt-4">
           <PageHeader backTo="/empresas" backLabel="Empresas" title={toTitleCase(company.name)} />
@@ -299,59 +302,71 @@ const EmpresaDetalhe = () => {
                 </TabsList>
 
                 <TabsContent value="contacts" className="mt-4">
-                  <ContactsTabContent contacts={contacts} />
+                  <DashboardErrorBoundary sectionName="Contatos">
+                    <ContactsTabContent contacts={contacts} />
+                  </DashboardErrorBoundary>
                 </TabsContent>
 
                 <TabsContent value="data" className="mt-4">
-                  <CompanyDataTab
-                    cnaes={cnaesHook.data}
-                    rfmScores={rfmHook.data}
-                    stakeholders={stakeholdersHook.data}
-                    loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
-                  />
+                  <DashboardErrorBoundary sectionName="Dados">
+                    <CompanyDataTab
+                      cnaes={cnaesHook.data}
+                      rfmScores={rfmHook.data}
+                      stakeholders={stakeholdersHook.data}
+                      loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
+                    />
+                  </DashboardErrorBoundary>
                 </TabsContent>
 
                 <TabsContent value="stakeholders" className="mt-4">
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                    <StakeholderMap contacts={contacts} interactions={interactions} companyId={id} />
-                  </motion.div>
+                  <DashboardErrorBoundary sectionName="Stakeholders">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                      <StakeholderMap contacts={contacts} interactions={interactions} companyId={id} />
+                    </motion.div>
+                  </DashboardErrorBoundary>
                 </TabsContent>
 
                 <TabsContent value="interactions" className="mt-4">
-                  <CompanyInteractionsTab interactions={interactions} />
+                  <DashboardErrorBoundary sectionName="Interações">
+                    <CompanyInteractionsTab interactions={interactions} />
+                  </DashboardErrorBoundary>
                 </TabsContent>
 
                 <TabsContent value="insights" className="mt-4">
-                  <CompanyInsightsTab
-                    companyId={company.id}
-                    contacts={contacts}
-                    avgRelationshipScore={stats.avgScore}
-                    totalInteractions={stats.total}
-                    positiveInteractions={stats.positive}
-                    pendingFollowUps={stats.pending}
-                  />
+                  <DashboardErrorBoundary sectionName="Insights">
+                    <CompanyInsightsTab
+                      companyId={company.id}
+                      contacts={contacts}
+                      avgRelationshipScore={stats.avgScore}
+                      totalInteractions={stats.total}
+                      positiveInteractions={stats.positive}
+                      pendingFollowUps={stats.pending}
+                    />
+                  </DashboardErrorBoundary>
                 </TabsContent>
 
                 <TabsContent value="lux" className="mt-4">
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <LuxIntelligencePanel
-                          record={luxRecord}
-                          records={luxRecords}
-                          entityType="company"
-                          loading={luxLoading}
-                          onTrigger={() => triggerLux({
-                            name: company.name,
-                            cnpj: company.cnpj,
-                            website: company.website,
-                            industry: company.industry,
-                          })}
-                          triggering={luxTriggering}
-                        />
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                  <DashboardErrorBoundary sectionName="Lux Intelligence">
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+                      <Card>
+                        <CardContent className="pt-6">
+                          <LuxIntelligencePanel
+                            record={luxRecord}
+                            records={luxRecords}
+                            entityType="company"
+                            loading={luxLoading}
+                            onTrigger={() => triggerLux({
+                              name: company.name,
+                              cnpj: company.cnpj,
+                              website: company.website,
+                              industry: company.industry,
+                            })}
+                            triggering={luxTriggering}
+                          />
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </DashboardErrorBoundary>
                 </TabsContent>
               </Tabs>
 

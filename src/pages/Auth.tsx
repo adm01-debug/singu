@@ -1,4 +1,5 @@
 import { useState, useEffect, type FormEvent } from 'react';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Sparkles } from 'lucide-react';
@@ -148,7 +149,9 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <>
+      <SEOHead title="Login" description="Acesse o SINGU - CRM Inteligente de Relacionamentos" />
+      <div className="min-h-screen flex">
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ background: 'var(--gradient-primary)' }}>
         <div className="absolute inset-0 bg-black/5" />
@@ -472,6 +475,7 @@ const Auth = () => {
         </motion.div>
       </div>
     </div>
+    </>
   );
 };
 
