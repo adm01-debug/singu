@@ -14,7 +14,8 @@ import {
   Network,
   Settings,
   X,
-  Workflow
+  Workflow,
+  Kanban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
@@ -27,6 +28,7 @@ const mainNavItems = [
 ];
 
 const moreNavItems = [
+  { icon: Kanban, label: 'Pipeline', path: '/pipeline' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics' },
   { icon: Lightbulb, label: 'Insights', path: '/insights' },
   { icon: Calendar, label: 'Calendário', path: '/calendario' },

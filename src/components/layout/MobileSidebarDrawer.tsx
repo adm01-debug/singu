@@ -36,6 +36,7 @@ const navItems = [
   { icon: Building2, label: 'Empresas', path: '/empresas', section: 'Principal' },
   { icon: MapPin, label: 'Mapa', path: '/mapa-empresas', section: 'Principal' },
   { icon: MessageSquare, label: 'Interações', path: '/interacoes', section: 'Principal' },
+  { icon: BarChart3, label: 'Pipeline', path: '/pipeline', section: 'Principal' },
   { icon: BarChart3, label: 'Analytics', path: '/analytics', section: 'Análise' },
   { icon: Lightbulb, label: 'Insights', path: '/insights', section: 'Análise' },
   { icon: Calendar, label: 'Calendário', path: '/calendario', section: 'Ferramentas' },

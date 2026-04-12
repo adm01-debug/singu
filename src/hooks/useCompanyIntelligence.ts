@@ -41,9 +41,33 @@ export interface Company360 {
   key_metrics?: Record<string, unknown>;
 }
 
+export interface NextBestAction {
+  action_type: string;
+  description: string;
+  priority: string;
+  reason: string;
+  suggested_date?: string;
+}
+
+export interface AccountPlan {
+  company_id: string;
+  objectives: string[];
+  key_contacts: Array<{ id: string; name: string; role: string }>;
+  opportunities: Array<{ title: string; value: number; stage: string }>;
+  risks: string[];
+  next_steps: string[];
+}
+
+export interface TouchpointSummary {
+  total_touchpoints: number;
+  by_channel: Record<string, number>;
+  by_month: Array<{ month: string; count: number }>;
+  last_touchpoint: string | null;
+  avg_gap_days: number;
+}
+
 /**
  * Fetches company stats from `vw_companies_stats` view (exists in external DB).
- * Replaces the non-existent `get_company_statistics` RPC.
  */
 export function useCompanyStatistics(companyId?: string) {
   return useQuery({
@@ -65,13 +89,21 @@ export function useCompanyStatistics(companyId?: string) {
 }
 
 /**
- * Fetches company summary from `v_company_summary` view as a 360° proxy.
- * Replaces the non-existent `get_company_360` RPC.
+ * Fetches full 360° view via RPC get_company_360_view.
+ * Falls back to v_company_summary view if RPC fails.
  */
 export function useCompany360(companyId?: string) {
   return useQuery({
     queryKey: ['company-360', companyId],
     queryFn: async () => {
+      // Try RPC first
+      const { data: rpcData, error: rpcError } = await callExternalRpc<Company360>(
+        'get_company_360_view',
+        { p_company_id: companyId }
+      );
+      if (!rpcError && rpcData) return rpcData;
+
+      // Fallback to view
       const { data, error } = await queryExternalData<Record<string, unknown>>({
         table: 'v_company_summary',
         select: '*',
@@ -100,15 +132,16 @@ export function useCompany360(companyId?: string) {
 }
 
 /**
- * Uses the existing `get_company_health_score` RPC (verified to exist).
+ * Uses the RPC calculate_company_health_score.
  */
 export function useCompanyHealthScore(companyId?: string) {
   return useQuery({
     queryKey: ['company-health-score', companyId],
     queryFn: async () => {
-      const { data, error } = await callExternalRpc('get_company_health_score', {
-        p_company_id: companyId,
-      });
+      const { data, error } = await callExternalRpc(
+        'calculate_company_health_score',
+        { p_company_id: companyId }
+      );
       if (error) throw error;
       return data as { score: number; factors: Record<string, number>; level: string } | null;
     },
@@ -119,8 +152,169 @@ export function useCompanyHealthScore(companyId?: string) {
 }
 
 /**
- * Fetches duplicates from `vw_companies_duplicatas` view (exists in external DB).
- * Replaces the non-existent `get_duplicate_companies` RPC.
+ * Fetches company timeline via RPC get_company_timeline.
+ */
+export function useCompanyTimeline(companyId?: string, limit = 30) {
+  return useQuery({
+    queryKey: ['company-timeline', companyId, limit],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<CompanyTimelineEvent[]>(
+        'get_company_timeline',
+        { p_company_id: companyId, p_limit: limit }
+      );
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!companyId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches next best action for a company.
+ */
+export function useNextBestAction(companyId?: string) {
+  return useQuery({
+    queryKey: ['next-best-action', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<NextBestAction>(
+        'get_next_best_action',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!companyId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches account plan for a company.
+ */
+export function useAccountPlan(companyId?: string) {
+  return useQuery({
+    queryKey: ['account-plan', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<AccountPlan>(
+        'get_account_plan',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!companyId,
+    staleTime: 15 * 60 * 1000,
+  });
+}
+
+/**
+ * Calculates churn risk for a company.
+ */
+export function useChurnRisk(companyId?: string) {
+  return useQuery({
+    queryKey: ['churn-risk', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<string>(
+        'calculate_churn_risk',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!companyId,
+    staleTime: 15 * 60 * 1000,
+  });
+}
+
+/**
+ * Calculates propensity score for a company.
+ */
+export function usePropensityScore(companyId?: string) {
+  return useQuery({
+    queryKey: ['propensity-score', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<number>(
+        'calculate_propensity_score',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!companyId,
+    staleTime: 15 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches key contacts for a company.
+ */
+export function useKeyContacts(companyId?: string) {
+  return useQuery({
+    queryKey: ['key-contacts', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<Array<{
+        id: string;
+        name: string;
+        role: string;
+        importance_score: number;
+      }>>(
+        'get_key_contacts',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!companyId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches touchpoint summary for a company.
+ */
+export function useTouchpointSummary(companyId?: string) {
+  return useQuery({
+    queryKey: ['touchpoint-summary', companyId],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<TouchpointSummary>(
+        'get_touchpoint_summary',
+        { p_company_id: companyId }
+      );
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!companyId,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches strategic accounts.
+ */
+export function useStrategicAccounts() {
+  return useQuery({
+    queryKey: ['strategic-accounts'],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<Array<{
+        id: string;
+        name: string;
+        health_score: number;
+        revenue: number;
+        churn_risk: string;
+      }>>(
+        'get_strategic_accounts',
+        {}
+      );
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 15 * 60 * 1000,
+  });
+}
+
+/**
+ * Fetches duplicates from `vw_companies_duplicatas` view.
  */
 export function useCompanyDuplicates(companyId?: string) {
   return useQuery({
@@ -147,18 +341,35 @@ export function useCompanyDuplicates(companyId?: string) {
 }
 
 /**
- * Timeline is not available as a view or RPC in the external DB.
- * Returns empty array gracefully — can be populated when the RPC is created.
+ * Tag management hooks.
  */
-export function useCompanyTimeline(companyId?: string, _limit = 30) {
+export function useAllTags() {
   return useQuery({
-    queryKey: ['company-timeline', companyId],
-    queryFn: async (): Promise<CompanyTimelineEvent[]> => {
-      // RPC get_company_timeline does not exist in external DB.
-      // Return empty to avoid errors. Data will appear once the RPC is created.
-      return [];
+    queryKey: ['all-tags'],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<string[]>(
+        'get_all_tags',
+        {}
+      );
+      if (error) throw error;
+      return data || [];
     },
-    enabled: !!companyId,
     staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useCompaniesByTag(tag?: string) {
+  return useQuery({
+    queryKey: ['companies-by-tag', tag],
+    queryFn: async () => {
+      const { data, error } = await callExternalRpc<Array<{ id: string; name: string }>>(
+        'get_companies_by_tag',
+        { p_tag: tag }
+      );
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tag,
+    staleTime: 5 * 60 * 1000,
   });
 }
