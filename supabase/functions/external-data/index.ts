@@ -12,7 +12,7 @@ const ALLOWED_RPCS = [
   // ── Contact Search ──
   'search_contacts', 'search_contacts_advanced', 'search_contacts_fuzzy',
   'list_contacts_paginated', 'find_contacts_by_role',
-  'get_contacts_by_role', 'find_decision_makers',
+  'get_contacts_by_role',
   // ── Contact Intelligence ──
   'get_contact_360_by_phone', 'get_contact_intelligence',
   'get_contact_intelligence_by_phone', 'get_contact_disc_profile',
@@ -20,16 +20,12 @@ const ALLOWED_RPCS = [
   'get_contact_statistics', 'get_contact_timeline',
   // ── Timing ──
   'get_best_contact_time', 'get_best_contact_times',
-  'suggest_next_contact_channel', 'get_days_without_contact',
-  'get_last_contact_date',
+  'get_days_without_contact', 'get_last_contact_date',
   // ── Quality ──
   'get_duplicate_contacts', 'get_orphan_contacts',
-  'detect_inactive_contacts', 'get_contacts_without_interaction',
-  'get_companies_without_contacts',
   // ── Contact Upserts ──
   'upsert_contact_email', 'upsert_contact_phone', 'upsert_contact_social_media',
   // ── Contact Outros ──
-  'generate_pre_contact_briefing', 'suggest_triggers_for_contact',
   'export_contacts_csv', 'get_birthday_contacts',
   // ── Company CRUD ──
   'soft_delete_company',
