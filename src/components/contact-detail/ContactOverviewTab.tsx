@@ -18,6 +18,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
+import { ContactIntelligenceWidget } from './ContactIntelligenceWidget';
+import { BestContactTimeWidget } from './BestContactTimeWidget';
 
 interface Props {
   contact: Contact;
