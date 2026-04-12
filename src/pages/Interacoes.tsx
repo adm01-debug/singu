@@ -59,6 +59,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { SentimentType } from '@/types';
 
+const ActivityHeatmapChart = lazy(() => import('@/components/interactions/ActivityHeatmapChart'));
+
 const interactionIcons: Record<string, typeof MessageSquare> = {
   whatsapp: MessageSquare,
   call: Phone,
