@@ -91,7 +91,7 @@ export function CompanyEmailsForm({ companyId, emails, onSave, onDelete, isLoadi
               Email {idx + 1}
             </div>
             <div className="flex items-center gap-2">
-              <Button type="button" size="sm" variant="outline" onClick={() => handleSave(idx)} disabled={savingIdx === idx || !email.email?.trim()}>
+              <Button type="button" size="sm" variant="outline" onClick={() => handleSave(idx)} disabled={savingIdx === idx || !email.email?.trim() || !isValidEmail(email.email || '')}>
                 {savingIdx === idx ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
               </Button>
               {items.length > 1 && (
