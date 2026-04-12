@@ -34,7 +34,7 @@ type Period = '30d' | '90d' | '180d' | '365d';
 type MetricType = 'vak' | 'emotional' | 'combined';
 
 const VAK_COLORS: Record<VAKType, string> = {
-  V: '#8b5cf6',
+  V: '#06b6d4',
   A: '#3b82f6',
   K: '#22c55e',
   D: '#64748b'
