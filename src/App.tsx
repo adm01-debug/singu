@@ -71,7 +71,6 @@ const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
-const Metas = lazy(() => import("./pages/Metas"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 
@@ -102,6 +101,23 @@ const queryClient = new QueryClient({
 const EasterEggsProvider = lazy(() =>
   import("@/hooks/useEasterEggs").then(m => ({
     default: () => { m.useEasterEggs(); return null; },
+  }))
+);
+
+// Observability — Web Vitals + Online Status
+const ObservabilityProvider = lazy(() =>
+  Promise.all([
+    import("@/hooks/useWebVitals"),
+    import("@/hooks/useOnlineStatus"),
+  ]).then(([vitals, online]) => ({
+    default: () => {
+      vitals.useWebVitals();
+      online.useOnlineStatus({
+        onOffline: () => { import("sonner").then(({ toast }) => toast.warning("Você está offline.")); },
+        onOnline: () => { import("sonner").then(({ toast }) => toast.success("Conexão restaurada!")); },
+      });
+      return null;
+    },
   }))
 );
 
@@ -149,6 +165,10 @@ const DeferredAppChrome = () => {
         <>
           <Suspense fallback={null}>
             <EasterEggsProvider />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <ObservabilityProvider />
           </Suspense>
 
           <Suspense fallback={null}>
@@ -268,11 +288,6 @@ const AnimatedRoutes = () => {
       <Route path="/mapa-empresas" element={
         <RequireAuth>
           <LazyPage><MapaEmpresas /></LazyPage>
-        </RequireAuth>
-      } />
-      <Route path="/metas" element={
-        <RequireAuth>
-          <LazyPage><Metas /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={

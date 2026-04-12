@@ -62,9 +62,6 @@ const ALLOWED_RPCS = [
   'get_industry_analysis', 'get_channel_analysis',
   'get_churn_risk_report', 'generate_daily_insights',
   'generate_seller_report', 'generate_pipeline_report',
-  // ── Goals & Gamification ──
-  'get_user_goals', 'get_goals_dashboard', 'get_quota_status',
-  'get_leaderboard', 'get_user_badges', 'check_and_award_badges',
 ] as const;
 
 type AllowedRpc = typeof ALLOWED_RPCS[number];

@@ -1,4 +1,3 @@
-import { lazy, Suspense } from 'react';
 import { RelationshipScoreChart } from './behavioral-tab/RelationshipScoreChart';
 import { DiscCompatibilityCard } from './behavioral-tab/DiscCompatibilityCard';
 import { RapportCard } from './behavioral-tab/RapportCard';
@@ -20,9 +19,6 @@ import { queryExternalData } from '@/lib/externalData';
 import type { Tables } from '@/integrations/supabase/types';
 import { ModuleHelp, moduleHelpContent } from '@/components/ui/module-help';
 import type { Contact } from '@/hooks/useContactDetail';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const OptimalContactWindowsChart = lazy(() => import('@/components/interactions/OptimalContactWindowsChart'));
 
 interface Props {
   contact: Contact;
@@ -163,13 +159,6 @@ export function ContactBehavioralTab({ contact }: Props) {
 
     {/* Relationship Score Evolution Chart */}
     <RelationshipScoreChart contactId={contact.id} />
-
-    {/* Optimal Contact Windows */}
-    <div className="mt-4">
-      <Suspense fallback={<Skeleton className="h-48 rounded-lg" />}>
-        <OptimalContactWindowsChart contactId={contact.id} />
-      </Suspense>
-    </div>
   </>
   );
 }

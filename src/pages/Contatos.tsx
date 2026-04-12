@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef, startTransition } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, startTransition, lazy, Suspense } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
@@ -76,6 +76,8 @@ import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
+
+const DuplicateContactsPanel = lazy(() => import('@/components/contacts/DuplicateContactsPanel'));
 
 const filterConfigs: FilterConfig[] = [
   {
@@ -423,7 +425,11 @@ const Contatos = () => {
         hideBack
       />
 
-      <div className="p-4 md:p-6 space-y-5">
+       <div className="p-4 md:p-6 space-y-5">
+        {/* Duplicate Contacts Alert */}
+        <Suspense fallback={null}>
+          <DuplicateContactsPanel />
+        </Suspense>
         {/* Stats Summary Bar */}
         <ContactsStatsBar contacts={contacts} />
         {/* Search and View Toggle */}

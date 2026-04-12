@@ -49,7 +49,7 @@ export const UnifiedCommunicationHistory = React.memo(function UnifiedCommunicat
           Comunicação Unificada
           <Badge variant="outline" className="text-[10px] ml-auto">{history.length}</Badge>
         </CardTitle>
-        <CardDescription className="text-xs">Todas as interações consolidadas de todos os canais</CardDescription>
+        <CardDescription className="text-xs">Todas as interações consolidadas</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-2 max-h-[350px] overflow-y-auto">
@@ -64,9 +64,7 @@ export const UnifiedCommunicationHistory = React.memo(function UnifiedCommunicat
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {item.resumo || item.type}
-                  </p>
+                  <p className="text-sm font-medium truncate">{item.resumo || item.type}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <Badge variant="outline" className="text-[9px]">{channel}</Badge>
                     {item.direction && (
