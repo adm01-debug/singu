@@ -96,7 +96,11 @@ const ALLOWED_TABLES = [
   'vw_singu_rapport_intel', 'vw_todays_reminders',
   // ── Extended views ──
   'vw_companies_completo', 'vw_companies_duplicatas',
+  'vw_companies_stats', 'vw_companies_contato', 'vw_companies_cores',
+  'v_company_summary', 'vw_company_addresses', 'vw_company_social_media',
   'vw_singu_data_health', 'vw_singu_disc_dashboard', 'vw_singu_usage_kpis',
+  // ── Company cadences ──
+  'company_cadences',
 ] as const;
 
 type AllowedTable = typeof ALLOWED_TABLES[number];
@@ -292,11 +296,26 @@ Deno.serve(async (req) => {
       return jsonOk({ results }, req);
     }
 
+    const client = getExternalClient();
+
+    // ─── RPC (call external database functions) — must run BEFORE table validation ───
+    if (operation === 'rpc') {
+      const functionName = typeof body.functionName === 'string' ? body.functionName : undefined;
+      if (!functionName || !isAllowedRpc(functionName)) {
+        return jsonError(`Invalid or disallowed RPC: "${functionName}"`, 400, req);
+      }
+
+      const params = (body.params && typeof body.params === 'object') ? body.params : {};
+
+      const { data, error } = await client.rpc(functionName, params as Record<string, unknown>);
+      if (error) throw new Error(`RPC ${functionName} failed: ${error.message}`);
+      return jsonOk({ data }, req);
+    }
+
+    // ─── Table validation (for non-RPC actions) ───
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
       return jsonError(`Invalid table "${table}". Only allowed tables are permitted.`, 400, req);
     }
-
-    const client = getExternalClient();
 
     // ─── SELECT (read) ───
     if (operation === 'select') {
@@ -382,20 +401,6 @@ Deno.serve(async (req) => {
       const { error } = await client.from(table).delete().eq('id', id);
       if (error) throw new Error(`Delete failed: ${error.message}`);
       return jsonOk({ success: true }, req);
-    }
-
-    // ─── RPC (call external database functions) ───
-    if (operation === 'rpc') {
-      const functionName = typeof body.functionName === 'string' ? body.functionName : undefined;
-      if (!functionName || !isAllowedRpc(functionName)) {
-        return jsonError(`Invalid or disallowed RPC: "${functionName}"`, 400, req);
-      }
-
-      const params = (body.params && typeof body.params === 'object') ? body.params : {};
-
-      const { data, error } = await client.rpc(functionName, params as Record<string, unknown>);
-      if (error) throw new Error(`RPC ${functionName} failed: ${error.message}`);
-      return jsonOk({ data }, req);
     }
 
     return jsonError(`Unknown action: ${operation}`, 400, req);

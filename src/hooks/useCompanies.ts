@@ -46,6 +46,8 @@ const LISTING_SELECT = [
   'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
+  'lead_score', 'lead_status',
+  'deleted_at', 'deleted_by',
 ].join(',');
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
@@ -130,7 +132,11 @@ function mapCompany(ext: ExternalRow): Company {
     bitrix_company_id: ext.bitrix_company_id as number | null ?? null,
     extra_data_rf: ext.extra_data_rf ?? null,
     cores_marca: ext.cores_marca as string | null ?? null,
-  } as Company;
+    lead_score: ext.lead_score as number | null ?? null,
+    lead_status: ext.lead_status as string | null ?? null,
+    deleted_at: ext.deleted_at as string | null ?? null,
+    deleted_by: ext.deleted_by as string | null ?? null,
+  } as unknown as Company;
 }
 
 function stripLocal(input: Record<string, unknown>): Record<string, unknown> {
