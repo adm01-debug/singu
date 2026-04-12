@@ -26,12 +26,17 @@ export function useBusinessAlerts() {
   return useQuery({
     queryKey: ['business-alerts'],
     queryFn: async () => {
-      const { data, error } = await callExternalRpc<BusinessAlert[]>(
+      const { data, error } = await callExternalRpc<Record<string, unknown>[]>(
         'get_business_alerts',
         {}
       );
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((item) => ({
+        ...item,
+        severity: SEVERITY_MAP[String(item.severity ?? '').toUpperCase()] 
+          ?? SEVERITY_MAP[String(item.severity ?? '')] 
+          ?? 'low',
+      })) as BusinessAlert[];
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
