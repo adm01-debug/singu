@@ -230,3 +230,36 @@ export function useCadenceMutation(contactId: string | undefined) {
     onError: (e) => toast.error(`Erro: ${e.message}`),
   });
 }
+
+// ─── Contact Preferences Upsert Mutation ──────────────────────
+
+export function usePreferencesMutation(contactId: string | undefined) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      preferred_channel?: string | null;
+      preferred_days?: string[] | null;
+      preferred_times?: string[] | null;
+      avoid_days?: string[] | null;
+      avoid_times?: string[] | null;
+      communication_tips?: string | null;
+      personal_notes?: string | null;
+      restrictions?: string | null;
+    }) => {
+      if (!user || !contactId) throw new Error('Missing user or contact');
+      const { error } = await supabase.from('contact_preferences').upsert({
+        ...data,
+        contact_id: contactId,
+        user_id: user.id,
+      }, { onConflict: 'contact_id,user_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Preferências salvas');
+      queryClient.invalidateQueries({ queryKey: ['contact-relational-data', contactId] });
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+}
