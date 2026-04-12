@@ -4,9 +4,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { join } from 'path';
 
-const read = (p: string) => readFileSync(resolve(__dirname, '../../..', p), 'utf-8');
+const root = join(__dirname, '../..');
+const read = (p: string) => readFileSync(join(root, p), 'utf-8');
 
 describe('Performance Optimizations', () => {
   it('CompanyListItem uses React.memo', () => {
