@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
 import { 
   Bell, 
@@ -188,6 +189,7 @@ const Notificacoes = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Notificações" description="Central de alertas e notificações do sistema" />
       <Header 
         title="Notificações" 
         subtitle="Configure alertas e notificações push"

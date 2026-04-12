@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, startTransition } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { sortArray } from '@/lib/sorting-utils';
 import { motion } from 'framer-motion';
 import { 
@@ -289,6 +290,7 @@ const Interacoes = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Interações" description="Histórico completo de comunicações e engajamentos" />
       <Header 
         title="Interações" 
         subtitle={`${filteredAndSortedInteractions.length} de ${interactions.length} interações`}

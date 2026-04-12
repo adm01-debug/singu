@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Header } from "@/components/layout/Header";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { SEOHead } from "@/components/seo/SEOHead";
 import { toast } from "sonner";
 
 // Fix default marker icon
@@ -304,6 +305,7 @@ export default function MapaEmpresas() {
 
   return (
     <AppLayout>
+      <SEOHead title="Mapa de Empresas" description="Visualização geográfica da carteira de clientes" />
       <Header title="Mapa de Empresas" subtitle="Visualize a localização geográfica dos seus clientes" hideBack />
 
       <div className="p-4 md:p-6 space-y-4">

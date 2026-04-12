@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
 import { LayoutGrid, BarChart3, Heart, Brain } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
@@ -70,6 +71,7 @@ const Dashboard = () => {
   if (loading) {
     return (
       <AppLayout>
+      <SEOHead title="Dashboard" description="Painel de controle com métricas e insights em tempo real" />
         <DashboardSkeleton />
       </AppLayout>
     );

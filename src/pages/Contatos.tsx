@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef, startTransition } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
 import { supabase } from '@/integrations/supabase/client';
@@ -412,6 +413,7 @@ const Contatos = () => {
   return (
     <>
     <AppLayout>
+      <SEOHead title="Contatos" description="Gestão inteligente de contatos e relacionamentos" />
       <Header 
         title="Contatos" 
         subtitle={`${filteredAndSortedContacts.length} de ${contacts.length} pessoas`}

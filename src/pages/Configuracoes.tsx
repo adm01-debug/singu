@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -142,6 +143,7 @@ const Configuracoes = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Configurações" description="Preferências e configurações do sistema" />
       <Header 
         title="Configurações" 
         subtitle="Gerencie seu perfil, preferências e configurações do sistema"

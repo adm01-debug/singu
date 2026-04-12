@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -300,6 +301,7 @@ export default function Automacoes() {
 
   return (
     <AppLayout title="Automações">
+      <SEOHead title="Automações" description="Regras e fluxos automáticos para seu CRM" />
       <Header 
         title="Automações & Workflows" 
         subtitle="Crie regras automáticas: Se X acontecer → Faça Y"

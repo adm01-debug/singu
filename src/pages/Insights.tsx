@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
@@ -259,6 +260,7 @@ const Insights = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Insights" description="Descobertas e recomendações de inteligência relacional" />
       <Header 
         title="Insights com IA" 
         subtitle="Análise inteligente dos seus relacionamentos e interações"
