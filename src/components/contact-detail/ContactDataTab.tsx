@@ -131,6 +131,8 @@ export function ContactDataTab({ contact }: Props) {
         <TimeHeatmapCard data={timeAnalysis} />
         <SocialMediaExternalCard contactId={contact.id} />
         <ContactEnrichedCard contactId={contact.id} />
+        <ExtraDataCard contact={contact} />
+        <BitrixIntegrationCard contact={contact} />
       </div>
     </div>
   );
