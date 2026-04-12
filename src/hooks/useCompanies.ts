@@ -46,6 +46,8 @@ const LISTING_SELECT = [
   'updated_at', 'created_at', 'user_id',
   'financial_health', 'annual_revenue', 'employee_count',
   'bitrix_company_id', 'cores_marca',
+  'lead_score', 'lead_status',
+  'deleted_at', 'deleted_by',
 ].join(',');
 const COMPANY_SEARCH_COLUMNS = [
   'nome_crm',
