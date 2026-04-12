@@ -1,10 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, TrendingUp, DollarSign, Clock, Target, ArrowRight } from 'lucide-react';
-import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal } from '@/hooks/usePipeline';
-import { ExternalDataCard } from '@/components/shared/ExternalDataCard';
+import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2 } from 'lucide-react';
+import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal, type PipelineDeal, type WeightedForecast } from '@/hooks/usePipeline';
 import { toast } from 'sonner';
 
 const STAGES = [
@@ -21,28 +19,23 @@ const formatCurrency = (value: number) =>
 
 // ── Deal Card ──────────────────────────────────────
 
-const DealCard = React.memo(function DealCard({ deal }: { deal: Record<string, unknown> }) {
-  const valor = Number(deal.valor || 0);
-  const titulo = String(deal.titulo || 'Sem título');
-  const companyName = String(deal.company_name || deal.company_nome || '');
-  const diasEstágio = Number(deal.dias_no_estagio_atual || 0);
-
+const DealCard = React.memo(function DealCard({ deal }: { deal: PipelineDeal }) {
   return (
     <div
       draggable
-      onDragStart={(e) => e.dataTransfer.setData('dealId', String(deal.id))}
+      onDragStart={(e) => e.dataTransfer.setData('dealId', deal.id)}
       className="p-3 rounded-lg border bg-card cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
     >
-      <p className="font-medium text-sm truncate">{titulo}</p>
-      {companyName && (
-        <p className="text-xs text-muted-foreground truncate mt-0.5">{companyName}</p>
+      <p className="font-medium text-sm truncate">{deal.titulo}</p>
+      {deal.company_name && (
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{deal.company_name}</p>
       )}
       <div className="flex items-center justify-between mt-2">
-        <span className="text-sm font-semibold text-primary">{formatCurrency(valor)}</span>
-        {diasEstágio > 7 && (
+        <span className="text-sm font-semibold text-primary">{formatCurrency(deal.valor)}</span>
+        {(deal.dias_no_estagio_atual ?? 0) > 7 && (
           <Badge variant="outline" className="text-xs text-warning">
             <Clock className="h-3 w-3 mr-1" />
-            {diasEstágio}d
+            {deal.dias_no_estagio_atual}d
           </Badge>
         )}
       </div>
@@ -58,10 +51,10 @@ function PipelineColumn({
   onDrop,
 }: {
   stage: typeof STAGES[number];
-  deals: Record<string, unknown>[];
+  deals: PipelineDeal[];
   onDrop: (dealId: string, stageId: string) => void;
 }) {
-  const totalValue = deals.reduce((sum, d) => sum + Number(d.valor || 0), 0);
+  const totalValue = deals.reduce((sum, d) => sum + (d.valor || 0), 0);
 
   return (
     <div
@@ -84,7 +77,7 @@ function PipelineColumn({
       </div>
       <div className="space-y-2 p-2 bg-muted/30 rounded-b-lg min-h-[200px] border border-t-0">
         {deals.map((deal) => (
-          <DealCard key={String(deal.id)} deal={deal} />
+          <DealCard key={deal.id} deal={deal} />
         ))}
         {deals.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-8">
@@ -98,14 +91,14 @@ function PipelineColumn({
 
 // ── Summary Cards ──────────────────────────────────
 
-function SummaryCards({ forecast }: { forecast: Array<Record<string, unknown>> | undefined }) {
+function SummaryCards({ forecast }: { forecast: WeightedForecast[] | null | undefined }) {
   const totals = useMemo(() => {
     if (!forecast) return { total: 0, weighted: 0, count: 0 };
     return forecast.reduce(
       (acc, f) => ({
-        total: acc.total + Number(f.total_value || 0),
-        weighted: acc.weighted + Number(f.weighted_value || 0),
-        count: acc.count + Number(f.count || 0),
+        total: acc.total + (f.total_value || 0),
+        weighted: acc.weighted + (f.weighted_value || 0),
+        count: acc.count + (f.count || 0),
       }),
       { total: 0, weighted: 0, count: 0 }
     );
@@ -163,12 +156,12 @@ export default function Pipeline() {
   const moveDeal = useMoveDeal();
 
   const dealsByStage = useMemo(() => {
-    const map: Record<string, Record<string, unknown>[]> = {};
+    const map: Record<string, PipelineDeal[]> = {};
     STAGES.forEach((s) => (map[s.id] = []));
     (deals || []).forEach((deal) => {
-      const stage = String((deal as Record<string, unknown>).pipeline_stage || 'lead');
+      const stage = deal.pipeline_stage || 'lead';
       if (!map[stage]) map[stage] = [];
-      map[stage].push(deal as Record<string, unknown>);
+      map[stage].push(deal);
     });
     return map;
   }, [deals]);
@@ -188,34 +181,42 @@ export default function Pipeline() {
     [moveDeal]
   );
 
+  if (dealsLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (dealsError) {
+    return (
+      <div className="text-center py-20 text-destructive">
+        <p>Erro ao carregar pipeline</p>
+        <p className="text-sm text-muted-foreground mt-1">{(dealsError as Error).message}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Pipeline de Vendas</h1>
-          <p className="text-muted-foreground text-sm">Gerencie seus deals com drag & drop</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Pipeline de Vendas</h1>
+        <p className="text-muted-foreground text-sm">Gerencie seus deals com drag & drop</p>
       </div>
 
-      <SummaryCards forecast={forecast as Array<Record<string, unknown>> | undefined} />
+      <SummaryCards forecast={forecast} />
 
-      <ExternalDataCard
-        isLoading={dealsLoading}
-        error={dealsError as Error | null}
-        emptyMessage="Nenhum deal encontrado no pipeline"
-        isEmpty={!deals || (deals as unknown[]).length === 0}
-      >
-        <div className="flex gap-3 overflow-x-auto pb-4">
-          {STAGES.map((stage) => (
-            <PipelineColumn
-              key={stage.id}
-              stage={stage}
-              deals={dealsByStage[stage.id] || []}
-              onDrop={handleDrop}
-            />
-          ))}
-        </div>
-      </ExternalDataCard>
+      <div className="flex gap-3 overflow-x-auto pb-4">
+        {STAGES.map((stage) => (
+          <PipelineColumn
+            key={stage.id}
+            stage={stage}
+            deals={dealsByStage[stage.id] || []}
+            onDrop={handleDrop}
+          />
+        ))}
+      </div>
     </div>
   );
 }
