@@ -1,3 +1,4 @@
+import React from 'react';
 import { Clock, Phone, Mail, Video, MessageSquare, Globe, Send, AtSign, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { MotionStyle, Transition, TargetAndTransition } from 'framer-motion';
@@ -145,4 +146,4 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({ activ
       </CardContent>
     </Card>
   );
-}
+});
