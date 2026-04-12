@@ -1,7 +1,7 @@
 import { Gauge, AlertTriangle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useDealVelocityBenchmark } from '@/hooks/useDealVelocity';
+import { useDealVelocityBenchmark } from '@/hooks/useDealVelocityBenchmark';
 import { cn } from '@/lib/utils';
 
 interface Props {

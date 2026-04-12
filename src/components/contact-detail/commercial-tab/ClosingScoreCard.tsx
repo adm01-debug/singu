@@ -2,7 +2,7 @@ import { Trophy, Target, Eye, Ear, Hand } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useClosingScoreRanking } from '@/hooks/useClosingScoreRanking';
+import { useClosingScoreView } from '@/hooks/useClosingScoreView';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function ClosingScoreCard({ contactId }: Props) {
-  const { data } = useClosingScoreRanking(contactId);
+  const { data } = useClosingScoreView(contactId);
 
   if (!data) return null;
 
