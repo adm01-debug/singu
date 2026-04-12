@@ -6,6 +6,7 @@ import { rateLimit } from "../_shared/rate-limit.ts";
 const limiter = rateLimit({ windowMs: 60_000, max: 60 });
 
 const ALLOWED_TABLES = [
+  // ── Core tables ──
   'companies', 'contacts', 'interactions', 'insights', 'alerts',
   'activities', 'life_events', 'contact_phones', 'contact_emails',
   'contact_addresses', 'contact_social_media', 'contact_relatives',
@@ -22,9 +23,22 @@ const ALLOWED_TABLES = [
   'company_phones', 'company_emails', 'company_addresses',
   'company_social_media', 'company_cnaes', 'company_rfm_scores',
   'company_stakeholder_map',
-  // Contact intelligence & analytics
+  // ── Contact intelligence & analytics ──
   'churn_predictions', 'deal_velocity_analysis',
   'relationship_score_history', 'workspace_accounts',
+  // ── Views (read-only, pre-computed intelligence) ──
+  'vw_active_alerts', 'vw_best_closing_moments', 'vw_churn_risk_ranking',
+  'vw_closing_score_alerts', 'vw_closing_score_ranking',
+  'vw_communication_dashboard', 'vw_contact_social_media',
+  'vw_contacts_completo', 'vw_contacts_contato', 'vw_contacts_full',
+  'vw_contacts_sem_apelido', 'vw_deal_velocity_benchmark',
+  'vw_deals_full', 'vw_disc_compatibility', 'vw_emotional_trend_by_contact',
+  'vw_eq_dashboard', 'vw_eq_evolution', 'vw_interacoes_sem_apelido',
+  'vw_interaction_timeline', 'vw_leads_full', 'vw_pending_followups',
+  'vw_pending_notifications', 'vw_rapport_points', 'vw_satisfaction_trend',
+  'vw_search_contacts', 'vw_singu_communication_intel',
+  'vw_singu_contact_360', 'vw_singu_emotional_trend',
+  'vw_singu_rapport_intel', 'vw_todays_reminders',
 ] as const;
 
 type AllowedTable = typeof ALLOWED_TABLES[number];
