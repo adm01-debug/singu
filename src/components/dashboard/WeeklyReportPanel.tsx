@@ -415,12 +415,12 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
           label="Em Risco" 
           value={data.stats?.atRiskContacts || 0}
           icon={<AlertTriangle className="h-4 w-4" />}
-          variant={data.stats?.atRiskContacts > 5 ? 'warning' : 'default'}
+          variant={(data.stats?.atRiskContacts ?? 0) > 5 ? 'warning' : 'default'}
         />
       </div>
 
       {/* Highlights */}
-      {data.highlights?.length > 0 && (
+      {(data.highlights?.length ?? 0) > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-sm flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-success" />
@@ -437,7 +437,7 @@ function ReportPreview({ data, generating }: ReportPreviewProps) {
       )}
 
       {/* Recommendations */}
-      {data.recommendations?.length > 0 && (
+      {(data.recommendations?.length ?? 0) > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-sm flex items-center gap-2">
             <Target className="h-4 w-4 text-warning" />

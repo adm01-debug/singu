@@ -26,8 +26,8 @@ export function TriggerAnalyticsPanel() {
           </CardHeader>
           <CardContent className="space-y-2">
             {abTests.slice(0, 5).map(test => {
-              const aRate = test.variant_a_uses > 0 ? (test.variant_a_conversions / test.variant_a_uses) * 100 : 0;
-              const bRate = test.variant_b_uses > 0 ? (test.variant_b_conversions / test.variant_b_uses) * 100 : 0;
+              const aRate = (test.variant_a_uses ?? 0) > 0 ? ((test.variant_a_conversions ?? 0) / (test.variant_a_uses ?? 1)) * 100 : 0;
+              const bRate = (test.variant_b_uses ?? 0) > 0 ? ((test.variant_b_conversions ?? 0) / (test.variant_b_uses ?? 1)) * 100 : 0;
               return (
                 <div key={test.id} className="rounded-lg border p-3 text-sm space-y-2">
                   <div className="flex items-center justify-between">
@@ -82,8 +82,8 @@ export function TriggerAnalyticsPanel() {
                 channelEffectiveness.reduce<Record<string, { uses: number; successes: number; score: number; count: number }>>((acc, item) => {
                   const ch = item.channel;
                   if (!acc[ch]) acc[ch] = { uses: 0, successes: 0, score: 0, count: 0 };
-                  acc[ch].uses += item.uses;
-                  acc[ch].successes += item.successes;
+                  acc[ch].uses += item.uses ?? 0;
+                  acc[ch].successes += item.successes ?? 0;
                   acc[ch].score += Number(item.effectiveness_score);
                   acc[ch].count += 1;
                   return acc;

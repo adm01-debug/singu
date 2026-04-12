@@ -518,7 +518,7 @@ function ContactIntelligence({ record }: { record: LuxIntelligenceRecord }) {
       </TabsContent>
 
       <TabsContent value="personal" className="space-y-4">
-        {(profile.hobbies?.length > 0 || profile.interests?.length > 0 || profile.travels?.length > 0) ? (
+        {((profile.hobbies?.length ?? 0) > 0 || (profile.interests?.length ?? 0) > 0 || (profile.travels?.length ?? 0) > 0) ? (
           <>
             {profile.hobbies && profile.hobbies.length > 0 && (
               <DataCard title="Hobbies" icon={Heart} iconColor="bg-primary dark:bg-primary/30 text-primary">

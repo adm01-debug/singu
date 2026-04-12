@@ -89,7 +89,7 @@ export function CompanyProfileCard({
               {c.nome_fantasia && c.nome_fantasia !== company.name && (
                 <p className="text-sm text-muted-foreground">{String(c.nome_fantasia)}</p>
               )}
-              <p className="text-muted-foreground">{c.ramo_atividade as string || c.nicho_cliente as string || company.industry || ''}</p>
+              <p className="text-muted-foreground">{String(c.ramo_atividade || c.nicho_cliente || company.industry || '')}</p>
               <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
                 <CompanyHealthBadge financialHealth={healthStatus} />
                 {c.status && (

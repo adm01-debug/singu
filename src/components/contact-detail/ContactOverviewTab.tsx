@@ -257,7 +257,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
                   <Badge variant="outline" className="text-xs capitalize">{preferences.preferred_channel}</Badge>
                 </div>
               )}
-              {preferences.preferred_days?.length > 0 && (
+              {(preferences.preferred_days?.length ?? 0) > 0 && (
                 <div>
                   <span className="text-xs text-muted-foreground">Dias preferidos</span>
                   <div className="mt-1 flex gap-1">

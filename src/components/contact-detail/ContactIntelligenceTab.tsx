@@ -156,7 +156,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
                   </div>
                   <div className="text-right">
                     <span className="text-xs text-muted-foreground">Importância: {v.importance}/10</span>
-                    {v.frequency > 1 && (
+                    {(v.frequency ?? 0) > 1 && (
                       <p className="text-xs text-muted-foreground">Mencionado {v.frequency}x</p>
                     )}
                   </div>
