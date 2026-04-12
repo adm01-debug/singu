@@ -366,6 +366,20 @@ Deno.serve(async (req) => {
       return jsonOk({ success: true }, req);
     }
 
+    // ─── RPC (call external database functions) ───
+    if (operation === 'rpc') {
+      const functionName = typeof body.functionName === 'string' ? body.functionName : undefined;
+      if (!functionName || !isAllowedRpc(functionName)) {
+        return jsonError(`Invalid or disallowed RPC: "${functionName}"`, 400, req);
+      }
+
+      const params = (body.params && typeof body.params === 'object') ? body.params : {};
+
+      const { data, error } = await client.rpc(functionName, params as Record<string, unknown>);
+      if (error) throw new Error(`RPC ${functionName} failed: ${error.message}`);
+      return jsonOk({ data }, req);
+    }
+
     return jsonError(`Unknown action: ${operation}`, 400, req);
 
   } catch (error) {
