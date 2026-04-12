@@ -87,7 +87,7 @@ export function useClosingScoreRanking(probabilityFilter: ProbabilityFilter = 'a
     loading,
     refreshing,
     stats: data?.stats || defaultStats(),
-    refresh: refetch,
+    refresh: () => { refetch(); },
   };
 }
 

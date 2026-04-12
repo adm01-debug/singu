@@ -62,7 +62,7 @@ export function useClosingScoreAlerts() {
     loading,
     dismissAlert,
     dismissAllAlerts,
-    refreshAlerts: refetch,
+    refreshAlerts: () => { refetch(); },
     probabilityLabels: { high: 'Alta', medium: 'Média', low: 'Baixa', very_low: 'Muito Baixa' },
   };
 }
