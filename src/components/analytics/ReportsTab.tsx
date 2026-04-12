@@ -186,6 +186,102 @@ function ParetoList() {
   );
 }
 
+// ── Seasonality Chart ──────────────────────────────
+
+function SeasonalityChart() {
+  const { data: seasons, isLoading } = useSeasonalityAnalysis(12);
+  if (isLoading) return <Skeleton className="h-64" />;
+  if (!seasons || seasons.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Sun className="h-4 w-4 text-warning" /> Sazonalidade (12 meses)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={seasons}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="month_name" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+            <YAxis yAxisId="left" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8 }} />
+            <Line yAxisId="left" type="monotone" dataKey="avg_revenue" name="Receita Média" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} />
+            <Line yAxisId="right" type="monotone" dataKey="avg_deals" name="Deals Médios" stroke="hsl(var(--success))" strokeWidth={2} dot={{ r: 3 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Industry Analysis ─────────────────────────────
+
+function IndustryChart() {
+  const { data: industries, isLoading } = useIndustryAnalysis();
+  if (isLoading) return <Skeleton className="h-64" />;
+  if (!industries || industries.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-primary" /> Análise por Indústria
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={industries.slice(0, 8)} layout="vertical">
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis type="number" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+            <YAxis dataKey="industry" type="category" width={110} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8 }} />
+            <Bar dataKey="total_revenue" name="Receita Total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Channel Analysis ──────────────────────────────
+
+function ChannelChart() {
+  const { data: channels, isLoading } = useChannelAnalysis();
+  if (isLoading) return <Skeleton className="h-64" />;
+  if (!channels || channels.length === 0) return null;
+
+  const radarData = channels.map(c => ({
+    channel: c.channel,
+    'Taxa Resposta': c.response_rate,
+    'Taxa Conversão': c.conversion_rate,
+  }));
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Radio className="h-4 w-4 text-info" /> Efetividade por Canal
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={250}>
+          <RadarChart data={radarData}>
+            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarAngleAxis dataKey="channel" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
+            <PolarRadiusAxis tick={{ fontSize: 9 }} />
+            <Radar name="Taxa Resposta" dataKey="Taxa Resposta" stroke="hsl(var(--primary))" fill="hsl(var(--primary)/0.2)" strokeWidth={2} />
+            <Radar name="Taxa Conversão" dataKey="Taxa Conversão" stroke="hsl(var(--success))" fill="hsl(var(--success)/0.2)" strokeWidth={2} />
+            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8 }} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Main Tab ───────────────────────────────────────
 
 export default function ReportsTab() {
@@ -197,6 +293,11 @@ export default function ReportsTab() {
         <LossReasonsChart />
       </div>
       <TrendChart />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <SeasonalityChart />
+        <IndustryChart />
+      </div>
+      <ChannelChart />
       <Suspense fallback={<Skeleton className="h-72 rounded-lg" />}>
         <CohortAnalysisWidget />
       </Suspense>
