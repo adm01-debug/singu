@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { AlertTriangle, Target, Heart, Gift } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,8 @@ import { ScoreHistoryPanel } from '@/components/contact-detail/ScoreHistoryPanel
 import { CommunicationPreferencesCard } from '@/components/contact-detail/CommunicationPreferencesCard';
 import { WorkspaceAccountsCard } from '@/components/contact-detail/WorkspaceAccountsCard';
 import type { Tables } from '@/integrations/supabase/types';
+import { Skeleton } from '@/components/ui/skeleton';
+const ChurnRiskWidget = lazy(() => import('./ChurnRiskWidget'));
 
 interface Props {
   contactId: string;
@@ -259,10 +262,13 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <WorkspaceAccountsCard contactId={contactId} />
       </div>
 
-      {/* New panels: Emotional Anchors, Best Time, AI Actions */}
+      {/* New panels: Emotional Anchors, Best Time, Churn, AI Actions */}
       <div className="grid gap-4 md:grid-cols-2">
         <EmotionalAnchorsPanel contactId={contactId} />
         <BestTimeToContactCard contactId={contactId} />
+        <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+          <ChurnRiskWidget contactId={contactId} />
+        </Suspense>
       </div>
 
       <AIActionsPanel

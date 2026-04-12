@@ -25,6 +25,8 @@ const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/Ex
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
 const DailyInsightsWidget = lazy(() => import('@/components/dashboard/widgets/DailyInsightsWidget'));
 const CompleteDashboardWidget = lazy(() => import('@/components/dashboard/widgets/CompleteDashboardWidget'));
+const DailyKpisWidget = lazy(() => import('@/components/dashboard/widgets/DailyKpisWidget'));
+const CadenceAlertWidget = lazy(() => import('@/components/contact-detail/CadenceAlertWidget'));
 
 interface StaggerAnimation {
   initial: TargetAndTransition;
@@ -183,7 +185,21 @@ export function OverviewTab({
         </Suspense>
       </DashboardErrorBoundary>
 
-      {/* 5. Recent Activity + Top Contacts */}
+      {/* 5. KPIs Diários + Alertas de Cadência */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DashboardErrorBoundary sectionName="KPIs Diários">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <DailyKpisWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Cadência">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <CadenceAlertWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
+
+      {/* 6. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
