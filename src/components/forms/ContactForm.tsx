@@ -54,6 +54,7 @@ const contactSchema = z.object({
   whatsapp: z.string().trim().max(20, 'Máximo 20 caracteres').optional(),
   linkedin: z.string().trim().max(200, 'Máximo 200 caracteres').optional(),
   instagram: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
+  twitter: z.string().trim().max(50, 'Máximo 50 caracteres').optional().or(z.literal('')),
 
   // Detalhes
   notes: z.string().trim().max(2000, 'Máximo 2000 caracteres').optional(),
@@ -141,6 +142,7 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
       whatsapp: getField(c, 'whatsapp'),
       linkedin: getField(c, 'linkedin'),
       instagram: getField(c, 'instagram'),
+      twitter: getField(c, 'twitter'),
       notes: getField(c, 'notes'),
       personal_notes: getField(c, 'personal_notes'),
       assinatura_contato: getField(c, 'assinatura_contato'),
@@ -480,6 +482,14 @@ export function ContactForm({ contact, companies, defaultCompanyId, onSubmit, on
                 <FormItem>
                   <FormLabel>Instagram</FormLabel>
                   <FormControl><Input placeholder="@joaosilva" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="twitter" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>X (Twitter)</FormLabel>
+                  <FormControl><Input placeholder="@joaosilva" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
