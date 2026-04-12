@@ -31,9 +31,9 @@ interface Props {
 export function ContactOverviewTab({ contact, company, insights, alerts, onDismissAlert, onDismissInsight }: Props) {
   const { user } = useAuth();
   // Use shared React Query hook instead of raw useEffect
-  const { data: relData } = useContactRelationalData(contact.id);
+  const { data: relData, error: relError, refetch: relRefetch } = useContactRelationalData(contact.id);
 
-  const { data: lifeEvents = [] } = useQuery({
+  const { data: lifeEvents = [], error: eventsError, refetch: eventsRefetch } = useQuery({
     queryKey: ['life-events', contact.id, user?.id],
     queryFn: async () => {
       const { data } = await supabase
