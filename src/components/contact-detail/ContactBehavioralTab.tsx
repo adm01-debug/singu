@@ -13,6 +13,8 @@ import { EqSubTab } from './behavioral-tab/EqSubTab';
 import { BiasesSubTab } from './behavioral-tab/BiasesSubTab';
 import { MetaprogramsSubTab } from './behavioral-tab/MetaprogramsSubTab';
 import { PersonalitySubTab } from './behavioral-tab/PersonalitySubTab';
+const CommunicationIntelWidget = lazy(() => import('./CommunicationIntelWidget'));
+const EmotionalTrendWidget = lazy(() => import('./EmotionalTrendWidget'));
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -157,6 +159,12 @@ export function ContactBehavioralTab({ contact }: Props) {
       <CommunicationDashboardCard contactId={contact.id} />
       <EqEvolutionCard contactId={contact.id} />
       <EqDashboardCard contactId={contact.id} />
+      <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+        <CommunicationIntelWidget contactId={contact.id} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+        <EmotionalTrendWidget contactId={contact.id} />
+      </Suspense>
     </div>
 
     {/* Relationship Score Evolution Chart */}
