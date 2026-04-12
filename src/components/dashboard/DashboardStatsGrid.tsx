@@ -79,4 +79,4 @@ export const DashboardStatsGrid = React.memo(function DashboardStatsGrid({ stats
       ))}
     </div>
   );
-}
+});
