@@ -345,6 +345,12 @@ const EmpresaDetalhe = () => {
                   </DashboardErrorBoundary>
                 </TabsContent>
 
+                <TabsContent value="commercial" className="mt-4">
+                  <DashboardErrorBoundary sectionName="Comercial">
+                    <CompanyCommercialTab companyId={id!} />
+                  </DashboardErrorBoundary>
+                </TabsContent>
+
                 <TabsContent value="insights" className="mt-4">
                   <DashboardErrorBoundary sectionName="Insights">
                     <CompanyInsightsTab
