@@ -71,9 +71,9 @@ export function useUserGoals(enabled = true) {
     queryFn: async () => {
       try {
         const { data, error } = await callExternalRpc<UserGoal[]>('get_user_goals', {});
-        if (error) { console.warn('[Gamification] get_user_goals error:', error); return []; }
+        if (error) { logger.warn('[Gamification] get_user_goals error:', error); return []; }
         return (Array.isArray(data) ? data : []) as UserGoal[];
-      } catch (e) { console.warn('[Gamification] get_user_goals failed:', e); return []; }
+      } catch (e) { logger.warn('[Gamification] get_user_goals failed:', e); return []; }
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -87,9 +87,9 @@ export function useGoalsDashboard(enabled = true) {
     queryFn: async () => {
       try {
         const { data, error } = await callExternalRpc<GoalsDashboard>('get_goals_dashboard', {});
-        if (error) { console.warn('[Gamification] get_goals_dashboard error:', error); return null; }
+        if (error) { logger.warn('[Gamification] get_goals_dashboard error:', error); return null; }
         return (data ?? null) as GoalsDashboard | null;
-      } catch (e) { console.warn('[Gamification] get_goals_dashboard failed:', e); return null; }
+      } catch (e) { logger.warn('[Gamification] get_goals_dashboard failed:', e); return null; }
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -103,9 +103,9 @@ export function useQuotaStatus(enabled = true) {
     queryFn: async () => {
       try {
         const { data, error } = await callExternalRpc<QuotaStatus | QuotaStatus[]>('get_quota_status', {});
-        if (error) { console.warn('[Gamification] get_quota_status error:', error); return []; }
+        if (error) { logger.warn('[Gamification] get_quota_status error:', error); return []; }
         return (Array.isArray(data) ? data : data ? [data] : []) as QuotaStatus[];
-      } catch (e) { console.warn('[Gamification] get_quota_status failed:', e); return []; }
+      } catch (e) { logger.warn('[Gamification] get_quota_status failed:', e); return []; }
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -119,9 +119,9 @@ export function useLeaderboard(enabled = true) {
     queryFn: async () => {
       try {
         const { data, error } = await callExternalRpc<LeaderboardEntry[]>('get_leaderboard', {});
-        if (error) { console.warn('[Gamification] get_leaderboard error:', error); return []; }
+        if (error) { logger.warn('[Gamification] get_leaderboard error:', error); return []; }
         return (Array.isArray(data) ? data : []) as LeaderboardEntry[];
-      } catch (e) { console.warn('[Gamification] get_leaderboard failed:', e); return []; }
+      } catch (e) { logger.warn('[Gamification] get_leaderboard failed:', e); return []; }
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -135,9 +135,9 @@ export function useUserBadges(enabled = true) {
     queryFn: async () => {
       try {
         const { data, error } = await callExternalRpc<UserBadge[]>('get_user_badges', {});
-        if (error) { console.warn('[Gamification] get_user_badges error:', error); return []; }
+        if (error) { logger.warn('[Gamification] get_user_badges error:', error); return []; }
         return (Array.isArray(data) ? data : []) as UserBadge[];
-      } catch (e) { console.warn('[Gamification] get_user_badges failed:', e); return []; }
+      } catch (e) { logger.warn('[Gamification] get_user_badges failed:', e); return []; }
     },
     enabled,
     staleTime: 5 * 60 * 1000,
