@@ -31,7 +31,6 @@ export interface ExternalEmail {
   email_type: string;
   email: string;
   email_normalizado?: string;
-  email_normalizado?: string;
   is_primary?: boolean;
   is_verified?: boolean;
   confiabilidade?: number;
@@ -57,8 +56,6 @@ export interface ExternalAddress {
   latitude?: number;
   longitude?: number;
   google_maps_url?: string;
-  google_place_id?: string;
-  tipo_logradouro?: string;
   google_place_id?: string;
   tipo_logradouro?: string;
   ponto_referencia?: string;
