@@ -31,7 +31,7 @@ const TREND_ICONS: Record<string, typeof TrendingUp> = {
 export function ContactCommercialTab({ contactId }: Props) {
   const { user } = useAuth();
 
-  const { data } = useQuery({
+  const { data, error, refetch } = useQuery({
     queryKey: ['contact-commercial', contactId, user?.id],
     queryFn: async () => {
       const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contactId }];
@@ -71,6 +71,23 @@ export function ContactCommercialTab({ contactId }: Props) {
 
   const rfm = data?.rfm || null;
   const purchases = data?.purchases || [];
+
+  if (error) {
+    return (
+      <Card className="border-destructive/30">
+        <CardContent className="py-8 text-center space-y-3">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Erro ao carregar dados comerciais</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {error instanceof Error ? error.message : 'Tente novamente em alguns instantes'}
+            </p>
+          </div>
+          <button onClick={() => refetch()} className="text-xs text-primary hover:underline">Tentar novamente</button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
