@@ -182,6 +182,7 @@ async function fetchCompaniesPage(search?: string): Promise<CompaniesPage> {
 async function fetchRemainingCompanies(search?: string): Promise<Company[]> {
   const buildOptions = (range: { from: number; to: number }): Parameters<typeof queryExternalData>[0] => ({
     table: 'companies',
+    select: LISTING_SELECT,
     order: { column: 'updated_at', ascending: false },
     range,
     ...(search && search.trim().length >= 2
