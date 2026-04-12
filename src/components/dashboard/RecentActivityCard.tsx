@@ -1,3 +1,4 @@
+import React from 'react';
 import { Clock, Phone, Mail, Video, MessageSquare, Globe, Send, AtSign, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { MotionStyle, Transition, TargetAndTransition } from 'framer-motion';
@@ -59,7 +60,7 @@ function deduplicateActivities(activities: DashboardStats['recentActivities']): 
   return result;
 }
 
-export function RecentActivityCard({ activities, animations }: RecentActivityCardProps) {
+export const RecentActivityCard = React.memo(function RecentActivityCard({ activities, animations }: RecentActivityCardProps) {
   const dedupedActivities = deduplicateActivities(activities);
   
   return (
@@ -145,4 +146,4 @@ export function RecentActivityCard({ activities, animations }: RecentActivityCar
       </CardContent>
     </Card>
   );
-}
+});
