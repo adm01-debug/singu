@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       };
     }
 
-    console.log('Bitrix24 webhook received:', JSON.stringify(payload, null, 2));
+    // Bitrix24 webhook received
 
     // Handle call finish events
     const validEvents = ['ONVOXIMPLANTCALLEND', 'ONEXTERNALCALLFINISH', 'ONCRMCALLEND'];
@@ -111,7 +111,7 @@ Deno.serve(async (req) => {
     }
 
     if (!contacts || contacts.length === 0) {
-      console.log(`No contact found for phone: ${phoneNumber}`);
+      // No contact found for phone;
       return new Response(JSON.stringify({ 
         status: 'skipped', 
         reason: 'contact not found',
@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
       throw interactionError;
     }
 
-    console.log('Call interaction created:', interaction.id);
+    // Call interaction created;
 
     return new Response(JSON.stringify({ 
       status: 'success', 
