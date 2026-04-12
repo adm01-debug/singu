@@ -123,6 +123,13 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
+      {/* 3c. Business Alerts from External DB */}
+      <DashboardErrorBoundary sectionName="Alertas de Negócio">
+        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+          <BusinessAlertsWidget />
+        </Suspense>
+      </DashboardErrorBoundary>
+
       {/* 3c. Data Quality */}
       <DashboardErrorBoundary sectionName="Qualidade de Dados">
         <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
