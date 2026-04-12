@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
 import { Brain, Eye, Activity, Zap, Target, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { queryExternalData } from '@/lib/externalData';
@@ -40,28 +40,13 @@ async function fetchWithFallback<T>(
 
 export function ContactBehavioralTab({ contact }: Props) {
   const { user } = useAuth();
-  const [discHistory, setDiscHistory] = useState<Tables<'disc_analysis_history'>[]>([]);
-  const [eqAnalysis, setEqAnalysis] = useState<{
-    overall_score?: number; overall_level?: string; profile_summary?: string;
-    pillar_scores?: Record<string, number>; strengths?: string[];
-  } | null>(null);
-  const [biases, setBiases] = useState<{
-    dominant_biases?: string[]; vulnerabilities?: string[]; resistances?: string[];
-    profile_summary?: string;
-  } | null>(null);
-  const [metaprograms, setMetaprograms] = useState<{
-    toward_score?: number; away_from_score?: number; internal_score?: number;
-    external_score?: number; options_score?: number; procedures_score?: number;
-  } | null>(null);
-
   const behavior = contact.behavior as Record<string, unknown> | null;
 
-  useEffect(() => {
-    if (!user || !contact.id) return;
+  const { data: behavioralData } = useQuery({
+    queryKey: ['contact-behavioral', contact.id, user?.id],
+    queryFn: async () => {
+      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
 
-    const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contact.id }];
-
-    const fetchData = async () => {
       const [discRes, eqRes, biasRes, metaRes] = await Promise.all([
         fetchWithFallback<Tables<'disc_analysis_history'>[]>(
           async () => supabase.from('disc_analysis_history').select('*').eq('contact_id', contact.id).order('analyzed_at', { ascending: false }).limit(5),
@@ -85,14 +70,33 @@ export function ContactBehavioralTab({ contact }: Props) {
         ),
       ]);
 
-      setDiscHistory((discRes as unknown as Tables<'disc_analysis_history'>[]) || []);
-      setEqAnalysis((eqRes as Record<string, unknown>[])?.[0] || null);
-      setBiases((biasRes as Record<string, unknown>[])?.[0] || null);
-      setMetaprograms((metaRes as Record<string, unknown>[])?.[0] || null);
-    };
+      return {
+        discHistory: (discRes as unknown as Tables<'disc_analysis_history'>[]) || [],
+        eqAnalysis: (eqRes as Record<string, unknown>[])?.[0] as {
+          overall_score?: number; overall_level?: string; profile_summary?: string;
+          pillar_scores?: Record<string, number>; strengths?: string[];
+          areas_for_growth?: string[]; sales_implications?: Record<string, unknown>;
+        } | null || null,
+        biases: (biasRes as Record<string, unknown>[])?.[0] as {
+          dominant_biases?: string[]; vulnerabilities?: string[]; resistances?: string[];
+          profile_summary?: string; category_distribution?: Record<string, number>;
+          sales_strategies?: Record<string, unknown>;
+        } | null || null,
+        metaprograms: (metaRes as Record<string, unknown>[])?.[0] as {
+          toward_score?: number; away_from_score?: number; internal_score?: number;
+          external_score?: number; options_score?: number; procedures_score?: number;
+        } | null || null,
+      };
+    },
+    enabled: !!contact.id && !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-    fetchData();
-  }, [user, contact.id]);
+  const discHistory = behavioralData?.discHistory || [];
+  const eqAnalysis = behavioralData?.eqAnalysis || null;
+  const biases = behavioralData?.biases || null;
+  const metaprograms = behavioralData?.metaprograms || null;
 
   const discProfile = behavior?.discProfile as string | null;
   const discConfidence = (behavior?.discConfidence as number) || 0;
@@ -139,7 +143,7 @@ export function ContactBehavioralTab({ contact }: Props) {
                   </div>
                   {latestDisc && (
                     <div className="space-y-2">
-                  {(['dominance_score', 'influence_score', 'steadiness_score', 'conscientiousness_score'] as const).map(key => {
+                      {(['dominance_score', 'influence_score', 'steadiness_score', 'conscientiousness_score'] as const).map(key => {
                         const labels: Record<string, string> = { dominance_score: 'D', influence_score: 'I', steadiness_score: 'S', conscientiousness_score: 'C' };
                         const shortLabel = labels[key];
                         const value = (latestDisc[key] as number) || 0;
@@ -153,6 +157,12 @@ export function ContactBehavioralTab({ contact }: Props) {
                       })}
                       {latestDisc.blend_profile && (
                         <p className="text-xs text-muted-foreground">Blend: {latestDisc.blend_profile}</p>
+                      )}
+                      {latestDisc.stress_primary && (
+                        <p className="text-xs text-muted-foreground">
+                          Sob pressão: {latestDisc.stress_primary}
+                          {latestDisc.stress_secondary && ` / ${latestDisc.stress_secondary}`}
+                        </p>
                       )}
                       {latestDisc.profile_summary && (
                         <p className="text-xs text-foreground mt-2">{latestDisc.profile_summary}</p>
@@ -182,10 +192,16 @@ export function ContactBehavioralTab({ contact }: Props) {
                         {entry.secondary_profile && (
                           <span className="text-muted-foreground">/ {entry.secondary_profile}</span>
                         )}
+                        <span className="text-muted-foreground">{entry.confidence}%</span>
                       </div>
-                      <span className="text-muted-foreground">
-                        {new Date(entry.analyzed_at).toLocaleDateString('pt-BR')}
-                      </span>
+                      <div className="text-right">
+                        <span className="text-muted-foreground">
+                          {new Date(entry.analyzed_at).toLocaleDateString('pt-BR')}
+                        </span>
+                        {entry.analysis_source && (
+                          <p className="text-muted-foreground/70">{entry.analysis_source}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -276,6 +292,16 @@ export function ContactBehavioralTab({ contact }: Props) {
                     </div>
                   </div>
                 )}
+                {eqAnalysis.areas_for_growth && eqAnalysis.areas_for_growth.length > 0 && (
+                  <div>
+                    <span className="text-xs font-medium text-muted-foreground">Áreas de Crescimento</span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {eqAnalysis.areas_for_growth.map((a: string) => (
+                        <Badge key={a} variant="outline" className="text-xs">{a}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-sm text-muted-foreground italic">Análise EQ ainda não realizada</p>
@@ -322,6 +348,20 @@ export function ContactBehavioralTab({ contact }: Props) {
                     <div className="mt-1 flex flex-wrap gap-1">
                       {biases.resistances.map((r: string) => (
                         <Badge key={r} variant="outline" className="text-xs text-success">{r}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {biases.category_distribution && typeof biases.category_distribution === 'object' && (
+                  <div>
+                    <span className="text-xs font-medium text-muted-foreground">Distribuição por Categoria</span>
+                    <div className="mt-1 space-y-1">
+                      {Object.entries(biases.category_distribution).map(([cat, val]) => (
+                        <div key={cat} className="flex items-center gap-2">
+                          <span className="w-28 text-xs text-muted-foreground capitalize">{cat.replace(/_/g, ' ')}</span>
+                          <Progress value={Number(val)} className="h-1.5 flex-1" />
+                          <span className="w-6 text-right text-[10px]">{Number(val)}</span>
+                        </div>
                       ))}
                     </div>
                   </div>

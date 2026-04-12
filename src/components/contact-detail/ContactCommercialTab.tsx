@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Minus, ShoppingBag, BarChart3, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,8 +5,10 @@ import { Progress } from '@/components/ui/progress';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { queryExternalData } from '@/lib/externalData';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface Props {
@@ -22,24 +23,47 @@ const TREND_ICONS: Record<string, typeof TrendingUp> = {
 
 export function ContactCommercialTab({ contactId }: Props) {
   const { user } = useAuth();
-  const [rfm, setRfm] = useState<Tables<'rfm_analysis'> | null>(null);
-  const [purchases, setPurchases] = useState<Tables<'purchase_history'>[]>([]);
 
-  useEffect(() => {
-    if (!user || !contactId) return;
+  const { data } = useQuery({
+    queryKey: ['contact-commercial', contactId, user?.id],
+    queryFn: async () => {
+      const contactFilter = [{ type: 'eq' as const, column: 'contact_id', value: contactId }];
 
-    const fetchData = async () => {
-      const [rfmRes, purchaseRes] = await Promise.all([
+      // Try local first, then external
+      const [rfmLocal, purchaseLocal] = await Promise.all([
         supabase.from('rfm_analysis').select('*').eq('contact_id', contactId).order('analyzed_at', { ascending: false }).limit(1),
         supabase.from('purchase_history').select('*').eq('contact_id', contactId).order('purchase_date', { ascending: false }).limit(20),
       ]);
 
-      setRfm(rfmRes.data?.[0] || null);
-      setPurchases(purchaseRes.data || []);
-    };
+      let rfm = rfmLocal.data?.[0] || null;
+      let purchases = purchaseLocal.data || [];
 
-    fetchData();
-  }, [user, contactId]);
+      // Fallback to external if empty
+      if (!rfm) {
+        const { data: extRfm } = await queryExternalData<Tables<'rfm_analysis'>>({
+          table: 'rfm_analysis', filters: contactFilter,
+          order: { column: 'analyzed_at', ascending: false }, range: { from: 0, to: 0 },
+        });
+        if (Array.isArray(extRfm) && extRfm.length > 0) rfm = extRfm[0];
+      }
+
+      if (purchases.length === 0) {
+        const { data: extPurchases } = await queryExternalData<Tables<'purchase_history'>>({
+          table: 'purchase_history', filters: contactFilter,
+          order: { column: 'purchase_date', ascending: false }, range: { from: 0, to: 19 },
+        });
+        if (Array.isArray(extPurchases)) purchases = extPurchases;
+      }
+
+      return { rfm, purchases };
+    },
+    enabled: !!contactId && !!user,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const rfm = data?.rfm || null;
+  const purchases = data?.purchases || [];
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
