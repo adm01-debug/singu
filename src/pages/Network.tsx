@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { NetworkVisualization } from '@/components/network/NetworkVisualization';
@@ -31,6 +32,7 @@ const Network = () => {
   usePageTitle('Rede de Contatos');
   return (
     <AppLayout>
+      <SEOHead title="Rede de Contatos" description="Grafo de relacionamentos e conexões" />
       <Header 
         title="Network Visualization" 
         subtitle="Mapa interativo de relacionamentos, empresas e contatos"

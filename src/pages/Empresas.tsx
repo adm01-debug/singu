@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { hapticSuccess, hapticHeavy } from '@/lib/haptics';
 import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
@@ -333,6 +334,7 @@ const Empresas = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Empresas" description="Gestão de empresas e organizações" />
       <Header 
         title="Empresas" 
         subtitle={filteredAndSortedCompanies.length === (activeSearch ? totalCount : companies.length) ? `${activeSearch ? totalCount : companies.length} empresas` : `${filteredAndSortedCompanies.length} de ${activeSearch ? totalCount : companies.length} empresas`}

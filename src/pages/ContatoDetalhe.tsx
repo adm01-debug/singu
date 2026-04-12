@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -170,65 +171,79 @@ const ContatoDetalhe = () => {
           </TabsList>
 
           <TabsContent value="resumo">
-            <div className="space-y-4">
-              <ContactOverviewTab
-                contact={contact}
-                company={company}
-                insights={insights}
-                alerts={alerts}
-                onDismissAlert={dismissAlert}
-                onDismissInsight={dismissInsight}
-              />
-              <RelationshipTimeline
-                interactions={interactions}
-                contact={contact}
-              />
-            </div>
+            <DashboardErrorBoundary sectionName="Resumo">
+              <div className="space-y-4">
+                <ContactOverviewTab
+                  contact={contact}
+                  company={company}
+                  insights={insights}
+                  alerts={alerts}
+                  onDismissAlert={dismissAlert}
+                  onDismissInsight={dismissInsight}
+                />
+                <RelationshipTimeline
+                  interactions={interactions}
+                  contact={contact}
+                />
+              </div>
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="dados">
-            <ContactDataTab contact={contact} />
+            <DashboardErrorBoundary sectionName="Dados">
+              <ContactDataTab contact={contact} />
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="interacoes">
-            <ContactInteractionsTab
-              interactions={interactions}
-              contact={contact}
-              companyId={contact.company_id}
-              onInteractionAdded={refetch}
-            />
+            <DashboardErrorBoundary sectionName="Interações">
+              <ContactInteractionsTab
+                interactions={interactions}
+                contact={contact}
+                companyId={contact.company_id}
+                onInteractionAdded={refetch}
+              />
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="comportamental">
-            <ContactBehavioralTab contact={contact} />
+            <DashboardErrorBoundary sectionName="Comportamental">
+              <ContactBehavioralTab contact={contact} />
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="inteligencia">
-            <ContactIntelligenceTab
-              contactId={contact.id}
-              contactName={formatContactName(contact.first_name, contact.last_name)}
-              linkedinUrl={contact.linkedin}
-              websiteUrl={company?.website}
-            />
+            <DashboardErrorBoundary sectionName="Inteligência">
+              <ContactIntelligenceTab
+                contactId={contact.id}
+                contactName={formatContactName(contact.first_name, contact.last_name)}
+                linkedinUrl={contact.linkedin}
+                websiteUrl={company?.website}
+              />
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="comercial">
-            <ContactCommercialTab contactId={contact.id} />
+            <DashboardErrorBoundary sectionName="Comercial">
+              <ContactCommercialTab contactId={contact.id} />
+            </DashboardErrorBoundary>
           </TabsContent>
 
           <TabsContent value="lux">
-            <Card>
-              <CardContent className="pt-6">
-                <LuxIntelligencePanel
-                  record={latestRecord}
-                  records={luxRecords}
-                  entityType="contact"
-                  loading={luxLoading}
-                  onTrigger={handleTriggerLux}
-                  triggering={triggering}
-                />
-              </CardContent>
-            </Card>
+            <DashboardErrorBoundary sectionName="Lux Intelligence">
+              <Card>
+                <CardContent className="pt-6">
+                  <LuxIntelligencePanel
+                    record={latestRecord}
+                    records={luxRecords}
+                    entityType="contact"
+                    loading={luxLoading}
+                    onTrigger={handleTriggerLux}
+                    triggering={triggering}
+                  />
+                </CardContent>
+              </Card>
+            </DashboardErrorBoundary>
           </TabsContent>
         </Tabs>
       </div>

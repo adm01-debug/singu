@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -219,6 +220,7 @@ const Calendario = () => {
 
   return (
     <AppLayout>
+      <SEOHead title="Calendário" description="Agenda de eventos e follow-ups de relacionamento" />
       <Header 
         title="Calendário" 
         subtitle="Acompanhe e gerencie seus follow-ups pendentes"
