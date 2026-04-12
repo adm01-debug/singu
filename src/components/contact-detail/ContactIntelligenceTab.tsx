@@ -279,7 +279,6 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
       <Suspense fallback={<Skeleton className="h-12 rounded-lg" />}>
         <ContactDaysWithoutWidget contactId={contactId} />
       </Suspense>
-      </div>
 
       <AIActionsPanel
         contactId={contactId}
