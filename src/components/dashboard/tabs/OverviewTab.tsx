@@ -176,7 +176,14 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 4. Recent Activity + Top Contacts */}
+      {/* 4. Painel Executivo */}
+      <DashboardErrorBoundary sectionName="Painel Executivo">
+        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+          <CompleteDashboardWidget />
+        </Suspense>
+      </DashboardErrorBoundary>
+
+      {/* 5. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
