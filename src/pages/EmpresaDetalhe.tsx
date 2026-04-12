@@ -11,7 +11,7 @@ import { useCompanyPhones, useCompanyEmails, useCompanyAddresses, useCompanySoci
 import { motion } from 'framer-motion';
 import { 
   Building2, Users, Edit, Plus, MessageSquare,
-  Network, BarChart3, Sparkles, Database
+  Network, BarChart3, Sparkles, Database, ShoppingCart
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,6 +29,7 @@ import { CompanyProfileCard } from '@/components/company-detail/CompanyProfileCa
 import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsTab';
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
 import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
+import { CompanyCommercialTab } from '@/components/company-detail/CompanyCommercialTab';
 import { CompanyEnrichedCard } from '@/components/company-detail/CompanyEnrichedCard';
 import { CompanyDuplicatesPanel } from '@/components/company-detail/CompanyDuplicatesPanel';
 import { supabase } from '@/integrations/supabase/client';
@@ -293,6 +294,10 @@ const EmpresaDetalhe = () => {
                     <span className="hidden sm:inline">Histórico ({stats.total})</span>
                     <span className="sm:hidden">{stats.total}</span>
                   </TabsTrigger>
+                  <TabsTrigger value="commercial" className="flex items-center gap-2">
+                    <ShoppingCart className="w-4 h-4" />
+                    <span className="hidden sm:inline">Comercial</span>
+                  </TabsTrigger>
                   <TabsTrigger value="insights" className="flex items-center gap-2">
                     <BarChart3 className="w-4 h-4" />
                     <span className="hidden sm:inline">Insights</span>
@@ -337,6 +342,12 @@ const EmpresaDetalhe = () => {
                 <TabsContent value="interactions" className="mt-4">
                   <DashboardErrorBoundary sectionName="Interações">
                     <CompanyInteractionsTab interactions={interactions} />
+                  </DashboardErrorBoundary>
+                </TabsContent>
+
+                <TabsContent value="commercial" className="mt-4">
+                  <DashboardErrorBoundary sectionName="Comercial">
+                    <CompanyCommercialTab companyId={id!} />
                   </DashboardErrorBoundary>
                 </TabsContent>
 

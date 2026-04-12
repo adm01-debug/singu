@@ -6,14 +6,14 @@ import { rateLimit } from "../_shared/rate-limit.ts";
 const limiter = rateLimit({ windowMs: 60_000, max: 60 });
 
 const ALLOWED_RPCS = [
-  // ── CRUD ──
+  // ── Contact CRUD ──
   'create_contact', 'update_contact', 'soft_delete_contact',
   'merge_contacts', 'merge_duplicate_contacts',
-  // ── Search ──
+  // ── Contact Search ──
   'search_contacts', 'search_contacts_advanced', 'search_contacts_fuzzy',
   'list_contacts_paginated', 'find_contacts_by_role',
   'get_contacts_by_role', 'find_decision_makers',
-  // ── Intelligence ──
+  // ── Contact Intelligence ──
   'get_contact_360_by_phone', 'get_contact_intelligence',
   'get_contact_intelligence_by_phone', 'get_contact_disc_profile',
   'get_contact_effectiveness', 'get_contact_engagement_score',
@@ -26,11 +26,25 @@ const ALLOWED_RPCS = [
   'get_duplicate_contacts', 'get_orphan_contacts',
   'detect_inactive_contacts', 'get_contacts_without_interaction',
   'get_companies_without_contacts',
-  // ── Upserts ──
+  // ── Contact Upserts ──
   'upsert_contact_email', 'upsert_contact_phone', 'upsert_contact_social_media',
-  // ── Outros ──
+  // ── Contact Outros ──
   'generate_pre_contact_briefing', 'suggest_triggers_for_contact',
   'export_contacts_csv', 'get_birthday_contacts',
+  // ── Company CRUD ──
+  'create_company', 'update_company', 'soft_delete_company',
+  'merge_companies',
+  // ── Company Search ──
+  'search_companies', 'search_companies_advanced',
+  'list_companies_paginated',
+  // ── Company Intelligence ──
+  'get_company_360', 'get_company_intelligence',
+  'get_company_statistics', 'get_company_timeline',
+  'get_company_health_score',
+  // ── Company Quality ──
+  'get_duplicate_companies',
+  // ── Company Upserts ──
+  'upsert_company_email', 'upsert_company_phone', 'upsert_company_social_media', 'upsert_company_address',
 ] as const;
 
 type AllowedRpc = typeof ALLOWED_RPCS[number];
