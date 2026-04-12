@@ -28,6 +28,7 @@ export function ContactDataTab({ contact }: Props) {
   const emailMutations = useExternalRelationalMutations(contact.id, 'contact_emails', 'Email');
   const addressMutations = useExternalRelationalMutations(contact.id, 'contact_addresses', 'Endereço');
   const socialMutations = useExternalRelationalMutations(contact.id, 'contact_social_media', 'Rede social');
+  const cadenceMutation = useCadenceMutation(contact.id);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, field: string) => {
