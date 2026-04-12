@@ -206,3 +206,27 @@ export function useRelativeMutations(contactId: string | undefined) {
 
   return { addRelative, deleteRelative };
 }
+
+// ─── Cadence Upsert Mutation ──────────────────────────────────
+
+export function useCadenceMutation(contactId: string | undefined) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { cadence_days: number; priority: string; auto_remind: boolean; notes: string | null }) => {
+      if (!user || !contactId) throw new Error('Missing user or contact');
+      const { error } = await supabase.from('contact_cadence').upsert({
+        ...data,
+        contact_id: contactId,
+        user_id: user.id,
+      }, { onConflict: 'contact_id,user_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Cadência salva');
+      queryClient.invalidateQueries({ queryKey: ['contact-relational-data', contactId] });
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+}
