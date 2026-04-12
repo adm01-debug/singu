@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDailyKpis } from '@/hooks/useDailyKpis';
@@ -17,15 +17,7 @@ const metrics: Array<{ key: string; label: string; icon: typeof Building2; color
 export const DailyKpisWidget = React.memo(function DailyKpisWidget() {
   const { data, isLoading } = useDailyKpis();
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-sm">KPIs Diários</CardTitle></CardHeader>
-        <CardContent><Skeleton className="h-24" /></CardContent>
-      </Card>
-    );
-  }
-
+  if (isLoading) return <Card><CardHeader className="pb-2"><CardTitle className="text-sm">KPIs Diários</CardTitle></CardHeader><CardContent><Skeleton className="h-24" /></CardContent></Card>;
   if (!data) return null;
 
   return (
@@ -33,19 +25,14 @@ export const DailyKpisWidget = React.memo(function DailyKpisWidget() {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           📊 KPIs Diários
-          {data.snapshot_date && (
-            <span className="text-[10px] text-muted-foreground ml-auto font-normal">{data.snapshot_date}</span>
-          )}
+          {data.snapshot_date && <span className="text-[10px] text-muted-foreground ml-auto font-normal">{data.snapshot_date}</span>}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-2">
           {metrics.map(({ key, label, icon: Icon, color, isCurrency }) => {
             const value = (data as Record<string, unknown>)[key] as number | undefined;
-            const display = isCurrency
-              ? `R$ ${(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`
-              : String(value ?? 0);
-
+            const display = isCurrency ? `R$ ${(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}` : String(value ?? 0);
             return (
               <div key={key} className="rounded-lg bg-muted/30 p-2 text-center">
                 <Icon className={cn("h-3.5 w-3.5 mx-auto mb-0.5", color)} />

@@ -17,17 +17,7 @@ const RISK_CONFIG: Record<string, { icon: typeof AlertTriangle; color: string; b
 export const ChurnRiskWidget = React.memo(function ChurnRiskWidget({ contactId }: { contactId: string }) {
   const { data, isLoading } = useChurnRisk(contactId);
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Risco de Churn</CardTitle>
-        </CardHeader>
-        <CardContent><Skeleton className="h-32" /></CardContent>
-      </Card>
-    );
-  }
-
+  if (isLoading) return <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Risco de Churn</CardTitle></CardHeader><CardContent><Skeleton className="h-32" /></CardContent></Card>;
   if (!data) return null;
 
   const risk = RISK_CONFIG[data.risk_level?.toLowerCase() || 'low'] || RISK_CONFIG.low;
@@ -38,13 +28,8 @@ export const ChurnRiskWidget = React.memo(function ChurnRiskWidget({ contactId }
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <RiskIcon className={cn("h-4 w-4", risk.color)} />
-            Risco de Churn
-          </span>
-          <Badge variant="outline" className={cn("text-[10px]", risk.badgeClass)}>
-            {data.risk_level}
-          </Badge>
+          <span className="flex items-center gap-2"><RiskIcon className={cn("h-4 w-4", risk.color)} />Risco de Churn</span>
+          <Badge variant="outline" className={cn("text-[10px]", risk.badgeClass)}>{data.risk_level}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -57,38 +42,22 @@ export const ChurnRiskWidget = React.memo(function ChurnRiskWidget({ contactId }
             <Progress value={probability} className="h-2" />
           </div>
         )}
-
         {data.days_since_contact != null && (
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground">Dias sem contato</span>
-            <span className={cn("font-semibold", data.days_since_contact > 30 ? 'text-destructive' : data.days_since_contact > 14 ? 'text-warning' : 'text-foreground')}>
-              {data.days_since_contact}d
-            </span>
+            <span className={cn("font-semibold", data.days_since_contact > 30 ? 'text-destructive' : data.days_since_contact > 14 ? 'text-warning' : 'text-foreground')}>{data.days_since_contact}d</span>
           </div>
         )}
-
         {data.risk_factors && data.risk_factors.length > 0 && (
           <div className="space-y-1">
             <p className="text-[10px] font-medium text-muted-foreground uppercase">Fatores de Risco</p>
-            <div className="flex flex-wrap gap-1">
-              {data.risk_factors.slice(0, 4).map((factor, i) => (
-                <Badge key={i} variant="outline" className="text-[9px]">{factor}</Badge>
-              ))}
-            </div>
+            <div className="flex flex-wrap gap-1">{data.risk_factors.slice(0, 4).map((f, i) => <Badge key={i} variant="outline" className="text-[9px]">{f}</Badge>)}</div>
           </div>
         )}
-
         {data.recommended_actions && data.recommended_actions.length > 0 && (
           <div className="space-y-1">
             <p className="text-[10px] font-medium text-muted-foreground uppercase">Ações Recomendadas</p>
-            <ul className="space-y-0.5">
-              {data.recommended_actions.slice(0, 3).map((action, i) => (
-                <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1">
-                  <span className="text-primary mt-0.5">•</span>
-                  {action}
-                </li>
-              ))}
-            </ul>
+            <ul className="space-y-0.5">{data.recommended_actions.slice(0, 3).map((a, i) => <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1"><span className="text-primary mt-0.5">•</span>{a}</li>)}</ul>
           </div>
         )}
       </CardContent>

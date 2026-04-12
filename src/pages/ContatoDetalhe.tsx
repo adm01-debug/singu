@@ -29,8 +29,8 @@ import {
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
 
-const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
 const ContactTimelineWidget = lazy(() => import('@/components/contact-detail/ContactTimelineWidget'));
+const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
 
 const ContactDetailSkeleton = () => (
   <AppLayout>
@@ -211,6 +211,11 @@ const ContatoDetalhe = () => {
                 companyId={contact.company_id}
                 onInteractionAdded={refetch}
               />
+              <Suspense fallback={<Skeleton className="h-40 rounded-lg mt-4" />}>
+                <div className="mt-4">
+                  <UnifiedCommunicationHistory contactId={contact.id} />
+                </div>
+              </Suspense>
             </DashboardErrorBoundary>
           </TabsContent>
 

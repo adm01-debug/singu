@@ -425,7 +425,7 @@ const Contatos = () => {
         hideBack
       />
 
-       <div className="p-4 md:p-6 space-y-5">
+      <div className="p-4 md:p-6 space-y-5">
         {/* Duplicate Contacts Alert */}
         <Suspense fallback={null}>
           <DuplicateContactsPanel />

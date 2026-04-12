@@ -23,11 +23,9 @@ const DataQualityWidget = lazy(() => import('@/components/dashboard/DataQualityW
 const StrategicAccountsWidget = lazy(() => import('@/components/dashboard/widgets/StrategicAccountsWidget'));
 const ExecutiveKpisWidget = lazy(() => import('@/components/dashboard/widgets/ExecutiveKpisWidget').then(m => ({ default: m.ExecutiveKpisWidget })));
 const WeeklySummaryWidget = lazy(() => import('@/components/dashboard/widgets/WeeklySummaryWidget').then(m => ({ default: m.WeeklySummaryWidget })));
-const DailyInsightsWidget = lazy(() => import('@/components/dashboard/widgets/DailyInsightsWidget'));
 const CompleteDashboardWidget = lazy(() => import('@/components/dashboard/widgets/CompleteDashboardWidget'));
 const DailyKpisWidget = lazy(() => import('@/components/dashboard/widgets/DailyKpisWidget'));
 const CadenceAlertWidget = lazy(() => import('@/components/contact-detail/CadenceAlertWidget'));
-
 interface StaggerAnimation {
   initial: TargetAndTransition;
   animate: TargetAndTransition;
@@ -164,28 +162,21 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 3c. Daily Insights + Data Quality */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <DashboardErrorBoundary sectionName="Insights do Dia">
-          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
-            <DailyInsightsWidget />
-          </Suspense>
-        </DashboardErrorBoundary>
-        <DashboardErrorBoundary sectionName="Qualidade de Dados">
-          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
-            <DataQualityWidget />
-          </Suspense>
-        </DashboardErrorBoundary>
-      </div>
+      {/* 3c. Data Quality */}
+      <DashboardErrorBoundary sectionName="Qualidade de Dados">
+        <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
+          <DataQualityWidget />
+        </Suspense>
+      </DashboardErrorBoundary>
 
-      {/* 4. Painel Executivo */}
+      {/* 4a. Painel Executivo */}
       <DashboardErrorBoundary sectionName="Painel Executivo">
         <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-32 w-full" />}>
           <CompleteDashboardWidget />
         </Suspense>
       </DashboardErrorBoundary>
 
-      {/* 5. KPIs Diários + Alertas de Cadência */}
+      {/* 4b. KPIs Diários + Cadência */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="KPIs Diários">
           <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
@@ -199,7 +190,7 @@ export function OverviewTab({
         </DashboardErrorBoundary>
       </div>
 
-      {/* 6. Recent Activity + Top Contacts */}
+      {/* 5. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div

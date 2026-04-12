@@ -104,23 +104,6 @@ const EasterEggsProvider = lazy(() =>
   }))
 );
 
-// Observability — Web Vitals + Online Status
-const ObservabilityProvider = lazy(() =>
-  Promise.all([
-    import("@/hooks/useWebVitals"),
-    import("@/hooks/useOnlineStatus"),
-  ]).then(([vitals, online]) => ({
-    default: () => {
-      vitals.useWebVitals();
-      online.useOnlineStatus({
-        onOffline: () => { import("sonner").then(({ toast }) => toast.warning("Você está offline.")); },
-        onOnline: () => { import("sonner").then(({ toast }) => toast.success("Conexão restaurada!")); },
-      });
-      return null;
-    },
-  }))
-);
-
 // What's New — only for authenticated users outside auth route
 const WhatsNewWrapper = () => {
   const { user } = useAuth();
@@ -165,10 +148,6 @@ const DeferredAppChrome = () => {
         <>
           <Suspense fallback={null}>
             <EasterEggsProvider />
-          </Suspense>
-
-          <Suspense fallback={null}>
-            <ObservabilityProvider />
           </Suspense>
 
           <Suspense fallback={null}>

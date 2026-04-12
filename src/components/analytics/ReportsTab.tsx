@@ -20,7 +20,6 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning
 const CohortAnalysisWidget = lazy(() => import('@/components/analytics/CohortAnalysisWidget'));
 const YoyComparisonWidget = lazy(() => import('@/components/analytics/YoyComparisonWidget'));
 const MonthlyReportWidget = lazy(() => import('@/components/analytics/MonthlyReportWidget'));
-const ChurnRiskReportWidget = lazy(() => import('@/components/analytics/ChurnRiskReportWidget'));
 
 const formatCurrency = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(v);
@@ -314,9 +313,6 @@ export default function ReportsTab() {
       </Suspense>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ParetoList />
-        <Suspense fallback={<Skeleton className="h-64 rounded-lg" />}>
-          <ChurnRiskReportWidget />
-        </Suspense>
       </div>
     </div>
   );

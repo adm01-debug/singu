@@ -5,9 +5,9 @@ import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { DISCBadge } from '@/components/ui/disc-badge';
 import { ExternalDataCard } from '@/components/ui/external-data-card';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
-import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk, useAccountPlan, usePropensityScore, useCompanyHealthScore } from '@/hooks/useCompanyIntelligence';
+import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk } from '@/hooks/useCompanyIntelligence';
 import { motion } from 'framer-motion';
-import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone, Target, Gauge, HeartPulse } from 'lucide-react';
+import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Tables } from '@/integrations/supabase/types';
@@ -46,9 +46,6 @@ export function CompanyInsightsTab({
   const { data: touchpoints } = useTouchpointSummary(companyId);
   const { data: churnRisk } = useChurnRisk(companyId);
   const { data: keyContacts = [] } = useKeyContacts(companyId);
-  const { data: accountPlan } = useAccountPlan(companyId);
-  const { data: propensity } = usePropensityScore(companyId);
-  const { data: healthScore } = useCompanyHealthScore(companyId);
 
   return (
     <motion.div
@@ -93,57 +90,6 @@ export function CompanyInsightsTab({
           </CardContent>
         </Card>
       )}
-
-      {/* Health Score + Propensity + Account Plan */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {healthScore != null && (
-          <Card>
-            <CardContent className="p-4 text-center">
-              <HeartPulse className="h-5 w-5 text-primary mx-auto mb-2" />
-              <div className={`text-3xl font-bold ${healthScore.score >= 70 ? 'text-success' : healthScore.score >= 40 ? 'text-warning' : 'text-destructive'}`}>
-                {healthScore.score}%
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Health Score · {healthScore.level}</p>
-            </CardContent>
-          </Card>
-        )}
-        {propensity != null && (
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Target className="h-5 w-5 text-primary mx-auto mb-2" />
-              <div className="text-3xl font-bold text-primary">
-                {typeof propensity === 'object' ? ((propensity as { score?: number }).score?.toFixed(0) ?? '—') : Number(propensity).toFixed(0)}%
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Propensão de Compra</p>
-            </CardContent>
-          </Card>
-        )}
-        {accountPlan && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Gauge className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Plano de Conta</span>
-              </div>
-              <div className="space-y-1.5">
-                {accountPlan.objectives?.length > 0 && (
-                  <p className="text-xs text-muted-foreground">🎯 {accountPlan.objectives[0]}</p>
-                )}
-                {accountPlan.risks?.length > 0 && (
-                  <p className="text-xs text-muted-foreground">⚠️ {accountPlan.risks[0]}</p>
-                )}
-                {accountPlan.next_steps?.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {accountPlan.next_steps.slice(0, 3).map((step, i) => (
-                      <Badge key={i} variant="outline" className="text-[10px]">{step}</Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
 
       {/* Company 360 Intelligence Card */}
       <ExternalDataCard 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCompleteDashboard, type CompleteDashboardData } from '@/hooks/useCompleteDashboard';
+import { useCompleteDashboard } from '@/hooks/useCompleteDashboard';
 import { Building2, Users, MessageSquare, TrendingUp, DollarSign, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,17 +17,7 @@ const kpis: Array<{ key: string; label: string; icon: typeof Building2; color: s
 export const CompleteDashboardWidget = React.memo(function CompleteDashboardWidget() {
   const { data, isLoading } = useCompleteDashboard();
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Painel Executivo</CardTitle>
-        </CardHeader>
-        <CardContent><Skeleton className="h-24" /></CardContent>
-      </Card>
-    );
-  }
-
+  if (isLoading) return <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Painel Executivo</CardTitle></CardHeader><CardContent><Skeleton className="h-24" /></CardContent></Card>;
   if (!data?.overview) return null;
 
   const overview = data.overview;
@@ -35,24 +25,15 @@ export const CompleteDashboardWidget = React.memo(function CompleteDashboardWidg
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
-          Painel Executivo
-        </CardTitle>
+        <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" />Painel Executivo</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-3">
           {kpis.map(({ key, label, icon: Icon, color, isCurrency, isPercent }) => {
-            const value = overview[key as keyof typeof overview] as number;
-            let display: string;
-            if (isCurrency) {
-              display = `R$ ${(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`;
-            } else if (isPercent) {
-              display = `${((value || 0)).toFixed(1)}%`;
-            } else {
-              display = String(value ?? 0);
-            }
-
+            const value = (overview as Record<string, unknown>)[key] as number;
+            const display = isCurrency
+              ? `R$ ${(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}`
+              : isPercent ? `${((value || 0)).toFixed(1)}%` : String(value ?? 0);
             return (
               <div key={key} className="rounded-lg bg-muted/30 p-2.5 text-center">
                 <Icon className={cn("h-4 w-4 mx-auto mb-1", color)} />
