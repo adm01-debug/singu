@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   Mail, Phone, MessageSquare, Linkedin, Instagram, Twitter,
   Building2, Briefcase, Calendar, Edit2, ExternalLink, Copy, Check,
-  MapPin, Globe
+  MapPin, Globe, AlertTriangle, Trash2, Brain, Target, Shield, Bell
 } from 'lucide-react';
 import { OptimizedAvatar } from '@/components/ui/optimized-avatar';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { useContactRelationalData } from '@/hooks/useContactRelationalData';
+import { useContactView360 } from '@/hooks/useContactView360';
 import type { Contact, Company } from '@/hooks/useContactDetail';
 
 const STAGE_CONFIG: Record<string, { label: string; color: string }> = {
