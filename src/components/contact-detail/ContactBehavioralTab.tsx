@@ -473,31 +473,31 @@ export function ContactBehavioralTab({ contact }: Props) {
               {behavior?.preferredChannel && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Canal preferido</span>
-                  <Badge variant="outline" className="capitalize text-xs">{behavior.preferredChannel as string}</Badge>
+                  <Badge variant="outline" className="capitalize text-xs">{String(behavior.preferredChannel)}</Badge>
                 </div>
               )}
               {behavior?.messageStyle && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Estilo de msg</span>
-                  <Badge variant="outline" className="text-xs">{behavior.messageStyle as string}</Badge>
+                  <Badge variant="outline" className="text-xs">{String(behavior.messageStyle)}</Badge>
                 </div>
               )}
               {behavior?.formalityLevel && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Formalidade</span>
-                  <span className="text-xs">{behavior.formalityLevel as number}/5</span>
+                  <span className="text-xs">{Number(behavior.formalityLevel)}/5</span>
                 </div>
               )}
               {behavior?.decisionSpeed && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Vel. decisão</span>
-                  <Badge variant="outline" className="text-xs capitalize">{behavior.decisionSpeed as string}</Badge>
+                  <Badge variant="outline" className="text-xs capitalize">{String(behavior.decisionSpeed)}</Badge>
                 </div>
               )}
               {behavior?.decisionPower && (
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Poder de decisão</span>
-                  <span className="text-xs">{behavior.decisionPower as number}/10</span>
+                  <span className="text-xs">{Number(behavior.decisionPower)}/10</span>
                 </div>
               )}
             </CardContent>
