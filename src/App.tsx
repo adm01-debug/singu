@@ -168,6 +168,10 @@ const DeferredAppChrome = () => {
           </Suspense>
 
           <Suspense fallback={null}>
+            <ObservabilityProvider />
+          </Suspense>
+
+          <Suspense fallback={null}>
             <KeyboardShortcutsDialogEnhanced />
           </Suspense>
 
