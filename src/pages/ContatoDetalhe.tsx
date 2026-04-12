@@ -22,6 +22,7 @@ import {
   ContactBehavioralTab,
   ContactIntelligenceTab,
   ContactCommercialTab,
+  ContactDataTab,
 } from '@/components/contact-detail';
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
