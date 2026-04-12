@@ -130,4 +130,49 @@ describe('Architecture Audit', () => {
       expect(parsed.compilerOptions.paths['@/*']).toBeDefined();
     });
   });
+
+  describe('Security Headers', () => {
+    const html = readFile('index.html');
+
+    it('has X-Content-Type-Options nosniff', () => {
+      expect(html).toContain('X-Content-Type-Options');
+      expect(html).toContain('nosniff');
+    });
+
+    it('has X-Frame-Options DENY', () => {
+      expect(html).toContain('X-Frame-Options');
+      expect(html).toContain('DENY');
+    });
+
+    it('has Content-Security-Policy frame-ancestors', () => {
+      expect(html).toContain('Content-Security-Policy');
+      expect(html).toContain("frame-ancestors 'none'");
+    });
+
+    it('has Referrer-Policy', () => {
+      expect(html).toContain('referrer');
+      expect(html).toContain('strict-origin-when-cross-origin');
+    });
+
+    it('has Permissions-Policy restricting hardware', () => {
+      expect(html).toContain('Permissions-Policy');
+      expect(html).toContain('camera=()');
+      expect(html).toContain('payment=()');
+    });
+
+    it('does not expose server info', () => {
+      expect(html).not.toContain('X-Powered-By');
+    });
+  });
+
+  describe('CORS Security', () => {
+    it('shared auth module does not use wildcard CORS', () => {
+      const auth = readFile('supabase/functions/_shared/auth.ts');
+      const corsLine = auth.split('\\n').find(l =>
+        l.includes('Access-Control-Allow-Origin') && l.includes("corsHeaders")
+      );
+      // The static corsHeaders should not contain "*"
+      expect(auth).not.toMatch(/corsHeaders\s*=\s*\{[^}]*"Access-Control-Allow-Origin":\s*"\*"/);
+    });
+  });
 });
