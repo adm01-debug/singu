@@ -14,7 +14,8 @@ import {
   Network,
   Settings,
   X,
-  Workflow
+  Workflow,
+  Kanban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
