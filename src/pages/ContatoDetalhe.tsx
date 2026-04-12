@@ -190,6 +190,9 @@ const ContatoDetalhe = () => {
                   interactions={interactions}
                   contact={contact}
                 />
+                <Suspense fallback={<Skeleton className="h-48 rounded-lg" />}>
+                  <ContactTimelineWidget contactId={contact.id} />
+                </Suspense>
               </div>
             </DashboardErrorBoundary>
           </TabsContent>
@@ -208,6 +211,11 @@ const ContatoDetalhe = () => {
                 companyId={contact.company_id}
                 onInteractionAdded={refetch}
               />
+              <Suspense fallback={<Skeleton className="h-40 rounded-lg mt-4" />}>
+                <div className="mt-4">
+                  <UnifiedCommunicationHistory contactId={contact.id} />
+                </div>
+              </Suspense>
             </DashboardErrorBoundary>
           </TabsContent>
 
