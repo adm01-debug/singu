@@ -21,6 +21,8 @@ import { WorkspaceAccountsCard } from '@/components/contact-detail/WorkspaceAcco
 import type { Tables } from '@/integrations/supabase/types';
 import { Skeleton } from '@/components/ui/skeleton';
 const ChurnRiskWidget = lazy(() => import('./ChurnRiskWidget'));
+const ChurnPredictionsWidget = lazy(() => import('./ChurnPredictionsWidget'));
+const ContactDaysWithoutWidget = lazy(() => import('./ContactDaysWithoutWidget'));
 
 interface Props {
   contactId: string;
@@ -269,7 +271,14 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
           <ChurnRiskWidget contactId={contactId} />
         </Suspense>
+        <Suspense fallback={<Skeleton className="h-28 rounded-lg" />}>
+          <ChurnPredictionsWidget contactId={contactId} />
+        </Suspense>
       </div>
+
+      <Suspense fallback={<Skeleton className="h-12 rounded-lg" />}>
+        <ContactDaysWithoutWidget contactId={contactId} />
+      </Suspense>
 
       <AIActionsPanel
         contactId={contactId}

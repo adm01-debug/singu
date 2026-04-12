@@ -19,6 +19,9 @@ const CompanyHealthScoreWidget = lazy(() => import('./CompanyHealthScoreWidget')
 const CompanyStatisticsWidget = lazy(() => import('./CompanyStatisticsWidget'));
 const AccountPlanWidget = lazy(() => import('./AccountPlanWidget'));
 const PropensityScoreWidget = lazy(() => import('./PropensityScoreWidget'));
+const CompanyDuplicatesWidget = lazy(() => import('./CompanyDuplicatesWidget'));
+const OptimalContactWindowsWidget = lazy(() => import('./OptimalContactWindowsWidget'));
+const QuickActionsWidget = lazy(() => import('./QuickActionsWidget'));
 
 type Contact = Tables<'contacts'>;
 
@@ -397,7 +400,17 @@ export function CompanyInsightsTab({
       <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
         <AccountPlanWidget companyId={companyId} />
       </Suspense>
+      <Suspense fallback={<Skeleton className="h-32 rounded-lg" />}>
+        <CompanyDuplicatesWidget companyId={companyId} />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-20 rounded-lg" />}>
+        <OptimalContactWindowsWidget companyId={companyId} />
+      </Suspense>
     </div>
+
+    <Suspense fallback={<Skeleton className="h-16 rounded-lg" />}>
+      <QuickActionsWidget companyId={companyId} />
+    </Suspense>
     </>
   );
 }
