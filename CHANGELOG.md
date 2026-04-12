@@ -4,6 +4,25 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
+## [1.9.0] - 2026-04-12
+
+### Qualidade de Código
+- Eliminado 100% dos `any` restantes no source code (BehaviorAlertsPanel, AppreciationPanel)
+- Ativado `strictBindCallApply: true` no TypeScript para maior type safety
+- README.md atualizado com métricas atuais (4.470 testes, 31 Edge Functions)
+- Runbook operacional expandido com procedimentos de escalation e thresholds
+
+### Documentação
+- 10 ADRs formais documentados (FSD, Circuit Breaker, Auth, AI Gateway, CORS, Logger, Rate Limiting, Zod)
+- API de Edge Functions documentada no README
+- Diagrama de arquitetura atualizado
+
+### Testes
+- 4.470 testes automatizados passando (78 arquivos)
+- 0 erros TypeScript
+- 0 vulnerabilidades npm
+
+---
 
 ## [1.8.0] - 2026-04-12
 
