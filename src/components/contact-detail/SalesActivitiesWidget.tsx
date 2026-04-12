@@ -86,7 +86,7 @@ export const SalesActivitiesWidget = React.memo(function SalesActivitiesWidget({
       icon={<Activity className="h-4 w-4 text-primary" />}
       isLoading={isLoading}
       error={error}
-      isEmpty={!activities || activities.length === 0}
+      hasData={!!activities && activities.length > 0}
       emptyMessage="Nenhuma atividade de vendas encontrada"
     >
       {activities && activities.length > 0 && (

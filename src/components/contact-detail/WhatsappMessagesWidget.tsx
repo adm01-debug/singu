@@ -65,7 +65,7 @@ export const WhatsappMessagesWidget = React.memo(function WhatsappMessagesWidget
       icon={<MessageSquare className="h-4 w-4 text-success" />}
       isLoading={isLoading}
       error={error}
-      isEmpty={!messages || messages.length === 0}
+      hasData={!!messages && messages.length > 0}
       emptyMessage="Nenhuma mensagem WhatsApp encontrada"
     >
       {messages && messages.length > 0 && (
