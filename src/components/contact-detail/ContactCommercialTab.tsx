@@ -107,6 +107,16 @@ export function ContactCommercialTab({ contactId }: Props) {
       <DealVelocityCard contactId={contactId} />
       <SatisfactionCard contactId={contactId} />
 
+      {/* New commercial cards */}
+      <DealsCard contactId={contactId} />
+      <ProposalsCard contactId={contactId} />
+      <MeetingsCard contactId={contactId} />
+      <TasksCard contactId={contactId} />
+      <EmailLogsCard contactId={contactId} />
+      <NpsCard contactId={contactId} />
+      <CadenceEnrollmentsCard contactId={contactId} />
+      <InactivityAlertsCard contactId={contactId} />
+
       {/* Deals & Leads Pipeline — full-width */}
       <div className="md:col-span-2">
         <DealsLeadsPipelineCard contactId={contactId} />
