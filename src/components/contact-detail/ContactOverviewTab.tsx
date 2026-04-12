@@ -488,6 +488,12 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
 
       {/* Statistics Widget — full width */}
       <ContactStatisticsWidget contactId={contact.id} />
+
+      {/* WhatsApp & Sales Activities */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <WhatsappMessagesWidget contactId={contact.id} />
+        <SalesActivitiesWidget contactName={`${contact.first_name} ${contact.last_name}`.trim()} />
+      </div>
     </div>
   );
 }
