@@ -292,11 +292,26 @@ Deno.serve(async (req) => {
       return jsonOk({ results }, req);
     }
 
+    const client = getExternalClient();
+
+    // ─── RPC (call external database functions) — must run BEFORE table validation ───
+    if (operation === 'rpc') {
+      const functionName = typeof body.functionName === 'string' ? body.functionName : undefined;
+      if (!functionName || !isAllowedRpc(functionName)) {
+        return jsonError(`Invalid or disallowed RPC: "${functionName}"`, 400, req);
+      }
+
+      const params = (body.params && typeof body.params === 'object') ? body.params : {};
+
+      const { data, error } = await client.rpc(functionName, params as Record<string, unknown>);
+      if (error) throw new Error(`RPC ${functionName} failed: ${error.message}`);
+      return jsonOk({ data }, req);
+    }
+
+    // ─── Table validation (for non-RPC actions) ───
     if (!table || typeof table !== 'string' || !isAllowedTable(table)) {
       return jsonError(`Invalid table "${table}". Only allowed tables are permitted.`, 400, req);
     }
-
-    const client = getExternalClient();
 
     // ─── SELECT (read) ───
     if (operation === 'select') {
