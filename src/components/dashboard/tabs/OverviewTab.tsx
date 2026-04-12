@@ -185,7 +185,21 @@ export function OverviewTab({
         </Suspense>
       </DashboardErrorBoundary>
 
-      {/* 5. Recent Activity + Top Contacts */}
+      {/* 5. KPIs Diários + Alertas de Cadência */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DashboardErrorBoundary sectionName="KPIs Diários">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <DailyKpisWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+        <DashboardErrorBoundary sectionName="Cadência">
+          <Suspense fallback={<Surface level={1} rounded="lg" className="animate-pulse h-28 w-full" />}>
+            <CadenceAlertWidget />
+          </Suspense>
+        </DashboardErrorBoundary>
+      </div>
+
+      {/* 6. Recent Activity + Top Contacts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardErrorBoundary sectionName="Atividade Recente">
           <motion.div
