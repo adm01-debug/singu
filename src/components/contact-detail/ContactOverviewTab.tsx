@@ -23,6 +23,7 @@ import { BestContactTimeWidget } from './BestContactTimeWidget';
 import { EngagementScoreWidget } from './EngagementScoreWidget';
 import { EffectivenessWidget } from './EffectivenessWidget';
 import { ContactStatisticsWidget } from './ContactStatisticsWidget';
+import { ContactTimelineWidget } from './ContactTimelineWidget';
 
 interface Props {
   contact: Contact;
@@ -484,8 +485,11 @@ export function ContactOverviewTab({ contact, company, insights, alerts, onDismi
         <EffectivenessWidget contactId={contact.id} />
       </div>
 
-      {/* Statistics Widget — full width */}
-      <ContactStatisticsWidget contactId={contact.id} />
+      {/* Statistics & Timeline */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ContactStatisticsWidget contactId={contact.id} />
+        <ContactTimelineWidget contactId={contact.id} />
+      </div>
     </div>
   );
 }

@@ -53,6 +53,8 @@ import { UsageKpisWidget } from '@/components/analytics/UsageKpisWidget';
 import { DiscDashboardWidget } from '@/components/analytics/DiscDashboardWidget';
 import { BirthdayContactsWidget } from '@/components/analytics/BirthdayContactsWidget';
 import { OrphanContactsWidget } from '@/components/analytics/OrphanContactsWidget';
+import { InactiveContactsWidget } from '@/components/analytics/InactiveContactsWidget';
+import { ContactsWithoutInteractionWidget } from '@/components/analytics/ContactsWithoutInteractionWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
 // Extracted data & shared components
@@ -304,6 +306,12 @@ const Analytics = () => {
               </motion.div>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
                 <OrphanContactsWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
+                <InactiveContactsWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
+                <ContactsWithoutInteractionWidget />
               </motion.div>
             </div>
           </TabsContent>
