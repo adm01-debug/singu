@@ -1,4 +1,4 @@
-import { AlertTriangle, Target, Heart, Gift, CheckCircle2, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Target, Heart, Gift } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -212,12 +212,6 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
           {offers.length > 0 ? (
             <div className="space-y-2">
               {offers.map((o) => {
-                const statusConfig: Record<string, string> = {
-                  pending: 'bg-warning text-warning',
-                  presented: 'bg-info text-info',
-                  accepted: 'bg-success text-success',
-                  rejected: 'bg-destructive text-destructive',
-                };
                 return (
                   <div key={o.id} className="rounded-lg border p-2.5 text-sm">
                     <div className="flex items-center justify-between gap-2">
