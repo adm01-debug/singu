@@ -29,6 +29,8 @@ import { CompanyProfileCard } from '@/components/company-detail/CompanyProfileCa
 import { CompanyInsightsTab } from '@/components/company-detail/CompanyInsightsTab';
 import { CompanyInteractionsTab } from '@/components/company-detail/CompanyInteractionsTab';
 import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
+import { CompanyEnrichedCard } from '@/components/company-detail/CompanyEnrichedCard';
+import { CompanyDuplicatesPanel } from '@/components/company-detail/CompanyDuplicatesPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
@@ -307,7 +309,7 @@ const EmpresaDetalhe = () => {
                   </DashboardErrorBoundary>
                 </TabsContent>
 
-                <TabsContent value="data" className="mt-4">
+                <TabsContent value="data" className="mt-4 space-y-4">
                   <DashboardErrorBoundary sectionName="Dados">
                     <CompanyDataTab
                       cnaes={cnaesHook.data}
@@ -315,6 +317,12 @@ const EmpresaDetalhe = () => {
                       stakeholders={stakeholdersHook.data}
                       loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading}
                     />
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Dados Enriquecidos">
+                    <CompanyEnrichedCard companyId={id!} />
+                  </DashboardErrorBoundary>
+                  <DashboardErrorBoundary sectionName="Duplicatas">
+                    <CompanyDuplicatesPanel />
                   </DashboardErrorBoundary>
                 </TabsContent>
 

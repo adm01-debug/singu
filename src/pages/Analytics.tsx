@@ -48,6 +48,9 @@ import {
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { DataHealthWidget } from '@/components/analytics/DataHealthWidget';
+import { UsageKpisWidget } from '@/components/analytics/UsageKpisWidget';
+import { DiscDashboardWidget } from '@/components/analytics/DiscDashboardWidget';
 import type { PeriodFilter } from '@/lib/tab-utils';
 
 // Extracted data & shared components
@@ -276,6 +279,19 @@ const Analytics = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </motion.div>
+            </div>
+
+            {/* External Intelligence Widgets */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <DataHealthWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                <UsageKpisWidget />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+                <DiscDashboardWidget />
               </motion.div>
             </div>
           </TabsContent>
