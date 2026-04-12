@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
     const event = payload.event;
     const instance = payload.instance;
 
-    console.log(`Evolution webhook [${event}] from instance: ${instance}`);
+    // Evolution webhook [${event}] from instance: ${instance}`);
 
     // Route to handler based on event type
     switch (event) {
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         return await handleSendMessage(supabase, payload, instance);
 
       default:
-        console.log(`Unhandled event: ${event}`);
+        // Unhandled event: ${event}`);
         return jsonResponse({ status: 'ignored', event });
     }
 
@@ -204,7 +204,7 @@ async function findContactByPhone(supabase: any, phoneNumber: string): Promise<{
     return { contactId: null, userId: defaultUserId, companyId: null, source: null };
   }
 
-  console.log(`Created new local contact: ${newContact.id}`);
+  // Created new contact: ${newContact.id}`);
   return {
     contactId: newContact.id,
     userId: defaultUserId,
@@ -277,7 +277,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
   // Find contact using enhanced search (local -> external -> create)
   const { contactId, userId, companyId, source } = await findContactByPhone(supabase, phoneNumber || '');
 
-  console.log(`Contact resolution: contactId=${contactId}, userId=${userId}, source=${source}`);
+  // Contact resolved: contactId=${contactId}, userId=${userId}, source=${source}`);
 
   // Save WhatsApp message
   if (userId) {
@@ -326,7 +326,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
         .from('contacts')
         .update({ first_name: senderName, last_name: '' })
         .eq('id', contactId);
-      console.log(`Updated created contact name to: ${senderName}`);
+      // Updated contact name: ${senderName}`);
     }
 
     const interactionTitle = isFromMe 
@@ -358,7 +358,7 @@ async function handleMessageUpsert(supabase: any, payload: any, instance: string
     if (interactionError) {
       console.error('Error creating interaction:', interactionError.message);
     } else {
-      console.log(`Interaction created: ${interaction.id} (contact source: ${source})`);
+      // Interaction created: ${interaction.id} (contact source: ${source})`);
 
       // Trigger DISC analysis for long messages
       if (messageContent.length >= 100 && contactId) {
@@ -429,7 +429,7 @@ async function handleConnectionUpdate(supabase: any, payload: any, instance: str
   const { data } = payload;
   const state = data?.state; // open, close, connecting
 
-  console.log(`Instance ${instance} connection: ${state}`);
+  // Instance ${instance} connection: ${state}`);
 
   const updates: Record<string, any> = {
     status: state === 'open' ? 'connected' : state === 'close' ? 'disconnected' : 'connecting',
@@ -477,7 +477,7 @@ async function handleContactsUpsert(supabase: any, payload: any, instance: strin
       .not('avatar_url', 'is', null); // Only update if they don't already have a custom avatar
 
     if (error) {
-      console.log('Contact not found for update:', phoneNumber);
+      // Contact not found for presence update;
     }
   }
 
@@ -490,7 +490,7 @@ async function handleContactsUpsert(supabase: any, payload: any, instance: strin
 async function handlePresenceUpdate(supabase: any, payload: any, instance: string) {
   const { data } = payload;
   // Presence updates are ephemeral - we log but don't persist them heavily
-  console.log(`Presence update: ${data?.id} -> ${JSON.stringify(data?.presences)}`);
+  // Presence update: ${data?.id} -> ${JSON.stringify(data?.presences)}`);
   return jsonResponse({ status: 'logged', presenceId: data?.id });
 }
 
