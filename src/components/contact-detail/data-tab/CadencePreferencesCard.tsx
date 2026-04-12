@@ -52,6 +52,21 @@ export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cad
     notes: cadence?.notes ?? '',
   });
 
+  const [prefsForm, setPrefsForm] = useState({
+    preferred_channel: preferences?.preferred_channel ?? 'whatsapp',
+    preferred_days: preferences?.preferred_days ?? [],
+    avoid_days: preferences?.avoid_days ?? [],
+    communication_tips: preferences?.communication_tips ?? '',
+    personal_notes: preferences?.personal_notes ?? '',
+    restrictions: preferences?.restrictions ?? '',
+  });
+
+  const DAYS_LIST = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const DAY_LABELS: Record<string, string> = { monday: 'Seg', tuesday: 'Ter', wednesday: 'Qua', thursday: 'Qui', friday: 'Sex', saturday: 'Sáb', sunday: 'Dom' };
+
+  const toggleDayInList = (day: string, list: string[]) =>
+    list.includes(day) ? list.filter(d => d !== day) : [...list, day];
+
   const handleSaveCadence = () => {
     if (onSaveCadence) {
       onSaveCadence({
@@ -62,6 +77,32 @@ export const CadencePreferencesCard = memo(function CadencePreferencesCard({ cad
       });
     }
     setEditingCadence(false);
+  };
+
+  const handleSavePrefs = () => {
+    if (onSavePreferences) {
+      onSavePreferences({
+        preferred_channel: prefsForm.preferred_channel || null,
+        preferred_days: prefsForm.preferred_days.length ? prefsForm.preferred_days : null,
+        avoid_days: prefsForm.avoid_days.length ? prefsForm.avoid_days : null,
+        communication_tips: prefsForm.communication_tips || null,
+        personal_notes: prefsForm.personal_notes || null,
+        restrictions: prefsForm.restrictions || null,
+      });
+    }
+    setEditingPrefs(false);
+  };
+
+  const startEditingPrefs = () => {
+    setPrefsForm({
+      preferred_channel: preferences?.preferred_channel ?? 'whatsapp',
+      preferred_days: preferences?.preferred_days ?? [],
+      avoid_days: preferences?.avoid_days ?? [],
+      communication_tips: preferences?.communication_tips ?? '',
+      personal_notes: preferences?.personal_notes ?? '',
+      restrictions: preferences?.restrictions ?? '',
+    });
+    setEditingPrefs(true);
   };
 
   return (
