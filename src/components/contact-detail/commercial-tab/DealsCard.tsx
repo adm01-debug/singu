@@ -28,7 +28,7 @@ export function DealsCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       onRetry={refetch}
-      isEmpty={!deals?.length}
+      hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
       emptyMessage="Nenhum negócio vinculado"
       badge={deals?.length ? `${deals.length}` : undefined}
     >

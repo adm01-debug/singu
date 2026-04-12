@@ -22,7 +22,7 @@ export function CadenceEnrollmentsCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       onRetry={refetch}
-      isEmpty={!enrollments?.length}
+      hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
       emptyMessage="Não inscrito em cadências"
       badge={enrollments?.length ? `${enrollments.length}` : undefined}
     >

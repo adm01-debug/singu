@@ -26,7 +26,7 @@ export function TasksCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       onRetry={refetch}
-      isEmpty={!tasks?.length}
+      hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
       emptyMessage="Nenhuma tarefa vinculada"
       badge={pending.length ? `${pending.length} pendente(s)` : tasks?.length ? `${tasks.length}` : undefined}
     >

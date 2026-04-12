@@ -24,7 +24,7 @@ export function ProposalsCard({ contactId }: Props) {
       isLoading={isLoading}
       error={error}
       onRetry={refetch}
-      isEmpty={!proposals?.length}
+      hasData={!!data?.length || !!deals?.length || !!proposals?.length || !!meetings?.length || !!tasks?.length || !!emails?.length || !!surveys?.length || !!enrollments?.length || !!alerts?.length}
       emptyMessage="Nenhuma proposta vinculada"
       badge={proposals?.length ? `${proposals.length}` : undefined}
     >
