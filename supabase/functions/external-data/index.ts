@@ -69,12 +69,6 @@ const ALLOWED_RPCS = [
   'create_task', 'get_pending_tasks', 'get_overdue_tasks',
   'create_reminder', 'snooze_reminder', 'complete_task',
   'get_tasks_by_contact', 'get_all_tasks',
-  // ── Products ──
-  'get_products', 'create_product', 'update_product', 'delete_product',
-  'get_product_categories', 'get_products_by_category',
-  // ── Proposals ──
-  'create_proposal', 'get_proposals', 'get_proposal_by_id',
-  'update_proposal', 'send_proposal', 'get_proposal_templates',
   // ── Territories ──
   'get_territories', 'create_territory', 'update_territory',
   'get_territory_performance', 'assign_territory',
