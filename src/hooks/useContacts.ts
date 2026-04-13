@@ -53,6 +53,17 @@ function normalizeExternalContact(raw: Record<string, unknown>): Contact {
 
 const PAGE_SIZE = 50;
 
+/** Lean select for listing — excludes heavy JSON blobs (behavior, life_events, extra_data) */
+const CONTACT_LISTING_SELECT = [
+  'id', 'first_name', 'last_name', 'full_name', 'nome_tratamento', 'apelido',
+  'cargo', 'departamento', 'sexo', 'email', 'phone', 'whatsapp',
+  'company_id', 'relationship_score', 'relationship_stage', 'sentiment',
+  'tags_array', 'interests_array', 'hobbies',
+  'avatar_url', 'birthday', 'source',
+  'updated_at', 'created_at', 'user_id',
+  'bitrix_contact_id', 'is_duplicate', 'duplicate_of',
+].join(',');
+
 async function fetchContactsPage(companyId?: string) {
   const filters = companyId
     ? [{ type: 'eq' as const, column: 'company_id', value: companyId }]
@@ -60,6 +71,7 @@ async function fetchContactsPage(companyId?: string) {
 
   const { data, error } = await queryExternalData<Record<string, unknown>>({
     table: 'contacts',
+    select: CONTACT_LISTING_SELECT,
     order: { column: 'updated_at', ascending: false },
     range: { from: 0, to: PAGE_SIZE - 1 },
     filters,

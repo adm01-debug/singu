@@ -19,6 +19,8 @@ export function useDuplicateContacts(enabled = true) {
   return useQuery({
     queryKey: ['duplicate-contacts'],
     queryFn: async () => {
+      // Defer this non-critical check to avoid blocking page load
+      await new Promise(r => setTimeout(r, 5000));
       try {
         const { data, error } = await callExternalRpc<DuplicateContact[]>(
           'get_duplicate_contacts',
@@ -35,7 +37,7 @@ export function useDuplicateContacts(enabled = true) {
       }
     },
     enabled,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
     retry: false,
   });
 }
