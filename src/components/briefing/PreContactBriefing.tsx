@@ -1,144 +1,47 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-  Phone,
-  Video,
-  Calendar,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Brain,
-  Target,
-  MessageSquare,
-  Zap,
-  AlertTriangle,
-  CheckCircle,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Eye,
-  Ear,
-  Hand,
-  Cpu,
-  Heart,
-  Lightbulb,
-  Copy,
-  Check,
-  User
-} from 'lucide-react';
+import { Phone, Video, Calendar, X, Clock, Brain, Target, Zap, CheckCircle, TrendingUp, TrendingDown, Minus, Eye, Ear, Hand, Cpu, Heart, User } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { usePreContactBriefing } from '@/hooks/usePreContactBriefing';
 import { NeuroBriefingCard } from '@/components/neuromarketing';
 import { cn } from '@/lib/utils';
+import { OpeningTipsSection, WordsSection, ValuesSection, DISCStrategiesSection, ObjectionsWarning, ClosingReadiness } from './pre-contact/BriefingSections';
 
-const interactionTypeIcons: Record<string, React.ElementType> = {
-  call: Phone,
-  meeting: Calendar,
-  video_call: Video,
-};
+const interactionTypeIcons: Record<string, React.ElementType> = { call: Phone, meeting: Calendar, video_call: Video };
+const vakIcons: Record<string, React.ElementType> = { Visual: Eye, Auditory: Ear, Kinesthetic: Hand, Digital: Cpu };
+const vakColors: Record<string, string> = { Visual: 'text-info bg-info/10', Auditory: 'text-secondary bg-secondary/10', Kinesthetic: 'text-accent bg-accent/10', Digital: 'text-success bg-success/10' };
 
-const vakIcons: Record<string, React.ElementType> = {
-  Visual: Eye,
-  Auditory: Ear,
-  Kinesthetic: Hand,
-  Digital: Cpu,
-};
-
-const vakColors: Record<string, string> = {
-  Visual: 'text-info bg-info/10',
-  Auditory: 'text-secondary bg-secondary/10',
-  Kinesthetic: 'text-accent bg-accent/10',
-  Digital: 'text-success bg-success/10',
-};
-
-interface PreContactBriefingProps {
-  className?: string;
-  compact?: boolean;
-}
+interface PreContactBriefingProps { className?: string; compact?: boolean; }
 
 export function PreContactBriefing({ className, compact = false }: PreContactBriefingProps) {
   const { upcomingBriefings, activeBriefing, loading, dismissBriefing, showBriefingFor } = usePreContactBriefing();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['tips', 'words']));
   const [copiedText, setCopiedText] = useState<string | null>(null);
 
-  const handleCopy = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedText(id);
-    setTimeout(() => setCopiedText(null), 2000);
-  };
+  const handleCopy = (text: string, id: string) => { navigator.clipboard.writeText(text); setCopiedText(id); setTimeout(() => setCopiedText(null), 2000); };
+  const toggleSection = (section: string) => { setExpandedSections(prev => { const next = new Set(prev); if (next.has(section)) next.delete(section); else next.add(section); return next; }); };
 
-  const toggleSection = (section: string) => {
-    setExpandedSections(prev => {
-      const next = new Set(prev);
-      if (next.has(section)) {
-        next.delete(section);
-      } else {
-        next.add(section);
-      }
-      return next;
-    });
-  };
+  if (loading || (upcomingBriefings.length === 0 && !activeBriefing)) return null;
 
-  if (loading) {
-    return null;
-  }
-
-  if (upcomingBriefings.length === 0 && !activeBriefing) {
-    return null;
-  }
-
-  // Compact view - just shows upcoming meetings as cards
+  // Compact view
   if (compact && !activeBriefing) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={className}
-      >
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={className}>
         <Card className="border-primary/20 bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-              <Brain className="w-4 h-4" />
-              Briefing Pré-Contato
-            </CardTitle>
-          </CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary"><Brain className="w-4 h-4" />Briefing Pré-Contato</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {upcomingBriefings.slice(0, 3).map((briefing) => {
               const Icon = interactionTypeIcons[briefing.interaction.type] || Phone;
               return (
-                <motion.div
-                  key={briefing.interaction.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer group"
-                  onClick={() => showBriefingFor(briefing.interaction.id)}
-                >
-                  <Avatar className="h-8 w-8 border border-primary/20">
-                    <AvatarImage src={briefing.contact.avatar_url || ''} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                      {briefing.contact.first_name} {briefing.contact.last_name}
-                    </p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Icon className="w-3 h-3" />
-                      {briefing.interaction.title}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="text-xs shrink-0">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {briefing.minutesUntilMeeting}min
-                  </Badge>
+                <motion.div key={briefing.interaction.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-2 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer group" onClick={() => showBriefingFor(briefing.interaction.id)}>
+                  <Avatar className="h-8 w-8 border border-primary/20"><AvatarImage src={briefing.contact.avatar_url || ''} /><AvatarFallback className="bg-primary/10 text-primary text-xs">{briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}</AvatarFallback></Avatar>
+                  <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{briefing.contact.first_name} {briefing.contact.last_name}</p><p className="text-xs text-muted-foreground flex items-center gap-1"><Icon className="w-3 h-3" />{briefing.interaction.title}</p></div>
+                  <Badge variant="outline" className="text-xs shrink-0"><Clock className="w-3 h-3 mr-1" />{briefing.minutesUntilMeeting}min</Badge>
                 </motion.div>
               );
             })}
@@ -148,408 +51,60 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
     );
   }
 
-  // Active briefing - full 30-second view
+  // Active briefing
   if (activeBriefing) {
     const briefing = activeBriefing;
     const Icon = interactionTypeIcons[briefing.interaction.type] || Phone;
     const VAKIcon = vakIcons[briefing.vakProfile.dominant] || Brain;
-    const TrendIcon = briefing.emotionalProfile.trend === 'improving' ? TrendingUp :
-                      briefing.emotionalProfile.trend === 'declining' ? TrendingDown : Minus;
+    const TrendIcon = briefing.emotionalProfile.trend === 'improving' ? TrendingUp : briefing.emotionalProfile.trend === 'declining' ? TrendingDown : Minus;
 
     return (
       <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          className={cn("fixed inset-x-4 top-20 z-50 max-w-2xl mx-auto", className)}
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.95, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} className={cn("fixed inset-x-4 top-20 z-50 max-w-2xl mx-auto", className)}>
           <Card className="border border-primary/20 bg-background/95 backdrop-blur-lg">
-            {/* Header */}
             <CardHeader className="pb-3 bg-primary/5 rounded-t-lg">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Avatar className="h-14 w-14 border-2 border-primary/30">
-                      <AvatarImage src={briefing.contact.avatar_url || ''} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
-                        {briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-primary text-primary-foreground">
-                      <Icon className="w-3 h-3" />
-                    </div>
+                    <Avatar className="h-14 w-14 border-2 border-primary/30"><AvatarImage src={briefing.contact.avatar_url || ''} /><AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}</AvatarFallback></Avatar>
+                    <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-primary text-primary-foreground"><Icon className="w-3 h-3" /></div>
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-foreground">
-                      {briefing.contact.first_name} {briefing.contact.last_name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {briefing.company?.name || briefing.contact.role_title || 'Contato'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge className="bg-primary/10 text-primary border-primary/30">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Em {briefing.minutesUntilMeeting} min
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {briefing.interaction.title}
-                      </Badge>
-                    </div>
+                    <h3 className="text-lg font-bold text-foreground">{briefing.contact.first_name} {briefing.contact.last_name}</h3>
+                    <p className="text-sm text-muted-foreground">{briefing.company?.name || briefing.contact.role_title || 'Contato'}</p>
+                    <div className="flex items-center gap-2 mt-1"><Badge className="bg-primary/10 text-primary border-primary/30"><Clock className="w-3 h-3 mr-1" />Em {briefing.minutesUntilMeeting} min</Badge><Badge variant="outline" className="text-xs">{briefing.interaction.title}</Badge></div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Link to={`/contatos/${briefing.contact.id}`}>
-                    <Button variant="ghost" size="sm">
-                      <User className="w-4 h-4 mr-1" />
-                      Perfil
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => dismissBriefing(briefing.interaction.id)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="w-5 h-5" />
-                  </Button>
+                  <Link to={`/contatos/${briefing.contact.id}`}><Button variant="ghost" size="sm"><User className="w-4 h-4 mr-1" />Perfil</Button></Link>
+                  <Button variant="ghost" size="icon" onClick={() => dismissBriefing(briefing.interaction.id)} className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></Button>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto">
-              {/* Quick Stats Row */}
               <div className="grid grid-cols-4 gap-3">
-                {/* VAK */}
-                <div className={cn("p-3 rounded-lg text-center", vakColors[briefing.vakProfile.dominant])}>
-                  <VAKIcon className="w-5 h-5 mx-auto mb-1" />
-                  <p className="text-xs font-medium">{briefing.vakProfile.dominant}</p>
-                  <p className="text-[10px] opacity-70">Estilo PNL</p>
-                </div>
-
-                {/* DISC */}
-                <div className="p-3 rounded-lg text-center bg-secondary/50">
-                  <Target className="w-5 h-5 mx-auto mb-1 text-foreground" />
-                  <p className="text-xs font-medium">{briefing.discProfile.type || 'N/A'}</p>
-                  <p className="text-[10px] text-muted-foreground">Perfil DISC</p>
-                </div>
-
-                {/* Emotional State */}
-                <div className={cn(
-                  "p-3 rounded-lg text-center",
-                  briefing.emotionalProfile.currentState === 'Positivo' ? 'bg-success/10 text-success' :
-                  briefing.emotionalProfile.currentState === 'Cauteloso' ? 'bg-warning/10 text-warning' :
-                  'bg-muted text-muted-foreground'
-                )}>
-                  <TrendIcon className="w-5 h-5 mx-auto mb-1" />
-                  <p className="text-xs font-medium">{briefing.emotionalProfile.currentState}</p>
-                  <p className="text-[10px] opacity-70">Estado</p>
-                </div>
-
-                {/* Rapport Score */}
-                <div className={cn(
-                  "p-3 rounded-lg text-center",
-                  briefing.rapportScore >= 70 ? 'bg-success/10 text-success' :
-                  briefing.rapportScore >= 40 ? 'bg-warning/10 text-warning' :
-                  'bg-destructive/10 text-destructive'
-                )}>
-                  <Heart className="w-5 h-5 mx-auto mb-1" />
-                  <p className="text-xs font-medium">{briefing.rapportScore}%</p>
-                  <p className="text-[10px] opacity-70">Rapport</p>
-                </div>
+                <div className={cn("p-3 rounded-lg text-center", vakColors[briefing.vakProfile.dominant])}><VAKIcon className="w-5 h-5 mx-auto mb-1" /><p className="text-xs font-medium">{briefing.vakProfile.dominant}</p><p className="text-[10px] opacity-70">Estilo PNL</p></div>
+                <div className="p-3 rounded-lg text-center bg-secondary/50"><Target className="w-5 h-5 mx-auto mb-1 text-foreground" /><p className="text-xs font-medium">{briefing.discProfile.type || 'N/A'}</p><p className="text-[10px] text-muted-foreground">Perfil DISC</p></div>
+                <div className={cn("p-3 rounded-lg text-center", briefing.emotionalProfile.currentState === 'Positivo' ? 'bg-success/10 text-success' : briefing.emotionalProfile.currentState === 'Cauteloso' ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground')}><TrendIcon className="w-5 h-5 mx-auto mb-1" /><p className="text-xs font-medium">{briefing.emotionalProfile.currentState}</p><p className="text-[10px] opacity-70">Estado</p></div>
+                <div className={cn("p-3 rounded-lg text-center", briefing.rapportScore >= 70 ? 'bg-success/10 text-success' : briefing.rapportScore >= 40 ? 'bg-warning/10 text-warning' : 'bg-destructive/10 text-destructive')}><Heart className="w-5 h-5 mx-auto mb-1" /><p className="text-xs font-medium">{briefing.rapportScore}%</p><p className="text-[10px] opacity-70">Rapport</p></div>
               </div>
 
-              {/* Last Interaction */}
-              {briefing.lastInteractionSummary && (
-                <div className="p-3 rounded-lg bg-muted/50 text-sm">
-                  <p className="text-xs text-muted-foreground mb-1">Última interação:</p>
-                  <p className="font-medium">{briefing.lastInteractionSummary}</p>
-                </div>
-              )}
-
-              {/* Neuro Briefing Card - Quick Neural Summary */}
-              <NeuroBriefingCard
-                contactName={`${briefing.contact.first_name} ${briefing.contact.last_name}`}
-                discProfile={briefing.discProfile?.type !== 'N/A' ? briefing.discProfile?.type : null}
-                interactions={[]}
-              />
-
+              {briefing.lastInteractionSummary && <div className="p-3 rounded-lg bg-muted/50 text-sm"><p className="text-xs text-muted-foreground mb-1">Última interação:</p><p className="font-medium">{briefing.lastInteractionSummary}</p></div>}
+              <NeuroBriefingCard contactName={`${briefing.contact.first_name} ${briefing.contact.last_name}`} discProfile={briefing.discProfile?.type !== 'N/A' ? briefing.discProfile?.type : null} interactions={[]} />
               <Separator />
 
-              {/* Opening Tips Section */}
-              <div>
-                <button
-                  onClick={() => toggleSection('tips')}
-                  aria-expanded={expandedSections.has('tips')}
-                  aria-label="Expandir Dicas de Abertura"
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-warning" />
-                    <span className="font-semibold text-sm">Dicas de Abertura</span>
-                  </div>
-                  {expandedSections.has('tips') ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedSections.has('tips') && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-2 space-y-1">
-                        {briefing.openingTips.map((tip, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-start gap-2 p-2 rounded-lg bg-warning/5 text-sm"
-                          >
-                            <CheckCircle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
-                            <span>{tip}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Words to Use/Avoid Section */}
-              <div>
-                <button
-                  onClick={() => toggleSection('words')}
-                  aria-expanded={expandedSections.has('words')}
-                  aria-label="Expandir Palavras Mágicas"
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-primary" />
-                    <span className="font-semibold text-sm">Palavras Mágicas</span>
-                  </div>
-                  {expandedSections.has('words') ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedSections.has('words') && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-2 grid grid-cols-2 gap-3">
-                        {/* Use */}
-                        <div className="p-3 rounded-lg bg-success/5 border border-success/20">
-                          <p className="text-xs font-medium text-success mb-2 flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" /> USE
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {briefing.wordsToUse.map((word, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => handleCopy(word, `use-${idx}`)}
-                                aria-label={`Copiar palavra: ${word}`}
-                                className="text-xs px-2 py-1 rounded-full bg-success/10 text-success hover:bg-success/20 transition-colors flex items-center gap-1"
-                              >
-                                {word}
-                                {copiedText === `use-${idx}` ? (
-                                  <Check className="w-3 h-3" />
-                                ) : (
-                                  <Copy className="w-3 h-3 opacity-50" />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Avoid */}
-                        <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/20">
-                          <p className="text-xs font-medium text-destructive mb-2 flex items-center gap-1">
-                            <X className="w-3 h-3" /> EVITE
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {briefing.wordsToAvoid.map((word, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs px-2 py-1 rounded-full bg-destructive/10 text-destructive"
-                              >
-                                {word}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Values Section */}
-              <div>
-                <button
-                  onClick={() => toggleSection('values')}
-                  aria-expanded={expandedSections.has('values')}
-                  aria-label="Expandir Valores Importantes"
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-accent" />
-                    <span className="font-semibold text-sm">Valores Importantes</span>
-                  </div>
-                  {expandedSections.has('values') ? (
-                    <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {expandedSections.has('values') && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {briefing.topValues.map((value, idx) => (
-                          <Badge key={idx} variant="secondary" className="capitalize">
-                            {value}
-                          </Badge>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* DISC Sales Strategies Section */}
-              {briefing.discProfile.type !== 'N/A' && (
-                <div>
-                  <button
-                    onClick={() => toggleSection('disc')}
-                    className="flex items-center justify-between w-full text-left"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-primary" />
-                      <span className="font-semibold text-sm">Estratégias DISC ({briefing.discProfile.type})</span>
-                    </div>
-                    {expandedSections.has('disc') ? (
-                      <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                    )}
-                  </button>
-                  <AnimatePresence>
-                    {expandedSections.has('disc') && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-2 space-y-3">
-                          {/* Opening Strategies */}
-                          <div className="p-2 rounded-lg bg-primary/5 border border-primary/20">
-                            <p className="text-xs font-medium text-primary mb-1">🎯 Abertura</p>
-                            <ul className="text-xs space-y-0.5 text-muted-foreground">
-                              {briefing.discProfile.salesStrategies.opening.slice(0, 2).map((tip, i) => (
-                                <li key={i} className="flex items-start gap-1">
-                                  <CheckCircle className="w-3 h-3 text-primary shrink-0 mt-0.5" />
-                                  {tip}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Closing Strategies */}
-                          <div className="p-2 rounded-lg bg-success/5 border border-success/20">
-                            <p className="text-xs font-medium text-success mb-1">🏆 Fechamento</p>
-                            <ul className="text-xs space-y-0.5 text-muted-foreground">
-                              {briefing.discProfile.salesStrategies.closing.slice(0, 2).map((tip, i) => (
-                                <li key={i} className="flex items-start gap-1">
-                                  <CheckCircle className="w-3 h-3 text-success shrink-0 mt-0.5" />
-                                  {tip}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          {/* Avoid Behaviors */}
-                          <div className="p-2 rounded-lg bg-destructive/5 border border-destructive/20">
-                            <p className="text-xs font-medium text-destructive mb-1">⚠️ Evite</p>
-                            <ul className="text-xs space-y-0.5 text-muted-foreground">
-                              {briefing.discProfile.avoidBehaviors.slice(0, 2).map((avoid, i) => (
-                                <li key={i} className="flex items-start gap-1">
-                                  <X className="w-3 h-3 text-destructive shrink-0 mt-0.5" />
-                                  {avoid}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* Objections Warning */}
-              {briefing.recentObjections.length > 0 && (
-                <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-warning" />
-                    <span className="text-sm font-medium text-warning">Atenção: Objeções Detectadas</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {briefing.recentObjections.map((objection, idx) => (
-                      <Badge key={idx} variant="outline" className="border-warning/30 text-warning">
-                        {objection}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Closing Readiness */}
-              <div className="p-3 rounded-lg bg-secondary/50">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Potencial de Fechamento</span>
-                  <Badge className={cn(
-                    briefing.closingMoment === 'Alto potencial' ? 'bg-success text-success-foreground' :
-                    briefing.closingMoment === 'Moderado' ? 'bg-warning text-warning-foreground' :
-                    'bg-muted text-muted-foreground'
-                  )}>
-                    {briefing.closingMoment}
-                  </Badge>
-                </div>
-                <Progress 
-                  value={briefing.closingMoment === 'Alto potencial' ? 85 : 
-                         briefing.closingMoment === 'Moderado' ? 50 : 25} 
-                  className="h-2"
-                />
-              </div>
+              <OpeningTipsSection tips={briefing.openingTips} isExpanded={expandedSections.has('tips')} onToggle={() => toggleSection('tips')} />
+              <WordsSection wordsToUse={briefing.wordsToUse} wordsToAvoid={briefing.wordsToAvoid} copiedText={copiedText} onCopy={handleCopy} isExpanded={expandedSections.has('words')} onToggle={() => toggleSection('words')} />
+              <ValuesSection values={briefing.topValues} isExpanded={expandedSections.has('values')} onToggle={() => toggleSection('values')} />
+              <DISCStrategiesSection discProfile={briefing.discProfile} isExpanded={expandedSections.has('disc')} onToggle={() => toggleSection('disc')} />
+              <ObjectionsWarning objections={briefing.recentObjections} />
+              <ClosingReadiness closingMoment={briefing.closingMoment} />
             </CardContent>
 
-            {/* Footer */}
             <div className="px-4 py-3 bg-muted/30 rounded-b-lg flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">
-                <Zap className="w-3 h-3 inline mr-1" />
-                Briefing de 30 segundos • Atualizado agora
-              </p>
-              <Button
-                size="sm"
-                onClick={() => dismissBriefing(briefing.interaction.id)}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Pronto para ligar
-              </Button>
+              <p className="text-xs text-muted-foreground"><Zap className="w-3 h-3 inline mr-1" />Briefing de 30 segundos • Atualizado agora</p>
+              <Button size="sm" onClick={() => dismissBriefing(briefing.interaction.id)}><CheckCircle className="w-4 h-4 mr-1" />Pronto para ligar</Button>
             </div>
           </Card>
         </motion.div>
@@ -557,61 +112,19 @@ export function PreContactBriefing({ className, compact = false }: PreContactBri
     );
   }
 
-  // List of upcoming briefings (when no active)
+  // List of upcoming briefings
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={className}
-    >
+    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={className}>
       <Card className="border-primary/20 bg-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-            <Brain className="w-4 h-4" />
-            Briefings Próximos
-            <Badge variant="secondary" className="ml-auto">
-              {upcomingBriefings.length}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary"><Brain className="w-4 h-4" />Briefings Próximos<Badge variant="secondary" className="ml-auto">{upcomingBriefings.length}</Badge></CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {upcomingBriefings.map((briefing) => {
             const Icon = interactionTypeIcons[briefing.interaction.type] || Phone;
             return (
-              <motion.div
-                key={briefing.interaction.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer group border border-transparent hover:border-primary/20"
-                onClick={() => showBriefingFor(briefing.interaction.id)}
-              >
-                <Avatar className="h-10 w-10 border border-primary/20">
-                  <AvatarImage src={briefing.contact.avatar_url || ''} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                    {briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                    {briefing.contact.first_name} {briefing.contact.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Icon className="w-3 h-3" />
-                    {briefing.interaction.title}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <Badge 
-                    variant={briefing.minutesUntilMeeting <= 15 ? 'destructive' : 'outline'} 
-                    className="text-xs"
-                  >
-                    <Clock className="w-3 h-3 mr-1" />
-                    {briefing.minutesUntilMeeting} min
-                  </Badge>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Clique para briefing
-                  </p>
-                </div>
+              <motion.div key={briefing.interaction.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 transition-colors cursor-pointer group border border-transparent hover:border-primary/20" onClick={() => showBriefingFor(briefing.interaction.id)}>
+                <Avatar className="h-10 w-10 border border-primary/20"><AvatarImage src={briefing.contact.avatar_url || ''} /><AvatarFallback className="bg-primary/10 text-primary text-sm">{briefing.contact.first_name?.[0]}{briefing.contact.last_name?.[0]}</AvatarFallback></Avatar>
+                <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{briefing.contact.first_name} {briefing.contact.last_name}</p><p className="text-xs text-muted-foreground flex items-center gap-1"><Icon className="w-3 h-3" />{briefing.interaction.title}</p></div>
+                <div className="text-right shrink-0"><Badge variant={briefing.minutesUntilMeeting <= 15 ? 'destructive' : 'outline'} className="text-xs"><Clock className="w-3 h-3 mr-1" />{briefing.minutesUntilMeeting} min</Badge><p className="text-[10px] text-muted-foreground mt-1">Clique para briefing</p></div>
               </motion.div>
             );
           })}
