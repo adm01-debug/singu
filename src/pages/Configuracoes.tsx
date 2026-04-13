@@ -32,15 +32,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/components/theme/ThemeProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useAccessibleToast } from '@/hooks/useAccessibleToast';
-import { TemplateNotificationSettings } from '@/components/triggers/TemplateNotificationSettings';
 import { SalespersonProfileSettings } from '@/components/triggers/SalespersonProfileSettings';
 import { CommunicationTrainingMode } from '@/components/triggers/CommunicationTrainingMode';
-import { CompatibilityAlertSettings } from '@/components/triggers/CompatibilityAlertSettings';
 import { WeeklyReportPanel } from '@/components/dashboard/WeeklyReportPanel';
 import { TourPreferencesPanel } from '@/components/settings/TourPreferencesPanel';
 import { ThemeCustomizer } from '@/components/settings/ThemeCustomizer';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { logger } from "@/lib/logger";
+import { ConfigNotificationsTab } from './configuracoes/ConfigNotificationsTab';
+import { ConfigSecurityTab } from './configuracoes/ConfigSecurityTab';
 interface ProfileData {
   first_name: string;
   last_name: string;
@@ -321,97 +321,8 @@ const Configuracoes = () => {
             </motion.div>
           </TabsContent>
 
-          {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card className="border-border/50 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-primary" />
-                    Notificações
-                  </CardTitle>
-                  <CardDescription>
-                    Configure como você deseja receber notificações
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">Notificações por Email</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receba atualizações importantes por email
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notifications.emailNotifications}
-                        onCheckedChange={(checked) => 
-                          setNotifications({ ...notifications, emailNotifications: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">Notificações Push</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receba notificações em tempo real no navegador
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notifications.pushNotifications}
-                        onCheckedChange={(checked) => 
-                          setNotifications({ ...notifications, pushNotifications: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">Resumo Semanal</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receba um resumo semanal das suas atividades
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notifications.weeklyDigest}
-                        onCheckedChange={(checked) => 
-                          setNotifications({ ...notifications, weeklyDigest: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-medium">Lembretes de Interação</p>
-                        <p className="text-sm text-muted-foreground">
-                          Receba lembretes para follow-ups pendentes
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notifications.interactionReminders}
-                        onCheckedChange={(checked) => 
-                          setNotifications({ ...notifications, interactionReminders: checked })
-                        }
-                      />
-                    </div>
-                  </div>
-                  
-                  <Separator className="my-6" />
-                  
-                  {/* Template Success Notifications */}
-                  <TemplateNotificationSettings />
-                  
-                  <Separator className="my-6" />
-                  
-                  {/* Compatibility Alert Settings */}
-                  <CompatibilityAlertSettings />
-                </CardContent>
-              </Card>
-            </motion.div>
+            <ConfigNotificationsTab notifications={notifications} onNotificationsChange={setNotifications} />
           </TabsContent>
 
           {/* Security Tab */}
