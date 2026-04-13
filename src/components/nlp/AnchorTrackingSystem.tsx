@@ -38,20 +38,8 @@ interface AnchorTrackingSystemProps {
   className?: string;
 }
 
-const COMMON_POSITIVE_ANCHORS = [
-  { trigger: 'Mencionar família', state: 'Orgulho/Amor', activate: 'Pergunte sobre os filhos/cônjuge' },
-  { trigger: 'Falar de conquistas', state: 'Confiança', activate: 'Relembre sucessos passados' },
-  { trigger: 'Elogios sinceros', state: 'Receptividade', activate: 'Reconheça algo específico' },
-  { trigger: 'Usar o nome', state: 'Conexão', activate: 'Use o nome dele várias vezes' },
-  { trigger: 'Humor leve', state: 'Relaxamento', activate: 'Faça uma piada leve' }
-];
+import { COMMON_POSITIVE_ANCHORS, COMMON_NEGATIVE_ANCHORS } from '@/data/anchorTrackingData';
 
-const COMMON_NEGATIVE_ANCHORS = [
-  { trigger: 'Pressão de tempo', state: 'Ansiedade', avoid: 'Não diga "precisa decidir agora"' },
-  { trigger: 'Falar de concorrentes', state: 'Defensividade', avoid: 'Evite comparações diretas' },
-  { trigger: 'Perguntas invasivas', state: 'Fechamento', avoid: 'Não force intimidade' },
-  { trigger: 'Jargões técnicos', state: 'Confusão', avoid: 'Simplifique a linguagem' }
-];
 
 const AnchorTrackingSystem: React.FC<AnchorTrackingSystemProps> = ({
   contact,
