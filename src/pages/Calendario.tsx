@@ -110,6 +110,7 @@ const Calendario = () => {
         <CalendarioContent
           currentMonth={currentMonth}
           selectedDate={selectedDate}
+          followUps={followUps}
           followUpsByDate={followUpsByDate}
           onSelectDate={setSelectedDate}
           onPrevMonth={() => setCurrentMonth(subMonths(currentMonth, 1))}
