@@ -1,0 +1,157 @@
+import { useState, useMemo, useCallback, useEffect, useRef, startTransition, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { List as VirtualList } from 'react-window';
+import { Search, UserPlus, Upload, CheckSquare } from 'lucide-react';
+import { ContactsGridSkeleton, ContactsListSkeleton } from '@/components/skeletons/PageSkeletons';
+import { EmptyState, SearchEmptyState } from '@/components/ui/empty-state';
+import { PullToRefresh } from '@/components/ui/pull-to-refresh';
+import { SwipeableListItem } from '@/components/ui/swipeable-list-item';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { AdvancedFilters, type FilterConfig, type SortOption } from '@/components/filters/AdvancedFilters';
+import { ContactCardWithContext } from '@/components/contact-card/ContactCardWithContext';
+import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
+import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
+import { BulkImportDialog } from '@/components/import/BulkImportDialog';
+import { ContactsTableView } from '@/components/contacts/ContactsTableView';
+import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
+import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
+import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
+import type { SearchPreset } from '@/hooks/useSearchPresets';
+import type { Contact } from '@/hooks/useContacts';
+
+const DuplicateContactsPanel = lazy(() => import('@/components/contacts/DuplicateContactsPanel'));
+
+interface Props {
+  contacts: Contact[];
+  loading: boolean;
+  filteredAndSortedContacts: Contact[];
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  gridColumns: GridColumns;
+  onGridColumnsChange: (cols: GridColumns) => void;
+  activeFilters: Record<string, string[]>;
+  onFiltersChange: (filters: Record<string, string[]>) => void;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+  onSortChange: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
+  filterConfigs: FilterConfig[];
+  sortOptions: SortOption[];
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+  onToggleSelectionMode: () => void;
+  onSelect: (id: string, selected: boolean) => void;
+  onSelectAll: () => void;
+  onBulkDelete: (ids: string[]) => Promise<void>;
+  onBulkAddTag: (ids: string[], tag: string) => Promise<void>;
+  onSetEditingContact: (contact: Contact | null) => void;
+  onSetDeletingContact: (contact: Contact | null) => void;
+  onSetIsFormOpen: (open: boolean) => void;
+  updateContact: (id: string, data: Partial<Contact>) => Promise<unknown>;
+  getCompanyName: (companyId: string | null) => string | null;
+  getLastInteractionDate: (contactId: string) => string | null;
+  onRefresh: () => Promise<void>;
+}
+
+export function ContatosContent(props: Props) {
+  const {
+    contacts, loading, filteredAndSortedContacts, searchTerm, onSearchChange,
+    viewMode, onViewModeChange, gridColumns, onGridColumnsChange,
+    activeFilters, onFiltersChange, sortBy, sortOrder, onSortChange,
+    filterConfigs, sortOptions, selectionMode, selectedIds,
+    onToggleSelectionMode, onSelect, onSelectAll, onBulkDelete, onBulkAddTag,
+    onSetEditingContact, onSetDeletingContact, onSetIsFormOpen,
+    updateContact, getCompanyName, getLastInteractionDate, onRefresh,
+  } = props;
+
+  const navigate = useNavigate();
+  const RENDER_BATCH = 60;
+  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const { selectedIndex } = { selectedIndex: -1 }; // simplified
+
+  useEffect(() => { setVisibleCount(RENDER_BATCH); }, [activeFilters, sortBy, sortOrder, searchTerm]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) startTransition(() => setVisibleCount(prev => prev + RENDER_BATCH)); }, { rootMargin: '400px' });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredAndSortedContacts.length]);
+
+  const visibleContacts = useMemo(() => filteredAndSortedContacts.slice(0, visibleCount), [filteredAndSortedContacts, visibleCount]);
+  const hasMoreContacts = visibleCount < filteredAndSortedContacts.length;
+
+  return (
+    <div className="p-4 md:p-6 space-y-5">
+      <Suspense fallback={null}><DuplicateContactsPanel /></Suspense>
+      <ContactsStatsBar contacts={contacts} />
+
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-md group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" aria-hidden="true" />
+          <Input placeholder="Buscar por nome, cargo ou email..." value={searchTerm} onChange={(e) => onSearchChange(e.target.value)} className="pl-10 transition-shadow focus-visible:shadow-[0_0_0_3px_hsl(var(--primary)/0.15)]" aria-label="Buscar contatos" />
+        </div>
+        <div className="flex items-center gap-2">
+          <SearchPresetsMenu context="contacts" currentFilters={activeFilters} currentSortBy={sortBy} currentSortOrder={sortOrder} currentSearchTerm={searchTerm}
+            onApplyPreset={(preset: SearchPreset) => { onFiltersChange(preset.filters); onSortChange(preset.sortBy, preset.sortOrder); if (preset.searchTerm) onSearchChange(preset.searchTerm); }} />
+          <BulkImportDialog entityType="contacts" />
+          <Button variant={selectionMode ? 'default' : 'outline'} size="sm" onClick={onToggleSelectionMode} className="gap-2">
+            <CheckSquare className="w-4 h-4" aria-hidden="true" /><span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
+          </Button>
+          <ViewModeSwitcher value={viewMode} onChange={onViewModeChange} gridColumns={gridColumns} onGridColumnsChange={onGridColumnsChange} />
+        </div>
+      </div>
+
+      <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={onFiltersChange} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(newSortBy, newSortOrder) => onSortChange(newSortBy, newSortOrder)} />
+      <RecentlyViewedSection type="contact" />
+
+      <PullToRefresh onRefresh={onRefresh}>
+        {loading ? (viewMode === 'grid' ? <ContactsGridSkeleton /> : <ContactsListSkeleton />) : (
+          <>
+            {viewMode === 'grid' && (
+              <>
+                <div className={`grid grid-cols-1 gap-5 ${gridColumns === 2 ? 'md:grid-cols-2' : gridColumns === 3 ? 'md:grid-cols-2 xl:grid-cols-3' : gridColumns === 4 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : gridColumns === 5 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' : 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'}`}>
+                  {visibleContacts.map((contact, index) => (
+                    <ContactCardWithContext key={contact.id} contact={contact} companyName={getCompanyName(contact.company_id)} lastInteraction={getLastInteractionDate(contact.id)} index={index} isSelected={selectedIds.has(contact.id)} isHighlighted={selectedIndex === index} selectionMode={selectionMode} onSelect={onSelect} onEdit={onSetEditingContact} onDelete={onSetDeletingContact} onUpdate={updateContact} viewMode="grid" />
+                  ))}
+                </div>
+                {hasMoreContacts && <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">Carregando mais contatos...</div>}
+              </>
+            )}
+
+            {viewMode === 'list' && (
+              filteredAndSortedContacts.length > 50 ? (
+                <VirtualList rowCount={filteredAndSortedContacts.length} rowHeight={88} rowProps={{ contacts: filteredAndSortedContacts, getCompanyName, getLastInteractionDate, selectedIds, selectedIndex, selectionMode, handleSelect: onSelect, setEditingContact: onSetEditingContact, setDeletingContact: onSetDeletingContact, updateContact }} style={{ height: Math.min(filteredAndSortedContacts.length * 88, 600) }}
+                  rowComponent={({ index, style, ...rp }) => { const c = rp.contacts[index]; if (!c) return null; return (<div style={style} className="pb-2"><ContactCardWithContext contact={c} companyName={rp.getCompanyName(c.company_id)} lastInteraction={rp.getLastInteractionDate(c.id)} index={index} isSelected={rp.selectedIds.has(c.id)} isHighlighted={rp.selectedIndex === index} selectionMode={rp.selectionMode} onSelect={rp.handleSelect} onEdit={rp.setEditingContact} onDelete={rp.setDeletingContact} onUpdate={rp.updateContact} viewMode="list" /></div>); }} />
+              ) : (
+                <div className="space-y-2">
+                  {filteredAndSortedContacts.map((contact, index) => (
+                    <SwipeableListItem key={contact.id} onDelete={() => onSetDeletingContact(contact)} onArchive={() => updateContact(contact.id, { relationship_stage: 'churned' } as Partial<Contact>)}>
+                      <ContactCardWithContext contact={contact} companyName={getCompanyName(contact.company_id)} lastInteraction={getLastInteractionDate(contact.id)} index={index} isSelected={selectedIds.has(contact.id)} isHighlighted={selectedIndex === index} selectionMode={selectionMode} onSelect={onSelect} onEdit={onSetEditingContact} onDelete={onSetDeletingContact} onUpdate={updateContact} viewMode="list" />
+                    </SwipeableListItem>
+                  ))}
+                </div>
+              )
+            )}
+
+            {viewMode === 'table' && (
+              <ContactsTableView contacts={filteredAndSortedContacts} selectionMode={selectionMode} selectedIds={selectedIds} onSelect={onSelect} getCompanyName={getCompanyName} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(field) => { if (sortBy === field) onSortChange(field, sortOrder === 'asc' ? 'desc' : 'asc'); else onSortChange(field, 'asc'); }} />
+            )}
+
+            {filteredAndSortedContacts.length === 0 && !loading && (
+              searchTerm || Object.keys(activeFilters).length > 0
+                ? <SearchEmptyState searchTerm={searchTerm || 'filtros ativos'} onClearSearch={() => { onSearchChange(''); onFiltersChange({}); }} entityName="contatos" />
+                : <EmptyState illustration="contacts" title="Sua rede de contatos começa aqui" description="Adicione seu primeiro contato para começar a gerenciar seus relacionamentos profissionais de forma inteligente." actions={[{ label: 'Adicionar Contato', onClick: () => onSetIsFormOpen(true), icon: UserPlus }, { label: 'Importar CSV', onClick: () => {}, variant: 'outline', icon: Upload }]} tips={['Adicione informações como cargo e empresa para contextualizar', 'Use tags para organizar seus contatos por projeto ou área', 'O perfil DISC ajuda a personalizar sua comunicação']} />
+            )}
+          </>
+        )}
+      </PullToRefresh>
+
+      <BulkActionsBar selectedIds={Array.from(selectedIds)} totalCount={filteredAndSortedContacts.length} entityType="contacts" onSelectAll={onSelectAll} onClearSelection={() => onSelect('__clear__', false)} onDelete={onBulkDelete} onAddTag={onBulkAddTag} />
+    </div>
+  );
+}
