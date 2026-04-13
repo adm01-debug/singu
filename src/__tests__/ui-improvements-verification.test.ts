@@ -585,16 +585,16 @@ describe('CompanyCardWithContext Improvements', () => {
     expect(content).toContain('Link');
   });
 
-  it('shows location with MapPin icon', () => {
-    expect(content).toContain('MapPin');
+  it('shows company status info', () => {
+    expect(content).toContain('StatusDot');
   });
 
-  it('shows phone info', () => {
-    expect(content).toContain('Phone');
+  it('shows time info', () => {
+    expect(content).toContain('TimeAgo');
   });
 
-  it('shows email info', () => {
-    expect(content).toContain('Mail');
+  it('shows intelligence strip', () => {
+    expect(content).toContain('IntelligenceStrip');
   });
 });
 
