@@ -69,6 +69,25 @@ const ALLOWED_RPCS = [
   'create_task', 'get_pending_tasks', 'get_overdue_tasks',
   'create_reminder', 'snooze_reminder', 'complete_task',
   'get_tasks_by_contact', 'get_all_tasks',
+  // ── Products ──
+  'get_products', 'create_product', 'update_product', 'delete_product',
+  'get_product_categories', 'get_products_by_category',
+  // ── Proposals ──
+  'create_proposal', 'get_proposals', 'get_proposal_by_id',
+  'update_proposal', 'send_proposal', 'get_proposal_templates',
+  // ── Territories ──
+  'get_territories', 'create_territory', 'update_territory',
+  'get_territory_performance', 'assign_territory',
+  // ── Seller / Team ──
+  'get_seller_efficiency', 'compare_seller_efficiency',
+  'get_performance_benchmark', 'get_coaching_suggestions',
+  'prioritize_daily_tasks', 'get_batch_next_actions',
+  // ── Search ──
+  'unified_search', 'quick_search', 'search_by_cnpj',
+  'autocomplete_companies', 'fuzzy_search_companies',
+  // ── Data Quality ──
+  'find_invalid_cnpjs', 'find_duplicate_emails', 'find_duplicate_companies',
+  'get_data_quality_report', 'get_incomplete_companies',
 ] as const;
 
 type AllowedRpc = typeof ALLOWED_RPCS[number];
