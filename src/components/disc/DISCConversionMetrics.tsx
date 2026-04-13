@@ -69,12 +69,6 @@ const DISCConversionMetrics: React.FC = () => {
     }
   };
 
-  const bestProfile = useMemo(() => 
-    metrics.reduce((best, curr) => 
-      curr.conversionRate > (best?.conversionRate || 0) ? curr : best, 
-      metrics[0]
-    ),
-  [metrics]);
 
   if (loading) {
     return (
@@ -103,7 +97,7 @@ const DISCConversionMetrics: React.FC = () => {
             <CardTitle className="text-lg">Métricas de Conversão DISC</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <Select value={period} onValueChange={(v) => setPeriod(v as ConversionPeriod)}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>

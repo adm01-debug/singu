@@ -60,7 +60,7 @@ const StateElicitationToolkit: React.FC<StateElicitationToolkitProps> = ({
     });
   };
 
-  const getStateScripts = (state: EmotionalState) => {
+  const getStateScripts = (state: typeof EMOTIONAL_STATES[number]) => {
     const vakScripts = state.scripts.vak[vakType] || state.scripts.vak['V'];
     const discScripts = state.scripts.disc[discProfile] || [];
     return { vakScripts, discScripts };
