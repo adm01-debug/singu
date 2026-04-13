@@ -13,6 +13,7 @@ import { ContactCardWithContext } from '@/components/contact-card/ContactCardWit
 import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { BulkImportDialog } from '@/components/import/BulkImportDialog';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
@@ -66,6 +67,7 @@ export function ContatosContent(props: Props) {
     updateContact, getCompanyName, getLastInteractionDate, onRefresh,
   } = props;
 
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const RENDER_BATCH = 60;
   const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
@@ -98,7 +100,7 @@ export function ContatosContent(props: Props) {
         <div className="flex items-center gap-2">
           <SearchPresetsMenu context="contacts" currentFilters={activeFilters} currentSortBy={sortBy} currentSortOrder={sortOrder} currentSearchTerm={searchTerm}
             onApplyPreset={(preset: SearchPreset) => { onFiltersChange(preset.filters); onSortChange(preset.sortBy, preset.sortOrder); if (preset.searchTerm) onSearchChange(preset.searchTerm); }} />
-          <BulkImportDialog entityType="contacts" />
+          {isAdmin && <BulkImportDialog entityType="contacts" />}
           <Button variant={selectionMode ? 'default' : 'outline'} size="sm" onClick={onToggleSelectionMode} className="gap-2">
             <CheckSquare className="w-4 h-4" aria-hidden="true" /><span className="hidden sm:inline">{selectionMode ? 'Cancelar' : 'Selecionar'}</span>
           </Button>
