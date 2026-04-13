@@ -56,10 +56,10 @@ const PAGE_SIZE = 50;
 /** Lean select for listing — excludes heavy JSON blobs (behavior, life_events, extra_data) */
 const CONTACT_LISTING_SELECT = [
   'id', 'first_name', 'last_name', 'full_name', 'nome_tratamento', 'apelido',
-  'cargo', 'departamento', 'sexo', 'email', 'phone', 'whatsapp',
+  'cargo', 'departamento', 'sexo',
   'company_id', 'relationship_score', 'relationship_stage', 'sentiment',
   'tags_array', 'interests_array', 'hobbies',
-  'avatar_url', 'birthday', 'source',
+  'birthday', 'source',
   'updated_at', 'created_at', 'user_id',
   'bitrix_contact_id', 'is_duplicate', 'duplicate_of',
 ].join(',');
