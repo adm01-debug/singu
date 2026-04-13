@@ -68,6 +68,7 @@ export function EmpresasContent(props: Props) {
     updateCompany, companyMetrics, selectedIndex, triggerSearch,
   } = props;
 
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const RENDER_BATCH = 60;
   const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
@@ -118,8 +119,8 @@ export function EmpresasContent(props: Props) {
             currentFilters={activeFilters} currentSortBy={sortBy} currentSortOrder={sortOrder} currentSearchTerm={localSearch}
             onApplyPreset={(preset: SearchPreset) => { onFiltersChange(preset.filters); onSortChange(preset.sortBy, preset.sortOrder); const ns = preset.searchTerm || ''; onSearchChange(ns); triggerSearch(ns); }} />
           <ViewModeSwitcher value={viewMode} onChange={onViewModeChange} gridColumns={gridColumns} onGridColumnsChange={onGridColumnsChange} />
-          <BulkImportDialog entityType="companies" />
-          <MergeCompaniesDialog />
+          {isAdmin && <BulkImportDialog entityType="companies" />}
+          {isAdmin && <MergeCompaniesDialog />}
           <Button variant={selectionMode ? 'default' : 'outline'} size="sm" onClick={onToggleSelectionMode} className="gap-2">
             <CheckSquare className="w-4 h-4" />{selectionMode ? 'Cancelar' : 'Selecionar'}
           </Button>
