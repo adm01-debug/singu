@@ -1,3 +1,5 @@
+import { BrainSystem } from '@/types/neuromarketing';
+
 export interface TrainingQuestion {
   id: string;
   type: 'identify_brain' | 'match_stimulus' | 'choose_approach';

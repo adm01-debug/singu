@@ -183,8 +183,6 @@ const ContatoDetalhe = () => {
                   company={company}
                   insights={insights}
                   alerts={alerts}
-                  onDismissAlert={dismissAlert}
-                  onDismissInsight={dismissInsight}
                 />
                 <RelationshipTimeline
                   interactions={interactions}
