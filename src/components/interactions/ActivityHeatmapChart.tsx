@@ -36,7 +36,7 @@ export const ActivityHeatmapChart = React.memo(function ActivityHeatmapChart({ d
     );
   }
 
-  if (!heatmapData || heatmapData.length === 0) {
+  if (!heatmapData || !Array.isArray(heatmapData) || heatmapData.length === 0) {
     return (
       <Card>
         <CardContent className="p-6 text-center text-muted-foreground">
