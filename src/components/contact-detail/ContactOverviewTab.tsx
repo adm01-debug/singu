@@ -1,22 +1,19 @@
 import {
-  Heart, Users, Clock, Star, Gift, MapPin, Target,
-  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle, PenLine,
+  Users, Star, Gift, MapPin, Target,
+  MessageSquare, Calendar, Bookmark, Lightbulb, AlertTriangle,
   Phone, Mail, Building2, Cake, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { format, formatDistanceToNow, differenceInYears } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format, differenceInYears } from 'date-fns';
 import { useContactRelationalData } from '@/hooks/useContactRelationalData';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import type { Tables } from '@/integrations/supabase/types';
 import type { Contact, Company, Insight, Alert } from '@/hooks/useContactDetail';
 import { ContactIntelligenceWidget } from './ContactIntelligenceWidget';
 import { BestContactTimeWidget } from './BestContactTimeWidget';
@@ -25,6 +22,8 @@ import { EffectivenessWidget } from './EffectivenessWidget';
 import { ContactStatisticsWidget } from './ContactStatisticsWidget';
 import { WhatsappMessagesWidget } from './WhatsappMessagesWidget';
 import { SalesActivitiesWidget } from './SalesActivitiesWidget';
+import { PersonalInfoCard } from './contact-overview/PersonalInfoCard';
+import { CadencePreferencesCard } from './contact-overview/CadencePreferencesCard';
 
 interface Props {
   contact: Contact;
