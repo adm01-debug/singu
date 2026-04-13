@@ -31,10 +31,8 @@ interface Template {
   effectiveness: number;
 }
 
-const DISC_TEMPLATES: Template[] = [
-  // Dominance (D) Templates
-  {
-    id: 'd-1',
+import { DISC_TEMPLATES } from '@/data/discTemplatesData';
+
     category: 'Abertura',
     context: 'Primeira ligação',
     template: 'Vou direto ao ponto: tenho uma solução que pode aumentar seus resultados em X%. Posso te mostrar em 3 minutos?',
