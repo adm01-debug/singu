@@ -9,8 +9,8 @@ import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurn
 import { useCompanyTimeline, useCompany360, useNextBestAction, useTouchpointSummary, useKeyContacts, useChurnRisk } from '@/hooks/useCompanyIntelligence';
 import { motion } from 'framer-motion';
 import { Users, TrendingUp, BarChart3, Clock, Activity, Brain, AlertTriangle, Lightbulb, Phone } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { Company360Card } from './insights/Company360Card';
+import { CompanyTimelineCard } from './insights/CompanyTimelineCard';
 import type { Tables } from '@/integrations/supabase/types';
 import type { DISCProfile } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -39,15 +39,6 @@ interface CompanyInsightsTabProps {
   pendingFollowUps: number;
 }
 
-const eventTypeIcons: Record<string, string> = {
-  interaction: '💬',
-  deal: '💰',
-  meeting: '📅',
-  task: '✅',
-  proposal: '📄',
-  contact: '👤',
-  alert: '⚠️',
-};
 
 export function CompanyInsightsTab({ 
   companyId, contacts, avgRelationshipScore, 
@@ -115,63 +106,7 @@ export function CompanyInsightsTab({
         hasData={!!company360}
         emptyMessage="Dados de inteligência ainda não disponíveis"
       >
-        {company360 && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Brain className="h-4 w-4 text-primary" /> Visão 360°
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {company360.health_score != null && (
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <div className={`text-2xl font-bold ${company360.health_score >= 70 ? 'text-success' : company360.health_score >= 40 ? 'text-warning' : 'text-destructive'}`}>
-                      {company360.health_score}%
-                    </div>
-                    <div className="text-xs text-muted-foreground">Saúde</div>
-                  </div>
-                )}
-                {company360.rfm_segment && (
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <div className="text-sm font-semibold text-foreground">{company360.rfm_segment}</div>
-                    <div className="text-xs text-muted-foreground">Segmento RFM</div>
-                  </div>
-                )}
-                {company360.total_revenue != null && (
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <div className="text-lg font-bold text-foreground">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact' }).format(company360.total_revenue)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Receita Total</div>
-                  </div>
-                )}
-                {company360.churn_risk != null && (
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <div className={`text-2xl font-bold ${company360.churn_risk <= 30 ? 'text-success' : company360.churn_risk <= 60 ? 'text-warning' : 'text-destructive'}`}>
-                      {company360.churn_risk}%
-                    </div>
-                    <div className="text-xs text-muted-foreground">Risco Churn</div>
-                  </div>
-                )}
-              </div>
-
-              {/* Top contacts from 360 */}
-              {company360.top_contacts && company360.top_contacts.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Contatos Principais</p>
-                  <div className="flex flex-wrap gap-2">
-                    {company360.top_contacts.slice(0, 5).map((c) => (
-                      <Badge key={c.id} variant="outline" className="text-xs">
-                        {c.name} {c.score != null && `(${c.score}%)`}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {company360 && <Company360Card data={company360} />}
       </ExternalDataCard>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
