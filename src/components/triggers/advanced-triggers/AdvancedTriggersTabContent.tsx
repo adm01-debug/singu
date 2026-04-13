@@ -183,7 +183,7 @@ interface SaturationTabProps {
     saturated: boolean;
     exposureCount: number;
     averageEffectiveness: number;
-    cooldownUntil: string | null;
+    cooldownUntil?: string | null;
   }>;
   advancedTriggers: Record<string, { icon: string; name: string }>;
   getSaturationColor: (level: string) => string;

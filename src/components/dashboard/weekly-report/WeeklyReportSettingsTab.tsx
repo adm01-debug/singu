@@ -32,7 +32,7 @@ interface LocalSettings {
 interface WeeklyReportSettingsTabProps {
   localSettings: LocalSettings;
   setLocalSettings: React.Dispatch<React.SetStateAction<LocalSettings>>;
-  dayOptions: { value: string; label: string }[];
+  dayOptions: readonly { readonly value: string; readonly label: string }[];
   onSave: () => void;
   onSendTest: () => void;
 }
