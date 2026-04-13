@@ -17,30 +17,6 @@ import { PersuasionTemplate, PersuasionScenario, MENTAL_TRIGGERS } from '@/types
 import { useClientTriggers } from '@/hooks/useClientTriggers';
 import { useTriggerHistory, TriggerUsageEntry } from '@/hooks/useTriggerHistory';
 import { ExpandedTemplateDetails } from './template-performance/ExpandedTemplateDetails';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-import { Contact, DISCProfile } from '@/types';
-import { PersuasionTemplate, PersuasionScenario, MENTAL_TRIGGERS } from '@/types/triggers';
-import { useClientTriggers } from '@/hooks/useClientTriggers';
-import { useTriggerHistory, TriggerUsageEntry } from '@/hooks/useTriggerHistory';
 
 interface TemplatePerformanceComparisonProps {
   contact?: Contact;
