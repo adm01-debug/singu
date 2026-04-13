@@ -30,7 +30,7 @@ import {
   Square,
 } from 'lucide-react';
 import { toast } from 'sonner';
-
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 interface BulkActionsBarProps {
   selectedIds: string[];
   totalCount: number;
@@ -66,6 +66,7 @@ export function BulkActionsBar({
 }: BulkActionsBarProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { isAdmin } = useIsAdmin();
 
   const selectedCount = selectedIds.length;
   const isAllSelected = selectedCount === totalCount && totalCount > 0;
@@ -211,8 +212,8 @@ export function BulkActionsBar({
                   </Button>
                 )}
 
-                {/* Export */}
-                {onExport && (
+                {/* Export - Admin only */}
+                {isAdmin && onExport && (
                   <Button 
                     variant="ghost" 
                     size="sm"
