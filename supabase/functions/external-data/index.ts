@@ -33,6 +33,7 @@ const ALLOWED_RPCS = [
   'export_contacts_csv', 'get_birthday_contacts',
   // ── Company CRUD ──
   'soft_delete_company', 'create_company',
+  'merge_companies', 'export_companies_csv',
   // ── Company Intelligence ──
   'get_company_health_score', 'get_company_360_view', 'advanced_company_search',
   'get_company_timeline', 'calculate_company_health_score',

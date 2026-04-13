@@ -63,6 +63,7 @@ import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShort
 import { useAccessibleToast } from '@/hooks/useAccessibleToast';
 import { useFuzzySearch } from '@/hooks/useFuzzySearch';
 import { useContacts, type Contact } from '@/hooks/useContacts';
+import { BulkImportDialog } from '@/components/import/BulkImportDialog';
 import { useCompanies } from '@/hooks/useCompanies';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useMiniCelebration } from '@/components/celebrations/MiniCelebration';
@@ -463,6 +464,7 @@ const Contatos = () => {
                 if (preset.searchTerm) handleSearchChange(preset.searchTerm);
               }}
             />
+            <BulkImportDialog entityType="contacts" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"

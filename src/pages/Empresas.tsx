@@ -42,6 +42,9 @@ import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { useCompanies, type Company } from '@/hooks/useCompanies';
 import { useContacts } from '@/hooks/useContacts';
+import { BulkImportDialog } from '@/components/import/BulkImportDialog';
+import { useExportCompaniesCsv } from '@/hooks/useCompanyActions';
+import { MergeCompaniesDialog } from '@/components/company-detail/MergeCompaniesDialog';
 import { useInteractions } from '@/hooks/useInteractions';
 import { useCompanyFilterOptions, companySortOptions } from '@/hooks/useCompanyFilterOptions';
 import type { SearchPreset } from '@/hooks/useSearchPresets';
@@ -393,6 +396,9 @@ const Empresas = () => {
             />
             <ViewModeSwitcher value={viewMode} onChange={setViewMode} gridColumns={gridColumns} onGridColumnsChange={setGridColumns} />
             
+            <BulkImportDialog entityType="companies" />
+            <MergeCompaniesDialog />
+
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
