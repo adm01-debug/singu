@@ -49,7 +49,7 @@ interface Props {
   onSetEditingContact: (contact: Contact | null) => void;
   onSetDeletingContact: (contact: Contact | null) => void;
   onSetIsFormOpen: (open: boolean) => void;
-  updateContact: (id: string, data: Partial<Contact>) => Promise<unknown>;
+  updateContact: (id: string, data: Record<string, unknown>) => Promise<unknown>;
   getCompanyName: (companyId: string | null) => string | null;
   getLastInteractionDate: (contactId: string) => string | null;
   onRefresh: () => Promise<void>;

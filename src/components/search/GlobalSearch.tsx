@@ -94,9 +94,14 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
 
   useModalHistory(open, () => onOpenChange(false), 'global-search');
 
-  const fuseOpts = { threshold: 0.4, ignoreLocation: true, getFn: (obj: unknown, path: string | string[]) => { const value = Fuse.config.getFn(obj, path); if (typeof value === 'string') return normalizeText(value); if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v); return value; } };
-  const navigationFuse = useMemo(() => new Fuse(navigationItems, { keys: ['label', 'description'], ...fuseOpts }), []);
-  const quickActionsFuse = useMemo(() => new Fuse(quickActions, { keys: ['label', 'description'], ...fuseOpts }), []);
+  const navigationFuse = useMemo(() => new Fuse(navigationItems, {
+    keys: ['label', 'description'], threshold: 0.4, ignoreLocation: true,
+    getFn: (obj, path) => { const value = Fuse.config.getFn(obj, path); if (typeof value === 'string') return normalizeText(value); if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v); return value; },
+  }), []);
+  const quickActionsFuse = useMemo(() => new Fuse(quickActions, {
+    keys: ['label', 'description'], threshold: 0.4, ignoreLocation: true,
+    getFn: (obj, path) => { const value = Fuse.config.getFn(obj, path); if (typeof value === 'string') return normalizeText(value); if (Array.isArray(value)) return value.map(v => typeof v === 'string' ? normalizeText(v) : v); return value; },
+  }), []);
 
   const filteredNavigation = useMemo(() => query.trim() ? navigationFuse.search(normalizeText(query)).map(r => r.item) : navigationItems, [query, navigationFuse]);
   const filteredQuickActions = useMemo(() => query.trim() ? quickActionsFuse.search(normalizeText(query)).map(r => r.item) : quickActions, [query, quickActionsFuse]);
