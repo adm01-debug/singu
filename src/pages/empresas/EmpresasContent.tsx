@@ -15,6 +15,7 @@ import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { BulkImportDialog } from '@/components/import/BulkImportDialog';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { MergeCompaniesDialog } from '@/components/company-detail/MergeCompaniesDialog';
 import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
 import { CompaniesInlineMap } from '@/components/companies/CompaniesInlineMap';

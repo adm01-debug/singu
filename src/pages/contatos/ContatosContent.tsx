@@ -13,6 +13,7 @@ import { ContactCardWithContext } from '@/components/contact-card/ContactCardWit
 import { ContactsStatsBar } from '@/components/contacts/ContactsStatsBar';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
 import { BulkImportDialog } from '@/components/import/BulkImportDialog';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { ContactsTableView } from '@/components/contacts/ContactsTableView';
 import { RecentlyViewedSection } from '@/components/recently-viewed/RecentlyViewedSection';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
