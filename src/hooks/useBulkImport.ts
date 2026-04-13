@@ -126,7 +126,7 @@ export function useBulkImport(entityType: ImportEntityType) {
               }).filter(Boolean);
 
               if (batch.length > 0) {
-                const { error } = await supabase.from(entityType).insert(batch as Record<string, unknown>[]);
+                const { error } = await supabase.from(entityType).insert(batch as any[]);
                 if (error) {
                   batch.forEach((_, bIdx) => {
                     errors.push({ row: i + bIdx + 2, message: error.message });
