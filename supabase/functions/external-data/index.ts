@@ -65,6 +65,10 @@ const ALLOWED_RPCS = [
   // ── Metas & Gamificação ──
   'get_user_goals', 'get_goals_dashboard', 'get_quota_status',
   'get_leaderboard', 'get_user_badges', 'check_and_award_badges',
+  // ── Tasks & Reminders ──
+  'create_task', 'get_pending_tasks', 'get_overdue_tasks',
+  'create_reminder', 'snooze_reminder', 'complete_task',
+  'get_tasks_by_contact', 'get_all_tasks',
 ] as const;
 
 type AllowedRpc = typeof ALLOWED_RPCS[number];
