@@ -40,7 +40,7 @@ export function CompanyCardWithContext({
   contactCount = 0, compact = false,
   onSelect, onEdit, onDelete, onUpdate,
 }: CompanyCardWithContextProps) {
-  const IndustryIcon = industryIcons[company.industry || ''] || (await import('lucide-react')).Building2;
+  const IndustryIcon = industryIcons[company.industry || ''] || Building2;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const { prefetchCompany } = usePrefetch();
   const prefetchFn = useCallback(() => { prefetchCompany(company.id); }, [company.id, prefetchCompany]);
