@@ -3,40 +3,24 @@
 // Enterprise Level Component
 // ==============================================
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
-  PolarRadiusAxis, Radar, PieChart, Pie, Cell
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 import {
-  TrendingUp, TrendingDown, Minus, DollarSign, Clock,
-  Users, Target, Award, RefreshCw, ChevronRight
+  TrendingUp, TrendingDown, Minus,
+  Target, Award
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { DISCProfile } from '@/types';
 import { DISC_PROFILES } from '@/data/discAdvancedData';
-import { logger } from "@/lib/logger";
-
-interface ProfileMetrics {
-  profile: Exclude<DISCProfile, null>;
-  totalContacts: number;
-  opportunities: number;
-  conversions: number;
-  conversionRate: number;
-  avgDealValue: number;
-  avgCycleDays: number;
-  avgRelationshipScore: number;
-  trend: 'up' | 'down' | 'stable';
-}
-
-type Period = '30d' | '90d' | '180d' | '365d';
+import { useDISCConversionData, type ConversionPeriod } from '@/hooks/useDISCConversionData';
+import { useState } from 'react';
 
 const DISC_COLORS: Record<string, string> = {
   D: 'hsl(0, 70%, 50%)',
@@ -46,122 +30,10 @@ const DISC_COLORS: Record<string, string> = {
 };
 
 const DISCConversionMetrics: React.FC = () => {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<Period>('90d');
-  const [metrics, setMetrics] = useState<ProfileMetrics[]>([]);
+  const [period, setPeriod] = useState<ConversionPeriod>('90d');
+  const { metrics, loading, bestProfile } = useDISCConversionData(period);
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      if (!user) return;
-
-      setLoading(true);
-      try {
-        // Fetch contacts with behavior data
-        const { data: contacts } = await supabase
-          .from('contacts')
-          .select('id, behavior, relationship_score, relationship_stage, created_at');
-
-        // Fetch interactions for cycle calculation
-        const { data: interactions } = await supabase
-          .from('interactions')
-          .select('contact_id, type, created_at')
-          .order('created_at', { ascending: true });
-
-        // Calculate metrics per profile
-        const profileData: Record<string, {
-          contacts: number;
-          opportunities: number;
-          conversions: number;
-          totalValue: number;
-          totalCycleDays: number;
-          totalRelationshipScore: number;
-          closedCount: number;
-        }> = {
-          D: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          I: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          S: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 },
-          C: { contacts: 0, opportunities: 0, conversions: 0, totalValue: 0, totalCycleDays: 0, totalRelationshipScore: 0, closedCount: 0 }
-        };
-
-        (contacts || []).forEach(contact => {
-          const behavior = contact.behavior as Record<string, unknown> | null;
-          const discProfile = (behavior?.discProfile || behavior?.disc) as Exclude<DISCProfile, null> | undefined;
-          
-          if (!discProfile || !profileData[discProfile]) return;
-
-          profileData[discProfile].contacts++;
-          profileData[discProfile].totalRelationshipScore += contact.relationship_score || 0;
-
-          // Count opportunities and conversions based on relationship stage
-          const stage = contact.relationship_stage;
-          if (stage === 'negociando' || stage === 'proposta' || stage === 'fechado') {
-            profileData[discProfile].opportunities++;
-          }
-          if (stage === 'fechado' || stage === 'cliente') {
-            profileData[discProfile].conversions++;
-            profileData[discProfile].closedCount++;
-            // Simulate deal value (would come from opportunities table in real app)
-            profileData[discProfile].totalValue += Math.random() * 50000 + 10000;
-          }
-
-          // Calculate average cycle from first interaction to conversion
-          const contactInteractions = (interactions || []).filter(i => i.contact_id === contact.id);
-          if (contactInteractions.length >= 2) {
-            const firstDate = new Date(contactInteractions[0].created_at);
-            const lastDate = new Date(contactInteractions[contactInteractions.length - 1].created_at);
-            const cycleDays = Math.round((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
-            if (cycleDays > 0) {
-              profileData[discProfile].totalCycleDays += cycleDays;
-            }
-          }
-        });
-
-        // Build metrics array
-        const calculatedMetrics: ProfileMetrics[] = (['D', 'I', 'S', 'C'] as const).map(profile => {
-          const data = profileData[profile];
-          const conversionRate = data.opportunities > 0 
-            ? Math.round((data.conversions / data.opportunities) * 100) 
-            : 0;
-          const avgDealValue = data.closedCount > 0 
-            ? Math.round(data.totalValue / data.closedCount) 
-            : 0;
-          const avgCycleDays = data.closedCount > 0 
-            ? Math.round(data.totalCycleDays / data.closedCount) 
-            : 0;
-          const avgRelationshipScore = data.contacts > 0 
-            ? Math.round(data.totalRelationshipScore / data.contacts) 
-            : 0;
-
-          // Simulate trend (would compare with previous period in real app)
-          const trends: ('up' | 'down' | 'stable')[] = ['up', 'down', 'stable'];
-          const trend = trends[Math.floor(Math.random() * 3)];
-
-          return {
-            profile,
-            totalContacts: data.contacts,
-            opportunities: data.opportunities,
-            conversions: data.conversions,
-            conversionRate,
-            avgDealValue,
-            avgCycleDays,
-            avgRelationshipScore,
-            trend
-          };
-        });
-
-        setMetrics(calculatedMetrics);
-      } catch (error) {
-        logger.error('Error fetching conversion metrics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-  }, [user, period]);
-
-  const chartData = useMemo(() => 
+  const chartData = useMemo(() =>
     metrics.map(m => ({
       name: DISC_PROFILES[m.profile]?.name || m.profile,
       profile: m.profile,
@@ -197,12 +69,6 @@ const DISCConversionMetrics: React.FC = () => {
     }
   };
 
-  const bestProfile = useMemo(() => 
-    metrics.reduce((best, curr) => 
-      curr.conversionRate > (best?.conversionRate || 0) ? curr : best, 
-      metrics[0]
-    ),
-  [metrics]);
 
   if (loading) {
     return (
@@ -231,7 +97,7 @@ const DISCConversionMetrics: React.FC = () => {
             <CardTitle className="text-lg">Métricas de Conversão DISC</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+            <Select value={period} onValueChange={(v) => setPeriod(v as ConversionPeriod)}>
               <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
