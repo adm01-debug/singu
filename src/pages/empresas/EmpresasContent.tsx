@@ -50,7 +50,7 @@ interface Props {
   onSetEditingCompany: (company: Company | null) => void;
   onSetDeletingCompany: (company: Company | null) => void;
   onSetIsFormOpen: (open: boolean) => void;
-  updateCompany: (...args: unknown[]) => Promise<unknown>;
+  updateCompany: (id: string, data: Partial<Company>) => Promise<Company>;
   companyMetrics: { contactCountMap: Map<string, number>; lastInteractionMap: Map<string, number> };
   selectedIndex: number;
   triggerSearch: (term: string) => void;
