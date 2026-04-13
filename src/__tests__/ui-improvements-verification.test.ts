@@ -538,7 +538,7 @@ describe('ContactCardWithContext Improvements', () => {
 // 8. COMPANY CARD IMPROVEMENTS
 // ============================================
 describe('CompanyCardWithContext Improvements', () => {
-  const content = readSrc('components/company-card/CompanyCardWithContext.tsx');
+  const content = readSrc('components/company-card/CompanyCardWithContext.tsx') + '\n' + readSrc('components/company-card/company-card-parts/CompanyCardHelpers.tsx');
 
   it('imports toTitleCase', () => {
     expect(content).toContain('toTitleCase');
