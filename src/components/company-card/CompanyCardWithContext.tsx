@@ -120,7 +120,7 @@ export function CompanyCardWithContext({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           {isInlineEditing ? (
-                            <InlineEdit value={company.name} field="name" onSave={(value: string) => handleInlineSave('name', value)} onCancel={() => setIsInlineEditing(false)} className="font-semibold text-sm" />
+                            <InlineEdit value={company.name} onSave={(value: string) => handleInlineSave('name', value)} onCancel={() => setIsInlineEditing(false)} className="font-semibold text-sm" />
                           ) : (
                             <h3 className="font-semibold text-sm leading-tight text-foreground truncate" onDoubleClick={() => setIsInlineEditing(true)}>{displayName}</h3>
                           )}
