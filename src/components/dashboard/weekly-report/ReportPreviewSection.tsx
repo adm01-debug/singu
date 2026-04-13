@@ -135,11 +135,11 @@ export function ReportHistory({ reports }: { reports: WeeklyReportData[] }) {
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
                 <span className="font-medium text-sm">
-                  Semana de {format(new Date(report.period_start), "dd 'de' MMM", { locale: ptBR })}
+                  Semana de {format(new Date(report.report_data?.period?.start || report.created_at), "dd 'de' MMM", { locale: ptBR })}
                 </span>
               </div>
-              <Badge variant={report.status === 'sent' ? 'default' : report.status === 'generated' ? 'secondary' : 'outline'} className="text-xs">
-                {report.status === 'sent' ? 'Enviado' : report.status === 'generated' ? 'Gerado' : 'Pendente'}
+              <Badge variant={report.sent_via?.length ? 'default' : 'secondary'} className="text-xs">
+                {report.sent_via?.length ? 'Enviado' : 'Gerado'}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
