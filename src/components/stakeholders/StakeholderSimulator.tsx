@@ -62,8 +62,7 @@ export function StakeholderSimulator({ stakeholders, className }: StakeholderSim
             <TooltipProvider>
               <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={() => applyPreset('convert_blockers')} className="text-xs"><UserX className="w-3 h-3 mr-1" />Neutralizar Blockers</Button></TooltipTrigger><TooltipContent><p>Simular conversão de todos os bloqueadores para neutros</p></TooltipContent></Tooltip>
               <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={() => applyPreset('boost_champions')} className="text-xs"><Sparkles className="w-3 h-3 mr-1" />Fortalecer Champions</Button></TooltipTrigger><TooltipContent><p>Simular fortalecimento de apoiadores para champions</p></TooltipContent></Tooltip>
-              <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={() => applyPreset('maximize_support')} className="text-xs"><Users className="w-3 h-3 mr-1" />Maximizar Suporte</Button></TooltipTrigger><TooltipContent><p>Simular cenário ideal com todos os stakeholders apoiando</p></TooltipContent></Tooltip>
-              <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={() => applyPreset('convert_high_influence')} className="text-xs"><Zap className="w-3 h-3 mr-1" />Converter Influentes</Button></TooltipTrigger><TooltipContent><p>Simular conversão de stakeholders com alta influência</p></TooltipContent></Tooltip>
+              <Tooltip><TooltipTrigger asChild><Button size="sm" variant="outline" onClick={() => applyPreset('convert_neutrals')} className="text-xs"><Users className="w-3 h-3 mr-1" />Converter Neutros</Button></TooltipTrigger><TooltipContent><p>Simular conversão de neutros para apoiadores</p></TooltipContent></Tooltip>
             </TooltipProvider>
           </div>
           <div className="flex items-center gap-2">
@@ -79,7 +78,7 @@ export function StakeholderSimulator({ stakeholders, className }: StakeholderSim
                   <ScrollArea className="max-h-[400px]"><div className="space-y-2">{savedScenarios.map(scenario => (
                     <div key={scenario.id} className="p-3 rounded-lg border hover:border-primary/50 transition-colors">
                       <div className="flex items-center justify-between mb-1"><span className="font-medium text-sm">{scenario.name}</span>
-                        <div className="flex items-center gap-1"><Button size="sm" variant="ghost" onClick={() => loadScenario(scenario.id)}><Play className="w-3 h-3" /></Button><Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteScenario(scenario.id)}><Trash2 className="w-3 h-3" /></Button></div></div>
+                        <div className="flex items-center gap-1"><Button size="sm" variant="ghost" onClick={() => loadScenario(scenario)}><Play className="w-3 h-3" /></Button><Button size="sm" variant="ghost" className="text-destructive" onClick={() => deleteScenario(scenario.id)}><Trash2 className="w-3 h-3" /></Button></div></div>
                       {scenario.description && <p className="text-xs text-muted-foreground">{scenario.description}</p>}
                       <Badge variant="outline" className="text-xs mt-1">{scenario.changes.length} alterações</Badge>
                     </div>))}</div></ScrollArea>
