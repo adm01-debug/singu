@@ -20,9 +20,9 @@ interface CompanyFormBasicTabProps {
   onLogoChange: (url: string | null) => void;
   companyId?: string;
   isEditing: boolean;
-  ramosOptions: Array<{ value: string; label: string }>;
+  ramosOptions: string[];
   ramosLoading: boolean;
-  nichosOptions: Array<{ value: string; label: string }>;
+  nichosOptions: string[];
   nichosLoading: boolean;
 }
 
