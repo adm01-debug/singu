@@ -1,43 +1,22 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  Trophy,
-  Target,
-  Users,
-  Star,
-  ChevronDown,
-  ChevronUp,
-  Sparkles,
+  BarChart3, TrendingUp, TrendingDown, Minus, Trophy, Target,
+  Users, Star, ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { Contact, DISCProfile } from '@/types';
 import { PersuasionTemplate, PersuasionScenario, MENTAL_TRIGGERS } from '@/types/triggers';
 import { useClientTriggers } from '@/hooks/useClientTriggers';
 import { useTriggerHistory, TriggerUsageEntry } from '@/hooks/useTriggerHistory';
+import { ExpandedTemplateDetails } from './template-performance/ExpandedTemplateDetails';
 
 interface TemplatePerformanceComparisonProps {
   contact?: Contact;
@@ -399,85 +378,18 @@ export function TemplatePerformanceComparison({ contact, className }: TemplatePe
 
                       {/* Expanded Details */}
                       <AnimatePresence>
-                        {isExpanded && (
+                      {isExpanded && (
                           <TableRow key={`${data.template.id}-details`}>
                             <TableCell colSpan={6} className="p-0">
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="p-4 bg-muted/20 space-y-4">
-                                  {/* Stats Grid */}
-                                  <div className="grid grid-cols-4 gap-3">
-                                    <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-success mb-1">
-                                        <Target className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Sucesso</span>
-                                      </div>
-                                      <p className="text-xl font-bold">{data.successCount}</p>
-                                    </div>
-                                    <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-warning mb-1">
-                                        <Minus className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Neutro</span>
-                                      </div>
-                                      <p className="text-xl font-bold">{data.neutralCount}</p>
-                                    </div>
-                                    <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-destructive mb-1">
-                                        <TrendingDown className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Falha</span>
-                                      </div>
-                                      <p className="text-xl font-bold">{data.failureCount}</p>
-                                    </div>
-                                    <div className="p-3 rounded-lg bg-background border">
-                                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-xs font-medium">Último Uso</span>
-                                      </div>
-                                      <p className="text-sm font-medium">{formatDate(data.lastUsed)}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* DISC Performance */}
-                                  <div>
-                                    <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                                      <Sparkles className="w-4 h-4 text-primary" />
-                                      Performance por Perfil DISC
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                      {(['D', 'I', 'S', 'C'] as DISCProfile[]).map(disc => (
-                                        <Badge
-                                          key={disc}
-                                          variant="outline"
-                                          className={cn('gap-1.5', discColors[disc])}
-                                        >
-                                          <span className="font-bold">{disc}</span>
-                                          <span className="text-xs">
-                                            {discLabels[disc]}
-                                          </span>
-                                          {data.totalUsages > 0 && (
-                                            <span className="ml-1 text-xs opacity-70">
-                                              {data.discPerformance[disc].successRate.toFixed(0)}%
-                                            </span>
-                                          )}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  {/* Template Preview */}
-                                  <div className="p-3 rounded-lg bg-background border">
-                                    <p className="text-xs text-muted-foreground mb-1">Prévia:</p>
-                                    <p className="text-sm line-clamp-2">
-                                      {data.template.template}
-                                    </p>
-                                  </div>
-                                </div>
-                              </motion.div>
+                              <ExpandedTemplateDetails data={{
+                                successCount: data.successCount,
+                                neutralCount: data.neutralCount,
+                                failureCount: data.failureCount,
+                                lastUsed: data.lastUsed,
+                                totalUsages: data.totalUsages,
+                                discPerformance: data.discPerformance,
+                                templateText: data.template.template,
+                              }} />
                             </TableCell>
                           </TableRow>
                         )}
