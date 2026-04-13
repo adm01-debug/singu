@@ -158,7 +158,7 @@ const NLPTrainingMode: React.FC = () => {
                     <div key={vak} className="p-3 rounded-lg border">
                       <Badge className="mb-2">{VAK_LABELS[vak].icon} {VAK_LABELS[vak].name}</Badge>
                       <ul className="text-xs space-y-1 text-muted-foreground">
-                        {VAK_COMMUNICATION_TIPS[vak].slice(0, 3).map((tip, i) => <li key={i}>• {tip}</li>)}
+                        {VAK_COMMUNICATION_TIPS[vak].salesTips.slice(0, 3).map((tip, i) => <li key={i}>• {tip}</li>)}
                       </ul>
                     </div>
                   ))}
