@@ -184,14 +184,14 @@ export function CompanyForm({ company, onSubmit, onCancel, isSubmitting }: Compa
             {isEditing && (
               <>
                 <TabsContent value="telefones" className="mt-0">
-                  <CompanyPhonesForm {...phonesHook} companyId={companyId!} />
-                  <div className="mt-6"><CompanyEmailsForm {...emailsHook} companyId={companyId!} /></div>
+                  <CompanyPhonesForm companyId={companyId!} phones={phonesHook.data} onSave={(p) => phonesHook.upsert.mutateAsync(p)} onDelete={(id) => phonesHook.remove.mutateAsync(id)} isLoading={phonesHook.isLoading} />
+                  <div className="mt-6"><CompanyEmailsForm companyId={companyId!} emails={emailsHook.data} onSave={(e) => emailsHook.upsert.mutateAsync(e)} onDelete={(id) => emailsHook.remove.mutateAsync(id)} isLoading={emailsHook.isLoading} /></div>
                 </TabsContent>
                 <TabsContent value="endereco" className="mt-0">
-                  <CompanyAddressesForm {...addressesHook} companyId={companyId!} />
+                  <CompanyAddressesForm companyId={companyId!} addresses={addressesHook.data} onSave={(a) => addressesHook.upsert.mutateAsync(a)} onDelete={(id) => addressesHook.remove.mutateAsync(id)} isLoading={addressesHook.isLoading} />
                 </TabsContent>
                 <TabsContent value="redes" className="mt-0">
-                  <CompanySocialMediaForm {...socialMediaHook} companyId={companyId!} />
+                  <CompanySocialMediaForm companyId={companyId!} socialMedia={socialMediaHook.data} onSave={(s) => socialMediaHook.upsert.mutateAsync(s)} onDelete={(id) => socialMediaHook.remove.mutateAsync(id)} isLoading={socialMediaHook.isLoading} />
                 </TabsContent>
               </>
             )}
