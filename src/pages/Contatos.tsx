@@ -464,6 +464,7 @@ const Contatos = () => {
                 if (preset.searchTerm) handleSearchChange(preset.searchTerm);
               }}
             />
+            <BulkImportDialog entityType="contacts" />
             <Button
               variant={selectionMode ? 'default' : 'outline'}
               size="sm"
