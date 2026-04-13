@@ -235,7 +235,7 @@ describe('CompanyForm — Tab Navigation', () => {
     expect(screen.getByText('ID Central')).toBeInTheDocument();
     expect(screen.getByText('ID Singular')).toBeInTheDocument();
     expect(screen.getByText('ID Confederação')).toBeInTheDocument();
-    expect(screen.getByText('Bitrix Company ID')).toBeInTheDocument();
+    expect(screen.getByText('ID Bitrix24')).toBeInTheDocument();
   });
 
   it('switches to Fiscal tab and shows CNPJ Base field', async () => {
