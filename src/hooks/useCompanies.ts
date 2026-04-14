@@ -253,19 +253,20 @@ async function fetchRemainingCompanies(search?: string): Promise<Company[]> {
     .map(mapCompany);
 }
 
-export function useCompanies() {
+export function useCompanies(options?: { enabled?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { logActivity } = useActivityLogger();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const externalEnabled = options?.enabled ?? true;
 
   const queryKey = ['companies', searchTerm || '__all__'];
 
   const { data, isLoading: loading } = useQuery({
     queryKey,
     queryFn: () => fetchCompaniesPage(searchTerm || undefined),
-    enabled: !!user,
+    enabled: !!user && externalEnabled,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     placeholderData: (prev) => prev,
