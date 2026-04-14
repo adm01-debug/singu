@@ -101,11 +101,15 @@ const queryClient = new QueryClient({
   },
 });
 
-// Easter eggs — loaded after idle
+// Easter eggs — loaded after idle (with graceful fallback on import failure)
 const EasterEggsProvider = lazy(() =>
-  import("@/hooks/useEasterEggs").then(m => ({
-    default: () => { m.useEasterEggs(); return null; },
-  }))
+  import("@/hooks/useEasterEggs")
+    .then(m => ({
+      default: () => { m.useEasterEggs(); return null; },
+    }))
+    .catch(() => ({
+      default: () => null,
+    }))
 );
 
 // What's New — only for authenticated users outside auth route
