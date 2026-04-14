@@ -281,7 +281,7 @@ export function useCompanies(options?: { enabled?: boolean }) {
       await new Promise(r => setTimeout(r, 2000));
       return fetchRemainingCompanies(searchTerm || undefined);
     },
-    enabled: !!user && !!data && data.count > INITIAL_FAST_LOAD,
+    enabled: !!user && externalEnabled && !!data && data.count > INITIAL_FAST_LOAD,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
