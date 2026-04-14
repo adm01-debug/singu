@@ -48,8 +48,18 @@ const Contatos = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { contacts, loading, createContact, updateContact, deleteContact, fetchContacts } = useContacts();
-  const { companies } = useCompanies();
-  const { interactions } = useInteractions();
+
+  // Defer secondary data (companies, interactions) until contacts are loaded — reduces initial concurrent requests
+  const [secondaryReady, setSecondaryReady] = useState(false);
+  useEffect(() => {
+    if (!loading && contacts.length >= 0) {
+      const t = setTimeout(() => setSecondaryReady(true), 300);
+      return () => clearTimeout(t);
+    }
+  }, [loading, contacts.length]);
+
+  const { companies } = useCompanies({ enabled: secondaryReady });
+  const { interactions } = useInteractions(undefined, undefined, { enabled: secondaryReady });
 
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') || '');
   const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get('view') as ViewMode) || 'grid');
