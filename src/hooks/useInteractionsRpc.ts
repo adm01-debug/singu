@@ -149,18 +149,24 @@ export function useOptimalContactWindows(companyId?: string) {
   });
 }
 
-export function useUnifiedCommunicationHistory(companyId?: string, limit = 50) {
+export function useUnifiedCommunicationHistory(entityId?: string, limit = 50, entityType: 'company' | 'contact' = 'company') {
   return useQuery({
-    queryKey: ['unified-communication-history', companyId, limit],
+    queryKey: ['unified-communication-history', entityId, entityType, limit],
     queryFn: async () => {
+      const params: Record<string, unknown> = { p_limit: limit };
+      if (entityType === 'contact') {
+        params.p_contact_id = entityId;
+      } else {
+        params.p_company_id = entityId;
+      }
       const { data, error } = await callExternalRpc<InteractionHistoryItem[]>(
         'get_unified_communication_history',
-        { p_company_id: companyId, p_limit: limit }
+        params
       );
       if (error) throw error;
       return data || [];
     },
-    enabled: !!companyId,
+    enabled: !!entityId,
     staleTime: 3 * 60 * 1000,
   });
 }

@@ -16,8 +16,10 @@ const channelColors: Record<string, string> = {
   note: 'bg-muted text-muted-foreground', social: 'bg-accent text-accent-foreground',
 };
 
-export const UnifiedCommunicationHistory = React.memo(function UnifiedCommunicationHistory({ contactId }: { contactId: string }) {
-  const { data: history, isLoading } = useUnifiedCommunicationHistory(contactId);
+export const UnifiedCommunicationHistory = React.memo(function UnifiedCommunicationHistory({ contactId, companyId }: { contactId?: string; companyId?: string }) {
+  const entityId = contactId || companyId;
+  const entityType = contactId ? 'contact' : 'company';
+  const { data: history, isLoading } = useUnifiedCommunicationHistory(entityId, 50, entityType as 'contact' | 'company');
 
   if (isLoading) return <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Comunicação Unificada</CardTitle></CardHeader><CardContent><Skeleton className="h-40" /></CardContent></Card>;
   if (!history || history.length === 0) return null;
