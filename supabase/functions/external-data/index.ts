@@ -3,7 +3,7 @@ import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, handleCorsAndMethod } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
 
-const limiter = rateLimit({ windowMs: 60_000, max: 60 });
+const limiter = rateLimit({ windowMs: 60_000, max: 100, message: "Rate limit exceeded for external data. Please wait." });
 
 const ALLOWED_RPCS = [
   // ── Dashboard & KPIs ──

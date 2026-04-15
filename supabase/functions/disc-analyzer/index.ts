@@ -6,6 +6,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, corsHeaders } from "../_shared/auth.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
+
+const limiter = rateLimit({ windowMs: 60_000, max: 30, message: "Rate limit exceeded for DISC analyzer. Please wait." });
 
 const DiscAnalyzerInput = z.object({
   texts: z.array(z.string().min(1)).min(1, 'Pelo menos 1 texto é necessário').max(50),
@@ -117,6 +120,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // ── Rate limit ──
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
 
   // ── Auth guard: use JWT user_id, ignore body userId ──
   const authResult = await withAuth(req);

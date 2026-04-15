@@ -5,6 +5,9 @@ import {
   jsonError,
   jsonOk,
 } from "../_shared/auth.ts";
+import { rateLimit } from "../_shared/rate-limit.ts";
+
+const limiter = rateLimit({ windowMs: 60_000, max: 20, message: "Rate limit exceeded for contact enrichment. Please wait." });
 
 interface EnrichResult {
   contactId: string;
@@ -16,6 +19,11 @@ interface EnrichResult {
 Deno.serve(async (req) => {
   const guard = handleCorsAndMethod(req);
   if (guard) return guard;
+
+  // ── Rate limit ──
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
 
   const authResult = await withAuth(req);
   if (authResult instanceof Response) return authResult;
