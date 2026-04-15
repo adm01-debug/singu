@@ -125,3 +125,36 @@ export function usePendingHandoffCount() {
     staleTime: 30_000,
   });
 }
+
+/** Realtime subscription for handoff changes — auto-invalidates queries */
+export function useHandoffRealtime() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('handoff-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'handoff_requests' },
+        (payload) => {
+          logger.info('[Handoff Realtime]', payload.eventType);
+          qc.invalidateQueries({ queryKey: HANDOFF_KEY });
+          qc.invalidateQueries({ queryKey: ['handoff-pending-count'] });
+
+          if (payload.eventType === 'INSERT') {
+            toast.info('Novo handoff recebido', {
+              description: 'Um SDR solicitou transferência de lead.',
+            });
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, qc]);
+}
