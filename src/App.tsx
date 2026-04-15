@@ -78,6 +78,7 @@ const Tarefas = lazy(() => import("./pages/Tarefas"));
 const Territorios = lazy(() => import("./pages/Territorios"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
+const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 
@@ -326,6 +327,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminSchemaDrift />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/field-mapping" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminFieldMapping />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>
