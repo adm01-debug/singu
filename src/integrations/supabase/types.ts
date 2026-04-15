@@ -1941,6 +1941,48 @@ export type Database = {
         }
         Relationships: []
       }
+      lux_webhook_config: {
+        Row: {
+          created_at: string | null
+          entity_type: string
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          last_test_at: string | null
+          last_test_status: string | null
+          max_retries: number | null
+          timeout_ms: number | null
+          updated_at: string | null
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_type: string
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_test_at?: string | null
+          last_test_status?: string | null
+          max_retries?: number | null
+          timeout_ms?: number | null
+          updated_at?: string | null
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_type?: string
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_test_at?: string | null
+          last_test_status?: string | null
+          max_retries?: number | null
+          timeout_ms?: number | null
+          updated_at?: string | null
+          webhook_url?: string
+        }
+        Relationships: []
+      }
       metaprogram_analysis: {
         Row: {
           analyzed_text: string | null
