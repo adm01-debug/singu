@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.email-pipeline-health]
 verify_jwt = false
+
+[functions.voice-ai-health]
+verify_jwt = false
