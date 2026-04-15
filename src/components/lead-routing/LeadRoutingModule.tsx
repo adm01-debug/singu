@@ -2,8 +2,8 @@ import React, { useState, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Users, Settings, ArrowRightLeft, BarChart3, MoreVertical, RefreshCw, RotateCcw } from 'lucide-react';
-import { usePendingHandoffCount } from '@/hooks/useHandoffQueue';
+import { Users, Settings, ArrowRightLeft, BarChart3, MoreVertical, RefreshCw, RotateCcw, History } from 'lucide-react';
+import { usePendingHandoffCount, useHandoffRealtime } from '@/hooks/useHandoffQueue';
 import { useSalesTeam } from '@/hooks/useSalesTeam';
 import { useServerRedistribute, useResetDailyCounts } from '@/hooks/useLeadRoutingServer';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ const SalesTeamTab = lazy(() => import('./tabs/SalesTeamTab'));
 const RoutingRulesTab = lazy(() => import('./tabs/RoutingRulesTab'));
 const HandoffQueueTab = lazy(() => import('./tabs/HandoffQueueTab'));
 const RoutingMetricsTab = lazy(() => import('./tabs/RoutingMetricsTab'));
+const AssignmentHistoryTab = lazy(() => import('./tabs/AssignmentHistoryTab'));
 
 const TabSkeleton = () => (
   <div className="space-y-4 p-4">
@@ -28,6 +29,7 @@ export default function LeadRoutingModule() {
   const { data: members = [] } = useSalesTeam();
   const redistribute = useServerRedistribute();
   const resetDaily = useResetDailyCounts();
+  useHandoffRealtime();
 
   const activeSdrs = Array.isArray(members) ? members.filter((m) => m.role === 'sdr' && m.is_active).length : 0;
   const activeClosers = Array.isArray(members) ? members.filter((m) => m.role === 'closer' && m.is_active).length : 0;
@@ -80,16 +82,16 @@ export default function LeadRoutingModule() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="team" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="team" className="flex items-center gap-1.5">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Equipe</span>
           </TabsTrigger>
-          <TabsTrigger value="rules" className="flex items-center gap-2">
+          <TabsTrigger value="rules" className="flex items-center gap-1.5">
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Regras</span>
           </TabsTrigger>
-          <TabsTrigger value="handoff" className="flex items-center gap-2 relative">
+          <TabsTrigger value="handoff" className="flex items-center gap-1.5 relative">
             <ArrowRightLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Handoff</span>
             {pendingCount > 0 && (
@@ -98,7 +100,11 @@ export default function LeadRoutingModule() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="metrics" className="flex items-center gap-2">
+          <TabsTrigger value="history" className="flex items-center gap-1.5">
+            <History className="h-4 w-4" />
+            <span className="hidden sm:inline">Histórico</span>
+          </TabsTrigger>
+          <TabsTrigger value="metrics" className="flex items-center gap-1.5">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Métricas</span>
           </TabsTrigger>
@@ -113,6 +119,9 @@ export default function LeadRoutingModule() {
           </TabsContent>
           <TabsContent value="handoff">
             <HandoffQueueTab />
+          </TabsContent>
+          <TabsContent value="history">
+            <AssignmentHistoryTab />
           </TabsContent>
           <TabsContent value="metrics">
             <RoutingMetricsTab />
