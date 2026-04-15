@@ -29,6 +29,7 @@ export default function LeadRoutingModule() {
   const { data: members = [] } = useSalesTeam();
   const redistribute = useServerRedistribute();
   const resetDaily = useResetDailyCounts();
+  useHandoffRealtime();
 
   const activeSdrs = Array.isArray(members) ? members.filter((m) => m.role === 'sdr' && m.is_active).length : 0;
   const activeClosers = Array.isArray(members) ? members.filter((m) => m.role === 'closer' && m.is_active).length : 0;
