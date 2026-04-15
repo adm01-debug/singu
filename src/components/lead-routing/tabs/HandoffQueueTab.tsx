@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useHandoffQueue, useRespondHandoff } from '@/hooks/useHandoffQueue';
+import { useSalesTeam } from '@/hooks/useSalesTeam';
 import { STATUS_LABELS } from '@/types/leadRouting';
-import type { HandoffRequest } from '@/types/leadRouting';
-import { Check, X, ArrowRight, Clock, AlertCircle } from 'lucide-react';
+import type { HandoffRequest, SalesTeamMember } from '@/types/leadRouting';
+import { Check, X, ArrowRight, Clock, Inbox } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -32,6 +33,11 @@ function QualificationBadges({ data }: { data: HandoffRequest['qualification_dat
           Score: {data.relationship_score}
         </Badge>
       )}
+      {data.disc_profile && (
+        <Badge variant="secondary" className="text-xs">
+          DISC: {data.disc_profile}
+        </Badge>
+      )}
     </div>
   );
 }
@@ -47,12 +53,29 @@ function statusColor(status: HandoffRequest['status']): string {
   return map[status] ?? '';
 }
 
+function getMemberName(id: string, membersMap: Map<string, SalesTeamMember>): string {
+  return membersMap.get(id)?.name ?? 'Desconhecido';
+}
+
 export default function HandoffQueueTab() {
   const { data: handoffs = [], isLoading } = useHandoffQueue();
+  const { data: members = [] } = useSalesTeam();
   const respond = useRespondHandoff();
 
+  const membersMap = useMemo(() => {
+    const map = new Map<string, SalesTeamMember>();
+    if (Array.isArray(members)) {
+      members.forEach((m) => map.set(m.id, m));
+    }
+    return map;
+  }, [members]);
+
   if (isLoading) {
-    return <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}</div>;
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+      </div>
+    );
   }
 
   const pending = handoffs.filter((h) => h.status === 'pending');
@@ -67,8 +90,10 @@ export default function HandoffQueueTab() {
         </h3>
         {pending.length === 0 ? (
           <Card className="border border-dashed">
-            <CardContent className="p-6 text-center text-muted-foreground">
-              Nenhum handoff pendente
+            <CardContent className="p-8 text-center text-muted-foreground">
+              <Inbox className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              <p className="font-medium">Nenhum handoff pendente</p>
+              <p className="text-xs mt-1">Handoffs SDR → Closer aparecerão aqui quando solicitados.</p>
             </CardContent>
           </Card>
         ) : (
@@ -76,12 +101,14 @@ export default function HandoffQueueTab() {
             {pending.map((h) => (
               <Card key={h.id} className="border border-warning/30">
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium">SDR</span>
-                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">Closer</span>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-sm flex-wrap">
+                        <span className="font-medium">{getMemberName(h.from_member_id, membersMap)}</span>
+                        <ArrowRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span className="font-medium">
+                          {h.to_member_id ? getMemberName(h.to_member_id, membersMap) : 'Qualquer Closer'}
+                        </span>
                         <Badge className={statusColor(h.status)}>{STATUS_LABELS[h.status]}</Badge>
                       </div>
                       {h.handoff_reason && (
@@ -91,9 +118,10 @@ export default function HandoffQueueTab() {
                       {h.notes && <p className="text-xs mt-2 italic text-muted-foreground">{h.notes}</p>}
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(h.created_at), { addSuffix: true, locale: ptBR })}
+                        {' · SLA: '}{h.sla_hours}h
                       </p>
                     </div>
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex gap-2 shrink-0">
                       <Button
                         size="sm"
                         variant="default"
@@ -129,7 +157,10 @@ export default function HandoffQueueTab() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
                       <Badge className={statusColor(h.status)}>{STATUS_LABELS[h.status]}</Badge>
-                      {h.handoff_reason && <span className="text-muted-foreground">{h.handoff_reason}</span>}
+                      <span className="text-muted-foreground">
+                        {getMemberName(h.from_member_id, membersMap)} → {h.to_member_id ? getMemberName(h.to_member_id, membersMap) : '—'}
+                      </span>
+                      {h.handoff_reason && <span className="text-muted-foreground text-xs">· {h.handoff_reason}</span>}
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(h.created_at), { addSuffix: true, locale: ptBR })}
