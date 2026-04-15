@@ -450,6 +450,38 @@ Deno.serve(async (req) => {
     const elapsed = Math.round(performance.now() - startTime);
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[external-data] Error after ${elapsed}ms:`, message);
+
+    // ── Schema drift detection ──
+    const isSchemaDrift = /PGRST|column.*not found|relation.*does not exist|function.*does not exist|could not find/i.test(message);
+    const extraHeaders: Record<string, string> = {};
+
+    if (isSchemaDrift) {
+      extraHeaders['X-Schema-Drift'] = 'true';
+      try {
+        const svcClient = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+        );
+        const body = await req.clone().json().catch(() => ({}));
+        const entityName = body?.table || body?.functionName || 'unknown';
+        const entityType = body?.action === 'rpc' ? 'rpc' : 'table';
+        const errorType = message.includes('column') ? 'missing_column'
+          : message.includes('function') ? 'rpc_error'
+          : 'type_mismatch';
+
+        await svcClient.from('schema_drift_alerts').insert({
+          error_type: errorType,
+          entity_type: entityType,
+          entity_name: entityName,
+          error_message: message.slice(0, 500),
+          stack_trace: (error instanceof Error ? error.stack : null)?.slice(0, 1000) ?? null,
+        });
+        console.warn(`[schema-drift] Logged: ${errorType} on ${entityType}:${entityName}`);
+      } catch (logErr) {
+        console.error('[schema-drift] Failed to log:', logErr);
+      }
+    }
+
     const status = message.includes('timeout') ? 504 : 500;
     return jsonError(message, status, req);
   }
