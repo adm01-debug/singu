@@ -4050,6 +4050,7 @@ export type Database = {
         Returns: boolean
       }
       immutable_unaccent: { Args: { "": string }; Returns: string }
+      reset_daily_lead_counts: { Args: never; Returns: number }
       search_companies_unaccent: {
         Args: { p_limit?: number; p_query: string; p_user_id: string }
         Returns: {
