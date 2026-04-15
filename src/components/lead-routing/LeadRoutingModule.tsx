@@ -1,8 +1,11 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Settings, ArrowRightLeft, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Users, Settings, ArrowRightLeft, BarChart3, MoreVertical, RefreshCw, RotateCcw } from 'lucide-react';
 import { usePendingHandoffCount } from '@/hooks/useHandoffQueue';
 import { useSalesTeam } from '@/hooks/useSalesTeam';
+import { useServerRedistribute, useResetDailyCounts } from '@/hooks/useLeadRoutingServer';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -23,6 +26,8 @@ export default function LeadRoutingModule() {
   const [activeTab, setActiveTab] = useState('team');
   const { data: pendingCount = 0 } = usePendingHandoffCount();
   const { data: members = [] } = useSalesTeam();
+  const redistribute = useServerRedistribute();
+  const resetDaily = useResetDailyCounts();
 
   const activeSdrs = Array.isArray(members) ? members.filter((m) => m.role === 'sdr' && m.is_active).length : 0;
   const activeClosers = Array.isArray(members) ? members.filter((m) => m.role === 'closer' && m.is_active).length : 0;
@@ -38,16 +43,39 @@ export default function LeadRoutingModule() {
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs">
-            {activeSdrs} SDR{activeSdrs !== 1 ? 's' : ''} ativo{activeSdrs !== 1 ? 's' : ''}
+            {activeSdrs} SDR{activeSdrs !== 1 ? 's' : ''}
           </Badge>
           <Badge variant="outline" className="text-xs">
-            {activeClosers} Closer{activeClosers !== 1 ? 's' : ''} ativo{activeClosers !== 1 ? 's' : ''}
+            {activeClosers} Closer{activeClosers !== 1 ? 's' : ''}
           </Badge>
           {pendingCount > 0 && (
             <Badge variant="destructive" className="text-xs">
-              {pendingCount} handoff{pendingCount !== 1 ? 's' : ''} pendente{pendingCount !== 1 ? 's' : ''}
+              {pendingCount} handoff{pendingCount !== 1 ? 's' : ''}
             </Badge>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => redistribute.mutate({ inactivityDays: 7 })}
+                disabled={redistribute.isPending}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Redistribuir Inativos (7d)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => resetDaily.mutate()}
+                disabled={resetDaily.isPending}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Resetar Contadores Diários
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
