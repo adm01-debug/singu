@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   HeartPulse, Database, Plug, Shield, ArrowRight,
   Activity, AlertTriangle, Mail, Mic, Sparkles,
-  BookOpen, Map, Key, Settings,
+  BookOpen, Map, Key, Settings, FileText,
 } from 'lucide-react';
 
 // ── Status Cards Row ──
@@ -94,6 +94,7 @@ const ADMIN_TOOLS = [
   { title: 'Voice AI Diagnostics', description: 'Diagnóstico do agente de voz', icon: Mic, to: '/admin/voice-diagnostics' },
   { title: 'Lux Intelligence', description: 'Configuração de webhooks n8n', icon: Sparkles, to: '/admin/lux-config' },
   { title: 'Secrets Management', description: 'Rotação e gestão de secrets', icon: Key, to: '/admin/secrets-management' },
+  { title: 'Audit Trail', description: 'Visualizador de trilha de auditoria', icon: FileText, to: '/admin/audit-trail' },
   { title: 'Knowledge Export', description: 'Exportar conhecimento para handoff', icon: BookOpen, to: '/admin/knowledge-export' },
 ];
 

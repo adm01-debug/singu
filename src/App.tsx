@@ -86,6 +86,7 @@ const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics")
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
+const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
@@ -395,6 +396,15 @@ const AnimatedRoutes = () => {
         </RequireAuth>
       } />
 
+      <Route path="/admin/audit-trail" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminAuditTrail />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
       <Route path="/admin/knowledge-export" element={
         <RequireAuth>
           <LazyPage>
