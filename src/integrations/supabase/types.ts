@@ -2653,6 +2653,42 @@ export type Database = {
           },
         ]
       }
+      secret_rotation_log: {
+        Row: {
+          created_at: string
+          id: string
+          is_automatic: boolean | null
+          new_hash: string | null
+          old_hash: string | null
+          reason: string | null
+          rotated_at: string
+          rotated_by: string | null
+          secret_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_automatic?: boolean | null
+          new_hash?: string | null
+          old_hash?: string | null
+          reason?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          secret_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_automatic?: boolean | null
+          new_hash?: string | null
+          old_hash?: string | null
+          reason?: string | null
+          rotated_at?: string
+          rotated_by?: string | null
+          secret_name?: string
+        }
+        Relationships: []
+      }
       social_behavior_analysis: {
         Row: {
           active_days: string[] | null

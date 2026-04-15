@@ -84,6 +84,7 @@ const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
 const AdminEmailDiagnostics = lazy(() => import("./pages/AdminEmailDiagnostics"));
 const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics"));
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
+const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 
@@ -368,6 +369,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminLuxConfig />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/secrets-management" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminSecretsManagement />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>
