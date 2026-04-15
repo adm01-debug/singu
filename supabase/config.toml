@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.voice-ai-health]
 verify_jwt = false
+
+[functions.system-health]
+verify_jwt = false
