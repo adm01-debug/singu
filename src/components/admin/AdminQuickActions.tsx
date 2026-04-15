@@ -33,8 +33,6 @@ export function AdminQuickActions() {
   }, []);
 
   const clearCache = useCallback(() => {
-    const { QueryClient } = require('@tanstack/react-query');
-    // Access the global query client via window
     window.location.reload();
     toast.success('Cache limpo — página recarregada');
   }, []);

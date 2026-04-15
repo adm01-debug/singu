@@ -86,6 +86,7 @@ const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics")
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 
