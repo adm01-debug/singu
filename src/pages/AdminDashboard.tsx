@@ -106,10 +106,10 @@ export default function AdminDashboard() {
     queryFn: async () => {
       try {
         const { data, error } = await supabase.functions.invoke('health', { body: {} });
-        if (error) return { status: 'error', detail: error.message };
+        if (error) return { status: 'error' };
         return data as { status: string; checks?: Record<string, { status: string; latencyMs?: number }> };
       } catch {
-        return { status: 'error', detail: 'Sem resposta' };
+        return { status: 'error' };
       }
     },
     staleTime: 60_000,

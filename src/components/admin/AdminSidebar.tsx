@@ -5,7 +5,7 @@ import {
   Shield, BookOpen, Map, Database,
 } from 'lucide-react';
 
-const ADMIN_LINKS = [
+const ADMIN_LINKS: { to: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/admin/telemetria', label: 'Telemetria', icon: Activity },
   { to: '/admin/schema-drift', label: 'Schema Drift', icon: AlertTriangle },
@@ -15,7 +15,7 @@ const ADMIN_LINKS = [
   { to: '/admin/lux-config', label: 'Lux Intelligence', icon: Sparkles },
   { to: '/admin/secrets-management', label: 'Secrets', icon: Shield },
   { to: '/admin/knowledge-export', label: 'Knowledge Export', icon: BookOpen },
-] as const;
+];
 
 export function AdminSidebar() {
   const location = useLocation();
