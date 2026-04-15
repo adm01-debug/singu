@@ -9,7 +9,7 @@ import {
   FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription,
 } from '@/components/ui/form';
 import { CompanyLogoUpload } from '@/components/forms/CompanyLogoUpload';
-import { SearchableSelect } from '@/components/ui/searchable-select';
+import { SearchableSelectWithApproval } from '@/components/ui/searchable-select';
 import { TagInput } from '@/components/ui/tag-input';
 import { FormSection } from './CompanyFormSection';
 import { statusOptions, type CompanyFormData } from './CompanyFormSchema';
@@ -79,7 +79,7 @@ export function CompanyFormBasicTab({
           <FormItem>
             <FormLabel>Ramo de Atividade</FormLabel>
             <FormControl>
-              <SearchableSelect value={field.value ?? ''} onValueChange={field.onChange} options={ramosOptions} isLoading={ramosLoading} placeholder="Selecione o ramo" searchPlaceholder="Buscar ramo..." />
+              <SearchableSelectWithApproval value={field.value ?? ''} onValueChange={field.onChange} options={ramosOptions} isLoading={ramosLoading} placeholder="Selecione o ramo" searchPlaceholder="Buscar ramo..." fieldName="ramo_atividade" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -88,7 +88,7 @@ export function CompanyFormBasicTab({
           <FormItem>
             <FormLabel>Nicho do Cliente</FormLabel>
             <FormControl>
-              <SearchableSelect value={field.value ?? ''} onValueChange={field.onChange} options={nichosOptions} isLoading={nichosLoading} placeholder="Selecione o nicho" searchPlaceholder="Buscar nicho..." />
+              <SearchableSelectWithApproval value={field.value ?? ''} onValueChange={field.onChange} options={nichosOptions} isLoading={nichosLoading} placeholder="Selecione o nicho" searchPlaceholder="Buscar nicho..." fieldName="nicho_cliente" />
             </FormControl>
             <FormMessage />
           </FormItem>
