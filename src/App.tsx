@@ -76,6 +76,7 @@ const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
 const Metas = lazy(() => import("./pages/Metas"));
 const Tarefas = lazy(() => import("./pages/Tarefas"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
+const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 
 const queryClient = new QueryClient({
@@ -305,6 +306,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminTelemetria />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/schema-drift" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminSchemaDrift />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>
