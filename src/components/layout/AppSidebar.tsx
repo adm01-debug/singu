@@ -44,6 +44,7 @@ const navSections = [
     key: "ops",
     items: [
       { title: "Mapa", url: "/mapa-empresas", icon: MapPin },
+      { title: "Territórios", url: "/territorios", icon: MapPin },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
       { title: "Automações", url: "/automacoes", icon: Workflow },
       { title: "Metas", url: "/metas", icon: Trophy },
