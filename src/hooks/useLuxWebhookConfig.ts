@@ -1,0 +1,117 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export interface LuxWebhookConfig {
+  id: string;
+  entity_type: 'contact' | 'company';
+  webhook_url: string;
+  is_active: boolean;
+  timeout_ms: number;
+  max_retries: number;
+  headers: Record<string, string>;
+  last_test_at: string | null;
+  last_test_status: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function useLuxWebhookConfig() {
+  const qc = useQueryClient();
+
+  const { data: configs = [], isLoading } = useQuery({
+    queryKey: ['lux-webhook-config'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lux_webhook_config')
+        .select('*')
+        .order('entity_type');
+      if (error) throw error;
+      return (data || []) as unknown as LuxWebhookConfig[];
+    },
+  });
+
+  const upsert = useMutation({
+    mutationFn: async (config: Partial<LuxWebhookConfig> & { entity_type: string; webhook_url: string }) => {
+      const existing = configs.find(c => c.entity_type === config.entity_type);
+      if (existing) {
+        const { error } = await supabase
+          .from('lux_webhook_config')
+          .update({ ...config, updated_at: new Date().toISOString() } as any)
+          .eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('lux_webhook_config')
+          .insert(config as any);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['lux-webhook-config'] });
+      toast.success('Configuração salva');
+    },
+    onError: (e) => toast.error(`Erro: ${e.message}`),
+  });
+
+  const toggleActive = useMutation({
+    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
+      const { error } = await supabase
+        .from('lux_webhook_config')
+        .update({ is_active } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['lux-webhook-config'] });
+      toast.success('Status atualizado');
+    },
+  });
+
+  const testWebhook = useMutation({
+    mutationFn: async (entityType: string) => {
+      const config = configs.find(c => c.entity_type === entityType);
+      if (!config) throw new Error('Configuração não encontrada');
+
+      try {
+        const res = await fetch(config.webhook_url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            luxRecordId: 'test-' + Date.now(),
+            entityType,
+            entityId: '00000000-0000-0000-0000-000000000000',
+            entityData: { test: true },
+            userId: 'test',
+            callbackUrl: 'https://test.example.com',
+          }),
+          signal: AbortSignal.timeout(config.timeout_ms),
+        });
+
+        const status = res.ok ? 'success' : `error:${res.status}`;
+        await supabase
+          .from('lux_webhook_config')
+          .update({ last_test_at: new Date().toISOString(), last_test_status: status } as any)
+          .eq('id', config.id);
+        qc.invalidateQueries({ queryKey: ['lux-webhook-config'] });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return status;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Erro';
+        await supabase
+          .from('lux_webhook_config')
+          .update({ last_test_at: new Date().toISOString(), last_test_status: `error:${msg}` } as any)
+          .eq('id', config.id);
+        qc.invalidateQueries({ queryKey: ['lux-webhook-config'] });
+        throw err;
+      }
+    },
+    onSuccess: () => toast.success('✅ Webhook respondeu com sucesso'),
+    onError: (e) => toast.error(`❌ Falha no teste: ${e.message}`),
+  });
+
+  const getConfigForEntity = (entityType: string) => configs.find(c => c.entity_type === entityType && c.is_active);
+
+  return { configs, isLoading, upsert, toggleActive, testWebhook, getConfigForEntity };
+}
