@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { assertProviderOrder } from '@/lib/providerGuard';
+import { ProviderErrorBoundary } from '@/components/feedback/ProviderErrorBoundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -377,25 +379,66 @@ const AnimatedRoutes = () => {
   );
 };
 
+/* ═══════════════════════════════════════════════════════════════════
+ * PROVIDER HIERARCHY — ORDEM OBRIGATÓRIA (NÃO ALTERAR SEM VALIDAR)
+ * 
+ * 1. HelmetProvider          — sem dependências
+ * 2. ErrorBoundary           — sem dependências (captura erros globais)
+ * 3. QueryClientProvider     — sem dependências (TanStack Query)
+ * 4. CelebrationProvider     — sem dependências
+ * 5. AriaLiveProvider        — sem dependências (acessibilidade)
+ * 6. TooltipProvider         — sem dependências
+ * 7. BrowserRouter           — sem dependências (React Router)
+ * 8. AuthProvider            — DEPENDE de BrowserRouter + QueryClientProvider
+ * 9. NavigationStackProvider — DEPENDE de BrowserRouter
+ * 
+ * ⚠️ Alterar esta ordem PODE causar tela branca (white-screen crash).
+ * Consulte: mem://architecture/provider-hierarchy-and-context
+ * ═══════════════════════════════════════════════════════════════════ */
+
+// DEV-only: validate provider order at startup
+if (import.meta.env.DEV) {
+  assertProviderOrder([
+    'HelmetProvider',
+    'ErrorBoundary',
+    'QueryClientProvider',
+    'CelebrationProvider',
+    'AriaLiveProvider',
+    'TooltipProvider',
+    'BrowserRouter',
+    'AuthProvider',
+    'NavigationStackProvider',
+  ]);
+}
+
 const App = () => (
+  /* ── Layer 1: Meta & Error Boundary (sem dependências) ── */
   <HelmetProvider>
     <ErrorBoundary showDetails={import.meta.env.DEV}>
+      {/* ── Layer 2: Data & UI Infra ── */}
       <QueryClientProvider client={queryClient}>
         <CelebrationProvider>
           <AriaLiveProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              {/* ── Layer 3: Routing ── */}
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <SkipNav />
-                <AuthProvider>
-                  <NavigationStackProvider>
-                    <ScrollToTop />
-                    <RouteAnnouncer />
-                    <AnimatedRoutes />
-                    <DeferredAppChrome />
-                  </NavigationStackProvider>
-                </AuthProvider>
+                {/* ── Layer 4: Auth (depende de Router + Query) ── */}
+                <ProviderErrorBoundary providerName="AuthProvider">
+                  <AuthProvider>
+                    {/* ── Layer 5: Navigation Stack (depende de Router) ── */}
+                    <ProviderErrorBoundary providerName="NavigationStackProvider">
+                      <NavigationStackProvider>
+                        <ScrollToTop />
+                        <RouteAnnouncer />
+                        <AnimatedRoutes />
+                        <DeferredAppChrome />
+                      </NavigationStackProvider>
+                    </ProviderErrorBoundary>
+                  </AuthProvider>
+                </ProviderErrorBoundary>
               </BrowserRouter>
             </TooltipProvider>
           </AriaLiveProvider>
