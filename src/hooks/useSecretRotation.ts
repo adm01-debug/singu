@@ -53,14 +53,14 @@ export function useSecretRotation() {
       const lastLog = rotationLogs.find(l => l.secret_name === params.secretName);
       const { error } = await supabase
         .from('secret_rotation_log')
-        .insert({
+        .insert([{
           secret_name: params.secretName,
           rotated_by: user?.id,
           old_hash: lastLog?.new_hash || null,
           new_hash: params.newHash,
           reason: params.reason,
           is_automatic: false,
-        } as Record<string, unknown>);
+        }]);
       if (error) throw error;
     },
     onSuccess: () => {
