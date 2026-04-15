@@ -341,6 +341,15 @@ const AnimatedRoutes = () => {
           </LazyPage>
         </RequireAuth>
       } />
+      <Route path="/admin/email-diagnostics" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminEmailDiagnostics />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
 
       {/* Catch-all */}
       <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
