@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { assertProviderOrder } from '@/lib/providerGuard';
+import { ProviderErrorBoundary } from '@/components/feedback/ProviderErrorBoundary';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
