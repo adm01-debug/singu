@@ -26,7 +26,7 @@ function RuleForm({
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [ruleType, setRuleType] = useState<RoutingRuleType>(initial?.rule_type ?? 'round_robin');
-  const [roleFilter, setRoleFilter] = useState(initial?.role_filter ?? 'any');
+  const [roleFilter, setRoleFilter] = useState<'sdr' | 'closer' | 'any'>(initial?.role_filter ?? 'any');
   const [priority, setPriority] = useState(initial?.priority ?? 1);
 
   return (
