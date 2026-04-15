@@ -84,6 +84,16 @@ function MemberForm({
         <Slider min={1} max={10} step={1} value={[weight]} onValueChange={([v]) => setWeight(v)} className="mt-2" />
         <p className="text-xs text-muted-foreground">Maior peso = mais leads recebidos proporcionalmente</p>
       </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="flex items-center gap-1.5"><Palmtree className="h-3.5 w-3.5" /> Início Férias</Label>
+          <Input type="date" value={vacationStart} onChange={(e) => setVacationStart(e.target.value)} />
+        </div>
+        <div className="space-y-1.5">
+          <Label>Fim Férias</Label>
+          <Input type="date" value={vacationEnd} onChange={(e) => setVacationEnd(e.target.value)} min={vacationStart || undefined} />
+        </div>
+      </div>
       <Button onClick={handleSubmit} disabled={!name.trim() || isPending} className="w-full">
         {initial?.id ? 'Atualizar Membro' : 'Adicionar Membro'}
       </Button>
