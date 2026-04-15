@@ -47,7 +47,7 @@ function RuleForm({
         </div>
         <div>
           <Label>Papel</Label>
-          <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <Select value={roleFilter} onValueChange={(v) => setRoleFilter(v as 'sdr' | 'closer' | 'any')}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="any">Qualquer</SelectItem>
