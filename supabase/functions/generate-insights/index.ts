@@ -2,7 +2,7 @@ import { z } from "https://esm.sh/zod@3.23.8";
 import { corsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
 
-const limiter = rateLimit({ windowMs: 60_000, max: 10, message: "Rate limit exceeded for insights. Please wait." });
+const limiter = rateLimit({ windowMs: 60_000, max: 30, message: "Rate limit exceeded for insights. Please wait." });
 
 const InsightsInput = z.object({
   contacts: z.array(z.record(z.unknown())).optional().default([]),
