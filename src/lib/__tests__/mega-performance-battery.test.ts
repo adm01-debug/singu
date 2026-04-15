@@ -817,7 +817,7 @@ describe('Formatters — Extended Edge Cases (200+ cenários)', () => {
       expect(toTitleCase(null as any)).toBeFalsy();
       expect(toTitleCase(undefined as any)).toBeFalsy();
     });
-    it('já formatada', () => expect(toTitleCase('Ana Maria')).toBe('Ana Maria');
+    it('já formatada', () => expect(toTitleCase('Ana Maria')).toBe('Ana Maria'));
     it('tudo maiúsculo', () => expect(toTitleCase('COOPERATIVA CENTRAL')).toBe('Cooperativa Central'));
     it('tudo minúsculo', () => expect(toTitleCase('cooperativa central')).toBe('Cooperativa Central'));
     it('com acentos', () => {
