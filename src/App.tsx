@@ -80,6 +80,7 @@ const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
 const AdminEmailDiagnostics = lazy(() => import("./pages/AdminEmailDiagnostics"));
+const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 
