@@ -1,64 +1,68 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { corsHeaders } from "https://esm.sh/@supabase/supabase-js@2.49.4/cors";
+import { z } from "https://esm.sh/zod@3.23.8";
 
-interface RouteRequest {
-  action: "distribute" | "redistribute" | "reset_daily";
-  contact_id?: string;
-  company_id?: string;
-  rule_id?: string;
-  role_filter?: "sdr" | "closer" | "any";
-  inactivity_days?: number;
+/* ─── Schemas ──────────────────────────────────────────────── */
+
+const DistributeSchema = z.object({
+  action: z.literal("distribute"),
+  contact_id: z.string().uuid().optional(),
+  company_id: z.string().uuid().optional(),
+  rule_id: z.string().uuid().optional(),
+  role_filter: z.enum(["sdr", "closer", "any"]).default("any"),
+});
+
+const RedistributeSchema = z.object({
+  action: z.literal("redistribute"),
+  inactivity_days: z.number().int().min(1).max(90).default(7),
+});
+
+const ResetSchema = z.object({
+  action: z.literal("reset_daily"),
+});
+
+const RequestSchema = z.discriminatedUnion("action", [
+  DistributeSchema,
+  RedistributeSchema,
+  ResetSchema,
+]);
+
+/* ─── Helpers ──────────────────────────────────────────────── */
+
+function json(data: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+function createSupabaseAdmin() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+}
 
-  try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return json({ error: "Não autorizado" }, 401);
-    }
+async function authenticateUser(
+  supabase: ReturnType<typeof createClient>,
+  authHeader: string | null,
+) {
+  if (!authHeader) throw new Error("Não autorizado");
+  const token = authHeader.replace("Bearer ", "");
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) throw new Error("Token inválido");
+  return user;
+}
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceKey);
-
-    // Validate JWT
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return json({ error: "Token inválido" }, 401);
-    }
-
-    const body: RouteRequest = await req.json();
-    const { action } = body;
-
-    switch (action) {
-      case "distribute":
-        return await handleDistribute(supabase, user.id, body);
-      case "redistribute":
-        return await handleRedistribute(supabase, user.id, body);
-      case "reset_daily":
-        return await handleResetDaily(supabase);
-      default:
-        return json({ error: `Ação desconhecida: ${action}` }, 400);
-    }
-  } catch (e) {
-    console.error("[lead-routing] Error:", e);
-    return json({ error: "Erro interno" }, 500);
-  }
-});
+/* ─── Handlers ─────────────────────────────────────────────── */
 
 async function handleDistribute(
   supabase: ReturnType<typeof createClient>,
   userId: string,
-  body: RouteRequest
+  body: z.infer<typeof DistributeSchema>,
 ) {
-  const roleFilter = body.role_filter ?? "any";
+  const roleFilter = body.role_filter;
 
-  // Get eligible members
   let query = supabase
     .from("sales_team_members")
     .select("*")
@@ -72,11 +76,10 @@ async function handleDistribute(
     .order("last_assigned_at", { ascending: true, nullsFirst: true });
 
   if (mErr) return json({ error: mErr.message }, 500);
-  if (!members || members.length === 0) {
+  if (!members?.length) {
     return json({ error: "Nenhum vendedor elegível disponível" }, 400);
   }
 
-  // Filter by capacity and vacation
   const now = new Date();
   const eligible = members.filter((m: Record<string, unknown>) => {
     const leadsToday = (m.leads_today as number) ?? 0;
@@ -94,23 +97,20 @@ async function handleDistribute(
     return true;
   });
 
-  if (eligible.length === 0) {
+  if (!eligible.length) {
     return json({ error: "Todos os vendedores atingiram o limite ou estão em férias" }, 400);
   }
 
-  // Weighted selection: sort by (last_assigned_at ASC, weight DESC)
   eligible.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
     const aTime = a.last_assigned_at ? new Date(a.last_assigned_at as string).getTime() : 0;
     const bTime = b.last_assigned_at ? new Date(b.last_assigned_at as string).getTime() : 0;
-    const timeDiff = aTime - bTime;
     const weightDiff = ((b.weight as number) ?? 5) - ((a.weight as number) ?? 5);
-    return timeDiff + weightDiff * -100_000;
+    return (aTime - bTime) + weightDiff * -100_000;
   });
 
   const selected = eligible[0];
   const selectedId = selected.id as string;
 
-  // Create assignment
   const { error: assignErr } = await supabase
     .from("lead_assignments")
     .insert({
@@ -126,7 +126,6 @@ async function handleDistribute(
 
   if (assignErr) return json({ error: assignErr.message }, 500);
 
-  // Update member counts
   await supabase
     .from("sales_team_members")
     .update({
@@ -146,12 +145,11 @@ async function handleDistribute(
 async function handleRedistribute(
   supabase: ReturnType<typeof createClient>,
   userId: string,
-  body: RouteRequest
+  body: z.infer<typeof RedistributeSchema>,
 ) {
-  const inactivityDays = body.inactivity_days ?? 7;
+  const inactivityDays = body.inactivity_days;
   const cutoff = new Date(Date.now() - inactivityDays * 86400_000).toISOString();
 
-  // Find stale assignments
   const { data: stale, error: staleErr } = await supabase
     .from("lead_assignments")
     .select("*")
@@ -161,20 +159,18 @@ async function handleRedistribute(
     .limit(50);
 
   if (staleErr) return json({ error: staleErr.message }, 500);
-  if (!stale || stale.length === 0) {
+  if (!stale?.length) {
     return json({ redistributed: 0, message: "Nenhum lead inativo encontrado" });
   }
 
   let redistributed = 0;
 
   for (const assignment of stale) {
-    // Mark old assignment as expired
     await supabase
       .from("lead_assignments")
       .update({ status: "expired" })
       .eq("id", assignment.id);
 
-    // Decrement old owner count
     if (assignment.assigned_to) {
       const { data: oldMember } = await supabase
         .from("sales_team_members")
@@ -192,7 +188,6 @@ async function handleRedistribute(
       }
     }
 
-    // Log redistribution
     await supabase.from("redistribution_log").insert({
       user_id: userId,
       contact_id: assignment.contact_id,
@@ -215,9 +210,40 @@ async function handleResetDaily(supabase: ReturnType<typeof createClient>) {
   return json({ success: true, reset_count: data });
 }
 
-function json(data: Record<string, unknown>, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+/* ─── Main ─────────────────────────────────────────────────── */
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createSupabaseAdmin();
+    const user = await authenticateUser(supabase, req.headers.get("Authorization"));
+    const rawBody = await req.json();
+
+    const parsed = RequestSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return json({
+        error: "Dados inválidos",
+        details: parsed.error.flatten().fieldErrors,
+      }, 400);
+    }
+
+    const body = parsed.data;
+
+    switch (body.action) {
+      case "distribute":
+        return await handleDistribute(supabase, user.id, body);
+      case "redistribute":
+        return await handleRedistribute(supabase, user.id, body);
+      case "reset_daily":
+        return await handleResetDaily(supabase);
+    }
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Erro interno";
+    const status = message.includes("autorizado") || message.includes("Token") ? 401 : 500;
+    console.error("[lead-routing] Error:", e);
+    return json({ error: message }, status);
+  }
+});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useRoutingMetrics } from '@/hooks/useRoutingMetrics';
@@ -6,9 +6,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrendingUp, Clock, Users, CheckCircle2,
   BarChart3, ArrowRightLeft, RefreshCw, Activity,
+  Target, Zap, AlertTriangle,
 } from 'lucide-react';
-import { RULE_TYPE_LABELS } from '@/types/leadRouting';
-import type { AssignmentType } from '@/types/leadRouting';
+import { Badge } from '@/components/ui/badge';
 
 const TYPE_LABELS: Record<string, string> = {
   auto_round_robin: 'Round-Robin',
@@ -19,13 +19,17 @@ const TYPE_LABELS: Record<string, string> = {
   redistribution: 'Redistribuição',
 };
 
+const TYPE_COLORS: Record<string, string> = {
+  auto_round_robin: 'bg-primary',
+  auto_weighted: 'bg-info',
+  auto_territory: 'bg-success',
+  manual: 'bg-warning',
+  handoff: 'bg-accent',
+  redistribution: 'bg-muted-foreground',
+};
+
 function MetricCard({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  color,
-  progress,
+  title, value, subtitle, icon: Icon, color, progress, trend,
 }: {
   title: string;
   value: string | number;
@@ -33,21 +37,139 @@ function MetricCard({
   icon: React.ElementType;
   color: string;
   progress?: number;
+  trend?: 'up' | 'down' | 'neutral';
 }) {
   return (
-    <Card className="border">
+    <Card className="border hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-xs text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold mt-1">{value}</p>
+            <div className="flex items-baseline gap-2 mt-1">
+              <p className="text-2xl font-bold">{value}</p>
+              {trend === 'up' && <TrendingUp className="h-3.5 w-3.5 text-success" />}
+              {trend === 'down' && <AlertTriangle className="h-3.5 w-3.5 text-warning" />}
+            </div>
             {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
             {progress !== undefined && (
               <Progress value={progress} className="h-1.5 mt-2" />
             )}
           </div>
-          <div className={`p-2 rounded-lg ${color}`}>
+          <div className={`p-2.5 rounded-xl ${color}`}>
             <Icon className="h-4 w-4" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DistributionChart({ byType }: { byType: Record<string, number> }) {
+  const entries = useMemo(() =>
+    Object.entries(byType)
+      .sort(([, a], [, b]) => (b as number) - (a as number)),
+    [byType],
+  );
+  const total = entries.reduce((s, [, v]) => s + (v as number), 0);
+  if (total === 0) return null;
+
+  return (
+    <Card className="border">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          Distribuições por Tipo
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {/* Visual bar chart */}
+        <div className="flex h-8 rounded-lg overflow-hidden mb-4">
+          {entries.map(([type, count]) => {
+            const pct = Math.round(((count as number) / total) * 100);
+            if (pct < 1) return null;
+            return (
+              <div
+                key={type}
+                className={`${TYPE_COLORS[type] ?? 'bg-muted'} flex items-center justify-center text-[10px] font-medium text-primary-foreground transition-all`}
+                style={{ width: `${pct}%` }}
+                title={`${TYPE_LABELS[type] ?? type}: ${count} (${pct}%)`}
+              >
+                {pct >= 10 ? `${pct}%` : ''}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Legend with details */}
+        <div className="grid grid-cols-2 gap-2">
+          {entries.map(([type, count]) => {
+            const pct = Math.round(((count as number) / total) * 100);
+            return (
+              <div key={type} className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[type] ?? 'bg-muted'}`} />
+                  <span className="text-xs">{TYPE_LABELS[type] ?? type.replace(/_/g, ' ')}</span>
+                </div>
+                <div className="text-xs font-semibold">
+                  {count as number} <span className="text-muted-foreground font-normal">({pct}%)</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HealthScore({ metrics }: { metrics: { slaCompliance: number; avgFirstContactHours: number; pendingHandoffs: number } }) {
+  const slaScore = Math.min(metrics.slaCompliance, 100);
+  const speedScore = metrics.avgFirstContactHours <= 1 ? 100 : metrics.avgFirstContactHours <= 2 ? 80 : metrics.avgFirstContactHours <= 4 ? 60 : 30;
+  const handoffScore = metrics.pendingHandoffs === 0 ? 100 : metrics.pendingHandoffs <= 3 ? 70 : 40;
+  const overall = Math.round((slaScore * 0.4 + speedScore * 0.35 + handoffScore * 0.25));
+  const label = overall >= 85 ? 'Excelente' : overall >= 70 ? 'Bom' : overall >= 50 ? 'Regular' : 'Crítico';
+  const color = overall >= 85 ? 'text-success' : overall >= 70 ? 'text-info' : overall >= 50 ? 'text-warning' : 'text-destructive';
+
+  return (
+    <Card className="border">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Target className="h-4 w-4" />
+          Saúde da Distribuição
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-6">
+          <div className="relative w-20 h-20">
+            <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+              <circle cx="18" cy="18" r="15.9155" fill="none" strokeWidth="3" className="stroke-muted" />
+              <circle
+                cx="18" cy="18" r="15.9155" fill="none" strokeWidth="3"
+                className={overall >= 85 ? 'stroke-success' : overall >= 70 ? 'stroke-info' : overall >= 50 ? 'stroke-warning' : 'stroke-destructive'}
+                strokeDasharray={`${overall}, 100`}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={`text-lg font-bold ${color}`}>{overall}</span>
+            </div>
+          </div>
+          <div className="flex-1 space-y-2">
+            <Badge variant="outline" className={color}>{label}</Badge>
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">SLA Compliance</span>
+                <span className="font-medium">{slaScore}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Velocidade</span>
+                <span className="font-medium">{speedScore}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Handoff Queue</span>
+                <span className="font-medium">{handoffScore}%</span>
+              </div>
+            </div>
           </div>
         </div>
       </CardContent>
@@ -66,10 +188,9 @@ export default function RoutingMetricsTab() {
     );
   }
 
-  const totalByType = Object.values(metrics.byType).reduce((s, v) => s + (v as number), 0);
-
   return (
     <div className="space-y-6">
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           title="Total de Distribuições"
@@ -91,6 +212,7 @@ export default function RoutingMetricsTab() {
           icon={CheckCircle2}
           color={metrics.slaCompliance >= 80 ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}
           progress={metrics.slaCompliance}
+          trend={metrics.slaCompliance >= 80 ? 'up' : 'down'}
         />
         <MetricCard
           title="Tempo Médio 1º Contato"
@@ -98,17 +220,18 @@ export default function RoutingMetricsTab() {
           subtitle={metrics.avgFirstContactHours <= 2 ? 'Excelente' : metrics.avgFirstContactHours <= 4 ? 'Bom' : 'Lento'}
           icon={Clock}
           color="bg-accent/10 text-accent-foreground"
+          trend={metrics.avgFirstContactHours <= 2 ? 'up' : metrics.avgFirstContactHours > 4 ? 'down' : 'neutral'}
         />
         <MetricCard
           title="SDRs Ativos"
           value={metrics.byRole.sdr}
-          icon={TrendingUp}
+          icon={Zap}
           color="bg-info/10 text-info"
         />
         <MetricCard
           title="Closers Ativos"
           value={metrics.byRole.closer}
-          icon={TrendingUp}
+          icon={Target}
           color="bg-success/10 text-success"
         />
         <MetricCard
@@ -117,6 +240,7 @@ export default function RoutingMetricsTab() {
           subtitle={metrics.pendingHandoffs > 0 ? 'Requer ação' : 'Tudo em dia'}
           icon={ArrowRightLeft}
           color={metrics.pendingHandoffs > 0 ? 'bg-warning/10 text-warning' : 'bg-muted text-muted-foreground'}
+          trend={metrics.pendingHandoffs > 0 ? 'down' : 'up'}
         />
         <MetricCard
           title="Redistribuições"
@@ -127,32 +251,11 @@ export default function RoutingMetricsTab() {
         />
       </div>
 
-      {Object.keys(metrics.byType).length > 0 && (
-        <Card className="border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Distribuições por Tipo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {Object.entries(metrics.byType)
-              .sort(([, a], [, b]) => (b as number) - (a as number))
-              .map(([type, count]) => {
-                const pct = totalByType > 0 ? Math.round(((count as number) / totalByType) * 100) : 0;
-                return (
-                  <div key={type} className="space-y-1">
-                    <div className="flex justify-between items-center text-sm">
-                      <span>{TYPE_LABELS[type] ?? type.replace(/_/g, ' ')}</span>
-                      <span className="font-semibold">{count as number} <span className="text-xs text-muted-foreground font-normal">({pct}%)</span></span>
-                    </div>
-                    <Progress value={pct} className="h-2" />
-                  </div>
-                );
-              })}
-          </CardContent>
-        </Card>
-      )}
+      {/* Health Score + Distribution Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <HealthScore metrics={metrics} />
+        <DistributionChart byType={metrics.byType as Record<string, number>} />
+      </div>
     </div>
   );
 }
