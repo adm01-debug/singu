@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.voice-agent]
 verify_jwt = false
+
+[functions.email-pipeline-health]
+verify_jwt = false
