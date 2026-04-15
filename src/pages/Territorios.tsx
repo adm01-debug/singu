@@ -22,8 +22,8 @@ export default function Territorios() {
   const [view, setView] = useState<'cards' | 'map'>('cards');
 
   const perfMap = useMemo(() => {
-    const m = new Map<string, (typeof performances)[0]>();
-    performances.forEach(p => m.set(p.territory_id, p));
+    const m: Record<string, (typeof performances)[0]> = {};
+    performances.forEach(p => { m[p.territory_id] = p; });
     return m;
   }, [performances]);
 
