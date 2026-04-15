@@ -361,6 +361,15 @@ const AnimatedRoutes = () => {
           </LazyPage>
         </RequireAuth>
       } />
+      <Route path="/admin/lux-config" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminLuxConfig />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
 
       {/* Catch-all */}
       <Route path="*" element={<LazyPage><NotFound /></LazyPage>} />
