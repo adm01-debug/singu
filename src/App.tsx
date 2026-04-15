@@ -89,6 +89,7 @@ const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
+const DocsPage = lazy(() => import("./pages/DocsPage"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 
@@ -410,6 +411,16 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminKnowledgeExport />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+
+      <Route path="/admin/docs" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <DocsPage />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>

@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Activity, AlertTriangle, Mail, Mic, Sparkles,
-  Shield, BookOpen, Map, Database, FileText,
+  Shield, BookOpen, Map, FileText,
 } from 'lucide-react';
 
 const ADMIN_LINKS: { to: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
@@ -16,6 +16,7 @@ const ADMIN_LINKS: { to: string; label: string; icon: React.ElementType; exact?:
   { to: '/admin/secrets-management', label: 'Secrets', icon: Shield },
   { to: '/admin/audit-trail', label: 'Audit Trail', icon: FileText },
   { to: '/admin/knowledge-export', label: 'Knowledge Export', icon: BookOpen },
+  { to: '/admin/docs', label: 'Documentação', icon: BookOpen },
 ];
 
 export function AdminSidebar() {
