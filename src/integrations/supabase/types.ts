@@ -2522,6 +2522,48 @@ export type Database = {
         }
         Relationships: []
       }
+      schema_drift_alerts: {
+        Row: {
+          created_at: string | null
+          entity_name: string
+          entity_type: string
+          error_message: string | null
+          error_type: string
+          id: string
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          stack_trace: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          entity_name: string
+          entity_type: string
+          error_message?: string | null
+          error_type: string
+          id?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          stack_trace?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          entity_name?: string
+          entity_type?: string
+          error_message?: string | null
+          error_type?: string
+          id?: string
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          stack_trace?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       score_history: {
         Row: {
           calculated_at: string
