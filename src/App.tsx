@@ -156,6 +156,10 @@ const DeferredAppChrome = () => {
       {shouldLoadAuthenticatedChrome && (
         <>
           <Suspense fallback={null}>
+            <SchemaDriftBannerLazy />
+          </Suspense>
+
+          <Suspense fallback={null}>
             <EasterEggsProvider />
           </Suspense>
 
