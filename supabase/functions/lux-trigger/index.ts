@@ -22,8 +22,47 @@ const LuxTriggerSchema = z.object({
   entityType: z.enum(['contact', 'company']),
   entityId: z.string().uuid('entityId must be a valid UUID'),
   entityData: z.record(z.unknown()).optional(),
-  webhookUrl: z.string().url().optional(),
 });
+
+/** Fetch with timeout */
+async function fetchWithTimeout(url: string, opts: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...opts, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Retry with exponential backoff */
+async function retryFetch(
+  url: string,
+  opts: RequestInit,
+  maxRetries: number,
+  timeoutMs: number,
+): Promise<{ ok: boolean; status?: number; error?: string }> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetchWithTimeout(url, opts, timeoutMs);
+      if (res.ok) return { ok: true, status: res.status };
+      const body = await res.text().catch(() => "");
+      console.warn(`[lux-trigger] Webhook attempt ${attempt + 1}/${maxRetries + 1} failed: ${res.status} ${body}`);
+      if (attempt < maxRetries) {
+        const delay = Math.min(1000 * Math.pow(2, attempt), 16000);
+        await new Promise(r => setTimeout(r, delay));
+      }
+      if (attempt === maxRetries) return { ok: false, status: res.status, error: `HTTP ${res.status}: ${body.slice(0, 200)}` };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[lux-trigger] Webhook attempt ${attempt + 1}/${maxRetries + 1} error: ${msg}`);
+      if (attempt === maxRetries) return { ok: false, error: msg };
+      const delay = Math.min(1000 * Math.pow(2, attempt), 16000);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  return { ok: false, error: "Max retries exceeded" };
+}
 
 Deno.serve(async (req) => {
   const corsHeaders = makeCors(req);
@@ -31,7 +70,6 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // ── Rate limit ──
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const limited = limiter.check(ip);
   if (limited) return limited;
@@ -54,7 +92,6 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    // Verify user
     const userClient = createClient(supabaseUrl, supabaseAnon, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -65,7 +102,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validate input with Zod
     const rawBody = await req.json();
     const parsed = LuxTriggerSchema.safeParse(rawBody);
     if (!parsed.success) {
@@ -77,10 +113,33 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { entityType, entityId, entityData, webhookUrl } = parsed.data;
+    const { entityType, entityId, entityData } = parsed.data;
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Lookup webhook config from lux_webhook_config table
+    const { data: webhookConfig } = await serviceClient
+      .from('lux_webhook_config')
+      .select('*')
+      .eq('entity_type', entityType)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    // Fallback to env var
+    const webhookUrl = webhookConfig?.webhook_url || Deno.env.get('N8N_LUX_WEBHOOK_URL');
+    const timeoutMs = webhookConfig?.timeout_ms || 60000;
+    const maxRetries = webhookConfig?.max_retries || 3;
+
+    if (!webhookUrl) {
+      console.error('[lux-trigger] No webhook URL configured for', entityType);
+      return new Response(JSON.stringify({ 
+        error: 'not_configured',
+        message: 'Webhook não configurado para este tipo de entidade',
+      }), {
+        status: 422, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Create lux_intelligence record
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: luxRecord, error: insertError } = await serviceClient
       .from('lux_intelligence')
       .insert({
@@ -94,57 +153,54 @@ Deno.serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error('Error creating lux record:', insertError);
+      console.error('[lux-trigger] Insert error:', insertError);
       return new Response(JSON.stringify({ error: 'Failed to create intelligence record' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Build callback URL for n8n to send results back
     const callbackUrl = `${supabaseUrl}/functions/v1/lux-webhook`;
 
-    // Trigger n8n webhook (fire and forget)
-    const n8nWebhookUrl = webhookUrl || Deno.env.get('N8N_LUX_WEBHOOK_URL');
-    
-    if (n8nWebhookUrl) {
-      try {
-        await fetch(n8nWebhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            luxRecordId: luxRecord.id,
-            entityType,
-            entityId,
-            entityData,
-            userId: user.id,
-            callbackUrl,
-          }),
-        });
-        console.log('n8n webhook triggered successfully');
-      } catch (webhookError) {
-        console.error('Error triggering n8n webhook:', webhookError);
-        await serviceClient
-          .from('lux_intelligence')
-          .update({ status: 'error', error_message: 'Failed to trigger n8n workflow' })
-          .eq('id', luxRecord.id);
-      }
-    } else {
-      console.warn('N8N_LUX_WEBHOOK_URL not configured');
+    console.log(`[lux-trigger] Calling webhook for ${entityType}/${entityId}, url=${webhookUrl}, timeout=${timeoutMs}ms, retries=${maxRetries}`);
+
+    const result = await retryFetch(
+      webhookUrl,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          luxRecordId: luxRecord.id,
+          entityType,
+          entityId,
+          entityData,
+          userId: user.id,
+          callbackUrl,
+        }),
+      },
+      maxRetries,
+      timeoutMs,
+    );
+
+    if (!result.ok) {
+      console.error(`[lux-trigger] Webhook failed after retries: ${result.error}`);
       await serviceClient
         .from('lux_intelligence')
-        .update({ status: 'error', error_message: 'n8n webhook URL not configured' })
+        .update({ status: 'error', error_message: `Webhook failed: ${result.error}` })
         .eq('id', luxRecord.id);
+    } else {
+      console.log(`[lux-trigger] Webhook triggered successfully (status=${result.status})`);
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
       luxRecordId: luxRecord.id,
-      message: 'Lux intelligence scan started' 
+      webhookStatus: result.ok ? 'sent' : 'failed',
+      message: result.ok ? 'Lux intelligence scan started' : 'Scan criado mas webhook falhou',
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in lux-trigger:', error);
+    console.error('[lux-trigger] Error:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

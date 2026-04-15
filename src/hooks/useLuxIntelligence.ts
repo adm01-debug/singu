@@ -136,8 +136,19 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
       });
 
       if (error) throw error;
+
+      // Handle "not configured" response
+      if (data?.error === 'not_configured') {
+        toast.error('Webhook Lux não configurado. Contate o administrador.');
+        return null;
+      }
+
       if (data?.success) {
-        toast.success('🔮 Lux Intelligence ativado! Varredura em andamento...');
+        if (data.webhookStatus === 'failed') {
+          toast.warning('🔮 Scan criado, mas o webhook falhou. Dados do último scan serão mantidos.');
+        } else {
+          toast.success('🔮 Lux Intelligence ativado! Varredura em andamento...');
+        }
         await fetchRecords();
         return data.luxRecordId;
       } else {
@@ -145,7 +156,7 @@ export function useLuxIntelligence(entityType: 'contact' | 'company', entityId?:
       }
     } catch (err) {
       logger.error('Error triggering Lux:', err);
-      toast.error(`Erro ao ativar Lux: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+      toast.error('Enriquecimento temporariamente indisponível');
       return null;
     } finally {
       setTriggering(false);
