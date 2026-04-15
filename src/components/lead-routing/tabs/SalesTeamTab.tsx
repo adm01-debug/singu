@@ -15,6 +15,8 @@ import { ROLE_LABELS, ROLE_COLORS } from '@/types/leadRouting';
 import type { SalesTeamMember, SalesRole } from '@/types/leadRouting';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const QuickDistributeWidget = lazy(() => import('../QuickDistributeWidget'));
+
 function MemberForm({
   initial,
   onSave,
