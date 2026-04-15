@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Users, Settings, ArrowRightLeft, BarChart3, MoreVertical, RefreshCw, RotateCcw, History } from 'lucide-react';
-import { usePendingHandoffCount } from '@/hooks/useHandoffQueue';
+import { usePendingHandoffCount, useHandoffRealtime } from '@/hooks/useHandoffQueue';
 import { useSalesTeam } from '@/hooks/useSalesTeam';
 import { useServerRedistribute, useResetDailyCounts } from '@/hooks/useLeadRoutingServer';
 import { Badge } from '@/components/ui/badge';
