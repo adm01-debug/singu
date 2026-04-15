@@ -122,7 +122,7 @@ export default function Territorios() {
               <TerritoryCard
                 key={t.id}
                 territory={t}
-                performance={perfMap.get(t.id)}
+                performance={perfMap[t.id]}
               />
             ))}
           </div>
