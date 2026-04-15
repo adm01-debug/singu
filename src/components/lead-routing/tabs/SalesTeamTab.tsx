@@ -30,11 +30,21 @@ function MemberForm({
   const [weight, setWeight] = useState(initial?.weight ?? 5);
   const [maxDay, setMaxDay] = useState(initial?.max_leads_day ?? 10);
   const [maxTotal, setMaxTotal] = useState(initial?.max_leads_total ?? 50);
+  const [vacationStart, setVacationStart] = useState(initial?.vacation_start ?? '');
+  const [vacationEnd, setVacationEnd] = useState(initial?.vacation_end ?? '');
 
   const handleSubmit = useCallback(() => {
     if (!name.trim()) return;
-    onSave({ name: name.trim(), email: email.trim() || null, role, weight, max_leads_day: maxDay, max_leads_total: maxTotal });
-  }, [name, email, role, weight, maxDay, maxTotal, onSave]);
+    onSave({
+      name: name.trim(),
+      email: email.trim() || null,
+      role, weight,
+      max_leads_day: maxDay,
+      max_leads_total: maxTotal,
+      vacation_start: vacationStart || null,
+      vacation_end: vacationEnd || null,
+    });
+  }, [name, email, role, weight, maxDay, maxTotal, vacationStart, vacationEnd, onSave]);
 
   return (
     <div className="space-y-4">
