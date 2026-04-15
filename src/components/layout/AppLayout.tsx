@@ -6,6 +6,7 @@ import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
+import { SlowQueryIndicator } from '@/components/feedback/SlowQueryIndicator';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { OnboardingTourWrapper } from '@/components/onboarding/OnboardingTourWrapper';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
@@ -211,6 +212,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       <NotificationCenter />
       <OnboardingTourWrapper />
       <KeyboardShortcutsCheatsheet />
+      <SlowQueryIndicator />
       <div className="md:hidden">
         <ScrollToTopButton />
       </div>
