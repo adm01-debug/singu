@@ -1512,6 +1512,81 @@ export type Database = {
         }
         Relationships: []
       }
+      handoff_requests: {
+        Row: {
+          accepted_at: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          expired_at: string | null
+          from_member_id: string
+          handoff_reason: string | null
+          id: string
+          notes: string | null
+          qualification_data: Json
+          rejected_at: string | null
+          rejection_reason: string | null
+          sla_hours: number
+          status: string
+          to_member_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          expired_at?: string | null
+          from_member_id: string
+          handoff_reason?: string | null
+          id?: string
+          notes?: string | null
+          qualification_data?: Json
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          sla_hours?: number
+          status?: string
+          to_member_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          expired_at?: string | null
+          from_member_id?: string
+          handoff_reason?: string | null
+          id?: string
+          notes?: string | null
+          qualification_data?: Json
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          sla_hours?: number
+          status?: string
+          to_member_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handoff_requests_from_member_id_fkey"
+            columns: ["from_member_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handoff_requests_to_member_id_fkey"
+            columns: ["to_member_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_alert_settings: {
         Row: {
           check_frequency_hours: number | null
@@ -1812,6 +1887,141 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_assignments: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string
+          assignment_type: string
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          first_contact_at: string | null
+          id: string
+          notes: string | null
+          previous_owner: string | null
+          routing_rule_id: string | null
+          sla_deadline: string | null
+          sla_met: boolean | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to: string
+          assignment_type?: string
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          first_contact_at?: string | null
+          id?: string
+          notes?: string | null
+          previous_owner?: string | null
+          routing_rule_id?: string | null
+          sla_deadline?: string | null
+          sla_met?: boolean | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string
+          assignment_type?: string
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          first_contact_at?: string | null
+          id?: string
+          notes?: string | null
+          previous_owner?: string | null
+          routing_rule_id?: string | null
+          sla_deadline?: string | null
+          sla_met?: boolean | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_assignments_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignments_previous_owner_fkey"
+            columns: ["previous_owner"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_assignments_routing_rule_id_fkey"
+            columns: ["routing_rule_id"]
+            isOneToOne: false
+            referencedRelation: "lead_routing_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_routing_rules: {
+        Row: {
+          conditions: Json
+          created_at: string
+          description: string | null
+          fallback_rule_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          role_filter: string
+          rule_type: string
+          team_pool: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          fallback_rule_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          role_filter?: string
+          rule_type?: string
+          team_pool?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          fallback_rule_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          role_filter?: string
+          rule_type?: string
+          team_pool?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_routing_rules_fallback_rule_id_fkey"
+            columns: ["fallback_rule_id"]
+            isOneToOne: false
+            referencedRelation: "lead_routing_rules"
             referencedColumns: ["id"]
           },
         ]
@@ -2272,6 +2482,63 @@ export type Database = {
         }
         Relationships: []
       }
+      redistribution_log: {
+        Row: {
+          auto_triggered: boolean
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          from_member_id: string | null
+          id: string
+          inactivity_days: number | null
+          notes: string | null
+          reason: string
+          to_member_id: string | null
+          user_id: string
+        }
+        Insert: {
+          auto_triggered?: boolean
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          from_member_id?: string | null
+          id?: string
+          inactivity_days?: number | null
+          notes?: string | null
+          reason?: string
+          to_member_id?: string | null
+          user_id: string
+        }
+        Update: {
+          auto_triggered?: boolean
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          from_member_id?: string | null
+          id?: string
+          inactivity_days?: number | null
+          notes?: string | null
+          reason?: string
+          to_member_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redistribution_log_from_member_id_fkey"
+            columns: ["from_member_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redistribution_log_to_member_id_fkey"
+            columns: ["to_member_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfm_analysis: {
         Row: {
           analyzed_at: string
@@ -2561,6 +2828,75 @@ export type Database = {
           segment_name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      sales_team_members: {
+        Row: {
+          created_at: string
+          current_lead_count: number
+          email: string | null
+          id: string
+          is_active: boolean
+          last_assigned_at: string | null
+          leads_today: number
+          leads_today_reset_at: string | null
+          max_leads_day: number
+          max_leads_total: number
+          name: string
+          profile_user_id: string | null
+          role: string
+          specializations: string[] | null
+          territories: string[] | null
+          updated_at: string
+          user_id: string
+          vacation_end: string | null
+          vacation_start: string | null
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          current_lead_count?: number
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          last_assigned_at?: string | null
+          leads_today?: number
+          leads_today_reset_at?: string | null
+          max_leads_day?: number
+          max_leads_total?: number
+          name: string
+          profile_user_id?: string | null
+          role?: string
+          specializations?: string[] | null
+          territories?: string[] | null
+          updated_at?: string
+          user_id: string
+          vacation_end?: string | null
+          vacation_start?: string | null
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          current_lead_count?: number
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          last_assigned_at?: string | null
+          leads_today?: number
+          leads_today_reset_at?: string | null
+          max_leads_day?: number
+          max_leads_total?: number
+          name?: string
+          profile_user_id?: string | null
+          role?: string
+          specializations?: string[] | null
+          territories?: string[] | null
+          updated_at?: string
+          user_id?: string
+          vacation_end?: string | null
+          vacation_start?: string | null
+          weight?: number
         }
         Relationships: []
       }
