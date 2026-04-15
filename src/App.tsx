@@ -321,6 +321,15 @@ const AnimatedRoutes = () => {
       <Route path="/design-system" element={
         <LazyPage><DesignSystem /></LazyPage>
       } />
+      <Route path="/admin" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminDashboard />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
       <Route path="/admin/telemetria" element={
         <RequireAuth>
           <LazyPage>
