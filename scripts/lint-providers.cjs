@@ -2,9 +2,10 @@
 
 /**
  * Script de lint para validar a ordem dos providers em App.tsx.
- * Uso: node scripts/lint-providers.js
+ * Uso: node scripts/lint-providers.cjs
  * 
- * Pode ser integrado a pre-commit hooks via husky/lint-staged.
+ * Verifica que providers críticos na função App() aparecem na ordem correta.
+ * Apenas valida a seção do componente App, ignorando componentes internos.
  */
 
 const fs = require('fs');
@@ -12,19 +13,9 @@ const path = require('path');
 
 const APP_FILE = path.resolve(__dirname, '..', 'src', 'App.tsx');
 
-const REQUIRED_ORDER = [
-  'HelmetProvider',
-  'ErrorBoundary',
-  'QueryClientProvider',
-  'BrowserRouter',
-  'AuthProvider',
-  'NavigationStackProvider',
-];
-
 const DEPENDENCIES = {
   AuthProvider: ['BrowserRouter', 'QueryClientProvider'],
   NavigationStackProvider: ['BrowserRouter'],
-  EasterEggsProvider: ['AuthProvider'],
 };
 
 function main() {
@@ -35,12 +26,20 @@ function main() {
 
   const content = fs.readFileSync(APP_FILE, 'utf-8');
 
-  // Extract provider tags from JSX (simplified regex)
-  const providerRegex = /<(HelmetProvider|ErrorBoundary|QueryClientProvider|CelebrationProvider|AriaLiveProvider|TooltipProvider|BrowserRouter|AuthProvider|NavigationStackProvider|EasterEggsProvider)\b/g;
+  // Extract only the App component section
+  const appIdx = content.indexOf('const App');
+  if (appIdx === -1) {
+    console.error('❌ Não foi possível encontrar "const App" em App.tsx');
+    process.exit(1);
+  }
+
+  const appSection = content.slice(appIdx);
+
+  const providerRegex = /<(HelmetProvider|ErrorBoundary|QueryClientProvider|CelebrationProvider|AriaLiveProvider|TooltipProvider|BrowserRouter|AuthProvider|NavigationStackProvider)\b/g;
 
   const found = [];
   let match;
-  while ((match = providerRegex.exec(content)) !== null) {
+  while ((match = providerRegex.exec(appSection)) !== null) {
     const name = match[1];
     if (!found.includes(name)) {
       found.push(name);
@@ -49,7 +48,6 @@ function main() {
 
   let hasError = false;
 
-  // Validate dependencies
   for (const [provider, deps] of Object.entries(DEPENDENCIES)) {
     const providerIndex = found.indexOf(provider);
     if (providerIndex === -1) continue;
@@ -65,7 +63,6 @@ function main() {
 
   if (hasError) {
     console.error('\n🚨 Ordem de providers inválida em App.tsx!');
-    console.error('Ordem esperada:', REQUIRED_ORDER.join(' → '));
     process.exit(1);
   }
 
