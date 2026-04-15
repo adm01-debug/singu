@@ -535,7 +535,7 @@ import {
 describe('Contact Utils — Performance & Edge Cases', () => {
   it('processa 100.000 extrações de behavior em < 100ms', () => {
     const contacts = Array.from({ length: 100000 }, (_, i) => ({
-      behavior: { discProfile: 'D', vakProfile: DEFAULT_VAK_PROFILE, decisionRole: 'decisor' },
+      behavior: { discProfile: 'D', vakProfile: { visual: 33, auditory: 33, kinesthetic: 34, primary: 'V' } as any, decisionRole: 'decisor' } as any,
     }));
     const start = performance.now();
     contacts.forEach(c => getContactBehavior(c));
@@ -1252,7 +1252,9 @@ describe('Error Patterns — Resilience Stress', () => {
   it('nullish coalescing chain em 100.000 iterações', () => {
     const start = performance.now();
     for (let i = 0; i < 100000; i++) {
-      const val = null ?? undefined ?? 0 ?? 'fallback';
+      const a: number | null = null;
+      const b: number | undefined = undefined;
+      const val = a ?? b ?? 0;
       expect(val).toBe(0);
     }
     expect(performance.now() - start).toBeLessThan(20);
