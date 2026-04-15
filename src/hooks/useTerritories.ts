@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { callExternalRpc } from '@/lib/externalData';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 export interface Territory {
   id: string;
@@ -33,11 +34,20 @@ export function useTerritories() {
   return useQuery({
     queryKey: ['territories'],
     queryFn: async () => {
-      const { data, error } = await callExternalRpc<Territory[]>('get_territories', {});
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const { data, error } = await callExternalRpc<Territory[]>('get_territories', {});
+        if (error) {
+          logger.warn('[Territories] RPC error:', error);
+          return [];
+        }
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        logger.warn('[Territories] Fetch failed:', e);
+        return [];
+      }
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60_000,
+    retry: false,
   });
 }
 
@@ -45,13 +55,22 @@ export function useTerritoryPerformance() {
   return useQuery({
     queryKey: ['territory-performance'],
     queryFn: async () => {
-      const { data, error } = await callExternalRpc<TerritoryPerformance[]>(
-        'get_territory_performance', {}
-      );
-      if (error) throw error;
-      return data ?? [];
+      try {
+        const { data, error } = await callExternalRpc<TerritoryPerformance[]>(
+          'get_territory_performance', {}
+        );
+        if (error) {
+          logger.warn('[TerritoryPerformance] RPC not available:', error);
+          return [];
+        }
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        logger.warn('[TerritoryPerformance] Fetch failed:', e);
+        return [];
+      }
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60_000,
+    retry: false,
   });
 }
 
