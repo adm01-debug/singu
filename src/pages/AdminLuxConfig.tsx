@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useLuxWebhookConfig, type LuxWebhookConfig } from '@/hooks/useLuxWebhookConfig';
-import { useLuxIntelligence } from '@/hooks/useLuxIntelligence';
+import { supabase } from '@/integrations/supabase/client';
 import { Navigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ import { ptBR } from 'date-fns/locale';
 function WebhookConfigCard({ entityType, config, onSave, onToggle, onTest, testingType }: {
   entityType: 'contact' | 'company';
   config?: LuxWebhookConfig;
-  onSave: (data: { entity_type: string; webhook_url: string; timeout_ms: number; max_retries: number }) => void;
+  onSave: (data: { entity_type: 'contact' | 'company'; webhook_url: string; timeout_ms: number; max_retries: number }) => void;
   onToggle: (id: string, active: boolean) => void;
   onTest: (entityType: string) => void;
   testingType: string | null;
@@ -93,8 +94,18 @@ function WebhookConfigCard({ entityType, config, onSave, onToggle, onTest, testi
 }
 
 function LuxExecutionHistory() {
-  // Show last executions from lux_intelligence table
-  const { records, loading } = useLuxIntelligenceHistory();
+  const { data: records = [], isLoading: loading } = useQuery({
+    queryKey: ['lux-intelligence-history-admin'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lux_intelligence')
+        .select('id, entity_type, entity_id, status, created_at, completed_at, error_message')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data || [];
+    },
+  });
 
   if (loading) return <div className="text-sm text-muted-foreground py-4">Carregando histórico...</div>;
 
@@ -132,26 +143,6 @@ function LuxExecutionHistory() {
       </CardContent>
     </Card>
   );
-}
-
-function useLuxIntelligenceHistory() {
-  const { useQuery } = require('@tanstack/react-query');
-  const { supabase } = require('@/integrations/supabase/client');
-
-  const { data: records = [], isLoading: loading } = useQuery({
-    queryKey: ['lux-intelligence-history-admin'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('lux_intelligence')
-        .select('id, entity_type, entity_id, status, created_at, completed_at, error_message')
-        .order('created_at', { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  return { records, loading };
 }
 
 export default function AdminLuxConfig() {
