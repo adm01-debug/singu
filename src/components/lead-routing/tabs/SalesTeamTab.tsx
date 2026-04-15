@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -184,6 +184,9 @@ export default function SalesTeamTab() {
 
   return (
     <div className="space-y-4">
+      <Suspense fallback={null}>
+        <QuickDistributeWidget />
+      </Suspense>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <p className="text-sm text-muted-foreground">{members.length} membros</p>
