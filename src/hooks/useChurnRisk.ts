@@ -101,7 +101,7 @@ export function useLocalChurnRisks(contactId?: string) {
       if (contactId) query = query.eq("contact_id", contactId);
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []) as LocalChurnRisk[];
+      return (data ?? []) as unknown as LocalChurnRisk[];
     },
     staleTime: 5 * 60 * 1000,
   });
