@@ -1,0 +1,76 @@
+import { useState, useMemo, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface SegmentFilter {
+  field: string;
+  operator: 'eq' | 'neq' | 'gt' | 'lt' | 'contains' | 'in' | 'is_null' | 'is_not_null';
+  value: string;
+}
+
+export interface SegmentDefinition {
+  name: string;
+  filters: SegmentFilter[];
+  logic: 'and' | 'or';
+}
+
+const AVAILABLE_FIELDS = [
+  { key: 'relationship_score', label: 'Score de Relacionamento', type: 'number' },
+  { key: 'sentiment', label: 'Sentimento', type: 'select', options: ['positive', 'neutral', 'negative'] },
+  { key: 'relationship_stage', label: 'Estágio', type: 'select', options: ['lead', 'prospect', 'customer', 'partner', 'churned'] },
+  { key: 'tags', label: 'Tags', type: 'array' },
+  { key: 'company_id', label: 'Tem Empresa', type: 'exists' },
+  { key: 'email', label: 'Tem Email', type: 'exists' },
+  { key: 'whatsapp', label: 'Tem WhatsApp', type: 'exists' },
+  { key: 'birthday', label: 'Tem Aniversário', type: 'exists' },
+];
+
+export function useContactSegmentation() {
+  const [segment, setSegment] = useState<SegmentDefinition>({ name: '', filters: [], logic: 'and' });
+
+  const { data: allContacts = [] } = useQuery({
+    queryKey: ['contacts-for-segmentation'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase.from('contacts').select('id, first_name, last_name, email, whatsapp, phone, relationship_score, sentiment, relationship_stage, tags, company_id, birthday').eq('user_id', user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  const matchesFilter = useCallback((contact: Record<string, any>, filter: SegmentFilter): boolean => {
+    const val = contact[filter.field];
+    switch (filter.operator) {
+      case 'eq': return String(val) === filter.value;
+      case 'neq': return String(val) !== filter.value;
+      case 'gt': return Number(val) > Number(filter.value);
+      case 'lt': return Number(val) < Number(filter.value);
+      case 'contains': return Array.isArray(val) ? val.some((v: string) => v.toLowerCase().includes(filter.value.toLowerCase())) : String(val || '').toLowerCase().includes(filter.value.toLowerCase());
+      case 'in': return filter.value.split(',').map(s => s.trim()).includes(String(val));
+      case 'is_null': return val === null || val === undefined || val === '';
+      case 'is_not_null': return val !== null && val !== undefined && val !== '';
+      default: return true;
+    }
+  }, []);
+
+  const filteredContacts = useMemo(() => {
+    if (segment.filters.length === 0) return allContacts;
+    return allContacts.filter(contact => {
+      if (segment.logic === 'and') return segment.filters.every(f => matchesFilter(contact, f));
+      return segment.filters.some(f => matchesFilter(contact, f));
+    });
+  }, [allContacts, segment, matchesFilter]);
+
+  const addFilter = (filter: SegmentFilter) => setSegment(s => ({ ...s, filters: [...s.filters, filter] }));
+  const removeFilter = (idx: number) => setSegment(s => ({ ...s, filters: s.filters.filter((_, i) => i !== idx) }));
+  const setLogic = (logic: 'and' | 'or') => setSegment(s => ({ ...s, logic }));
+  const clearFilters = () => setSegment(s => ({ ...s, filters: [] }));
+
+  return {
+    segment, setSegment, addFilter, removeFilter, setLogic, clearFilters,
+    filteredContacts, totalContacts: allContacts.length,
+    availableFields: AVAILABLE_FIELDS,
+  };
+}
