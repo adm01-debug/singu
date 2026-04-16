@@ -3,7 +3,7 @@ import { usePrefetch } from "@/components/navigation/PrefetchLink";
 import {
   LayoutDashboard, Building2, Users, MessageSquare, Lightbulb, Settings,
   Zap, LogOut, CalendarDays, Bell, ChevronDown, BarChart3, Share2,
-  Workflow, MapPin, PanelLeftClose, PanelLeft, Kanban, Trophy, CheckSquare, Globe, ArrowRightLeft, ListFilter, BrainCircuit, LifeBuoy, Mail, BookOpen, Copy, Package, Shield,
+  Workflow, MapPin, PanelLeftClose, PanelLeft, Kanban, Trophy, CheckSquare, Globe, ArrowRightLeft, ListFilter, BrainCircuit, LifeBuoy, Mail, BookOpen, Copy, Package, Shield, Star,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -40,6 +40,7 @@ const navSections = [
       { title: "Performance", url: "/performance", icon: Zap },
       { title: "BI Avançado", url: "/bi", icon: BrainCircuit },
       { title: "Suporte", url: "/suporte", icon: LifeBuoy },
+      { title: "NPS & Satisfação", url: "/nps", icon: Star },
       { title: "Report Builder", url: "/report-builder", icon: LayoutDashboard },
       { title: "Relatórios Customizáveis", url: "/relatorios-customizaveis", icon: LayoutDashboard },
       { title: "Assistente IA", url: "/assistente", icon: LayoutDashboard },
