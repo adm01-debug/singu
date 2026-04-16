@@ -3188,6 +3188,167 @@ export type Database = {
         }
         Relationships: []
       }
+      sequence_enrollments: {
+        Row: {
+          completed_at: string | null
+          contact_id: string
+          created_at: string
+          current_step: number
+          enrolled_at: string
+          id: string
+          last_step_executed_at: string | null
+          next_action_at: string | null
+          replied_at: string | null
+          sequence_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id: string
+          created_at?: string
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          last_step_executed_at?: string | null
+          next_action_at?: string | null
+          replied_at?: string | null
+          sequence_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          last_step_executed_at?: string | null
+          next_action_at?: string | null
+          replied_at?: string | null
+          sequence_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_enrollments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequence_steps: {
+        Row: {
+          channel: string
+          created_at: string
+          delay_days: number
+          delay_hours: number
+          id: string
+          message_template: string | null
+          notes: string | null
+          sequence_id: string
+          step_order: number
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          delay_days?: number
+          delay_hours?: number
+          id?: string
+          message_template?: string | null
+          notes?: string | null
+          sequence_id: string
+          step_order?: number
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delay_days?: number
+          delay_hours?: number
+          id?: string
+          message_template?: string | null
+          notes?: string | null
+          sequence_id?: string
+          step_order?: number
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequences: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          max_enrollments: number | null
+          name: string
+          pause_on_meeting: boolean
+          pause_on_reply: boolean
+          status: string
+          total_completed: number
+          total_enrolled: number
+          total_replied: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_enrollments?: number | null
+          name: string
+          pause_on_meeting?: boolean
+          pause_on_reply?: boolean
+          status?: string
+          total_completed?: number
+          total_enrolled?: number
+          total_replied?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_enrollments?: number | null
+          name?: string
+          pause_on_meeting?: boolean
+          pause_on_reply?: boolean
+          status?: string
+          total_completed?: number
+          total_enrolled?: number
+          total_replied?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       social_behavior_analysis: {
         Row: {
           active_days: string[] | null
