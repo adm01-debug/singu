@@ -189,6 +189,13 @@ export default function Campanhas() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Detail Drawer */}
+        <CampaignDetailDrawer
+          campaign={selectedCampaign}
+          open={!!selectedCampaign}
+          onOpenChange={(o) => { if (!o) setSelectedCampaign(null); }}
+        />
       </div>
     </AppLayout>
   );
