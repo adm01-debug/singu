@@ -84,6 +84,7 @@ const Performance = lazy(() => import("./pages/Performance"));
 const BIAvancado = lazy(() => import("./pages/BIAvancado"));
 const Suporte = lazy(() => import("./pages/Suporte"));
 const ReportBuilder = lazy(() => import("./pages/ReportBuilder"));
+const Campanhas = lazy(() => import("./pages/Campanhas"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
