@@ -158,8 +158,6 @@ export default function Documentos() {
 
       <PageHeader
         title="Documentos & Assinaturas"
-        description="Templates, merge fields e assinatura eletrônica"
-        icon={FileText}
         actions={
           <Button onClick={openNew}>
             <Plus className="h-4 w-4 mr-2" />
