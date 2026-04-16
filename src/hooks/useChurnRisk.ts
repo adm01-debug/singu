@@ -74,3 +74,53 @@ export function useChurnPredictions(contactId: string | undefined) {
     gcTime: 20 * 60 * 1000,
   });
 }
+
+// ─── Local Churn Risk Analysis (Supabase local) ───
+
+export interface LocalChurnRisk {
+  id: string;
+  contact_id: string;
+  risk_level: "low" | "medium" | "high" | "critical";
+  risk_score: number;
+  risk_factors: Array<{ factor: string; weight: number; detail: string }>;
+  recommendations: string[];
+  days_since_last_interaction: number | null;
+  sentiment_trend: string | null;
+  score_trend: string | null;
+  analyzed_at: string;
+}
+
+export function useLocalChurnRisks(contactId?: string) {
+  return useQuery({
+    queryKey: ["local-churn-risks", contactId],
+    queryFn: async () => {
+      let query = supabase
+        .from("churn_risk_scores")
+        .select("*")
+        .order("risk_score", { ascending: false });
+      if (contactId) query = query.eq("contact_id", contactId);
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []) as LocalChurnRisk[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAnalyzeChurnRisk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (contactId?: string) => {
+      const { data, error } = await supabase.functions.invoke("detect-churn-risk", {
+        body: contactId ? { contactId } : {},
+      });
+      if (error) throw error;
+      return data as { success: boolean; analyzed: number; risks: LocalChurnRisk[] };
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["local-churn-risks"] });
+      toast.success(`Análise concluída: ${data.analyzed} contatos analisados`);
+    },
+    onError: () => toast.error("Erro ao analisar risco de churn"),
+  });
+}
