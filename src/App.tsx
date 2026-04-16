@@ -93,6 +93,7 @@ const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
 const AdminEmailDiagnostics = lazy(() => import("./pages/AdminEmailDiagnostics"));
 const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics"));
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
+const Deduplicacao = lazy(() => import("./pages/Deduplicacao"));
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
@@ -368,6 +369,11 @@ const AnimatedRoutes = () => {
       <Route path="/nurturing" element={
         <RequireAuth>
           <LazyPage><Nurturing /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/deduplicacao" element={
+        <RequireAuth>
+          <LazyPage><Deduplicacao /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={
