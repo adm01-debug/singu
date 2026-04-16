@@ -2026,6 +2026,169 @@ export type Database = {
           },
         ]
       }
+      lead_score_config: {
+        Row: {
+          auto_recalculate: boolean
+          created_at: string
+          grade_thresholds: Json
+          id: string
+          recalculate_interval_hours: number
+          updated_at: string
+          user_id: string
+          weight_engagement: number
+          weight_fit: number
+          weight_intent: number
+          weight_relationship: number
+        }
+        Insert: {
+          auto_recalculate?: boolean
+          created_at?: string
+          grade_thresholds?: Json
+          id?: string
+          recalculate_interval_hours?: number
+          updated_at?: string
+          user_id: string
+          weight_engagement?: number
+          weight_fit?: number
+          weight_intent?: number
+          weight_relationship?: number
+        }
+        Update: {
+          auto_recalculate?: boolean
+          created_at?: string
+          grade_thresholds?: Json
+          id?: string
+          recalculate_interval_hours?: number
+          updated_at?: string
+          user_id?: string
+          weight_engagement?: number
+          weight_fit?: number
+          weight_intent?: number
+          weight_relationship?: number
+        }
+        Relationships: []
+      }
+      lead_score_history: {
+        Row: {
+          contact_id: string
+          engagement_score: number
+          fit_score: number
+          grade: string
+          id: string
+          intent_score: number
+          recorded_at: string
+          relationship_score: number
+          total_score: number
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          engagement_score?: number
+          fit_score?: number
+          grade: string
+          id?: string
+          intent_score?: number
+          recorded_at?: string
+          relationship_score?: number
+          total_score: number
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          engagement_score?: number
+          fit_score?: number
+          grade?: string
+          id?: string
+          intent_score?: number
+          recorded_at?: string
+          relationship_score?: number
+          total_score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_score_history_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_scores: {
+        Row: {
+          contact_id: string
+          created_at: string
+          engagement_score: number
+          fit_score: number
+          grade: string
+          id: string
+          intent_score: number
+          last_calculated_at: string
+          previous_score: number | null
+          relationship_score: number
+          score_change: number | null
+          score_factors: Json
+          total_score: number
+          updated_at: string
+          user_id: string
+          weight_engagement: number
+          weight_fit: number
+          weight_intent: number
+          weight_relationship: number
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          engagement_score?: number
+          fit_score?: number
+          grade?: string
+          id?: string
+          intent_score?: number
+          last_calculated_at?: string
+          previous_score?: number | null
+          relationship_score?: number
+          score_change?: number | null
+          score_factors?: Json
+          total_score?: number
+          updated_at?: string
+          user_id: string
+          weight_engagement?: number
+          weight_fit?: number
+          weight_intent?: number
+          weight_relationship?: number
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          engagement_score?: number
+          fit_score?: number
+          grade?: string
+          id?: string
+          intent_score?: number
+          last_calculated_at?: string
+          previous_score?: number | null
+          relationship_score?: number
+          score_change?: number | null
+          score_factors?: Json
+          total_score?: number
+          updated_at?: string
+          user_id?: string
+          weight_engagement?: number
+          weight_fit?: number
+          weight_intent?: number
+          weight_relationship?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_scores_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       life_events: {
         Row: {
           contact_id: string
