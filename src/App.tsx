@@ -397,6 +397,29 @@ const AnimatedRoutes = () => {
       <Route path="/design-system" element={
         <LazyPage><DesignSystem /></LazyPage>
       } />
+      <Route path="/seguranca" element={
+        <RequireAuth>
+          <LazyPage><SecurityPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/reset-password" element={
+        <LazyPage><ResetPassword /></LazyPage>
+      } />
+      <Route path="/sso/callback" element={
+        <LazyPage><SSOCallbackPage /></LazyPage>
+      } />
+      <Route path="/admin/roles" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><RolesPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/permissions" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><PermissionsPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/role-permissions" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><RolePermissionsPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/seguranca" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><AdminSegurancaPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
       <Route path="/admin" element={
         <RequireAuth>
           <LazyPage>
