@@ -269,6 +269,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
 
       {/* New panels: Emotional Anchors, Best Time, AI Actions */}
       <div className="grid gap-4 md:grid-cols-2">
+        <ContactTimeHeatmap contactId={contactId} />
         <LeadScoreWidget contactId={contactId} />
         <EmotionalAnchorsPanel contactId={contactId} />
         <BestTimeToContactCard contactId={contactId} />
