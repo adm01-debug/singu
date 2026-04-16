@@ -201,6 +201,10 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                                 Follow-up: {format(new Date(interaction.follow_up_date), "dd/MM/yyyy")}
                               </div>
                             )}
+                            <MeetingSummaryCard
+                              interactionId={interaction.id}
+                              hasContent={!!(interaction.content && interaction.content.length >= 30)}
+                            />
                           </div>
                         </motion.div>
                       )}
