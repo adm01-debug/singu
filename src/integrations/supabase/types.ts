@@ -4095,6 +4095,51 @@ export type Database = {
           },
         ]
       }
+      search_products_cache: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          metadata: Json | null
+          name: string
+          price: number | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          name: string
+          price?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          metadata?: Json | null
+          name?: string
+          price?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       secret_rotation_log: {
         Row: {
           created_at: string
@@ -4128,6 +4173,36 @@ export type Database = {
           rotated_at?: string
           rotated_by?: string | null
           secret_name?: string
+        }
+        Relationships: []
+      }
+      semantic_search_cache: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          query_hash: string
+          query_text: string
+          results: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          query_hash: string
+          query_text: string
+          results?: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          query_hash?: string
+          query_text?: string
+          results?: Json
+          user_id?: string
         }
         Relationships: []
       }
@@ -5605,6 +5680,26 @@ export type Database = {
           id: string
           title: string
           type: string
+        }[]
+      }
+      search_products_semantic: {
+        Args: {
+          p_limit?: number
+          p_min_similarity?: number
+          p_query: string
+          p_user_id: string
+        }
+        Returns: {
+          category: string
+          description: string
+          external_id: string
+          id: string
+          image_url: string
+          metadata: Json
+          name: string
+          price: number
+          similarity: number
+          tags: string[]
         }[]
       }
     }
