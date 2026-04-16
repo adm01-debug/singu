@@ -276,6 +276,9 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         <Suspense fallback={<Skeleton className="h-28 rounded-lg" />}>
           <ChurnPredictionsWidget contactId={contactId} />
         </Suspense>
+        <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+          <LocalChurnRiskPanel contactId={contactId} compact />
+        </Suspense>
       </div>
 
       <Suspense fallback={<Skeleton className="h-12 rounded-lg" />}>
