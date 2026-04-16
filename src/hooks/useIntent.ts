@@ -196,15 +196,15 @@ export function useCreateManualSignal() {
       signal_source?: string; signal_value?: Record<string, unknown>;
     }) => {
       if (!user?.id) throw new Error("not_authenticated");
-      const { error } = await supabase.from("intent_signals").insert({
+      const { error } = await supabase.from("intent_signals").insert([{
         user_id: user.id,
         signal_type: input.signal_type,
         weight: input.weight ?? 1,
         contact_id: input.contact_id ?? null,
         external_company_id: input.external_company_id ?? null,
         signal_source: input.signal_source ?? "manual",
-        signal_value: input.signal_value ?? {},
-      });
+        signal_value: (input.signal_value ?? {}) as never,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {
