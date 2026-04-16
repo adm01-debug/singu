@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { TeamDashboardPanel } from '@/components/team/TeamDashboardPanel';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
@@ -141,6 +142,7 @@ const Dashboard = () => {
                 topContactAnimations={topContactAnimations}
                 tabDirection={tabDirection}
               />
+              <TeamDashboardPanel />
             </TabsContent>
 
             <TabsContent value="analytics" className="mt-4">
