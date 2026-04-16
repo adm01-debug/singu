@@ -214,6 +214,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       <OnboardingTourWrapper />
       <KeyboardShortcutsCheatsheet />
       <SlowQueryIndicator />
+      <AskCrmChat />
       <div className="md:hidden">
         <ScrollToTopButton />
       </div>
