@@ -28,6 +28,7 @@ import { SalesActivitiesWidget } from './SalesActivitiesWidget';
 import { RelativesSection } from './contact-overview/RelativesSection';
 import { LifeEventsSection } from './contact-overview/LifeEventsSection';
 import { ConsolidatedHealthPanel } from './ConsolidatedHealthPanel';
+import { ScoreHistoryChart } from './ScoreHistoryChart';
 
 interface Props {
   contact: Contact;
