@@ -223,7 +223,18 @@ export function useLeadScore(contactId: string | undefined) {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      return data as LeadScore | null;
+      if (!data) return null;
+      return {
+        ...data,
+        total_score: Number(data.total_score),
+        engagement_score: Number(data.engagement_score),
+        fit_score: Number(data.fit_score),
+        intent_score: Number(data.intent_score),
+        relationship_score: Number(data.relationship_score),
+        score_change: Number(data.score_change),
+        previous_score: Number(data.previous_score),
+        score_factors: (data.score_factors ?? []) as unknown as ScoreFactor[],
+      } as LeadScore;
     },
     enabled: !!contactId && !!user?.id,
     staleTime: 10 * 60 * 1000,
@@ -265,7 +276,15 @@ export function useLeadScoreConfig() {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      return data as LeadScoreConfig | null;
+      if (!data) return null;
+      return {
+        ...data,
+        weight_engagement: Number(data.weight_engagement),
+        weight_fit: Number(data.weight_fit),
+        weight_intent: Number(data.weight_intent),
+        weight_relationship: Number(data.weight_relationship),
+        grade_thresholds: (data.grade_thresholds ?? { cold: 0, warm: 30, hot: 60, on_fire: 85 }) as unknown as LeadScoreConfig['grade_thresholds'],
+      } as LeadScoreConfig;
     },
     enabled: !!user?.id,
     staleTime: 30 * 60 * 1000,
@@ -308,26 +327,27 @@ export function useCalculateLeadScore() {
       const previousScore = existing?.total_score ? Number(existing.total_score) : 0;
 
       // Upsert score
+      const upsertPayload = {
+        contact_id: contactId,
+        user_id: user.id,
+        total_score: result.total_score,
+        grade: result.grade,
+        engagement_score: result.engagement_score,
+        fit_score: result.fit_score,
+        intent_score: result.intent_score,
+        relationship_score: result.relationship_score,
+        score_factors: result.score_factors as unknown as Record<string, unknown>[],
+        weight_engagement: weights?.engagement ?? 0.30,
+        weight_fit: weights?.fit ?? 0.20,
+        weight_intent: weights?.intent ?? 0.25,
+        weight_relationship: weights?.relationship ?? 0.25,
+        last_calculated_at: new Date().toISOString(),
+        score_change: result.total_score - previousScore,
+        previous_score: previousScore,
+      };
       const { error } = await supabase
         .from('lead_scores')
-        .upsert({
-          contact_id: contactId,
-          user_id: user.id,
-          total_score: result.total_score,
-          grade: result.grade,
-          engagement_score: result.engagement_score,
-          fit_score: result.fit_score,
-          intent_score: result.intent_score,
-          relationship_score: result.relationship_score,
-          score_factors: result.score_factors as unknown as Record<string, unknown>[],
-          weight_engagement: weights?.engagement ?? 0.30,
-          weight_fit: weights?.fit ?? 0.20,
-          weight_intent: weights?.intent ?? 0.25,
-          weight_relationship: weights?.relationship ?? 0.25,
-          last_calculated_at: new Date().toISOString(),
-          score_change: result.total_score - previousScore,
-          previous_score: previousScore,
-        }, { onConflict: 'contact_id,user_id' });
+        .upsert(upsertPayload, { onConflict: 'contact_id,user_id' });
 
       if (error) throw error;
 
