@@ -53,7 +53,7 @@ export function useMergeRecords() {
           entity_type: entity,
           entity_id: primaryId,
           old_data: { merged_from: secondaryId },
-          new_data: { fieldOverrides: fieldOverrides ?? null },
+          new_data: (fieldOverrides ?? {}) as Record<string, never>,
         }]);
       }
 
