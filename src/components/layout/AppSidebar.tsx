@@ -37,6 +37,7 @@ const navSections = [
       { title: "Network", url: "/network", icon: Share2 },
       { title: "Insights", url: "/insights", icon: Lightbulb },
       { title: "Analytics", url: "/analytics", icon: BarChart3 },
+      { title: "Performance", url: "/performance", icon: Zap },
     ],
   },
   {

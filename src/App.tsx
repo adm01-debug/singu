@@ -80,6 +80,7 @@ const Metas = lazy(() => import("./pages/Metas"));
 const Tarefas = lazy(() => import("./pages/Tarefas"));
 const Territorios = lazy(() => import("./pages/Territorios"));
 const Rodizio = lazy(() => import("./pages/Rodizio"));
+const Performance = lazy(() => import("./pages/Performance"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
@@ -311,6 +312,11 @@ const AnimatedRoutes = () => {
       <Route path="/metas" element={
         <RequireAuth>
           <LazyPage><Metas /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/performance" element={
+        <RequireAuth>
+          <LazyPage><Performance /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/territorios" element={
