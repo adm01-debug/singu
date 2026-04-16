@@ -63,6 +63,7 @@ export default function Suporte() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<SupportTicket['priority']>('medium');
   const [category, setCategory] = useState('general');
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
 
   const filtered = useMemo(() => {
     return tickets.filter(t => {
@@ -73,16 +74,22 @@ export default function Suporte() {
     });
   }, [tickets, statusFilter, priorityFilter, search]);
 
-  const stats = useMemo(() => ({
-    open: tickets.filter(t => t.status === 'open').length,
-    inProgress: tickets.filter(t => t.status === 'in_progress').length,
-    resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
-    urgent: tickets.filter(t => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length,
-  }), [tickets]);
+  const stats = useMemo(() => {
+    const open = tickets.filter(t => t.status === 'open').length;
+    const inProgress = tickets.filter(t => t.status === 'in_progress').length;
+    const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+    const urgent = tickets.filter(t => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length;
+    const overdue = tickets.filter(t =>
+      t.sla_deadline && !t.resolved_at && new Date(t.sla_deadline).getTime() < Date.now()
+    ).length;
+    return { open, inProgress, resolved, urgent, overdue };
+  }, [tickets]);
 
   const handleCreate = () => {
     if (!title.trim()) return;
-    create.mutate({ title, description, priority, category });
+    const slaHours = SLA_HOURS[priority];
+    const sla_deadline = new Date(Date.now() + slaHours * 60 * 60 * 1000).toISOString();
+    create.mutate({ title, description, priority, category, sla_deadline });
     setTitle('');
     setDescription('');
     setPriority('medium');
