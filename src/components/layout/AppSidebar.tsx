@@ -58,6 +58,7 @@ const navSections = [
       { title: "Mapa", url: "/mapa-empresas", icon: MapPin },
       { title: "Territórios", url: "/territorios", icon: Globe },
       { title: "Otimização Territórios", url: "/territory-optimization", icon: MapPinned },
+      { title: "ABM", url: "/abm", icon: Target },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
       { title: "Automações", url: "/automacoes", icon: Workflow },
       { title: "Sequências", url: "/sequencias", icon: ListFilter },

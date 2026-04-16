@@ -380,8 +380,10 @@ export function useUpsertCampaign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
       if (input.id) {
-        const { id, ...updates } = input;
-        const { data, error } = await supabase.from("abm_campaigns").update(updates).eq("id", id).select().single();
+        const { id, metrics, ...rest } = input;
+        const updates: Record<string, unknown> = { ...rest };
+        if (metrics !== undefined) updates.metrics = metrics as unknown;
+        const { data, error } = await supabase.from("abm_campaigns").update(updates as never).eq("id", id).select().single();
         if (error) throw error;
         return data;
       }
