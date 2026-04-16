@@ -107,12 +107,13 @@ export default function Suporte() {
         <PageHeader backTo="/" backLabel="Dashboard" title="Suporte & Chamados" />
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: 'Abertos', value: stats.open, icon: Ticket, color: 'text-blue-500' },
-            { label: 'Em Andamento', value: stats.inProgress, icon: Clock, color: 'text-yellow-500' },
-            { label: 'Resolvidos', value: stats.resolved, icon: CheckCircle2, color: 'text-green-500' },
-            { label: 'Urgentes', value: stats.urgent, icon: AlertTriangle, color: 'text-red-500' },
+            { label: 'Abertos', value: stats.open, icon: Ticket, color: 'text-primary' },
+            { label: 'Em Andamento', value: stats.inProgress, icon: Clock, color: 'text-warning' },
+            { label: 'Resolvidos', value: stats.resolved, icon: CheckCircle2, color: 'text-success' },
+            { label: 'Urgentes', value: stats.urgent, icon: AlertTriangle, color: 'text-destructive' },
+            { label: 'SLA Vencido', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive' },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-3 flex items-center gap-3">
@@ -165,29 +166,36 @@ export default function Suporte() {
                   const prio = PRIORITY_CONFIG[ticket.priority];
                   const StatusIcon = status.icon;
                   return (
-                    <div key={ticket.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
+                    <div
+                      key={ticket.id}
+                      onClick={() => setSelectedTicket(ticket)}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <StatusIcon className={`h-4 w-4 shrink-0 ${status.color}`} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{ticket.title}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <Badge variant="outline" className={`text-[10px] h-4 ${prio.color}`}>{prio.label}</Badge>
                             <Badge variant="secondary" className="text-[10px] h-4">{CATEGORY_LABELS[ticket.category] || ticket.category}</Badge>
+                            <SLABadge deadline={ticket.sla_deadline} resolvedAt={ticket.resolved_at} />
                             <span className="text-[10px] text-muted-foreground">
                               {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: ptBR })}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <Select
-                        value={ticket.status}
-                        onValueChange={v => update.mutate({ id: ticket.id, status: v as SupportTicket['status'] })}
-                      >
-                        <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k} className="text-xs">{v.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={ticket.status}
+                          onValueChange={v => update.mutate({ id: ticket.id, status: v as SupportTicket['status'] })}
+                        >
+                          <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k} className="text-xs">{v.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   );
                 })}
