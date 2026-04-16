@@ -27,15 +27,17 @@ import { WhatsappMessagesWidget } from './WhatsappMessagesWidget';
 import { SalesActivitiesWidget } from './SalesActivitiesWidget';
 import { RelativesSection } from './contact-overview/RelativesSection';
 import { LifeEventsSection } from './contact-overview/LifeEventsSection';
+import { ConsolidatedHealthPanel } from './ConsolidatedHealthPanel';
 
 interface Props {
   contact: Contact;
   company: Company | null;
   insights: Insight[];
   alerts: Alert[];
+  interactionCount?: number;
 }
 
-export function ContactOverviewTab({ contact, company, insights, alerts }: Props) {
+export function ContactOverviewTab({ contact, company, insights, alerts, interactionCount = 0 }: Props) {
   const { user } = useAuth();
   const { data: relData } = useContactRelationalData(contact.id);
 
@@ -101,6 +103,14 @@ export function ContactOverviewTab({ contact, company, insights, alerts }: Props
 
       {/* Life Events */}
       <LifeEventsSection lifeEvents={lifeEvents} />
+
+      {/* Consolidated Health Panel */}
+      <ConsolidatedHealthPanel
+        contactId={contact.id}
+        sentiment={contact.sentiment}
+        relationshipScore={contact.relationship_score}
+        interactionCount={interactionCount}
+      />
 
       {/* Intelligence & Timing Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
