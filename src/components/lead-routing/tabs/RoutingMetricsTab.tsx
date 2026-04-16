@@ -1,14 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { useRoutingMetrics } from '@/hooks/useRoutingMetrics';
+import { useSalesTeam } from '@/hooks/useSalesTeam';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrendingUp, Clock, Users, CheckCircle2,
   BarChart3, ArrowRightLeft, RefreshCw, Activity,
-  Target, Zap, AlertTriangle,
+  Target, Zap, AlertTriangle, Download, Trophy, Medal,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ROLE_LABELS } from '@/types/leadRouting';
+import type { SalesTeamMember } from '@/types/leadRouting';
 
 const TYPE_LABELS: Record<string, string> = {
   auto_round_robin: 'Round-Robin',
@@ -256,6 +260,110 @@ export default function RoutingMetricsTab() {
         <HealthScore metrics={metrics} />
         <DistributionChart byType={metrics.byType as Record<string, number>} />
       </div>
+
+      {/* Member Performance Ranking */}
+      <MemberPerformanceRanking />
+
+      {/* Export */}
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => exportMetricsCsv(metrics)}>
+          <Download className="h-4 w-4 mr-1" />
+          Exportar CSV
+        </Button>
+      </div>
     </div>
   );
+}
+
+/* ─── Member Performance Ranking ─── */
+function MemberPerformanceRanking() {
+  const { data: members = [] } = useSalesTeam();
+
+  const ranked = useMemo(() => {
+    if (!Array.isArray(members) || members.length === 0) return [];
+    return [...members]
+      .filter((m) => m.is_active)
+      .sort((a, b) => b.current_lead_count - a.current_lead_count)
+      .slice(0, 10);
+  }, [members]);
+
+  if (ranked.length === 0) return null;
+
+  const maxLeads = ranked[0]?.current_lead_count || 1;
+
+  return (
+    <Card className="border">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Trophy className="h-4 w-4 text-warning" />
+          Ranking de Performance
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {ranked.map((m, i) => {
+          const pct = maxLeads > 0 ? Math.round((m.current_lead_count / maxLeads) * 100) : 0;
+          const utilDay = m.max_leads_day > 0 ? Math.round((m.leads_today / m.max_leads_day) * 100) : 0;
+          return (
+            <div key={m.id} className="flex items-center gap-3">
+              <div className="w-6 text-center shrink-0">
+                {i === 0 ? <Trophy className="h-4 w-4 text-warning mx-auto" /> :
+                 i === 1 ? <Medal className="h-4 w-4 text-muted-foreground mx-auto" /> :
+                 <span className="text-xs text-muted-foreground">{i + 1}</span>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium truncate">{m.name}</span>
+                    <Badge variant="outline" className="text-[10px] px-1">{ROLE_LABELS[m.role]}</Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span>{m.current_lead_count} leads</span>
+                    <span className={utilDay >= 90 ? 'text-destructive' : utilDay >= 70 ? 'text-warning' : ''}>
+                      {utilDay}% dia
+                    </span>
+                  </div>
+                </div>
+                <Progress value={pct} className="h-1.5 mt-1" />
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ─── CSV Export ─── */
+function exportMetricsCsv(metrics: {
+  totalAssignments: number;
+  activeAssignments: number;
+  slaCompliance: number;
+  avgFirstContactHours: number;
+  redistributions: number;
+  pendingHandoffs: number;
+  byRole: { sdr: number; closer: number };
+  byType: Record<string, number>;
+}) {
+  const lines = [
+    'Métrica,Valor',
+    `Total Distribuições,${metrics.totalAssignments}`,
+    `Leads Ativos,${metrics.activeAssignments}`,
+    `SLA Compliance,${metrics.slaCompliance}%`,
+    `Tempo Médio 1º Contato,${metrics.avgFirstContactHours}h`,
+    `Redistribuições,${metrics.redistributions}`,
+    `Handoffs Pendentes,${metrics.pendingHandoffs}`,
+    `SDRs Ativos,${metrics.byRole.sdr}`,
+    `Closers Ativos,${metrics.byRole.closer}`,
+    '',
+    'Tipo Distribuição,Quantidade',
+    ...Object.entries(metrics.byType).map(([k, v]) => `${k},${v}`),
+  ];
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `metricas-rodizio-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
