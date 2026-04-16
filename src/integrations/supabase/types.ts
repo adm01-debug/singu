@@ -1033,6 +1033,86 @@ export type Database = {
           },
         ]
       }
+      custom_field_values: {
+        Row: {
+          created_at: string
+          custom_field_id: string
+          entity_id: string
+          id: string
+          updated_at: string
+          user_id: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_field_id: string
+          entity_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_field_id?: string
+          entity_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          entity_type: string
+          field_label: string
+          field_name: string
+          field_options: Json | null
+          field_type: string
+          id: string
+          is_required: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          entity_type: string
+          field_label: string
+          field_name: string
+          field_options?: Json | null
+          field_type: string
+          id?: string
+          is_required?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          entity_type?: string
+          field_label?: string
+          field_name?: string
+          field_options?: Json | null
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       decision_criteria: {
         Row: {
           contact_id: string
