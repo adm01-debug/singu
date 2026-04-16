@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEmailCampaigns, EmailCampaign } from '@/hooks/useEmailCampaigns';
+import { SegmentBuilderPanel } from '@/components/segmentation/SegmentBuilderPanel';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -148,6 +149,9 @@ export default function Campanhas() {
             )}
           </CardContent>
         </Card>
+
+        {/* Segment Builder */}
+        <SegmentBuilderPanel />
 
         {/* New Campaign Dialog */}
         <Dialog open={showNew} onOpenChange={setShowNew}>
