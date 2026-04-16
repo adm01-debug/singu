@@ -59,6 +59,7 @@ const navSections = [
       { title: "Rodízio", url: "/rodizio", icon: ArrowRightLeft },
       { title: "Deduplicação", url: "/deduplicacao", icon: Copy },
       { title: "ERP", url: "/erp", icon: Package },
+      { title: "Documentos", url: "/documentos", icon: BookOpen },
     ],
   },
   {
