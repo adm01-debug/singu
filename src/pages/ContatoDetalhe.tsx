@@ -203,6 +203,7 @@ const ContatoDetalhe = () => {
               <div className="space-y-4">
                 <ContactDataTab contact={contact} />
                 <CustomFieldsDisplay entityType="contact" entityId={contact.id} />
+                <DocumentsPanel entityType="contact" entityId={contact.id} />
               </div>
             </DashboardErrorBoundary>
           </TabsContent>

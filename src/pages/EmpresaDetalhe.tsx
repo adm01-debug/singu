@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { CustomFieldsDisplay } from '@/components/custom-fields/CustomFieldsDisplay';
+import { DocumentsPanel } from '@/components/documents/DocumentsPanel';
 import { useParams, Link } from 'react-router-dom';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { SEOHead } from '@/components/seo/SEOHead';
