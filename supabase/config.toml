@@ -101,3 +101,9 @@ verify_jwt = false
 
 [functions.territory-optimization]
 verify_jwt = false
+
+[functions.abm-account-scorer]
+verify_jwt = false
+
+[functions.abm-whitespace-analyzer]
+verify_jwt = false

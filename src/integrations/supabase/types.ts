@@ -14,6 +14,290 @@ export type Database = {
   }
   public: {
     Tables: {
+      abm_account_plans: {
+        Row: {
+          account_id: string
+          created_at: string
+          end_date: string | null
+          goal: string | null
+          id: string
+          key_stakeholders: Json
+          milestones: Json
+          objectives: Json
+          start_date: string | null
+          status: string
+          strategies: Json
+          target_revenue: number | null
+          template_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          key_stakeholders?: Json
+          milestones?: Json
+          objectives?: Json
+          start_date?: string | null
+          status?: string
+          strategies?: Json
+          target_revenue?: number | null
+          template_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          key_stakeholders?: Json
+          milestones?: Json
+          objectives?: Json
+          start_date?: string | null
+          status?: string
+          strategies?: Json
+          target_revenue?: number | null
+          template_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abm_account_plans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "abm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abm_accounts: {
+        Row: {
+          account_score: number
+          assigned_to: string | null
+          company_name: string
+          created_at: string
+          external_company_id: string
+          id: string
+          last_scored_at: string | null
+          notes: string | null
+          parent_account_id: string | null
+          score_breakdown: Json
+          status: string
+          target_revenue: number | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_score?: number
+          assigned_to?: string | null
+          company_name: string
+          created_at?: string
+          external_company_id: string
+          id?: string
+          last_scored_at?: string | null
+          notes?: string | null
+          parent_account_id?: string | null
+          score_breakdown?: Json
+          status?: string
+          target_revenue?: number | null
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_score?: number
+          assigned_to?: string | null
+          company_name?: string
+          created_at?: string
+          external_company_id?: string
+          id?: string
+          last_scored_at?: string | null
+          notes?: string | null
+          parent_account_id?: string | null
+          score_breakdown?: Json
+          status?: string
+          target_revenue?: number | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abm_accounts_parent_account_id_fkey"
+            columns: ["parent_account_id"]
+            isOneToOne: false
+            referencedRelation: "abm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abm_buying_committee: {
+        Row: {
+          account_id: string
+          committee_role: string
+          contact_email: string | null
+          contact_name: string
+          contact_role: string | null
+          created_at: string
+          engagement_score: number
+          external_contact_id: string | null
+          id: string
+          influence_level: number
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          committee_role: string
+          contact_email?: string | null
+          contact_name: string
+          contact_role?: string | null
+          created_at?: string
+          engagement_score?: number
+          external_contact_id?: string | null
+          id?: string
+          influence_level?: number
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          committee_role?: string
+          contact_email?: string | null
+          contact_name?: string
+          contact_role?: string | null
+          created_at?: string
+          engagement_score?: number
+          external_contact_id?: string | null
+          id?: string
+          influence_level?: number
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abm_buying_committee_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "abm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      abm_campaigns: {
+        Row: {
+          budget: number | null
+          campaign_type: string
+          channels: string[]
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          metrics: Json
+          name: string
+          start_date: string | null
+          status: string
+          target_account_ids: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: number | null
+          campaign_type: string
+          channels?: string[]
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json
+          name: string
+          start_date?: string | null
+          status?: string
+          target_account_ids?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: number | null
+          campaign_type?: string
+          channels?: string[]
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          metrics?: Json
+          name?: string
+          start_date?: string | null
+          status?: string
+          target_account_ids?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      abm_whitespace_opportunities: {
+        Row: {
+          account_id: string
+          confidence: number
+          created_at: string
+          estimated_value: number | null
+          id: string
+          identified_at: string
+          opportunity_type: string
+          product_category: string
+          rationale: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          confidence?: number
+          created_at?: string
+          estimated_value?: number | null
+          id?: string
+          identified_at?: string
+          opportunity_type: string
+          product_category: string
+          rationale?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          confidence?: number
+          created_at?: string
+          estimated_value?: number | null
+          id?: string
+          identified_at?: string
+          opportunity_type?: string
+          product_category?: string
+          rationale?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abm_whitespace_opportunities_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "abm_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       access_blocked_log: {
         Row: {
           city: string | null

@@ -80,6 +80,9 @@ const Metas = lazy(() => import("./pages/Metas"));
 const Tarefas = lazy(() => import("./pages/Tarefas"));
 const Territorios = lazy(() => import("./pages/Territorios"));
 const TerritoryOptimization = lazy(() => import("./pages/TerritoryOptimization"));
+const ABM = lazy(() => import("./pages/ABM"));
+const ABMAccountDetail = lazy(() => import("./pages/ABMAccountDetail"));
+const ABMCampaigns = lazy(() => import("./pages/ABMCampaigns"));
 const Rodizio = lazy(() => import("./pages/Rodizio"));
 const Performance = lazy(() => import("./pages/Performance"));
 const BIAvancado = lazy(() => import("./pages/BIAvancado"));
@@ -354,6 +357,21 @@ const AnimatedRoutes = () => {
       <Route path="/territory-optimization" element={
         <RequireAuth>
           <LazyPage><TerritoryOptimization /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/abm" element={
+        <RequireAuth>
+          <LazyPage><ABM /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/abm/campanhas" element={
+        <RequireAuth>
+          <LazyPage><ABMCampaigns /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/abm/:id" element={
+        <RequireAuth>
+          <LazyPage><ABMAccountDetail /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
