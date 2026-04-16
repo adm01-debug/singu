@@ -1,33 +1,56 @@
 
-## Plano: extração de schema SINGU para migração
+## Auditoria das funcionalidades 2.2 e 2.3
 
-### Objetivo
-Rodar 6 queries SQL via `supabase--read_query` no Supabase deste projeto (rqodmqosrotmtrjnnjul) e colar os JSONs brutos no chat entre tags `<<<QUERY_N_START>>>` / `<<<QUERY_N_END>>>`, sem criar memories, sem escrever código, sem alterar arquivos.
+### 2.2 ✅ Automação de Atribuição de Leads — JÁ IMPLEMENTADO (~95%)
 
-### Execução
-1. **QUERY 1** — Colunas (information_schema.columns) → JSON de ~300-500 KB
-2. **QUERY 2** — Foreign Keys → JSON pequeno
-3. **QUERY 3** — Enums (pg_type) → JSON pequeno
-4. **QUERY 4** — Functions plpgsql/sql com `pg_get_functiondef` → JSON médio
-5. **QUERY 5** — Triggers + RLS policies + tabelas com RLS habilitado (json_build_object) → JSON médio
-6. **QUERY 6** — Indexes + Unique constraints + Check constraints (json_build_object) → JSON médio
+**Backend completo:**
+- Tabelas: `sales_team_members` (weight, caps, férias, manager), `lead_routing_rules` (priorizadas, 5 tipos: round_robin, weighted, territory, specialization, load_balanced), `lead_assignments` (SLA tracking), `redistribution_log`, `handoff_requests`
+- DB Functions: `reset_daily_lead_counts()`, `auto_reset_leads_on_update()`, `get_team_member_ids()`
+- Edge Function `lead-routing` server-side com 3 actions: `distribute` (round-robin ponderado), `redistribute` (inativos), `reset_daily`
+- RLS policies + auditoria
 
-### Estratégia de tamanho
-- Tento cada query inteira primeiro.
-- Se QUERY 1 estourar limite de output, divido por faixa alfabética de `table_name` (`^[a-h]`, `^[i-r]`, `^[s-z]`) e uso `<<<QUERY_1_PART_N_START/END>>>`.
-- Se QUERY 4 estourar (functions com definitions longas), divido em 2 partes por faixa alfabética de `proname`.
+**Frontend completo:**
+- Rota `/rodizio` com 4 tabs: Equipe, Regras, Handoff, Métricas
+- CRUD de membros (weight, caps, férias, toggle ativo)
+- CRUD de regras priorizadas com switch
+- Fila de handoff SDR→Closer com BANT
+- Métricas de distribuição
+- Hooks: `useSalesTeam`, `useRoutingRules`, `useLeadAssignments`, `useServerDistribute`, `useServerRedistribute`, `useResetDailyCounts`, `useHandoffQueue`, `useRoutingMetrics`
 
-### Fallbacks
-- Se `supabase--read_query` bloquear acesso a `pg_catalog` (pg_proc/pg_trigger/pg_policies), reporto qual query falhou entre as tags com `ERROR: ...` e sigo com as demais.
-- Se houver erro de sintaxe, reporto idem e continuo.
+**Pequeno gap:** trigger automático "lead criado → distribui" não está cabeado em automação (precisa chamar `useServerDistribute` manualmente ou via regra de Automações). Pode ser adicionado como template em `AutomationTemplates`.
 
-### Output
-Uma única mensagem de chat com os 6 blocos delimitados, JSON bruto puro dentro de cada bloco, sem markdown extra, sem comentários interpretativos, sem follow-up perguntando confirmação.
+---
 
-### O que NÃO farei
-- Não uso `code--exec` / psql.
-- Não crio memories em `mem://migration/*`.
-- Não escrevo código TypeScript, não toco em arquivos da aplicação, não faço deploy.
-- Não respondo em múltiplas mensagens nem peço confirmação intermediária.
+### 2.3 ❌ Sequências de Email Automatizadas — APENAS ESQUELETO (~40%)
 
-Aprovar para executar.
+**O que existe:**
+- Tabelas: `sequences`, `sequence_steps`, `sequence_enrollments` com `pause_on_reply`/`pause_on_meeting`
+- UI `/sequencias`: criar cadência, listar, toggle, delete, enrollment manual
+- Steps multi-canal (email/whatsapp/call/linkedin/sms) com delay dias+horas
+- Tracking de open/click existe em `email_logs` (mas só p/ campaigns)
+
+**O que FALTA (o coração da feature):**
+
+| Componente | Status |
+|---|---|
+| Edge Function `sequence-processor` (cron que avança enrollments) | ❌ |
+| Envio real de email do step via `send-transactional-email` | ❌ |
+| Triggers comportamentais (abriu→ramifica, clicou→avança, não-abriu-3d→reenvia) | ❌ |
+| Branching condicional (steps só lineares hoje) | ❌ |
+| Pause-on-reply automático (flag existe, ninguém lê `replied_at`) | ❌ |
+| Auto-enrollment por evento (lead criado → entra) | ❌ |
+| Tracking de pixel/clicks dos próprios steps | ❌ |
+| Trigger "visitou pricing page" | ❌ |
+
+---
+
+## Veredicto
+
+| Item | Status real |
+|---|---|
+| **2.2 Round-Robin/Weighted** | ✅ Implementado backend + frontend |
+| **2.3 Drip + Behavioral Triggers** | ❌ Só schema + UI de desenho; sem motor |
+
+Para fechar 2.3 é preciso construir: `sequence-processor` (cron 5min), tabela `sequence_events` (open/click/reply/visit), pixel de tracking, integração com `send-transactional-email`, branching condicional nos steps, leitor de `replied_at` para pause automático, e gancho de auto-enrollment via Automações.
+
+Aprove para eu implementar o motor de execução de sequências (2.3) — 2.2 já está pronto, não precisa tocar.
