@@ -4205,6 +4205,7 @@ export type Database = {
       }
     }
     Functions: {
+      execute_readonly_query: { Args: { query_text: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
