@@ -42,6 +42,7 @@ const navSections = [
       { title: "Suporte", url: "/suporte", icon: LifeBuoy },
       { title: "Report Builder", url: "/report-builder", icon: LayoutDashboard },
       { title: "Relatórios Customizáveis", url: "/relatorios-customizaveis", icon: LayoutDashboard },
+      { title: "Assistente IA", url: "/assistente", icon: LayoutDashboard },
       { title: "Campanhas", url: "/campanhas", icon: Mail },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
       { title: "Nurturing", url: "/nurturing", icon: Workflow },
