@@ -1,14 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { useRoutingMetrics } from '@/hooks/useRoutingMetrics';
+import { useSalesTeam } from '@/hooks/useSalesTeam';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   TrendingUp, Clock, Users, CheckCircle2,
   BarChart3, ArrowRightLeft, RefreshCw, Activity,
-  Target, Zap, AlertTriangle,
+  Target, Zap, AlertTriangle, Download, Trophy, Medal,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ROLE_LABELS } from '@/types/leadRouting';
+import type { SalesTeamMember } from '@/types/leadRouting';
 
 const TYPE_LABELS: Record<string, string> = {
   auto_round_robin: 'Round-Robin',
