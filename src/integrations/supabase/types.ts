@@ -1312,6 +1312,7 @@ export type Database = {
           feedback: string | null
           id: string
           interaction_id: string | null
+          public_token: string
           score: number | null
           sent_at: string | null
           status: string
@@ -1328,6 +1329,7 @@ export type Database = {
           feedback?: string | null
           id?: string
           interaction_id?: string | null
+          public_token?: string
           score?: number | null
           sent_at?: string | null
           status?: string
@@ -1344,6 +1346,7 @@ export type Database = {
           feedback?: string | null
           id?: string
           interaction_id?: string | null
+          public_token?: string
           score?: number | null
           sent_at?: string | null
           status?: string
