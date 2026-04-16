@@ -16,6 +16,7 @@ import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToCon
 import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
 import { SocialIntelligencePanel } from '@/components/contact-detail/SocialIntelligencePanel';
 import { ScoreHistoryPanel } from '@/components/contact-detail/ScoreHistoryPanel';
+import { ContactTimeHeatmap } from '@/components/contact-detail/ContactTimeHeatmap';
 import { CommunicationPreferencesCard } from '@/components/contact-detail/CommunicationPreferencesCard';
 import { WorkspaceAccountsCard } from '@/components/contact-detail/WorkspaceAccountsCard';
 import type { Tables } from '@/integrations/supabase/types';
