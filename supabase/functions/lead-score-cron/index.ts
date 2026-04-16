@@ -1,0 +1,41 @@
+// Lead Score Cron — varre todos os contatos com atividade recente e recalcula.
+// Aciona-se via cron (header x-cron-secret) ou manualmente por admin.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { scopedCorsHeaders, jsonError, jsonOk, requireCronSecret } from "../_shared/auth.ts";
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') return new Response(null, { headers: scopedCorsHeaders(req) });
+  if (req.method !== 'POST') return jsonError('Method not allowed', 405, req);
+
+  const guard = requireCronSecret(req);
+  if (guard) return guard;
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
+
+  // Contatos com qualquer atividade nos últimos 60d → enfileira
+  const since = new Date(Date.now() - 60 * 86_400_000).toISOString();
+  const { data: actives } = await supabase
+    .from('interactions').select('contact_id, user_id')
+    .gte('created_at', since).limit(5000);
+
+  const seen = new Set<string>();
+  const rows: Array<{ user_id: string; contact_id: string; reason: string }> = [];
+  for (const a of actives ?? []) {
+    const k = `${a.user_id}:${a.contact_id}`;
+    if (seen.has(k) || !a.contact_id) continue;
+    seen.add(k);
+    rows.push({ user_id: a.user_id as string, contact_id: a.contact_id as string, reason: 'cron_daily' });
+  }
+
+  if (rows.length > 0) {
+    // Insere em lotes de 500
+    for (let i = 0; i < rows.length; i += 500) {
+      await supabase.from('lead_score_recompute_queue').insert(rows.slice(i, i + 500));
+    }
+  }
+
+  return jsonOk({ ok: true, enqueued: rows.length }, req);
+});
