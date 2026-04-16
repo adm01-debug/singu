@@ -157,8 +157,8 @@ export function useRecomputeLead() {
 export function useRecomputeAllLeads() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (limit = 100) => {
-      const { data, error } = await supabase.functions.invoke('lead-scorer', { body: { batch: true, limit } });
+    mutationFn: async (limit?: number) => {
+      const { data, error } = await supabase.functions.invoke('lead-scorer', { body: { batch: true, limit: limit ?? 100 } });
       if (error) throw error;
       return data as { processed: number };
     },
