@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Interaction, Contact as ContactType } from '@/hooks/useContactDetail';
 import { logger } from "@/lib/logger";
+import { MeetingSummaryCard } from '@/components/meeting-summary/MeetingSummaryCard';
 
 const TYPE_CONFIG: Record<string, { icon: typeof Phone; label: string; color: string }> = {
   call: { icon: Phone, label: 'Ligação', color: 'text-info bg-info/10' },
@@ -200,6 +201,10 @@ export function ContactInteractionsTab({ interactions, contact, companyId, onInt
                                 Follow-up: {format(new Date(interaction.follow_up_date), "dd/MM/yyyy")}
                               </div>
                             )}
+                            <MeetingSummaryCard
+                              interactionId={interaction.id}
+                              hasContent={!!(interaction.content && interaction.content.length >= 30)}
+                            />
                           </div>
                         </motion.div>
                       )}
