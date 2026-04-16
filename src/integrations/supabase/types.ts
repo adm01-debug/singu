@@ -2356,6 +2356,65 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_summaries: {
+        Row: {
+          action_items: Json | null
+          created_at: string
+          duration_minutes: number | null
+          generated_by_model: string | null
+          id: string
+          interaction_id: string
+          key_decisions: string[] | null
+          next_steps: string[] | null
+          participants: string[] | null
+          sentiment_overview: string | null
+          summary: string
+          topics: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json | null
+          created_at?: string
+          duration_minutes?: number | null
+          generated_by_model?: string | null
+          id?: string
+          interaction_id: string
+          key_decisions?: string[] | null
+          next_steps?: string[] | null
+          participants?: string[] | null
+          sentiment_overview?: string | null
+          summary: string
+          topics?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_items?: Json | null
+          created_at?: string
+          duration_minutes?: number | null
+          generated_by_model?: string | null
+          id?: string
+          interaction_id?: string
+          key_decisions?: string[] | null
+          next_steps?: string[] | null
+          participants?: string[] | null
+          sentiment_overview?: string | null
+          summary?: string
+          topics?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_summaries_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       metaprogram_analysis: {
         Row: {
           analyzed_text: string | null
