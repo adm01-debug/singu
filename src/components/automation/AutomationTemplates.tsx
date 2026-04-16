@@ -1,4 +1,4 @@
-import { Zap, Clock, TrendingDown, UserCheck, Star, MessageSquare } from 'lucide-react';
+import { Zap, Clock, TrendingDown, UserCheck, Star, MessageSquare, Send } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -119,6 +119,23 @@ const templates: Template[] = [
       actions: [
         { type: 'create_alert', config: { title: 'Follow-up atrasado!', priority: 'high' } },
         { type: 'send_notification', config: { message: 'Você tem um follow-up vencido' } },
+      ],
+    },
+  },
+  {
+    id: 'auto-enroll-new-lead',
+    name: 'Inscrever Novo Lead',
+    description: 'Quando um lead é criado/marcado com tag, inscreve automaticamente em uma sequência de nutrição.',
+    icon: <Send className="w-5 h-5" />,
+    category: 'Engajamento',
+    data: {
+      name: 'Auto-inscrição de Novos Leads',
+      description: 'Adiciona contatos novos a uma sequência de nutrição',
+      trigger_type: 'tag_added',
+      trigger_config: { tag: 'novo-lead' },
+      conditions: [],
+      actions: [
+        { type: 'enroll_in_sequence', config: { sequence_id: '', sequence_name: 'Configure a sequência ao salvar' } },
       ],
     },
   },

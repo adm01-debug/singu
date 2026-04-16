@@ -22,7 +22,8 @@ export type ActionType =
   | 'update_stage'
   | 'add_tag'
   | 'send_notification'
-  | 'update_score';
+  | 'update_score'
+  | 'enroll_in_sequence';
 
 export interface AutomationCondition {
   field: string;
@@ -85,6 +86,7 @@ export const ACTION_OPTIONS: { value: ActionType; label: string; description: st
   { value: 'add_tag', label: 'Adicionar Tag', description: 'Adiciona uma tag ao contato', icon: '🏷️' },
   { value: 'send_notification', label: 'Enviar Notificação', description: 'Envia uma notificação push', icon: '📲' },
   { value: 'update_score', label: 'Atualizar Score', description: 'Modifica o score de relacionamento', icon: '⭐' },
+  { value: 'enroll_in_sequence', label: 'Inscrever em Sequência', description: 'Adiciona o contato a uma sequência multi-canal', icon: '📨' },
 ];
 
 // ===================== HOOK =====================
