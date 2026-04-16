@@ -13,8 +13,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useSupportTickets, SupportTicket } from '@/hooks/useSupportTickets';
 import { CannedResponsesPanel } from '@/components/support/CannedResponsesPanel';
+import { TicketDetailDrawer } from '@/components/support/TicketDetailDrawer';
+import { SLABadge } from '@/components/support/SLABadge';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+// SLA hours by priority — auto-assigned on ticket creation
+const SLA_HOURS: Record<SupportTicket['priority'], number> = {
+  urgent: 2,
+  high: 8,
+  medium: 24,
+  low: 72,
+};
 
 const PRIORITY_CONFIG = {
   low: { label: 'Baixa', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
