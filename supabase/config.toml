@@ -107,3 +107,12 @@ verify_jwt = false
 
 [functions.abm-whitespace-analyzer]
 verify_jwt = false
+
+[functions.intent-tracker]
+verify_jwt = false
+
+[functions.intent-aggregator]
+verify_jwt = false
+
+[functions.intent-pixel-snippet]
+verify_jwt = false

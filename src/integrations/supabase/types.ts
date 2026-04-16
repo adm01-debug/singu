@@ -2940,6 +2940,144 @@ export type Database = {
           },
         ]
       }
+      intent_scores: {
+        Row: {
+          computed_at: string
+          created_at: string
+          id: string
+          intent_score: number
+          scope: string
+          scope_id: string
+          score_trend: string
+          signal_count_30d: number
+          top_signals: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          created_at?: string
+          id?: string
+          intent_score?: number
+          scope: string
+          scope_id: string
+          score_trend?: string
+          signal_count_30d?: number
+          top_signals?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          created_at?: string
+          id?: string
+          intent_score?: number
+          scope?: string
+          scope_id?: string
+          score_trend?: string
+          signal_count_30d?: number
+          top_signals?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      intent_signals: {
+        Row: {
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          external_company_id: string | null
+          id: string
+          occurred_at: string
+          signal_source: string | null
+          signal_type: string
+          signal_value: Json
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          external_company_id?: string | null
+          id?: string
+          occurred_at?: string
+          signal_source?: string | null
+          signal_type: string
+          signal_value?: Json
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          external_company_id?: string | null
+          id?: string
+          occurred_at?: string
+          signal_source?: string | null
+          signal_type?: string
+          signal_value?: Json
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intent_signals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intent_signals_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intent_tracking_pixels: {
+        Row: {
+          active: boolean
+          created_at: string
+          domain: string
+          id: string
+          label: string | null
+          last_signal_at: string | null
+          pixel_key: string
+          signal_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          domain: string
+          id?: string
+          label?: string | null
+          last_signal_at?: string | null
+          pixel_key: string
+          signal_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          domain?: string
+          id?: string
+          label?: string | null
+          last_signal_at?: string | null
+          pixel_key?: string
+          signal_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       interactions: {
         Row: {
           attachments: string[] | null
