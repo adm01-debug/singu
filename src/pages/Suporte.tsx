@@ -179,6 +179,9 @@ export default function Suporte() {
           </CardContent>
         </Card>
 
+        {/* Canned Responses */}
+        <CannedResponsesPanel />
+
         {/* New Ticket Dialog */}
         <Dialog open={showNew} onOpenChange={setShowNew}>
           <DialogContent>
