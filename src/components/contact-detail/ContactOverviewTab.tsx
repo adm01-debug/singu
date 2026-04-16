@@ -109,7 +109,7 @@ export function ContactOverviewTab({ contact, company, insights, alerts, interac
         contactId={contact.id}
         sentiment={contact.sentiment}
         relationshipScore={contact.relationship_score}
-        interactionCount={0}
+        interactionCount={interactionCount}
       />
 
       {/* Intelligence & Timing Widgets */}

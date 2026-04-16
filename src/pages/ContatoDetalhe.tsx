@@ -183,6 +183,7 @@ const ContatoDetalhe = () => {
                   company={company}
                   insights={insights}
                   alerts={alerts}
+                  interactionCount={interactions.length}
                 />
                 <RelationshipTimeline
                   interactions={interactions}
