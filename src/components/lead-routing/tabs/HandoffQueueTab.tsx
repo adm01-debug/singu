@@ -116,7 +116,7 @@ function CreateHandoffForm({
           <Select value={toId} onValueChange={setToId}>
             <SelectTrigger><SelectValue placeholder="Qualquer closer" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Qualquer Closer</SelectItem>
+              <SelectItem value="__any__">Qualquer Closer</SelectItem>
               {closers.map((m) => (
                 <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
               ))}
