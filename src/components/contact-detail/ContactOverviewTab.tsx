@@ -103,6 +103,14 @@ export function ContactOverviewTab({ contact, company, insights, alerts }: Props
       {/* Life Events */}
       <LifeEventsSection lifeEvents={lifeEvents} />
 
+      {/* Consolidated Health Panel */}
+      <ConsolidatedHealthPanel
+        contactId={contact.id}
+        sentiment={contact.sentiment}
+        relationshipScore={contact.relationship_score}
+        interactionCount={0}
+      />
+
       {/* Intelligence & Timing Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ContactIntelligenceWidget contactId={contact.id} />
