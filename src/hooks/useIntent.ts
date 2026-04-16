@@ -82,7 +82,7 @@ export function useIntentScore(scope: IntentScope, scopeId: string | undefined) 
       const { data, error } = await supabase.from("intent_scores").select("*")
         .eq("user_id", user!.id).eq("scope", scope).eq("scope_id", scopeId!).maybeSingle();
       if (error) throw error;
-      return (data as IntentScore | null) ?? null;
+      return (data as unknown as IntentScore | null) ?? null;
     },
   });
 }
@@ -98,7 +98,7 @@ export function useTopIntentScores(scope: IntentScope = "account", limit = 50) {
         .eq("user_id", user!.id).eq("scope", scope)
         .order("intent_score", { ascending: false }).limit(limit);
       if (error) throw error;
-      return (Array.isArray(data) ? data : []) as IntentScore[];
+      return (Array.isArray(data) ? data : []) as unknown as IntentScore[];
     },
   });
 }
