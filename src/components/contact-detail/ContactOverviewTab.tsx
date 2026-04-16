@@ -106,12 +106,15 @@ export function ContactOverviewTab({ contact, company, insights, alerts, interac
       <LifeEventsSection lifeEvents={lifeEvents} />
 
       {/* Consolidated Health Panel */}
-      <ConsolidatedHealthPanel
-        contactId={contact.id}
-        sentiment={contact.sentiment}
-        relationshipScore={contact.relationship_score}
-        interactionCount={interactionCount}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ConsolidatedHealthPanel
+          contactId={contact.id}
+          sentiment={contact.sentiment}
+          relationshipScore={contact.relationship_score}
+          interactionCount={interactionCount}
+        />
+        <ScoreHistoryChart contactId={contact.id} />
+      </div>
 
       {/* Intelligence & Timing Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
