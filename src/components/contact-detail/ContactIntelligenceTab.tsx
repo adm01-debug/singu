@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const ChurnRiskWidget = lazy(() => import('./ChurnRiskWidget'));
 const ChurnPredictionsWidget = lazy(() => import('./ChurnPredictionsWidget'));
 const ContactDaysWithoutWidget = lazy(() => import('./ContactDaysWithoutWidget'));
+import { LeadScoreWidget } from '@/components/lead-score/LeadScoreWidget';
 
 interface Props {
   contactId: string;
@@ -266,6 +267,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
 
       {/* New panels: Emotional Anchors, Best Time, AI Actions */}
       <div className="grid gap-4 md:grid-cols-2">
+        <LeadScoreWidget contactId={contactId} />
         <EmotionalAnchorsPanel contactId={contactId} />
         <BestTimeToContactCard contactId={contactId} />
         <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
