@@ -8,7 +8,6 @@ export interface TeamMemberStats {
   contacts_count: number;
   interactions_this_month: number;
   deals_count: number;
-  avg_sentiment: string;
   is_on_vacation: boolean;
 }
 
@@ -17,73 +16,47 @@ export function useTeamDashboard() {
     queryKey: ['team-dashboard'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { members: [], isManager: false };
+      if (!user) return { members: [] as TeamMemberStats[], isManager: false };
 
-      // Check if user is a manager
-      const { data: managedMembers } = await supabase
+      const { data: allMembers } = await supabase
         .from('sales_team_members')
-        .select('id, name, role, is_on_vacation, user_id, manager_id')
+        .select('id, name, role, user_id, manager_id, vacation_end')
         .order('name');
 
-      if (!managedMembers?.length) return { members: [], isManager: false };
+      if (!allMembers?.length) return { members: [] as TeamMemberStats[], isManager: false };
 
-      // Find if current user is a manager
-      const currentMember = managedMembers.find(m => m.user_id === user.id);
-      if (!currentMember) return { members: [], isManager: false };
+      const currentMember = allMembers.find(m => m.user_id === user.id);
+      if (!currentMember) return { members: [] as TeamMemberStats[], isManager: false };
 
-      const teamMembers = managedMembers.filter(
-        m => (m as any).manager_id === currentMember.id || m.user_id === user.id
-      );
+      // Check reports
+      let teamMembers = allMembers.filter(m => m.manager_id === currentMember.id || m.user_id === user.id);
 
       if (teamMembers.length <= 1) {
-        // Not a manager or no reports — show all for admin
-        const isAdmin = await checkAdmin(user.id);
-        if (!isAdmin) return { members: [], isManager: false };
-        // Admin sees all
-        return { members: await enrichMembers(managedMembers), isManager: true };
+        // Check if admin
+        const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+        if (!isAdmin) return { members: [] as TeamMemberStats[], isManager: false };
+        teamMembers = allMembers;
       }
 
-      return { members: await enrichMembers(teamMembers), isManager: true };
+      // Enrich with counts
+      const enriched: TeamMemberStats[] = [];
+      for (const m of teamMembers) {
+        const uid = m.user_id;
+        if (!uid) { enriched.push({ id: m.id, name: m.name, role: m.role || 'vendedor', contacts_count: 0, interactions_this_month: 0, deals_count: 0, is_on_vacation: !!(m.vacation_end && new Date(m.vacation_end) > new Date()) }); continue; }
+
+        const { count: cc } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('user_id', uid);
+        const monthAgo = new Date(); monthAgo.setMonth(monthAgo.getMonth() - 1);
+        const { count: ic } = await supabase.from('interactions').select('*', { count: 'exact', head: true }).eq('user_id', uid).gte('created_at', monthAgo.toISOString());
+
+        enriched.push({
+          id: m.id, name: m.name, role: m.role || 'vendedor',
+          contacts_count: cc || 0, interactions_this_month: ic || 0, deals_count: 0,
+          is_on_vacation: !!(m.vacation_end && new Date(m.vacation_end) > new Date()),
+        });
+      }
+
+      return { members: enriched, isManager: true };
     },
     staleTime: 5 * 60_000,
   });
-}
-
-async function checkAdmin(userId: string): Promise<boolean> {
-  const { data } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
-  return !!data;
-}
-
-async function enrichMembers(members: any[]): Promise<TeamMemberStats[]> {
-  const userIds = members.map(m => m.user_id).filter(Boolean);
-  if (!userIds.length) return members.map(m => ({
-    id: m.id, name: m.name, role: m.role || 'vendedor',
-    contacts_count: 0, interactions_this_month: 0, deals_count: 0,
-    avg_sentiment: 'neutral', is_on_vacation: m.is_on_vacation || false,
-  }));
-
-  // Get contact counts per user
-  const contactCounts = new Map<string, number>();
-  const interactionCounts = new Map<string, number>();
-
-  for (const uid of userIds) {
-    const { count: cc } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('user_id', uid);
-    contactCounts.set(uid, cc || 0);
-
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    const { count: ic } = await supabase.from('interactions').select('*', { count: 'exact', head: true }).eq('user_id', uid).gte('created_at', monthAgo.toISOString());
-    interactionCounts.set(uid, ic || 0);
-  }
-
-  return members.map(m => ({
-    id: m.id,
-    name: m.name,
-    role: m.role || 'vendedor',
-    contacts_count: contactCounts.get(m.user_id) || 0,
-    interactions_this_month: interactionCounts.get(m.user_id) || 0,
-    deals_count: 0,
-    avg_sentiment: 'neutral',
-    is_on_vacation: m.is_on_vacation || false,
-  }));
 }
