@@ -50,7 +50,7 @@ export function ScoreHistoryChart({ contactId }: Props) {
       byDate.set(dateKey, {
         date: dateKey,
         label: format(new Date(entry.calculated_at), "dd/MM", { locale: ptBR }),
-        score: entry.total_score ?? 0,
+        score: entry.score_value ?? 0,
         scoreType: entry.score_type ?? 'lead_score',
       });
     }
