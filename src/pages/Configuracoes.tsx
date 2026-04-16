@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { motion } from 'framer-motion';
-import { User, Palette, Bell, Shield, Save, Camera, Brain, GraduationCap, FileText, Smartphone } from 'lucide-react';
+import { User, Palette, Bell, Shield, Save, Camera, Brain, GraduationCap, FileText, Smartphone, Settings2 } from 'lucide-react';
+import { CustomFieldsManager } from '@/components/custom-fields/CustomFieldsManager';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,6 +90,7 @@ const Configuracoes = () => {
             <TabsTrigger value="notifications" className="gap-2"><Bell className="w-4 h-4" />Notificações</TabsTrigger>
             <TabsTrigger value="security" className="gap-2"><Shield className="w-4 h-4" />Segurança</TabsTrigger>
             <TabsTrigger value="app" className="gap-2"><Smartphone className="w-4 h-4" />App</TabsTrigger>
+            <TabsTrigger value="custom-fields" className="gap-2"><Settings2 className="w-4 h-4" />Campos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -141,6 +143,7 @@ const Configuracoes = () => {
           <TabsContent value="notifications"><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><ConfigNotificationsTab notifications={notifications} onChange={setNotifications} /></motion.div></TabsContent>
           <TabsContent value="security"><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}><ConfigSecurityTab /></motion.div></TabsContent>
           <TabsContent value="app"><TourPreferencesPanel /></TabsContent>
+          <TabsContent value="custom-fields"><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4"><CustomFieldsManager entityType="contact" /><CustomFieldsManager entityType="company" /><CustomFieldsManager entityType="deal" /></motion.div></TabsContent>
         </Tabs>
       </div>
     </AppLayout>
