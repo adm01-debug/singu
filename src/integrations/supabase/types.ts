@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_blocked_log: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          reason: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          reason: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          reason?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      access_security_settings: {
+        Row: {
+          created_at: string | null
+          enable_device_detection: boolean | null
+          enable_geo_blocking: boolean | null
+          enable_ip_restriction: boolean | null
+          id: string
+          max_sessions: number | null
+          notify_new_device: boolean | null
+          session_timeout_minutes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          enable_device_detection?: boolean | null
+          enable_geo_blocking?: boolean | null
+          enable_ip_restriction?: boolean | null
+          id?: string
+          max_sessions?: number | null
+          notify_new_device?: boolean | null
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          enable_device_detection?: boolean | null
+          enable_geo_blocking?: boolean | null
+          enable_ip_restriction?: boolean | null
+          id?: string
+          max_sessions?: number | null
+          notify_new_device?: boolean | null
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       activities: {
         Row: {
           created_at: string
@@ -370,6 +442,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      city_whitelist: {
+        Row: {
+          city: string
+          country_code: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          state: string | null
+          user_id: string
+        }
+        Insert: {
+          city: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          state?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          state?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       client_values: {
         Row: {
@@ -1320,6 +1422,44 @@ export type Database = {
           },
         ]
       }
+      device_login_notifications: {
+        Row: {
+          created_at: string | null
+          device_id: string | null
+          id: string
+          ip_address: string | null
+          is_read: boolean | null
+          location: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_id?: string | null
+          id?: string
+          ip_address?: string | null
+          is_read?: boolean | null
+          location?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string | null
+          id?: string
+          ip_address?: string | null
+          is_read?: boolean | null
+          location?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_login_notifications_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "user_known_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disc_analysis_history: {
         Row: {
           analysis_notes: string | null
@@ -1925,6 +2065,33 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_allowed_countries: {
+        Row: {
+          country_code: string
+          country_name: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          user_id: string
+        }
+        Insert: {
+          country_code: string
+          country_name: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id: string
+        }
+        Update: {
+          country_code?: string
+          country_name?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       handoff_requests: {
         Row: {
           accepted_at: string | null
@@ -2303,6 +2470,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ip_whitelist: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: string
+          is_active: boolean | null
+          label: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address: string
+          is_active?: boolean | null
+          label?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string
+          is_active?: boolean | null
+          label?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       knowledge_base_articles: {
         Row: {
@@ -2697,6 +2894,39 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          blocked_reason: string | null
+          created_at: string | null
+          email: string
+          id: string
+          ip_address: string | null
+          success: boolean | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          blocked_reason?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          blocked_reason?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          ip_address?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       lux_intelligence: {
         Row: {
           ai_report: string | null
@@ -3084,6 +3314,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      password_reset_requests: {
+        Row: {
+          approved_by: string | null
+          created_at: string | null
+          email: string
+          id: string
+          reason: string | null
+          resolved_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string | null
+          email: string
+          id?: string
+          reason?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          reason?: string | null
+          resolved_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      permissions: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          id: string
+          module: string
+          name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          module: string
+          name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          module?: string
+          name?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -3606,6 +3896,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_team_members: {
         Row: {
@@ -4732,6 +5051,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_known_devices: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_fingerprint: string
+          device_name: string | null
+          id: string
+          is_trusted: boolean | null
+          last_used_at: string | null
+          os: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          id?: string
+          is_trusted?: boolean | null
+          last_used_at?: string | null
+          os?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          id?: string
+          is_trusted?: boolean | null
+          last_used_at?: string | null
+          os?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -4881,6 +5236,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webauthn_credentials: {
+        Row: {
+          created_at: string | null
+          credential_id: string
+          id: string
+          label: string | null
+          last_used_at: string | null
+          public_key: string
+          sign_count: number | null
+          transports: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          credential_id: string
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          public_key: string
+          sign_count?: number | null
+          transports?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          credential_id?: string
+          id?: string
+          label?: string | null
+          last_used_at?: string | null
+          public_key?: string
+          sign_count?: number | null
+          transports?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
       }
       weekly_report_settings: {
         Row: {

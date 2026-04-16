@@ -95,6 +95,13 @@ const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics")
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
 const Deduplicacao = lazy(() => import("./pages/Deduplicacao"));
 const ErpViewer = lazy(() => import("./pages/ErpViewer"));
+const SecurityPage = lazy(() => import("./pages/Security"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const SSOCallbackPage = lazy(() => import("./pages/SSOCallbackPage"));
+const RolesPage = lazy(() => import("./pages/RolesPage"));
+const PermissionsPage = lazy(() => import("./pages/PermissionsPage"));
+const RolePermissionsPage = lazy(() => import("./pages/RolePermissionsPage"));
+const AdminSegurancaPage = lazy(() => import("./pages/admin/AdminSegurancaPage"));
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
@@ -389,6 +396,29 @@ const AnimatedRoutes = () => {
       } />
       <Route path="/design-system" element={
         <LazyPage><DesignSystem /></LazyPage>
+      } />
+      <Route path="/seguranca" element={
+        <RequireAuth>
+          <LazyPage><SecurityPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/reset-password" element={
+        <LazyPage><ResetPassword /></LazyPage>
+      } />
+      <Route path="/sso/callback" element={
+        <LazyPage><SSOCallbackPage /></LazyPage>
+      } />
+      <Route path="/admin/roles" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><RolesPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/permissions" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><PermissionsPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/role-permissions" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><RolePermissionsPage /></RequireAdminLazy></LazyPage></RequireAuth>
+      } />
+      <Route path="/admin/seguranca" element={
+        <RequireAuth><LazyPage><RequireAdminLazy><AdminSegurancaPage /></RequireAdminLazy></LazyPage></RequireAuth>
       } />
       <Route path="/admin" element={
         <RequireAuth>
