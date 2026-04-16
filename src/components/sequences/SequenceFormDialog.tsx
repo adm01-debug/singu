@@ -24,6 +24,10 @@ type StepDraft = {
   subject: string;
   message_template: string;
   notes: string;
+  condition_type: string;
+  condition_wait_hours: number;
+  branch_on_yes_step: number | null;
+  branch_on_no_step: number | null;
 };
 
 const emptyStep = (): StepDraft => ({
@@ -33,7 +37,20 @@ const emptyStep = (): StepDraft => ({
   subject: '',
   message_template: '',
   notes: '',
+  condition_type: 'always',
+  condition_wait_hours: 24,
+  branch_on_yes_step: null,
+  branch_on_no_step: null,
 });
+
+const CONDITION_OPTIONS = [
+  { value: 'always', label: 'Sempre executar' },
+  { value: 'if_opened', label: 'Se abriu o email anterior' },
+  { value: 'if_not_opened', label: 'Se NÃO abriu o anterior' },
+  { value: 'if_clicked', label: 'Se clicou em link' },
+  { value: 'if_replied', label: 'Se respondeu' },
+  { value: 'if_not_replied', label: 'Se NÃO respondeu' },
+];
 
 interface Props {
   open: boolean;
@@ -69,7 +86,7 @@ export function SequenceFormDialog({ open, onOpenChange, onSubmit, loading }: Pr
         subject: s.subject || null,
         message_template: s.message_template || null,
         notes: s.notes || null,
-      })),
+      })) as CreateSequenceData['steps'],
     });
     setName('');
     setDescription('');
@@ -172,9 +189,62 @@ export function SequenceFormDialog({ open, onOpenChange, onSubmit, loading }: Pr
                   <Textarea
                     value={step.message_template}
                     onChange={e => updateStep(idx, 'message_template', e.target.value)}
-                    placeholder="Template da mensagem... Use {{nome}}, {{empresa}} como variáveis"
+                    placeholder="Template da mensagem... Use {{first_name}}, {{last_name}} como variáveis"
                     rows={2} className="text-xs resize-none"
                   />
+
+                  {idx > 0 && (
+                    <div className="space-y-2 pt-2 border-t border-border/30">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-[10px] text-muted-foreground shrink-0">Condição:</Label>
+                        <Select
+                          value={step.condition_type}
+                          onValueChange={v => updateStep(idx, 'condition_type', v)}
+                        >
+                          <SelectTrigger className="h-7 text-xs flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CONDITION_OPTIONS.map(c => (
+                              <SelectItem key={c.value} value={c.value} className="text-xs">{c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {step.condition_type !== 'always' && (
+                          <>
+                            <Input
+                              type="number" min={1} value={step.condition_wait_hours}
+                              onChange={e => updateStep(idx, 'condition_wait_hours', Number(e.target.value))}
+                              className="h-7 w-14 text-center text-xs"
+                            />
+                            <span className="text-[10px] text-muted-foreground">h</span>
+                          </>
+                        )}
+                      </div>
+                      {step.condition_type !== 'always' && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex items-center gap-1">
+                            <Label className="text-[10px] text-success shrink-0">Se SIM → step:</Label>
+                            <Input
+                              type="number" min={1}
+                              value={step.branch_on_yes_step ?? ''}
+                              onChange={e => updateStep(idx, 'branch_on_yes_step', e.target.value ? Number(e.target.value) : null)}
+                              className="h-7 text-xs" placeholder="próximo"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Label className="text-[10px] text-destructive shrink-0">Se NÃO → step:</Label>
+                            <Input
+                              type="number" min={1}
+                              value={step.branch_on_no_step ?? ''}
+                              onChange={e => updateStep(idx, 'branch_on_no_step', e.target.value ? Number(e.target.value) : null)}
+                              className="h-7 text-xs" placeholder="parar"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
