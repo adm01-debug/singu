@@ -1033,6 +1033,79 @@ export type Database = {
           },
         ]
       }
+      csat_surveys: {
+        Row: {
+          answered_at: string | null
+          channel: string | null
+          contact_id: string
+          created_at: string
+          expires_at: string | null
+          feedback: string | null
+          id: string
+          interaction_id: string | null
+          score: number | null
+          sent_at: string | null
+          status: string
+          ticket_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          channel?: string | null
+          contact_id: string
+          created_at?: string
+          expires_at?: string | null
+          feedback?: string | null
+          id?: string
+          interaction_id?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          channel?: string | null
+          contact_id?: string
+          created_at?: string
+          expires_at?: string | null
+          feedback?: string | null
+          id?: string
+          interaction_id?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csat_surveys_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "csat_surveys_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "csat_surveys_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_field_values: {
         Row: {
           created_at: string
