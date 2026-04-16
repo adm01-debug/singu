@@ -83,7 +83,7 @@ function CreateHandoffForm({
     if (!fromId) return;
     onSubmit({
       fromMemberId: fromId,
-      toMemberId: toId || undefined,
+      toMemberId: toId && toId !== '__any__' ? toId : undefined,
       reason: reason || undefined,
       notes: notes || undefined,
       qualificationData: {
