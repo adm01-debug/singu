@@ -45,14 +45,17 @@ export function useMergeRecords() {
       if (delErr) throw delErr;
 
       // 4. Audit log entry
-      await supabase.from('audit_log').insert({
-        user_id: (await supabase.auth.getUser()).data.user?.id ?? '',
-        action: 'merge',
-        entity_type: entity,
-        entity_id: primaryId,
-        old_data: { merged_from: secondaryId },
-        new_data: { fieldOverrides: fieldOverrides ?? null },
-      });
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user?.id) {
+        await supabase.from('audit_log').insert([{
+          user_id: userData.user.id,
+          action: 'merge',
+          entity_type: entity,
+          entity_id: primaryId,
+          old_data: { merged_from: secondaryId },
+          new_data: { fieldOverrides: fieldOverrides ?? null },
+        }]);
+      }
 
       return { primaryId, secondaryId };
     },
