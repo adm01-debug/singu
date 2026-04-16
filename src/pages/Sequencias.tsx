@@ -85,7 +85,7 @@ export default function Sequencias() {
         )}
       </div>
 
-      <SequenceFormDialog open={formOpen} onOpenChange={setFormOpen} onSubmit={createSequence} loading={creating} />
+      <SequenceFormDialog open={formOpen} onOpenChange={setFormOpen} onSubmit={async (d) => { await createSequence(d); }} loading={creating} />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>

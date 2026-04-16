@@ -65,7 +65,7 @@ export function SequenceFormDialog({ open, onOpenChange, onSubmit, loading }: Pr
       steps: steps.map(s => ({
         ...s,
         step_order: 0,
-        channel: s.channel as StepDraft['channel'],
+        channel: s.channel as 'email' | 'whatsapp' | 'call' | 'linkedin' | 'sms',
         subject: s.subject || null,
         message_template: s.message_template || null,
         notes: s.notes || null,
