@@ -74,6 +74,75 @@ export function useEmailCampaigns() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  /**
+   * Materializa destinatários a partir dos contatos do usuário com email válido,
+   * marca a campanha como "sending" e depois "sent". Simula o envio (não dispara emails reais —
+   * a entrega real é responsabilidade da edge function de email já existente).
+   */
+  const sendCampaign = useMutation({
+    mutationFn: async (campaignId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Não autenticado');
+
+      // Buscar contatos elegíveis (com email)
+      const { data: contacts, error: contactsError } = await supabase
+        .from('contacts')
+        .select('id, email, first_name, last_name')
+        .eq('user_id', user.id)
+        .not('email', 'is', null);
+      if (contactsError) throw contactsError;
+
+      const eligible = (contacts ?? []).filter(c => c.email && c.email.includes('@'));
+      if (eligible.length === 0) throw new Error('Nenhum contato com email válido foi encontrado');
+
+      // Marcar como enviando
+      await supabase.from('email_campaigns').update({ status: 'sending' } as any).eq('id', campaignId);
+
+      // Materializar destinatários (idempotente — só insere os que ainda não existem)
+      const { data: existing } = await supabase
+        .from('campaign_recipients')
+        .select('contact_id')
+        .eq('campaign_id', campaignId);
+      const existingIds = new Set((existing ?? []).map(r => r.contact_id));
+
+      const toInsert = eligible
+        .filter(c => !existingIds.has(c.id))
+        .map(c => ({
+          campaign_id: campaignId,
+          contact_id: c.id,
+          email: c.email!,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        }));
+
+      if (toInsert.length > 0) {
+        const { error: insError } = await supabase.from('campaign_recipients').insert(toInsert);
+        if (insError) throw insError;
+      }
+
+      // Marcar campanha como enviada e atualizar contadores
+      const { error: updError } = await supabase
+        .from('email_campaigns')
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+          total_recipients: eligible.length,
+        } as any)
+        .eq('id', campaignId);
+      if (updError) throw updError;
+
+      return { recipientsCount: eligible.length, newlyAdded: toInsert.length };
+    },
+    onSuccess: ({ recipientsCount, newlyAdded }) => {
+      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: ['campaign-recipients'] });
+      toast.success(`Campanha enviada para ${recipientsCount} destinatários (${newlyAdded} novos)`);
+    },
+    onError: (e: Error) => {
+      toast.error(`Falha ao enviar: ${e.message}`);
+    },
+  });
+
   const stats = {
     total: campaigns.length,
     drafts: campaigns.filter(c => c.status === 'draft').length,
@@ -85,5 +154,5 @@ export function useEmailCampaigns() {
       : 0,
   };
 
-  return { campaigns, isLoading, create, update, remove, stats };
+  return { campaigns, isLoading, create, update, remove, sendCampaign, stats };
 }
