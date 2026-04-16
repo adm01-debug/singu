@@ -11,6 +11,7 @@ import { useSequenceProcessor } from '@/hooks/useSequenceProcessor';
 import { SequenceCard } from '@/components/sequences/SequenceCard';
 import { SequenceFormDialog } from '@/components/sequences/SequenceFormDialog';
 import { SequenceMetricsCard } from '@/components/sequences/SequenceMetricsCard';
+import { SequenceDetailDrawer } from '@/components/sequences/SequenceDetailDrawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function Sequencias() {
@@ -19,6 +20,8 @@ export default function Sequencias() {
   const processor = useSequenceProcessor();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const detailSequence = sequences.find(s => s.id === detailId) ?? null;
 
   const activeCount = sequences.filter(s => s.status === 'active').length;
   const totalEnrolled = sequences.reduce((sum, s) => sum + s.total_enrolled, 0);
@@ -93,7 +96,7 @@ export default function Sequencias() {
                     sequence={seq}
                     onToggle={(id, status) => toggleStatus({ id, status })}
                     onDelete={setDeleteId}
-                    onClick={() => {}}
+                    onClick={() => setDetailId(seq.id)}
                   />
                   {seq.status === 'active' && <SequenceMetricsCard sequenceId={seq.id} />}
                 </div>
@@ -104,6 +107,12 @@ export default function Sequencias() {
       </div>
 
       <SequenceFormDialog open={formOpen} onOpenChange={setFormOpen} onSubmit={async (d) => { await createSequence(d); }} loading={creating} />
+
+      <SequenceDetailDrawer
+        sequence={detailSequence}
+        open={!!detailId}
+        onOpenChange={(o) => { if (!o) setDetailId(null); }}
+      />
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
