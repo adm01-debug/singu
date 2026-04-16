@@ -127,6 +127,8 @@ const IntentPage = lazy(() => import("./pages/Intent"));
 const IntentSetupPage = lazy(() => import("./pages/IntentSetup"));
 const LeadScoringPage = lazy(() => import("./pages/LeadScoring"));
 const LeadScoringConfigPage = lazy(() => import("./pages/LeadScoringConfig"));
+const WinLossPage = lazy(() => import("./pages/WinLoss"));
+const WinLossSetupPage = lazy(() => import("./pages/WinLossSetup"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -396,6 +398,16 @@ const AnimatedRoutes = () => {
       <Route path="/lead-scoring/config" element={
         <RequireAuth>
           <LazyPage><LeadScoringConfigPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/win-loss" element={
+        <RequireAuth>
+          <LazyPage><WinLossPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/win-loss/setup" element={
+        <RequireAuth>
+          <LazyPage><WinLossSetupPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
