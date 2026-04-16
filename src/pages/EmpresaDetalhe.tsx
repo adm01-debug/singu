@@ -35,6 +35,7 @@ import { CompanyDataTab } from '@/components/company-detail/CompanyDataTab';
 import { CompanyCommercialTab } from '@/components/company-detail/CompanyCommercialTab';
 import { CompanyEnrichedCard } from '@/components/company-detail/CompanyEnrichedCard';
 import { CompanyDuplicatesPanel } from '@/components/company-detail/CompanyDuplicatesPanel';
+import { CompanyErpProposalsWidget } from '@/components/erp/CompanyErpProposalsWidget';
 import { ContactsTabContent } from './empresa-detalhe/ContactsTabContent';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
