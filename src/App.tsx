@@ -79,6 +79,7 @@ const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
 const Metas = lazy(() => import("./pages/Metas"));
 const Tarefas = lazy(() => import("./pages/Tarefas"));
 const Territorios = lazy(() => import("./pages/Territorios"));
+const TerritoryOptimization = lazy(() => import("./pages/TerritoryOptimization"));
 const Rodizio = lazy(() => import("./pages/Rodizio"));
 const Performance = lazy(() => import("./pages/Performance"));
 const BIAvancado = lazy(() => import("./pages/BIAvancado"));
@@ -348,6 +349,11 @@ const AnimatedRoutes = () => {
       <Route path="/territorios" element={
         <RequireAuth>
           <LazyPage><Territorios /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/territory-optimization" element={
+        <RequireAuth>
+          <LazyPage><TerritoryOptimization /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
