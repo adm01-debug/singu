@@ -276,6 +276,42 @@ export type Database = {
           },
         ]
       }
+      canned_responses: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          shortcut: string | null
+          title: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          shortcut?: string | null
+          title: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          shortcut?: string | null
+          title?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       churn_risk_scores: {
         Row: {
           analyzed_at: string
