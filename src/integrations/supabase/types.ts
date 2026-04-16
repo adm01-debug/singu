@@ -276,6 +276,42 @@ export type Database = {
           },
         ]
       }
+      canned_responses: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          shortcut: string | null
+          title: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          shortcut?: string | null
+          title: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          shortcut?: string | null
+          title?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       churn_risk_scores: {
         Row: {
           analyzed_at: string
@@ -2268,6 +2304,48 @@ export type Database = {
           },
         ]
       }
+      knowledge_base_articles: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          helpful_count: number | null
+          id: string
+          is_published: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
       lead_assignments: {
         Row: {
           assigned_by: string | null
@@ -2851,6 +2929,105 @@ export type Database = {
           procedures_words?: string[] | null
           toward_score?: number | null
           toward_words?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      nurturing_enrollments: {
+        Row: {
+          completed_at: string | null
+          contact_id: string
+          created_at: string
+          current_step: number | null
+          enrolled_at: string
+          id: string
+          next_action_at: string | null
+          status: string | null
+          user_id: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id: string
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          next_action_at?: string | null
+          status?: string | null
+          user_id: string
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          next_action_at?: string | null
+          status?: string | null
+          user_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurturing_enrollments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nurturing_enrollments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "nurturing_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nurturing_workflows: {
+        Row: {
+          completed_count: number | null
+          created_at: string
+          description: string | null
+          enrolled_count: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          steps: Json | null
+          trigger_config: Json | null
+          trigger_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_count?: number | null
+          created_at?: string
+          description?: string | null
+          enrolled_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_count?: number | null
+          created_at?: string
+          description?: string | null
+          enrolled_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -4635,6 +4812,72 @@ export type Database = {
             columns: ["interaction_id"]
             isOneToOne: false
             referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visit_checkins: {
+        Row: {
+          address: string | null
+          check_in_at: string
+          check_out_at: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          latitude: number
+          longitude: number
+          notes: string | null
+          photo_url: string | null
+          user_id: string
+          visit_type: string | null
+        }
+        Insert: {
+          address?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          notes?: string | null
+          photo_url?: string | null
+          user_id: string
+          visit_type?: string | null
+        }
+        Update: {
+          address?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          notes?: string | null
+          photo_url?: string | null
+          user_id?: string
+          visit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_checkins_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_checkins_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
         ]
