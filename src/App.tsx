@@ -86,6 +86,7 @@ const Suporte = lazy(() => import("./pages/Suporte"));
 const ReportBuilder = lazy(() => import("./pages/ReportBuilder"));
 const Campanhas = lazy(() => import("./pages/Campanhas"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
+const Nurturing = lazy(() => import("./pages/Nurturing"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
