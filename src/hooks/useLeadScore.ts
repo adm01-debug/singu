@@ -336,7 +336,7 @@ export function useCalculateLeadScore() {
         fit_score: result.fit_score,
         intent_score: result.intent_score,
         relationship_score: result.relationship_score,
-        score_factors: result.score_factors as unknown as Record<string, unknown>[],
+        score_factors: JSON.parse(JSON.stringify(result.score_factors)),
         weight_engagement: weights?.engagement ?? 0.30,
         weight_fit: weights?.fit ?? 0.20,
         weight_intent: weights?.intent ?? 0.25,
