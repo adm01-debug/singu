@@ -3,16 +3,20 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
-import { ListFilter, Play, Users, Zap } from 'lucide-react';
+import { ListFilter, Play, Users, Zap, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useSequences } from '@/hooks/useSequences';
+import { useSequenceProcessor } from '@/hooks/useSequenceProcessor';
 import { SequenceCard } from '@/components/sequences/SequenceCard';
 import { SequenceFormDialog } from '@/components/sequences/SequenceFormDialog';
+import { SequenceMetricsCard } from '@/components/sequences/SequenceMetricsCard';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function Sequencias() {
   usePageTitle('Sequências');
   const { sequences, loading, createSequence, toggleStatus, deleteSequence, creating } = useSequences();
+  const processor = useSequenceProcessor();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -71,17 +75,31 @@ export default function Sequencias() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sequences.map(seq => (
-              <SequenceCard
-                key={seq.id}
-                sequence={seq}
-                onToggle={(id, status) => toggleStatus({ id, status })}
-                onDelete={setDeleteId}
-                onClick={() => {}}
-              />
-            ))}
-          </div>
+          <>
+            <div className="flex justify-end">
+              <Button
+                size="sm" variant="outline"
+                onClick={() => processor.mutate()}
+                disabled={processor.isPending}
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${processor.isPending ? 'animate-spin' : ''}`} />
+                Rodar processador agora
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sequences.map(seq => (
+                <div key={seq.id} className="space-y-2">
+                  <SequenceCard
+                    sequence={seq}
+                    onToggle={(id, status) => toggleStatus({ id, status })}
+                    onDelete={setDeleteId}
+                    onClick={() => {}}
+                  />
+                  {seq.status === 'active' && <SequenceMetricsCard sequenceId={seq.id} />}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
