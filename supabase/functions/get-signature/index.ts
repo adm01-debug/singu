@@ -1,0 +1,84 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const url = new URL(req.url);
+    const token = url.searchParams.get("token") || (await req.json().catch(() => ({}))).token;
+
+    if (!token || typeof token !== "string" || token.length < 16) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: signature, error } = await supabase
+      .from("document_signatures")
+      .select("id, signer_name, signer_email, rendered_html, status, viewed_at, signed_at, declined_at, expires_at, created_at")
+      .eq("signature_token", token)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!signature) {
+      return new Response(JSON.stringify({ error: "Documento não encontrado" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check expiration
+    if (signature.expires_at && new Date(signature.expires_at) < new Date()) {
+      await supabase
+        .from("document_signatures")
+        .update({ status: "expired" })
+        .eq("id", signature.id);
+      return new Response(JSON.stringify({ ...signature, status: "expired" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Mark as viewed if pending
+    if (signature.status === "pending") {
+      await supabase
+        .from("document_signatures")
+        .update({ status: "viewed", viewed_at: new Date().toISOString() })
+        .eq("id", signature.id);
+      signature.status = "viewed";
+      signature.viewed_at = new Date().toISOString();
+    }
+
+    // Track view
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || null;
+    const ua = req.headers.get("user-agent") || null;
+    await supabase.from("document_views").insert({
+      signature_id: signature.id,
+      viewer_ip: ip,
+      viewer_user_agent: ua,
+      viewer_email: signature.signer_email,
+    });
+
+    return new Response(JSON.stringify(signature), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("get-signature error:", e);
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
