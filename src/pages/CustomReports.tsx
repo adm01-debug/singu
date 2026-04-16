@@ -99,7 +99,7 @@ export default function CustomReports() {
         <meta name="description" content="Crie relatórios sob medida com filtros, agrupamentos, métricas e exportação CSV." />
       </Helmet>
       <div className="min-h-screen p-4 md:p-6 space-y-4">
-        <PageHeader backTo="/" backLabel="Dashboard" title="Relatórios Customizáveis" icon={<FileBarChart2 className="h-5 w-5 text-primary" />} />
+        <PageHeader backTo="/" backLabel="Dashboard" title="Relatórios Customizáveis" />
 
         {/* Toolbar */}
         <Card>

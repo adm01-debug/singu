@@ -84,6 +84,7 @@ const Performance = lazy(() => import("./pages/Performance"));
 const BIAvancado = lazy(() => import("./pages/BIAvancado"));
 const Suporte = lazy(() => import("./pages/Suporte"));
 const ReportBuilder = lazy(() => import("./pages/ReportBuilder"));
+const CustomReports = lazy(() => import("./pages/CustomReports"));
 const Campanhas = lazy(() => import("./pages/Campanhas"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Nurturing = lazy(() => import("./pages/Nurturing"));
@@ -364,6 +365,11 @@ const AnimatedRoutes = () => {
       <Route path="/report-builder" element={
         <RequireAuth>
           <LazyPage><ReportBuilder /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/relatorios-customizaveis" element={
+        <RequireAuth>
+          <LazyPage><CustomReports /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/campanhas" element={
