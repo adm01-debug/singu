@@ -125,6 +125,8 @@ const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").th
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
 const IntentPage = lazy(() => import("./pages/Intent"));
 const IntentSetupPage = lazy(() => import("./pages/IntentSetup"));
+const LeadScoringPage = lazy(() => import("./pages/LeadScoring"));
+const LeadScoringConfigPage = lazy(() => import("./pages/LeadScoringConfig"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -384,6 +386,16 @@ const AnimatedRoutes = () => {
       <Route path="/intent/setup" element={
         <RequireAuth>
           <LazyPage><IntentSetupPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/lead-scoring" element={
+        <RequireAuth>
+          <LazyPage><LeadScoringPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/lead-scoring/config" element={
+        <RequireAuth>
+          <LazyPage><LeadScoringConfigPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={

@@ -3517,6 +3517,7 @@ export type Database = {
       }
       lead_score_history: {
         Row: {
+          breakdown: Json
           contact_id: string
           engagement_score: number
           fit_score: number
@@ -3529,6 +3530,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          breakdown?: Json
           contact_id: string
           engagement_score?: number
           fit_score?: number
@@ -3541,6 +3543,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          breakdown?: Json
           contact_id?: string
           engagement_score?: number
           fit_score?: number
@@ -3562,10 +3565,102 @@ export type Database = {
           },
         ]
       }
-      lead_scores: {
+      lead_score_recompute_queue: {
         Row: {
           contact_id: string
+          enqueued_at: string
+          id: string
+          processed_at: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          enqueued_at?: string
+          id?: string
+          processed_at?: string | null
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          enqueued_at?: string
+          id?: string
+          processed_at?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_score_rules: {
+        Row: {
+          active: boolean
           created_at: string
+          decay_days: number
+          dimension: string
+          id: string
+          signal_key: string
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          decay_days?: number
+          dimension: string
+          id?: string
+          signal_key: string
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          decay_days?: number
+          dimension?: string
+          id?: string
+          signal_key?: string
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      lead_score_thresholds: {
+        Row: {
+          created_at: string
+          grade: string
+          id: string
+          min_score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grade: string
+          id?: string
+          min_score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grade?: string
+          id?: string
+          min_score?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_scores: {
+        Row: {
+          computed_at: string
+          contact_id: string
+          created_at: string
+          decay_applied_at: string
           engagement_score: number
           fit_score: number
           grade: string
@@ -3585,8 +3680,10 @@ export type Database = {
           weight_relationship: number
         }
         Insert: {
+          computed_at?: string
           contact_id: string
           created_at?: string
+          decay_applied_at?: string
           engagement_score?: number
           fit_score?: number
           grade?: string
@@ -3606,8 +3703,10 @@ export type Database = {
           weight_relationship?: number
         }
         Update: {
+          computed_at?: string
           contact_id?: string
           created_at?: string
+          decay_applied_at?: string
           engagement_score?: number
           fit_score?: number
           grade?: string
@@ -6841,6 +6940,10 @@ export type Database = {
           similarity: number
           tags: string[]
         }[]
+      }
+      seed_lead_score_defaults: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
