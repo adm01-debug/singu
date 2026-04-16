@@ -47,6 +47,7 @@ const navSections = [
       { title: "Territórios", url: "/territorios", icon: Globe },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
       { title: "Automações", url: "/automacoes", icon: Workflow },
+      { title: "Sequências", url: "/sequencias", icon: ListFilter },
       { title: "Metas", url: "/metas", icon: Trophy },
       { title: "Rodízio", url: "/rodizio", icon: ArrowRightLeft },
     ],
