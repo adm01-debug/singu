@@ -1,43 +1,44 @@
 
-User wants autonomous execution. Roadmap 2.x ainda tem 2 itens grandes:
-- 2.4 Lead Scoring Comportamental server-side (parcial — falta persistência server, decay, triggers)
-- 2.6 Intent Data (zero — falta tabela, pixel first-party, aggregator, UI)
+Intent Data acabou. Próximo do roadmap 2.x = **2.4 Lead Scoring Comportamental server-side** (hoje só client-side, falta persistência server, decay temporal e triggers de automação).
 
-ABM acabou. Próximo lógico = Intent Data (mais novo, fecha o tripé Score+ABM+Intent). Lead Scoring server-side vem depois.
-
-## Plano: Intent Data Module
+## Plano: Lead Scoring Server-Side com Decay
 
 ### 1. Schema (migration)
-- `intent_signals`: id, user_id, contact_id (nullable), company_id (nullable), external_company_id, signal_type ('page_view'|'email_open'|'email_click'|'form_submit'|'content_download'|'pricing_view'|'demo_request'|'social_engagement'|'search_query'|'competitor_mention'), signal_source, signal_value jsonb, weight int (1-10), occurred_at, created_at. Indexes em (user_id, occurred_at desc), (contact_id), (external_company_id), (signal_type)
-- `intent_scores`: id, user_id, scope ('contact'|'account'), scope_id text, intent_score int (0-100), score_trend ('rising'|'stable'|'falling'), signal_count_30d int, top_signals jsonb, computed_at. Unique(user_id, scope, scope_id)
-- `intent_tracking_pixels`: id, user_id, pixel_key text unique, domain text, active bool, created_at — para identificar fonte
-- RLS por user_id, audit em intent_signals
+- `lead_scores` — `user_id, contact_id, fit_score, engagement_score, intent_score, relationship_score, total_score, grade ('A'|'B'|'C'|'D'), computed_at, decay_applied_at`. Unique(user_id, contact_id).
+- `lead_score_history` — snapshots para gráfico de evolução: `id, user_id, contact_id, total_score, grade, breakdown jsonb, recorded_at`. Index (contact_id, recorded_at desc).
+- `lead_score_rules` — config por user: `id, user_id, dimension, signal_key, weight, decay_days, active`. Permite tunar pesos sem deploy.
+- `lead_score_thresholds` — grades por user: `id, user_id, grade, min_score`. Default A≥80, B≥60, C≥40, D<40.
+- RLS por user_id, audit em lead_scores.
 
 ### 2. Edge Functions
-- **`intent-tracker`** (verify_jwt=false, público): recebe POST do pixel `{ pixel_key, signal_type, url, referrer, contact_email?, utm }`, valida pixel, registra em `intent_signals`. CORS aberto.
-- **`intent-aggregator`**: agrega últimos 30d por contact/account → score (weighted sum normalizado), tendência (compara janela 0-15 vs 15-30), top 5 signals. Persiste em `intent_scores`. Cron diário + on-demand.
-- **`intent-pixel-snippet`** (GET): retorna JS minificado do pixel parametrizado.
+- **`lead-scorer`**: calcula score de 1 contato ou batch. Lê interactions (engagement), intent_signals (intent), contact attrs (fit), relationship_score field (relationship). Aplica **decay exponencial** por dimensão (ex: engagement signals decaem 5%/dia, intent 3%/dia). Persiste em `lead_scores` + snapshot em `lead_score_history` quando muda grade ou ±10 pontos.
+- **`lead-score-cron`**: roda diário, recalcula todos os contatos com atividade nos últimos 60d. Aciona webhook/notificação quando contato muda para grade A.
+- Ambas com rate limit, JWT validation, registradas em config.toml.
 
-### 3. Hooks `src/hooks/useIntent.ts`
-- `useIntentSignals(filters)`, `useIntentScore(scope, id)`, `useTopIntentAccounts()`, `useGeneratePixel`, `useTrackingPixels`, `useRefreshIntent`
+### 3. Trigger DB
+- `trigger_lead_score_recompute` em `intent_signals` AFTER INSERT → marca contato como dirty (insere em `lead_score_recompute_queue`). Cron processa fila.
 
-### 4. UI
-- **`/intent`**: hub com 4 KPIs (sinais 24h/7d, contas hot, score médio), tabela "Hot Accounts" ordenada por intent_score com trend badge, filtros por signal_type/período
-- **`/intent/setup`**: gera pixel, mostra snippet `<script>` para copiar, lista domínios ativos
-- **Widget `IntentSignalCard`**: usado em ContatoDetalhe e EmpresaDetalhe mostrando score + top signals
-- Componentes em `src/components/intent/`: `IntentScoreBadge`, `IntentSignalsTimeline`, `HotAccountsTable`, `PixelSetupCard`, `IntentTrendChart` (recharts)
+### 4. Hooks (`src/hooks/useLeadScoring.ts`)
+- `useLeadScore(contactId)`, `useTopLeads(grade?, limit)`, `useLeadScoreHistory(contactId)`, `useRecomputeLead(contactId)`, `useRecomputeAllLeads`, `useScoreRules` + `useUpdateRule`, `useScoreThresholds` + `useUpdateThreshold`.
 
-### 5. Integração ABM
-- Bonus signals do intent já alimentam score de account quando rodar `abm-account-scorer` (intent dimension)
+### 5. UI
+- **`/lead-scoring`**: hub com 4 KPIs (total leads, distribuição por grade, score médio, mudanças 24h), tabela de top leads ordenada por score com grade badge, gráfico de distribuição (recharts pie).
+- **`/lead-scoring/config`**: editor de pesos por dimensão/sinal e thresholds de grade.
+- **Widget `LeadScoreCard`**: usado em ContatoDetalhe mostrando score atual + breakdown radar + sparkline histórico.
+- Componentes em `src/components/lead-scoring/`: `LeadGradeBadge`, `LeadScoreBreakdown` (radar chart), `LeadScoreSparkline`, `TopLeadsTable`, `ScoreDistributionChart`, `ScoreRulesEditor`.
 
-### 6. Navegação
-- Sidebar: novo item "Intent Data" (ícone Radar) abaixo de ABM
-- Rotas `/intent` e `/intent/setup` em App.tsx
+### 6. Integração
+- ABM: `abm-account-scorer` lê `lead_scores` para média de score do buying committee → entra em `engagement` dimension.
+- Intent: trigger já mencionado garante recompute on-signal.
 
-### 7. Memória
-- `mem://features/intent-data-module` + atualizar índice
+### 7. Navegação
+- Sidebar: "Lead Scoring" (ícone Gauge) abaixo de Intent Data.
+- Rotas `/lead-scoring` e `/lead-scoring/config` em App.tsx.
+
+### 8. Memória
+- `mem://features/lead-scoring-server-side` + atualizar índice (substitui o `lead-scoring-system` antigo client-side).
 
 ### Não fazer
-- Não criar tabela `products`/`proposals`
-- Não tocar em ABM/Territory/Sequences existentes além de leitura
-- Não implementar 3rd-party intent providers (Bombora/G2) — só first-party agora
+- Não criar tabelas `products`/`proposals`.
+- Não tocar em ABM/Intent/Territory além de leitura cruzada.
+- Não remover hook client-side antigo agora — deixa coexistir como fallback offline.
