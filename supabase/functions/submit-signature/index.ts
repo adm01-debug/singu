@@ -1,0 +1,105 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    const body = await req.json().catch(() => ({}));
+    const { token, action, signature_typed, signature_image, declined_reason } = body;
+
+    if (!token || typeof token !== "string") {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: existing } = await supabase
+      .from("document_signatures")
+      .select("id, status, expires_at")
+      .eq("signature_token", token)
+      .maybeSingle();
+
+    if (!existing) {
+      return new Response(JSON.stringify({ error: "Documento não encontrado" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existing.status === "signed") {
+      return new Response(JSON.stringify({ error: "Documento já assinado" }), {
+        status: 409,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (existing.expires_at && new Date(existing.expires_at) < new Date()) {
+      return new Response(JSON.stringify({ error: "Documento expirado" }), {
+        status: 410,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || null;
+    const ua = req.headers.get("user-agent") || null;
+
+    if (action === "sign") {
+      if (!signature_typed && !signature_image) {
+        return new Response(JSON.stringify({ error: "Assinatura ausente" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { error } = await supabase
+        .from("document_signatures")
+        .update({
+          status: "signed",
+          signed_at: new Date().toISOString(),
+          signature_typed: signature_typed ?? null,
+          signature_image: signature_image ?? null,
+          signed_ip: ip,
+          signed_user_agent: ua,
+        })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else if (action === "decline") {
+      const { error } = await supabase
+        .from("document_signatures")
+        .update({
+          status: "declined",
+          declined_at: new Date().toISOString(),
+          declined_reason: declined_reason ?? "Recusado pelo signatário",
+        })
+        .eq("id", existing.id);
+      if (error) throw error;
+    } else {
+      return new Response(JSON.stringify({ error: "Ação inválida" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (e) {
+    console.error("submit-signature error:", e);
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

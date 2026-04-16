@@ -1760,6 +1760,192 @@ export type Database = {
         }
         Relationships: []
       }
+      document_signatures: {
+        Row: {
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          declined_at: string | null
+          declined_reason: string | null
+          document_id: string | null
+          expires_at: string | null
+          id: string
+          merge_data: Json
+          rendered_html: string
+          signature_image: string | null
+          signature_token: string
+          signature_typed: string | null
+          signed_at: string | null
+          signed_ip: string | null
+          signed_user_agent: string | null
+          signer_email: string
+          signer_name: string
+          status: string
+          template_id: string | null
+          updated_at: string
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          declined_at?: string | null
+          declined_reason?: string | null
+          document_id?: string | null
+          expires_at?: string | null
+          id?: string
+          merge_data?: Json
+          rendered_html: string
+          signature_image?: string | null
+          signature_token?: string
+          signature_typed?: string | null
+          signed_at?: string | null
+          signed_ip?: string | null
+          signed_user_agent?: string | null
+          signer_email: string
+          signer_name: string
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          declined_at?: string | null
+          declined_reason?: string | null
+          document_id?: string | null
+          expires_at?: string | null
+          id?: string
+          merge_data?: Json
+          rendered_html?: string
+          signature_image?: string | null
+          signature_token?: string
+          signature_typed?: string | null
+          signed_at?: string | null
+          signed_ip?: string | null
+          signed_user_agent?: string | null
+          signer_email?: string
+          signer_name?: string
+          status?: string
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_signatures_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_signatures_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_signatures_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "document_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_templates: {
+        Row: {
+          category: string | null
+          content_html: string
+          created_at: string
+          description: string | null
+          document_type: string
+          id: string
+          is_active: boolean
+          merge_fields: Json
+          name: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content_html: string
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          id?: string
+          is_active?: boolean
+          merge_fields?: Json
+          name: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content_html?: string
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          id?: string
+          is_active?: boolean
+          merge_fields?: Json
+          name?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      document_views: {
+        Row: {
+          created_at: string
+          document_id: string | null
+          duration_seconds: number | null
+          id: string
+          signature_id: string | null
+          viewer_email: string | null
+          viewer_ip: string | null
+          viewer_user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          signature_id?: string | null
+          viewer_email?: string | null
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          signature_id?: string | null
+          viewer_email?: string | null
+          viewer_ip?: string | null
+          viewer_user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_views_signature_id_fkey"
+            columns: ["signature_id"]
+            isOneToOne: false
+            referencedRelation: "document_signatures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string

@@ -95,6 +95,8 @@ const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics")
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
 const Deduplicacao = lazy(() => import("./pages/Deduplicacao"));
 const ErpViewer = lazy(() => import("./pages/ErpViewer"));
+const Documentos = lazy(() => import("./pages/Documentos"));
+const PublicSignaturePage = lazy(() => import("./pages/PublicSignaturePage"));
 const SecurityPage = lazy(() => import("./pages/Security"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const SSOCallbackPage = lazy(() => import("./pages/SSOCallbackPage"));
@@ -389,6 +391,12 @@ const AnimatedRoutes = () => {
           <LazyPage><ErpViewer /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/documentos" element={
+        <RequireAuth>
+          <LazyPage><Documentos /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/signature/:token" element={<LazyPage><PublicSignaturePage /></LazyPage>} />
       <Route path="/whatsapp" element={
         <RequireAuth>
           <Navigate to="/interacoes?canal=whatsapp" replace />
