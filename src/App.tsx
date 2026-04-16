@@ -95,6 +95,13 @@ const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics")
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
 const Deduplicacao = lazy(() => import("./pages/Deduplicacao"));
 const ErpViewer = lazy(() => import("./pages/ErpViewer"));
+const SecurityPage = lazy(() => import("./pages/Security"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const SSOCallbackPage = lazy(() => import("./pages/SSOCallbackPage"));
+const RolesPage = lazy(() => import("./pages/RolesPage"));
+const PermissionsPage = lazy(() => import("./pages/PermissionsPage"));
+const RolePermissionsPage = lazy(() => import("./pages/RolePermissionsPage"));
+const AdminSegurancaPage = lazy(() => import("./pages/admin/AdminSegurancaPage"));
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
