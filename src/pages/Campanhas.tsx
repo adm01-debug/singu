@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Mail, Plus, Send, FileEdit, Trash2, Eye, Clock, CheckCircle2, Search, BarChart3 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PageHeader } from '@/components/navigation/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,9 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useEmailCampaigns, EmailCampaign } from '@/hooks/useEmailCampaigns';
 import { SegmentBuilderPanel } from '@/components/segmentation/SegmentBuilderPanel';
 import { CampaignDetailDrawer } from '@/components/campaigns/CampaignDetailDrawer';
+import { EmailBuilder } from '@/components/email-builder/EmailBuilder';
+import type { EmailBlock } from '@/components/email-builder/types';
+import { renderBlocksToHtml, renderBlocksToText } from '@/lib/emailBuilderRenderer';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -36,6 +40,7 @@ export default function Campanhas() {
   const [name, setName] = useState('');
   const [subject, setSubject] = useState('');
   const [contentText, setContentText] = useState('');
+  const [blocks, setBlocks] = useState<EmailBlock[]>([]);
 
   const filtered = useMemo(() => {
     return campaigns.filter(c => {
@@ -47,8 +52,14 @@ export default function Campanhas() {
 
   const handleCreate = () => {
     if (!name.trim() || !subject.trim()) return;
-    create.mutate({ name, subject, content_text: contentText });
-    setName(''); setSubject(''); setContentText('');
+    const hasBlocks = blocks.length > 0;
+    create.mutate({
+      name,
+      subject,
+      content_text: hasBlocks ? renderBlocksToText(blocks) : contentText,
+      content_html: hasBlocks ? renderBlocksToHtml(blocks) : null,
+    });
+    setName(''); setSubject(''); setContentText(''); setBlocks([]);
     setShowNew(false);
   };
 
@@ -167,21 +178,32 @@ export default function Campanhas() {
 
         {/* New Campaign Dialog */}
         <Dialog open={showNew} onOpenChange={setShowNew}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Nova Campanha</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <div>
-                <Label className="text-xs">Nome da Campanha</Label>
-                <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Newsletter Abril 2026" className="h-8 text-xs" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Nome da Campanha</Label>
+                  <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Newsletter Abril 2026" className="h-8 text-xs" />
+                </div>
+                <div>
+                  <Label className="text-xs">Assunto do Email</Label>
+                  <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Ex: Novidades incríveis para você!" className="h-8 text-xs" />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs">Assunto do Email</Label>
-                <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Ex: Novidades incríveis para você!" className="h-8 text-xs" />
-              </div>
-              <div>
-                <Label className="text-xs">Conteúdo</Label>
-                <Textarea value={contentText} onChange={e => setContentText(e.target.value)} placeholder="Escreva o conteúdo do email..." className="text-xs min-h-[120px]" />
-              </div>
+              <Tabs defaultValue="builder">
+                <TabsList className="h-7">
+                  <TabsTrigger value="builder" className="text-xs h-6">Editor visual</TabsTrigger>
+                  <TabsTrigger value="text" className="text-xs h-6">Apenas texto</TabsTrigger>
+                </TabsList>
+                <TabsContent value="builder" className="mt-2">
+                  <EmailBuilder blocks={blocks} onBlocksChange={setBlocks} />
+                </TabsContent>
+                <TabsContent value="text" className="mt-2">
+                  <Label className="text-xs">Conteúdo</Label>
+                  <Textarea value={contentText} onChange={e => setContentText(e.target.value)} placeholder="Escreva o conteúdo do email..." className="text-xs min-h-[200px]" />
+                </TabsContent>
+              </Tabs>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowNew(false)} className="text-xs">Cancelar</Button>

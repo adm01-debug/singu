@@ -1,0 +1,134 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export interface LandingPageBlock {
+  id: string;
+  type: string;
+  [k: string]: unknown;
+}
+
+export interface LandingPage {
+  id: string;
+  user_id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  blocks: LandingPageBlock[];
+  theme: Record<string, unknown>;
+  is_published: boolean;
+  view_count: number;
+  submission_count: number;
+  redirect_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LandingPageSubmission {
+  id: string;
+  landing_page_id: string;
+  email: string | null;
+  name: string | null;
+  phone: string | null;
+  data: Record<string, unknown>;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  created_at: string;
+}
+
+export function useLandingPages() {
+  const qc = useQueryClient();
+  const key = ['landing-pages'];
+
+  const { data: pages = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as unknown as LandingPage[];
+    },
+    staleTime: 60_000,
+  });
+
+  const create = useMutation({
+    mutationFn: async (input: Partial<LandingPage>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Não autenticado');
+      const slug = (input.slug || `lp-${Date.now()}`).toLowerCase().replace(/[^a-z0-9-]/g, '-').slice(0, 60);
+      const { data, error } = await supabase
+        .from('landing_pages')
+        .insert({
+          user_id: user.id,
+          slug,
+          title: input.title ?? 'Nova landing page',
+          description: input.description ?? null,
+          blocks: (input.blocks ?? []) as never,
+          theme: (input.theme ?? {}) as never,
+          is_published: false,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data as unknown as LandingPage;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); toast.success('Landing page criada!'); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const update = useMutation({
+    mutationFn: async ({ id, ...patch }: Partial<LandingPage> & { id: string }) => {
+      const { error } = await supabase.from('landing_pages').update(patch as never).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); toast.success('Landing page salva!'); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('landing_pages').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: key }); toast.success('Removida.'); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const togglePublish = useMutation({
+    mutationFn: async ({ id, publish }: { id: string; publish: boolean }) => {
+      const { error } = await supabase.from('landing_pages').update({ is_published: publish }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_d, v) => {
+      qc.invalidateQueries({ queryKey: key });
+      toast.success(v.publish ? 'Página publicada!' : 'Página despublicada.');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return { pages, isLoading, create, update, remove, togglePublish };
+}
+
+export function useLandingPageSubmissions(pageId?: string) {
+  return useQuery({
+    queryKey: ['lp-submissions', pageId],
+    enabled: !!pageId,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('landing_page_submissions')
+        .select('*')
+        .eq('landing_page_id', pageId!)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as unknown as LandingPageSubmission[];
+    },
+  });
+}
