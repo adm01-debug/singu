@@ -1,10 +1,6 @@
 
-User wants Territory Optimization AI module. Backend edge function + UI hub + route. Need to design plan.
+ABM module. Need: hierarchy, multi-contact roles (já existe `decision_role` em ContactBehavior), account scoring, account plans (já existe AccountPlanWidget + useAccountPlan), whitespace, ABM campaigns.
 
-Existing: useTerritories hook (returns Territory[] with company_count, contact_count, deal_count, total_revenue, assigned_to), useTerritoryPerformance (conversion_rate, avg_deal_size). Sales team members have territories[]. AdminLayout + sidebar pattern exists.
+Existing: AccountPlanWidget, useAccountPlan hook, contact decision_role, companies table com is_matriz. Falta: parent_company_id, account_score, whitespace engine, ABM campaigns ligadas a accounts.
 
-Plan scope:
-1. Edge function `territory-optimization` (Lovable AI for recommendations, Gini calc in Deno)
-2. Hook `useTerritoryOptimization`
-3. Page `/territory-optimization` with banner, KPIs, recommendations, chart, table
-4. Route guard (admin/manager) + sidebar entry + breadcrumb
+Plano enxuto — 1 entrega ABM completa.
