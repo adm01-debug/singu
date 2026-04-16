@@ -52,7 +52,7 @@ export function useRBAC() {
     permissions.some(p => p.name === permName);
 
   const hasRole = (role: string): boolean =>
-    userRoles.includes(role);
+    userRoles.includes(role as typeof userRoles[number]);
 
   const hasModuleAccess = (module: string): boolean =>
     permissions.some(p => p.module === module);
