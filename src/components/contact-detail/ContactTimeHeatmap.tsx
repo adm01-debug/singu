@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useContactTimeAnalysis, type TimeSlotData } from '@/hooks/useContactTimeAnalysis';
+import { useContactTimeAnalysis } from '@/hooks/useContactTimeAnalysis';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -24,29 +24,29 @@ function formatHour(h: number): string {
   return `${h.toString().padStart(2, '0')}h`;
 }
 
-function formatDay(d: number): string {
-  return DAYS[d] ?? '?';
-}
-
 interface Props {
   contactId: string;
 }
 
 export function ContactTimeHeatmap({ contactId }: Props) {
-  const { data, isLoading } = useContactTimeAnalysis(contactId);
+  const { heatmapData, bestTimes, timeData, loading } = useContactTimeAnalysis(contactId);
 
-  const slotMap = useMemo(() => {
-    const map = new Map<string, TimeSlotData>();
-    if (!data?.slots) return map;
-    for (const s of data.slots) {
-      map.set(`${s.day_of_week}-${s.hour_of_day}`, s);
-    }
-    return map;
-  }, [data?.slots]);
+  const totalAttempts = useMemo(
+    () => timeData.reduce((sum, t) => sum + (t.total_attempts ?? 0), 0),
+    [timeData]
+  );
 
-  if (isLoading) return <Skeleton className="h-64 rounded-lg" />;
+  const avgSuccessRate = useMemo(() => {
+    const withData = timeData.filter((t) => (t.total_attempts ?? 0) > 0);
+    if (withData.length === 0) return 0;
+    const totalSuccess = withData.reduce((s, t) => s + (t.success_count ?? 0), 0);
+    const totalAtt = withData.reduce((s, t) => s + (t.total_attempts ?? 0), 0);
+    return totalAtt > 0 ? Math.round((totalSuccess / totalAtt) * 100) : 0;
+  }, [timeData]);
 
-  if (!data || data.totalAttempts === 0) {
+  if (loading) return <Skeleton className="h-64 rounded-lg" />;
+
+  if (totalAttempts === 0) {
     return (
       <Card>
         <CardHeader className="pb-2">
@@ -66,6 +66,8 @@ export function ContactTimeHeatmap({ contactId }: Props) {
     );
   }
 
+  const best = bestTimes[0] ?? null;
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -73,26 +75,26 @@ export function ContactTimeHeatmap({ contactId }: Props) {
           <Clock className="h-4 w-4 text-primary" />
           Mapa de Melhor Horário
           <Badge variant="outline" className="text-[10px] ml-auto">
-            {data.totalAttempts} tentativas
+            {totalAttempts} tentativas
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {/* Summary badges */}
+        {/* Summary */}
         <div className="flex flex-wrap gap-2">
-          {data.bestSlot && (
+          {best && (
             <Badge variant="outline" className="text-xs text-emerald-500 border-emerald-500/30 gap-1">
               <Trophy className="h-3 w-3" />
-              Melhor: {formatDay(data.bestSlot.day_of_week)} {formatHour(data.bestSlot.hour_of_day)} ({data.bestSlot.success_rate}%)
+              Melhor: {best.dayLabel} {best.hourLabel} ({Math.round(best.successRate)}%)
             </Badge>
           )}
           <Badge variant="outline" className="text-xs gap-1">
             <TrendingUp className="h-3 w-3" />
-            Média: {data.avgSuccessRate}%
+            Média: {avgSuccessRate}%
           </Badge>
         </div>
 
-        {/* Heatmap grid */}
+        {/* Heatmap */}
         <TooltipProvider delayDuration={100}>
           <div className="overflow-x-auto">
             <div className="min-w-[400px]">
@@ -105,16 +107,15 @@ export function ContactTimeHeatmap({ contactId }: Props) {
                 ))}
               </div>
 
-              {/* Rows per day */}
-              {DAYS.map((day, dayIdx) => (
+              {/* Rows */}
+              {heatmapData.map((row, dayIdx) => (
                 <div key={dayIdx} className="flex items-center gap-[2px] mb-[2px]">
-                  <span className="text-[10px] text-muted-foreground w-8 text-right pr-1">{day}</span>
+                  <span className="text-[10px] text-muted-foreground w-8 text-right pr-1">{row.day}</span>
                   {HOURS_DISPLAY.map((hour) => {
-                    const slot = slotMap.get(`${dayIdx}-${hour}`);
-                    const rate = slot?.success_rate ?? 0;
-                    const hasData = !!slot && (slot.total_attempts ?? 0) > 0;
-                    const isBest =
-                      data.bestSlot?.day_of_week === dayIdx && data.bestSlot?.hour_of_day === hour;
+                    const cell = row.hours[hour];
+                    const rate = cell?.successRate ?? 0;
+                    const hasData = (cell?.attempts ?? 0) > 0;
+                    const isBest = best?.dayOfWeek === dayIdx && best?.hourOfDay === hour;
 
                     return (
                       <Tooltip key={hour}>
@@ -128,14 +129,11 @@ export function ContactTimeHeatmap({ contactId }: Props) {
                           />
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs">
-                          <p className="font-medium">{day} {formatHour(hour)}</p>
+                          <p className="font-medium">{DAYS[dayIdx]} {formatHour(hour)}</p>
                           {hasData ? (
                             <>
-                              <p>Taxa de sucesso: {rate}%</p>
-                              <p>Tentativas: {slot.total_attempts}</p>
-                              {slot.avg_response_time_minutes != null && (
-                                <p>Tempo resp.: {Math.round(slot.avg_response_time_minutes)}min</p>
-                              )}
+                              <p>Taxa de sucesso: {Math.round(rate)}%</p>
+                              <p>Tentativas: {cell.attempts}</p>
                             </>
                           ) : (
                             <p className="text-muted-foreground">Sem dados</p>
