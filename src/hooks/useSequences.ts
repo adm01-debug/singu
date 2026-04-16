@@ -13,6 +13,10 @@ export interface SequenceStep {
   subject: string | null;
   message_template: string | null;
   notes: string | null;
+  condition_type?: string;
+  condition_wait_hours?: number;
+  branch_on_yes_step?: number | null;
+  branch_on_no_step?: number | null;
 }
 
 export interface Sequence {
@@ -96,6 +100,10 @@ export function useSequences() {
           subject: s.subject || null,
           message_template: s.message_template || null,
           notes: s.notes || null,
+          condition_type: s.condition_type ?? 'always',
+          condition_wait_hours: s.condition_wait_hours ?? 24,
+          branch_on_yes_step: s.branch_on_yes_step ?? null,
+          branch_on_no_step: s.branch_on_no_step ?? null,
         }));
         const { error: stepsError } = await supabase
           .from('sequence_steps')
