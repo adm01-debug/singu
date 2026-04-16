@@ -123,6 +123,8 @@ const StatusPage = lazy(() => import("./pages/StatusPage"));
 const DocsPage = lazy(() => import("./pages/DocsPage"));
 const RequireAdminLazy = lazy(() => import("@/components/admin/RequireAdmin").then(m => ({ default: m.RequireAdmin })));
 const SchemaDriftBannerLazy = lazy(() => import("@/components/admin/SchemaDriftBanner").then(m => ({ default: m.SchemaDriftBanner })));
+const IntentPage = lazy(() => import("./pages/Intent"));
+const IntentSetupPage = lazy(() => import("./pages/IntentSetup"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -372,6 +374,16 @@ const AnimatedRoutes = () => {
       <Route path="/abm/:id" element={
         <RequireAuth>
           <LazyPage><ABMAccountDetail /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/intent" element={
+        <RequireAuth>
+          <LazyPage><IntentPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/intent/setup" element={
+        <RequireAuth>
+          <LazyPage><IntentSetupPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
