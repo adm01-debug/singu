@@ -193,7 +193,7 @@ export default function PublicSignaturePage() {
             <CardContent className="p-6 text-center">
               {signature.status === 'signed' && (
                 <>
-                  <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                  <CheckCircle2 className="h-12 w-12 text-primary mx-auto mb-2" />
                   <p className="font-medium">Documento assinado com sucesso</p>
                   {signature.signed_at && (
                     <p className="text-xs text-muted-foreground mt-1">
