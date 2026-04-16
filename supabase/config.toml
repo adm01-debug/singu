@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.sequence-track]
 verify_jwt = false
+
+[functions.territory-optimization]
+verify_jwt = false
