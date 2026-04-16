@@ -73,6 +73,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
+const Sequencias = lazy(() => import("./pages/Sequencias"));
 const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
 const Metas = lazy(() => import("./pages/Metas"));
@@ -295,6 +296,11 @@ const AnimatedRoutes = () => {
       <Route path="/automacoes" element={
         <RequireAuth>
           <LazyPage><Automacoes /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/sequencias" element={
+        <RequireAuth>
+          <LazyPage><Sequencias /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/mapa-empresas" element={
