@@ -1281,6 +1281,51 @@ export type Database = {
         }
         Relationships: []
       }
+      competitors: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          strengths: string[] | null
+          typical_price_range: string | null
+          updated_at: string
+          user_id: string
+          weaknesses: string[] | null
+          website: string | null
+          win_rate_against: number | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          strengths?: string[] | null
+          typical_price_range?: string | null
+          updated_at?: string
+          user_id: string
+          weaknesses?: string[] | null
+          website?: string | null
+          win_rate_against?: number | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          strengths?: string[] | null
+          typical_price_range?: string | null
+          updated_at?: string
+          user_id?: string
+          weaknesses?: string[] | null
+          website?: string | null
+          win_rate_against?: number | null
+        }
+        Relationships: []
+      }
       contact_cadence: {
         Row: {
           auto_remind: boolean | null
@@ -6850,6 +6895,153 @@ export type Database = {
           },
         ]
       }
+      win_loss_insights: {
+        Row: {
+          created_at: string
+          description: string
+          generated_at: string
+          id: string
+          insight_type: string
+          period_end: string
+          period_start: string
+          severity: string
+          supporting_data: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          generated_at?: string
+          id?: string
+          insight_type: string
+          period_end: string
+          period_start: string
+          severity?: string
+          supporting_data?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          generated_at?: string
+          id?: string
+          insight_type?: string
+          period_end?: string
+          period_start?: string
+          severity?: string
+          supporting_data?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      win_loss_reasons: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          label: string
+          outcome_type: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          id?: string
+          label: string
+          outcome_type?: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          label?: string
+          outcome_type?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      win_loss_records: {
+        Row: {
+          competitor_id: string | null
+          created_at: string
+          deal_id: string
+          deal_value: number | null
+          decision_maker_contact_id: string | null
+          id: string
+          lessons_learned: string | null
+          notes: string | null
+          outcome: string
+          primary_reason_id: string | null
+          recorded_at: string
+          sales_cycle_days: number | null
+          secondary_reasons: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          competitor_id?: string | null
+          created_at?: string
+          deal_id: string
+          deal_value?: number | null
+          decision_maker_contact_id?: string | null
+          id?: string
+          lessons_learned?: string | null
+          notes?: string | null
+          outcome: string
+          primary_reason_id?: string | null
+          recorded_at?: string
+          sales_cycle_days?: number | null
+          secondary_reasons?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          competitor_id?: string | null
+          created_at?: string
+          deal_id?: string
+          deal_value?: number | null
+          decision_maker_contact_id?: string | null
+          id?: string
+          lessons_learned?: string | null
+          notes?: string | null
+          outcome?: string
+          primary_reason_id?: string | null
+          recorded_at?: string
+          sales_cycle_days?: number | null
+          secondary_reasons?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "win_loss_records_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "competitors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "win_loss_records_primary_reason_id_fkey"
+            columns: ["primary_reason_id"]
+            isOneToOne: false
+            referencedRelation: "win_loss_reasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       push_subscriptions_safe: {
@@ -6945,6 +7137,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      seed_win_loss_defaults: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
