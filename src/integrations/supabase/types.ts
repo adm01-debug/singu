@@ -4740,6 +4740,203 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_campaign_recipients: {
+        Row: {
+          campaign_id: string
+          contact_id: string
+          cost_cents: number | null
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          failed_at: string | null
+          id: string
+          phone: string
+          provider_message_id: string | null
+          replied_at: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          contact_id: string
+          cost_cents?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          phone: string
+          provider_message_id?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          contact_id?: string
+          cost_cents?: number | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          failed_at?: string | null
+          id?: string
+          phone?: string
+          provider_message_id?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sms_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_campaign_recipients_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_campaigns: {
+        Row: {
+          cost_estimate_cents: number
+          created_at: string
+          id: string
+          message: string
+          name: string
+          scheduled_at: string | null
+          segment_filter: Json
+          sender_id: string | null
+          sent_at: string | null
+          status: string
+          total_delivered: number
+          total_failed: number
+          total_opt_outs: number
+          total_recipients: number
+          total_replies: number
+          total_sent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost_estimate_cents?: number
+          created_at?: string
+          id?: string
+          message: string
+          name: string
+          scheduled_at?: string | null
+          segment_filter?: Json
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string
+          total_delivered?: number
+          total_failed?: number
+          total_opt_outs?: number
+          total_recipients?: number
+          total_replies?: number
+          total_sent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost_estimate_cents?: number
+          created_at?: string
+          id?: string
+          message?: string
+          name?: string
+          scheduled_at?: string | null
+          segment_filter?: Json
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string
+          total_delivered?: number
+          total_failed?: number
+          total_opt_outs?: number
+          total_recipients?: number
+          total_replies?: number
+          total_sent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sms_opt_outs: {
+        Row: {
+          contact_id: string | null
+          id: string
+          opted_out_at: string
+          phone: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          id?: string
+          opted_out_at?: string
+          phone: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          id?: string
+          opted_out_at?: string
+          phone?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_opt_outs_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_templates: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          usage_count: number
+          user_id: string
+          variables: Json
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+          variables?: Json
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
       social_behavior_analysis: {
         Row: {
           active_days: string[] | null
