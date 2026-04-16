@@ -43,6 +43,7 @@ const navSections = [
       { title: "Report Builder", url: "/report-builder", icon: LayoutDashboard },
       { title: "Campanhas", url: "/campanhas", icon: Mail },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
+      { title: "Nurturing", url: "/nurturing", icon: Workflow },
     ],
   },
   {
