@@ -17,6 +17,7 @@ export interface CsatSurvey {
   sent_at: string | null;
   answered_at: string | null;
   expires_at: string | null;
+  public_token: string;
   created_at: string;
   updated_at: string;
 }
