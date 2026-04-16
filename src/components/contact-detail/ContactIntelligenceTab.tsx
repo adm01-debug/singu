@@ -16,6 +16,7 @@ import { BestTimeToContactCard } from '@/components/contact-detail/BestTimeToCon
 import { AIActionsPanel } from '@/components/contact-detail/AIActionsPanel';
 import { SocialIntelligencePanel } from '@/components/contact-detail/SocialIntelligencePanel';
 import { ScoreHistoryPanel } from '@/components/contact-detail/ScoreHistoryPanel';
+import { ContactTimeHeatmap } from '@/components/contact-detail/ContactTimeHeatmap';
 import { CommunicationPreferencesCard } from '@/components/contact-detail/CommunicationPreferencesCard';
 import { WorkspaceAccountsCard } from '@/components/contact-detail/WorkspaceAccountsCard';
 import type { Tables } from '@/integrations/supabase/types';
@@ -268,6 +269,7 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
 
       {/* New panels: Emotional Anchors, Best Time, AI Actions */}
       <div className="grid gap-4 md:grid-cols-2">
+        <ContactTimeHeatmap contactId={contactId} />
         <LeadScoreWidget contactId={contactId} />
         <EmotionalAnchorsPanel contactId={contactId} />
         <BestTimeToContactCard contactId={contactId} />
