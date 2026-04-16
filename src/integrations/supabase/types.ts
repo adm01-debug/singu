@@ -4681,6 +4681,72 @@ export type Database = {
           },
         ]
       }
+      visit_checkins: {
+        Row: {
+          address: string | null
+          check_in_at: string
+          check_out_at: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          duration_minutes: number | null
+          id: string
+          latitude: number
+          longitude: number
+          notes: string | null
+          photo_url: string | null
+          user_id: string
+          visit_type: string | null
+        }
+        Insert: {
+          address?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          notes?: string | null
+          photo_url?: string | null
+          user_id: string
+          visit_type?: string | null
+        }
+        Update: {
+          address?: string | null
+          check_in_at?: string
+          check_out_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          duration_minutes?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          notes?: string | null
+          photo_url?: string | null
+          user_id?: string
+          visit_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_checkins_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_checkins_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_report_settings: {
         Row: {
           created_at: string
