@@ -9,14 +9,18 @@ interface Props {
 }
 
 /**
- * Visual SLA indicator: green (>2h left), yellow (<2h left), red (overdue), gray (resolved/none).
+ * Visual SLA indicator using semantic design tokens.
+ * - success: resolved within SLA
+ * - warning: <2h remaining
+ * - destructive: overdue
+ * - default: on track
  */
 export function SLABadge({ deadline, resolvedAt, className }: Props) {
   if (!deadline) return null;
 
   if (resolvedAt) {
     return (
-      <Badge variant="outline" className={cn('h-5 text-[10px] gap-1 border-green-500/30 text-green-600', className)}>
+      <Badge variant="outline" className={cn('h-5 text-[10px] gap-1 border-success/40 text-success', className)}>
         <CheckCircle2 className="h-3 w-3" /> SLA OK
       </Badge>
     );
@@ -30,7 +34,7 @@ export function SLABadge({ deadline, resolvedAt, className }: Props) {
   if (diffMs < 0) {
     const overdueH = Math.abs(Math.round(diffHours));
     return (
-      <Badge variant="outline" className={cn('h-5 text-[10px] gap-1 border-red-500/40 bg-red-500/10 text-red-600', className)}>
+      <Badge variant="outline" className={cn('h-5 text-[10px] gap-1 border-destructive/50 bg-destructive/10 text-destructive', className)}>
         <AlertTriangle className="h-3 w-3" /> SLA vencido {overdueH}h
       </Badge>
     );
@@ -47,8 +51,8 @@ export function SLABadge({ deadline, resolvedAt, className }: Props) {
       className={cn(
         'h-5 text-[10px] gap-1',
         isWarning
-          ? 'border-orange-500/40 bg-orange-500/10 text-orange-600'
-          : 'border-blue-500/30 text-blue-600',
+          ? 'border-warning/50 bg-warning/10 text-warning-foreground'
+          : 'border-primary/30 text-primary',
         className,
       )}
     >
