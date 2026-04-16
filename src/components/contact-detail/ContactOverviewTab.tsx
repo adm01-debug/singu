@@ -34,9 +34,10 @@ interface Props {
   company: Company | null;
   insights: Insight[];
   alerts: Alert[];
+  interactionCount?: number;
 }
 
-export function ContactOverviewTab({ contact, company, insights, alerts }: Props) {
+export function ContactOverviewTab({ contact, company, insights, alerts, interactionCount = 0 }: Props) {
   const { user } = useAuth();
   const { data: relData } = useContactRelationalData(contact.id);
 
