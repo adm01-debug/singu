@@ -45,6 +45,7 @@ const navSections = [
       { title: "Relatórios Customizáveis", url: "/relatorios-customizaveis", icon: LayoutDashboard },
       { title: "Assistente IA", url: "/assistente", icon: LayoutDashboard },
       { title: "Campanhas", url: "/campanhas", icon: Mail },
+      { title: "SMS Marketing", url: "/sms-marketing", icon: MessageSquare },
       { title: "Knowledge Base", url: "/knowledge-base", icon: BookOpen },
       { title: "Nurturing", url: "/nurturing", icon: Workflow },
       { title: "Landing Pages", url: "/landing-pages", icon: FileText },

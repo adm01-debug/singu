@@ -89,6 +89,7 @@ const Assistente = lazy(() => import("./pages/Assistente"));
 const NPS = lazy(() => import("./pages/NPS"));
 const PublicSurvey = lazy(() => import("./pages/PublicSurvey"));
 const Campanhas = lazy(() => import("./pages/Campanhas"));
+const SmsMarketing = lazy(() => import("./pages/SmsMarketing"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Nurturing = lazy(() => import("./pages/Nurturing"));
 const LandingPagesPage = lazy(() => import("./pages/LandingPages"));
@@ -392,6 +393,11 @@ const AnimatedRoutes = () => {
       <Route path="/campanhas" element={
         <RequireAuth>
           <LazyPage><Campanhas /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/sms-marketing" element={
+        <RequireAuth>
+          <LazyPage><SmsMarketing /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/knowledge-base" element={
