@@ -42,7 +42,7 @@ function LeadScoreWidgetInner({ contactId }: Props) {
         supabase.from('interactions').select('id').eq('contact_id', contactId).eq('type', 'deal').limit(10),
         supabase.from('hidden_objections').select('id').eq('contact_id', contactId).eq('resolved', false),
         supabase.from('contact_cadence').select('next_contact_due, last_contact_at').eq('contact_id', contactId).maybeSingle(),
-        supabase.from('score_history').select('score').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(1),
+        supabase.from('score_history').select('score_value').eq('contact_id', contactId).order('created_at', { ascending: false }).limit(1),
       ]);
 
       const contact = contactRes.data;
@@ -80,7 +80,7 @@ function LeadScoreWidgetInner({ contactId }: Props) {
         active_deals: dealsRes.data?.length ?? 0,
         deal_stage_max: dealsRes.data && dealsRes.data.length > 0 ? 2 : 0,
         response_rate: interactions.length > 0 ? Math.min(100, interactions.length * 8) : 0,
-        rapport_score: rapportRes.data?.[0]?.score ? Number(rapportRes.data[0].score) : null,
+        rapport_score: rapportRes.data?.[0]?.score_value ? Number(rapportRes.data[0].score_value) : null,
         churn_risk: null,
         hidden_objections_count: objectionsRes.data?.length ?? 0,
         cadence_on_track: cadenceOnTrack,
