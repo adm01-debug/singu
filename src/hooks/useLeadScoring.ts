@@ -81,7 +81,7 @@ export function useTopLeads(grade?: LeadScoreGrade | 'all', limit = 50) {
         .limit(limit);
       if (grade && grade !== 'all') q = q.eq('grade', grade);
       const { data } = await q;
-      return (data ?? []) as Array<LeadScoreRow & { contact: unknown }>;
+      return (data ?? []) as Array<LeadScoreRow & { contact: { id: string; first_name?: string; last_name?: string; email?: string; role_title?: string; company_id?: string } | null }>;
     },
     enabled: !!user?.id,
     staleTime: STALE,

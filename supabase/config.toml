@@ -116,3 +116,8 @@ verify_jwt = false
 
 [functions.intent-pixel-snippet]
 verify_jwt = false
+[functions.lead-scorer]
+verify_jwt = false
+
+[functions.lead-score-cron]
+verify_jwt = false
