@@ -4587,7 +4587,9 @@ export type Database = {
           current_step: number
           enrolled_at: string
           id: string
+          last_event_at: string | null
           last_step_executed_at: string | null
+          last_step_sent_at: string | null
           next_action_at: string | null
           replied_at: string | null
           sequence_id: string
@@ -4602,7 +4604,9 @@ export type Database = {
           current_step?: number
           enrolled_at?: string
           id?: string
+          last_event_at?: string | null
           last_step_executed_at?: string | null
+          last_step_sent_at?: string | null
           next_action_at?: string | null
           replied_at?: string | null
           sequence_id: string
@@ -4617,7 +4621,9 @@ export type Database = {
           current_step?: number
           enrolled_at?: string
           id?: string
+          last_event_at?: string | null
           last_step_executed_at?: string | null
+          last_step_sent_at?: string | null
           next_action_at?: string | null
           replied_at?: string | null
           sequence_id?: string
@@ -4642,9 +4648,143 @@ export type Database = {
           },
         ]
       }
-      sequence_steps: {
+      sequence_events: {
+        Row: {
+          contact_id: string
+          created_at: string
+          enrollment_id: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          sequence_id: string
+          step_order: number | null
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          enrollment_id: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          sequence_id: string
+          step_order?: number | null
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          enrollment_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          sequence_id?: string
+          step_order?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_events_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "sequence_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_events_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequence_send_log: {
         Row: {
           channel: string
+          clicked_at: string | null
+          contact_id: string
+          created_at: string
+          enrollment_id: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          opened_at: string | null
+          sent_at: string
+          sequence_id: string
+          status: string
+          step_id: string
+          step_order: number
+          tracking_token: string | null
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          clicked_at?: string | null
+          contact_id: string
+          created_at?: string
+          enrollment_id: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          opened_at?: string | null
+          sent_at?: string
+          sequence_id: string
+          status?: string
+          step_id: string
+          step_order: number
+          tracking_token?: string | null
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          clicked_at?: string | null
+          contact_id?: string
+          created_at?: string
+          enrollment_id?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          opened_at?: string | null
+          sent_at?: string
+          sequence_id?: string
+          status?: string
+          step_id?: string
+          step_order?: number
+          tracking_token?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_send_log_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "sequence_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_send_log_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_send_log_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "sequence_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequence_steps: {
+        Row: {
+          branch_on_no_step: number | null
+          branch_on_yes_step: number | null
+          channel: string
+          condition_type: string
+          condition_wait_hours: number
           created_at: string
           delay_days: number
           delay_hours: number
@@ -4657,7 +4797,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          branch_on_no_step?: number | null
+          branch_on_yes_step?: number | null
           channel: string
+          condition_type?: string
+          condition_wait_hours?: number
           created_at?: string
           delay_days?: number
           delay_hours?: number
@@ -4670,7 +4814,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          branch_on_no_step?: number | null
+          branch_on_yes_step?: number | null
           channel?: string
+          condition_type?: string
+          condition_wait_hours?: number
           created_at?: string
           delay_days?: number
           delay_hours?: number
