@@ -84,6 +84,7 @@ const Performance = lazy(() => import("./pages/Performance"));
 const BIAvancado = lazy(() => import("./pages/BIAvancado"));
 const Suporte = lazy(() => import("./pages/Suporte"));
 const ReportBuilder = lazy(() => import("./pages/ReportBuilder"));
+const Campanhas = lazy(() => import("./pages/Campanhas"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
@@ -350,6 +351,11 @@ const AnimatedRoutes = () => {
       <Route path="/report-builder" element={
         <RequireAuth>
           <LazyPage><ReportBuilder /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/campanhas" element={
+        <RequireAuth>
+          <LazyPage><Campanhas /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/whatsapp" element={

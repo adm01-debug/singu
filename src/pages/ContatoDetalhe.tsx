@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { CustomFieldsDisplay } from '@/components/custom-fields/CustomFieldsDisplay';
 import { DocumentsPanel } from '@/components/documents/DocumentsPanel';
+import { CSATPanel } from '@/components/csat/CSATPanel';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
@@ -243,7 +244,10 @@ const ContatoDetalhe = () => {
 
           <TabsContent value="comercial">
             <DashboardErrorBoundary sectionName="Comercial">
-              <ContactCommercialTab contactId={contact.id} />
+              <div className="space-y-4">
+                <ContactCommercialTab contactId={contact.id} />
+                <CSATPanel contactId={contact.id} />
+              </div>
             </DashboardErrorBoundary>
           </TabsContent>
 

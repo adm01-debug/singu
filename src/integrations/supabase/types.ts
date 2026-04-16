@@ -225,6 +225,57 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_recipients: {
+        Row: {
+          campaign_id: string
+          clicked_at: string | null
+          contact_id: string
+          created_at: string
+          email: string
+          id: string
+          opened_at: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id: string
+          clicked_at?: string | null
+          contact_id: string
+          created_at?: string
+          email: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string
+          clicked_at?: string | null
+          contact_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       churn_risk_scores: {
         Row: {
           analyzed_at: string
@@ -1033,6 +1084,79 @@ export type Database = {
           },
         ]
       }
+      csat_surveys: {
+        Row: {
+          answered_at: string | null
+          channel: string | null
+          contact_id: string
+          created_at: string
+          expires_at: string | null
+          feedback: string | null
+          id: string
+          interaction_id: string | null
+          score: number | null
+          sent_at: string | null
+          status: string
+          ticket_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          channel?: string | null
+          contact_id: string
+          created_at?: string
+          expires_at?: string | null
+          feedback?: string | null
+          id?: string
+          interaction_id?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          channel?: string | null
+          contact_id?: string
+          created_at?: string
+          expires_at?: string | null
+          feedback?: string | null
+          id?: string
+          interaction_id?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string
+          ticket_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csat_surveys_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "csat_surveys_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "csat_surveys_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_field_values: {
         Row: {
           created_at: string
@@ -1511,6 +1635,66 @@ export type Database = {
           updated_at?: string
           user_id?: string
           version?: number | null
+        }
+        Relationships: []
+      }
+      email_campaigns: {
+        Row: {
+          content_html: string | null
+          content_text: string | null
+          created_at: string
+          id: string
+          name: string
+          scheduled_at: string | null
+          segment_filter: Json | null
+          sent_at: string | null
+          status: string
+          subject: string
+          tags: string[] | null
+          total_bounced: number | null
+          total_clicked: number | null
+          total_opened: number | null
+          total_recipients: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_html?: string | null
+          content_text?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          tags?: string[] | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_opened?: number | null
+          total_recipients?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_html?: string | null
+          content_text?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          segment_filter?: Json | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          tags?: string[] | null
+          total_bounced?: number | null
+          total_clicked?: number | null
+          total_opened?: number | null
+          total_recipients?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
