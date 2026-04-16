@@ -347,7 +347,7 @@ export function useCalculateLeadScore() {
       };
       const { error } = await supabase
         .from('lead_scores')
-        .upsert(upsertPayload, { onConflict: 'contact_id,user_id' });
+        .upsert([upsertPayload], { onConflict: 'contact_id,user_id' });
 
       if (error) throw error;
 
