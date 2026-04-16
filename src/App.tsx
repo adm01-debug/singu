@@ -91,6 +91,8 @@ const PublicSurvey = lazy(() => import("./pages/PublicSurvey"));
 const Campanhas = lazy(() => import("./pages/Campanhas"));
 const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Nurturing = lazy(() => import("./pages/Nurturing"));
+const LandingPagesPage = lazy(() => import("./pages/LandingPages"));
+const PublicLandingPage = lazy(() => import("./pages/PublicLandingPage"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
@@ -239,6 +241,7 @@ const AnimatedRoutes = () => {
       {/* Public routes */}
       <Route path="/auth" element={<LazyPage><Auth /></LazyPage>} />
       <Route path="/survey/:token" element={<LazyPage><PublicSurvey /></LazyPage>} />
+      <Route path="/lp/:slug" element={<LazyPage><PublicLandingPage /></LazyPage>} />
       <Route path="/onboarding" element={
         <RequireAuth>
           <LazyPage><Onboarding /></LazyPage>
@@ -399,6 +402,11 @@ const AnimatedRoutes = () => {
       <Route path="/nurturing" element={
         <RequireAuth>
           <LazyPage><Nurturing /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/landing-pages" element={
+        <RequireAuth>
+          <LazyPage><LandingPagesPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/deduplicacao" element={
