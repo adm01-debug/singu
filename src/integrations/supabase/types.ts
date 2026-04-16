@@ -2812,6 +2812,110 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_submissions: {
+        Row: {
+          created_at: string
+          data: Json
+          email: string | null
+          id: string
+          ip_address: string | null
+          landing_page_id: string
+          name: string | null
+          phone: string | null
+          user_agent: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          landing_page_id: string
+          name?: string | null
+          phone?: string | null
+          user_agent?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          email?: string | null
+          id?: string
+          ip_address?: string | null
+          landing_page_id?: string
+          name?: string | null
+          phone?: string | null
+          user_agent?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_submissions_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_pages: {
+        Row: {
+          blocks: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          redirect_url: string | null
+          slug: string
+          submission_count: number
+          theme: Json
+          title: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          blocks?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          redirect_url?: string | null
+          slug: string
+          submission_count?: number
+          theme?: Json
+          title: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          redirect_url?: string | null
+          slug?: string
+          submission_count?: number
+          theme?: Json
+          title?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       lead_assignments: {
         Row: {
           assigned_by: string | null
