@@ -314,6 +314,11 @@ const AnimatedRoutes = () => {
           <LazyPage><Metas /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/performance" element={
+        <RequireAuth>
+          <LazyPage><Performance /></LazyPage>
+        </RequireAuth>
+      } />
       <Route path="/territorios" element={
         <RequireAuth>
           <LazyPage><Territorios /></LazyPage>
