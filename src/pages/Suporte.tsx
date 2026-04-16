@@ -13,21 +13,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useSupportTickets, SupportTicket } from '@/hooks/useSupportTickets';
 import { CannedResponsesPanel } from '@/components/support/CannedResponsesPanel';
+import { TicketDetailDrawer } from '@/components/support/TicketDetailDrawer';
+import { SLABadge } from '@/components/support/SLABadge';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// SLA hours by priority — auto-assigned on ticket creation
+const SLA_HOURS: Record<SupportTicket['priority'], number> = {
+  urgent: 2,
+  high: 8,
+  medium: 24,
+  low: 72,
+};
+
 const PRIORITY_CONFIG = {
-  low: { label: 'Baixa', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  medium: { label: 'Média', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' },
-  high: { label: 'Alta', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
-  urgent: { label: 'Urgente', color: 'bg-red-500/10 text-red-500 border-red-500/20' },
+  low: { label: 'Baixa', color: 'bg-primary/10 text-primary border-primary/20' },
+  medium: { label: 'Média', color: 'bg-warning/10 text-warning-foreground border-warning/20' },
+  high: { label: 'Alta', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
+  urgent: { label: 'Urgente', color: 'bg-destructive/10 text-destructive border-destructive/20' },
 };
 
 const STATUS_CONFIG = {
-  open: { label: 'Aberto', icon: Ticket, color: 'text-blue-500' },
-  in_progress: { label: 'Em Andamento', icon: Clock, color: 'text-yellow-500' },
+  open: { label: 'Aberto', icon: Ticket, color: 'text-primary' },
+  in_progress: { label: 'Em Andamento', icon: Clock, color: 'text-warning' },
   waiting: { label: 'Aguardando', icon: AlertTriangle, color: 'text-orange-500' },
-  resolved: { label: 'Resolvido', icon: CheckCircle2, color: 'text-green-500' },
+  resolved: { label: 'Resolvido', icon: CheckCircle2, color: 'text-success' },
   closed: { label: 'Fechado', icon: CheckCircle2, color: 'text-muted-foreground' },
 };
 
@@ -53,6 +63,7 @@ export default function Suporte() {
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<SupportTicket['priority']>('medium');
   const [category, setCategory] = useState('general');
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
 
   const filtered = useMemo(() => {
     return tickets.filter(t => {
@@ -63,16 +74,22 @@ export default function Suporte() {
     });
   }, [tickets, statusFilter, priorityFilter, search]);
 
-  const stats = useMemo(() => ({
-    open: tickets.filter(t => t.status === 'open').length,
-    inProgress: tickets.filter(t => t.status === 'in_progress').length,
-    resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
-    urgent: tickets.filter(t => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length,
-  }), [tickets]);
+  const stats = useMemo(() => {
+    const open = tickets.filter(t => t.status === 'open').length;
+    const inProgress = tickets.filter(t => t.status === 'in_progress').length;
+    const resolved = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
+    const urgent = tickets.filter(t => t.priority === 'urgent' && t.status !== 'closed' && t.status !== 'resolved').length;
+    const overdue = tickets.filter(t =>
+      t.sla_deadline && !t.resolved_at && new Date(t.sla_deadline).getTime() < Date.now()
+    ).length;
+    return { open, inProgress, resolved, urgent, overdue };
+  }, [tickets]);
 
   const handleCreate = () => {
     if (!title.trim()) return;
-    create.mutate({ title, description, priority, category });
+    const slaHours = SLA_HOURS[priority];
+    const sla_deadline = new Date(Date.now() + slaHours * 60 * 60 * 1000).toISOString();
+    create.mutate({ title, description, priority, category, sla_deadline });
     setTitle('');
     setDescription('');
     setPriority('medium');
@@ -90,12 +107,13 @@ export default function Suporte() {
         <PageHeader backTo="/" backLabel="Dashboard" title="Suporte & Chamados" />
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: 'Abertos', value: stats.open, icon: Ticket, color: 'text-blue-500' },
-            { label: 'Em Andamento', value: stats.inProgress, icon: Clock, color: 'text-yellow-500' },
-            { label: 'Resolvidos', value: stats.resolved, icon: CheckCircle2, color: 'text-green-500' },
-            { label: 'Urgentes', value: stats.urgent, icon: AlertTriangle, color: 'text-red-500' },
+            { label: 'Abertos', value: stats.open, icon: Ticket, color: 'text-primary' },
+            { label: 'Em Andamento', value: stats.inProgress, icon: Clock, color: 'text-warning' },
+            { label: 'Resolvidos', value: stats.resolved, icon: CheckCircle2, color: 'text-success' },
+            { label: 'Urgentes', value: stats.urgent, icon: AlertTriangle, color: 'text-destructive' },
+            { label: 'SLA Vencido', value: stats.overdue, icon: AlertTriangle, color: 'text-destructive' },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-3 flex items-center gap-3">
@@ -148,29 +166,36 @@ export default function Suporte() {
                   const prio = PRIORITY_CONFIG[ticket.priority];
                   const StatusIcon = status.icon;
                   return (
-                    <div key={ticket.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
+                    <div
+                      key={ticket.id}
+                      onClick={() => setSelectedTicket(ticket)}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <StatusIcon className={`h-4 w-4 shrink-0 ${status.color}`} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{ticket.title}</p>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             <Badge variant="outline" className={`text-[10px] h-4 ${prio.color}`}>{prio.label}</Badge>
                             <Badge variant="secondary" className="text-[10px] h-4">{CATEGORY_LABELS[ticket.category] || ticket.category}</Badge>
+                            <SLABadge deadline={ticket.sla_deadline} resolvedAt={ticket.resolved_at} />
                             <span className="text-[10px] text-muted-foreground">
                               {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true, locale: ptBR })}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <Select
-                        value={ticket.status}
-                        onValueChange={v => update.mutate({ id: ticket.id, status: v as SupportTicket['status'] })}
-                      >
-                        <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k} className="text-xs">{v.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Select
+                          value={ticket.status}
+                          onValueChange={v => update.mutate({ id: ticket.id, status: v as SupportTicket['status'] })}
+                        >
+                          <SelectTrigger className="h-7 w-28 text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(STATUS_CONFIG).map(([k, v]) => <SelectItem key={k} value={k} className="text-xs">{v.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   );
                 })}
@@ -222,6 +247,13 @@ export default function Suporte() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Ticket Detail Drawer */}
+        <TicketDetailDrawer
+          ticket={selectedTicket}
+          open={!!selectedTicket}
+          onClose={() => setSelectedTicket(null)}
+        />
       </div>
     </AppLayout>
   );
