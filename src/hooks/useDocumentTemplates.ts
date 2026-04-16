@@ -192,8 +192,7 @@ export function useDocumentSignatures() {
         .single();
       if (error) throw error;
       if (input.template_id) {
-        // Increment usage_count
-        await supabase.rpc('execute_readonly_query' as any, { query_text: '' }).catch(() => {});
+        // Increment usage_count (best-effort)
         const { data: tpl } = await supabase
           .from('document_templates' as any)
           .select('usage_count')
