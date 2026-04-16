@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { CustomFieldsDisplay } from '@/components/custom-fields/CustomFieldsDisplay';
+import { DocumentsPanel } from '@/components/documents/DocumentsPanel';
 import { useParams, Link } from 'react-router-dom';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { SEOHead } from '@/components/seo/SEOHead';
@@ -196,7 +198,7 @@ const EmpresaDetalhe = () => {
                 </TabsList>
 
                 <TabsContent value="contacts" className="mt-4"><DashboardErrorBoundary sectionName="Contatos"><ContactsTabContent contacts={contacts} /></DashboardErrorBoundary></TabsContent>
-                <TabsContent value="data" className="mt-4 space-y-4"><DashboardErrorBoundary sectionName="Dados"><CompanyDataTab cnaes={cnaesHook.data} rfmScores={rfmHook.data} stakeholders={stakeholdersHook.data} loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Dados Enriquecidos"><CompanyEnrichedCard companyId={id!} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Duplicatas"><CompanyDuplicatesPanel /></DashboardErrorBoundary></TabsContent>
+                <TabsContent value="data" className="mt-4 space-y-4"><DashboardErrorBoundary sectionName="Dados"><CompanyDataTab cnaes={cnaesHook.data} rfmScores={rfmHook.data} stakeholders={stakeholdersHook.data} loading={cnaesHook.isLoading || rfmHook.isLoading || stakeholdersHook.isLoading} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Campos Personalizados"><CustomFieldsDisplay entityType="company" entityId={id!} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Documentos"><DocumentsPanel entityType="company" entityId={id!} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Dados Enriquecidos"><CompanyEnrichedCard companyId={id!} /></DashboardErrorBoundary><DashboardErrorBoundary sectionName="Duplicatas"><CompanyDuplicatesPanel /></DashboardErrorBoundary></TabsContent>
                 <TabsContent value="stakeholders" className="mt-4"><DashboardErrorBoundary sectionName="Stakeholders"><motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}><StakeholderMap contacts={contacts} interactions={interactions} companyId={id} /></motion.div></DashboardErrorBoundary></TabsContent>
                 <TabsContent value="interactions" className="mt-4"><DashboardErrorBoundary sectionName="Interações"><CompanyInteractionsTab interactions={interactions} /></DashboardErrorBoundary></TabsContent>
                 <TabsContent value="commercial" className="mt-4"><DashboardErrorBoundary sectionName="Comercial"><CompanyCommercialTab companyId={id!} /></DashboardErrorBoundary></TabsContent>

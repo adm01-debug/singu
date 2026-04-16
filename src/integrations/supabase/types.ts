@@ -1033,6 +1033,86 @@ export type Database = {
           },
         ]
       }
+      custom_field_values: {
+        Row: {
+          created_at: string
+          custom_field_id: string
+          entity_id: string
+          id: string
+          updated_at: string
+          user_id: string
+          value: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_field_id: string
+          entity_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          value?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_field_id?: string
+          entity_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_values_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_fields"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          entity_type: string
+          field_label: string
+          field_name: string
+          field_options: Json | null
+          field_type: string
+          id: string
+          is_required: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          entity_type: string
+          field_label: string
+          field_name: string
+          field_options?: Json | null
+          field_type: string
+          id?: string
+          is_required?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          entity_type?: string
+          field_label?: string
+          field_name?: string
+          field_options?: Json | null
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       decision_criteria: {
         Row: {
           contact_id: string
@@ -1377,6 +1457,60 @@ export type Database = {
           typical_phrases?: Json
           under_pressure?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string
+          entity_id: string
+          entity_type: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string | null
+          name: string
+          status: string | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          version: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          entity_id: string
+          entity_type: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          name: string
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          version?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          entity_id?: string
+          entity_type?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          name?: string
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          version?: number | null
         }
         Relationships: []
       }
@@ -3122,6 +3256,7 @@ export type Database = {
           last_assigned_at: string | null
           leads_today: number
           leads_today_reset_at: string | null
+          manager_id: string | null
           max_leads_day: number
           max_leads_total: number
           name: string
@@ -3144,6 +3279,7 @@ export type Database = {
           last_assigned_at?: string | null
           leads_today?: number
           leads_today_reset_at?: string | null
+          manager_id?: string | null
           max_leads_day?: number
           max_leads_total?: number
           name: string
@@ -3166,6 +3302,7 @@ export type Database = {
           last_assigned_at?: string | null
           leads_today?: number
           leads_today_reset_at?: string | null
+          manager_id?: string | null
           max_leads_day?: number
           max_leads_total?: number
           name?: string
@@ -3179,7 +3316,15 @@ export type Database = {
           vacation_start?: string | null
           weight?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_team_members_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       schema_drift_alerts: {
         Row: {
@@ -3819,6 +3964,120 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          first_response_at: string | null
+          id: string
+          priority: string
+          resolved_at: string | null
+          sla_deadline: string | null
+          status: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          first_response_at?: string | null
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          sla_deadline?: string | null
+          status?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          first_response_at?: string | null
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          sla_deadline?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_internal: boolean | null
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_comments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
             referencedColumns: ["id"]
           },
         ]
@@ -4485,6 +4744,10 @@ export type Database = {
     }
     Functions: {
       execute_readonly_query: { Args: { query_text: string }; Returns: Json }
+      get_team_member_ids: {
+        Args: { _manager_user_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

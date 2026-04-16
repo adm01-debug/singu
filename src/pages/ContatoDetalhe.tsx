@@ -1,4 +1,6 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
+import { CustomFieldsDisplay } from '@/components/custom-fields/CustomFieldsDisplay';
+import { DocumentsPanel } from '@/components/documents/DocumentsPanel';
 import { Link, useParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
@@ -198,7 +200,11 @@ const ContatoDetalhe = () => {
 
           <TabsContent value="dados">
             <DashboardErrorBoundary sectionName="Dados">
-              <ContactDataTab contact={contact} />
+              <div className="space-y-4">
+                <ContactDataTab contact={contact} />
+                <CustomFieldsDisplay entityType="contact" entityId={contact.id} />
+                <DocumentsPanel entityType="contact" entityId={contact.id} />
+              </div>
             </DashboardErrorBoundary>
           </TabsContent>
 
