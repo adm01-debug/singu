@@ -40,6 +40,7 @@ const navSections = [
       { title: "Performance", url: "/performance", icon: Zap },
       { title: "BI Avançado", url: "/bi", icon: BrainCircuit },
       { title: "Suporte", url: "/suporte", icon: LifeBuoy },
+      { title: "Report Builder", url: "/report-builder", icon: LayoutDashboard },
     ],
   },
   {
