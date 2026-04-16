@@ -26,7 +26,7 @@ const STATUS_CONFIG = {
 };
 
 export default function Campanhas() {
-  const { campaigns, isLoading, create, update, remove, sendCampaign, stats } = useEmailCampaigns();
+  const { campaigns, isLoading, create, remove, sendCampaign, stats } = useEmailCampaigns();
   const [showNew, setShowNew] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
