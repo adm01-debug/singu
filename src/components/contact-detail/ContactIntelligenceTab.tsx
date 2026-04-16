@@ -23,6 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const ChurnRiskWidget = lazy(() => import('./ChurnRiskWidget'));
 const ChurnPredictionsWidget = lazy(() => import('./ChurnPredictionsWidget'));
 const ContactDaysWithoutWidget = lazy(() => import('./ContactDaysWithoutWidget'));
+const LocalChurnRiskPanel = lazy(() => import('@/components/churn-risk/ChurnRiskPanel'));
 import { LeadScoreWidget } from '@/components/lead-score/LeadScoreWidget';
 
 interface Props {
@@ -275,6 +276,9 @@ export function ContactIntelligenceTab({ contactId, contactName, linkedinUrl, we
         </Suspense>
         <Suspense fallback={<Skeleton className="h-28 rounded-lg" />}>
           <ChurnPredictionsWidget contactId={contactId} />
+        </Suspense>
+        <Suspense fallback={<Skeleton className="h-40 rounded-lg" />}>
+          <LocalChurnRiskPanel contactId={contactId} compact />
         </Suspense>
       </div>
 

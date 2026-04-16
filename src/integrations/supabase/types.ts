@@ -225,6 +225,65 @@ export type Database = {
         }
         Relationships: []
       }
+      churn_risk_scores: {
+        Row: {
+          analyzed_at: string
+          contact_id: string
+          created_at: string
+          days_since_last_interaction: number | null
+          expires_at: string
+          id: string
+          recommendations: string[] | null
+          risk_factors: Json
+          risk_level: string
+          risk_score: number
+          score_trend: string | null
+          sentiment_trend: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analyzed_at?: string
+          contact_id: string
+          created_at?: string
+          days_since_last_interaction?: number | null
+          expires_at?: string
+          id?: string
+          recommendations?: string[] | null
+          risk_factors?: Json
+          risk_level?: string
+          risk_score?: number
+          score_trend?: string | null
+          sentiment_trend?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analyzed_at?: string
+          contact_id?: string
+          created_at?: string
+          days_since_last_interaction?: number | null
+          expires_at?: string
+          id?: string
+          recommendations?: string[] | null
+          risk_factors?: Json
+          risk_level?: string
+          risk_score?: number
+          score_trend?: string | null
+          sentiment_trend?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "churn_risk_scores_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_values: {
         Row: {
           category: string
