@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEmailCampaigns, EmailCampaign } from '@/hooks/useEmailCampaigns';
 import { SegmentBuilderPanel } from '@/components/segmentation/SegmentBuilderPanel';
+import { CampaignDetailDrawer } from '@/components/campaigns/CampaignDetailDrawer';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -25,10 +26,11 @@ const STATUS_CONFIG = {
 };
 
 export default function Campanhas() {
-  const { campaigns, isLoading, create, update, remove, stats } = useEmailCampaigns();
+  const { campaigns, isLoading, create, update, remove, sendCampaign, stats } = useEmailCampaigns();
   const [showNew, setShowNew] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedCampaign, setSelectedCampaign] = useState<EmailCampaign | null>(null);
 
   // Form state
   const [name, setName] = useState('');
@@ -112,7 +114,11 @@ export default function Campanhas() {
                   const openRate = campaign.total_recipients > 0 ? Math.round((campaign.total_opened / campaign.total_recipients) * 100) : 0;
                   const clickRate = campaign.total_recipients > 0 ? Math.round((campaign.total_clicked / campaign.total_recipients) * 100) : 0;
                   return (
-                    <div key={campaign.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
+                    <div
+                      key={campaign.id}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
+                      onClick={() => setSelectedCampaign(campaign)}
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <StatusIcon className={`h-4 w-4 shrink-0 ${status.color}`} />
                         <div className="min-w-0">
@@ -123,7 +129,7 @@ export default function Campanhas() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4" onClick={e => e.stopPropagation()}>
                         {campaign.status === 'sent' && (
                           <div className="hidden md:flex items-center gap-3 text-[10px] text-muted-foreground">
                             <span>{campaign.total_recipients} destinatários</span>
@@ -133,7 +139,13 @@ export default function Campanhas() {
                         )}
                         <div className="flex gap-1">
                           {campaign.status === 'draft' && (
-                            <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => update.mutate({ id: campaign.id, status: 'sent', sent_at: new Date().toISOString() })}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => sendCampaign.mutate(campaign.id)}
+                              disabled={sendCampaign.isPending}
+                            >
                               <Send className="h-3 w-3 mr-1" /> Enviar
                             </Button>
                           )}
