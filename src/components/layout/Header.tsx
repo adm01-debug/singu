@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
-import { Bell, Plus } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
+import { UnifiedNotificationsBell } from '@/components/notifications/UnifiedNotificationsBell';
 
 interface HeaderProps {
   title: string;
@@ -77,12 +78,9 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
         </div>
 
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          <Link to="/notificacoes" className="hidden md:inline-flex">
-            <Button variant="ghost" size="icon" className="relative h-8 w-8" aria-label="Notificações">
-              <Bell className="w-4 h-4" aria-hidden="true" />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full" />
-            </Button>
-          </Link>
+          <div className="hidden md:inline-flex">
+            <UnifiedNotificationsBell />
+          </div>
 
           {showAddButton && (
             <Button onClick={onAddClick} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 text-xs">
