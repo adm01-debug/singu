@@ -27,17 +27,17 @@ const SLA_HOURS: Record<SupportTicket['priority'], number> = {
 };
 
 const PRIORITY_CONFIG = {
-  low: { label: 'Baixa', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  medium: { label: 'Média', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' },
-  high: { label: 'Alta', color: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
-  urgent: { label: 'Urgente', color: 'bg-red-500/10 text-red-500 border-red-500/20' },
+  low: { label: 'Baixa', color: 'bg-primary/10 text-primary border-primary/20' },
+  medium: { label: 'Média', color: 'bg-warning/10 text-warning-foreground border-warning/20' },
+  high: { label: 'Alta', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
+  urgent: { label: 'Urgente', color: 'bg-destructive/10 text-destructive border-destructive/20' },
 };
 
 const STATUS_CONFIG = {
-  open: { label: 'Aberto', icon: Ticket, color: 'text-blue-500' },
-  in_progress: { label: 'Em Andamento', icon: Clock, color: 'text-yellow-500' },
+  open: { label: 'Aberto', icon: Ticket, color: 'text-primary' },
+  in_progress: { label: 'Em Andamento', icon: Clock, color: 'text-warning' },
   waiting: { label: 'Aguardando', icon: AlertTriangle, color: 'text-orange-500' },
-  resolved: { label: 'Resolvido', icon: CheckCircle2, color: 'text-green-500' },
+  resolved: { label: 'Resolvido', icon: CheckCircle2, color: 'text-success' },
   closed: { label: 'Fechado', icon: CheckCircle2, color: 'text-muted-foreground' },
 };
 
@@ -247,6 +247,13 @@ export default function Suporte() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Ticket Detail Drawer */}
+        <TicketDetailDrawer
+          ticket={selectedTicket}
+          open={!!selectedTicket}
+          onClose={() => setSelectedTicket(null)}
+        />
       </div>
     </AppLayout>
   );
