@@ -2933,6 +2933,105 @@ export type Database = {
         }
         Relationships: []
       }
+      nurturing_enrollments: {
+        Row: {
+          completed_at: string | null
+          contact_id: string
+          created_at: string
+          current_step: number | null
+          enrolled_at: string
+          id: string
+          next_action_at: string | null
+          status: string | null
+          user_id: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id: string
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          next_action_at?: string | null
+          status?: string | null
+          user_id: string
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          current_step?: number | null
+          enrolled_at?: string
+          id?: string
+          next_action_at?: string | null
+          status?: string | null
+          user_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurturing_enrollments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nurturing_enrollments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "nurturing_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nurturing_workflows: {
+        Row: {
+          completed_count: number | null
+          created_at: string
+          description: string | null
+          enrolled_count: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          steps: Json | null
+          trigger_config: Json | null
+          trigger_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_count?: number | null
+          created_at?: string
+          description?: string | null
+          enrolled_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_count?: number | null
+          created_at?: string
+          description?: string | null
+          enrolled_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          steps?: Json | null
+          trigger_config?: Json | null
+          trigger_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offer_suggestions: {
         Row: {
           confidence_score: number | null
