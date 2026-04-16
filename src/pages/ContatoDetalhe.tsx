@@ -198,7 +198,10 @@ const ContatoDetalhe = () => {
 
           <TabsContent value="dados">
             <DashboardErrorBoundary sectionName="Dados">
-              <ContactDataTab contact={contact} />
+              <div className="space-y-4">
+                <ContactDataTab contact={contact} />
+                <CustomFieldsDisplay entityType="contact" entityId={contact.id} />
+              </div>
             </DashboardErrorBoundary>
           </TabsContent>
 
