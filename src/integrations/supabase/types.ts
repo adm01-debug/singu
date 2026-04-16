@@ -3256,6 +3256,7 @@ export type Database = {
           last_assigned_at: string | null
           leads_today: number
           leads_today_reset_at: string | null
+          manager_id: string | null
           max_leads_day: number
           max_leads_total: number
           name: string
@@ -3278,6 +3279,7 @@ export type Database = {
           last_assigned_at?: string | null
           leads_today?: number
           leads_today_reset_at?: string | null
+          manager_id?: string | null
           max_leads_day?: number
           max_leads_total?: number
           name: string
@@ -3300,6 +3302,7 @@ export type Database = {
           last_assigned_at?: string | null
           leads_today?: number
           leads_today_reset_at?: string | null
+          manager_id?: string | null
           max_leads_day?: number
           max_leads_total?: number
           name?: string
@@ -3313,7 +3316,15 @@ export type Database = {
           vacation_start?: string | null
           weight?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_team_members_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "sales_team_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       schema_drift_alerts: {
         Row: {
@@ -4733,6 +4744,10 @@ export type Database = {
     }
     Functions: {
       execute_readonly_query: { Args: { query_text: string }; Returns: Json }
+      get_team_member_ids: {
+        Args: { _manager_user_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
