@@ -186,16 +186,61 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     } catch (error) { logger.error('Search error:', error); toast.error('Não foi possível completar a busca agora.'); setResults({ contacts: [], companies: [], interactions: [] }); } finally { setIsLoading(false); }
   }, [user, semanticMode, semantic]);
 
-  useEffect(() => { const timer = setTimeout(() => performSearch(query), semanticMode ? 450 : 300); return () => clearTimeout(timer); }, [query, performSearch, semanticMode]);
-  useEffect(() => { if (!open) { setQuery(''); setResults({ contacts: [], companies: [], interactions: [] }); semantic.reset(); } }, [open, semantic]);
+  useEffect(() => {
+    if (conversationalMode) return; // não disparar lexical/semântica em modo conversacional
+    const timer = setTimeout(() => performSearch(query), semanticMode ? 450 : 300);
+    return () => clearTimeout(timer);
+  }, [query, performSearch, semanticMode, conversationalMode]);
+  useEffect(() => {
+    if (!open) {
+      setQuery('');
+      setResults({ contacts: [], companies: [], interactions: [] });
+      setConvDraft('');
+      semantic.reset();
+      conv.reset();
+    }
+  }, [open, semantic, conv]);
 
   const toggleSemantic = useCallback(() => {
     setSemanticMode(prev => {
       const next = !prev;
       try { localStorage.setItem('global-search-semantic', next ? '1' : '0'); } catch { /* noop */ }
+      if (next) {
+        setConversationalMode(false);
+        try { localStorage.setItem('global-search-conversational', '0'); } catch { /* noop */ }
+      }
       return next;
     });
   }, []);
+
+  const toggleConversational = useCallback(() => {
+    setConversationalMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem('global-search-conversational', next ? '1' : '0'); } catch { /* noop */ }
+      if (next) {
+        setSemanticMode(false);
+        try { localStorage.setItem('global-search-semantic', '0'); } catch { /* noop */ }
+        conv.reset();
+      }
+      return next;
+    });
+  }, [conv]);
+
+  const submitConversational = useCallback(async (q?: string) => {
+    if (!user) return;
+    const text = (q ?? convDraft).trim();
+    if (text.length < 3) return;
+    setConvDraft(text);
+    await conv.ask(text, user.id);
+  }, [conv, convDraft, user]);
+
+  const handleConvItemSelect = useCallback((item: { id: string; entity: string }) => {
+    onOpenChange(false);
+    if (item.entity === 'contacts') navigate(`/contatos/${item.id}`);
+    else if (item.entity === 'companies') navigate(`/empresas/${item.id}`);
+    else if (item.entity === 'interactions') navigate('/interacoes');
+    else if (item.entity === 'deals') navigate('/pipeline');
+  }, [navigate, onOpenChange]);
 
   const handleNavigate = (path: string, label: string) => { onOpenChange(false); addRecentItem({ id: path, type: 'page', title: label, path }); navigate(path); };
   const handleSelect = (result: SearchResult) => { onOpenChange(false); const path = result.type === 'contact' ? `/contatos/${result.id}` : result.type === 'company' ? `/empresas/${result.id}` : '/interacoes'; addRecentItem({ id: result.id, type: result.type, title: result.title, path }); navigate(path); };
