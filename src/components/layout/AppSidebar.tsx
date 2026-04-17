@@ -62,6 +62,7 @@ const navSections = [
       { title: "ABM", url: "/abm", icon: Target },
       { title: "Intent Data", url: "/intent", icon: Radar },
       { title: "Lead Scoring", url: "/lead-scoring", icon: Gauge },
+      { title: "Enriquecimento", url: "/enrichment", icon: Sparkles },
       { title: "Win/Loss", url: "/win-loss", icon: TrendingUp },
       { title: "Conversation Intel", url: "/conversation-intelligence", icon: Brain },
       { title: "Playbooks", url: "/playbooks", icon: BookOpen },
