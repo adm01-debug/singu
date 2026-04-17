@@ -8,6 +8,7 @@ import { PeopleIntelTimeline } from "@/components/enrichment/PeopleIntelTimeline
 import { ValidationQueueCard } from "@/components/enrichment/ValidationQueueCard";
 import { BulkRevalidateCard } from "@/components/enrichment/BulkRevalidateCard";
 import { EnrichmentCoverageCard } from "@/components/enrichment/EnrichmentCoverageCard";
+import { EnrichmentExportButton } from "@/components/enrichment/EnrichmentExportButton";
 import { useEmailVerifications, usePhoneValidations } from "@/hooks/useEnrichmentSuite";
 
 export default function Enrichment() {
@@ -29,13 +30,16 @@ export default function Enrichment() {
 
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" /> Enriquecimento de Dados
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Valide emails, encontre contatos, verifique telefones e acompanhe mudanças de carreira.
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" /> Enriquecimento de Dados
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Valide emails, encontre contatos, verifique telefones e acompanhe mudanças de carreira.
+          </p>
+        </div>
+        <EnrichmentExportButton />
       </header>
 
       <section className="grid gap-3 sm:grid-cols-3">
