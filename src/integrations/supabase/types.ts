@@ -3515,6 +3515,51 @@ export type Database = {
           },
         ]
       }
+      email_thread_summaries: {
+        Row: {
+          action_items: Json
+          created_at: string
+          generated_by_model: string
+          id: string
+          interaction_ids: string[]
+          key_points: string[]
+          next_steps: string[]
+          sentiment: string | null
+          summary: string
+          thread_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json
+          created_at?: string
+          generated_by_model?: string
+          id?: string
+          interaction_ids?: string[]
+          key_points?: string[]
+          next_steps?: string[]
+          sentiment?: string | null
+          summary: string
+          thread_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_items?: Json
+          created_at?: string
+          generated_by_model?: string
+          id?: string
+          interaction_ids?: string[]
+          key_points?: string[]
+          next_steps?: string[]
+          sentiment?: string | null
+          summary?: string
+          thread_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_verifications: {
         Row: {
           contact_id: string | null
