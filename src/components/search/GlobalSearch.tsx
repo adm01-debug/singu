@@ -263,42 +263,179 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
               type="button"
               onClick={toggleSemantic}
               aria-pressed={semanticMode}
-              title={semanticMode ? 'Busca Inteligente IA: ativada (sinônimos + tolerância a erros)' : 'Ativar busca inteligente IA'}
+              title={semanticMode ? 'Busca Inteligente IA: ativada' : 'Ativar busca inteligente IA'}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                semanticMode
-                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                  : 'bg-muted hover:bg-muted/70 text-muted-foreground',
+                semanticMode ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-muted hover:bg-muted/70 text-muted-foreground',
               )}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">IA</span>
             </button>
+            <button
+              type="button"
+              onClick={toggleConversational}
+              aria-pressed={conversationalMode}
+              title={conversationalMode ? 'Modo Pergunte: ativado' : 'Pergunte em linguagem natural'}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                conversationalMode ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-muted hover:bg-muted/70 text-muted-foreground',
+              )}
+            >
+              <MessageCircleQuestion className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Pergunte</span>
+            </button>
             <button onClick={() => { onOpenChange(false); setVoiceOpen(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors" aria-label="Assistente de Voz"><Mic className="w-3.5 h-3.5" /><span className="hidden sm:inline">Voz</span></button>
           </div>
         </div>
-        <CommandInput placeholder={semanticMode ? 'Busca semântica: descreva o que procura…' : 'Buscar contatos, empresas, navegar ou executar ações...'} value={query} onValueChange={setQuery} />
-        <CommandList className="max-h-[400px]">
-          {query && !effectiveLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
-          {query && effectiveLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">{semanticMode ? 'Buscando com IA...' : 'Buscando...'}</p></div></div>}
-          {semanticMode && hasResults && semantic.variations.length > 1 && (
-            <div className="px-4 py-1.5 text-[11px] text-muted-foreground border-b border-border/50 flex flex-wrap items-center gap-1">
-              <Sparkles className="w-3 h-3 text-primary" />
-              <span>Termos relacionados:</span>
-              {semantic.variations.slice(1, 5).map(v => (
-                <span key={v} className="px-1.5 py-0.5 rounded bg-muted/60">{v}</span>
+
+        {conversationalMode ? (
+          <div className="px-3 pt-3 pb-2 border-b border-border space-y-2">
+            <Textarea
+              autoFocus
+              value={convDraft}
+              onChange={(e) => setConvDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitConversational(); }
+              }}
+              placeholder="Pergunte em linguagem natural… ex: contatos de SP que não falo há 30 dias"
+              className="min-h-[68px] resize-none text-sm"
+            />
+            <div className="flex flex-wrap items-center gap-1.5">
+              {['Contatos sem follow-up há 30 dias', 'Empresas de tecnologia em SP', 'Interações negativas esta semana'].map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => { setConvDraft(s); submitConversational(s); }}
+                  className="px-2 py-1 rounded-md bg-muted hover:bg-muted/70 text-[11px] text-muted-foreground transition-colors"
+                >
+                  {s}
+                </button>
               ))}
-              {semantic.cached && <span className="ml-auto text-[10px] opacity-60">cache</span>}
+              <button
+                type="button"
+                onClick={() => submitConversational()}
+                disabled={conv.loading || convDraft.trim().length < 3}
+                className="ml-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50 hover:bg-primary/90 transition-colors"
+              >
+                {conv.loading ? 'Pensando…' : 'Buscar'}
+                {!conv.loading && <ArrowRight className="w-3.5 h-3.5" />}
+              </button>
             </div>
+            {conv.history.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70">Histórico:</span>
+                {conv.history.slice(0, 5).map(h => (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => { setConvDraft(h); submitConversational(h); }}
+                    className="px-1.5 py-0.5 rounded bg-muted/60 text-[11px] text-muted-foreground/90 hover:bg-muted truncate max-w-[180px]"
+                    title={h}
+                  >
+                    {h}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <CommandInput placeholder={semanticMode ? 'Busca semântica: descreva o que procura…' : 'Buscar contatos, empresas, navegar ou executar ações...'} value={query} onValueChange={setQuery} />
+        )}
+
+        <CommandList className="max-h-[400px]">
+          {conversationalMode ? (
+            <div className="p-2">
+              {conv.loading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+                    <p className="text-sm text-muted-foreground">Interpretando pergunta com IA…</p>
+                  </div>
+                </div>
+              )}
+              {!conv.loading && conv.interpretation && (
+                <div className="px-3 py-2 mb-1 rounded-md bg-primary/5 border border-primary/20 flex items-start gap-2">
+                  <MessageCircleQuestion className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                  <div className="text-xs flex-1">
+                    <p className="font-medium text-foreground">Interpretação da IA</p>
+                    <p className="text-muted-foreground mt-0.5">{conv.interpretation.summary}</p>
+                    {conv.interpretation.cached && (
+                      <span className="text-[10px] uppercase tracking-wide text-primary/70 mt-1 inline-block">cache</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {!conv.loading && conv.items.length > 0 && (
+                <div className="space-y-0.5">
+                  {conv.items.map(item => (
+                    <button
+                      key={`${item.entity}-${item.id}`}
+                      type="button"
+                      onClick={() => handleConvItemSelect(item)}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center shrink-0">
+                        {item.entity === 'contacts' && <Users className="w-4 h-4 text-muted-foreground" />}
+                        {item.entity === 'companies' && <Building2 className="w-4 h-4 text-muted-foreground" />}
+                        {item.entity === 'interactions' && <MessageSquare className="w-4 h-4 text-muted-foreground" />}
+                        {item.entity === 'deals' && <Zap className="w-4 h-4 text-muted-foreground" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.title}</p>
+                        {item.subtitle && <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>}
+                      </div>
+                      {item.meta && <span className="text-[11px] text-muted-foreground shrink-0">{item.meta}</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {!conv.loading && conv.interpretation && conv.items.length === 0 && conv.interpretation.entity !== 'deals' && (
+                <CommandEmpty>
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    Nenhum registro corresponde aos filtros interpretados.
+                  </div>
+                </CommandEmpty>
+              )}
+              {!conv.loading && conv.interpretation?.entity === 'deals' && (
+                <button
+                  type="button"
+                  onClick={() => { onOpenChange(false); navigate('/pipeline'); }}
+                  className="w-full mt-2 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-muted hover:bg-muted/70 text-sm font-medium transition-colors"
+                >
+                  Abrir Pipeline com filtros <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+              {!conv.loading && !conv.interpretation && (
+                <div className="py-6 text-center text-xs text-muted-foreground">
+                  Faça uma pergunta para começar — exemplos abaixo do campo.
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {query && !effectiveLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
+              {query && effectiveLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">{semanticMode ? 'Buscando com IA...' : 'Buscando...'}</p></div></div>}
+              {semanticMode && hasResults && semantic.variations.length > 1 && (
+                <div className="px-4 py-1.5 text-[11px] text-muted-foreground border-b border-border/50 flex flex-wrap items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span>Termos relacionados:</span>
+                  {semantic.variations.slice(1, 5).map(v => (
+                    <span key={v} className="px-1.5 py-0.5 rounded bg-muted/60">{v}</span>
+                  ))}
+                  {semantic.cached && <span className="ml-auto text-[10px] opacity-60">cache</span>}
+                </div>
+              )}
+
+              <SearchResultGroups results={results} onSelect={handleSelect} />
+
+              {query && !hasResults && !hasLocalResults && !effectiveLoading && (
+                <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">{semanticMode ? 'Tente palavras diferentes ou desative a busca IA' : 'Tente buscar por nome, email, empresa ou título'}</p></div></div></CommandEmpty>
+              )}
+
+              <SearchLocalGroups query={query} filteredQuickActions={filteredQuickActions} filteredNavigation={filteredNavigation} filteredRecent={filteredRecent} onQuickAction={handleQuickAction} onNavigate={handleNavigate} onRecentSelect={handleRecentSelect} />
+            </>
           )}
-
-          <SearchResultGroups results={results} onSelect={handleSelect} />
-
-          {query && !hasResults && !hasLocalResults && !effectiveLoading && (
-            <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">{semanticMode ? 'Tente palavras diferentes ou desative a busca IA' : 'Tente buscar por nome, email, empresa ou título'}</p></div></div></CommandEmpty>
-          )}
-
-          <SearchLocalGroups query={query} filteredQuickActions={filteredQuickActions} filteredNavigation={filteredNavigation} filteredRecent={filteredRecent} onQuickAction={handleQuickAction} onNavigate={handleNavigate} onRecentSelect={handleRecentSelect} />
         </CommandList>
 
         <div className="border-t border-border p-2.5 bg-muted/30">
