@@ -44,8 +44,8 @@ Deno.serve(async (req) => {
   if (typeof authResult !== "string") return authResult;
   const userId = authResult;
 
-  const limited = limiter(userId);
-  if (limited) return jsonError(limited.message, 429, req);
+    const limited = limiter.check(userId);
+    if (limited) return limited;
 
   try {
     const body = await req.json().catch(() => ({}));
