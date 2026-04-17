@@ -1,62 +1,73 @@
 
-Conversation Intelligence acabou. Próximo grande gap = **Forecasting & Revenue Intelligence** — previsão de receita com IA, weighted pipeline avançado, deal health scoring e detecção de risco. Hoje pipeline_kanban tem só weighted forecast simples; falta forecast por período (mês/trimestre), categorização (commit/best case/pipeline), confidence score por deal, alertas de slip e snapshots históricos para tracking de accuracy.
+Forecasting acabou. Próximo grande gap = **Deal Rooms & Mutual Action Plans (MAP)** — espaço colaborativo por oportunidade com plano de ação compartilhado entre vendedor e comprador, milestones, documentos, stakeholders e tracking de engajamento. Hoje deals só têm pipeline_kanban + forecast; falta workspace de execução do ciclo.
 
-## Plano: Forecasting & Revenue Intelligence
+## Plano: Deal Rooms & Mutual Action Plans
 
 ### 1. Schema (migration)
-- `forecast_periods` — `id, user_id, period_type ('month'|'quarter'), period_start, period_end, quota_amount, status ('open'|'closed'), closed_at`
-- `deal_forecasts` — `id, user_id, deal_id, period_id, category ('commit'|'best_case'|'pipeline'|'omitted'), confidence_score int (0-100), forecasted_amount, forecasted_close_date, risk_factors jsonb, health_score int, last_activity_at, slip_count int, notes`. Unique(deal_id, period_id)
-- `forecast_snapshots` — snapshot semanal/diário: `id, user_id, period_id, snapshot_date, commit_total, best_case_total, pipeline_total, weighted_total, deal_count, snapshot_data jsonb`
-- `forecast_categories_history` — log de mudanças de categoria: `id, deal_forecast_id, from_category, to_category, changed_at, reason`
-- RLS por user_id, audit em deal_forecasts. RPC `seed_forecast_period(_user_id, _type)` cria período atual
+- `deal_rooms` — `id, user_id, deal_id, deal_name, company_id, title, description, status ('active'|'won'|'lost'|'paused'), target_close_date, share_token (unique), share_enabled bool, last_buyer_view_at, buyer_view_count int`
+- `deal_room_milestones` — `id, room_id, user_id, title, description, due_date, status ('pending'|'in_progress'|'done'|'blocked'), owner_side ('seller'|'buyer'|'both'), sort_order, completed_at, completed_by`
+- `deal_room_stakeholders` — `id, room_id, user_id, contact_id (nullable), name, email, role_title, side ('seller'|'buyer'), influence ('champion'|'decision_maker'|'influencer'|'blocker'|'user'), engagement_score int 0-100, notes`
+- `deal_room_documents` — `id, room_id, user_id, title, file_path (storage), file_type, file_size, uploaded_by_side, view_count int, last_viewed_at`
+- `deal_room_activities` — `id, room_id, user_id, actor_side, actor_label, activity_type ('milestone_completed'|'doc_uploaded'|'doc_viewed'|'comment'|'view'), payload jsonb, created_at`
+- `deal_room_comments` — `id, room_id, user_id, author_side, author_label, body, created_at`
+- RLS: vendedor por user_id; rota pública `/dr/:token` lê via share_token (RPC SECURITY DEFINER)
+- RPC `get_deal_room_by_token(_token)` retorna room+milestones+stakeholders+docs+activities (sem expor user_id)
+- RPC `record_buyer_view(_token, _payload)` incrementa contadores + cria activity
+- Trigger audit em deal_rooms e deal_room_milestones
 
 ### 2. Edge Functions
-- **`forecast-analyzer`**: para cada deal aberto no período → calcula health_score (atividade recente, stage age, talk ratio se houver, score do contato) → invoca IA Lovable (gemini-3-flash-preview) com tool calling para sugerir categoria (commit/best/pipeline) + confidence + risk_factors → upsert em deal_forecasts. Rate limit
-- **`forecast-snapshot-cron`**: diário, captura snapshot do estado atual de todos os períodos abertos para tracking histórico de accuracy
-- **`forecast-narrative`**: gera narrativa executiva do forecast atual (commit vs quota, top deals em risco, recomendações)
+- **`deal-room-share`**: gera/rota share_token, retorna URL pública
+- **`deal-room-buyer-view`**: endpoint público (no JWT) que valida token e registra view + activity (chamado pela rota pública)
+- **`deal-room-health`**: calcula health do room (milestones em dia %, engajamento de stakeholders, recência de view do buyer) e gera 2-3 recomendações via Lovable AI (gemini-3-flash-preview)
 
-### 3. Hooks `src/hooks/useForecasting.ts`
-- `useForecastPeriods`, `useCurrentPeriod`, `useCreatePeriod`, `useClosePeriod`
-- `useDealForecasts(periodId)`, `useUpdateDealForecast` (mudar categoria manualmente), `useAnalyzeForecast`
-- `useForecastSnapshots(periodId)` — gráfico de evolução
-- `useForecastSummary(periodId)` — totais por categoria, attainment %, gap to quota
-- `useForecastNarrative`
+### 3. Hooks `src/hooks/useDealRooms.ts`
+- `useDealRooms(filters)`, `useDealRoom(id)`, `useCreateDealRoom`, `useUpdateDealRoom`, `useDeleteDealRoom`
+- `useMilestones(roomId)`, `useUpsertMilestone`, `useDeleteMilestone`, `useToggleMilestone`
+- `useStakeholders(roomId)`, `useUpsertStakeholder`, `useDeleteStakeholder`
+- `useRoomDocuments(roomId)`, `useUploadDocument`, `useDeleteDocument`
+- `useRoomActivities(roomId)`, `useRoomComments(roomId)`, `useAddComment`
+- `useShareRoom`, `useRoomHealth`
+- `usePublicDealRoom(token)` (sem JWT, via RPC)
 
 ### 4. UI
 
-**`/forecasting`** (hub):
-- 4 KPIs: Commit, Best Case, Quota Attainment %, Gap to Quota
-- Seletor de período (mês/trimestre atual + anteriores)
-- Visão "Waterfall": commit → best case → pipeline → quota line
-- Tabs:
-  - "Pipeline por categoria" — colunas drag-and-drop (commit/best/pipeline/omitted) com deals
-  - "Trending" — line chart de snapshots ao longo do período
-  - "Risk" — tabela de deals em risco (low health_score, no activity, slipped)
-  - "Accuracy" — comparação forecast vs actual de períodos fechados
+**`/deal-rooms`** (lista):
+- Cards de rooms com progresso de milestones, próximo milestone, último view do buyer, status
+- Filtros: status, próximos a fechar, sem atividade do buyer >7d
 
-**`/forecasting/setup`**: editor de quota por período + configuração de pesos de health score
+**`/deal-rooms/:id`** (workspace interno do vendedor):
+- Header: deal name, valor, target close, share button (gera link público)
+- 4 KPIs: % milestones done, dias até target, stakeholders engajados, buyer views
+- Tabs: "Plano" (kanban de milestones) | "Stakeholders" | "Documentos" | "Atividade" | "Comentários" | "Health IA"
 
-**Widget `DealForecastBadge`**: usado em PipelineKanban card mostrando categoria + confidence
+**`/dr/:token`** (rota pública para o buyer — sem auth):
+- Layout limpo, branded, mostra plano, milestones, stakeholders (lado buyer), documentos disponíveis, comentários
+- Buyer pode marcar milestones do lado dele como done, comentar e baixar docs
+- Registra view ao carregar
 
-**Componentes** em `src/components/forecasting/`:
-- `ForecastWaterfall` (recharts), `CategoryColumn` (drag-drop kanban), `HealthScoreIndicator`
-- `RiskDealsTable`, `AccuracyChart`, `QuotaProgressBar`, `ForecastNarrativeCard`
-- `PeriodSelector`, `CategoryBadge`, `AnalyzeForecastButton`
+**Componentes** em `src/components/deal-rooms/`:
+- `DealRoomCard`, `MilestoneKanban`, `MilestoneCard`, `StakeholderList`, `StakeholderCard`
+- `DocumentsList`, `DocumentUploader`, `ActivityFeed`, `CommentsThread`
+- `ShareDialog` (mostra URL + toggle), `RoomHealthCard`, `BuyerSidePanel`
 
-### 5. Integração
-- `PipelineKanban`: cada deal card mostra `DealForecastBadge` quando há forecast no período aberto; click move categoria
-- Win/Loss: ao fechar deal, atualiza `forecast_periods.actual_won_amount` para tracking de accuracy
-- Lead Scoring: contatos primários do deal entram no health_score do forecast
+### 5. Storage
+- Reutiliza bucket `documents` (já existe, privado) com path `deal-rooms/{room_id}/{file}`
+- RLS: vendedor sobe; buyer baixa via signed URL gerado por RPC quando token válido
 
-### 6. Navegação
-- Sidebar: "Forecasting" (ícone TrendingUp ou DollarSign — escolher LineChart pra diferenciar de Win/Loss) abaixo de Conversation Intel
-- Rotas `/forecasting` e `/forecasting/setup` em App.tsx
+### 6. Integração
+- `PipelineKanban` deal card: botão "Abrir Deal Room" (cria se não existir)
+- `EmpresaDetalhe` aba comercial: lista de rooms ativos da conta
+- Win/Loss: ao fechar deal, marca room como won/lost e congela edição
 
-### 7. Memória
-- `mem://features/forecasting-revenue-intelligence` + atualizar índice
+### 7. Navegação
+- Sidebar: "Deal Rooms" (ícone Briefcase ou Handshake) abaixo de Forecasting
+- Rotas `/deal-rooms`, `/deal-rooms/:id` (auth) e `/dr/:token` (pública) em App.tsx
+
+### 8. Memória
+- `mem://features/deal-rooms-mutual-action-plans` + atualizar índice
 
 ### Não fazer
 - Não criar tabelas products/proposals
-- Não substituir weighted forecast simples do pipeline_kanban — coexiste
-- Não implementar ML model próprio — usa IA via Lovable Gateway
-- Sem multi-currency neste passo
+- Sem autenticação magic-link do buyer agora (token compartilhado basta)
+- Sem assinatura eletrônica de docs
+- Sem chat em tempo real (comments por refresh)
