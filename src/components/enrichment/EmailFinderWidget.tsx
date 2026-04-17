@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useEmailFinder } from "@/hooks/useEnrichmentSuite";
 import { useApplyFoundEmail } from "@/hooks/useApplyFoundEmail";
 import { useContacts } from "@/hooks/useContacts";
-import { SearchableSelectStrict } from "@/components/ui/searchable-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Props {
   contactId?: string | null;
