@@ -133,6 +133,9 @@ const ConversationIntelligencePage = lazy(() => import("./pages/ConversationInte
 const ConversationIntelligenceSetupPage = lazy(() => import("./pages/ConversationIntelligenceSetup"));
 const ForecastingPage = lazy(() => import("./pages/Forecasting"));
 const ForecastingSetupPage = lazy(() => import("./pages/ForecastingSetup"));
+const DealRoomsPage = lazy(() => import("./pages/DealRooms"));
+const DealRoomDetailPage = lazy(() => import("./pages/DealRoomDetail"));
+const PublicDealRoomPage = lazy(() => import("./pages/PublicDealRoom"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
