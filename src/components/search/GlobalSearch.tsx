@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useModalHistory } from '@/hooks/useModalHistory';
 import {
-  Building2, Users, MessageSquare, Search, Zap, Mic, Sparkles,
+  Building2, Users, MessageSquare, Search, Zap, Mic, Sparkles, MessageCircleQuestion, ArrowRight,
   LayoutDashboard, CalendarDays, Lightbulb, Bell, Settings,
   UserPlus, Building, MessagesSquare,
 } from 'lucide-react';
@@ -15,9 +15,11 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryExternalData } from '@/lib/externalData';
 import { useSemanticSearch } from '@/hooks/useSemanticSearch';
+import { useConversationalSearch } from '@/hooks/useConversationalSearch';
 import type { SearchContact } from '@/hooks/useSearchContactsView';
 import { SearchResultGroups } from './global-search/SearchResultGroups';
 import { SearchLocalGroups } from './global-search/SearchLocalGroups';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 const LazyVoiceOverlay = lazy(() => import('./VoiceSearchOverlayConnected'));
