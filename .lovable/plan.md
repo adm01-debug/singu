@@ -1,44 +1,64 @@
 
-#9 entregue. Próximo: #10 — Heatmap de horário ótimo de contato (quando o contato responde mais).
+#10 entregue. Próximo: #11 — Next-Best-Action por contato (sugestão IA do próximo passo).
 
-Já existem `ContactTimeHeatmap` e `useContactTimeAnalysis` no projeto, então não recriar. O gap real é **agregação global** (todos contatos do usuário) para responder "quando devo prospectar?", não individual.
-
-## Melhoria #10: Best Time to Engage — Heatmap Global do Vendedor
+## Melhoria #11: Next-Best-Action (NBA) por contato
 
 ### Escopo
-Card no Dashboard mostrando heatmap 7×17 (dom-sab × 6h-22h) de **taxa de resposta** das interações outbound do vendedor logado nos últimos 90 dias, destacando os 3 melhores slots com badges acionáveis.
+Card no `ContatoDetalhe` que sugere a **próxima melhor ação** para o contato com base em sinais já existentes: lead score, sentiment trend, dias desde última interação, stage do deal, intent signals recentes. IA gera recomendação acionável + justificativa + canal sugerido + script curto.
 
-### Dados (client-side, sem nova edge function)
-- Query `interactions` do user: `direction='outbound'`, últimos 90d, com flag de resposta (existe interação inbound do mesmo `contact_id` em até 48h após)
-- Agregação por `(day_of_week, hour_of_day)`: total enviado, total respondido, response_rate
-- Top 3 slots com mín. 5 tentativas para evitar ruído
+### Sinais de entrada (todos client-side, dados já existem)
+- Lead score atual + grade (A/B/C/D)
+- Sentiment trend (up/stable/down) — reusa `useContactSentimentTrend`
+- Dias desde última interação
+- Última interação: tipo, sentiment, sumário (se houver)
+- Deals abertos: stage, valor, idade
+- Intent signals últimos 30d (se houver)
+- DISC do contato (se houver) e do vendedor
 
-### UI
-- `BestTimeHeatmapCard.tsx` em `src/components/dashboard/`
-- Grid 7×17 com gradiente verde (alta taxa) → vermelho (baixa), opacity por volume
-- Header: badges "Melhor: Ter 10h (78%)", "2º: Qua 14h (72%)", "3º: Qui 9h (69%)"
-- Legenda + tooltip nativo `title` por célula
-- Empty state: "Mín. 20 interações outbound nos últimos 90d"
+### Backend
+- Nova edge function `next-best-action` (Deno.serve + Zod + JWT + rate-limit 30/min)
+- Input: `{ contact_id }`
+- Agrega sinais via SQL (1 query JOIN), monta contexto e chama Lovable AI (`google/gemini-2.5-flash`, `response_format: json_object`)
+- Retorna: `{ action, reason, channel, urgency, suggested_script, expected_outcome }`
+- Cache em nova tabela `contact_next_actions` (upsert por `contact_id`, TTL 24h client-side via `staleTime`)
 
-### Hook
-- `useBestTimeHeatmap()` — useQuery, staleTime 10min, retorna `{ cells, topSlots, totalAttempts }`
+### Tabela `contact_next_actions`
+- `id, user_id, contact_id (unique per user), action, reason, channel, urgency (low|medium|high), suggested_script, expected_outcome, signals_snapshot jsonb, generated_at, model`
+- RLS por user_id, índice `(user_id, contact_id)`
+
+### Frontend
+- Hook `useNextBestAction(contactId)` — `useQuery` (lê) + `useMutation` (gera/regenera)
+- Componente `NextBestActionCard.tsx` em `src/components/contact-detail/`
+  - Header: ícone Sparkles + badge urgência (cor semântica)
+  - Ação principal em destaque (ex: "Enviar email reforçando proposta")
+  - Justificativa curta (2-3 linhas)
+  - Badge canal sugerido (Email/WhatsApp/Call/LinkedIn)
+  - Script sugerido (collapsible, copiável)
+  - Resultado esperado em rodapé
+  - Botões: "Copiar script", "Regenerar", "Marcar como feito" (cria task)
+- Empty state: botão "Gerar sugestão IA"
 
 ### Integração
-- Adicionar no Dashboard (`Index.tsx`) na seção de inteligência ou nova aba "Timing"
+- `ContatoDetalhe.tsx`: card no topo da aba "Visão Geral" (acima do score), ou nova posição de destaque
+- "Marcar como feito" → cria entrada em `tasks` (reusa hook existente)
 
 ### Arquivos
-- Novo: `src/hooks/useBestTimeHeatmap.ts`
-- Novo: `src/components/dashboard/BestTimeHeatmapCard.tsx`
-- Editar: `src/pages/Index.tsx` (montar card)
-- Nova memória: `mem://features/best-time-heatmap-global.md`
+- Migration: tabela `contact_next_actions` + RLS + índices
+- Novo: `supabase/functions/next-best-action/index.ts`
+- Novo: `src/hooks/useNextBestAction.ts`
+- Novo: `src/components/contact-detail/NextBestActionCard.tsx`
+- Editar: `src/pages/ContatoDetalhe.tsx`
+- Nova memória: `mem://features/next-best-action.md`
 
 ### Validação E2E
 - Build limpo
-- User com 20+ outbound + responses → heatmap colorido + top 3
-- User sem dados → empty state
-- Tooltip mostra "Ter 10h: 78% (39/50 respondidas)"
+- Contato com dados → "Gerar sugestão" → card renderizado em <8s com ação + script
+- Regenerar atualiza
+- Copiar script funciona
+- Marcar como feito cria tarefa
+- Empty state em contato novo
 
 ### Restrições
-≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR.
+≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR. Reusar `rateLimit` shared, padrão de edge functions existente.
 
-Após #10 → #11 (next-best-action por contato — sugestão IA do próximo passo baseado em score, sentiment trend, dias sem interação).
+Após #11 → #12 (deal slip risk — alerta IA quando deals começam a "esfriar" baseado em sinais combinados).
