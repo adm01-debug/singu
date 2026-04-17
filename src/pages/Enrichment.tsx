@@ -38,7 +38,7 @@ export default function Enrichment() {
         </p>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-3">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2"><Mail className="h-3.5 w-3.5" />Emails verificados</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold">{stats.emailsTotal}</p><p className="text-xs text-muted-foreground">{stats.emailsValid} válidos ({stats.emailsRate}%)</p></CardContent>
