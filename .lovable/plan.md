@@ -1,41 +1,62 @@
 
-Semantic search entregue. Próxima melhoria: #15 — Conversational CRM Search (busca em linguagem natural com IA).
+## Melhoria #17: Mapa de Calor — Quando seus Clientes Interagem com Você
 
-## Melhoria #15: Conversational Search (Ask CRM via busca)
+### Contexto
+Já existem 3 heatmaps no projeto:
+1. `BestTimeHeatmapCard` (Dashboard→Inteligência) — outbound→resposta em 48h
+2. `ActivityHeatmapChart` — volume bruto de interações
+3. `TimeHeatmapCard` (ContatoDetalhe) — sucesso por contato
+
+**Falta:** um heatmap focado em **quando os clientes (eles) iniciam contato com você** — ou seja, sinais de **intenção inbound**. Isso responde "quando devo estar disponível?" em vez de "quando devo prospectar?".
 
 ### Escopo
-Estender o `GlobalSearch` (⌘K) para aceitar perguntas em linguagem natural ("contatos de SP que não falo há 30 dias", "deals em negociação acima de 50k") e converter em filtros estruturados via Lovable AI, executando RPCs/queries reais e renderizando resultados como cards acionáveis.
+Novo card `InboundActivityHeatmapCard` no Dashboard→Inteligência (ao lado do BestTime existente) com:
+- Grid 7×17 (Dom-Sáb × 6h-22h) de **interações inbound** (`initiated_by='them'`) últimos 90d
+- Cores por **volume relativo** (gradiente primary), não taxa
+- Top 3 janelas de pico com badge "🔥 Pico"
+- Stat cards: total inbound, horário mais ativo, dia mais ativo
+- Insight textual: "Seus clientes mais te procuram nas {dia} às {hora}"
+- Toggle de canal (Todos / WhatsApp / Email / Call) para segmentar
+- Empty state se <10 inbounds nos últimos 90d
 
-### Arquitetura
-- **Edge Function nova**: `conversational-search` — recebe `query`, contexto do usuário, retorna `{ intent, filters, sql_safe_params, summary }` via Gemini Flash com tool calling.
-- **Tool schema**: 4 tools — `search_contacts_filtered`, `search_companies_filtered`, `search_deals_filtered`, `search_interactions_filtered` — cada uma com parâmetros tipados (cidade, dias_sem_interacao, valor_min, stage, etc.).
-- **Execução client-side**: após receber filtros, hook chama queries Supabase reais com filtros aplicados.
+### Diferencial vs heatmaps existentes
+| Heatmap | Foco | Métrica |
+|---|---|---|
+| BestTime (existente) | Outbound→Resposta | Taxa % |
+| Activity (existente) | Volume total | Contagem absoluta |
+| **Inbound (novo)** | **Quando clientes me procuram** | **Volume inbound + canal** |
 
-### UI
-- Toggle "💬 Pergunte" no `GlobalSearch` (3º modo ao lado de Lexical e IA Semântica).
-- Quando ativo: input vira textarea com placeholder "Pergunte em linguagem natural...", botão "Buscar" explícito.
-- Resultados agrupados por entidade com chip de "interpretação da IA" no topo.
-- Sugestões clicáveis: "Mostrar contatos sem follow-up", "Deals quentes esta semana", "Empresas de tecnologia em SP".
-
-### Persistência
-- Histórico das últimas 10 perguntas em `localStorage` (`crm-conversational-history`).
-- Cache de respostas idênticas (5 min) em `conversational_search_cache` (nova tabela leve).
+### Arquitetura (100% client-side)
+- **Hook novo** `useInboundActivityHeatmap(channel?)`:
+  - Query `interactions` últimos 90d, `initiated_by='them'`, `user_id` atual
+  - Filtro opcional por `tipo` (whatsapp/email/call)
+  - Agrega em grid 7×17, identifica top 3 picos, calcula totais
+  - StaleTime 10min, gcTime 30min
+- **Componente** `InboundActivityHeatmapCard.tsx`:
+  - Header com título + ToggleGroup de canal
+  - Stat cards (3 mini-cards: total, dia top, hora top)
+  - Heatmap grid com tooltips nativos (`title`)
+  - Insight textual abaixo
+  - Legenda de intensidade
+  - Empty state com CTA "Capture mais interações"
 
 ### Arquivos
-- Nova edge function: `supabase/functions/conversational-search/index.ts`
-- Nova tabela: `conversational_search_cache` (id, user_id, query_hash, response, expires_at)
-- Novo hook: `src/hooks/useConversationalSearch.ts`
-- Editar: `src/components/search/GlobalSearch.tsx` (3º modo)
-- Nova memória: `mem://features/conversational-crm-search.md`
+- Novo: `src/hooks/useInboundActivityHeatmap.ts` (~120 linhas)
+- Novo: `src/components/dashboard/InboundActivityHeatmapCard.tsx` (~220 linhas)
+- Editar: `src/components/dashboard/IntelligenceTab.tsx` (adicionar card abaixo/ao lado do BestTime)
+- Nova memória: `mem://features/inbound-activity-heatmap.md`
+- Atualizar: `mem://index.md`
 
 ### Validação E2E
-- "contatos de São Paulo" → retorna lista filtrada por city
-- "deals acima de 100 mil em negociação" → filtra por valor + stage
-- "quem não falo há 2 semanas" → calcula dias_sem_interacao
-- Cache funciona (2ª query igual = instantâneo)
-- Histórico persiste entre sessões
+- Build limpo (sem `any`, ≤400 linhas/arquivo)
+- Card renderiza com dados reais
+- Toggle de canal filtra corretamente
+- Top 3 picos destacados com badge
+- Empty state em conta nova
+- Tooltips funcionam ao hover
+- Insight textual coerente com dados
 
 ### Restrições
-≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR, rate limit 20/min na edge function.
+PT-BR, sem `useEffect` para fetch (TanStack Query), sem edge function nova, sem migration.
 
-Após #15 → #16 (smart notifications — IA decide quando notificar e canal ideal).
+Após #17 → #18 (channel performance matrix — qual canal converte mais por persona/stage).
