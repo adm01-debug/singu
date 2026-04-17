@@ -10,6 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { ExternalEmail } from '@/hooks/useContactRelationalData';
 import { EMAIL_TYPE_LABELS } from './helpers';
 import { ConfidenceBadge, PrimaryBadge, VerifiedBadge, SourceBadge } from './shared-badges';
+import { EnrichmentBadge } from '@/components/enrichment/EnrichmentBadge';
+import { useContactValidationStatus } from '@/hooks/useContactValidationStatus';
+import { useEmailVerifier } from '@/hooks/useEnrichmentSuite';
+import { ShieldCheck } from 'lucide-react';
 
 const EMAIL_TYPES = ['pessoal', 'profissional', 'corporativo', 'outro'];
 
@@ -69,9 +73,12 @@ interface Props {
   onCopy: (text: string, field: string) => void;
   onAdd?: (data: Record<string, unknown>) => void;
   onDelete?: (id: string) => void;
+  contactId?: string;
 }
 
-export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy, onAdd, onDelete }: Props) {
+export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy, onAdd, onDelete, contactId }: Props) {
+  const { getEmail, isLoading: validationLoading } = useContactValidationStatus(contactId);
+  const verifier = useEmailVerifier();
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -93,6 +100,10 @@ export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy
                 </a>
                 <PrimaryBadge isPrimary={e.is_primary} />
                 <VerifiedBadge isVerified={e.is_verified} />
+                {(() => {
+                  const v = getEmail(e.email);
+                  return <EnrichmentBadge status={v?.status} score={v?.score} loading={validationLoading && !v} compact />;
+                })()}
               </div>
               <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                 <Badge variant="secondary" className="text-[10px]">
@@ -107,6 +118,14 @@ export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy
               {e.contexto && <p className="text-[10px] text-muted-foreground mt-0.5">{e.contexto}</p>}
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => verifier.mutate({ email: e.email, contactId })}
+                disabled={verifier.isPending}
+                aria-label={`Verificar ${e.email}`}
+                className="rounded p-1 text-muted-foreground hover:bg-info/10 hover:text-info transition-colors disabled:opacity-50"
+              >
+                <ShieldCheck className="h-3 w-3" />
+              </button>
               <button
                 onClick={() => onCopy(e.email, `email-${e.id}`)}
                 className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
