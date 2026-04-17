@@ -1955,6 +1955,86 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_forecasts: {
+        Row: {
+          ai_rationale: string | null
+          analyzed_at: string | null
+          category: string
+          company_id: string | null
+          confidence_score: number
+          contact_id: string | null
+          created_at: string
+          deal_id: string
+          deal_name: string | null
+          forecasted_amount: number
+          forecasted_close_date: string | null
+          health_score: number
+          id: string
+          last_activity_at: string | null
+          notes: string | null
+          period_id: string
+          risk_factors: Json
+          slip_count: number
+          stage: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_rationale?: string | null
+          analyzed_at?: string | null
+          category?: string
+          company_id?: string | null
+          confidence_score?: number
+          contact_id?: string | null
+          created_at?: string
+          deal_id: string
+          deal_name?: string | null
+          forecasted_amount?: number
+          forecasted_close_date?: string | null
+          health_score?: number
+          id?: string
+          last_activity_at?: string | null
+          notes?: string | null
+          period_id: string
+          risk_factors?: Json
+          slip_count?: number
+          stage?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_rationale?: string | null
+          analyzed_at?: string | null
+          category?: string
+          company_id?: string | null
+          confidence_score?: number
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string
+          deal_name?: string | null
+          forecasted_amount?: number
+          forecasted_close_date?: string | null
+          health_score?: number
+          id?: string
+          last_activity_at?: string | null
+          notes?: string | null
+          period_id?: string
+          risk_factors?: Json
+          slip_count?: number
+          stage?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_forecasts_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decision_criteria: {
         Row: {
           contact_id: string
@@ -2830,6 +2910,187 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      forecast_categories_history: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          deal_forecast_id: string
+          from_category: string | null
+          id: string
+          reason: string | null
+          to_category: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string
+          deal_forecast_id: string
+          from_category?: string | null
+          id?: string
+          reason?: string | null
+          to_category: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          deal_forecast_id?: string
+          from_category?: string | null
+          id?: string
+          reason?: string | null
+          to_category?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_categories_history_deal_forecast_id_fkey"
+            columns: ["deal_forecast_id"]
+            isOneToOne: false
+            referencedRelation: "deal_forecasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_periods: {
+        Row: {
+          actual_won_amount: number
+          closed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          period_end: string
+          period_start: string
+          period_type: string
+          quota_amount: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_won_amount?: number
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_end: string
+          period_start: string
+          period_type: string
+          quota_amount?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_won_amount?: number
+          closed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          quota_amount?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      forecast_quota_settings: {
+        Row: {
+          created_at: string
+          default_monthly_quota: number
+          default_quarterly_quota: number
+          health_weight_activity: number
+          health_weight_engagement: number
+          health_weight_relationship: number
+          health_weight_stage_age: number
+          id: string
+          inactivity_threshold_days: number
+          slip_threshold_days: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_monthly_quota?: number
+          default_quarterly_quota?: number
+          health_weight_activity?: number
+          health_weight_engagement?: number
+          health_weight_relationship?: number
+          health_weight_stage_age?: number
+          id?: string
+          inactivity_threshold_days?: number
+          slip_threshold_days?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_monthly_quota?: number
+          default_quarterly_quota?: number
+          health_weight_activity?: number
+          health_weight_engagement?: number
+          health_weight_relationship?: number
+          health_weight_stage_age?: number
+          id?: string
+          inactivity_threshold_days?: number
+          slip_threshold_days?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      forecast_snapshots: {
+        Row: {
+          best_case_total: number
+          commit_total: number
+          created_at: string
+          deal_count: number
+          id: string
+          period_id: string
+          pipeline_total: number
+          snapshot_data: Json
+          snapshot_date: string
+          user_id: string
+          weighted_total: number
+        }
+        Insert: {
+          best_case_total?: number
+          commit_total?: number
+          created_at?: string
+          deal_count?: number
+          id?: string
+          period_id: string
+          pipeline_total?: number
+          snapshot_data?: Json
+          snapshot_date?: string
+          user_id: string
+          weighted_total?: number
+        }
+        Update: {
+          best_case_total?: number
+          commit_total?: number
+          created_at?: string
+          deal_count?: number
+          id?: string
+          period_id?: string
+          pipeline_total?: number
+          snapshot_data?: Json
+          snapshot_date?: string
+          user_id?: string
+          weighted_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_snapshots_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_periods"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       geo_allowed_countries: {
         Row: {
@@ -7304,6 +7565,10 @@ export type Database = {
       seed_conversation_topics: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      seed_forecast_period: {
+        Args: { _type: string; _user_id: string }
+        Returns: string
       }
       seed_lead_score_defaults: {
         Args: { _user_id: string }
