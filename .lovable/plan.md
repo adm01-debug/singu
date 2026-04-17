@@ -1,51 +1,62 @@
 
-Win/Loss acabou. Faltam grandes módulos do roadmap de excelência. Próximo grande gap = **Conversation Intelligence** — análise IA de chamadas/reuniões transcritas com detecção de tópicos, talk ratio, objeções, momentos críticos e coaching automático. Hoje só existe `meeting-summary` simples; falta análise estruturada profunda + dashboard de coaching.
+Conversation Intelligence acabou. Próximo grande gap = **Forecasting & Revenue Intelligence** — previsão de receita com IA, weighted pipeline avançado, deal health scoring e detecção de risco. Hoje pipeline_kanban tem só weighted forecast simples; falta forecast por período (mês/trimestre), categorização (commit/best case/pipeline), confidence score por deal, alertas de slip e snapshots históricos para tracking de accuracy.
 
-## Plano: Conversation Intelligence
+## Plano: Forecasting & Revenue Intelligence
 
 ### 1. Schema (migration)
-- `conversation_analyses` — `id, user_id, interaction_id (FK), contact_id, deal_id (nullable), duration_seconds, talk_ratio_rep numeric, talk_ratio_customer numeric, longest_monologue_seconds, questions_asked int, sentiment_overall ('positive'|'neutral'|'negative'|'mixed'), sentiment_timeline jsonb, topics jsonb, objections jsonb, action_items jsonb, key_moments jsonb, coaching_score int (0-100), coaching_tips text[], next_best_action text, analyzed_at`
-- `conversation_topics_catalog` — `id, user_id, topic_key, label, category ('product'|'pricing'|'competition'|'objection'|'closing'|'discovery'|'other'), keywords text[], active` — biblioteca de tópicos rastreados
-- `coaching_scorecards` — `id, user_id, name, criteria jsonb (lista de critérios com peso), active` — templates de avaliação
-- RLS por user_id, audit em conversation_analyses, função `seed_conversation_topics(_user_id)` cria 12 tópicos padrão
+- `forecast_periods` — `id, user_id, period_type ('month'|'quarter'), period_start, period_end, quota_amount, status ('open'|'closed'), closed_at`
+- `deal_forecasts` — `id, user_id, deal_id, period_id, category ('commit'|'best_case'|'pipeline'|'omitted'), confidence_score int (0-100), forecasted_amount, forecasted_close_date, risk_factors jsonb, health_score int, last_activity_at, slip_count int, notes`. Unique(deal_id, period_id)
+- `forecast_snapshots` — snapshot semanal/diário: `id, user_id, period_id, snapshot_date, commit_total, best_case_total, pipeline_total, weighted_total, deal_count, snapshot_data jsonb`
+- `forecast_categories_history` — log de mudanças de categoria: `id, deal_forecast_id, from_category, to_category, changed_at, reason`
+- RLS por user_id, audit em deal_forecasts. RPC `seed_forecast_period(_user_id, _type)` cria período atual
 
 ### 2. Edge Functions
-- **`conversation-analyzer`**: recebe `interaction_id` → lê `interactions.content` (transcrição) → invoca Lovable AI (gemini-3-flash-preview) com tool calling estruturado para extrair talk ratio, sentiment timeline, tópicos detectados (cruzando com catálogo), objeções, action items, key moments, coaching score + tips → persiste em `conversation_analyses`. Rate limit + JWT
-- **`conversation-coaching-digest`**: gera digest semanal por vendedor — média de coaching score, top objeções não tratadas, padrões de melhoria → invoca IA para narrativa executiva
+- **`forecast-analyzer`**: para cada deal aberto no período → calcula health_score (atividade recente, stage age, talk ratio se houver, score do contato) → invoca IA Lovable (gemini-3-flash-preview) com tool calling para sugerir categoria (commit/best/pipeline) + confidence + risk_factors → upsert em deal_forecasts. Rate limit
+- **`forecast-snapshot-cron`**: diário, captura snapshot do estado atual de todos os períodos abertos para tracking histórico de accuracy
+- **`forecast-narrative`**: gera narrativa executiva do forecast atual (commit vs quota, top deals em risco, recomendações)
 
-### 3. Hooks `src/hooks/useConversationIntel.ts`
-- `useConversationAnalysis(interactionId)`, `useConversationAnalyses(filters)`, `useAnalyzeConversation`
-- `useTopicsCatalog`, `useUpsertTopic`, `useDeleteTopic`, `useSeedTopics`
-- `useCoachingScorecards`, `useUpsertScorecard`
-- `useCoachingMetrics(period, repId?)` — score médio, tendência, top objeções
+### 3. Hooks `src/hooks/useForecasting.ts`
+- `useForecastPeriods`, `useCurrentPeriod`, `useCreatePeriod`, `useClosePeriod`
+- `useDealForecasts(periodId)`, `useUpdateDealForecast` (mudar categoria manualmente), `useAnalyzeForecast`
+- `useForecastSnapshots(periodId)` — gráfico de evolução
+- `useForecastSummary(periodId)` — totais por categoria, attainment %, gap to quota
+- `useForecastNarrative`
 
 ### 4. UI
-**`/conversation-intelligence`** (hub):
-- 4 KPIs: Conversas analisadas (período), Coaching Score médio, Talk Ratio médio do rep, Objeções não tratadas
-- Tabs: "Conversas" (tabela com score badge, sentiment, ações) | "Tópicos" (frequência por categoria) | "Coaching" (cards de tendência por vendedor) | "Setup"
-- Gráfico: barra de top objeções, line de coaching score ao longo do tempo
 
-**`/conversation-intelligence/setup`**: editor de tópicos (CRUD + seed) e scorecards de coaching
+**`/forecasting`** (hub):
+- 4 KPIs: Commit, Best Case, Quota Attainment %, Gap to Quota
+- Seletor de período (mês/trimestre atual + anteriores)
+- Visão "Waterfall": commit → best case → pipeline → quota line
+- Tabs:
+  - "Pipeline por categoria" — colunas drag-and-drop (commit/best/pipeline/omitted) com deals
+  - "Trending" — line chart de snapshots ao longo do período
+  - "Risk" — tabela de deals em risco (low health_score, no activity, slipped)
+  - "Accuracy" — comparação forecast vs actual de períodos fechados
 
-**Widget `ConversationAnalysisCard`**: aparece em `InteracaoDetalhe` mostrando talk ratio, sentiment timeline, tópicos detectados, action items e tips
+**`/forecasting/setup`**: editor de quota por período + configuração de pesos de health score
 
-**Componentes** em `src/components/conversation-intel/`:
-- `CoachingScoreBadge`, `TalkRatioBar`, `SentimentTimeline` (recharts area), `TopicsChart` (donut), `ObjectionsList`, `KeyMomentsTimeline`
-- `ConversationAnalysesTable`, `TopicsEditor`, `ScorecardEditor`, `AnalyzeButton`
+**Widget `DealForecastBadge`**: usado em PipelineKanban card mostrando categoria + confidence
+
+**Componentes** em `src/components/forecasting/`:
+- `ForecastWaterfall` (recharts), `CategoryColumn` (drag-drop kanban), `HealthScoreIndicator`
+- `RiskDealsTable`, `AccuracyChart`, `QuotaProgressBar`, `ForecastNarrativeCard`
+- `PeriodSelector`, `CategoryBadge`, `AnalyzeForecastButton`
 
 ### 5. Integração
-- `InteracaoDetalhe`: botão "Analisar com IA" + render do `ConversationAnalysisCard` quando análise existe
-- Lead Scoring: coaching score alto + sentiment positivo entram como sinal de engagement
-- Win/Loss: objeções recorrentes entram em supporting_data dos insights
+- `PipelineKanban`: cada deal card mostra `DealForecastBadge` quando há forecast no período aberto; click move categoria
+- Win/Loss: ao fechar deal, atualiza `forecast_periods.actual_won_amount` para tracking de accuracy
+- Lead Scoring: contatos primários do deal entram no health_score do forecast
 
 ### 6. Navegação
-- Sidebar: "Conversation Intel" (ícone MessageSquare ou Mic) abaixo de Win/Loss
-- Rotas `/conversation-intelligence` e `/conversation-intelligence/setup` em App.tsx
+- Sidebar: "Forecasting" (ícone TrendingUp ou DollarSign — escolher LineChart pra diferenciar de Win/Loss) abaixo de Conversation Intel
+- Rotas `/forecasting` e `/forecasting/setup` em App.tsx
 
 ### 7. Memória
-- `mem://features/conversation-intelligence` + atualizar índice
+- `mem://features/forecasting-revenue-intelligence` + atualizar índice
 
 ### Não fazer
 - Não criar tabelas products/proposals
-- Não substituir `meeting-summary` existente — coexiste como resumo rápido
-- Não implementar gravação ao vivo nem STT em tempo real (usa transcrição já presente em interactions)
+- Não substituir weighted forecast simples do pipeline_kanban — coexiste
+- Não implementar ML model próprio — usa IA via Lovable Gateway
+- Sem multi-currency neste passo
