@@ -63,6 +63,7 @@ const navSections = [
       { title: "Lead Scoring", url: "/lead-scoring", icon: Gauge },
       { title: "Win/Loss", url: "/win-loss", icon: TrendingUp },
       { title: "Conversation Intel", url: "/conversation-intelligence", icon: Brain },
+      { title: "Playbooks", url: "/playbooks", icon: BookOpen },
       { title: "Forecasting", url: "/forecasting", icon: LineChart },
       { title: "Deal Rooms", url: "/deal-rooms", icon: Briefcase },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
