@@ -4409,6 +4409,110 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_score_threshold_automations: {
+        Row: {
+          action_config: Json
+          action_type: string
+          active: boolean
+          cooldown_hours: number
+          created_at: string
+          description: string | null
+          fired_count: number
+          grade_target: string | null
+          id: string
+          last_fired_at: string | null
+          name: string
+          score_target: number | null
+          trigger_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          active?: boolean
+          cooldown_hours?: number
+          created_at?: string
+          description?: string | null
+          fired_count?: number
+          grade_target?: string | null
+          id?: string
+          last_fired_at?: string | null
+          name: string
+          score_target?: number | null
+          trigger_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          active?: boolean
+          cooldown_hours?: number
+          created_at?: string
+          description?: string | null
+          fired_count?: number
+          grade_target?: string | null
+          id?: string
+          last_fired_at?: string | null
+          name?: string
+          score_target?: number | null
+          trigger_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lead_score_threshold_log: {
+        Row: {
+          action_result: Json
+          automation_id: string
+          contact_id: string
+          fired_at: string
+          from_grade: string | null
+          from_score: number | null
+          id: string
+          success: boolean
+          to_grade: string | null
+          to_score: number | null
+          user_id: string
+        }
+        Insert: {
+          action_result?: Json
+          automation_id: string
+          contact_id: string
+          fired_at?: string
+          from_grade?: string | null
+          from_score?: number | null
+          id?: string
+          success?: boolean
+          to_grade?: string | null
+          to_score?: number | null
+          user_id: string
+        }
+        Update: {
+          action_result?: Json
+          automation_id?: string
+          contact_id?: string
+          fired_at?: string
+          from_grade?: string | null
+          from_score?: number | null
+          id?: string
+          success?: boolean
+          to_grade?: string | null
+          to_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_score_threshold_log_automation_id_fkey"
+            columns: ["automation_id"]
+            isOneToOne: false
+            referencedRelation: "lead_score_threshold_automations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_score_thresholds: {
         Row: {
           created_at: string
