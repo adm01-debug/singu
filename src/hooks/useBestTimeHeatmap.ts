@@ -38,7 +38,7 @@ const HOUR_END = 22;
 interface InteractionRow {
   id: string;
   contact_id: string | null;
-  direction: string | null;
+  initiated_by: string | null;
   created_at: string;
 }
 
@@ -64,18 +64,18 @@ export function useBestTimeHeatmap() {
       const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('interactions')
-        .select('id, contact_id, direction, created_at')
+        .select('id, contact_id, initiated_by, created_at')
         .eq('user_id', user!.id)
         .gte('created_at', since)
         .order('created_at', { ascending: true })
         .limit(5000);
       if (error) throw error;
 
-      const rows = (data || []) as InteractionRow[];
-      const outbound = rows.filter(r => r.direction === 'outbound' && r.contact_id);
+      const rows = (data || []) as unknown as InteractionRow[];
+      const outbound = rows.filter(r => r.initiated_by === 'us' && r.contact_id);
       const inboundByContact = new Map<string, number[]>();
       rows
-        .filter(r => r.direction === 'inbound' && r.contact_id)
+        .filter(r => r.initiated_by === 'them' && r.contact_id)
         .forEach(r => {
           const arr = inboundByContact.get(r.contact_id!) || [];
           arr.push(new Date(r.created_at).getTime());
