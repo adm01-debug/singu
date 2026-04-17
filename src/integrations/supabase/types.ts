@@ -2035,6 +2035,313 @@ export type Database = {
           },
         ]
       }
+      deal_room_activities: {
+        Row: {
+          activity_type: string
+          actor_label: string | null
+          actor_side: string
+          created_at: string
+          id: string
+          payload: Json
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          actor_label?: string | null
+          actor_side: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          actor_label?: string | null
+          actor_side?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_room_activities_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_room_comments: {
+        Row: {
+          author_label: string | null
+          author_side: string
+          body: string
+          created_at: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          author_label?: string | null
+          author_side: string
+          body: string
+          created_at?: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          author_label?: string | null
+          author_side?: string
+          body?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_room_comments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_room_documents: {
+        Row: {
+          created_at: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          last_viewed_at: string | null
+          room_id: string
+          title: string
+          uploaded_by_side: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          room_id: string
+          title: string
+          uploaded_by_side?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          room_id?: string
+          title?: string
+          uploaded_by_side?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_room_documents_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_room_milestones: {
+        Row: {
+          completed_at: string | null
+          completed_by_side: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          owner_side: string
+          room_id: string
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by_side?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          owner_side?: string
+          room_id: string
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by_side?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          owner_side?: string
+          room_id?: string
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_room_milestones_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_room_stakeholders: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          email: string | null
+          engagement_score: number
+          id: string
+          influence: string
+          name: string
+          notes: string | null
+          role_title: string | null
+          room_id: string
+          side: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          engagement_score?: number
+          id?: string
+          influence?: string
+          name: string
+          notes?: string | null
+          role_title?: string | null
+          room_id: string
+          side: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          email?: string | null
+          engagement_score?: number
+          id?: string
+          influence?: string
+          name?: string
+          notes?: string | null
+          role_title?: string | null
+          room_id?: string
+          side?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_room_stakeholders_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "deal_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deal_rooms: {
+        Row: {
+          buyer_view_count: number
+          company_id: string | null
+          created_at: string
+          deal_id: string | null
+          deal_name: string | null
+          deal_value: number | null
+          description: string | null
+          health_analyzed_at: string | null
+          health_recommendations: Json
+          health_score: number | null
+          id: string
+          last_buyer_view_at: string | null
+          share_enabled: boolean
+          share_token: string
+          status: string
+          target_close_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          buyer_view_count?: number
+          company_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          deal_name?: string | null
+          deal_value?: number | null
+          description?: string | null
+          health_analyzed_at?: string | null
+          health_recommendations?: Json
+          health_score?: number | null
+          id?: string
+          last_buyer_view_at?: string | null
+          share_enabled?: boolean
+          share_token?: string
+          status?: string
+          target_close_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          buyer_view_count?: number
+          company_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          deal_name?: string | null
+          deal_value?: number | null
+          description?: string | null
+          health_analyzed_at?: string | null
+          health_recommendations?: Json
+          health_score?: number | null
+          id?: string
+          last_buyer_view_at?: string | null
+          share_enabled?: boolean
+          share_token?: string
+          status?: string
+          target_close_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       decision_criteria: {
         Row: {
           contact_id: string
@@ -7496,7 +7803,25 @@ export type Database = {
       }
     }
     Functions: {
+      buyer_add_comment: {
+        Args: { _body: string; _label?: string; _token: string }
+        Returns: string
+      }
+      buyer_toggle_milestone: {
+        Args: {
+          _done: boolean
+          _label?: string
+          _milestone_id: string
+          _token: string
+        }
+        Returns: boolean
+      }
       execute_readonly_query: { Args: { query_text: string }; Returns: Json }
+      get_buyer_document_path: {
+        Args: { _document_id: string; _token: string }
+        Returns: string
+      }
+      get_deal_room_by_token: { Args: { _token: string }; Returns: Json }
       get_team_member_ids: {
         Args: { _manager_user_id: string }
         Returns: string[]
@@ -7509,6 +7834,10 @@ export type Database = {
         Returns: boolean
       }
       immutable_unaccent: { Args: { "": string }; Returns: string }
+      record_buyer_view: {
+        Args: { _label?: string; _token: string }
+        Returns: boolean
+      }
       reset_daily_lead_counts: { Args: never; Returns: number }
       search_companies_unaccent: {
         Args: { p_limit?: number; p_query: string; p_user_id: string }
@@ -7565,6 +7894,16 @@ export type Database = {
       seed_conversation_topics: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      seed_deal_room: {
+        Args: {
+          _company_id: string
+          _deal_id: string
+          _deal_name: string
+          _title: string
+          _user_id: string
+        }
+        Returns: string
       }
       seed_forecast_period: {
         Args: { _type: string; _user_id: string }
