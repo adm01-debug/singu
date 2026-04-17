@@ -63,7 +63,7 @@ export function useDealSlipRisk(deal: PipelineDeal | null | undefined) {
 
       const { data: interactions } = await supabase
         .from('interactions')
-        .select('sentiment, created_at, direction')
+        .select('sentiment, created_at, initiated_by')
         .eq('contact_id', deal!.contact_id!)
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
@@ -74,7 +74,10 @@ export function useDealSlipRisk(deal: PipelineDeal | null | undefined) {
         sentiment: r.sentiment,
         created_at: r.created_at,
       }));
-      const inbound = list.find((r) => r.direction === 'inbound');
+      const inbound = list.find((r) => {
+        const by = (r.initiated_by ?? '').toLowerCase();
+        return by === 'contact' || by === 'cliente' || by === 'inbound';
+      });
       return {
         recentSentiments,
         lastInboundAt: inbound?.created_at ?? null,

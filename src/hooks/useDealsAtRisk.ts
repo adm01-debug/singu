@@ -51,19 +51,25 @@ export function useDealsAtRisk(limit = 5) {
       const { data: interactions } = contactIds.length > 0
         ? await supabase
             .from('interactions')
-            .select('contact_id, sentiment, created_at, direction')
+            .select('contact_id, sentiment, created_at, initiated_by')
             .in('contact_id', contactIds)
             .gte('created_at', since.toISOString())
             .order('created_at', { ascending: false })
             .limit(500)
-        : { data: [] as Array<{ contact_id: string; sentiment: string | null; created_at: string; direction: string | null }> };
+        : { data: [] as Array<{ contact_id: string; sentiment: string | null; created_at: string; initiated_by: string | null }> };
 
-      const byContact = new Map<string, typeof interactions>();
+      type Row = { contact_id: string; sentiment: string | null; created_at: string; initiated_by: string | null };
+      const byContact = new Map<string, Row[]>();
       (interactions ?? []).forEach((row) => {
         const list = byContact.get(row.contact_id) ?? [];
-        list.push(row);
+        list.push(row as Row);
         byContact.set(row.contact_id, list);
       });
+
+      const isInbound = (by: string | null) => {
+        const v = (by ?? '').toLowerCase();
+        return v === 'contact' || v === 'cliente' || v === 'inbound';
+      };
 
       const results: DealAtRisk[] = open.map((deal) => {
         const stage = deal.pipeline_stage || 'lead';
@@ -78,7 +84,7 @@ export function useDealsAtRisk(limit = 5) {
           : 0;
         const sentimentScore = clamp(((-avgSent + 1) / 2) * 100);
 
-        const inbound = list.find((r) => r.direction === 'inbound');
+        const inbound = list.find((r) => isInbound(r.initiated_by));
         const daysSince = inbound
           ? Math.floor((Date.now() - new Date(inbound.created_at).getTime()) / 86400000)
           : 60;
