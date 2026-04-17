@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useModalHistory } from '@/hooks/useModalHistory';
 import {
-  Building2, Users, MessageSquare, Search, Zap, Mic,
+  Building2, Users, MessageSquare, Search, Zap, Mic, Sparkles,
   LayoutDashboard, CalendarDays, Lightbulb, Bell, Settings,
   UserPlus, Building, MessagesSquare,
 } from 'lucide-react';
@@ -14,9 +14,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryExternalData } from '@/lib/externalData';
+import { useSemanticSearch } from '@/hooks/useSemanticSearch';
 import type { SearchContact } from '@/hooks/useSearchContactsView';
 import { SearchResultGroups } from './global-search/SearchResultGroups';
 import { SearchLocalGroups } from './global-search/SearchLocalGroups';
+import { cn } from '@/lib/utils';
 
 const LazyVoiceOverlay = lazy(() => import('./VoiceSearchOverlayConnected'));
 
@@ -88,6 +90,10 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const setVoiceOpen = useCallback((v: boolean) => { setVoiceOpenInternal(v); onVoiceModeChange?.(v); }, [onVoiceModeChange]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [semanticMode, setSemanticMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('global-search-semantic') === '1'; } catch { return false; }
+  });
+  const semantic = useSemanticSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -117,6 +123,36 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
 
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim() || !user) { setResults({ contacts: [], companies: [], interactions: [] }); return; }
+
+    if (semanticMode) {
+      const sem = await semantic.search(searchQuery.trim(), {
+        entities: ['contacts', 'companies', 'interactions'],
+        limit: 8,
+        silent: true,
+      });
+      setResults({
+        contacts: sem.contacts.map(c => ({
+          id: c.id, type: 'contact' as const,
+          title: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Contato',
+          subtitle: c.role_title || c.email || undefined,
+          meta: c.phone || undefined,
+        })),
+        companies: sem.companies.map(c => ({
+          id: c.id, type: 'company' as const,
+          title: toTitleCase(c.name),
+          subtitle: c.industry || undefined,
+          meta: c.city && c.state ? `${c.city}, ${c.state}` : undefined,
+        })),
+        interactions: sem.interactions.map(i => ({
+          id: i.id, type: 'interaction' as const,
+          title: i.title || 'Interação',
+          subtitle: i.type,
+          meta: new Date(i.created_at).toLocaleDateString('pt-BR'),
+        })),
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
@@ -141,10 +177,18 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         interactions: interactionsResponse.data?.map(i => ({ id: i.id, type: 'interaction' as const, title: i.title, subtitle: i.type, meta: new Date(i.created_at).toLocaleDateString('pt-BR') })) || [],
       });
     } catch (error) { logger.error('Search error:', error); toast.error('Não foi possível completar a busca agora.'); setResults({ contacts: [], companies: [], interactions: [] }); } finally { setIsLoading(false); }
-  }, [user]);
+  }, [user, semanticMode, semantic]);
 
-  useEffect(() => { const timer = setTimeout(() => performSearch(query), 300); return () => clearTimeout(timer); }, [query, performSearch]);
-  useEffect(() => { if (!open) { setQuery(''); setResults({ contacts: [], companies: [], interactions: [] }); } }, [open]);
+  useEffect(() => { const timer = setTimeout(() => performSearch(query), semanticMode ? 450 : 300); return () => clearTimeout(timer); }, [query, performSearch, semanticMode]);
+  useEffect(() => { if (!open) { setQuery(''); setResults({ contacts: [], companies: [], interactions: [] }); semantic.reset(); } }, [open, semantic]);
+
+  const toggleSemantic = useCallback(() => {
+    setSemanticMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem('global-search-semantic', next ? '1' : '0'); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   const handleNavigate = (path: string, label: string) => { onOpenChange(false); addRecentItem({ id: path, type: 'page', title: label, path }); navigate(path); };
   const handleSelect = (result: SearchResult) => { onOpenChange(false); const path = result.type === 'contact' ? `/contatos/${result.id}` : result.type === 'company' ? `/empresas/${result.id}` : '/interacoes'; addRecentItem({ id: result.id, type: result.type, title: result.title, path }); navigate(path); };
