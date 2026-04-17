@@ -109,7 +109,7 @@ export default function MarketingFormDetail() {
           <Card>
             <CardHeader><CardTitle className="text-sm">Preview</CardTitle></CardHeader>
             <CardContent>
-              <PublicFormRenderer fields={draft.fields} onSubmit={() => toast.info('Preview — submissão desativada aqui')} />
+              <PublicFormRenderer fields={draft.fields} onSubmit={async () => { toast.info('Preview — submissão desativada aqui'); }} />
             </CardContent>
           </Card>
 

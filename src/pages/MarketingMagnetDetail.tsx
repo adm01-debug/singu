@@ -111,7 +111,7 @@ export default function MarketingMagnetDetail() {
               <div key={d.id} className="p-2 rounded border border-border/60 text-xs space-y-0.5">
                 <div className="flex justify-between"><span className="font-medium">{d.email ?? 'sem email'}</span>
                   <span className="text-muted-foreground">{new Date(d.downloaded_at).toLocaleString('pt-BR')}</span></div>
-                {d.utm_source && <div className="text-[10px] text-muted-foreground font-mono">utm: {d.utm_source}/{d.utm_medium ?? '—'}</div>}
+                {d.utm_source && <div className="text-[10px] text-muted-foreground font-mono">utm: {d.utm_source}</div>}
               </div>
             ))}
           </CardContent>
