@@ -146,6 +146,8 @@ const PublicDealRoomPage = lazy(() => import("./pages/PublicDealRoom"));
 const PlaybooksPage = lazy(() => import("./pages/Playbooks"));
 const PlaybookDetailPage = lazy(() => import("./pages/PlaybookDetail"));
 const BattleCardDetailPage = lazy(() => import("./pages/BattleCardDetail"));
+const CustomerSuccessPage = lazy(() => import("./pages/CustomerSuccess"));
+const CustomerSuccessAccountPage = lazy(() => import("./pages/CustomerSuccessAccount"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -458,6 +460,12 @@ const AnimatedRoutes = () => {
         <RequireAuth>
           <LazyPage><RevOpsPage /></LazyPage>
         </RequireAuth>
+      } />
+      <Route path="/customer-success" element={
+        <RequireAuth><LazyPage><CustomerSuccessPage /></LazyPage></RequireAuth>
+      } />
+      <Route path="/customer-success/account/:id" element={
+        <RequireAuth><LazyPage><CustomerSuccessAccountPage /></LazyPage></RequireAuth>
       } />
       <Route path="/deal-rooms" element={
         <RequireAuth>
