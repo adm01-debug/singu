@@ -21,6 +21,7 @@ import { useProactiveIntelligence } from '@/hooks/useProactiveIntelligence';
 import { LuxButton } from '@/components/lux/LuxButton';
 import { LuxIntelligencePanel } from '@/components/lux/LuxIntelligencePanel';
 import { ProactiveIntelligencePanel } from '@/components/proactive-intelligence/ProactiveIntelligencePanel';
+import { ContactTouchpointsTab } from '@/components/marketing/ContactTouchpointsTab';
 import {
   ContactDetailHeader,
   ContactOverviewTab,
@@ -177,6 +178,7 @@ const ContatoDetalhe = () => {
             <TabsTrigger value="inteligencia" className="text-xs sm:text-sm">Inteligência</TabsTrigger>
             <TabsTrigger value="comercial" className="text-xs sm:text-sm">Comercial</TabsTrigger>
             <TabsTrigger value="lux" className="text-xs sm:text-sm">Lux Intelligence</TabsTrigger>
+            <TabsTrigger value="touchpoints" className="text-xs sm:text-sm">Touchpoints</TabsTrigger>
           </TabsList>
 
           <TabsContent value="resumo">
@@ -267,6 +269,12 @@ const ContatoDetalhe = () => {
                   />
                 </CardContent>
               </Card>
+            </DashboardErrorBoundary>
+          </TabsContent>
+
+          <TabsContent value="touchpoints">
+            <DashboardErrorBoundary sectionName="Touchpoints">
+              <ContactTouchpointsTab contactId={contact.id} />
             </DashboardErrorBoundary>
           </TabsContent>
         </Tabs>
