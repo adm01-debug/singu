@@ -58,7 +58,7 @@ export function useAttribution(dealId: string | undefined, model: AttributionMod
         _deal_value: dealValue,
       });
       if (error) throw error;
-      return data as { model: string; allocations: Allocation[]; total_value: number; touchpoints_count: number };
+      return data as unknown as { model: string; allocations: Allocation[]; total_value: number; touchpoints_count: number };
     },
     staleTime: 30_000,
   });
