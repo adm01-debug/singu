@@ -8,6 +8,8 @@ import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
 import { SlowQueryIndicator } from '@/components/feedback/SlowQueryIndicator';
 import { AskCrmChat } from '@/components/ask-crm/AskCrmChat';
+import { AIEmailComposer } from '@/components/ai/AIEmailComposer';
+import { AIEmailComposerTrigger } from '@/components/ai/AIEmailComposerTrigger';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
 import { OnboardingTourWrapper } from '@/components/onboarding/OnboardingTourWrapper';
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
@@ -150,6 +152,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
             >
               <Mic className="h-4 w-4" />
             </button>
+            <AIEmailComposerTrigger />
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -215,6 +218,7 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       <KeyboardShortcutsCheatsheet />
       <SlowQueryIndicator />
       <AskCrmChat />
+      <AIEmailComposer />
       <div className="md:hidden">
         <ScrollToTopButton />
       </div>

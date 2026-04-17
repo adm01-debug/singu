@@ -10,6 +10,7 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { formatContactName, pluralize } from '@/lib/formatters';
 import { PageHeader } from '@/components/navigation/PageHeader';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { AIEmailComposerTrigger } from '@/components/ai/AIEmailComposerTrigger';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -134,6 +135,7 @@ const ContatoDetalhe = () => {
           title={formatContactName(contact.first_name, contact.last_name)}
           actions={
             <div className="flex items-center gap-2">
+              <AIEmailComposerTrigger variant="pill" prefilledContactId={contact.id} label="Email com IA" />
               <ValidateAllButton
                 contactId={contact.id}
                 fallbackEmail={contact.email}
