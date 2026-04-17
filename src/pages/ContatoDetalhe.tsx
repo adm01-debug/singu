@@ -38,6 +38,7 @@ import { ValidateAllButton } from '@/components/enrichment/ValidateAllButton';
 import { PeopleIntelTimeline } from '@/components/enrichment/PeopleIntelTimeline';
 import { ContactEmailThreadsSection } from '@/components/contact-detail/ContactEmailThreadsSection';
 import { SentimentTrendChart } from '@/components/contact-detail/SentimentTrendChart';
+import { NextBestActionCard } from '@/components/contact-detail/NextBestActionCard';
 
 const ContactTimelineWidget = lazy(() => import('@/components/contact-detail/ContactTimelineWidget'));
 const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
@@ -197,6 +198,10 @@ const ContatoDetalhe = () => {
           <TabsContent value="resumo">
             <DashboardErrorBoundary sectionName="Resumo">
               <div className="space-y-4">
+                <NextBestActionCard
+                  contactId={contact.id}
+                  contactName={formatContactName(contact.first_name, contact.last_name)}
+                />
                 <ContactOverviewTab
                   contact={contact}
                   company={company}
