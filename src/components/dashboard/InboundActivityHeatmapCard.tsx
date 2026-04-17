@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Button } from '@/components/ui/button';
 import { Inbox, Flame, MessageCircle, Mail, Phone, Sparkles, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useInboundActivityHeatmap, INBOUND_HEATMAP_CONSTANTS, type InboundChannel } from '@/hooks/useInboundActivityHeatmap';
@@ -59,24 +59,31 @@ export function InboundActivityHeatmapCard() {
               Volume de interações iniciadas pelos clientes (últimos 90d)
             </CardDescription>
           </div>
-          <ToggleGroup
-            type="single"
-            size="sm"
-            value={channel}
-            onValueChange={(v) => v && setChannel(v as InboundChannel)}
-            className="shrink-0"
-          >
-            <ToggleGroupItem value="all" className="text-[10px] h-7 px-2">Todos</ToggleGroupItem>
-            <ToggleGroupItem value="whatsapp" className="text-[10px] h-7 px-2" aria-label="WhatsApp">
-              <MessageCircle className="w-3 h-3" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="email" className="text-[10px] h-7 px-2" aria-label="Email">
-              <Mail className="w-3 h-3" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="call" className="text-[10px] h-7 px-2" aria-label="Ligações">
-              <Phone className="w-3 h-3" />
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className="flex items-center gap-1 shrink-0 rounded-md border border-border/60 p-0.5">
+            {([
+              { v: 'all', label: 'Todos', icon: null },
+              { v: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+              { v: 'email', label: 'Email', icon: Mail },
+              { v: 'call', label: 'Call', icon: Phone },
+            ] as const).map(opt => {
+              const Icon = opt.icon;
+              const active = channel === opt.v;
+              return (
+                <Button
+                  key={opt.v}
+                  type="button"
+                  size="sm"
+                  variant={active ? 'secondary' : 'ghost'}
+                  className="h-6 px-2 text-[10px] gap-1"
+                  onClick={() => setChannel(opt.v as InboundChannel)}
+                  aria-label={opt.label}
+                  aria-pressed={active}
+                >
+                  {Icon ? <Icon className="w-3 h-3" /> : opt.label}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </CardHeader>
 

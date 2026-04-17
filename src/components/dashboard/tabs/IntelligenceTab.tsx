@@ -5,6 +5,7 @@ import { Typography } from '@/components/ui/typography';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
+import { InboundActivityHeatmapCard } from '@/components/dashboard/InboundActivityHeatmapCard';
 import { DealsAtRiskCard } from '@/components/dashboard/DealsAtRiskCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
@@ -67,14 +68,19 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
         </div>
       </DashboardErrorBoundary>
 
-      <DashboardErrorBoundary sectionName="Melhor Hora para Prospectar">
+      <DashboardErrorBoundary sectionName="Mapas de Calor de Timing">
         <div className="flex items-center gap-2 mb-4">
           <Clock className="w-5 h-5 text-primary" aria-hidden="true" />
-          <Typography variant="h4" gradient>Timing de Prospecção</Typography>
+          <Typography variant="h4" gradient>Timing de Prospecção & Inbound</Typography>
         </div>
-        <LazySection fallbackVariant="chart" fallbackHeight="h-64">
-          <BestTimeHeatmapCard />
-        </LazySection>
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+            <BestTimeHeatmapCard />
+          </LazySection>
+          <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+            <InboundActivityHeatmapCard />
+          </LazySection>
+        </div>
       </DashboardErrorBoundary>
 
       <DashboardErrorBoundary sectionName="Deals em Risco">
