@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Mail, Copy, Check, Plus, Trash2 } from 'lucide-react';
+import { Mail, Copy, Check, Plus, Trash2, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { ConfidenceBadge, PrimaryBadge, VerifiedBadge, SourceBadge } from './sha
 import { EnrichmentBadge } from '@/components/enrichment/EnrichmentBadge';
 import { useContactValidationStatus } from '@/hooks/useContactValidationStatus';
 import { useEmailVerifier } from '@/hooks/useEnrichmentSuite';
+import { EmailFinderDialog } from '@/components/enrichment/EmailFinderDialog';
 import { ShieldCheck } from 'lucide-react';
 
 const EMAIL_TYPES = ['pessoal', 'profissional', 'corporativo', 'outro'];
