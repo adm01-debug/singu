@@ -1,54 +1,45 @@
 
-#11 entregue. Próximo: #12 — Deal Slip Risk (alerta IA quando deals começam a "esfriar").
+#12 entregue. Próximo: #13 — Forecast Confidence por deal.
 
-## Melhoria #12: Deal Slip Risk Detector
+## Melhoria #13: Forecast Confidence Score
 
 ### Escopo
-Sistema que detecta deals em risco de "esfriar" (slip) baseado em sinais combinados: dias parados no stage, queda de sentiment, ausência de interações recentes, idade vs benchmark do stage. Mostra badge de risco no card do Pipeline + drawer com explicação detalhada e ações sugeridas.
+Score 0-100 de confiança de fechamento por deal combinando: probabilidade do stage, slip risk invertido, momentum (interações últimos 14d vs 14d anteriores), idade vs ciclo médio, valor relativo. Exibe como badge no DealCard + coluna de forecast ponderado refinado no Pipeline.
 
-### Cálculo de risco (client-side, sem edge function)
-Score 0-100 ponderado:
-- **Stagnation (40%)**: dias parados no stage atual / benchmark esperado por stage
-- **Sentiment decay (25%)**: tendência negativa nas últimas 5 interações
-- **Engagement gap (25%)**: dias sem interação inbound do contato
-- **Age vs benchmark (10%)**: idade total do deal vs ciclo médio
+### Cálculo (client-side, sem edge function)
+Confidence 0-100 ponderado:
+- **Stage probability (35%)**: probabilidade base do stage (lead=10%, qualif=25%, proposta=50%, negoc=70%, fechamento=90%)
+- **Slip risk invertido (30%)**: `100 - slipScore` (reusa `useDealSlipRisk`)
+- **Momentum (20%)**: razão (interações 14d recentes / 14d anteriores), normalizado 0-100
+- **Velocity fit (15%)**: deal dentro do ciclo médio (60d) → alto, acima → baixo
 
-Classificação: 0-30 saudável (verde), 31-60 atenção (amarelo), 61-100 risco alto (vermelho).
-
-Benchmarks por stage hardcoded (lead=7d, qualified=14d, proposal=10d, negotiation=21d, etc.).
+Classificação: 0-40 baixa, 41-70 média, 71-100 alta.
 
 ### Hook
-- `useDealSlipRisk(deal)` — calcula localmente baseado em deal + interações + stage; retorna `{ score, level, factors[], recommendations[] }`
-- `useDealsAtRisk()` — agrega todos os deals abertos do user, retorna ordenados por risco
+- `useDealForecastConfidence(deal)` — combina slip risk + momentum + stage; retorna `{ confidence, level, expectedCloseValue, factors[] }`
+- `expectedCloseValue = deal.valor * (confidence/100)`
 
 ### UI
-- **`DealRiskBadge.tsx`**: badge compacto (verde/amarelo/vermelho) com tooltip mostrando score
-- **`DealRiskDrawer.tsx`**: drawer com breakdown dos 4 fatores (progress bars), recomendações textuais, botão "Gerar plano de recuperação IA" (opcional, futuro)
-- **`DealsAtRiskCard.tsx`**: card no Dashboard listando top 5 deals em risco com link direto
+- **`DealConfidenceBadge.tsx`**: badge compacto (cinza/azul/verde) ao lado do valor no DealCard
+- **`ForecastConfidencePanel.tsx`**: painel no Pipeline mostrando soma de `expectedCloseValue` agregada por nível (Alta/Média/Baixa) com barras horizontais
 
 ### Integração
-- `Pipeline.tsx`: badge no canto superior direito de cada `DealCard` (Kanban)
-- `IntelligenceTab.tsx` do Dashboard: card `DealsAtRiskCard`
-- Click no badge → abre drawer
+- `Pipeline.tsx`: adicionar badge no DealCard (próximo ao DealRiskBadge) + painel no header acima das colunas
 
 ### Arquivos
-- Novo: `src/hooks/useDealSlipRisk.ts`
-- Novo: `src/hooks/useDealsAtRisk.ts`
-- Novo: `src/components/pipeline/DealRiskBadge.tsx`
-- Novo: `src/components/pipeline/DealRiskDrawer.tsx`
-- Novo: `src/components/dashboard/DealsAtRiskCard.tsx`
-- Editar: card do deal no Pipeline (localizar componente exato)
-- Editar: `src/components/dashboard/tabs/IntelligenceTab.tsx`
-- Nova memória: `mem://features/deal-slip-risk.md`
+- Novo: `src/hooks/useDealForecastConfidence.ts`
+- Novo: `src/components/pipeline/DealConfidenceBadge.tsx`
+- Novo: `src/components/pipeline/ForecastConfidencePanel.tsx`
+- Editar: `src/pages/Pipeline.tsx` (DealCard + header)
+- Nova memória: `mem://features/forecast-confidence.md`
 
 ### Validação E2E
 - Build limpo
-- Deal parado >benchmark → badge vermelho
-- Deal recente saudável → badge verde
-- Drawer mostra 4 fatores com progress bars
-- Card no Dashboard lista top 5 em risco
+- Deal em negociação saudável → confidence alta (verde)
+- Deal estagnado → confidence baixa (cinza)
+- Painel agrega valores por nível corretamente
 
 ### Restrições
-≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR, 100% client-side (sem nova edge function nem migration).
+≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR, 100% client-side.
 
-Após #12 → #13 (forecast confidence — IA que avalia probabilidade de fechamento por deal combinando stage, slip risk, momentum).
+Após #13 → #14 (win/loss analysis — IA agrega motivos de deals ganhos/perdidos e sugere padrões).
