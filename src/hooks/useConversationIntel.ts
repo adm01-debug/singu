@@ -58,7 +58,7 @@ export function useConversationAnalysis(interactionId: string | undefined) {
         .eq("interaction_id", interactionId!)
         .maybeSingle();
       if (error) throw error;
-      return data as ConversationAnalysis | null;
+      return data as unknown as ConversationAnalysis | null;
     },
   });
 }
@@ -186,7 +186,7 @@ export function useCoachingScorecards() {
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as CoachingScorecard[];
+      return (data ?? []) as unknown as CoachingScorecard[];
     },
   });
 }
