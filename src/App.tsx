@@ -98,6 +98,11 @@ const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
 const Nurturing = lazy(() => import("./pages/Nurturing"));
 const LandingPagesPage = lazy(() => import("./pages/LandingPages"));
 const PublicLandingPage = lazy(() => import("./pages/PublicLandingPage"));
+const MarketingHub = lazy(() => import("./pages/MarketingHub"));
+const MarketingFormDetail = lazy(() => import("./pages/MarketingFormDetail"));
+const MarketingMagnetDetail = lazy(() => import("./pages/MarketingMagnetDetail"));
+const PublicForm = lazy(() => import("./pages/PublicForm"));
+const PublicLeadMagnet = lazy(() => import("./pages/PublicLeadMagnet"));
 const AdminTelemetria = lazy(() => import("./pages/AdminTelemetria"));
 const AdminSchemaDrift = lazy(() => import("./pages/AdminSchemaDrift"));
 const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
@@ -264,6 +269,8 @@ const AnimatedRoutes = () => {
       <Route path="/auth" element={<LazyPage><Auth /></LazyPage>} />
       <Route path="/survey/:token" element={<LazyPage><PublicSurvey /></LazyPage>} />
       <Route path="/lp/:slug" element={<LazyPage><PublicLandingPage /></LazyPage>} />
+      <Route path="/f/:slug" element={<LazyPage><PublicForm /></LazyPage>} />
+      <Route path="/lm/:slug" element={<LazyPage><PublicLeadMagnet /></LazyPage>} />
       <Route path="/onboarding" element={
         <RequireAuth>
           <LazyPage><Onboarding /></LazyPage>
@@ -529,6 +536,21 @@ const AnimatedRoutes = () => {
       <Route path="/landing-pages" element={
         <RequireAuth>
           <LazyPage><LandingPagesPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/marketing" element={
+        <RequireAuth>
+          <LazyPage><MarketingHub /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/marketing/forms/:id" element={
+        <RequireAuth>
+          <LazyPage><MarketingFormDetail /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/marketing/lead-magnets/:id" element={
+        <RequireAuth>
+          <LazyPage><MarketingMagnetDetail /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/deduplicacao" element={
