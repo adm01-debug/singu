@@ -99,6 +99,9 @@ export function ContactDataTab({ contact }: Props) {
         <EmailsCard
           emails={emails}
           contactId={contact.id}
+          contactFirstName={contact.first_name ?? undefined}
+          contactLastName={contact.last_name ?? undefined}
+          contactDomain={contact.email?.split('@')[1] ?? undefined}
           copiedField={copiedField}
           onCopy={copyToClipboard}
           onAdd={(d) => emailMutations.add.mutate(d)}
