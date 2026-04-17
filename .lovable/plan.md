@@ -1,44 +1,42 @@
 
-O usuário quer execução autônoma sequencial até 10/10. Preciso definir QUAL melhoria começar agora. Olhando o estado atual: acabamos de entregar a Suíte de Enriquecimento (gaps 6 e 7 da lista de Data Enrichment & Intelligence). Os 5 itens "já cobertos" foram apenas validados conceitualmente, mas há gaps reais de UX/integração que merecem virar a próxima melhoria.
+Continuando a sequência. Melhoria #1 entregue (badges + Validar tudo + People Intel timeline). Agora #2.
 
-Análise rápida do que falta para 10/10 no domínio Enrichment + integração:
+## Melhoria #2: Auto-validação on insert + revalidação periódica
 
-1. **Badges de validação inline em ContatoDetalhe** — hoje a suíte só vive em `/enrichment`. Validação não aparece ao lado do email/phone do contato.
-2. **Botão "Validar tudo" no contato** — dispara verify+phone em paralelo automaticamente.
-3. **Accordion "People Intelligence" no ContatoDetalhe** — timeline já existe mas não está plugada no detalhe.
-4. **Auto-validação on insert** — trigger DB que enfileira validação ao criar/editar email/phone do contato.
-5. **pg_cron de revalidação** — re-verifica emails com >30 dias.
-6. **Coluna best_email no email_finder UI** — botão "usar este email" que cria/atualiza email no contato.
+### Schema (migração)
+- Trigger `trg_auto_validate_contact_email` em `contacts` (AFTER INSERT/UPDATE de `email`): enfileira em nova tabela `validation_queue` (id, kind enum 'email'|'phone', value, contact_id, user_id, status enum 'pending'|'processing'|'done'|'error', attempts, last_error, created_at, processed_at) com RLS própria.
+- Trigger análogo `trg_auto_validate_contact_phone` para `phone`.
+- Triggers idênticos em `contact_emails` e `contact_phones` (tabelas relacionais externas espelhadas localmente, se existirem; se não, somente `contacts`).
+- Índices em `(status, created_at)` e `(contact_id)`.
 
-Vou executar UMA melhoria por vez começando pela de maior impacto visível: **integração da suíte no ContatoDetalhe** (itens 1+2+3 juntos formam uma unidade coerente de UX).
+### Edge function `validation-queue-worker`
+- Padrão Deno.serve + JWT service-role + rate-limit + Zod
+- Pega lote de até 50 itens `pending` ordenados por `created_at`, marca `processing`, despacha para `email-verifier` ou `phone-validator` conforme `kind`, grava resultado, marca `done`/`error` (até 3 tentativas, backoff via `attempts`).
 
-## Melhoria #1: Integrar Suíte de Enriquecimento no ContatoDetalhe
+### pg_cron
+- Job 1: `*/5 * * * *` (5min) → invoca `validation-queue-worker` para drenar fila.
+- Job 2: `0 4 * * *` (04:00 UTC) → re-enfileira emails com `verified_at < now() - 30d`.
+- Job 3: `30 4 * * *` (04:30 UTC) → re-enfileira phones com `validated_at < now() - 90d`.
+- Habilitar `pg_cron` + `pg_net` se ainda não estiverem.
 
-### Escopo
-- Adicionar `EnrichmentBadges` ao lado de cada email/phone listado em `ContactDataTab` (PhonesCard, EmailsCard) mostrando status colorido + score via última verificação
-- Botão "Validar tudo" no header do ContatoDetalhe que dispara `email-verifier` + `phone-validator` em paralelo para todos os contatos do registro
-- Nova aba/accordion "Intelligence" no ContatoDetalhe com `PeopleIntelTimeline` daquele contato
-- Hook auxiliar `useContactValidationStatus(contactId)` que retorna o último status por email/phone
+### UI mínima
+- Em `/enrichment`, novo card "Fila de validação" mostrando `pending` / `processing` / `done` / `error` das últimas 24h via hook `useValidationQueueStats` (TanStack Query, refetch 30s).
+- Botão admin "Processar fila agora" (só `useIsAdmin`) que invoca o worker manualmente.
 
-### Arquivos
-- Novo: `src/components/enrichment/EnrichmentBadge.tsx` (badge compacto reutilizável)
-- Novo: `src/components/enrichment/ValidateAllButton.tsx` (botão no header)
-- Novo: `src/hooks/useContactValidationStatus.ts`
-- Editar: `src/components/contact-detail/data-tab/PhonesCard.tsx` — render badge ao lado do número
-- Editar: `src/components/contact-detail/data-tab/EmailsCard.tsx` — render badge ao lado do email
-- Editar: `src/pages/ContatoDetalhe.tsx` — botão Validar tudo no header + accordion People Intel
-- Atualizar memória `mem://features/email-phone-validation-suite` mencionando integração
+### Hooks
+- `useValidationQueueStats()` — agregação por status.
+- `useTriggerQueueWorker()` — mutation admin.
 
-### Validação
-- Abrir um contato com 1 email + 1 phone
-- Clicar "Validar tudo" → 2 toasts, badges aparecem
-- Conferir registros em `email_verifications` e `phone_validations` via SQL
-- Atualizar role_title do contato → conferir entry em `people_intelligence_events` aparece no accordion
+### Validação E2E
+- Criar contato com email novo via UI → conferir entry `pending` em `validation_queue` (SQL).
+- Aguardar 5min ou clicar "Processar fila agora" → conferir status muda para `done` e `email_verifications` recebe registro.
+- Editar email do contato → nova entry enfileirada.
+- Forçar `verified_at` antigo via SQL e rodar job manualmente → conferir reverificação.
+- Confirmar cron jobs ativos via `cron.job` table.
 
 ### Restrições
-- Mantenho ≤400 linhas por arquivo
-- Sem `any`, sem `useEffect` para fetch
-- Português em toda UI/textos
-- Não toco em ABM, Lead Scoring, Intent ou outros módulos
+- ≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR.
+- Não tocar em ABM/Lead Scoring/Intent.
+- Reutilizar edge functions `email-verifier` e `phone-validator` já existentes (sem recriar).
 
-Após concluir #1 e validar, sigo automaticamente para #2 (auto-validação on insert via trigger DB) e assim por diante até esgotar a lista.
+Após #2 validada, sigo automaticamente para #3 (botão "Usar este email" no EmailFinder que cria/atualiza email no contato).
