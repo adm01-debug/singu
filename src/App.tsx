@@ -137,6 +137,9 @@ const ForecastingSetupPage = lazy(() => import("./pages/ForecastingSetup"));
 const DealRoomsPage = lazy(() => import("./pages/DealRooms"));
 const DealRoomDetailPage = lazy(() => import("./pages/DealRoomDetail"));
 const PublicDealRoomPage = lazy(() => import("./pages/PublicDealRoom"));
+const PlaybooksPage = lazy(() => import("./pages/Playbooks"));
+const PlaybookDetailPage = lazy(() => import("./pages/PlaybookDetail"));
+const BattleCardDetailPage = lazy(() => import("./pages/BattleCardDetail"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -454,6 +457,15 @@ const AnimatedRoutes = () => {
         </RequireAuth>
       } />
       <Route path="/dr/:token" element={<LazyPage><PublicDealRoomPage /></LazyPage>} />
+      <Route path="/playbooks" element={
+        <RequireAuth><LazyPage><PlaybooksPage /></LazyPage></RequireAuth>
+      } />
+      <Route path="/playbooks/battle-cards/:id" element={
+        <RequireAuth><LazyPage><BattleCardDetailPage /></LazyPage></RequireAuth>
+      } />
+      <Route path="/playbooks/:id" element={
+        <RequireAuth><LazyPage><PlaybookDetailPage /></LazyPage></RequireAuth>
+      } />
       <Route path="/rodizio" element={
         <RequireAuth>
           <LazyPage><Rodizio /></LazyPage>

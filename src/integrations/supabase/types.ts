@@ -661,6 +661,66 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_cards: {
+        Row: {
+          active: boolean
+          competitor_logo_url: string | null
+          competitor_name: string
+          created_at: string
+          id: string
+          landmines: string[]
+          last_updated_by: string | null
+          our_strengths: Json
+          pricing_comparison: string | null
+          proof_points: Json
+          summary: string | null
+          their_strengths: Json
+          updated_at: string
+          user_id: string
+          version: number
+          weaknesses: Json
+          win_themes: string[]
+        }
+        Insert: {
+          active?: boolean
+          competitor_logo_url?: string | null
+          competitor_name: string
+          created_at?: string
+          id?: string
+          landmines?: string[]
+          last_updated_by?: string | null
+          our_strengths?: Json
+          pricing_comparison?: string | null
+          proof_points?: Json
+          summary?: string | null
+          their_strengths?: Json
+          updated_at?: string
+          user_id: string
+          version?: number
+          weaknesses?: Json
+          win_themes?: string[]
+        }
+        Update: {
+          active?: boolean
+          competitor_logo_url?: string | null
+          competitor_name?: string
+          created_at?: string
+          id?: string
+          landmines?: string[]
+          last_updated_by?: string | null
+          our_strengths?: Json
+          pricing_comparison?: string | null
+          proof_points?: Json
+          summary?: string | null
+          their_strengths?: Json
+          updated_at?: string
+          user_id?: string
+          version?: number
+          weaknesses?: Json
+          win_themes?: string[]
+        }
+        Relationships: []
+      }
       campaign_recipients: {
         Row: {
           campaign_id: string
@@ -5154,6 +5214,57 @@ export type Database = {
         }
         Relationships: []
       }
+      playbook_usage_log: {
+        Row: {
+          action: string
+          battle_card_id: string | null
+          contact_id: string | null
+          context: Json | null
+          deal_id: string | null
+          id: string
+          opened_at: string
+          playbook_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          battle_card_id?: string | null
+          contact_id?: string | null
+          context?: Json | null
+          deal_id?: string | null
+          id?: string
+          opened_at?: string
+          playbook_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          battle_card_id?: string | null
+          contact_id?: string | null
+          context?: Json | null
+          deal_id?: string | null
+          id?: string
+          opened_at?: string
+          playbook_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_usage_log_battle_card_id_fkey"
+            columns: ["battle_card_id"]
+            isOneToOne: false
+            referencedRelation: "battle_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_usage_log_playbook_id_fkey"
+            columns: ["playbook_id"]
+            isOneToOne: false
+            referencedRelation: "sales_playbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -5704,6 +5815,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sales_playbooks: {
+        Row: {
+          active: boolean
+          content: Json
+          created_at: string
+          description: string | null
+          id: string
+          industry_target: string | null
+          name: string
+          persona_target: string | null
+          scenario: string
+          stage_target: string | null
+          tags: string[]
+          updated_at: string
+          usage_count: number
+          user_id: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          content?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry_target?: string | null
+          name: string
+          persona_target?: string | null
+          scenario: string
+          stage_target?: string | null
+          tags?: string[]
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          content?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          industry_target?: string | null
+          name?: string
+          persona_target?: string | null
+          scenario?: string
+          stage_target?: string | null
+          tags?: string[]
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
       }
       sales_team_members: {
         Row: {
@@ -8017,6 +8182,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      seed_playbook_defaults: { Args: { _user_id: string }; Returns: undefined }
       seed_win_loss_defaults: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
