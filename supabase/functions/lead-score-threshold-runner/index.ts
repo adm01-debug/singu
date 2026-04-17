@@ -207,12 +207,8 @@ Deno.serve(async (req: Request) => {
     if (success) {
       await supabase.from('lead_score_threshold_automations').update({
         last_fired_at: new Date().toISOString(),
-        fired_count: (a as unknown as { fired_count: number }).fired_count
-          ? undefined
-          : undefined,
+        fired_count: ((a as unknown as { fired_count?: number }).fired_count ?? 0) + 1,
       }).eq('id', a.id);
-      // increment via raw sql for atomicity
-      await supabase.rpc('increment_lsta_fired', { _id: a.id }).then(() => {}, () => {});
     }
     fired.push({ automation_id: a.id, name: a.name, success });
   }
