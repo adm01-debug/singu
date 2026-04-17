@@ -7,6 +7,7 @@ import { PhoneValidatorWidget } from "@/components/enrichment/PhoneValidatorWidg
 import { PeopleIntelTimeline } from "@/components/enrichment/PeopleIntelTimeline";
 import { ValidationQueueCard } from "@/components/enrichment/ValidationQueueCard";
 import { BulkRevalidateCard } from "@/components/enrichment/BulkRevalidateCard";
+import { EnrichmentCoverageCard } from "@/components/enrichment/EnrichmentCoverageCard";
 import { useEmailVerifications, usePhoneValidations } from "@/hooks/useEnrichmentSuite";
 
 export default function Enrichment() {
@@ -50,11 +51,9 @@ export default function Enrichment() {
           <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2"><Search className="h-3.5 w-3.5" />Custo</CardTitle></CardHeader>
           <CardContent><p className="text-2xl font-semibold text-success">R$ 0</p><p className="text-xs text-muted-foreground">100% server-side, sem APIs pagas</p></CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-xs flex items-center gap-2"><Sparkles className="h-3.5 w-3.5" />Cobertura</CardTitle></CardHeader>
-          <CardContent><p className="text-2xl font-semibold">7/7</p><p className="text-xs text-muted-foreground">Itens da suíte ativos</p></CardContent>
-        </Card>
       </section>
+
+      <EnrichmentCoverageCard />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <div id="validation-queue-card"><ValidationQueueCard /></div>

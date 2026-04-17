@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,22 +62,17 @@ export function BulkRevalidateCard() {
         {/* Tipo */}
         <div className="space-y-1.5">
           <Label className="text-xs">Tipo de validação</Label>
-          <ToggleGroup
-            type="single"
-            value={kind}
-            onValueChange={(v) => v && setKind(v as BulkRevalidateKind)}
-            className="justify-start"
-          >
-            <ToggleGroupItem value="email" size="sm" className="gap-1.5">
+          <div className="flex gap-1.5">
+            <Button size="sm" variant={kind === "email" ? "default" : "outline"} onClick={() => setKind("email")} className="gap-1.5 flex-1">
               <Mail className="h-3.5 w-3.5" /> Emails
-            </ToggleGroupItem>
-            <ToggleGroupItem value="phone" size="sm" className="gap-1.5">
+            </Button>
+            <Button size="sm" variant={kind === "phone" ? "default" : "outline"} onClick={() => setKind("phone")} className="gap-1.5 flex-1">
               <Phone className="h-3.5 w-3.5" /> Telefones
-            </ToggleGroupItem>
-            <ToggleGroupItem value="both" size="sm" className="gap-1.5">
+            </Button>
+            <Button size="sm" variant={kind === "both" ? "default" : "outline"} onClick={() => setKind("both")} className="gap-1.5 flex-1">
               <Layers className="h-3.5 w-3.5" /> Ambos
-            </ToggleGroupItem>
-          </ToggleGroup>
+            </Button>
+          </div>
         </div>
 
         {/* Status */}
