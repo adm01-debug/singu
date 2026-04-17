@@ -5,6 +5,7 @@ import { EmailVerifierWidget } from "@/components/enrichment/EmailVerifierWidget
 import { EmailFinderWidget } from "@/components/enrichment/EmailFinderWidget";
 import { PhoneValidatorWidget } from "@/components/enrichment/PhoneValidatorWidget";
 import { PeopleIntelTimeline } from "@/components/enrichment/PeopleIntelTimeline";
+import { ValidationQueueCard } from "@/components/enrichment/ValidationQueueCard";
 import { useEmailVerifications, usePhoneValidations } from "@/hooks/useEnrichmentSuite";
 
 export default function Enrichment() {
@@ -53,6 +54,8 @@ export default function Enrichment() {
           <CardContent><p className="text-2xl font-semibold">7/7</p><p className="text-xs text-muted-foreground">Itens da suíte ativos</p></CardContent>
         </Card>
       </section>
+
+      <ValidationQueueCard />
 
       <section className="grid gap-4 lg:grid-cols-2">
         <EmailVerifierWidget />

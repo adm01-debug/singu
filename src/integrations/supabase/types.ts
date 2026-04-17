@@ -8654,6 +8654,45 @@ export type Database = {
           },
         ]
       }
+      validation_queue: {
+        Row: {
+          attempts: number
+          contact_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["validation_kind"]
+          last_error: string | null
+          processed_at: string | null
+          status: Database["public"]["Enums"]["validation_queue_status"]
+          user_id: string
+          value: string
+        }
+        Insert: {
+          attempts?: number
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["validation_kind"]
+          last_error?: string | null
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["validation_queue_status"]
+          user_id: string
+          value: string
+        }
+        Update: {
+          attempts?: number
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["validation_kind"]
+          last_error?: string | null
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["validation_queue_status"]
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
       visit_checkins: {
         Row: {
           address: string | null
@@ -9341,6 +9380,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      validation_kind: "email" | "phone"
+      validation_queue_status: "pending" | "processing" | "done" | "error"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -9469,6 +9510,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      validation_kind: ["email", "phone"],
+      validation_queue_status: ["pending", "processing", "done", "error"],
     },
   },
 } as const
