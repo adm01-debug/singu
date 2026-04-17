@@ -1,9 +1,10 @@
 import { lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Target } from 'lucide-react';
+import { ShoppingBag, Target, Clock } from 'lucide-react';
 import { Typography } from '@/components/ui/typography';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
 const BestTimeToContactPanel = lazy(() => import('@/components/analytics/BestTimeToContactPanel').then(m => ({ default: m.BestTimeToContactPanel })));
@@ -63,6 +64,16 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
             <RFMAnalysisPanel compact />
           </LazySection>
         </div>
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Melhor Hora para Prospectar">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-5 h-5 text-primary" aria-hidden="true" />
+          <Typography variant="h4" gradient>Timing de Prospecção</Typography>
+        </div>
+        <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+          <BestTimeHeatmapCard />
+        </LazySection>
       </DashboardErrorBoundary>
     </motion.div>
   );
