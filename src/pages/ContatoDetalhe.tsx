@@ -37,6 +37,7 @@ import { MeetingMode } from '@/components/contact-detail/MeetingMode';
 import { ValidateAllButton } from '@/components/enrichment/ValidateAllButton';
 import { PeopleIntelTimeline } from '@/components/enrichment/PeopleIntelTimeline';
 import { ContactEmailThreadsSection } from '@/components/contact-detail/ContactEmailThreadsSection';
+import { SentimentTrendChart } from '@/components/contact-detail/SentimentTrendChart';
 
 const ContactTimelineWidget = lazy(() => import('@/components/contact-detail/ContactTimelineWidget'));
 const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
@@ -227,6 +228,7 @@ const ContatoDetalhe = () => {
 
           <TabsContent value="interacoes">
             <DashboardErrorBoundary sectionName="Interações">
+              <SentimentTrendChart contactId={contact.id} />
               <ContactEmailThreadsSection contactId={contact.id} />
               <ContactInteractionsTab
                 interactions={interactions}
