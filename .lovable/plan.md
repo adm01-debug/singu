@@ -1,42 +1,27 @@
 
-Continuando a sequência. Melhoria #1 entregue (badges + Validar tudo + People Intel timeline). Agora #2.
+Continuando a sequência. #2 entregue. Agora #3.
 
-## Melhoria #2: Auto-validação on insert + revalidação periódica
+## Melhoria #3: "Usar este email" no EmailFinder + auto-aplicar no contato
 
-### Schema (migração)
-- Trigger `trg_auto_validate_contact_email` em `contacts` (AFTER INSERT/UPDATE de `email`): enfileira em nova tabela `validation_queue` (id, kind enum 'email'|'phone', value, contact_id, user_id, status enum 'pending'|'processing'|'done'|'error', attempts, last_error, created_at, processed_at) com RLS própria.
-- Trigger análogo `trg_auto_validate_contact_phone` para `phone`.
-- Triggers idênticos em `contact_emails` e `contact_phones` (tabelas relacionais externas espelhadas localmente, se existirem; se não, somente `contacts`).
-- Índices em `(status, created_at)` e `(contact_id)`.
+### Escopo
+Quando o EmailFinder encontra emails ranqueados, hoje só exibe a lista. Adicionar:
+- Botão "Usar este email" em cada resultado → atualiza `contacts.email` (ou cria entry em `contact_emails` se já houver email principal)
+- Se invocado com `contactId` no contexto, pré-preenche e salva direto
+- Modo standalone (em `/enrichment`): mostra SearchableSelect de contato para destinar o email
+- Marcar email escolhido como `is_primary` se contato não tinha email
 
-### Edge function `validation-queue-worker`
-- Padrão Deno.serve + JWT service-role + rate-limit + Zod
-- Pega lote de até 50 itens `pending` ordenados por `created_at`, marca `processing`, despacha para `email-verifier` ou `phone-validator` conforme `kind`, grava resultado, marca `done`/`error` (até 3 tentativas, backoff via `attempts`).
+### Arquivos
+- Editar `src/components/enrichment/EmailFinderWidget.tsx` — botão por linha + handler
+- Novo `src/hooks/useApplyFoundEmail.ts` — mutation que atualiza contato e invalida queries
+- Editar `src/components/contact-detail/data-tab/EmailsCard.tsx` — botão "Buscar email" abre EmailFinder modal pré-preenchido com firstName/lastName/domain do contato
+- Novo `src/components/enrichment/EmailFinderDialog.tsx` — wrapper modal reutilizável
 
-### pg_cron
-- Job 1: `*/5 * * * *` (5min) → invoca `validation-queue-worker` para drenar fila.
-- Job 2: `0 4 * * *` (04:00 UTC) → re-enfileira emails com `verified_at < now() - 30d`.
-- Job 3: `30 4 * * *` (04:30 UTC) → re-enfileira phones com `validated_at < now() - 90d`.
-- Habilitar `pg_cron` + `pg_net` se ainda não estiverem.
-
-### UI mínima
-- Em `/enrichment`, novo card "Fila de validação" mostrando `pending` / `processing` / `done` / `error` das últimas 24h via hook `useValidationQueueStats` (TanStack Query, refetch 30s).
-- Botão admin "Processar fila agora" (só `useIsAdmin`) que invoca o worker manualmente.
-
-### Hooks
-- `useValidationQueueStats()` — agregação por status.
-- `useTriggerQueueWorker()` — mutation admin.
-
-### Validação E2E
-- Criar contato com email novo via UI → conferir entry `pending` em `validation_queue` (SQL).
-- Aguardar 5min ou clicar "Processar fila agora" → conferir status muda para `done` e `email_verifications` recebe registro.
-- Editar email do contato → nova entry enfileirada.
-- Forçar `verified_at` antigo via SQL e rodar job manualmente → conferir reverificação.
-- Confirmar cron jobs ativos via `cron.job` table.
+### Validação
+- Em ContatoDetalhe sem email: clicar "Buscar email" → modal abre pré-preenchido → escolher resultado → email salvo no contato + badge de validação aparece
+- Em `/enrichment`: rodar finder → escolher contato → email aplicado
+- Trigger DB de validação (#2) dispara automaticamente após update
 
 ### Restrições
-- ≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR.
-- Não tocar em ABM/Lead Scoring/Intent.
-- Reutilizar edge functions `email-verifier` e `phone-validator` já existentes (sem recriar).
+≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR. Reutilizar edge functions e hooks existentes.
 
-Após #2 validada, sigo automaticamente para #3 (botão "Usar este email" no EmailFinder que cria/atualiza email no contato).
+Após #3 → #4 (revalidação manual em massa em /enrichment com seletor de filtros).
