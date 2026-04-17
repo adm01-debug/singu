@@ -62,7 +62,7 @@ export default function ConversationIntelligence() {
               <CardHeader><CardTitle className="text-base">Conversas analisadas</CardTitle></CardHeader>
               <CardContent>
                 {loadingAnalyses ? <Skeleton className="h-64 w-full" /> :
-                  <ConversationAnalysesTable rows={(analyses ?? []) as Parameters<typeof ConversationAnalysesTable>[0]["rows"]} />}
+                  <ConversationAnalysesTable rows={(analyses ?? []) as unknown as Parameters<typeof ConversationAnalysesTable>[0]["rows"]} />}
               </CardContent>
             </Card>
           </TabsContent>
