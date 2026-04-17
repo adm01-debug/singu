@@ -199,18 +199,46 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
   const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
+  const effectiveLoading = semanticMode ? semantic.loading : isLoading;
 
   return (
     <>
       <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
         <div className="flex items-center justify-between gap-2 px-3 border-b border-border">
           <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-primary" /><span className="text-xs font-medium text-muted-foreground">Super Command Palette</span></div>
-          <button onClick={() => { onOpenChange(false); setVoiceOpen(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors" aria-label="Assistente de Voz"><Mic className="w-3.5 h-3.5" /><span className="hidden sm:inline">Voz</span></button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleSemantic}
+              aria-pressed={semanticMode}
+              title={semanticMode ? 'Busca Inteligente IA: ativada (sinônimos + tolerância a erros)' : 'Ativar busca inteligente IA'}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                semanticMode
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted hover:bg-muted/70 text-muted-foreground',
+              )}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">IA</span>
+            </button>
+            <button onClick={() => { onOpenChange(false); setVoiceOpen(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors" aria-label="Assistente de Voz"><Mic className="w-3.5 h-3.5" /><span className="hidden sm:inline">Voz</span></button>
+          </div>
         </div>
-        <CommandInput placeholder="Buscar contatos, empresas, navegar ou executar ações..." value={query} onValueChange={setQuery} />
+        <CommandInput placeholder={semanticMode ? 'Busca semântica: descreva o que procura…' : 'Buscar contatos, empresas, navegar ou executar ações...'} value={query} onValueChange={setQuery} />
         <CommandList className="max-h-[400px]">
-          {query && !isLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
-          {query && isLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">Buscando...</p></div></div>}
+          {query && !effectiveLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
+          {query && effectiveLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">{semanticMode ? 'Buscando com IA...' : 'Buscando...'}</p></div></div>}
+          {semanticMode && hasResults && semantic.variations.length > 1 && (
+            <div className="px-4 py-1.5 text-[11px] text-muted-foreground border-b border-border/50 flex flex-wrap items-center gap-1">
+              <Sparkles className="w-3 h-3 text-primary" />
+              <span>Termos relacionados:</span>
+              {semantic.variations.slice(1, 5).map(v => (
+                <span key={v} className="px-1.5 py-0.5 rounded bg-muted/60">{v}</span>
+              ))}
+              {semantic.cached && <span className="ml-auto text-[10px] opacity-60">cache</span>}
+            </div>
+          )}
 
           <SearchResultGroups results={results} onSelect={handleSelect} />
 
