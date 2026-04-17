@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gauge, RefreshCw, Settings2 } from 'lucide-react';
+import { Gauge, RefreshCw, Settings2, Zap } from 'lucide-react';
 import {
   useTopLeads,
   useLeadScoreDistribution,
@@ -34,7 +34,10 @@ export default function LeadScoringPage() {
             </h1>
             <p className="text-sm text-muted-foreground">Pontuação automática com decay temporal por dimensão.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="outline" asChild>
+              <Link to="/lead-scoring/automations"><Zap className="h-4 w-4 mr-2" />Automações</Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link to="/lead-scoring/config"><Settings2 className="h-4 w-4 mr-2" />Configurar</Link>
             </Button>
