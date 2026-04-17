@@ -3,7 +3,7 @@ import { usePrefetch } from "@/components/navigation/PrefetchLink";
 import {
   LayoutDashboard, Building2, Users, MessageSquare, Lightbulb, Settings,
   Zap, LogOut, CalendarDays, Bell, ChevronDown, BarChart3, Share2,
-  Workflow, MapPin, PanelLeftClose, PanelLeft, Kanban, Trophy, CheckSquare, Globe, ArrowRightLeft, ListFilter, BrainCircuit, LifeBuoy, Mail, BookOpen, Copy, Package, Shield, Star, FileText, MapPinned, Target, Radar, Gauge, TrendingUp, Brain, LineChart, Briefcase, Megaphone,
+  Workflow, MapPin, PanelLeftClose, PanelLeft, Kanban, Trophy, CheckSquare, Globe, ArrowRightLeft, ListFilter, BrainCircuit, LifeBuoy, Mail, BookOpen, Copy, Package, Shield, Star, FileText, MapPinned, Target, Radar, Gauge, TrendingUp, Brain, LineChart, Briefcase, Megaphone, Activity,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -66,6 +66,7 @@ const navSections = [
       { title: "Conversation Intel", url: "/conversation-intelligence", icon: Brain },
       { title: "Playbooks", url: "/playbooks", icon: BookOpen },
       { title: "Forecasting", url: "/forecasting", icon: LineChart },
+      { title: "RevOps", url: "/revops", icon: Activity },
       { title: "Deal Rooms", url: "/deal-rooms", icon: Briefcase },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
       { title: "Automações", url: "/automacoes", icon: Workflow },

@@ -139,6 +139,7 @@ const ConversationIntelligencePage = lazy(() => import("./pages/ConversationInte
 const ConversationIntelligenceSetupPage = lazy(() => import("./pages/ConversationIntelligenceSetup"));
 const ForecastingPage = lazy(() => import("./pages/Forecasting"));
 const ForecastingSetupPage = lazy(() => import("./pages/ForecastingSetup"));
+const RevOpsPage = lazy(() => import("./pages/RevOps"));
 const DealRoomsPage = lazy(() => import("./pages/DealRooms"));
 const DealRoomDetailPage = lazy(() => import("./pages/DealRoomDetail"));
 const PublicDealRoomPage = lazy(() => import("./pages/PublicDealRoom"));
@@ -451,6 +452,11 @@ const AnimatedRoutes = () => {
       <Route path="/forecasting/setup" element={
         <RequireAuth>
           <LazyPage><ForecastingSetupPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/revops" element={
+        <RequireAuth>
+          <LazyPage><RevOpsPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/deal-rooms" element={

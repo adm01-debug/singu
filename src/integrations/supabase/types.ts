@@ -5967,6 +5967,120 @@ export type Database = {
           },
         ]
       }
+      revops_alerts: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          dismissed: boolean
+          expected_value: number | null
+          id: string
+          message: string
+          metric_key: string
+          period: string | null
+          severity: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          dismissed?: boolean
+          expected_value?: number | null
+          id?: string
+          message: string
+          metric_key: string
+          period?: string | null
+          severity: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          dismissed?: boolean
+          expected_value?: number | null
+          id?: string
+          message?: string
+          metric_key?: string
+          period?: string | null
+          severity?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      revops_benchmarks: {
+        Row: {
+          created_at: string
+          critical_threshold: number
+          description: string | null
+          id: string
+          metric_key: string
+          target_value: number
+          updated_at: string
+          user_id: string
+          warning_threshold: number
+        }
+        Insert: {
+          created_at?: string
+          critical_threshold?: number
+          description?: string | null
+          id?: string
+          metric_key: string
+          target_value: number
+          updated_at?: string
+          user_id: string
+          warning_threshold?: number
+        }
+        Update: {
+          created_at?: string
+          critical_threshold?: number
+          description?: string | null
+          id?: string
+          metric_key?: string
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+          warning_threshold?: number
+        }
+        Relationships: []
+      }
+      revops_snapshots: {
+        Row: {
+          avg_velocity_days: number | null
+          captured_at: string
+          conversion_rate: number | null
+          count: number
+          created_at: string
+          funnel_stage: string
+          id: string
+          period: string
+          total_value: number | null
+          user_id: string
+        }
+        Insert: {
+          avg_velocity_days?: number | null
+          captured_at?: string
+          conversion_rate?: number | null
+          count?: number
+          created_at?: string
+          funnel_stage: string
+          id?: string
+          period: string
+          total_value?: number | null
+          user_id: string
+        }
+        Update: {
+          avg_velocity_days?: number | null
+          captured_at?: string
+          conversion_rate?: number | null
+          count?: number
+          created_at?: string
+          funnel_stage?: string
+          id?: string
+          period?: string
+          total_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       rfm_analysis: {
         Row: {
           analyzed_at: string
@@ -8561,6 +8675,11 @@ export type Database = {
         Args: { _deal_id: string; _deal_value?: number; _model?: string }
         Returns: Json
       }
+      compute_revops_kpis: {
+        Args: { _period_end: string; _period_start: string; _user_id: string }
+        Returns: Json
+      }
+      dismiss_revops_alert: { Args: { _alert_id: string }; Returns: boolean }
       enroll_contact_in_workflow: {
         Args: { _contact_id: string; _workflow_id: string }
         Returns: string
