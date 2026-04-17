@@ -60,7 +60,7 @@ interface SuggestionState {
 
 export function AIEmailComposer() {
   const { isOpen, prefilledContactId, close } = useEmailComposerStore();
-  const { data: contacts = [], isLoading: loadingContacts } = useContacts();
+  const { contacts = [], loading: loadingContacts } = useContacts();
   const { suggestions, loading: generating, error, generateSuggestions, clearSuggestions } = useAIWritingAssistant();
   const refineMutation = useEmailRefine();
 
