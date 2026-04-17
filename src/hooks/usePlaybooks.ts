@@ -158,7 +158,15 @@ export function useLogPlaybookUsage() {
       context?: Record<string, unknown>;
     }) => {
       if (!user) return;
-      await supabase.from("playbook_usage_log").insert({ ...input, user_id: user.id });
+      await supabase.from("playbook_usage_log").insert({
+        user_id: user.id,
+        action: input.action,
+        playbook_id: input.playbook_id ?? null,
+        battle_card_id: input.battle_card_id ?? null,
+        contact_id: input.contact_id ?? null,
+        deal_id: input.deal_id ?? null,
+        context: (input.context ?? {}) as any,
+      });
     },
   });
 }
