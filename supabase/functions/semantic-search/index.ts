@@ -7,6 +7,16 @@ const corsHeaders = {
 
 const CACHE_TTL_MINUTES = 10;
 
+type EntityKey = "products" | "contacts" | "companies" | "interactions";
+
+const ALL_ENTITIES: EntityKey[] = ["products", "contacts", "companies", "interactions"];
+
+interface ResultRow {
+  id: string;
+  similarity: number;
+  [key: string]: unknown;
+}
+
 async function hashQuery(text: string): Promise<string> {
   const data = new TextEncoder().encode(text.trim().toLowerCase());
   const hash = await crypto.subtle.digest("SHA-256", data);
@@ -27,12 +37,12 @@ async function expandQueryWithAI(query: string): Promise<string[]> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           {
             role: "system",
             content:
-              "Você expande consultas de busca de produtos em sinônimos e termos relacionados em português. Retorne APENAS um array JSON com 3-5 variações curtas, sem explicações.",
+              "Você expande consultas de busca em CRM (contatos, empresas, interações, produtos) em sinônimos e termos relacionados em português. Retorne APENAS um array JSON com 3-5 variações curtas, sem explicações.",
           },
           { role: "user", content: query },
         ],
@@ -72,6 +82,13 @@ async function expandQueryWithAI(query: string): Promise<string[]> {
   }
 }
 
+const RPC_BY_ENTITY: Record<EntityKey, string> = {
+  products: "search_products_semantic",
+  contacts: "search_contacts_semantic",
+  companies: "search_companies_semantic",
+  interactions: "search_interactions_semantic",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -89,7 +106,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: { Authorization: authHeader } } },
     );
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -102,8 +119,13 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const query = String(body?.query ?? "").trim();
-    const limit = Math.min(Math.max(Number(body?.limit ?? 20), 1), 50);
+    const limit = Math.min(Math.max(Number(body?.limit ?? 10), 1), 50);
     const useAI = body?.useAI !== false;
+    const requested: EntityKey[] = Array.isArray(body?.entities) && body.entities.length > 0
+      ? body.entities.filter((e: string): e is EntityKey =>
+        ALL_ENTITIES.includes(e as EntityKey)
+      )
+      : ALL_ENTITIES;
 
     if (!query || query.length < 2) {
       return new Response(JSON.stringify({ error: "Query must be at least 2 characters" }), {
@@ -112,9 +134,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const queryHash = await hashQuery(`${query}:${limit}:${useAI}`);
+    const queryHash = await hashQuery(`${query}:${limit}:${useAI}:${requested.sort().join(",")}`);
 
-    // Check cache
+    // Cache check
     const { data: cached } = await supabase
       .from("semantic_search_cache")
       .select("results, expires_at")
@@ -126,39 +148,51 @@ Deno.serve(async (req) => {
     if (cached) {
       return new Response(
         JSON.stringify({ results: cached.results, cached: true, query }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Expand query with AI for better recall
     const variations = useAI ? await expandQueryWithAI(query) : [query];
 
-    // Run RPC for each variation and merge by best similarity
-    const merged = new Map<string, any>();
-    for (const v of variations) {
-      const { data, error } = await supabase.rpc("search_products_semantic", {
-        p_user_id: user.id,
-        p_query: v,
-        p_limit: limit,
-        p_min_similarity: 0.1,
-      });
-      if (error) {
-        console.error("RPC error:", error);
-        continue;
-      }
-      for (const row of data || []) {
-        const existing = merged.get(row.id);
-        if (!existing || row.similarity > existing.similarity) {
-          merged.set(row.id, row);
-        }
-      }
-    }
+    // Federar: para cada entidade, rodar todas as variações em paralelo, mesclar pelo melhor score
+    const results: Record<EntityKey, ResultRow[]> = {
+      products: [],
+      contacts: [],
+      companies: [],
+      interactions: [],
+    };
 
-    const results = Array.from(merged.values())
-      .sort((a, b) => b.similarity - a.similarity)
-      .slice(0, limit);
+    await Promise.all(
+      requested.map(async (entity) => {
+        const merged = new Map<string, ResultRow>();
+        const rpc = RPC_BY_ENTITY[entity];
+        await Promise.all(
+          variations.map(async (v) => {
+            const { data, error } = await supabase.rpc(rpc, {
+              p_user_id: user.id,
+              p_query: v,
+              p_limit: limit,
+              p_min_similarity: 0.1,
+            });
+            if (error) {
+              console.error(`RPC ${rpc} error:`, error.message);
+              return;
+            }
+            for (const row of (data ?? []) as ResultRow[]) {
+              const existing = merged.get(row.id);
+              if (!existing || row.similarity > existing.similarity) {
+                merged.set(row.id, row);
+              }
+            }
+          }),
+        );
+        results[entity] = Array.from(merged.values())
+          .sort((a, b) => b.similarity - a.similarity)
+          .slice(0, limit);
+      }),
+    );
 
-    // Persist cache (best-effort)
+    // Cache (best-effort)
     const expiresAt = new Date(Date.now() + CACHE_TTL_MINUTES * 60 * 1000).toISOString();
     await supabase
       .from("semantic_search_cache")
@@ -170,18 +204,18 @@ Deno.serve(async (req) => {
           results,
           expires_at: expiresAt,
         },
-        { onConflict: "user_id,query_hash" }
+        { onConflict: "user_id,query_hash" },
       );
 
     return new Response(
-      JSON.stringify({ results, cached: false, query, variations }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ results, cached: false, query, variations, entities: requested }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("semantic-search error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

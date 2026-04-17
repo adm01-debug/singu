@@ -9391,6 +9391,22 @@ export type Database = {
         Returns: boolean
       }
       reset_daily_lead_counts: { Args: never; Returns: number }
+      search_companies_semantic: {
+        Args: {
+          p_limit?: number
+          p_min_similarity?: number
+          p_query: string
+          p_user_id: string
+        }
+        Returns: {
+          city: string
+          id: string
+          industry: string
+          name: string
+          similarity: number
+          state: string
+        }[]
+      }
       search_companies_unaccent: {
         Args: { p_limit?: number; p_query: string; p_user_id: string }
         Returns: {
@@ -9399,6 +9415,24 @@ export type Database = {
           industry: string
           name: string
           state: string
+        }[]
+      }
+      search_contacts_semantic: {
+        Args: {
+          p_limit?: number
+          p_min_similarity?: number
+          p_query: string
+          p_user_id: string
+        }
+        Returns: {
+          company_id: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          phone: string
+          role_title: string
+          similarity: number
         }[]
       }
       search_contacts_unaccent: {
@@ -9411,6 +9445,22 @@ export type Database = {
           last_name: string
           phone: string
           role_title: string
+        }[]
+      }
+      search_interactions_semantic: {
+        Args: {
+          p_limit?: number
+          p_min_similarity?: number
+          p_query: string
+          p_user_id: string
+        }
+        Returns: {
+          contact_id: string
+          created_at: string
+          id: string
+          similarity: number
+          title: string
+          type: string
         }[]
       }
       search_interactions_unaccent: {
