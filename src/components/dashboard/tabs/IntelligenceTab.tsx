@@ -1,9 +1,10 @@
 import { lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Target } from 'lucide-react';
+import { ShoppingBag, Target, Clock } from 'lucide-react';
 import { Typography } from '@/components/ui/typography';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
+import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
 const BestTimeToContactPanel = lazy(() => import('@/components/analytics/BestTimeToContactPanel').then(m => ({ default: m.BestTimeToContactPanel })));
