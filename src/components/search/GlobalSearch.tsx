@@ -95,7 +95,12 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const [semanticMode, setSemanticMode] = useState<boolean>(() => {
     try { return localStorage.getItem('global-search-semantic') === '1'; } catch { return false; }
   });
+  const [conversationalMode, setConversationalMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('global-search-conversational') === '1'; } catch { return false; }
+  });
+  const [convDraft, setConvDraft] = useState('');
   const semantic = useSemanticSearch();
+  const conv = useConversationalSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
