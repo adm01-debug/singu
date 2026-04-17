@@ -82,15 +82,6 @@ interface CompanyRow {
   tags: string[] | null;
 }
 
-interface DealRow {
-  id: string;
-  title: string;
-  value: number | null;
-  stage: string | null;
-  expected_close_date: string | null;
-  created_at: string;
-}
-
 interface InteractionRow {
   id: string;
   title: string | null;
@@ -163,28 +154,9 @@ async function executeFilters(
   }
 
   if (entity === 'deals') {
-    let q = supabase
-      .from('deals')
-      .select('id, title, value, stage, expected_close_date, created_at')
-      .eq('user_id', userId)
-      .order('value', { ascending: false, nullsFirst: false })
-      .limit(limit);
-    if (filters.stage) q = q.eq('stage', filters.stage);
-    if (typeof filters.valor_min === 'number') q = q.gte('value', filters.valor_min);
-    if (typeof filters.valor_max === 'number') q = q.lte('value', filters.valor_max);
-    if (typeof filters.dias_max_idade === 'number') {
-      const cutoff = new Date(Date.now() - filters.dias_max_idade * 86_400_000).toISOString();
-      q = q.gte('created_at', cutoff);
-    }
-    const { data, error } = await q;
-    if (error) throw error;
-    return ((data || []) as DealRow[]).map(r => ({
-      id: r.id,
-      entity: 'deals',
-      title: r.title || 'Deal',
-      subtitle: r.stage || undefined,
-      meta: r.value ? `R$ ${Number(r.value).toLocaleString('pt-BR')}` : undefined,
-    }));
+    // Deals vivem em banco externo (vw_deals_full). Devolvemos interpretação
+    // sem rows aqui — UI mostra link para o Pipeline com filtros aplicados.
+    return [];
   }
 
   // interactions
