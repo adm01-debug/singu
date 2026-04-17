@@ -121,3 +121,9 @@ verify_jwt = false
 
 [functions.lead-score-cron]
 verify_jwt = false
+
+[functions.win-loss-analyzer]
+verify_jwt = false
+
+[functions.win-loss-record-deal]
+verify_jwt = false
