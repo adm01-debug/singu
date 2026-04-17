@@ -1,56 +1,51 @@
 
-Lead Scoring server-side acabou. Próximo grande gap do roadmap = **Win/Loss Intelligence** — análise estruturada de deals ganhos/perdidos com motivos categorizados, padrões via IA e dashboard executivo. Hoje só existe `pipeline_kanban` com `deal_status`, sem captura estruturada de razão, sem competidor e sem análise.
+Win/Loss acabou. Faltam grandes módulos do roadmap de excelência. Próximo grande gap = **Conversation Intelligence** — análise IA de chamadas/reuniões transcritas com detecção de tópicos, talk ratio, objeções, momentos críticos e coaching automático. Hoje só existe `meeting-summary` simples; falta análise estruturada profunda + dashboard de coaching.
 
-## Plano: Win/Loss Intelligence
+## Plano: Conversation Intelligence
 
 ### 1. Schema (migration)
-- `win_loss_records` — `id, user_id, deal_id, outcome ('won'|'lost'|'no_decision'), primary_reason_id, secondary_reasons text[], competitor_id (nullable), deal_value, sales_cycle_days, decision_maker_contact_id, notes, lessons_learned text, recorded_at, created_at`
-- `win_loss_reasons` — `id, user_id, category ('price'|'product'|'timing'|'relationship'|'competition'|'budget'|'authority'|'need'|'other'), label, outcome_type ('won'|'lost'|'both'), active, sort_order` — seeded por usuário via função
-- `competitors` — `id, user_id, name, website, strengths text[], weaknesses text[], typical_price_range, win_rate_against numeric, notes, active`
-- `win_loss_insights` — `id, user_id, period_start, period_end, insight_type ('pattern'|'recommendation'|'alert'), title, description, severity, supporting_data jsonb, generated_at` (cache de IA)
-- RLS por user_id, audit em win_loss_records, função `seed_win_loss_defaults(_user_id)` cria razões padrão
+- `conversation_analyses` — `id, user_id, interaction_id (FK), contact_id, deal_id (nullable), duration_seconds, talk_ratio_rep numeric, talk_ratio_customer numeric, longest_monologue_seconds, questions_asked int, sentiment_overall ('positive'|'neutral'|'negative'|'mixed'), sentiment_timeline jsonb, topics jsonb, objections jsonb, action_items jsonb, key_moments jsonb, coaching_score int (0-100), coaching_tips text[], next_best_action text, analyzed_at`
+- `conversation_topics_catalog` — `id, user_id, topic_key, label, category ('product'|'pricing'|'competition'|'objection'|'closing'|'discovery'|'other'), keywords text[], active` — biblioteca de tópicos rastreados
+- `coaching_scorecards` — `id, user_id, name, criteria jsonb (lista de critérios com peso), active` — templates de avaliação
+- RLS por user_id, audit em conversation_analyses, função `seed_conversation_topics(_user_id)` cria 12 tópicos padrão
 
 ### 2. Edge Functions
-- **`win-loss-analyzer`**: lê win_loss_records últimos 90/180d → calcula win rate, avg deal size por outcome, top motivos perda/ganho, win rate por competidor → invoca Lovable AI (gemini-3-flash-preview) com tool calling para gerar 3-5 insights estruturados → persiste em `win_loss_insights`. Rate limit + JWT
-- **`win-loss-record-deal`**: chamado quando deal vai para `closed_won`/`closed_lost` no pipeline → cria placeholder em `win_loss_records` para vendedor preencher. Trigger DB opcional
+- **`conversation-analyzer`**: recebe `interaction_id` → lê `interactions.content` (transcrição) → invoca Lovable AI (gemini-3-flash-preview) com tool calling estruturado para extrair talk ratio, sentiment timeline, tópicos detectados (cruzando com catálogo), objeções, action items, key moments, coaching score + tips → persiste em `conversation_analyses`. Rate limit + JWT
+- **`conversation-coaching-digest`**: gera digest semanal por vendedor — média de coaching score, top objeções não tratadas, padrões de melhoria → invoca IA para narrativa executiva
 
-### 3. Hooks `src/hooks/useWinLoss.ts`
-- `useWinLossRecords(filters)`, `useWinLossRecord(dealId)`, `useCreateWinLossRecord`, `useUpdateWinLossRecord`
-- `useWinLossReasons(outcome?)`, `useCreateReason`, `useUpdateReason`
-- `useCompetitors`, `useCreateCompetitor`, `useUpdateCompetitor`
-- `useWinLossMetrics(period)` — win rate, motivos top, competidor-rate
-- `useWinLossInsights`, `useGenerateInsights`
+### 3. Hooks `src/hooks/useConversationIntel.ts`
+- `useConversationAnalysis(interactionId)`, `useConversationAnalyses(filters)`, `useAnalyzeConversation`
+- `useTopicsCatalog`, `useUpsertTopic`, `useDeleteTopic`, `useSeedTopics`
+- `useCoachingScorecards`, `useUpsertScorecard`
+- `useCoachingMetrics(period, repId?)` — score médio, tendência, top objeções
 
 ### 4. UI
+**`/conversation-intelligence`** (hub):
+- 4 KPIs: Conversas analisadas (período), Coaching Score médio, Talk Ratio médio do rep, Objeções não tratadas
+- Tabs: "Conversas" (tabela com score badge, sentiment, ações) | "Tópicos" (frequência por categoria) | "Coaching" (cards de tendência por vendedor) | "Setup"
+- Gráfico: barra de top objeções, line de coaching score ao longo do tempo
 
-**`/win-loss`** (hub):
-- 4 KPIs: Win Rate, Avg Deal Size Won, Top Loss Reason, Active Competitors
-- Aba "Records" com tabela filtrada por outcome/período/competidor
-- Aba "Insights" com cards de IA (pattern/recommendation/alert) + botão "Gerar"
-- Gráficos: barra de motivos por outcome, donut de win rate por competidor
+**`/conversation-intelligence/setup`**: editor de tópicos (CRUD + seed) e scorecards de coaching
 
-**`/win-loss/setup`**: editor de razões (CRUD) e competidores
+**Widget `ConversationAnalysisCard`**: aparece em `InteracaoDetalhe` mostrando talk ratio, sentiment timeline, tópicos detectados, action items e tips
 
-**Widget `WinLossCaptureDialog`**: aparece quando deal muda para fechado no PipelineKanban — formulário compacto: outcome, motivo primário (select), motivos secundários (multi), competidor, lições aprendidas
-
-**Componentes** em `src/components/win-loss/`:
-- `WinRateCard`, `LossReasonsChart` (recharts horizontal bar), `CompetitorWinRateChart` (donut)
-- `WinLossRecordsTable`, `WinLossInsightCard`, `CompetitorCard`
-- `ReasonsEditor`, `CompetitorEditor`, `WinLossCaptureDialog`
+**Componentes** em `src/components/conversation-intel/`:
+- `CoachingScoreBadge`, `TalkRatioBar`, `SentimentTimeline` (recharts area), `TopicsChart` (donut), `ObjectionsList`, `KeyMomentsTimeline`
+- `ConversationAnalysesTable`, `TopicsEditor`, `ScorecardEditor`, `AnalyzeButton`
 
 ### 5. Integração
-- `PipelineKanban`: ao arrastar card para `closed_won`/`closed_lost` abre `WinLossCaptureDialog`
-- `EmpresaDetalhe` aba comercial: card resumindo win rate histórico da conta
-- Lead Scoring: motivos de perda recorrentes podem entrar como sinal negativo de fit (futuro)
+- `InteracaoDetalhe`: botão "Analisar com IA" + render do `ConversationAnalysisCard` quando análise existe
+- Lead Scoring: coaching score alto + sentiment positivo entram como sinal de engagement
+- Win/Loss: objeções recorrentes entram em supporting_data dos insights
 
 ### 6. Navegação
-- Sidebar: "Win/Loss" (ícone TrendingUp ou Target) abaixo de Lead Scoring
-- Rotas `/win-loss` e `/win-loss/setup` em App.tsx
+- Sidebar: "Conversation Intel" (ícone MessageSquare ou Mic) abaixo de Win/Loss
+- Rotas `/conversation-intelligence` e `/conversation-intelligence/setup` em App.tsx
 
 ### 7. Memória
-- `mem://features/win-loss-intelligence` + atualizar índice
+- `mem://features/conversation-intelligence` + atualizar índice
 
 ### Não fazer
 - Não criar tabelas products/proposals
-- Não tocar em pipeline_stages além de listener
-- Análise de sentiment de notas via IA fica fora (futuro)
+- Não substituir `meeting-summary` existente — coexiste como resumo rápido
+- Não implementar gravação ao vivo nem STT em tempo real (usa transcrição já presente em interactions)
