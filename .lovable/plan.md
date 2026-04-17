@@ -1,45 +1,41 @@
 
-#12 entregue. Próximo: #13 — Forecast Confidence por deal.
+Semantic search entregue. Próxima melhoria: #15 — Conversational CRM Search (busca em linguagem natural com IA).
 
-## Melhoria #13: Forecast Confidence Score
+## Melhoria #15: Conversational Search (Ask CRM via busca)
 
 ### Escopo
-Score 0-100 de confiança de fechamento por deal combinando: probabilidade do stage, slip risk invertido, momentum (interações últimos 14d vs 14d anteriores), idade vs ciclo médio, valor relativo. Exibe como badge no DealCard + coluna de forecast ponderado refinado no Pipeline.
+Estender o `GlobalSearch` (⌘K) para aceitar perguntas em linguagem natural ("contatos de SP que não falo há 30 dias", "deals em negociação acima de 50k") e converter em filtros estruturados via Lovable AI, executando RPCs/queries reais e renderizando resultados como cards acionáveis.
 
-### Cálculo (client-side, sem edge function)
-Confidence 0-100 ponderado:
-- **Stage probability (35%)**: probabilidade base do stage (lead=10%, qualif=25%, proposta=50%, negoc=70%, fechamento=90%)
-- **Slip risk invertido (30%)**: `100 - slipScore` (reusa `useDealSlipRisk`)
-- **Momentum (20%)**: razão (interações 14d recentes / 14d anteriores), normalizado 0-100
-- **Velocity fit (15%)**: deal dentro do ciclo médio (60d) → alto, acima → baixo
-
-Classificação: 0-40 baixa, 41-70 média, 71-100 alta.
-
-### Hook
-- `useDealForecastConfidence(deal)` — combina slip risk + momentum + stage; retorna `{ confidence, level, expectedCloseValue, factors[] }`
-- `expectedCloseValue = deal.valor * (confidence/100)`
+### Arquitetura
+- **Edge Function nova**: `conversational-search` — recebe `query`, contexto do usuário, retorna `{ intent, filters, sql_safe_params, summary }` via Gemini Flash com tool calling.
+- **Tool schema**: 4 tools — `search_contacts_filtered`, `search_companies_filtered`, `search_deals_filtered`, `search_interactions_filtered` — cada uma com parâmetros tipados (cidade, dias_sem_interacao, valor_min, stage, etc.).
+- **Execução client-side**: após receber filtros, hook chama queries Supabase reais com filtros aplicados.
 
 ### UI
-- **`DealConfidenceBadge.tsx`**: badge compacto (cinza/azul/verde) ao lado do valor no DealCard
-- **`ForecastConfidencePanel.tsx`**: painel no Pipeline mostrando soma de `expectedCloseValue` agregada por nível (Alta/Média/Baixa) com barras horizontais
+- Toggle "💬 Pergunte" no `GlobalSearch` (3º modo ao lado de Lexical e IA Semântica).
+- Quando ativo: input vira textarea com placeholder "Pergunte em linguagem natural...", botão "Buscar" explícito.
+- Resultados agrupados por entidade com chip de "interpretação da IA" no topo.
+- Sugestões clicáveis: "Mostrar contatos sem follow-up", "Deals quentes esta semana", "Empresas de tecnologia em SP".
 
-### Integração
-- `Pipeline.tsx`: adicionar badge no DealCard (próximo ao DealRiskBadge) + painel no header acima das colunas
+### Persistência
+- Histórico das últimas 10 perguntas em `localStorage` (`crm-conversational-history`).
+- Cache de respostas idênticas (5 min) em `conversational_search_cache` (nova tabela leve).
 
 ### Arquivos
-- Novo: `src/hooks/useDealForecastConfidence.ts`
-- Novo: `src/components/pipeline/DealConfidenceBadge.tsx`
-- Novo: `src/components/pipeline/ForecastConfidencePanel.tsx`
-- Editar: `src/pages/Pipeline.tsx` (DealCard + header)
-- Nova memória: `mem://features/forecast-confidence.md`
+- Nova edge function: `supabase/functions/conversational-search/index.ts`
+- Nova tabela: `conversational_search_cache` (id, user_id, query_hash, response, expires_at)
+- Novo hook: `src/hooks/useConversationalSearch.ts`
+- Editar: `src/components/search/GlobalSearch.tsx` (3º modo)
+- Nova memória: `mem://features/conversational-crm-search.md`
 
 ### Validação E2E
-- Build limpo
-- Deal em negociação saudável → confidence alta (verde)
-- Deal estagnado → confidence baixa (cinza)
-- Painel agrega valores por nível corretamente
+- "contatos de São Paulo" → retorna lista filtrada por city
+- "deals acima de 100 mil em negociação" → filtra por valor + stage
+- "quem não falo há 2 semanas" → calcula dias_sem_interacao
+- Cache funciona (2ª query igual = instantâneo)
+- Histórico persiste entre sessões
 
 ### Restrições
-≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR, 100% client-side.
+≤400 linhas/arquivo, sem `any`, sem `useEffect` para fetch, PT-BR, rate limit 20/min na edge function.
 
-Após #13 → #14 (win/loss analysis — IA agrega motivos de deals ganhos/perdidos e sugere padrões).
+Após #15 → #16 (smart notifications — IA decide quando notificar e canal ideal).
