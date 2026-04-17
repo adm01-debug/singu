@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Mail, Copy, Check, Plus, Trash2 } from 'lucide-react';
+import { Mail, Copy, Check, Plus, Trash2, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { ConfidenceBadge, PrimaryBadge, VerifiedBadge, SourceBadge } from './sha
 import { EnrichmentBadge } from '@/components/enrichment/EnrichmentBadge';
 import { useContactValidationStatus } from '@/hooks/useContactValidationStatus';
 import { useEmailVerifier } from '@/hooks/useEnrichmentSuite';
+import { EmailFinderDialog } from '@/components/enrichment/EmailFinderDialog';
 import { ShieldCheck } from 'lucide-react';
 
 const EMAIL_TYPES = ['pessoal', 'profissional', 'corporativo', 'outro'];
@@ -74,11 +75,19 @@ interface Props {
   onAdd?: (data: Record<string, unknown>) => void;
   onDelete?: (id: string) => void;
   contactId?: string;
+  contactFirstName?: string;
+  contactLastName?: string;
+  contactDomain?: string;
 }
 
-export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy, onAdd, onDelete, contactId }: Props) {
+export const EmailsCard = memo(function EmailsCard({
+  emails, copiedField, onCopy, onAdd, onDelete, contactId,
+  contactFirstName, contactLastName, contactDomain,
+}: Props) {
   const { getEmail, isLoading: validationLoading } = useContactValidationStatus(contactId);
   const verifier = useEmailVerifier();
+  const [finderOpen, setFinderOpen] = useState(false);
+  const canSearch = !!contactId && !!(contactFirstName || contactLastName);
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -87,10 +96,33 @@ export const EmailsCard = memo(function EmailsCard({ emails, copiedField, onCopy
             <Mail className="h-4 w-4 text-info" />
             Emails ({emails.length})
           </span>
-          {onAdd && <AddEmailDialog onAdd={onAdd} />}
+          <div className="flex items-center gap-1">
+            {canSearch && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => setFinderOpen(true)}
+                aria-label="Buscar email via EmailFinder"
+              >
+                <Search className="h-3 w-3 mr-1" />Buscar
+              </Button>
+            )}
+            {onAdd && <AddEmailDialog onAdd={onAdd} />}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
+        {contactId && (
+          <EmailFinderDialog
+            open={finderOpen}
+            onOpenChange={setFinderOpen}
+            contactId={contactId}
+            prefillFirstName={contactFirstName}
+            prefillLastName={contactLastName}
+            prefillDomain={contactDomain}
+          />
+        )}
         {emails.length > 0 ? emails.map((e) => (
           <div key={e.id} className="flex items-start justify-between rounded-lg border p-2.5 text-sm">
             <div className="min-w-0 flex-1">
