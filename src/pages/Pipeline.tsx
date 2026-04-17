@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2, AlertTriangle, Gauge } from 'lucide-react';
 import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal, useStageVelocity, useStalledDeals, useVelocityMetrics, type PipelineDeal, type WeightedForecast } from '@/hooks/usePipeline';
 import { useDealSlipRisk } from '@/hooks/useDealSlipRisk';
+import { useDealForecastConfidence } from '@/hooks/useDealForecastConfidence';
 import { DealRiskBadge } from '@/components/pipeline/DealRiskBadge';
 import { DealRiskDrawer } from '@/components/pipeline/DealRiskDrawer';
+import { DealConfidenceBadge } from '@/components/pipeline/DealConfidenceBadge';
+import { ForecastConfidencePanel } from '@/components/pipeline/ForecastConfidencePanel';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -33,6 +36,7 @@ const DealCard = React.memo(function DealCard({
   onOpenRisk: (deal: PipelineDeal) => void;
 }) {
   const risk = useDealSlipRisk(deal);
+  const conf = useDealForecastConfidence(deal);
   return (
     <div
       draggable
@@ -50,15 +54,22 @@ const DealCard = React.memo(function DealCard({
       {deal.company_name && (
         <p className="text-xs text-muted-foreground truncate mt-0.5">{deal.company_name}</p>
       )}
-      <div className="flex items-center justify-between mt-2">
+      <div className="flex items-center justify-between mt-2 gap-2">
         <span className="text-sm font-semibold text-primary">{formatCurrency(deal.valor)}</span>
-        {(deal.dias_no_estagio_atual ?? 0) > 7 && (
+        <DealConfidenceBadge
+          confidence={conf.confidence}
+          level={conf.level}
+          expectedValue={conf.expectedCloseValue}
+        />
+      </div>
+      {(deal.dias_no_estagio_atual ?? 0) > 7 && (
+        <div className="flex justify-end mt-1.5">
           <Badge variant="outline" className="text-xs text-warning">
             <Clock className="h-3 w-3 mr-1" />
             {deal.dias_no_estagio_atual}d
           </Badge>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 });
@@ -325,6 +336,8 @@ export default function Pipeline() {
       </div>
 
       <SummaryCards forecast={forecast} />
+
+      <ForecastConfidencePanel />
 
       <div className="flex gap-3 overflow-x-auto pb-4">
         {STAGES.map((stage) => (
