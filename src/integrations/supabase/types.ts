@@ -887,6 +887,42 @@ export type Database = {
           },
         ]
       }
+      coaching_scorecards: {
+        Row: {
+          active: boolean
+          created_at: string
+          criteria: Json
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cognitive_bias_history: {
         Row: {
           analyzed_at: string
@@ -1630,6 +1666,138 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      conversation_analyses: {
+        Row: {
+          action_items: Json
+          analyzed_at: string
+          coaching_score: number | null
+          coaching_tips: string[]
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          duration_seconds: number | null
+          id: string
+          interaction_id: string
+          key_moments: Json
+          longest_monologue_seconds: number | null
+          model_used: string | null
+          next_best_action: string | null
+          objections: Json
+          questions_asked: number | null
+          sentiment_overall: string | null
+          sentiment_timeline: Json
+          talk_ratio_customer: number | null
+          talk_ratio_rep: number | null
+          topics: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_items?: Json
+          analyzed_at?: string
+          coaching_score?: number | null
+          coaching_tips?: string[]
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          interaction_id: string
+          key_moments?: Json
+          longest_monologue_seconds?: number | null
+          model_used?: string | null
+          next_best_action?: string | null
+          objections?: Json
+          questions_asked?: number | null
+          sentiment_overall?: string | null
+          sentiment_timeline?: Json
+          talk_ratio_customer?: number | null
+          talk_ratio_rep?: number | null
+          topics?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_items?: Json
+          analyzed_at?: string
+          coaching_score?: number | null
+          coaching_tips?: string[]
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          duration_seconds?: number | null
+          id?: string
+          interaction_id?: string
+          key_moments?: Json
+          longest_monologue_seconds?: number | null
+          model_used?: string | null
+          next_best_action?: string | null
+          objections?: Json
+          questions_asked?: number | null
+          sentiment_overall?: string | null
+          sentiment_timeline?: Json
+          talk_ratio_customer?: number | null
+          talk_ratio_rep?: number | null
+          topics?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_analyses_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_analyses_interaction_id_fkey"
+            columns: ["interaction_id"]
+            isOneToOne: false
+            referencedRelation: "interactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_topics_catalog: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          keywords: string[]
+          label: string
+          sort_order: number
+          topic_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          label: string
+          sort_order?: number
+          topic_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          label?: string
+          sort_order?: number
+          topic_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       csat_surveys: {
         Row: {
@@ -7132,6 +7300,10 @@ export type Database = {
           similarity: number
           tags: string[]
         }[]
+      }
+      seed_conversation_topics: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       seed_lead_score_defaults: {
         Args: { _user_id: string }
