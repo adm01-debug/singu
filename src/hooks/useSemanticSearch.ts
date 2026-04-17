@@ -1,8 +1,40 @@
-import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useState, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
 
-export type SemanticResult = {
+export type SemanticEntity = 'contacts' | 'companies' | 'interactions' | 'products';
+
+export interface SemanticContactRow {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  role_title: string | null;
+  company_id: string | null;
+  similarity: number;
+}
+
+export interface SemanticCompanyRow {
+  id: string;
+  name: string;
+  industry: string | null;
+  city: string | null;
+  state: string | null;
+  similarity: number;
+}
+
+export interface SemanticInteractionRow {
+  id: string;
+  title: string;
+  type: string;
+  created_at: string;
+  contact_id: string | null;
+  similarity: number;
+}
+
+export interface SemanticProductRow {
   id: string;
   external_id: string | null;
   name: string;
@@ -13,52 +45,90 @@ export type SemanticResult = {
   price: number | null;
   metadata: Record<string, unknown>;
   similarity: number;
+}
+
+export interface SemanticSearchResults {
+  contacts: SemanticContactRow[];
+  companies: SemanticCompanyRow[];
+  interactions: SemanticInteractionRow[];
+  products: SemanticProductRow[];
+}
+
+const EMPTY: SemanticSearchResults = {
+  contacts: [],
+  companies: [],
+  interactions: [],
+  products: [],
 };
+
+interface SearchOpts {
+  entities?: SemanticEntity[];
+  limit?: number;
+  useAI?: boolean;
+  silent?: boolean;
+}
 
 export function useSemanticSearch() {
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<SemanticResult[]>([]);
+  const [results, setResults] = useState<SemanticSearchResults>(EMPTY);
   const [cached, setCached] = useState(false);
   const [variations, setVariations] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const search = useCallback(
-    async (query: string, opts?: { limit?: number; useAI?: boolean }) => {
+    async (query: string, opts: SearchOpts = {}) => {
       if (!query || query.trim().length < 2) {
-        setResults([]);
-        return [];
+        setResults(EMPTY);
+        setError(null);
+        return EMPTY;
       }
+
+      abortRef.current?.abort();
+      const ctrl = new AbortController();
+      abortRef.current = ctrl;
+
       setLoading(true);
+      setError(null);
       try {
-        const { data, error } = await supabase.functions.invoke("semantic-search", {
+        const { data, error: fnError } = await supabase.functions.invoke('semantic-search', {
           body: {
             query: query.trim(),
-            limit: opts?.limit ?? 20,
-            useAI: opts?.useAI ?? true,
+            entities: opts.entities ?? ['contacts', 'companies', 'interactions'],
+            limit: opts.limit ?? 8,
+            useAI: opts.useAI ?? true,
           },
         });
-        if (error) throw error;
+        if (ctrl.signal.aborted) return EMPTY;
+        if (fnError) throw fnError;
         if (data?.error) throw new Error(data.error);
 
-        setResults(data.results ?? []);
-        setCached(Boolean(data.cached));
-        setVariations(data.variations ?? []);
-        return data.results as SemanticResult[];
+        const merged: SemanticSearchResults = { ...EMPTY, ...(data?.results ?? {}) };
+        setResults(merged);
+        setCached(Boolean(data?.cached));
+        setVariations(data?.variations ?? []);
+        return merged;
       } catch (e) {
-        console.error("Semantic search failed:", e);
-        toast.error(e instanceof Error ? e.message : "Erro na busca semântica");
-        return [];
+        if (ctrl.signal.aborted) return EMPTY;
+        const msg = e instanceof Error ? e.message : 'Erro na busca semântica';
+        logger.error('Semantic search failed', e);
+        setError(msg);
+        if (!opts.silent) toast.error(msg);
+        return EMPTY;
       } finally {
-        setLoading(false);
+        if (!ctrl.signal.aborted) setLoading(false);
       }
     },
-    []
+    [],
   );
 
   const reset = useCallback(() => {
-    setResults([]);
+    abortRef.current?.abort();
+    setResults(EMPTY);
     setCached(false);
     setVariations([]);
+    setError(null);
   }, []);
 
-  return { search, results, loading, cached, variations, reset };
+  return { search, results, loading, cached, variations, error, reset };
 }
