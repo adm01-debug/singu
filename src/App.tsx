@@ -131,6 +131,8 @@ const WinLossPage = lazy(() => import("./pages/WinLoss"));
 const WinLossSetupPage = lazy(() => import("./pages/WinLossSetup"));
 const ConversationIntelligencePage = lazy(() => import("./pages/ConversationIntelligence"));
 const ConversationIntelligenceSetupPage = lazy(() => import("./pages/ConversationIntelligenceSetup"));
+const ForecastingPage = lazy(() => import("./pages/Forecasting"));
+const ForecastingSetupPage = lazy(() => import("./pages/ForecastingSetup"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -420,6 +422,16 @@ const AnimatedRoutes = () => {
       <Route path="/conversation-intelligence/setup" element={
         <RequireAuth>
           <LazyPage><ConversationIntelligenceSetupPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/forecasting" element={
+        <RequireAuth>
+          <LazyPage><ForecastingPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/forecasting/setup" element={
+        <RequireAuth>
+          <LazyPage><ForecastingSetupPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
