@@ -1,0 +1,113 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { rateLimit } from "../_shared/rate-limit.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const limiter = rateLimit({ windowMs: 60_000, max: 12 });
+const BATCH_SIZE = 50;
+const MAX_ATTEMPTS = 3;
+
+interface QueueItem {
+  id: string;
+  user_id: string;
+  contact_id: string | null;
+  kind: "email" | "phone";
+  value: string;
+  attempts: number;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "worker";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
+
+  try {
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // Pega lote pendente
+    const { data: items, error: fetchErr } = await admin
+      .from("validation_queue")
+      .select("id, user_id, contact_id, kind, value, attempts")
+      .eq("status", "pending")
+      .lt("attempts", MAX_ATTEMPTS)
+      .order("created_at", { ascending: true })
+      .limit(BATCH_SIZE);
+
+    if (fetchErr) throw fetchErr;
+    const queue = (items ?? []) as QueueItem[];
+
+    if (queue.length === 0) {
+      return new Response(JSON.stringify({ processed: 0, message: "Fila vazia" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Marca como processing
+    const ids = queue.map((q) => q.id);
+    await admin.from("validation_queue").update({ status: "processing" }).in("id", ids);
+
+    let okCount = 0;
+    let errCount = 0;
+
+    for (const item of queue) {
+      try {
+        const fnName = item.kind === "email" ? "email-verifier" : "phone-validator";
+        const body = item.kind === "email"
+          ? { email: item.value, contactId: item.contact_id, persist: true }
+          : { phone: item.value, contactId: item.contact_id, persist: true };
+
+        // Invoca função interna com service role
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/${fnName}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SERVICE_KEY}`,
+            apikey: SERVICE_KEY,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(`${fnName} ${resp.status}: ${txt.slice(0, 200)}`);
+        }
+
+        await admin
+          .from("validation_queue")
+          .update({ status: "done", processed_at: new Date().toISOString(), attempts: item.attempts + 1 })
+          .eq("id", item.id);
+        okCount++;
+      } catch (err) {
+        const nextAttempts = item.attempts + 1;
+        const finalStatus = nextAttempts >= MAX_ATTEMPTS ? "error" : "pending";
+        await admin
+          .from("validation_queue")
+          .update({
+            status: finalStatus,
+            attempts: nextAttempts,
+            last_error: String(err).slice(0, 500),
+            processed_at: finalStatus === "error" ? new Date().toISOString() : null,
+          })
+          .eq("id", item.id);
+        errCount++;
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ processed: queue.length, ok: okCount, errors: errCount }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
