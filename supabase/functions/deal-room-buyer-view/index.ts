@@ -1,0 +1,21 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { scopedCorsHeaders } from "../_shared/auth.ts";
+
+Deno.serve(async (req) => {
+  const cors = scopedCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { ...cors, "Content-Type": "application/json" } });
+
+  try {
+    const { token, label } = await req.json();
+    if (!token) return new Response(JSON.stringify({ error: "token required" }), { status: 400, headers: { ...cors, "Content-Type": "application/json" } });
+
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data, error } = await supabase.rpc("record_buyer_view", { _token: token, _label: label ?? null });
+    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
+
+    return new Response(JSON.stringify({ recorded: data }), { headers: { ...cors, "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "error" }), { status: 500, headers: { ...cors, "Content-Type": "application/json" } });
+  }
+});

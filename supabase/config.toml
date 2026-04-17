@@ -133,3 +133,6 @@ verify_jwt = false
 
 [functions.conversation-coaching-digest]
 verify_jwt = false
+
+[functions.deal-room-buyer-view]
+verify_jwt = false

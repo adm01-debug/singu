@@ -133,6 +133,9 @@ const ConversationIntelligencePage = lazy(() => import("./pages/ConversationInte
 const ConversationIntelligenceSetupPage = lazy(() => import("./pages/ConversationIntelligenceSetup"));
 const ForecastingPage = lazy(() => import("./pages/Forecasting"));
 const ForecastingSetupPage = lazy(() => import("./pages/ForecastingSetup"));
+const DealRoomsPage = lazy(() => import("./pages/DealRooms"));
+const DealRoomDetailPage = lazy(() => import("./pages/DealRoomDetail"));
+const PublicDealRoomPage = lazy(() => import("./pages/PublicDealRoom"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -434,6 +437,17 @@ const AnimatedRoutes = () => {
           <LazyPage><ForecastingSetupPage /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/deal-rooms" element={
+        <RequireAuth>
+          <LazyPage><DealRoomsPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/deal-rooms/:id" element={
+        <RequireAuth>
+          <LazyPage><DealRoomDetailPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/dr/:token" element={<LazyPage><PublicDealRoomPage /></LazyPage>} />
       <Route path="/rodizio" element={
         <RequireAuth>
           <LazyPage><Rodizio /></LazyPage>
