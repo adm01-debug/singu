@@ -64,6 +64,7 @@ const navSections = [
       { title: "Win/Loss", url: "/win-loss", icon: TrendingUp },
       { title: "Conversation Intel", url: "/conversation-intelligence", icon: Brain },
       { title: "Forecasting", url: "/forecasting", icon: LineChart },
+      { title: "Deal Rooms", url: "/deal-rooms", icon: Briefcase },
       { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
       { title: "Automações", url: "/automacoes", icon: Workflow },
       { title: "Sequências", url: "/sequencias", icon: ListFilter },
