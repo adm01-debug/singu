@@ -67,6 +67,7 @@ const Insights = lazy(() => import("./pages/Insights"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Calendario = lazy(() => import("./pages/Calendario"));
 const Notificacoes = lazy(() => import("./pages/Notificacoes"));
+const NotificacoesConfig = lazy(() => import("./pages/NotificacoesConfig"));
 const Network = lazy(() => import("./pages/Network"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -340,6 +341,11 @@ const AnimatedRoutes = () => {
       <Route path="/notificacoes" element={
         <RequireAuth>
           <LazyPage><Notificacoes /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/notificacoes/configuracoes" element={
+        <RequireAuth>
+          <LazyPage><NotificacoesConfig /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/network" element={
