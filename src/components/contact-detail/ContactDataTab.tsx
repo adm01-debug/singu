@@ -90,6 +90,7 @@ export function ContactDataTab({ contact }: Props) {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <PhonesCard
           phones={phones}
+          contactId={contact.id}
           copiedField={copiedField}
           onCopy={copyToClipboard}
           onAdd={(d) => phoneMutations.add.mutate(d)}
@@ -97,6 +98,7 @@ export function ContactDataTab({ contact }: Props) {
         />
         <EmailsCard
           emails={emails}
+          contactId={contact.id}
           copiedField={copiedField}
           onCopy={copyToClipboard}
           onAdd={(d) => emailMutations.add.mutate(d)}

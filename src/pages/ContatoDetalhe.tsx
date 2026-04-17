@@ -33,6 +33,8 @@ import {
 } from '@/components/contact-detail';
 import { RelationshipTimeline } from '@/components/contact-detail/RelationshipTimeline';
 import { MeetingMode } from '@/components/contact-detail/MeetingMode';
+import { ValidateAllButton } from '@/components/enrichment/ValidateAllButton';
+import { PeopleIntelTimeline } from '@/components/enrichment/PeopleIntelTimeline';
 
 const ContactTimelineWidget = lazy(() => import('@/components/contact-detail/ContactTimelineWidget'));
 const UnifiedCommunicationHistory = lazy(() => import('@/components/interactions/UnifiedCommunicationHistory'));
@@ -131,12 +133,19 @@ const ContatoDetalhe = () => {
           backLabel="Contatos"
           title={formatContactName(contact.first_name, contact.last_name)}
           actions={
-            <LuxButton
-              onClick={handleTriggerLux}
-              loading={triggering}
-              processing={isProcessing}
-              variant="header"
-            />
+            <div className="flex items-center gap-2">
+              <ValidateAllButton
+                contactId={contact.id}
+                fallbackEmail={contact.email}
+                fallbackPhone={contact.phone}
+              />
+              <LuxButton
+                onClick={handleTriggerLux}
+                loading={triggering}
+                processing={isProcessing}
+                variant="header"
+              />
+            </div>
           }
         />
 
@@ -206,6 +215,7 @@ const ContatoDetalhe = () => {
             <DashboardErrorBoundary sectionName="Dados">
               <div className="space-y-4">
                 <ContactDataTab contact={contact} />
+                <PeopleIntelTimeline contactId={contact.id} />
                 <CustomFieldsDisplay entityType="contact" entityId={contact.id} />
                 <DocumentsPanel entityType="contact" entityId={contact.id} />
               </div>

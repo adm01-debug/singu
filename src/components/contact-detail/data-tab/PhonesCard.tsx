@@ -10,6 +10,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { ExternalPhone } from '@/hooks/useContactRelationalData';
 import { PHONE_TYPE_LABELS, formatPhoneDisplay } from './helpers';
 import { ConfidenceBadge, PrimaryBadge, VerifiedBadge, SourceBadge } from './shared-badges';
+import { EnrichmentBadge } from '@/components/enrichment/EnrichmentBadge';
+import { useContactValidationStatus } from '@/hooks/useContactValidationStatus';
+import { usePhoneValidator } from '@/hooks/useEnrichmentSuite';
+import { ShieldCheck } from 'lucide-react';
 
 const PHONE_TYPES = ['celular', 'fixo', 'comercial', 'whatsapp', 'recado', 'outro'];
 
@@ -76,9 +80,12 @@ interface Props {
   onCopy: (text: string, field: string) => void;
   onAdd?: (data: Record<string, unknown>) => void;
   onDelete?: (id: string) => void;
+  contactId?: string;
 }
 
-export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy, onAdd, onDelete }: Props) {
+export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy, onAdd, onDelete, contactId }: Props) {
+  const { getPhone, isLoading: validationLoading } = useContactValidationStatus(contactId);
+  const validator = usePhoneValidator();
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -107,6 +114,10 @@ export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy
                     </Badge>
                   </a>
                 )}
+                {(() => {
+                  const v = getPhone(p.numero_e164 || p.numero);
+                  return <EnrichmentBadge status={v?.status} detail={v?.line_type ?? undefined} loading={validationLoading && !v} compact />;
+                })()}
               </div>
               <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                 <Badge variant="secondary" className="text-[10px]">
@@ -122,6 +133,14 @@ export const PhonesCard = memo(function PhonesCard({ phones, copiedField, onCopy
               {p.observacao && <p className="text-[10px] text-muted-foreground italic">{p.observacao}</p>}
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={() => validator.mutate({ phone: p.numero_e164 || p.numero, defaultCountry: 'BR', contactId })}
+                disabled={validator.isPending}
+                aria-label={`Validar ${p.numero}`}
+                className="rounded p-1 text-muted-foreground hover:bg-info/10 hover:text-info transition-colors disabled:opacity-50"
+              >
+                <ShieldCheck className="h-3 w-3" />
+              </button>
               <button
                 onClick={() => onCopy(formatPhoneDisplay(p), `phone-${p.id}`)}
                 className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
