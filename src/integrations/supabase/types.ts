@@ -1943,6 +1943,291 @@ export type Database = {
         }
         Relationships: []
       }
+      cs_accounts: {
+        Row: {
+          account_name: string
+          arr: number
+          company_id: string | null
+          contact_id: string | null
+          contract_start: string | null
+          created_at: string
+          csm_owner_id: string | null
+          health_score: number
+          health_trend: string | null
+          id: string
+          last_health_recalc_at: string | null
+          lifecycle_stage: string
+          notes: string | null
+          renewal_date: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          arr?: number
+          company_id?: string | null
+          contact_id?: string | null
+          contract_start?: string | null
+          created_at?: string
+          csm_owner_id?: string | null
+          health_score?: number
+          health_trend?: string | null
+          id?: string
+          last_health_recalc_at?: string | null
+          lifecycle_stage?: string
+          notes?: string | null
+          renewal_date?: string | null
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          arr?: number
+          company_id?: string | null
+          contact_id?: string | null
+          contract_start?: string | null
+          created_at?: string
+          csm_owner_id?: string | null
+          health_score?: number
+          health_trend?: string | null
+          id?: string
+          last_health_recalc_at?: string | null
+          lifecycle_stage?: string
+          notes?: string | null
+          renewal_date?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cs_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cs_accounts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cs_health_signals: {
+        Row: {
+          account_id: string
+          captured_at: string
+          created_at: string
+          id: string
+          metadata: Json
+          score: number
+          signal_type: string
+          source: string | null
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          account_id: string
+          captured_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          score?: number
+          signal_type: string
+          source?: string | null
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          account_id?: string
+          captured_at?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          score?: number
+          signal_type?: string
+          source?: string | null
+          user_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cs_health_signals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "cs_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cs_nps_responses: {
+        Row: {
+          account_id: string
+          category: string
+          comment: string | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          score: number
+          surveyed_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          category: string
+          comment?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          score: number
+          surveyed_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          category?: string
+          comment?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          surveyed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cs_nps_responses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "cs_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cs_nps_responses_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cs_qbrs: {
+        Row: {
+          account_id: string
+          agenda: Json
+          attendees: Json
+          completed_at: string | null
+          created_at: string
+          id: string
+          next_steps: Json
+          notes: string | null
+          outcomes: Json
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          agenda?: Json
+          attendees?: Json
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          next_steps?: Json
+          notes?: string | null
+          outcomes?: Json
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          agenda?: Json
+          attendees?: Json
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          next_steps?: Json
+          notes?: string | null
+          outcomes?: Json
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cs_qbrs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "cs_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cs_renewals: {
+        Row: {
+          account_id: string
+          actual_arr: number | null
+          closed_at: string | null
+          created_at: string
+          forecasted_arr: number
+          id: string
+          notes: string | null
+          renewal_date: string
+          risk_level: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          actual_arr?: number | null
+          closed_at?: string | null
+          created_at?: string
+          forecasted_arr?: number
+          id?: string
+          notes?: string | null
+          renewal_date: string
+          risk_level?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          actual_arr?: number | null
+          closed_at?: string | null
+          created_at?: string
+          forecasted_arr?: number
+          id?: string
+          notes?: string | null
+          renewal_date?: string
+          risk_level?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cs_renewals_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "cs_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       csat_surveys: {
         Row: {
           answered_at: string | null
@@ -8671,12 +8956,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      compute_account_health: { Args: { _account_id: string }; Returns: Json }
       compute_attribution: {
         Args: { _deal_id: string; _deal_value?: number; _model?: string }
         Returns: Json
       }
       compute_revops_kpis: {
         Args: { _period_end: string; _period_start: string; _user_id: string }
+        Returns: Json
+      }
+      cs_renewal_pipeline: {
+        Args: { _days_ahead?: number; _user_id: string }
         Returns: Json
       }
       dismiss_revops_alert: { Args: { _alert_id: string }; Returns: boolean }
