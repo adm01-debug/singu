@@ -533,6 +533,90 @@ export type Database = {
           },
         ]
       }
+      attribution_models_cache: {
+        Row: {
+          allocations: Json
+          computed_at: string
+          deal_id: string
+          id: string
+          model: string
+          total_value: number
+          user_id: string
+        }
+        Insert: {
+          allocations?: Json
+          computed_at?: string
+          deal_id: string
+          id?: string
+          model: string
+          total_value?: number
+          user_id: string
+        }
+        Update: {
+          allocations?: Json
+          computed_at?: string
+          deal_id?: string
+          id?: string
+          model?: string
+          total_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      attribution_touchpoints: {
+        Row: {
+          campaign: string | null
+          contact_id: string | null
+          content: string | null
+          created_at: string
+          deal_id: string | null
+          id: string
+          medium: string | null
+          metadata: Json
+          occurred_at: string
+          page_url: string | null
+          source: string | null
+          term: string | null
+          touchpoint_type: string
+          user_id: string
+          value_attributed: number
+        }
+        Insert: {
+          campaign?: string | null
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          medium?: string | null
+          metadata?: Json
+          occurred_at?: string
+          page_url?: string | null
+          source?: string | null
+          term?: string | null
+          touchpoint_type: string
+          user_id: string
+          value_attributed?: number
+        }
+        Update: {
+          campaign?: string | null
+          contact_id?: string | null
+          content?: string | null
+          created_at?: string
+          deal_id?: string | null
+          id?: string
+          medium?: string | null
+          metadata?: Json
+          occurred_at?: string
+          page_url?: string | null
+          source?: string | null
+          term?: string | null
+          touchpoint_type?: string
+          user_id?: string
+          value_attributed?: number
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -3459,6 +3543,122 @@ export type Database = {
           },
         ]
       }
+      form_submissions: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          data: Json
+          form_id: string
+          id: string
+          ip_hash: string | null
+          page_url: string | null
+          routed_to: string | null
+          user_agent: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          data?: Json
+          form_id: string
+          id?: string
+          ip_hash?: string | null
+          page_url?: string | null
+          routed_to?: string | null
+          user_agent?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          data?: Json
+          form_id?: string
+          id?: string
+          ip_hash?: string | null
+          page_url?: string | null
+          routed_to?: string | null
+          user_agent?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forms: {
+        Row: {
+          created_at: string
+          description: string | null
+          fields: Json
+          id: string
+          is_published: boolean
+          name: string
+          nurturing_workflow_id: string | null
+          redirect_url: string | null
+          routing_rules: Json
+          slug: string
+          submission_count: number
+          success_message: string | null
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_published?: boolean
+          name: string
+          nurturing_workflow_id?: string | null
+          redirect_url?: string | null
+          routing_rules?: Json
+          slug: string
+          submission_count?: number
+          success_message?: string | null
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_published?: boolean
+          name?: string
+          nurturing_workflow_id?: string | null
+          redirect_url?: string | null
+          routing_rules?: Json
+          slug?: string
+          submission_count?: number
+          success_message?: string | null
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       geo_allowed_countries: {
         Row: {
           country_code: string
@@ -4258,6 +4458,118 @@ export type Database = {
           },
         ]
       }
+      lead_magnet_downloads: {
+        Row: {
+          contact_id: string | null
+          downloaded_at: string
+          email: string | null
+          id: string
+          magnet_id: string
+          name: string | null
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          downloaded_at?: string
+          email?: string | null
+          id?: string
+          magnet_id: string
+          name?: string | null
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          downloaded_at?: string
+          email?: string | null
+          id?: string
+          magnet_id?: string
+          name?: string | null
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnet_downloads_magnet_id_fkey"
+            columns: ["magnet_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_magnets: {
+        Row: {
+          created_at: string
+          description: string | null
+          download_count: number
+          external_url: string | null
+          file_path: string | null
+          form_id: string | null
+          gated: boolean
+          id: string
+          is_published: boolean
+          slug: string
+          thumbnail_url: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          external_url?: string | null
+          file_path?: string | null
+          form_id?: string | null
+          gated?: boolean
+          id?: string
+          is_published?: boolean
+          slug: string
+          thumbnail_url?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          external_url?: string | null
+          file_path?: string | null
+          form_id?: string | null
+          gated?: boolean
+          id?: string
+          is_published?: boolean
+          slug?: string
+          thumbnail_url?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnets_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_routing_rules: {
         Row: {
           conditions: Json
@@ -5002,6 +5314,107 @@ export type Database = {
         }
         Relationships: []
       }
+      mql_classifications: {
+        Row: {
+          contact_id: string
+          created_at: string
+          criteria_id: string | null
+          handoff_assignment_id: string | null
+          handoff_at: string | null
+          handoff_to: string | null
+          id: string
+          notes: string | null
+          qualified_at: string
+          reason: string | null
+          score_snapshot: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          criteria_id?: string | null
+          handoff_assignment_id?: string | null
+          handoff_at?: string | null
+          handoff_to?: string | null
+          id?: string
+          notes?: string | null
+          qualified_at?: string
+          reason?: string | null
+          score_snapshot?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          criteria_id?: string | null
+          handoff_assignment_id?: string | null
+          handoff_at?: string | null
+          handoff_to?: string | null
+          id?: string
+          notes?: string | null
+          qualified_at?: string
+          reason?: string | null
+          score_snapshot?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mql_classifications_criteria_id_fkey"
+            columns: ["criteria_id"]
+            isOneToOne: false
+            referencedRelation: "mql_criteria"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mql_criteria: {
+        Row: {
+          auto_handoff: boolean
+          conditions: Json
+          created_at: string
+          description: string | null
+          handoff_to_role: string
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_handoff?: boolean
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          handoff_to_role?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_handoff?: boolean
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          handoff_to_role?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       nurturing_enrollments: {
         Row: {
           completed_at: string | null
@@ -5049,6 +5462,65 @@ export type Database = {
           },
           {
             foreignKeyName: "nurturing_enrollments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "nurturing_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nurturing_executions: {
+        Row: {
+          completed_at: string | null
+          contact_id: string
+          context: Json
+          created_at: string
+          current_step: number
+          error_message: string | null
+          id: string
+          last_action_at: string | null
+          next_action_at: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+          workflow_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id: string
+          context?: Json
+          created_at?: string
+          current_step?: number
+          error_message?: string | null
+          id?: string
+          last_action_at?: string | null
+          next_action_at?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          workflow_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string
+          context?: Json
+          created_at?: string
+          current_step?: number
+          error_message?: string | null
+          id?: string
+          last_action_at?: string | null
+          next_action_at?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          workflow_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurturing_executions_workflow_id_fkey"
             columns: ["workflow_id"]
             isOneToOne: false
             referencedRelation: "nurturing_workflows"
@@ -8085,6 +8557,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      compute_attribution: {
+        Args: { _deal_id: string; _deal_value?: number; _model?: string }
+        Returns: Json
+      }
+      enroll_contact_in_workflow: {
+        Args: { _contact_id: string; _workflow_id: string }
+        Returns: string
+      }
+      evaluate_mql: { Args: { _contact_id: string }; Returns: Json }
       execute_readonly_query: { Args: { query_text: string }; Returns: Json }
       get_buyer_document_path: {
         Args: { _document_id: string; _token: string }
@@ -8103,6 +8584,8 @@ export type Database = {
         Returns: boolean
       }
       immutable_unaccent: { Args: { "": string }; Returns: string }
+      increment_form_view: { Args: { _slug: string }; Returns: undefined }
+      increment_magnet_view: { Args: { _slug: string }; Returns: undefined }
       record_buyer_view: {
         Args: { _label?: string; _token: string }
         Returns: boolean
@@ -8184,6 +8667,20 @@ export type Database = {
       }
       seed_playbook_defaults: { Args: { _user_id: string }; Returns: undefined }
       seed_win_loss_defaults: { Args: { _user_id: string }; Returns: undefined }
+      submit_public_form: {
+        Args: {
+          _data: Json
+          _page_url?: string
+          _slug: string
+          _user_agent?: string
+          _utms?: Json
+        }
+        Returns: Json
+      }
+      track_magnet_download: {
+        Args: { _email: string; _name?: string; _slug: string; _utms?: Json }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
