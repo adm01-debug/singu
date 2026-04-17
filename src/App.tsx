@@ -133,6 +133,7 @@ const IntentSetupPage = lazy(() => import("./pages/IntentSetup"));
 const LeadScoringPage = lazy(() => import("./pages/LeadScoring"));
 const LeadScoringConfigPage = lazy(() => import("./pages/LeadScoringConfig"));
 const LeadScoringAutomationsPage = lazy(() => import("./pages/LeadScoringAutomations"));
+const EnrichmentPage = lazy(() => import("./pages/Enrichment"));
 const WinLossPage = lazy(() => import("./pages/WinLoss"));
 const WinLossSetupPage = lazy(() => import("./pages/WinLossSetup"));
 const ConversationIntelligencePage = lazy(() => import("./pages/ConversationIntelligence"));
@@ -424,6 +425,11 @@ const AnimatedRoutes = () => {
       <Route path="/lead-scoring/automations" element={
         <RequireAuth>
           <LazyPage><LeadScoringAutomationsPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/enrichment" element={
+        <RequireAuth>
+          <LazyPage><EnrichmentPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/win-loss" element={
