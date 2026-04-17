@@ -129,6 +129,8 @@ const LeadScoringPage = lazy(() => import("./pages/LeadScoring"));
 const LeadScoringConfigPage = lazy(() => import("./pages/LeadScoringConfig"));
 const WinLossPage = lazy(() => import("./pages/WinLoss"));
 const WinLossSetupPage = lazy(() => import("./pages/WinLossSetup"));
+const ConversationIntelligencePage = lazy(() => import("./pages/ConversationIntelligence"));
+const ConversationIntelligenceSetupPage = lazy(() => import("./pages/ConversationIntelligenceSetup"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -408,6 +410,16 @@ const AnimatedRoutes = () => {
       <Route path="/win-loss/setup" element={
         <RequireAuth>
           <LazyPage><WinLossSetupPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/conversation-intelligence" element={
+        <RequireAuth>
+          <LazyPage><ConversationIntelligencePage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/conversation-intelligence/setup" element={
+        <RequireAuth>
+          <LazyPage><ConversationIntelligenceSetupPage /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/rodizio" element={
