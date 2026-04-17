@@ -92,13 +92,22 @@ export function EmailFinderWidget({
             <label className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
               <UserPlus2 className="h-3 w-3" /> Aplicar resultado em qual contato?
             </label>
-            <SearchableSelectStrict
-              value={pickedContactId}
-              onValueChange={setPickedContactId}
-              options={contactOptions}
-              placeholder="Selecione um contato..."
-              emptyMessage="Nenhum contato encontrado"
-            />
+            <Select value={pickedContactId} onValueChange={setPickedContactId}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="Selecione um contato..." />
+              </SelectTrigger>
+              <SelectContent>
+                {contactOptions.length === 0 ? (
+                  <div className="p-2 text-xs text-muted-foreground">Nenhum contato disponível</div>
+                ) : (
+                  contactOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                      {opt.label}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
