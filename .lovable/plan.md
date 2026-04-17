@@ -1,73 +1,57 @@
 
-Forecasting acabou. Próximo grande gap = **Deal Rooms & Mutual Action Plans (MAP)** — espaço colaborativo por oportunidade com plano de ação compartilhado entre vendedor e comprador, milestones, documentos, stakeholders e tracking de engajamento. Hoje deals só têm pipeline_kanban + forecast; falta workspace de execução do ciclo.
+Deal Rooms acabou. O usuário fez um gap analysis explícito do roadmap 2.x. Embora 2.4/2.5/2.6 já existam parcial ou totalmente (Lead Scoring server-side, ABM, Intent Data), ele aponta gaps específicos restantes — em especial **2.4 Lead Scoring Comportamental**: integração com sequence_events (open/click/reply alimentando score) e trigger de automação `score_threshold`. Esses dois pontos NÃO estão implementados ainda.
 
-## Plano: Deal Rooms & Mutual Action Plans
+Próxima melhoria: **Behavioral Score Bridge & Threshold Automations** — fechar o gap real do 2.4 trazendo eventos de sequência como sinais de intent ponderados e criando trigger de automação reagindo a faixas de grade.
+
+## Plano: Behavioral Score Bridge & Threshold Automations
 
 ### 1. Schema (migration)
-- `deal_rooms` — `id, user_id, deal_id, deal_name, company_id, title, description, status ('active'|'won'|'lost'|'paused'), target_close_date, share_token (unique), share_enabled bool, last_buyer_view_at, buyer_view_count int`
-- `deal_room_milestones` — `id, room_id, user_id, title, description, due_date, status ('pending'|'in_progress'|'done'|'blocked'), owner_side ('seller'|'buyer'|'both'), sort_order, completed_at, completed_by`
-- `deal_room_stakeholders` — `id, room_id, user_id, contact_id (nullable), name, email, role_title, side ('seller'|'buyer'), influence ('champion'|'decision_maker'|'influencer'|'blocker'|'user'), engagement_score int 0-100, notes`
-- `deal_room_documents` — `id, room_id, user_id, title, file_path (storage), file_type, file_size, uploaded_by_side, view_count int, last_viewed_at`
-- `deal_room_activities` — `id, room_id, user_id, actor_side, actor_label, activity_type ('milestone_completed'|'doc_uploaded'|'doc_viewed'|'comment'|'view'), payload jsonb, created_at`
-- `deal_room_comments` — `id, room_id, user_id, author_side, author_label, body, created_at`
-- RLS: vendedor por user_id; rota pública `/dr/:token` lê via share_token (RPC SECURITY DEFINER)
-- RPC `get_deal_room_by_token(_token)` retorna room+milestones+stakeholders+docs+activities (sem expor user_id)
-- RPC `record_buyer_view(_token, _payload)` incrementa contadores + cria activity
-- Trigger audit em deal_rooms e deal_room_milestones
+- `lead_score_threshold_automations` — `id, user_id, name, trigger_type ('grade_reached'|'grade_dropped'|'score_above'|'score_below'), grade_target ('A'|'B'|'C'|'D' nullable), score_target int nullable, action_type ('notify'|'create_task'|'enroll_sequence'|'webhook'|'tag'), action_config jsonb, cooldown_hours int default 24, active bool, last_fired_at, fired_count int`
+- `lead_score_threshold_log` — `id, user_id, contact_id, automation_id, from_grade, to_grade, from_score, to_score, action_result jsonb, fired_at` (auditoria + cooldown)
+- Adiciona regras default ao `seed_lead_score_defaults`: `engagement.email_open=2/14d`, `engagement.email_click=5/14d`, `engagement.email_reply=12/30d`, `engagement.sequence_completed=8/30d`
+- Trigger `tg_sequence_events_to_intent`: AFTER INSERT em `sequence_events` mapeia event_type → cria `intent_signal` correspondente (open→email_open, click→email_click, reply→email_reply) e enfileira recompute
+- RLS por user_id em ambas
 
-### 2. Edge Functions
-- **`deal-room-share`**: gera/rota share_token, retorna URL pública
-- **`deal-room-buyer-view`**: endpoint público (no JWT) que valida token e registra view + activity (chamado pela rota pública)
-- **`deal-room-health`**: calcula health do room (milestones em dia %, engajamento de stakeholders, recência de view do buyer) e gera 2-3 recomendações via Lovable AI (gemini-3-flash-preview)
+### 2. Edge Function
+- **`lead-score-threshold-runner`** (cron + on-recompute): após cada execução do `lead-scorer`, compara delta de grade/score e dispara automações elegíveis respeitando cooldown. Ações:
+  - `notify` → cria registro em `notifications`
+  - `create_task` → insere em `tasks` (assigned_to + due_date relativo)
+  - `enroll_sequence` → insere em `sequence_enrollments`
+  - `webhook` → POST para URL configurada
+  - `tag` → adiciona tag ao contato
+  - Registra resultado em `lead_score_threshold_log`
+- Estende `lead-scorer` para invocar runner ao detectar mudança de grade
 
-### 3. Hooks `src/hooks/useDealRooms.ts`
-- `useDealRooms(filters)`, `useDealRoom(id)`, `useCreateDealRoom`, `useUpdateDealRoom`, `useDeleteDealRoom`
-- `useMilestones(roomId)`, `useUpsertMilestone`, `useDeleteMilestone`, `useToggleMilestone`
-- `useStakeholders(roomId)`, `useUpsertStakeholder`, `useDeleteStakeholder`
-- `useRoomDocuments(roomId)`, `useUploadDocument`, `useDeleteDocument`
-- `useRoomActivities(roomId)`, `useRoomComments(roomId)`, `useAddComment`
-- `useShareRoom`, `useRoomHealth`
-- `usePublicDealRoom(token)` (sem JWT, via RPC)
+### 3. Hooks `src/hooks/useScoreAutomations.ts`
+- `useScoreAutomations`, `useUpsertAutomation`, `useToggleAutomation`, `useDeleteAutomation`
+- `useAutomationLog(automationId?, days)`
 
 ### 4. UI
+**`/lead-scoring/automations`** (nova subpágina):
+- Lista de automações com toggle ativo, último disparo, contador de execuções
+- Botão "Nova automação" → wizard 3 passos: Trigger (grade/score) → Ação → Cooldown+nome
+- Templates pré-prontos: "Lead virou A → notificar AE", "Caiu de A para C → criar tarefa de win-back", "Alcançou 80 → entrar em sequência VIP"
+- Tab "Histórico" mostra log de disparos
 
-**`/deal-rooms`** (lista):
-- Cards de rooms com progresso de milestones, próximo milestone, último view do buyer, status
-- Filtros: status, próximos a fechar, sem atividade do buyer >7d
+**Componentes** em `src/components/lead-scoring/`:
+- `AutomationCard`, `AutomationWizard`, `AutomationTemplatesGrid`, `AutomationLogTable`
+- `ScoreSourceBreakdown` (atualizado mostrando origem dos sinais — email_open/click/reply ao lado de page_view, etc.)
 
-**`/deal-rooms/:id`** (workspace interno do vendedor):
-- Header: deal name, valor, target close, share button (gera link público)
-- 4 KPIs: % milestones done, dias até target, stakeholders engajados, buyer views
-- Tabs: "Plano" (kanban de milestones) | "Stakeholders" | "Documentos" | "Atividade" | "Comentários" | "Health IA"
+### 5. Integração
+- Link "Automações" na página `/lead-scoring` (header + tab)
+- ContatoDetalhe `LeadScoreCard`: timeline de sinais agora inclui eventos de sequência
+- Sequences: ao gravar event, trigger preenche `intent_signals` (sem código aplicativo extra)
 
-**`/dr/:token`** (rota pública para o buyer — sem auth):
-- Layout limpo, branded, mostra plano, milestones, stakeholders (lado buyer), documentos disponíveis, comentários
-- Buyer pode marcar milestones do lado dele como done, comentar e baixar docs
-- Registra view ao carregar
+### 6. Navegação
+- Rota `/lead-scoring/automations` em App.tsx
+- Tab "Automações" no header de `/lead-scoring`
 
-**Componentes** em `src/components/deal-rooms/`:
-- `DealRoomCard`, `MilestoneKanban`, `MilestoneCard`, `StakeholderList`, `StakeholderCard`
-- `DocumentsList`, `DocumentUploader`, `ActivityFeed`, `CommentsThread`
-- `ShareDialog` (mostra URL + toggle), `RoomHealthCard`, `BuyerSidePanel`
-
-### 5. Storage
-- Reutiliza bucket `documents` (já existe, privado) com path `deal-rooms/{room_id}/{file}`
-- RLS: vendedor sobe; buyer baixa via signed URL gerado por RPC quando token válido
-
-### 6. Integração
-- `PipelineKanban` deal card: botão "Abrir Deal Room" (cria se não existir)
-- `EmpresaDetalhe` aba comercial: lista de rooms ativos da conta
-- Win/Loss: ao fechar deal, marca room como won/lost e congela edição
-
-### 7. Navegação
-- Sidebar: "Deal Rooms" (ícone Briefcase ou Handshake) abaixo de Forecasting
-- Rotas `/deal-rooms`, `/deal-rooms/:id` (auth) e `/dr/:token` (pública) em App.tsx
-
-### 8. Memória
-- `mem://features/deal-rooms-mutual-action-plans` + atualizar índice
+### 7. Memória
+- Atualizar `mem://features/lead-scoring-server-side` com seção "Behavioral Bridge + Threshold Automations"
+- Novo `mem://features/lead-score-threshold-automations`
 
 ### Não fazer
 - Não criar tabelas products/proposals
-- Sem autenticação magic-link do buyer agora (token compartilhado basta)
-- Sem assinatura eletrônica de docs
-- Sem chat em tempo real (comments por refresh)
+- Não substituir o trigger existente `tg_intent_signals_enqueue_score` — coexiste
+- Não tocar em ABM/Intent além de leitura
+- Sem integração com Bombora/G2/Clearbit (pago, fora de escopo)
