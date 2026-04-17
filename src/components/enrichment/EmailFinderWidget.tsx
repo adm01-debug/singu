@@ -1,18 +1,72 @@
-import { useState } from "react";
-import { Search, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Loader2, Check, UserPlus2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useEmailFinder } from "@/hooks/useEnrichmentSuite";
+import { useApplyFoundEmail } from "@/hooks/useApplyFoundEmail";
+import { useContacts } from "@/hooks/useContacts";
+import { SearchableSelectStrict } from "@/components/ui/searchable-select";
 
-export function EmailFinderWidget({ contactId = null }: { contactId?: string | null }) {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [domain, setDomain] = useState("");
+interface Props {
+  contactId?: string | null;
+  prefillFirstName?: string;
+  prefillLastName?: string;
+  prefillDomain?: string;
+  /** Chamado após aplicar um email com sucesso (para fechar modais externos) */
+  onApplied?: (email: string) => void;
+}
+
+export function EmailFinderWidget({
+  contactId = null,
+  prefillFirstName = "",
+  prefillLastName = "",
+  prefillDomain = "",
+  onApplied,
+}: Props) {
+  const [firstName, setFirstName] = useState(prefillFirstName);
+  const [lastName, setLastName] = useState(prefillLastName);
+  const [domain, setDomain] = useState(prefillDomain);
+  const [pickedContactId, setPickedContactId] = useState<string>(contactId ?? "");
+  const [appliedEmails, setAppliedEmails] = useState<Set<string>>(new Set());
+
   const { mutate, data, isPending } = useEmailFinder();
+  const apply = useApplyFoundEmail();
+  const { contacts } = useContacts(undefined, { enabled: !contactId });
 
-  const submit = () => firstName && lastName && domain && mutate({ firstName, lastName, domain, contactId });
+  // Atualiza prefill se as props mudarem (ex: dialog reabre com outro contato)
+  useEffect(() => {
+    if (prefillFirstName) setFirstName(prefillFirstName);
+    if (prefillLastName) setLastName(prefillLastName);
+    if (prefillDomain) setDomain(prefillDomain);
+  }, [prefillFirstName, prefillLastName, prefillDomain]);
+
+  useEffect(() => {
+    if (contactId) setPickedContactId(contactId);
+  }, [contactId]);
+
+  const submit = () =>
+    firstName && lastName && domain && mutate({ firstName, lastName, domain, contactId: pickedContactId || null });
+
+  const handleApply = (email: string, score: number) => {
+    if (!pickedContactId) return;
+    apply.mutate(
+      { contactId: pickedContactId, email, score, source: "email_finder" },
+      {
+        onSuccess: () => {
+          setAppliedEmails((prev) => new Set(prev).add(email));
+          onApplied?.(email);
+        },
+      }
+    );
+  };
+
+  const contactOptions =
+    contacts?.map((c) => ({
+      value: c.id,
+      label: `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "(sem nome)",
+    })) ?? [];
 
   return (
     <Card>
@@ -32,24 +86,70 @@ export function EmailFinderWidget({ contactId = null }: { contactId?: string | n
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar"}
           </Button>
         </div>
-        {data?.best && (
-          <div className="rounded-lg border bg-success/5 p-3">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-sm font-medium">{data.best.email}</span>
-              <Badge variant="outline">Confiança {data.best.score}</Badge>
-            </div>
+
+        {!contactId && data && (
+          <div className="rounded-md border bg-muted/30 p-2 space-y-1.5">
+            <label className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+              <UserPlus2 className="h-3 w-3" /> Aplicar resultado em qual contato?
+            </label>
+            <SearchableSelectStrict
+              value={pickedContactId}
+              onValueChange={setPickedContactId}
+              options={contactOptions}
+              placeholder="Selecione um contato..."
+              emptyMessage="Nenhum contato encontrado"
+            />
           </div>
         )}
+
+        {data?.best && (
+          <div className="rounded-lg border bg-success/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-sm font-medium truncate">{data.best.email}</span>
+              <Badge variant="outline">Confiança {data.best.score}</Badge>
+            </div>
+            <Button
+              size="sm"
+              variant="default"
+              className="w-full h-8 text-xs"
+              disabled={!pickedContactId || apply.isPending || appliedEmails.has(data.best.email)}
+              onClick={() => handleApply(data.best.email, data.best.score)}
+            >
+              {appliedEmails.has(data.best.email) ? (
+                <><Check className="h-3 w-3 mr-1" /> Aplicado</>
+              ) : apply.isPending ? (
+                <><Loader2 className="h-3 w-3 mr-1 animate-spin" /> Aplicando...</>
+              ) : (
+                <>Usar este email</>
+              )}
+            </Button>
+          </div>
+        )}
+
         {data?.candidates && data.candidates.length > 1 && (
           <details className="text-xs">
             <summary className="cursor-pointer text-muted-foreground">Ver {data.candidates.length} candidatos</summary>
-            <ul className="mt-2 space-y-1">
-              {data.candidates.slice(0, 8).map((c) => (
-                <li key={c.email} className="flex justify-between font-mono">
-                  <span>{c.email}</span>
-                  <span className="text-muted-foreground">{c.score}</span>
-                </li>
-              ))}
+            <ul className="mt-2 space-y-1.5">
+              {data.candidates.slice(0, 8).map((c) => {
+                const applied = appliedEmails.has(c.email);
+                return (
+                  <li key={c.email} className="flex items-center justify-between gap-2 rounded border px-2 py-1.5">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="font-mono truncate">{c.email}</span>
+                      <span className="text-muted-foreground text-[10px] flex-shrink-0">{c.score}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[10px] flex-shrink-0"
+                      disabled={!pickedContactId || apply.isPending || applied}
+                      onClick={() => handleApply(c.email, c.score)}
+                    >
+                      {applied ? <Check className="h-3 w-3" /> : "Usar"}
+                    </Button>
+                  </li>
+                );
+              })}
             </ul>
           </details>
         )}
