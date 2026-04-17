@@ -26,7 +26,7 @@ export default function CustomerSuccess() {
   }, [accounts]);
 
   return (
-    <AppShell>
+    
       <Helmet>
         <title>Customer Success | CRM</title>
         <meta name="description" content="Gestão de Customer Success, health score, NPS, QBRs e renovações." />
@@ -101,6 +101,6 @@ export default function CustomerSuccess() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppShell>
+    
   );
 }

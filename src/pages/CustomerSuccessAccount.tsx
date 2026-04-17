@@ -22,13 +22,13 @@ export default function CustomerSuccessAccount() {
   const [npsOpen, setNpsOpen] = useState(false);
   const [tab, setTab] = useState("health");
 
-  if (isLoading) return <AppShell><div className="container p-6"><Skeleton className="h-64" /></div></AppShell>;
-  if (!account) return <AppShell><div className="container p-6">Conta não encontrada</div></AppShell>;
+  if (isLoading) return <div className="container p-6"><Skeleton className="h-64" /></div>;
+  if (!account) return <div className="container p-6">Conta não encontrada</div>;
 
   const daysToRenewal = account.renewal_date ? Math.ceil((new Date(account.renewal_date).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <AppShell>
+    
       <Helmet><title>{account.account_name} | Customer Success</title></Helmet>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center gap-2">
@@ -71,6 +71,6 @@ export default function CustomerSuccessAccount() {
 
         <NPSResponseDialog accountId={account.id} open={npsOpen} onOpenChange={setNpsOpen} />
       </div>
-    </AppShell>
+    
   );
 }
