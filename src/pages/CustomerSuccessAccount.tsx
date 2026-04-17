@@ -28,7 +28,7 @@ export default function CustomerSuccessAccount() {
   const daysToRenewal = account.renewal_date ? Math.ceil((new Date(account.renewal_date).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    
+    <>
       <Helmet><title>{account.account_name} | Customer Success</title></Helmet>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center gap-2">
@@ -71,6 +71,6 @@ export default function CustomerSuccessAccount() {
 
         <NPSResponseDialog accountId={account.id} open={npsOpen} onOpenChange={setNpsOpen} />
       </div>
-    
+    </>
   );
 }
