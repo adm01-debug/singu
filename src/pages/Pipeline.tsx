@@ -266,6 +266,7 @@ export default function Pipeline() {
   const { data: deals, isLoading: dealsLoading, error: dealsError } = useDealsPipeline();
   const { data: forecast } = useWeightedForecast();
   const moveDeal = useMoveDeal();
+  const [riskDeal, setRiskDeal] = useState<PipelineDeal | null>(null);
 
   const dealsByStage = useMemo(() => {
     const map: Record<string, PipelineDeal[]> = {};
@@ -332,6 +333,7 @@ export default function Pipeline() {
             stage={stage}
             deals={dealsByStage[stage.id] || []}
             onDrop={handleDrop}
+            onOpenRisk={setRiskDeal}
           />
         ))}
       </div>
@@ -342,6 +344,12 @@ export default function Pipeline() {
           <StalledDealsPanel />
         </div>
       </div>
+
+      <DealRiskDrawer
+        deal={riskDeal}
+        open={!!riskDeal}
+        onOpenChange={(o) => !o && setRiskDeal(null)}
+      />
     </AppLayout>
   );
 }
