@@ -1556,6 +1556,65 @@ export type Database = {
           },
         ]
       }
+      contact_next_actions: {
+        Row: {
+          action: string
+          channel: string
+          contact_id: string
+          created_at: string
+          expected_outcome: string | null
+          generated_at: string
+          id: string
+          model: string | null
+          reason: string
+          signals_snapshot: Json
+          suggested_script: string | null
+          updated_at: string
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          channel: string
+          contact_id: string
+          created_at?: string
+          expected_outcome?: string | null
+          generated_at?: string
+          id?: string
+          model?: string | null
+          reason: string
+          signals_snapshot?: Json
+          suggested_script?: string | null
+          updated_at?: string
+          urgency?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          channel?: string
+          contact_id?: string
+          created_at?: string
+          expected_outcome?: string | null
+          generated_at?: string
+          id?: string
+          model?: string | null
+          reason?: string
+          signals_snapshot?: Json
+          suggested_script?: string | null
+          updated_at?: string
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_next_actions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_preferences: {
         Row: {
           avoid_days: string[] | null
