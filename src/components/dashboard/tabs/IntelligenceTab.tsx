@@ -1,10 +1,11 @@
 import { lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Target, Clock } from 'lucide-react';
+import { ShoppingBag, Target, Clock, AlertTriangle } from 'lucide-react';
 import { Typography } from '@/components/ui/typography';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
+import { DealsAtRiskCard } from '@/components/dashboard/DealsAtRiskCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
 const BestTimeToContactPanel = lazy(() => import('@/components/analytics/BestTimeToContactPanel').then(m => ({ default: m.BestTimeToContactPanel })));
@@ -74,6 +75,14 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
         <LazySection fallbackVariant="chart" fallbackHeight="h-64">
           <BestTimeHeatmapCard />
         </LazySection>
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Deals em Risco">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="w-5 h-5 text-destructive" aria-hidden="true" />
+          <Typography variant="h4" gradient>Slip Risk</Typography>
+        </div>
+        <DealsAtRiskCard />
       </DashboardErrorBoundary>
     </motion.div>
   );
