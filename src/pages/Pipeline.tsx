@@ -1,10 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, DollarSign, Clock, Target, ArrowRight, Loader2, AlertTriangle, Gauge } from 'lucide-react';
 import { useDealsPipeline, usePipelineSummary, useWeightedForecast, useMoveDeal, useStageVelocity, useStalledDeals, useVelocityMetrics, type PipelineDeal, type WeightedForecast } from '@/hooks/usePipeline';
+import { useDealSlipRisk } from '@/hooks/useDealSlipRisk';
+import { DealRiskBadge } from '@/components/pipeline/DealRiskBadge';
+import { DealRiskDrawer } from '@/components/pipeline/DealRiskDrawer';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -22,14 +25,28 @@ const formatCurrency = (value: number) =>
 
 // ── Deal Card ──────────────────────────────────────
 
-const DealCard = React.memo(function DealCard({ deal }: { deal: PipelineDeal }) {
+const DealCard = React.memo(function DealCard({
+  deal,
+  onOpenRisk,
+}: {
+  deal: PipelineDeal;
+  onOpenRisk: (deal: PipelineDeal) => void;
+}) {
+  const risk = useDealSlipRisk(deal);
   return (
     <div
       draggable
       onDragStart={(e) => e.dataTransfer.setData('dealId', deal.id)}
       className="p-3 rounded-lg border bg-card cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
     >
-      <p className="font-medium text-sm truncate">{deal.titulo}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-medium text-sm truncate flex-1">{deal.titulo}</p>
+        <DealRiskBadge
+          score={risk.score}
+          level={risk.level}
+          onClick={() => onOpenRisk(deal)}
+        />
+      </div>
       {deal.company_name && (
         <p className="text-xs text-muted-foreground truncate mt-0.5">{deal.company_name}</p>
       )}
@@ -52,10 +69,12 @@ function PipelineColumn({
   stage,
   deals,
   onDrop,
+  onOpenRisk,
 }: {
   stage: typeof STAGES[number];
   deals: PipelineDeal[];
   onDrop: (dealId: string, stageId: string) => void;
+  onOpenRisk: (deal: PipelineDeal) => void;
 }) {
   const totalValue = deals.reduce((sum, d) => sum + (d.valor || 0), 0);
 
@@ -80,7 +99,7 @@ function PipelineColumn({
       </div>
       <div className="space-y-2 p-2 bg-muted/30 rounded-b-lg min-h-[200px] border border-t-0">
         {deals.map((deal) => (
-          <DealCard key={deal.id} deal={deal} />
+          <DealCard key={deal.id} deal={deal} onOpenRisk={onOpenRisk} />
         ))}
         {deals.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-8">
@@ -247,6 +266,7 @@ export default function Pipeline() {
   const { data: deals, isLoading: dealsLoading, error: dealsError } = useDealsPipeline();
   const { data: forecast } = useWeightedForecast();
   const moveDeal = useMoveDeal();
+  const [riskDeal, setRiskDeal] = useState<PipelineDeal | null>(null);
 
   const dealsByStage = useMemo(() => {
     const map: Record<string, PipelineDeal[]> = {};
@@ -313,6 +333,7 @@ export default function Pipeline() {
             stage={stage}
             deals={dealsByStage[stage.id] || []}
             onDrop={handleDrop}
+            onOpenRisk={setRiskDeal}
           />
         ))}
       </div>
@@ -323,6 +344,12 @@ export default function Pipeline() {
           <StalledDealsPanel />
         </div>
       </div>
+
+      <DealRiskDrawer
+        deal={riskDeal}
+        open={!!riskDeal}
+        onOpenChange={(o) => !o && setRiskDeal(null)}
+      />
     </AppLayout>
   );
 }
