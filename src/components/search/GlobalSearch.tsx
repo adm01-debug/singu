@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { useModalHistory } from '@/hooks/useModalHistory';
 import {
-  Building2, Users, MessageSquare, Search, Zap, Mic,
+  Building2, Users, MessageSquare, Search, Zap, Mic, Sparkles,
   LayoutDashboard, CalendarDays, Lightbulb, Bell, Settings,
   UserPlus, Building, MessagesSquare,
 } from 'lucide-react';
@@ -14,9 +14,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { queryExternalData } from '@/lib/externalData';
+import { useSemanticSearch } from '@/hooks/useSemanticSearch';
 import type { SearchContact } from '@/hooks/useSearchContactsView';
 import { SearchResultGroups } from './global-search/SearchResultGroups';
 import { SearchLocalGroups } from './global-search/SearchLocalGroups';
+import { cn } from '@/lib/utils';
 
 const LazyVoiceOverlay = lazy(() => import('./VoiceSearchOverlayConnected'));
 
@@ -88,6 +90,10 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const setVoiceOpen = useCallback((v: boolean) => { setVoiceOpenInternal(v); onVoiceModeChange?.(v); }, [onVoiceModeChange]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [semanticMode, setSemanticMode] = useState<boolean>(() => {
+    try { return localStorage.getItem('global-search-semantic') === '1'; } catch { return false; }
+  });
+  const semantic = useSemanticSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -117,6 +123,36 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
 
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim() || !user) { setResults({ contacts: [], companies: [], interactions: [] }); return; }
+
+    if (semanticMode) {
+      const sem = await semantic.search(searchQuery.trim(), {
+        entities: ['contacts', 'companies', 'interactions'],
+        limit: 8,
+        silent: true,
+      });
+      setResults({
+        contacts: sem.contacts.map(c => ({
+          id: c.id, type: 'contact' as const,
+          title: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Contato',
+          subtitle: c.role_title || c.email || undefined,
+          meta: c.phone || undefined,
+        })),
+        companies: sem.companies.map(c => ({
+          id: c.id, type: 'company' as const,
+          title: toTitleCase(c.name),
+          subtitle: c.industry || undefined,
+          meta: c.city && c.state ? `${c.city}, ${c.state}` : undefined,
+        })),
+        interactions: sem.interactions.map(i => ({
+          id: i.id, type: 'interaction' as const,
+          title: i.title || 'Interação',
+          subtitle: i.type,
+          meta: new Date(i.created_at).toLocaleDateString('pt-BR'),
+        })),
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const [contactsResponse, companiesResponse, interactionsResponse] = await Promise.all([
@@ -141,10 +177,18 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         interactions: interactionsResponse.data?.map(i => ({ id: i.id, type: 'interaction' as const, title: i.title, subtitle: i.type, meta: new Date(i.created_at).toLocaleDateString('pt-BR') })) || [],
       });
     } catch (error) { logger.error('Search error:', error); toast.error('Não foi possível completar a busca agora.'); setResults({ contacts: [], companies: [], interactions: [] }); } finally { setIsLoading(false); }
-  }, [user]);
+  }, [user, semanticMode, semantic]);
 
-  useEffect(() => { const timer = setTimeout(() => performSearch(query), 300); return () => clearTimeout(timer); }, [query, performSearch]);
-  useEffect(() => { if (!open) { setQuery(''); setResults({ contacts: [], companies: [], interactions: [] }); } }, [open]);
+  useEffect(() => { const timer = setTimeout(() => performSearch(query), semanticMode ? 450 : 300); return () => clearTimeout(timer); }, [query, performSearch, semanticMode]);
+  useEffect(() => { if (!open) { setQuery(''); setResults({ contacts: [], companies: [], interactions: [] }); semantic.reset(); } }, [open, semantic]);
+
+  const toggleSemantic = useCallback(() => {
+    setSemanticMode(prev => {
+      const next = !prev;
+      try { localStorage.setItem('global-search-semantic', next ? '1' : '0'); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   const handleNavigate = (path: string, label: string) => { onOpenChange(false); addRecentItem({ id: path, type: 'page', title: label, path }); navigate(path); };
   const handleSelect = (result: SearchResult) => { onOpenChange(false); const path = result.type === 'contact' ? `/contatos/${result.id}` : result.type === 'company' ? `/empresas/${result.id}` : '/interacoes'; addRecentItem({ id: result.id, type: result.type, title: result.title, path }); navigate(path); };
@@ -155,23 +199,51 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
   const hasLocalResults = filteredNavigation.length > 0 || filteredQuickActions.length > 0 || filteredRecent.length > 0;
   const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
   const modKey = isMac ? '⌘' : 'Ctrl';
+  const effectiveLoading = semanticMode ? semantic.loading : isLoading;
 
   return (
     <>
       <CommandDialog ref={ref} open={open} onOpenChange={onOpenChange} shouldFilter={false}>
         <div className="flex items-center justify-between gap-2 px-3 border-b border-border">
           <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-primary" /><span className="text-xs font-medium text-muted-foreground">Super Command Palette</span></div>
-          <button onClick={() => { onOpenChange(false); setVoiceOpen(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors" aria-label="Assistente de Voz"><Mic className="w-3.5 h-3.5" /><span className="hidden sm:inline">Voz</span></button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleSemantic}
+              aria-pressed={semanticMode}
+              title={semanticMode ? 'Busca Inteligente IA: ativada (sinônimos + tolerância a erros)' : 'Ativar busca inteligente IA'}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                semanticMode
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted hover:bg-muted/70 text-muted-foreground',
+              )}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">IA</span>
+            </button>
+            <button onClick={() => { onOpenChange(false); setVoiceOpen(true); }} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-colors" aria-label="Assistente de Voz"><Mic className="w-3.5 h-3.5" /><span className="hidden sm:inline">Voz</span></button>
+          </div>
         </div>
-        <CommandInput placeholder="Buscar contatos, empresas, navegar ou executar ações..." value={query} onValueChange={setQuery} />
+        <CommandInput placeholder={semanticMode ? 'Busca semântica: descreva o que procura…' : 'Buscar contatos, empresas, navegar ou executar ações...'} value={query} onValueChange={setQuery} />
         <CommandList className="max-h-[400px]">
-          {query && !isLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
-          {query && isLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">Buscando...</p></div></div>}
+          {query && !effectiveLoading && <div className="sr-only" aria-live="polite" aria-atomic="true">{hasResults ? `${results.contacts.length + results.companies.length + results.interactions.length} resultados encontrados` : 'Nenhum resultado encontrado'}</div>}
+          {query && effectiveLoading && <div className="flex items-center justify-center py-8"><div className="flex flex-col items-center gap-3"><div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" /><p className="text-sm text-muted-foreground">{semanticMode ? 'Buscando com IA...' : 'Buscando...'}</p></div></div>}
+          {semanticMode && hasResults && semantic.variations.length > 1 && (
+            <div className="px-4 py-1.5 text-[11px] text-muted-foreground border-b border-border/50 flex flex-wrap items-center gap-1">
+              <Sparkles className="w-3 h-3 text-primary" />
+              <span>Termos relacionados:</span>
+              {semantic.variations.slice(1, 5).map(v => (
+                <span key={v} className="px-1.5 py-0.5 rounded bg-muted/60">{v}</span>
+              ))}
+              {semantic.cached && <span className="ml-auto text-[10px] opacity-60">cache</span>}
+            </div>
+          )}
 
           <SearchResultGroups results={results} onSelect={handleSelect} />
 
-          {query && !hasResults && !hasLocalResults && !isLoading && (
-            <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">Tente buscar por nome, email, empresa ou título</p></div></div></CommandEmpty>
+          {query && !hasResults && !hasLocalResults && !effectiveLoading && (
+            <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">{semanticMode ? 'Tente palavras diferentes ou desative a busca IA' : 'Tente buscar por nome, email, empresa ou título'}</p></div></div></CommandEmpty>
           )}
 
           <SearchLocalGroups query={query} filteredQuickActions={filteredQuickActions} filteredNavigation={filteredNavigation} filteredRecent={filteredRecent} onQuickAction={handleQuickAction} onNavigate={handleNavigate} onRecentSelect={handleRecentSelect} />
