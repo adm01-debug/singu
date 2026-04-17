@@ -145,6 +145,25 @@ async function computeForContact(
     });
   }
 
+  // Disparar threshold runner se grade mudou OU score cruzou múltiplo de 10
+  const crossedScore = Math.floor(prevScore / 10) !== Math.floor(total / 10);
+  if (!prev || prev.grade !== grade || crossedScore) {
+    try {
+      await supabase.functions.invoke('lead-score-threshold-runner', {
+        body: {
+          user_id: userId,
+          contact_id: contactId,
+          from_grade: prev?.grade ?? null,
+          to_grade: grade,
+          from_score: prevScore,
+          to_score: total,
+        },
+      });
+    } catch (e) {
+      console.error('threshold-runner invoke failed', e);
+    }
+  }
+
   return { contact_id: contactId, total, grade, change, dimensions: dimScores };
 }
 
