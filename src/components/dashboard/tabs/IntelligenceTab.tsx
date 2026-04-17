@@ -65,6 +65,16 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
           </LazySection>
         </div>
       </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Melhor Hora para Prospectar">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-5 h-5 text-primary" aria-hidden="true" />
+          <Typography variant="h4" gradient>Timing de Prospecção</Typography>
+        </div>
+        <LazySection fallbackVariant="chart" fallbackHeight="h-64">
+          <BestTimeHeatmapCard />
+        </LazySection>
+      </DashboardErrorBoundary>
     </motion.div>
   );
 }
