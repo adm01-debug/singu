@@ -1,60 +1,88 @@
 
-Behavioral Score Bridge acabou. Próximo grande gap = **Sales Playbooks & Battle Cards** — biblioteca de playbooks por situação (discovery, demo, negociação, win-back) e battle cards por concorrente, com sugestão contextual durante o ciclo de venda. Hoje existem ApproachEngine e CopywritingTools, mas falta playbook estruturado por estágio + battle cards consultáveis em segundos durante a call.
+Vou explorar o estado atual antes de planejar.
 
-## Plano: Sales Playbooks & Battle Cards
+Análise do que já existe (do contexto):
+- Email marketing campaigns: módulo `/campanhas` com EmailBuilder ✅
+- Landing pages builder: `/landing-pages` + `/lp/:slug` ✅
+- Lead nurturing workflows: `useNurturingWorkflows` hook ✅ (mas falta UI de execução/runner)
+- MQL→SQL handoff: existe lead-routing/handoff ✅ (mas falta classificação MQL formal)
+- Sequences multi-canal já existem
+
+Gaps reais (do item 6 do roadmap):
+1. **Forms builder** com routing automático — NÃO existe
+2. **Lead nurturing runner** + UI completa de workflows comportamentais — hook existe, falta UI/edge
+3. **MQL classification** formal (score+critérios → marca contato MQL → handoff SDR) — falta camada formal
+4. **Multi-touch attribution** (first/last/linear/U-shape) por touchpoint — NÃO existe
+5. **Lead magnets** com tracking de download — NÃO existe
+
+Plano: entregar como módulo unificado **Marketing Automation Suite** focado nos 5 gaps reais (não duplicar email/LP/sequences que já existem).
+
+## Plano: Marketing Automation Suite
 
 ### 1. Schema (migration)
-- `sales_playbooks` — `id, user_id, name, description, scenario ('discovery'|'demo'|'negotiation'|'objection'|'closing'|'winback'|'onboarding'|'custom'), stage_target, industry_target, persona_target, content jsonb (sections array), tags[], active, usage_count, created_at, updated_at`
-- `playbook_sections` (embed em jsonb): `{title, type:'talktrack'|'questions'|'objections'|'next_steps'|'resources', body, items[]}`
-- `battle_cards` — `id, user_id, competitor_name, competitor_logo_url, our_strengths jsonb, their_strengths jsonb, weaknesses jsonb, pricing_comparison, win_themes text[], landmines text[], proof_points jsonb, last_updated_by, version int, active`
-- `playbook_usage_log` — `id, user_id, playbook_id, contact_id, deal_id, opened_at, action ('opened'|'copied'|'shared')`
-- RLS por user_id, audit, seed `seed_playbook_defaults` (4 playbooks + 2 battle cards exemplo)
+- `forms` — id, user_id, name, slug, fields jsonb (array de {key,label,type,required}), routing_rules jsonb, redirect_url, success_message, is_published, submission_count, view_count
+- `form_submissions` — id, form_id, user_id, data jsonb, contact_id (auto-criado), routed_to (member_id), utm_source/medium/campaign, page_url, created_at
+- `lead_magnets` — id, user_id, title, description, type (ebook|webinar|whitepaper|template|video), file_path, thumbnail_url, gated bool, form_id (FK), download_count, view_count, is_published
+- `lead_magnet_downloads` — id, magnet_id, user_id, contact_id, email, downloaded_at, utm_*
+- `mql_criteria` — id, user_id, name, conditions jsonb (score>=X, has tag Y, intent signal Z), is_active, auto_handoff bool, handoff_to_role (sdr|closer)
+- `mql_classifications` — id, user_id, contact_id, criteria_id, qualified_at, status (mql|sql|disqualified), handoff_assignment_id, score_snapshot int
+- `attribution_touchpoints` — id, user_id, contact_id, touchpoint_type (form|email|page_view|magnet|sequence|call|meeting|ad), source, medium, campaign, content, occurred_at, deal_id, value_attributed numeric
+- `attribution_models_cache` — id, user_id, deal_id, model (first|last|linear|u_shape|w_shape), allocations jsonb, total_value, computed_at
+- `nurturing_executions` — id, workflow_id, contact_id, current_step int, status (active|paused|completed), next_action_at, last_action_at, started_at, completed_at
+- RLS por user_id em todas; público leia forms publicados + insira submissions
+- RPC `submit_public_form(_slug, _data, _utms)` SECURITY DEFINER
+- RPC `compute_attribution(_deal_id, _model)` retorna allocations
+- RPC `evaluate_mql(_contact_id)` checa critérios e classifica
 
 ### 2. Edge Functions
-- **`playbook-recommender`**: dado `{deal_id|contact_id, current_stage, recent_topics?}` retorna top 3 playbooks rankeados por relevância (match em scenario/stage/persona) + 1 battle card se concorrente foi mencionado em conversation_intelligence
-- **`playbook-generator`**: gera novo playbook via Lovable AI (gemini-3-flash-preview) a partir de prompt curto (cenário + indústria) com tool calling estruturado retornando sections JSON pronto
+- `form-submit-handler` (público, no JWT): valida, cria contact se não existe, aplica routing rule (round-robin entre owners definidos), grava submission + touchpoint, dispara nurturing workflow se configurado
+- `nurturing-runner` (cron a cada 5min): processa enrollments com `next_action_at <= now()`, executa step (email/whatsapp/wait/task), avança current_step
+- `mql-evaluator` (cron diário + on-demand): roda critérios MQL ativos para contatos elegíveis, classifica e dispara handoff
+- `attribution-calculator` (on-demand): calcula allocations conforme modelo escolhido para um deal
 
-### 3. Hooks `src/hooks/usePlaybooks.ts` e `useBattleCards.ts`
-- `usePlaybooks(filters)`, `usePlaybook(id)`, `useUpsertPlaybook`, `useDeletePlaybook`, `useGeneratePlaybook`
-- `useBattleCards`, `useBattleCard(id)`, `useUpsertBattleCard`, `useDeleteBattleCard`
-- `useRecommendPlaybooks(context)`, `useLogPlaybookUsage`
+### 3. Hooks
+- `useForms`, `useForm(id)`, `useUpsertForm`, `useFormSubmissions(formId)`
+- `useLeadMagnets`, `useLeadMagnet(id)`, `useUpsertLeadMagnet`, `useMagnetDownloads`
+- `useMQLCriteria`, `useMQLClassifications`, `useEvaluateMQL`, `useHandoffMQL`
+- `useTouchpoints(contactId|dealId)`, `useAttribution(dealId, model)`, `useRecordTouchpoint`
+- Estender `useNurturingWorkflows` com `useEnrollContact`, `useNurturingExecutions`
 
 ### 4. UI
 
-**`/playbooks`** (hub):
-- Tabs: "Playbooks" | "Battle Cards" | "Uso"
-- Filtros por scenario/indústria/persona, busca textual
-- Card grid + botão "Gerar com IA" e "Novo manual"
+**`/marketing`** (hub central com 5 tabs):
+- Tab "Formulários": grid de forms, botão Novo (form builder drag-drop), copiar URL pública
+- Tab "Lead Magnets": grid de magnets, upload + form gating
+- Tab "Nurturing": workflows com status, enrollments ativos, runner stats
+- Tab "MQL → SQL": critérios configuráveis + lista de contatos qualificados aguardando handoff
+- Tab "Attribution": seletor de modelo (first/last/linear/U/W) + breakdown por deal/campanha
 
-**`/playbooks/:id`** (detalhe):
-- Renderização rica de sections (talktrack, perguntas SPIN, objeções+respostas, next steps, resources)
-- Botão "Copiar bloco" por seção, "Usar no deal" (registra usage)
+**`/marketing/forms/:id`** — builder de campos (FormBuilder), preview, settings de routing
+**`/marketing/lead-magnets/:id`** — editor com upload, form de gating, share URL
+**`/f/:slug`** (rota pública) — renderiza form + captura, redirect ou success message
+**`/lm/:slug`** (rota pública) — landing de lead magnet com gate de form
 
-**`/playbooks/battle-cards/:id`**:
-- Layout Nós x Eles, win themes, landmines, proof points, pricing comparison
-
-**Drawer `<PlaybookSuggestionDrawer />`** (lateral):
-- Acionado em PipelineKanban deal card e ContatoDetalhe header — chama `playbook-recommender` e mostra top 3 playbooks + battle card sugerido
-
-**Componentes** em `src/components/playbooks/`:
-- `PlaybookCard`, `PlaybookSectionRenderer`, `PlaybookEditor` (form com sections dinâmicas), `GeneratePlaybookDialog`
-- `BattleCardView`, `BattleCardEditor`, `CompetitorComparisonTable`
-- `PlaybookSuggestionDrawer`, `PlaybookUsageChart`
+**Componentes** em `src/components/marketing/`:
+- `FormBuilder` (campos drag-drop), `FormFieldEditor`, `PublicFormRenderer`
+- `LeadMagnetCard`, `LeadMagnetEditor`, `MagnetGatingForm`
+- `NurturingWorkflowEditor` (canvas de steps), `NurturingExecutionList`
+- `MQLCriteriaEditor`, `MQLContactList`, `MQLHandoffDialog`
+- `AttributionModelSelector`, `AttributionBreakdownChart`, `TouchpointTimeline`
 
 ### 5. Integração
-- `PipelineKanban` deal card: ícone "BookOpen" abre drawer de sugestão
-- `ContatoDetalhe`: botão "Playbook" no header
-- `ConversationIntelligence` insights: se concorrente detectado → link direto para battle card
+- ContatoDetalhe: nova aba "Touchpoints" com timeline + badge MQL/SQL
+- PipelineKanban deal card: botão "Attribution" abre breakdown
+- AppSidebar: novo grupo "Marketing" com link para `/marketing`
 
-### 6. Navegação
-- Sidebar: "Playbooks" (ícone BookOpen) abaixo de Conversation Intel
-- Rotas `/playbooks`, `/playbooks/:id`, `/playbooks/battle-cards/:id` em App.tsx
+### 6. Rotas (App.tsx)
+- `/marketing`, `/marketing/forms/:id`, `/marketing/lead-magnets/:id` (auth)
+- `/f/:slug`, `/lm/:slug` (públicas)
 
 ### 7. Memória
-- `mem://features/sales-playbooks-battle-cards` + atualizar índice
+- `mem://features/marketing-automation-suite` + atualizar índice
 
 ### Não fazer
-- Não criar tabelas products/proposals
-- Sem editor WYSIWYG complexo (markdown simples + sections estruturadas)
-- Sem versionamento histórico de playbooks (só `version` int)
-- Sem importação de PDFs externos
+- Não duplicar email-builder/landing-pages/sequences que já existem
+- Não criar produtos/propostas
+- Sem editor WYSIWYG complexo de email (reusa EmailBuilder)
+- Sem ad platform integration (Google/Meta) — touchpoints manuais ou via UTM
+- Sem pixel tracking novo (reusa intent-tracker)
