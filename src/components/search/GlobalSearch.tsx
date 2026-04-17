@@ -242,8 +242,8 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
 
           <SearchResultGroups results={results} onSelect={handleSelect} />
 
-          {query && !hasResults && !hasLocalResults && !isLoading && (
-            <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">Tente buscar por nome, email, empresa ou título</p></div></div></CommandEmpty>
+          {query && !hasResults && !hasLocalResults && !effectiveLoading && (
+            <CommandEmpty><div className="flex flex-col items-center gap-3 py-8"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center"><Search className="w-6 h-6 text-muted-foreground" /></div><div className="text-center"><p className="font-medium">Nenhum resultado para "{query}"</p><p className="text-sm text-muted-foreground mt-1">{semanticMode ? 'Tente palavras diferentes ou desative a busca IA' : 'Tente buscar por nome, email, empresa ou título'}</p></div></div></CommandEmpty>
           )}
 
           <SearchLocalGroups query={query} filteredQuickActions={filteredQuickActions} filteredNavigation={filteredNavigation} filteredRecent={filteredRecent} onQuickAction={handleQuickAction} onNavigate={handleNavigate} onRecentSelect={handleRecentSelect} />
