@@ -69,10 +69,12 @@ function PipelineColumn({
   stage,
   deals,
   onDrop,
+  onOpenRisk,
 }: {
   stage: typeof STAGES[number];
   deals: PipelineDeal[];
   onDrop: (dealId: string, stageId: string) => void;
+  onOpenRisk: (deal: PipelineDeal) => void;
 }) {
   const totalValue = deals.reduce((sum, d) => sum + (d.valor || 0), 0);
 
@@ -97,7 +99,7 @@ function PipelineColumn({
       </div>
       <div className="space-y-2 p-2 bg-muted/30 rounded-b-lg min-h-[200px] border border-t-0">
         {deals.map((deal) => (
-          <DealCard key={deal.id} deal={deal} />
+          <DealCard key={deal.id} deal={deal} onOpenRisk={onOpenRisk} />
         ))}
         {deals.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-8">
