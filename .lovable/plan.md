@@ -1,56 +1,58 @@
 
-Marketing Suite finalizado. Próxima entrega = **Revenue Operations Dashboard (RevOps)** — Parte B do plano anterior. Visão unificada da máquina de receita ponta-a-ponta.
+RevOps acabou. Próximo gap real do CRM enterprise = **Customer Success / Health Score Module**. Hoje há lead scoring, churn risk e RevOps mas falta acompanhamento estruturado pós-venda: health score por cliente, NPS/CSAT tracking, QBRs, expansion playbooks e renewal pipeline. Sem isso o CRM "termina no Won" e perde o ciclo expansion/upsell/retention.
 
-## Plano: RevOps Dashboard
+## Plano: Customer Success Suite
 
 ### 1. Schema (migration)
-- `revops_snapshots` — id, user_id, period (date), funnel_stage ('visitor'|'lead'|'mql'|'sql'|'opportunity'|'customer'), count int, conversion_rate numeric, avg_velocity_days numeric, total_value numeric, captured_at
-- `revops_benchmarks` — id, user_id, metric_key (text), target_value numeric, warning_threshold numeric, critical_threshold numeric, updated_at
-- `revops_alerts` — id, user_id, metric_key, severity ('info'|'warning'|'critical'), message, current_value, expected_value, period, dismissed bool, created_at
-- RLS por user_id; índices em (user_id, period), (user_id, metric_key)
-- RPC `compute_revops_kpis(_user_id, _period_start, _period_end)` retorna jsonb com win_rate, cycle_time, pipeline_coverage, mql_to_sql_rate, sql_to_won_rate
-- RPC `dismiss_revops_alert(_alert_id)`
+- `cs_accounts` — id, user_id, contact_id (FK), company_id, csm_owner_id, tier ('strategic'|'enterprise'|'mid'|'smb'), arr numeric, contract_start, renewal_date, lifecycle_stage ('onboarding'|'adopting'|'mature'|'at_risk'|'churned'), health_score int (0-100), updated_at
+- `cs_health_signals` — id, account_id, signal_type ('usage'|'support'|'engagement'|'sentiment'|'payment'|'nps'), score numeric, weight numeric, captured_at, metadata jsonb
+- `cs_nps_responses` — id, account_id, contact_id, score int (0-10), category ('promoter'|'passive'|'detractor'), comment, surveyed_at
+- `cs_qbrs` — id, account_id, scheduled_at, completed_at, status, agenda jsonb, outcomes jsonb, next_steps jsonb, attendees jsonb
+- `cs_renewals` — id, account_id, renewal_date, status ('upcoming'|'in_negotiation'|'renewed'|'churned'|'downgraded'), forecasted_arr, actual_arr, risk_level, notes
+- RLS por user_id; índices em (user_id, renewal_date), (account_id, signal_type)
+- RPC `compute_account_health(_account_id)` agrega signals ponderados → health_score
+- RPC `cs_renewal_pipeline(_user_id, _days_ahead)` retorna renewals dos próximos N dias
 
 ### 2. Edge Function
-- `revops-snapshot-builder` (cron diário 04:00 UTC):
-  - Para cada user_id ativo: consolida MQL classifications, SQL handoffs, deals (opportunities + won) do dia
-  - Calcula conversion rates entre estágios e velocity médio
-  - Insere snapshot do dia em `revops_snapshots`
-  - Compara com período anterior (7d/30d) → gera alertas se queda > threshold
-  - Insere em `revops_alerts`
+- `cs-health-recalc` (cron diário 05:00 UTC): para cada account, agrega health_signals dos últimos 90d com decay temporal, atualiza health_score, gera alerta se queda >20pts ou score <40
 
-### 3. Hooks (`src/hooks/`)
-- `useRevOpsSnapshots(period)` — lista snapshots filtrados
-- `useRevOpsKPIs(periodStart, periodEnd)` — chama RPC compute
-- `useRevOpsBenchmarks` + `useUpsertBenchmark`
-- `useRevOpsAlerts` + `useDismissAlert`
-- `useTriggerRevOpsSnapshot` (admin on-demand)
+### 3. Hooks
+- `useCSAccounts`, `useCSAccount(id)`, `useUpsertCSAccount`
+- `useHealthSignals(accountId)`, `useRecordSignal`
+- `useNPS(accountId)`, `useSubmitNPS`
+- `useQBRs(accountId)`, `useUpsertQBR`
+- `useRenewals(daysAhead)`, `useUpdateRenewal`
 
 ### 4. UI
 
-**`/revops`** — hub com 3 tabs:
-- **Funil**: `RevenueFunnelChart` (Visitor→Lead→MQL→SQL→Opp→Customer) com taxas e drop-off destacado em vermelho quando abaixo do benchmark
-- **KPIs**: `KPIComparisonGrid` (Pipeline Coverage, Win Rate, Cycle Time, MQL→SQL %, SQL→Won %) com setas trend vs período anterior
-- **Benchmarks**: `BenchmarkConfigForm` para configurar metas por métrica
+**`/customer-success`** — hub com 4 tabs:
+- **Portfolio**: grid de accounts com health score colorido (verde/amarelo/vermelho), tier badge, renewal countdown, CSM owner
+- **Renewals**: pipeline de renovações próximas (30/60/90d) ordenado por risco
+- **NPS**: score médio, distribuição promoters/passives/detractors, comments recentes
+- **QBRs**: calendário de QBRs agendados + concluídos com outcomes
 
-**Componentes** em `src/components/revops/`:
-- `RevenueFunnelChart` (recharts FunnelChart)
-- `KPIComparisonGrid` (grid de StatCards com delta %)
-- `BenchmarkConfigForm`
-- `RevOpsAlertList` (cards dismissíveis no topo do hub)
-- `PeriodSelector` (7d/30d/90d/QTD)
+**`/customer-success/account/:id`** — detalhe do account:
+- Header: health score gauge, tier, ARR, renewal date countdown
+- Tab Health: timeline de signals + breakdown por categoria
+- Tab QBRs: histórico + agendar novo
+- Tab NPS: histórico de respostas
+- Tab Expansion: oportunidades de upsell/cross-sell
+
+**Componentes** em `src/components/customer-success/`:
+- `HealthScoreGauge`, `AccountPortfolioCard`, `RenewalPipelineList`
+- `NPSDistributionChart`, `NPSResponseDialog`, `QBRScheduler`, `QBROutcomesEditor`
+- `HealthSignalTimeline`, `ExpansionOpportunityList`
 
 ### 5. Navegação & Cron
-- `App.tsx`: rota `/revops` (auth, lazy)
-- `AppSidebar`: item "RevOps" (ícone `Activity`) abaixo de Forecasting
-- `pg_cron` via `supabase--insert`: job `revops-snapshot-builder` diário 04:00 UTC
+- `App.tsx`: rotas `/customer-success` e `/customer-success/account/:id` (auth, lazy)
+- `AppSidebar`: item "Customer Success" (ícone `Heart`) abaixo de RevOps
+- `pg_cron` via `supabase--insert`: job `cs-health-recalc` diário 05:00 UTC
 
 ### 6. Memória
-- Criar `mem://features/revops-dashboard`
-- Atualizar `mem://index.md` adicionando entrada
+- Criar `mem://features/customer-success-suite`
 
 ### Não fazer
-- Não refatorar dashboards existentes (Pipeline/Forecasting/Analytics) — RevOps lê deles
 - Não criar produtos/propostas
-- Sem integração ERP/contabilidade externa
-- Sem export PDF nesta entrega
+- Sem integração com Gainsight/ChurnZero/Totango (externos)
+- Sem refatorar churn-risk-detection — CS Suite consome dele como signal
+- Sem ticketing — Help Desk já existe e será referenciado, não duplicado
