@@ -437,6 +437,17 @@ const AnimatedRoutes = () => {
           <LazyPage><ForecastingSetupPage /></LazyPage>
         </RequireAuth>
       } />
+      <Route path="/deal-rooms" element={
+        <RequireAuth>
+          <LazyPage><DealRoomsPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/deal-rooms/:id" element={
+        <RequireAuth>
+          <LazyPage><DealRoomDetailPage /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/dr/:token" element={<LazyPage><PublicDealRoomPage /></LazyPage>} />
       <Route path="/rodizio" element={
         <RequireAuth>
           <LazyPage><Rodizio /></LazyPage>
