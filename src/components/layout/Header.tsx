@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
 import { UnifiedNotificationsBell } from '@/components/notifications/UnifiedNotificationsBell';
+import { SmartNotificationsBell } from '@/components/notifications/SmartNotificationsBell';
 
 interface HeaderProps {
   title: string;
@@ -78,7 +79,8 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
         </div>
 
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
-          <div className="hidden md:inline-flex">
+          <div className="hidden md:inline-flex items-center gap-1">
+            <SmartNotificationsBell />
             <UnifiedNotificationsBell />
           </div>
 

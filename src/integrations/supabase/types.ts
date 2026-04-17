@@ -5964,6 +5964,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          digest_mode: string
+          enabled_channels: string[]
+          min_urgency_email: string
+          min_urgency_push: string
+          quiet_hours_end: number
+          quiet_hours_start: number
+          updated_at: string
+          user_id: string
+          weekend_silence: boolean
+        }
+        Insert: {
+          created_at?: string
+          digest_mode?: string
+          enabled_channels?: string[]
+          min_urgency_email?: string
+          min_urgency_push?: string
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          updated_at?: string
+          user_id: string
+          weekend_silence?: boolean
+        }
+        Update: {
+          created_at?: string
+          digest_mode?: string
+          enabled_channels?: string[]
+          min_urgency_email?: string
+          min_urgency_push?: string
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          updated_at?: string
+          user_id?: string
+          weekend_silence?: boolean
+        }
+        Relationships: []
+      }
       nurturing_enrollments: {
         Row: {
           completed_at: string | null
@@ -7715,6 +7754,78 @@ export type Database = {
         }
         Relationships: []
       }
+      smart_notifications: {
+        Row: {
+          action_url: string | null
+          body: string | null
+          bundle_count: number
+          bundle_key: string | null
+          clicked_at: string | null
+          created_at: string
+          decided_channel: string
+          decision_reason: string | null
+          delivered_at: string | null
+          dismissed_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          payload: Json
+          scheduled_for: string
+          snoozed_until: string | null
+          status: string
+          title: string
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          body?: string | null
+          bundle_count?: number
+          bundle_key?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          decided_channel?: string
+          decision_reason?: string | null
+          delivered_at?: string | null
+          dismissed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          payload?: Json
+          scheduled_for?: string
+          snoozed_until?: string | null
+          status?: string
+          title: string
+          urgency?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string | null
+          bundle_count?: number
+          bundle_key?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          decided_channel?: string
+          decision_reason?: string | null
+          delivered_at?: string | null
+          dismissed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          scheduled_for?: string
+          snoozed_until?: string | null
+          status?: string
+          title?: string
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       sms_campaign_recipients: {
         Row: {
           campaign_id: string
@@ -9394,6 +9505,20 @@ export type Database = {
         Returns: Json
       }
       dismiss_revops_alert: { Args: { _alert_id: string }; Returns: boolean }
+      enqueue_smart_notification: {
+        Args: {
+          _action_url?: string
+          _body?: string
+          _bundle_key?: string
+          _entity_id?: string
+          _entity_type?: string
+          _event_type: string
+          _payload?: Json
+          _title: string
+          _urgency?: string
+        }
+        Returns: string
+      }
       enroll_contact_in_workflow: {
         Args: { _contact_id: string; _workflow_id: string }
         Returns: string
