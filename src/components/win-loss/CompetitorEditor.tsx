@@ -85,10 +85,10 @@ export function CompetitorEditor() {
                     <p className="text-xs text-muted-foreground mt-0.5">{c.typical_price_range}</p>
                   )}
                   {c.strengths.length > 0 && (
-                    <p className="text-xs mt-1"><span className="text-emerald-600">+</span> {c.strengths.join(', ')}</p>
+                    <p className="text-xs mt-1"><span className="text-emerald-600 dark:text-emerald-400">+</span> {c.strengths.join(', ')}</p>
                   )}
                   {c.weaknesses.length > 0 && (
-                    <p className="text-xs"><span className="text-rose-600">−</span> {c.weaknesses.join(', ')}</p>
+                    <p className="text-xs"><span className="text-rose-600 dark:text-rose-400">−</span> {c.weaknesses.join(', ')}</p>
                   )}
                 </div>
                 <Button

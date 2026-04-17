@@ -199,8 +199,7 @@ export function useSeedReasons() {
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
-      // @ts-expect-error - RPC types may not be regenerated yet
-      const { error } = await supabase.rpc('seed_win_loss_defaults', { _user_id: user.id });
+      const { error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ error: Error | null }>)('seed_win_loss_defaults', { _user_id: user.id });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['win-loss-reasons'] }),
@@ -373,7 +372,7 @@ export function useWinLossInsights() {
 export function useGenerateInsights() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (periodDays = 90) => {
+    mutationFn: async (periodDays: number = 90) => {
       const { data, error } = await supabase.functions.invoke('win-loss-analyzer', {
         body: { period_days: periodDays },
       });
