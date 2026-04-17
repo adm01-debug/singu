@@ -25,14 +25,28 @@ const formatCurrency = (value: number) =>
 
 // ── Deal Card ──────────────────────────────────────
 
-const DealCard = React.memo(function DealCard({ deal }: { deal: PipelineDeal }) {
+const DealCard = React.memo(function DealCard({
+  deal,
+  onOpenRisk,
+}: {
+  deal: PipelineDeal;
+  onOpenRisk: (deal: PipelineDeal) => void;
+}) {
+  const risk = useDealSlipRisk(deal);
   return (
     <div
       draggable
       onDragStart={(e) => e.dataTransfer.setData('dealId', deal.id)}
       className="p-3 rounded-lg border bg-card cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
     >
-      <p className="font-medium text-sm truncate">{deal.titulo}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-medium text-sm truncate flex-1">{deal.titulo}</p>
+        <DealRiskBadge
+          score={risk.score}
+          level={risk.level}
+          onClick={() => onOpenRisk(deal)}
+        />
+      </div>
       {deal.company_name && (
         <p className="text-xs text-muted-foreground truncate mt-0.5">{deal.company_name}</p>
       )}
