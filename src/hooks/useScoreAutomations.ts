@@ -72,7 +72,7 @@ export function useUpsertAutomation() {
         grade_target: input.grade_target ?? null,
         score_target: input.score_target ?? null,
         action_type: input.action_type,
-        action_config: input.action_config ?? {},
+        action_config: (input.action_config ?? {}) as never,
         cooldown_hours: input.cooldown_hours ?? 24,
         active: input.active ?? true,
       };
