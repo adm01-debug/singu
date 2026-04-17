@@ -3456,6 +3456,133 @@ export type Database = {
         }
         Relationships: []
       }
+      email_finder_results: {
+        Row: {
+          best_confidence: number
+          best_email: string | null
+          candidates: Json
+          contact_id: string | null
+          created_at: string
+          domain: string
+          first_name: string | null
+          found_at: string
+          full_name: string
+          id: string
+          last_name: string | null
+          sources: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_confidence?: number
+          best_email?: string | null
+          candidates?: Json
+          contact_id?: string | null
+          created_at?: string
+          domain: string
+          first_name?: string | null
+          found_at?: string
+          full_name: string
+          id?: string
+          last_name?: string | null
+          sources?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_confidence?: number
+          best_email?: string | null
+          candidates?: Json
+          contact_id?: string | null
+          created_at?: string
+          domain?: string
+          first_name?: string | null
+          found_at?: string
+          full_name?: string
+          id?: string
+          last_name?: string | null
+          sources?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_finder_results_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_verifications: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          disposable: boolean
+          email: string
+          free_provider: boolean
+          id: string
+          mx_found: boolean
+          provider: string
+          raw: Json
+          reasons: string[]
+          role_account: boolean
+          score: number
+          smtp_check: boolean
+          status: string
+          updated_at: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          disposable?: boolean
+          email: string
+          free_provider?: boolean
+          id?: string
+          mx_found?: boolean
+          provider?: string
+          raw?: Json
+          reasons?: string[]
+          role_account?: boolean
+          score?: number
+          smtp_check?: boolean
+          status?: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          disposable?: boolean
+          email?: string
+          free_provider?: boolean
+          id?: string
+          mx_found?: boolean
+          provider?: string
+          raw?: Json
+          reasons?: string[]
+          role_account?: boolean
+          score?: number
+          smtp_check?: boolean
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_verifications_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       emotional_anchors: {
         Row: {
           anchor_type: string
@@ -5944,6 +6071,59 @@ export type Database = {
         }
         Relationships: []
       }
+      people_intelligence_events: {
+        Row: {
+          confidence: number
+          contact_id: string
+          created_at: string
+          detected_at: string
+          event_type: string
+          field_name: string | null
+          id: string
+          metadata: Json
+          new_value: string | null
+          old_value: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number
+          contact_id: string
+          created_at?: string
+          detected_at?: string
+          event_type: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json
+          new_value?: string | null
+          old_value?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number
+          contact_id?: string
+          created_at?: string
+          detected_at?: string
+          event_type?: string
+          field_name?: string | null
+          id?: string
+          metadata?: Json
+          new_value?: string | null
+          old_value?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_intelligence_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           action: string
@@ -5970,6 +6150,74 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      phone_validations: {
+        Row: {
+          carrier: string | null
+          contact_id: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          line_type: string | null
+          phone_e164: string | null
+          phone_input: string
+          provider: string
+          raw: Json
+          reasons: string[]
+          status: string
+          updated_at: string
+          user_id: string
+          validated_at: string
+        }
+        Insert: {
+          carrier?: string | null
+          contact_id?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          line_type?: string | null
+          phone_e164?: string | null
+          phone_input: string
+          provider?: string
+          raw?: Json
+          reasons?: string[]
+          status?: string
+          updated_at?: string
+          user_id: string
+          validated_at?: string
+        }
+        Update: {
+          carrier?: string | null
+          contact_id?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          line_type?: string | null
+          phone_e164?: string | null
+          phone_input?: string
+          provider?: string
+          raw?: Json
+          reasons?: string[]
+          status?: string
+          updated_at?: string
+          user_id?: string
+          validated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_validations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       playbook_usage_log: {
         Row: {
