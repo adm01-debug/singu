@@ -101,7 +101,7 @@ function getInitialCollapsed(): Record<string, boolean> {
   return { principal: false, analise: false, ops: true, config: true };
 }
 
-export function AppSidebar() {
+function AppSidebarInner() {
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
@@ -295,5 +295,6 @@ export function AppSidebar() {
   );
 }
 
-// Memoized export — sidebar receives no props, safe to memoize the entire tree
-export const AppSidebarMemo = memo(AppSidebar);
+// Memoized — sidebar receives no props, safe to memoize the entire tree to avoid
+// re-renders triggered by AppLayout updates on every route change.
+export const AppSidebar = memo(AppSidebarInner);

@@ -183,13 +183,23 @@ const Analytics = () => {
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="reports" className="space-y-6"><ReportsTab /></TabsContent>
+          <TabsContent value="reports" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <ReportsTab />
+            </Suspense>
+          </TabsContent>
 
-          <TabsContent value="advanced" className="space-y-6"><AdvancedAnalyticsTab /></TabsContent>
+          <TabsContent value="advanced" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <AdvancedAnalyticsTab />
+            </Suspense>
+          </TabsContent>
 
           <TabsContent value="neuro" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <NeuroPortfolioDashboard />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <NeuroPortfolioDashboard />
+              </Suspense>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <NeuroRadarChart discProfile={null} interactions={[]} title="Balanço Neural Médio do Portfólio" />
                 <NeuroTimeline contactName="Portfólio Geral" interactions={[]} maxEntries={8} />
@@ -204,7 +214,9 @@ const Analytics = () => {
 
           <TabsContent value="disc" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <DISCAnalyticsPanel />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <DISCAnalyticsPanel />
+              </Suspense>
               <DISCTrainingMode />
               <DISCConversionMetrics />
             </motion.div>
@@ -212,7 +224,9 @@ const Analytics = () => {
 
           <TabsContent value="rfm" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <RfmExternalDashboard />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <RfmExternalDashboard />
+              </Suspense>
               <RFMAnalysisPanel />
             </motion.div>
           </TabsContent>
@@ -231,7 +245,9 @@ const Analytics = () => {
 
           <TabsContent value="nlp" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <NLPAnalyticsPanel />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <NLPAnalyticsPanel />
+              </Suspense>
               <NLPTrainingMode />
               <NLPConversionMetrics />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><RapportRealtimeCoach /><MiltonianCalibration /></div>

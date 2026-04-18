@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Bell, AlertTriangle, Lightbulb, Heart, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -137,6 +138,5 @@ function NotificationCenterInner() {
 }
 
 // NotificationCenter receives no props — memoize to skip re-renders when AppLayout updates
-import { memo } from 'react';
 export const NotificationCenter = memo(NotificationCenterInner);
 export default NotificationCenter;
