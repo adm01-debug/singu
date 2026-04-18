@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Calendar as CalendarIcon, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { format, addMonths, subMonths, isToday, parseISO, isPast } from 'date-fns';
+import { addMonths, subMonths, isToday, parseISO, isPast } from 'date-fns';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -25,18 +26,17 @@ const Calendario = () => {
   usePageTitle('Calendário');
   const { user } = useAuth();
   const { celebrate } = useCelebration();
+  const queryClient = useQueryClient();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedFollowUp, setSelectedFollowUp] = useState<FollowUp | null>(null);
 
-  useEffect(() => { if (user) fetchData(); }, [user]);
-
-  const fetchData = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
+  const { data: followUps = [] } = useQuery({
+    queryKey: ['calendario-followups', user?.id],
+    enabled: !!user,
+    staleTime: 60_000,
+    gcTime: 5 * 60_000,
+    queryFn: async (): Promise<FollowUp[]> => {
       const [interactionsRes, contactsRes, companiesRes] = await Promise.all([
         supabase.from('interactions').select('*').eq('follow_up_required', true).not('follow_up_date', 'is', null).order('follow_up_date', { ascending: true }),
         supabase.from('contacts').select('*'),
@@ -51,24 +51,20 @@ const Calendario = () => {
       const companiesMap: Record<string, Company> = {};
       companiesRes.data?.forEach(c => { companiesMap[c.id] = c; });
 
-      setFollowUps((interactionsRes.data || []).map(i => ({
+      return (interactionsRes.data || []).map(i => ({
         ...i,
         contact: i.contact_id ? contactsMap[i.contact_id] : null,
         company: i.company_id ? companiesMap[i.company_id] : null,
-      })));
-    } catch (error) {
-      logger.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      }));
+    },
+  });
 
   const markAsCompleted = async (id: string) => {
     try {
       const followUp = followUps.find(f => f.id === id);
       const { error } = await supabase.from('interactions').update({ follow_up_required: false }).eq('id', id);
       if (error) throw error;
-      setFollowUps(prev => prev.filter(f => f.id !== id));
+      queryClient.setQueryData<FollowUp[]>(['calendario-followups', user?.id], prev => (prev || []).filter(f => f.id !== id));
       setSelectedFollowUp(null);
       celebrate({ type: 'follow-up-complete', title: 'Follow-up Concluído! 🎉', subtitle: followUp?.contact ? `Ótimo trabalho com ${followUp.contact.first_name}!` : 'Continue mantendo seus relacionamentos em dia!', duration: 3000 });
     } catch (error) {

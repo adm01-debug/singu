@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState, useEffect, lazy, Suspense } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Search, Command, Settings, LogOut, ChevronRight, Mic } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
@@ -7,18 +7,20 @@ import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
 import { SlowQueryIndicator } from '@/components/feedback/SlowQueryIndicator';
-import { AskCrmChat } from '@/components/ask-crm/AskCrmChat';
-import { AIEmailComposer } from '@/components/ai/AIEmailComposer';
 import { AIEmailComposerTrigger } from '@/components/ai/AIEmailComposerTrigger';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
-import { OnboardingTourWrapper } from '@/components/onboarding/OnboardingTourWrapper';
+
+// Heavy global chrome — lazy + deferred to idle to avoid blocking route transitions
+const AskCrmChat = lazy(() => import('@/components/ask-crm/AskCrmChat').then(m => ({ default: m.AskCrmChat })));
+const AIEmailComposer = lazy(() => import('@/components/ai/AIEmailComposer').then(m => ({ default: m.AIEmailComposer })));
+const OnboardingTourWrapper = lazy(() => import('@/components/onboarding/OnboardingTourWrapper').then(m => ({ default: m.OnboardingTourWrapper })));
+const KeyboardShortcutsCheatsheet = lazy(() => import('@/components/keyboard/KeyboardShortcutsCheatsheet').then(m => ({ default: m.KeyboardShortcutsCheatsheet })));
 import { useGlobalSearch } from '@/hooks/useGlobalSearch';
 import { useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import { SkipToContent } from '@/components/navigation/NavigationPatterns';
 import { PageTransition } from '@/components/navigation/PageTransition';
 import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
-import { KeyboardShortcutsCheatsheet } from '@/components/keyboard/KeyboardShortcutsCheatsheet';
 import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
 import { SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
@@ -76,11 +78,24 @@ function getBreadcrumbs(pathname: string, pageTitle: string): { label: string; p
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
   const [voiceMode, setVoiceMode] = useState(false);
+  const [deferredReady, setDeferredReady] = useState(false);
   const { state } = useSidebar();
   const location = useLocation();
   const { user, signOut } = useAuth();
 
   useKeyboardShortcutsEnhanced();
+
+  // Defer heavy chrome until browser is idle to keep route transitions snappy
+  useEffect(() => {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number };
+    const schedule = w.requestIdleCallback
+      ? (cb: () => void) => w.requestIdleCallback!(cb, { timeout: 2000 })
+      : (cb: () => void) => window.setTimeout(cb, 800);
+    const id = schedule(() => setDeferredReady(true));
+    return () => {
+      if (typeof id === 'number') window.clearTimeout(id);
+    };
+  }, []);
 
   const pageTitle = useMemo(() => title || getPageTitle(location.pathname), [title, location.pathname]);
   const breadcrumbs = useMemo(() => getBreadcrumbs(location.pathname, pageTitle), [location.pathname, pageTitle]);
@@ -214,11 +229,15 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       </div>
 
       <NotificationCenter />
-      <OnboardingTourWrapper />
-      <KeyboardShortcutsCheatsheet />
       <SlowQueryIndicator />
-      <AskCrmChat />
-      <AIEmailComposer />
+      {deferredReady && (
+        <Suspense fallback={null}>
+          <OnboardingTourWrapper />
+          <KeyboardShortcutsCheatsheet />
+          <AskCrmChat />
+          <AIEmailComposer />
+        </Suspense>
+      )}
       <div className="md:hidden">
         <ScrollToTopButton />
       </div>

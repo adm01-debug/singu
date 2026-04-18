@@ -14,23 +14,36 @@ export interface InstantKpis {
   overdue_tasks: number;
 }
 
+// Session-level circuit breaker: once we detect a schema error, stop calling
+let schemaBroken = false;
+
+function isSchemaError(err: unknown): boolean {
+  const msg = typeof err === 'string' ? err : (err as { message?: string })?.message || '';
+  return /does not exist|is ambiguous|column .* not found/i.test(msg);
+}
+
 export function useInstantKpis() {
   return useQuery({
     queryKey: ['instant-kpis'],
+    enabled: !schemaBroken,
     queryFn: async () => {
       const { data, error } = await callExternalRpc<InstantKpis>(
         'get_instant_kpis',
         {}
       );
-      // Gracefully degrade if external DB has schema issues
       if (error) {
-        logger.warn('get_instant_kpis unavailable, falling back to null', error);
+        if (isSchemaError(error)) {
+          schemaBroken = true;
+          logger.warn('get_instant_kpis disabled for session (schema mismatch)');
+        } else {
+          logger.warn('get_instant_kpis unavailable, falling back to null', error);
+        }
         return null;
       }
       return data;
     },
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
-    retry: 1,
+    retry: 0,
   });
 }

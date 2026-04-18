@@ -157,126 +157,53 @@ export function useRealtimeNotifications() {
     });
   }, []);
 
-  // Subscribe to realtime changes
+  // Defer realtime subscription + initial load to idle time so route transitions stay snappy
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel('realtime-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'alerts',
-          filter: `user_id=eq.${user.id}`,
-        },
-        handleNewAlert
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'insights',
-          filter: `user_id=eq.${user.id}`,
-        },
-        handleNewInsight
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'health_alerts',
-          filter: `user_id=eq.${user.id}`,
-        },
-        handleNewHealthAlert
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'stakeholder_alerts',
-          filter: `user_id=eq.${user.id}`,
-        },
-        handleNewStakeholderAlert
-      )
-      .subscribe();
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number };
+    const schedule = w.requestIdleCallback
+      ? (cb: () => void) => w.requestIdleCallback!(cb, { timeout: 3000 })
+      : (cb: () => void) => window.setTimeout(cb, 1500);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
+    const handle = schedule(async () => {
+      if (cancelled) return;
 
-  // Load initial notifications
-  useEffect(() => {
-    if (!user) return;
-
-    const loadNotifications = async () => {
-      const { data: alerts } = await supabase
-        .from('alerts')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      const { data: insights } = await supabase
-        .from('insights')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      const { data: healthAlerts } = await supabase
-        .from('health_alerts')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('dismissed', false)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      // Initial load
+      const [alertsRes, insightsRes, healthRes] = await Promise.all([
+        supabase.from('alerts').select('*').eq('user_id', user.id).eq('dismissed', false).order('created_at', { ascending: false }).limit(20),
+        supabase.from('insights').select('*').eq('user_id', user.id).eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
+        supabase.from('health_alerts').select('*').eq('user_id', user.id).eq('dismissed', false).order('created_at', { ascending: false }).limit(10),
+      ]);
+      if (cancelled) return;
 
       const allNotifications: RealtimeNotification[] = [
-        ...(alerts || []).map(a => ({
-          id: a.id,
-          type: 'alert' as const,
-          title: a.title,
-          description: a.description || undefined,
-          entityId: a.contact_id || undefined,
-          entityType: 'contact',
-          createdAt: a.created_at,
-        })),
-        ...(insights || []).map(i => ({
-          id: i.id,
-          type: 'insight' as const,
-          title: i.title,
-          description: i.description || undefined,
-          entityId: i.contact_id,
-          entityType: 'contact',
-          createdAt: i.created_at,
-        })),
-        ...(healthAlerts || []).map(h => ({
-          id: h.id,
-          type: 'health_alert' as const,
-          title: h.title,
-          description: h.description || undefined,
-          entityId: h.contact_id,
-          entityType: 'contact',
-          createdAt: h.created_at,
-        })),
-      ].sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      ).slice(0, 50);
+        ...(alertsRes.data || []).map(a => ({ id: a.id, type: 'alert' as const, title: a.title, description: a.description || undefined, entityId: a.contact_id || undefined, entityType: 'contact', createdAt: a.created_at })),
+        ...(insightsRes.data || []).map(i => ({ id: i.id, type: 'insight' as const, title: i.title, description: i.description || undefined, entityId: i.contact_id, entityType: 'contact', createdAt: i.created_at })),
+        ...(healthRes.data || []).map(h => ({ id: h.id, type: 'health_alert' as const, title: h.title, description: h.description || undefined, entityId: h.contact_id, entityType: 'contact', createdAt: h.created_at })),
+      ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 50);
 
       setNotifications(allNotifications);
       setUnreadCount(allNotifications.length);
-    };
 
-    loadNotifications();
-  }, [user]);
+      // Subscribe channel
+      channel = supabase
+        .channel('realtime-notifications')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alerts', filter: `user_id=eq.${user.id}` }, handleNewAlert)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'insights', filter: `user_id=eq.${user.id}` }, handleNewInsight)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'health_alerts', filter: `user_id=eq.${user.id}` }, handleNewHealthAlert)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stakeholder_alerts', filter: `user_id=eq.${user.id}` }, handleNewStakeholderAlert)
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (typeof handle === 'number') window.clearTimeout(handle);
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [user, handleNewAlert, handleNewInsight, handleNewHealthAlert, handleNewStakeholderAlert]);
 
   const clearUnread = useCallback(() => {
     setUnreadCount(0);
