@@ -1,27 +1,23 @@
 
-## Diagnóstico: Preview em branco
+## Causa raiz
+`GlobalSearch.tsx` tem **dois `useEffect` que sincronizam bidirecionalmente** `query ↔ URL ?q=`:
+- L126: URL → state (`setQuery(urlQuery)` quando muda `location.search`)
+- L127: state → URL (`navigate({search:?q=...}, replace:true)` quando muda `query`)
 
-A imagem mostra tela cinza com ícone de arquivo quebrado — o app React não está montando. Causas prováveis após a sessão recente:
+Em certas condições (ex.: re-render do `AppLayout` por outra razão, codificação de espaços, modo conversacional alterando `convDraft`), os dois entram em loop infinito → "Maximum update depth exceeded" → main thread travada → **cliques do sidebar não disparam handlers**.
 
-1. **Edição em `bun.lock`** (registrada nas últimas mensagens) pode ter quebrado resolução de dependências
-2. Erro de import em arquivos criados nas melhorias #17/#18/#19 (`TouchpointSequenceCard`, `IntelligenceTab`)
-3. Erro de runtime no boot (`App.tsx`, providers)
+## Correção (cirúrgica, 1 arquivo)
+**`src/components/search/GlobalSearch.tsx`**:
 
-## Plano de investigação (read-only)
+1. **Remover sincronização state→URL automática** (L127). A URL `?q=` só é útil para deep-link de entrada, não para refletir cada tecla digitada (que já causa re-render local + chamadas de busca).
+2. **Manter L126 simplificado**: só ler `?q=` no momento em que o palette **abre** (`open` muda de false→true), não em toda mudança de `location.search`. Trocar deps para `[open]` apenas e ler `location.search` via ref.
+3. Se o usuário quiser persistir `?q=` na URL ao fechar, fazemos isso no `onOpenChange(false)` — sem efeito reativo.
 
-1. Ler logs do console e erros de runtime via `code--read_console_logs` e `code--read_runtime_errors`
-2. Ler `code--read_network_requests` para ver se o bundle JS está 200 ou falhando
-3. Inspecionar `bun.lock` (status), `package.json`, e os 3 arquivos criados recentemente:
-   - `src/hooks/useTouchpointSequences.ts`
-   - `src/components/dashboard/TouchpointSequenceCard.tsx`
-   - `src/components/dashboard/tabs/IntelligenceTab.tsx`
-4. Verificar `src/App.tsx` para regressão de providers
+Resultado: zero loop, sidebar volta a responder, e deep-link `?q=` continua funcionando para abrir com texto pré-preenchido.
 
-## Plano de correção (após diagnóstico)
+## Validação
+- Recarregar `/revops`, clicar em qualquer item do sidebar → navega normalmente.
+- Console limpo (sem "Maximum update depth").
+- Abrir ⌘K com `?q=teste` na URL → input já preenchido com "teste".
 
-Dependendo do achado:
-- **Se `bun.lock` corrompido** → restaurar via `bun install` (sandbox executa automaticamente ao detectar mudança em package.json)
-- **Se erro de import nos arquivos novos** → corrigir paths/exports
-- **Se erro de runtime** → patch cirúrgico no componente ofensor
-
-Aprovar para eu executar a investigação e aplicar a correção.
+Sem migration, sem nova dependência, ≤10 linhas alteradas.
