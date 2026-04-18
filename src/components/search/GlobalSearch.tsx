@@ -99,8 +99,30 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     try { return localStorage.getItem('global-search-conversational') === '1'; } catch { return false; }
   });
   const [convDraft, setConvDraft] = useState('');
-  const semantic = useSemanticSearch();
-  const conv = useConversationalSearch();
+  const {
+    search: semanticSearch,
+    reset: resetSemantic,
+    loading: semanticLoading,
+    cached: semanticCached,
+    variations: semanticVariations,
+  } = useSemanticSearch();
+  const {
+    ask: convAsk,
+    reset: resetConversational,
+    loading: convLoading,
+    interpretation: convInterpretation,
+    items: convItems,
+    history: convHistory,
+  } = useConversationalSearch();
+  // Stable views over hook returns (avoid passing whole objects into deps).
+  const semantic = useMemo(
+    () => ({ search: semanticSearch, reset: resetSemantic, loading: semanticLoading, cached: semanticCached, variations: semanticVariations }),
+    [semanticSearch, resetSemantic, semanticLoading, semanticCached, semanticVariations],
+  );
+  const conv = useMemo(
+    () => ({ ask: convAsk, reset: resetConversational, loading: convLoading, interpretation: convInterpretation, items: convItems, history: convHistory }),
+    [convAsk, resetConversational, convLoading, convInterpretation, convItems, convHistory],
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -138,7 +160,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     if (!searchQuery.trim() || !user) { setResults({ contacts: [], companies: [], interactions: [] }); return; }
 
     if (semanticMode) {
-      const sem = await semantic.search(searchQuery.trim(), {
+      const sem = await semanticSearch(searchQuery.trim(), {
         entities: ['contacts', 'companies', 'interactions'],
         limit: 8,
         silent: true,
@@ -190,7 +212,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         interactions: interactionsResponse.data?.map(i => ({ id: i.id, type: 'interaction' as const, title: i.title, subtitle: i.type, meta: new Date(i.created_at).toLocaleDateString('pt-BR') })) || [],
       });
     } catch (error) { logger.error('Search error:', error); toast.error('Não foi possível completar a busca agora.'); setResults({ contacts: [], companies: [], interactions: [] }); } finally { setIsLoading(false); }
-  }, [user, semanticMode, semantic]);
+  }, [user, semanticMode, semanticSearch]);
 
   useEffect(() => {
     if (conversationalMode) return; // não disparar lexical/semântica em modo conversacional
@@ -198,14 +220,13 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     return () => clearTimeout(timer);
   }, [query, performSearch, semanticMode, conversationalMode]);
   useEffect(() => {
-    if (!open) {
-      setQuery('');
-      setResults({ contacts: [], companies: [], interactions: [] });
-      setConvDraft('');
-      semantic.reset();
-      conv.reset();
-    }
-  }, [open, semantic, conv]);
+    if (open) return;
+    setQuery('');
+    setResults({ contacts: [], companies: [], interactions: [] });
+    setConvDraft('');
+    resetSemantic();
+    resetConversational();
+  }, [open, resetSemantic, resetConversational]);
 
   const toggleSemantic = useCallback(() => {
     setSemanticMode(prev => {
@@ -226,19 +247,19 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
       if (next) {
         setSemanticMode(false);
         try { localStorage.setItem('global-search-semantic', '0'); } catch { /* noop */ }
-        conv.reset();
+        resetConversational();
       }
       return next;
     });
-  }, [conv]);
+  }, [resetConversational]);
 
   const submitConversational = useCallback(async (q?: string) => {
     if (!user) return;
     const text = (q ?? convDraft).trim();
     if (text.length < 3) return;
     setConvDraft(text);
-    await conv.ask(text, user.id);
-  }, [conv, convDraft, user]);
+    await convAsk(text, user.id);
+  }, [convAsk, convDraft, user]);
 
   const handleConvItemSelect = useCallback((item: { id: string; entity: string }) => {
     onOpenChange(false);
