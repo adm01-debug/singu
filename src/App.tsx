@@ -72,6 +72,7 @@ const Network = lazy(() => import("./pages/Network"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const RpcProbe = lazy(() => import("./pages/__RpcProbe"));
 const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const Sequencias = lazy(() => import("./pages/Sequencias"));
@@ -276,6 +277,14 @@ const AnimatedRoutes = () => {
       <Route path="/lp/:slug" element={<LazyPage><PublicLandingPage /></LazyPage>} />
       <Route path="/f/:slug" element={<LazyPage><PublicForm /></LazyPage>} />
       <Route path="/lm/:slug" element={<LazyPage><PublicLeadMagnet /></LazyPage>} />
+      {/* TEMP DEV PROBE — remove after RPC validation */}
+      {import.meta.env.DEV && (
+        <Route path="/__rpc-probe" element={
+          <RequireAuth>
+            <LazyPage><RpcProbe /></LazyPage>
+          </RequireAuth>
+        } />
+      )}
       <Route path="/onboarding" element={
         <RequireAuth>
           <LazyPage><Onboarding /></LazyPage>
