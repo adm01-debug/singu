@@ -258,8 +258,8 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     const text = (q ?? convDraft).trim();
     if (text.length < 3) return;
     setConvDraft(text);
-    await conv.ask(text, user.id);
-  }, [conv, convDraft, user]);
+    await convAsk(text, user.id);
+  }, [convAsk, convDraft, user]);
 
   const handleConvItemSelect = useCallback((item: { id: string; entity: string }) => {
     onOpenChange(false);
