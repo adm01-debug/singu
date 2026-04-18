@@ -276,6 +276,14 @@ const AnimatedRoutes = () => {
       <Route path="/lp/:slug" element={<LazyPage><PublicLandingPage /></LazyPage>} />
       <Route path="/f/:slug" element={<LazyPage><PublicForm /></LazyPage>} />
       <Route path="/lm/:slug" element={<LazyPage><PublicLeadMagnet /></LazyPage>} />
+      {/* TEMP DEV PROBE — remove after RPC validation */}
+      {import.meta.env.DEV && (
+        <Route path="/__rpc-probe" element={
+          <RequireAuth>
+            <LazyPage><RpcProbe /></LazyPage>
+          </RequireAuth>
+        } />
+      )}
       <Route path="/onboarding" element={
         <RequireAuth>
           <LazyPage><Onboarding /></LazyPage>
