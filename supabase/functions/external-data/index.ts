@@ -213,6 +213,22 @@ Deno.serve(async (req) => {
     const table = typeof body.table === 'string' ? body.table : undefined;
     const operation = action || 'select';
 
+    // ─── WHOAMI (debug — exposes only the external DB host, never keys) ───
+    if (operation === 'whoami') {
+      const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL') || '';
+      let host = '';
+      let ref = '';
+      try {
+        const u = new URL(extUrl);
+        host = u.host;
+        ref = u.host.split('.')[0] || '';
+      } catch {
+        host = 'INVALID_URL';
+      }
+      const hasKey = !!Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY');
+      return jsonOk({ host, ref, hasServiceRoleKey: hasKey }, req);
+    }
+
     // ─── LIST TABLES (schema discovery) ───
     if (operation === 'list_tables') {
       const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;

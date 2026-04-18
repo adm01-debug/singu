@@ -48,6 +48,32 @@ async function getAccessToken(): Promise<string> {
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/external-data`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// [DEBUG] Probe which external DB this app is wired to. Runs once on module load.
+// Server-side secrets aren't readable from the browser, so we ask the edge function.
+// REMOVE AFTER VALIDATION.
+if (import.meta.env.DEV) {
+  (async () => {
+    try {
+      const token = await getAccessToken();
+      const resp = await fetch(EDGE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': ANON_KEY,
+        },
+        body: JSON.stringify({ action: 'whoami' }),
+      });
+      const json = await resp.json();
+      // eslint-disable-next-line no-console
+      console.log('[EXTERNAL_SUPABASE_URL]', json?.data ?? json);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('[EXTERNAL_SUPABASE_URL] probe failed:', (e as Error).message);
+    }
+  })();
+}
+
 const externalDbBreaker = getCircuitBreaker('external-db', {
   failureThreshold: 3,
   resetTimeoutMs: 30_000,
