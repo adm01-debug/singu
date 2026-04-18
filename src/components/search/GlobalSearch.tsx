@@ -160,7 +160,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     if (!searchQuery.trim() || !user) { setResults({ contacts: [], companies: [], interactions: [] }); return; }
 
     if (semanticMode) {
-      const sem = await semantic.search(searchQuery.trim(), {
+      const sem = await semanticSearch(searchQuery.trim(), {
         entities: ['contacts', 'companies', 'interactions'],
         limit: 8,
         silent: true,
