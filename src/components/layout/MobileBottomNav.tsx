@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -38,7 +38,7 @@ const moreNavItems = [
   { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
-export function MobileBottomNav() {
+function MobileBottomNavInner() {
   const location = useLocation();
   const navigate = useNavigate();
   const [showMore, setShowMore] = useState(false);
@@ -225,3 +225,6 @@ export function MobileBottomNav() {
     </>
   );
 }
+
+// MobileBottomNav receives no props — memoizing prevents re-renders triggered by parent updates
+export const MobileBottomNav = memo(MobileBottomNavInner);

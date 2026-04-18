@@ -294,3 +294,6 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+// Memoized export — sidebar receives no props, safe to memoize the entire tree
+export const AppSidebarMemo = memo(AppSidebar);

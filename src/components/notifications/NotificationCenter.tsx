@@ -45,7 +45,7 @@ const groupConfig = {
   },
 };
 
-export function NotificationCenter() {
+function NotificationCenterInner() {
   const navigate = useNavigate();
   const { notifications, unreadCount, clearUnread, dismissNotification } = useRealtimeNotifications();
   const { transition } = useMotionSafe();
@@ -136,4 +136,7 @@ export function NotificationCenter() {
   );
 }
 
+// NotificationCenter receives no props — memoize to skip re-renders when AppLayout updates
+import { memo } from 'react';
+export const NotificationCenter = memo(NotificationCenterInner);
 export default NotificationCenter;

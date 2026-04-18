@@ -27,15 +27,16 @@ import { AdvancedTriggersPanel } from '@/components/triggers/AdvancedTriggersPan
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
-import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
-import RfmExternalDashboard from '@/components/analytics/RfmExternalDashboard';
-import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
-import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
-import AdvancedAnalyticsTab from '@/components/analytics/AdvancedAnalyticsTab';
-import ReportsTab from '@/components/analytics/ReportsTab';
+// Lazy-loaded heavy panels (recharts-bound) — split off the Analytics chunk
+const NLPAnalyticsPanel = lazy(() => import('@/components/analytics/NLPAnalyticsPanel').then(m => ({ default: m.NLPAnalyticsPanel })));
+const RfmExternalDashboard = lazy(() => import('@/components/analytics/RfmExternalDashboard'));
+const DISCAnalyticsPanel = lazy(() => import('@/components/analytics/DISCAnalyticsPanel'));
+const NeuroPortfolioDashboard = lazy(() => import('@/components/analytics/NeuroPortfolioDashboard'));
+const AdvancedAnalyticsTab = lazy(() => import('@/components/analytics/AdvancedAnalyticsTab'));
+const ReportsTab = lazy(() => import('@/components/analytics/ReportsTab'));
 import { DISCTrainingMode, DISCConversionMetrics } from '@/components/disc';
 import {
   NLPTrainingMode, NLPConversionMetrics,
