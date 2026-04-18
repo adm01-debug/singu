@@ -220,14 +220,13 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     return () => clearTimeout(timer);
   }, [query, performSearch, semanticMode, conversationalMode]);
   useEffect(() => {
-    if (!open) {
-      setQuery('');
-      setResults({ contacts: [], companies: [], interactions: [] });
-      setConvDraft('');
-      semantic.reset();
-      conv.reset();
-    }
-  }, [open, semantic, conv]);
+    if (open) return;
+    setQuery('');
+    setResults({ contacts: [], companies: [], interactions: [] });
+    setConvDraft('');
+    resetSemantic();
+    resetConversational();
+  }, [open, resetSemantic, resetConversational]);
 
   const toggleSemantic = useCallback(() => {
     setSemanticMode(prev => {
