@@ -7,6 +7,7 @@ import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBou
 import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
 import { InboundActivityHeatmapCard } from '@/components/dashboard/InboundActivityHeatmapCard';
 import { ChannelPerformanceMatrixCard } from '@/components/dashboard/ChannelPerformanceMatrixCard';
+import { TouchpointSequenceCard } from '@/components/dashboard/TouchpointSequenceCard';
 import { DealsAtRiskCard } from '@/components/dashboard/DealsAtRiskCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
@@ -92,6 +93,11 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
         <LazySection fallbackVariant="chart" fallbackHeight="h-80">
           <ChannelPerformanceMatrixCard />
         </LazySection>
+        <div className="mt-5">
+          <LazySection fallbackVariant="chart" fallbackHeight="h-80">
+            <TouchpointSequenceCard />
+          </LazySection>
+        </div>
       </DashboardErrorBoundary>
 
       <DashboardErrorBoundary sectionName="Deals em Risco">
