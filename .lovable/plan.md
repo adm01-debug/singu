@@ -1,48 +1,48 @@
 
-#17 entregue. Próxima: #18 — Channel Performance Matrix.
+#18 entregue. Próxima: #19 — Touchpoint Sequence Analysis.
 
-## Melhoria #18: Channel Performance Matrix
+## Melhoria #19: Touchpoint Sequence Analysis
 
 ### Escopo
-Matriz visual cruzando **canal × estágio do funil** mostrando qual canal converte melhor em cada etapa, com taxas de conversão, tempo médio de avanço e recomendação por estágio. Responde "qual canal usar para mover deal de Qualificação→Proposta?".
+Analisar **sequências de canais** que mais convertem deals. Responde: "qual ordem de toques (ex: Email→WhatsApp→Call) tem maior taxa de fechamento?". Diferente da matriz canal×estágio (#18), foco aqui é a **ordem temporal** dos toques.
 
-### Diferencial vs heatmaps existentes
-- Heatmaps de timing: respondem **quando**
-- Channel Matrix: responde **qual canal** + **em que estágio**
+### Diferencial
+- #16 BestTime: quando contatar
+- #17 Inbound: quando eles me procuram
+- #18 Channel Matrix: qual canal por estágio
+- **#19 Sequence: qual ORDEM de canais converte mais**
 
 ### Arquitetura (100% client-side)
-**Hook** `useChannelPerformanceMatrix()`:
-- Query `interactions` últimos 180d + `deals` (via external-data) com transições de stage
-- Cruza canal (whatsapp/email/call/meeting) × estágio quando interação ocorreu
-- Calcula: total interações, taxa avanço (interação→próximo stage em 14d), tempo médio até avanço
-- Identifica célula vencedora por estágio (highest conversion)
-- StaleTime 15min, gcTime 30min
+**Hook** `useTouchpointSequences()`:
+- Query `interactions` 180d + `deals` (external) com status `won/lost`
+- Agrupa interações por `contact_id`, ordena cronologicamente
+- Extrai sequência canônica de até 5 primeiros toques únicos por deal (ex: `email→whatsapp→call`)
+- Agrega: para cada sequência → total deals, won, lost, taxa %, ticket médio
+- Identifica top 5 sequências vencedoras (mín 3 deals)
+- StaleTime 15min
 
-**Componente** `ChannelPerformanceMatrixCard.tsx` (Dashboard→Inteligência):
-- Header com título + período (180d)
-- Grid 4 canais × N estágios (linhas × colunas)
-- Cada célula: ícone canal + taxa% + mini stats (total / dias avg)
-- Célula vencedora por estágio: ring primary + badge "🏆 Top"
-- Tooltip detalhado por célula
-- Insight textual: "Para mover deals de {stage X} para {stage Y}, use {canal}"
-- Empty state se <30 interações totais
+**Componente** `TouchpointSequenceCard.tsx` (Dashboard→Inteligência):
+- Header com título + filtro de tamanho (2/3/4/5 toques)
+- Lista ranqueada: cada linha mostra ícones canais em sequência (com setas), taxa %, badge "🏆 Top" no #1, total deals
+- Insight: "Sequência campeã: {seq} — {rate}% de conversão"
+- Empty state se <10 deals fechados
 
 ### Arquivos
-- Novo: `src/hooks/useChannelPerformanceMatrix.ts` (~180 linhas)
-- Novo: `src/components/dashboard/ChannelPerformanceMatrixCard.tsx` (~250 linhas)
-- Editar: `src/components/dashboard/tabs/IntelligenceTab.tsx` (adicionar nova seção "Performance por Canal")
-- Nova memória: `mem://features/channel-performance-matrix.md`
+- Novo: `src/hooks/useTouchpointSequences.ts` (~180 linhas)
+- Novo: `src/components/dashboard/TouchpointSequenceCard.tsx` (~220 linhas)
+- Editar: `src/components/dashboard/tabs/IntelligenceTab.tsx` (adicionar abaixo do ChannelMatrix)
+- Nova memória: `mem://features/touchpoint-sequence-analysis.md`
 - Atualizar: `mem://index.md`
 
 ### Validação E2E
-- Build limpo (sem `any`, ≤400 linhas/arquivo)
-- Matriz renderiza com dados reais
-- Célula vencedora destacada por estágio
-- Tooltips funcionam
+- Build limpo, ≤400 linhas/arquivo, sem `any`
+- Sequências renderizadas com ícones + setas
+- Filtro de tamanho funciona
+- Top sequência destacada
 - Empty state em conta nova
-- Insight textual coerente
+- Insight coerente
 
 ### Restrições
-PT-BR, TanStack Query (sem useEffect), 100% client-side, sem migration, sem nova edge function.
+PT-BR, TanStack Query, sem migration, sem edge function nova.
 
-Após #18 → #19 (touchpoint sequence analysis — sequências de canais que mais convertem).
+Após #19 → #20 (deal velocity benchmark — comparar tempo médio do funil vs benchmarks).
