@@ -72,6 +72,7 @@ const Network = lazy(() => import("./pages/Network"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const RpcProbe = lazy(() => import("./pages/__RpcProbe"));
 const RelatorioContato = lazy(() => import("./pages/RelatorioContato"));
 const Automacoes = lazy(() => import("./pages/Automacoes"));
 const Sequencias = lazy(() => import("./pages/Sequencias"));
