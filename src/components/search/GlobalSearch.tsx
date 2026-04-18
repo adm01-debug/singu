@@ -114,6 +114,15 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     items: convItems,
     history: convHistory,
   } = useConversationalSearch();
+  // Stable views over hook returns (avoid passing whole objects into deps).
+  const semantic = useMemo(
+    () => ({ search: semanticSearch, reset: resetSemantic, loading: semanticLoading, cached: semanticCached, variations: semanticVariations }),
+    [semanticSearch, resetSemantic, semanticLoading, semanticCached, semanticVariations],
+  );
+  const conv = useMemo(
+    () => ({ ask: convAsk, reset: resetConversational, loading: convLoading, interpretation: convInterpretation, items: convItems, history: convHistory }),
+    [convAsk, resetConversational, convLoading, convInterpretation, convItems, convHistory],
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
