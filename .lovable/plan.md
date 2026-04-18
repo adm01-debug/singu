@@ -1,23 +1,52 @@
 
-## Causa raiz
-`GlobalSearch.tsx` tem **dois `useEffect` que sincronizam bidirecionalmente** `query ↔ URL ?q=`:
-- L126: URL → state (`setQuery(urlQuery)` quando muda `location.search`)
-- L127: state → URL (`navigate({search:?q=...}, replace:true)` quando muda `query`)
+## Diagnóstico real encontrado
+O problema não é só o sync `query ↔ URL`. Há um segundo gatilho mais crítico em `src/components/search/GlobalSearch.tsx`:
 
-Em certas condições (ex.: re-render do `AppLayout` por outra razão, codificação de espaços, modo conversacional alterando `convDraft`), os dois entram em loop infinito → "Maximum update depth exceeded" → main thread travada → **cliques do sidebar não disparam handlers**.
+- `useSemanticSearch()` e `useConversationalSearch()` retornam **objetos novos a cada render**
+- `GlobalSearch` usa esses objetos inteiros nas dependências:
+  - `useEffect(..., [open, semantic, conv])`
+  - `useCallback(..., [user, semanticMode, semantic])`
+  - `useCallback(..., [conv])`
+- Quando `open === false`, o efeito chama `semantic.reset()` e `conv.reset()`; como `semantic` e `conv` mudam de identidade a cada render, o efeito roda de novo e pode entrar em **loop de atualização**, travando a thread principal
+- Isso bate com o console atual: o erro continua vindo de `GlobalSearch.tsx`, então a sidebar fica “clicável”, mas a navegação não avança
 
-## Correção (cirúrgica, 1 arquivo)
-**`src/components/search/GlobalSearch.tsx`**:
+## O que vou corrigir
+### 1) Tornar `GlobalSearch` estável
+Em `src/components/search/GlobalSearch.tsx`:
+- Desestruturar apenas membros estáveis dos hooks (`search`, `reset`, `loading`, `items`, etc.)
+- Remover `semantic` e `conv` inteiros das dependências dos hooks
+- Trocar dependências por callbacks/valores estáveis:
+  - `performSearch` → depender de `semanticSearch`
+  - efeito de fechamento → depender de `resetSemantic` e `resetConversational`
+  - toggle conversacional → depender só de `resetConversational`
 
-1. **Remover sincronização state→URL automática** (L127). A URL `?q=` só é útil para deep-link de entrada, não para refletir cada tecla digitada (que já causa re-render local + chamadas de busca).
-2. **Manter L126 simplificado**: só ler `?q=` no momento em que o palette **abre** (`open` muda de false→true), não em toda mudança de `location.search`. Trocar deps para `[open]` apenas e ler `location.search` via ref.
-3. Se o usuário quiser persistir `?q=` na URL ao fechar, fazemos isso no `onOpenChange(false)` — sem efeito reativo.
+### 2) Blindar o reset ao fechar
+Ainda em `GlobalSearch.tsx`:
+- Manter reset apenas quando a busca fecha
+- Evitar resets redundantes que disparam render sem necessidade
 
-Resultado: zero loop, sidebar volta a responder, e deep-link `?q=` continua funcionando para abrir com texto pré-preenchido.
+### 3) Revalidar a correção no front
+Depois da correção, vou executar uma bateria forte de testes no preview:
+- clicar repetidamente nos itens principais da sidebar
+- testar seções recolhidas/expandidas
+- testar navegação entre `/empresas`, `/contatos`, `/interacoes`, `/pipeline`, `/configuracoes`, `/revops`
+- validar console sem `Maximum update depth exceeded`
+- confirmar que abrir/fechar a busca não volta a travar a navegação
 
-## Validação
-- Recarregar `/revops`, clicar em qualquer item do sidebar → navega normalmente.
-- Console limpo (sem "Maximum update depth").
-- Abrir ⌘K com `?q=teste` na URL → input já preenchido com "teste".
+## Arquivos envolvidos
+- `src/components/search/GlobalSearch.tsx` — correção principal
+- possível leitura complementar apenas para validação:
+  - `src/components/layout/AppSidebar.tsx`
+  - `src/components/ui/sidebar.tsx`
 
-Sem migration, sem nova dependência, ≤10 linhas alteradas.
+## Resultado esperado
+- Sidebar volta a navegar em qualquer clique
+- App deixa de travar
+- Busca global continua funcionando
+- Console fica limpo do loop infinito
+
+## Execução
+Assim que você aprovar, eu faço:
+1. correção cirúrgica em `GlobalSearch.tsx`
+2. bateria de testes clicando no front
+3. retorno com o resultado exato do que funcionou e do que foi validado
