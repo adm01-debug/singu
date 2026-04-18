@@ -123,8 +123,14 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     return new Fuse(recentItems, { keys: ['title'], threshold: 0.4, ignoreLocation: true }).search(query).map(r => r.item);
   }, [query, recentItems]);
 
-  useEffect(() => { if (open) { const params = new URLSearchParams(location.search); const urlQuery = params.get('q') ?? ''; if (urlQuery !== query) setQuery(urlQuery); setRecentItems(getRecentItems()); } }, [open, location.search]);
-  useEffect(() => { if (!open) return; const params = new URLSearchParams(location.search); const nq = query.trim(); if (nq) params.set('q', nq); else params.delete('q'); const nextSearch = params.toString(); const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search; if (nextSearch !== currentSearch) navigate({ pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : '' }, { replace: true }); }, [query, open, location.pathname, location.search, navigate]);
+  // Read ?q= from URL only when palette opens (deep-link entry). No reactive sync to avoid infinite loops.
+  useEffect(() => {
+    if (!open) return;
+    const params = new URLSearchParams(window.location.search);
+    const urlQuery = params.get('q') ?? '';
+    setQuery((prev) => (prev === urlQuery ? prev : urlQuery));
+    setRecentItems(getRecentItems());
+  }, [open]);
 
   useEffect(() => { if (!open) return; const handleKeyDown = (e: KeyboardEvent) => { if (e.altKey && !e.ctrlKey && !e.metaKey) { const action = quickActions.find(a => a.shortcut.toLowerCase() === e.key.toLowerCase()); if (action) { e.preventDefault(); handleQuickAction(action); return; } const navItem = navigationItems.find(n => n.key === e.key); if (navItem) { e.preventDefault(); handleNavigate(navItem.path, navItem.label); } } }; document.addEventListener('keydown', handleKeyDown); return () => document.removeEventListener('keydown', handleKeyDown); }, [open]);
 
