@@ -212,7 +212,7 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
         interactions: interactionsResponse.data?.map(i => ({ id: i.id, type: 'interaction' as const, title: i.title, subtitle: i.type, meta: new Date(i.created_at).toLocaleDateString('pt-BR') })) || [],
       });
     } catch (error) { logger.error('Search error:', error); toast.error('Não foi possível completar a busca agora.'); setResults({ contacts: [], companies: [], interactions: [] }); } finally { setIsLoading(false); }
-  }, [user, semanticMode, semantic]);
+  }, [user, semanticMode, semanticSearch]);
 
   useEffect(() => {
     if (conversationalMode) return; // não disparar lexical/semântica em modo conversacional
