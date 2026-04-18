@@ -247,11 +247,11 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
       if (next) {
         setSemanticMode(false);
         try { localStorage.setItem('global-search-semantic', '0'); } catch { /* noop */ }
-        conv.reset();
+        resetConversational();
       }
       return next;
     });
-  }, [conv]);
+  }, [resetConversational]);
 
   const submitConversational = useCallback(async (q?: string) => {
     if (!user) return;
