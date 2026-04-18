@@ -1,11 +1,12 @@
 import { lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingBag, Target, Clock, AlertTriangle } from 'lucide-react';
+import { ShoppingBag, Target, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
 import { Typography } from '@/components/ui/typography';
 import { LazySection } from '@/components/dashboard/LazySection';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { BestTimeHeatmapCard } from '@/components/dashboard/BestTimeHeatmapCard';
 import { InboundActivityHeatmapCard } from '@/components/dashboard/InboundActivityHeatmapCard';
+import { ChannelPerformanceMatrixCard } from '@/components/dashboard/ChannelPerformanceMatrixCard';
 import { DealsAtRiskCard } from '@/components/dashboard/DealsAtRiskCard';
 
 const ChurnPredictionPanel = lazy(() => import('@/components/analytics/ChurnPredictionPanel').then(m => ({ default: m.ChurnPredictionPanel })));
@@ -81,6 +82,16 @@ export function IntelligenceTab({ prefersReducedMotion, tabDirection }: Intellig
             <InboundActivityHeatmapCard />
           </LazySection>
         </div>
+      </DashboardErrorBoundary>
+
+      <DashboardErrorBoundary sectionName="Performance por Canal">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-primary" aria-hidden="true" />
+          <Typography variant="h4" gradient>Performance por Canal</Typography>
+        </div>
+        <LazySection fallbackVariant="chart" fallbackHeight="h-80">
+          <ChannelPerformanceMatrixCard />
+        </LazySection>
       </DashboardErrorBoundary>
 
       <DashboardErrorBoundary sectionName="Deals em Risco">
