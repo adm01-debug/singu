@@ -15,9 +15,17 @@ interface DuplicateContact {
   [key: string]: unknown;
 }
 
+let schemaBroken = false;
+
+function isSchemaError(err: unknown): boolean {
+  const msg = typeof err === 'string' ? err : (err as { message?: string })?.message || '';
+  return /does not exist|is ambiguous|column .* not found/i.test(msg);
+}
+
 export function useDuplicateContacts(enabled = true) {
   return useQuery({
     queryKey: ['duplicate-contacts'],
+    enabled: enabled && !schemaBroken,
     queryFn: async () => {
       // Defer this non-critical check to avoid blocking page load
       await new Promise(r => setTimeout(r, 5000));
@@ -27,7 +35,12 @@ export function useDuplicateContacts(enabled = true) {
           {}
         );
         if (error) {
-          logger.warn('[DuplicateContacts] RPC error (known schema issue):', error);
+          if (isSchemaError(error)) {
+            schemaBroken = true;
+            logger.warn('get_duplicate_contacts disabled for session (schema mismatch)');
+          } else {
+            logger.warn('[DuplicateContacts] RPC error:', error);
+          }
           return [] as DuplicateContact[];
         }
         return (Array.isArray(data) ? data : []) as DuplicateContact[];
@@ -36,7 +49,6 @@ export function useDuplicateContacts(enabled = true) {
         return [] as DuplicateContact[];
       }
     },
-    enabled,
     staleTime: 30 * 60 * 1000,
     retry: false,
   });
