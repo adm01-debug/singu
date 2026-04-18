@@ -1,52 +1,61 @@
 
-## Diagnóstico real encontrado
-O problema não é só o sync `query ↔ URL`. Há um segundo gatilho mais crítico em `src/components/search/GlobalSearch.tsx`:
+## Diagnóstico de lentidão geral
 
-- `useSemanticSearch()` e `useConversationalSearch()` retornam **objetos novos a cada render**
-- `GlobalSearch` usa esses objetos inteiros nas dependências:
-  - `useEffect(..., [open, semantic, conv])`
-  - `useCallback(..., [user, semanticMode, semantic])`
-  - `useCallback(..., [conv])`
-- Quando `open === false`, o efeito chama `semantic.reset()` e `conv.reset()`; como `semantic` e `conv` mudam de identidade a cada render, o efeito roda de novo e pode entrar em **loop de atualização**, travando a thread principal
-- Isso bate com o console atual: o erro continua vindo de `GlobalSearch.tsx`, então a sidebar fica “clicável”, mas a navegação não avança
+### Problemas identificados
 
-## O que vou corrigir
-### 1) Tornar `GlobalSearch` estável
-Em `src/components/search/GlobalSearch.tsx`:
-- Desestruturar apenas membros estáveis dos hooks (`search`, `reset`, `loading`, `items`, etc.)
-- Remover `semantic` e `conv` inteiros das dependências dos hooks
-- Trocar dependências por callbacks/valores estáveis:
-  - `performSearch` → depender de `semanticSearch`
-  - efeito de fechamento → depender de `resetSemantic` e `resetConversational`
-  - toggle conversacional → depender só de `resetConversational`
+**1. AppLayout monta MUITOS componentes pesados em TODA navegação** (src/components/layout/AppLayout.tsx)
 
-### 2) Blindar o reset ao fechar
-Ainda em `GlobalSearch.tsx`:
-- Manter reset apenas quando a busca fecha
-- Evitar resets redundantes que disparam render sem necessidade
+Cada vez que troca de rota, o `AppLayout` re-renderiza e dispara *imediatamente*:
+- `<NotificationCenter />` → `useRealtimeNotifications` (canal Supabase Realtime + 4 listeners postgres_changes)
+- `<AskCrmChat />` → componente sempre montado (210 linhas)
+- `<AIEmailComposer />` → dialog global sempre montado
+- `<OnboardingTourWrapper />`
+- `<KeyboardShortcutsCheatsheet />`
+- `<SlowQueryIndicator />` → assinatura no QueryCache
+- `<GlobalSearch open={isOpen} ...>` → mesmo fechado, hooks `useSemanticSearch`/`useConversationalSearch` podem inicializar
+- `<QuickAddButton />`, `<NotificationCenter />` etc.
 
-### 3) Revalidar a correção no front
-Depois da correção, vou executar uma bateria forte de testes no preview:
-- clicar repetidamente nos itens principais da sidebar
-- testar seções recolhidas/expandidas
-- testar navegação entre `/empresas`, `/contatos`, `/interacoes`, `/pipeline`, `/configuracoes`, `/revops`
-- validar console sem `Maximum update depth exceeded`
-- confirmar que abrir/fechar a busca não volta a travar a navegação
+Resultado: cada navegação executa **dezenas de hooks `useEffect`, queries TanStack e abre canais realtime**, segurando a thread principal.
 
-## Arquivos envolvidos
-- `src/components/search/GlobalSearch.tsx` — correção principal
-- possível leitura complementar apenas para validação:
-  - `src/components/layout/AppSidebar.tsx`
-  - `src/components/ui/sidebar.tsx`
+**2. Console mostra RPCs falhando em loop por todo o app**
+- `get_instant_kpis` → "column resolved_at does not exist"
+- `get_duplicate_contacts` → "column reference 'email' is ambiguous"
+- Esses erros disparam `CircuitBreaker`, retries e logs constantes (peso de CPU + rede).
 
-## Resultado esperado
-- Sidebar volta a navegar em qualquer clique
-- App deixa de travar
-- Busca global continua funcionando
-- Console fica limpo do loop infinito
+**3. Calendário usa `useEffect` para fetch** em vez de TanStack Query (linha 33 de `Calendario.tsx`), violando padrão e impedindo cache entre navegações.
 
-## Execução
-Assim que você aprovar, eu faço:
-1. correção cirúrgica em `GlobalSearch.tsx`
-2. bateria de testes clicando no front
-3. retorno com o resultado exato do que funcionou e do que foi validado
+**4. Páginas detalhe abrem realtime channels** (`useContactDetail`) sem unsubscribe consistente em navegação rápida.
+
+### Plano de correção (3 frentes, foco em maior ROI)
+
+**Frente A — Defer chrome global pesado** (src/components/layout/AppLayout.tsx)
+- Mover `AskCrmChat`, `AIEmailComposer`, `KeyboardShortcutsCheatsheet`, `OnboardingTourWrapper` para `lazy()` + render só após `requestIdleCallback` (≈800 ms após mount), igual já é feito com `DeferredAppChrome` em App.tsx.
+- `GlobalSearch` continuar montado, mas garantir hooks internos só ativam quando `open === true` (já parcialmente feito após último fix).
+
+**Frente B — Silenciar RPCs quebradas** (não-bloqueante)
+- `useInstantKpis` e `useDuplicateContacts`: detectar erro de schema (`column ... does not exist` / `is ambiguous`) e marcar `enabled: false` em sessão (cache) para não retentar. Reduz logs e ciclos do CircuitBreaker.
+
+**Frente C — Realtime sob demanda**
+- `useRealtimeNotifications` (montado pelo `NotificationCenter` em todo layout): só abrir canal quando o popover do sino abre pela primeira vez; manter cache de notificações em memória após abrir.
+- Alternativa mais leve: adiar `subscribe()` para `requestIdleCallback` após 1.5 s do load inicial.
+
+**Frente D — Calendário com TanStack Query**
+- Substituir `useEffect + fetch` por `useQuery` com `staleTime: 60_000`, evitando refetch a cada visita.
+
+### Arquivos a editar
+- `src/components/layout/AppLayout.tsx` — defer de chrome global
+- `src/hooks/useRealtimeNotifications.ts` — abrir canal sob demanda
+- `src/hooks/useInstantKpis.ts` — circuit-break de schema
+- `src/hooks/useDuplicateContacts.ts` — circuit-break de schema
+- `src/pages/Calendario.tsx` — migrar para useQuery
+
+### Resultado esperado
+- Navegação entre módulos < 300 ms (hoje: vários segundos).
+- Console limpo dos 2 erros recorrentes.
+- Menos canais Realtime abertos em paralelo.
+- Sem regressão funcional (notificações continuam chegando, busca continua, etc.).
+
+### Validação
+Após aplicar, eu vou clicar entre `/`, `/empresas`, `/contatos`, `/calendario`, `/pipeline`, `/revops` e medir tempo de paint via `browser--performance_profile`.
+
+Aprovar para executar.
