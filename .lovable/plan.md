@@ -1,48 +1,41 @@
 
-#18 entregue. Próxima: #19 — Touchpoint Sequence Analysis.
+O usuário solicitou auditoria técnica exaustiva 22 dimensões. Vou fazer leitura profunda do codebase antes de apresentar o relatório (não é implementação — é diagnóstico).
 
-## Melhoria #19: Touchpoint Sequence Analysis
+Plano: explorar README, estrutura, configs críticas (vite, tsconfig, package.json), security headers, edge functions shared, RLS policies via supabase linter, scan de segurança, e amostra de hooks/components. Depois entregar o relatório completo com scorecard, top 10 ações e roadmap em 3 ondas.
 
-### Escopo
-Analisar **sequências de canais** que mais convertem deals. Responde: "qual ordem de toques (ex: Email→WhatsApp→Call) tem maior taxa de fechamento?". Diferente da matriz canal×estágio (#18), foco aqui é a **ordem temporal** dos toques.
+## Plano de Execução
 
-### Diferencial
-- #16 BestTime: quando contatar
-- #17 Inbound: quando eles me procuram
-- #18 Channel Matrix: qual canal por estágio
-- **#19 Sequence: qual ORDEM de canais converte mais**
+### Fase 1 — Coleta exaustiva (read-only)
+1. **Inventário**: `package.json`, `vite.config.ts`, `tsconfig.app.json`, `index.html`, `README.md`, `ARCHITECTURE.md`, listagem `src/`, `supabase/functions/`, `supabase/migrations/`, `docs/adr/`
+2. **Segurança backend**: rodar `security--run_security_scan` + `supabase--linter` + amostra de RLS via `supabase--read_query` em `pg_policies`
+3. **Edge functions**: amostrar 5 funções críticas (`external-data`, `health`, `ai-*`, `lux-trigger`) para padrão Deno.serve, validação Zod, rate limit
+4. **Frontend**: amostrar `App.tsx`, `useAuth.tsx`, `externalData.ts`, `circuitBreaker.ts`, `resilientFetch.ts`, `validationSchemas.ts`, `logger.ts`
+5. **Testes**: listar `src/**/__tests__/` e `vitest.config.ts` (se existir) para cobertura
+6. **CI/CD**: `.github/workflows/` se existir
+7. **Tipagem**: confirmar strict mode, contar `any` em src/
+8. **Performance**: chunks no vite, PWA config, bundle strategy
 
-### Arquitetura (100% client-side)
-**Hook** `useTouchpointSequences()`:
-- Query `interactions` 180d + `deals` (external) com status `won/lost`
-- Agrupa interações por `contact_id`, ordena cronologicamente
-- Extrai sequência canônica de até 5 primeiros toques únicos por deal (ex: `email→whatsapp→call`)
-- Agrega: para cada sequência → total deals, won, lost, taxa %, ticket médio
-- Identifica top 5 sequências vencedoras (mín 3 deals)
-- StaleTime 15min
+### Fase 2 — Análise das 22 dimensões
+Para cada dimensão: **Nota (0-10)** + **Evidências concretas (arquivo:linha)** + **Gaps para 10/10** + **Ações corretivas**.
 
-**Componente** `TouchpointSequenceCard.tsx` (Dashboard→Inteligência):
-- Header com título + filtro de tamanho (2/3/4/5 toques)
-- Lista ranqueada: cada linha mostra ícones canais em sequência (com setas), taxa %, badge "🏆 Top" no #1, total deals
-- Insight: "Sequência campeã: {seq} — {rate}% de conversão"
-- Empty state se <10 deals fechados
+### Fase 3 — Entrega
+1. **Scorecard ASCII** completo (tabela 22 linhas + nota geral ponderada)
+2. **Top 10 ações** ordenadas por ROI (impacto÷esforço)
+3. **Roadmap 3 ondas**: 🔴 Quick Wins (1-3d) / 🟠 Sprint 1 (1-2sem) / 🟡 Sprint 2 (2-4sem)
+4. **Parágrafo final** sobre maturidade
 
-### Arquivos
-- Novo: `src/hooks/useTouchpointSequences.ts` (~180 linhas)
-- Novo: `src/components/dashboard/TouchpointSequenceCard.tsx` (~220 linhas)
-- Editar: `src/components/dashboard/tabs/IntelligenceTab.tsx` (adicionar abaixo do ChannelMatrix)
-- Nova memória: `mem://features/touchpoint-sequence-analysis.md`
-- Atualizar: `mem://index.md`
-
-### Validação E2E
-- Build limpo, ≤400 linhas/arquivo, sem `any`
-- Sequências renderizadas com ícones + setas
-- Filtro de tamanho funciona
-- Top sequência destacada
-- Empty state em conta nova
-- Insight coerente
+### Pesos para média ponderada
+- ×3 Crítico: Segurança, Autenticação, Autorização, Data Integrity
+- ×2 Alto: Banco, Tipagem, Validação, Testes, Arquitetura
+- ×1 Padrão: demais 11 dimensões
 
 ### Restrições
-PT-BR, TanStack Query, sem migration, sem edge function nova.
+- Sem inventar evidências — só citar o que ler
+- Marcar "NÃO AUDITÁVEL" em infra/processos sem acesso (CI/CD se inexistente, on-call, pen-test)
+- PT-BR
+- Pausa em #20 da fila de melhorias enquanto auditoria roda — retomar #20 (Deal Velocity Benchmark) após aprovação do relatório
 
-Após #19 → #20 (deal velocity benchmark — comparar tempo médio do funil vs benchmarks).
+### Output ao final
+Relatório completo em chat (sem alterações de código) — usuário decide depois quais ações virar PRs.
+
+Aprovar para iniciar a varredura.
