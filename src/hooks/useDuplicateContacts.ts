@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { callExternalRpc } from '@/lib/externalData';
-import { logger } from '@/lib/logger';
 
 interface DuplicateContact {
   id?: string;
@@ -15,41 +14,15 @@ interface DuplicateContact {
   [key: string]: unknown;
 }
 
-let schemaBroken = false;
-
-function isSchemaError(err: unknown): boolean {
-  const msg = typeof err === 'string' ? err : (err as { message?: string })?.message || '';
-  return /does not exist|is ambiguous|column .* not found/i.test(msg);
-}
-
 export function useDuplicateContacts(enabled = true) {
   return useQuery({
     queryKey: ['duplicate-contacts'],
-    enabled: enabled && !schemaBroken,
+    enabled,
     queryFn: async () => {
-      // Defer this non-critical check to avoid blocking page load
-      await new Promise(r => setTimeout(r, 5000));
-      try {
-        const { data, error } = await callExternalRpc<DuplicateContact[]>(
-          'get_duplicate_contacts',
-          {}
-        );
-        if (error) {
-          if (isSchemaError(error)) {
-            schemaBroken = true;
-            logger.warn('get_duplicate_contacts disabled for session (schema mismatch)');
-          } else {
-            logger.warn('[DuplicateContacts] RPC error:', error);
-          }
-          return [] as DuplicateContact[];
-        }
-        return (Array.isArray(data) ? data : []) as DuplicateContact[];
-      } catch (e) {
-        logger.warn('[DuplicateContacts] Fetch failed:', e);
-        return [] as DuplicateContact[];
-      }
+      const { data, error } = await callExternalRpc<DuplicateContact[]>('get_duplicate_contacts', {});
+      if (error) throw error;
+      return (Array.isArray(data) ? data : []) as DuplicateContact[];
     },
     staleTime: 30 * 60 * 1000,
-    retry: false,
   });
 }
