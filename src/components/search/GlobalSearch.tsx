@@ -99,8 +99,21 @@ export const GlobalSearch = React.forwardRef<HTMLDivElement, GlobalSearchProps>(
     try { return localStorage.getItem('global-search-conversational') === '1'; } catch { return false; }
   });
   const [convDraft, setConvDraft] = useState('');
-  const semantic = useSemanticSearch();
-  const conv = useConversationalSearch();
+  const {
+    search: semanticSearch,
+    reset: resetSemantic,
+    loading: semanticLoading,
+    cached: semanticCached,
+    variations: semanticVariations,
+  } = useSemanticSearch();
+  const {
+    ask: convAsk,
+    reset: resetConversational,
+    loading: convLoading,
+    interpretation: convInterpretation,
+    items: convItems,
+    history: convHistory,
+  } = useConversationalSearch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
