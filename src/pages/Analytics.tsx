@@ -27,15 +27,16 @@ import { AdvancedTriggersPanel } from '@/components/triggers/AdvancedTriggersPan
 import { ChurnPredictionPanel } from '@/components/analytics/ChurnPredictionPanel';
 import { BestTimeToContactPanel } from '@/components/analytics/BestTimeToContactPanel';
 import { DealVelocityPanel } from '@/components/analytics/DealVelocityPanel';
-import { NLPAnalyticsPanel } from '@/components/analytics/NLPAnalyticsPanel';
 import { ClosingScoreRanking } from '@/components/analytics/ClosingScoreRanking';
 import { AccountChurnPredictionPanel } from '@/components/analytics/AccountChurnPredictionPanel';
 import { RFMAnalysisPanel } from '@/components/analytics/RFMAnalysisPanel';
-import RfmExternalDashboard from '@/components/analytics/RfmExternalDashboard';
-import DISCAnalyticsPanel from '@/components/analytics/DISCAnalyticsPanel';
-import NeuroPortfolioDashboard from '@/components/analytics/NeuroPortfolioDashboard';
-import AdvancedAnalyticsTab from '@/components/analytics/AdvancedAnalyticsTab';
-import ReportsTab from '@/components/analytics/ReportsTab';
+// Lazy-loaded heavy panels (recharts-bound) — split off the Analytics chunk
+const NLPAnalyticsPanel = lazy(() => import('@/components/analytics/NLPAnalyticsPanel').then(m => ({ default: m.NLPAnalyticsPanel })));
+const RfmExternalDashboard = lazy(() => import('@/components/analytics/RfmExternalDashboard'));
+const DISCAnalyticsPanel = lazy(() => import('@/components/analytics/DISCAnalyticsPanel'));
+const NeuroPortfolioDashboard = lazy(() => import('@/components/analytics/NeuroPortfolioDashboard'));
+const AdvancedAnalyticsTab = lazy(() => import('@/components/analytics/AdvancedAnalyticsTab'));
+const ReportsTab = lazy(() => import('@/components/analytics/ReportsTab'));
 import { DISCTrainingMode, DISCConversionMetrics } from '@/components/disc';
 import {
   NLPTrainingMode, NLPConversionMetrics,
@@ -182,13 +183,23 @@ const Analytics = () => {
             <TabsTrigger value="triggers">Gatilhos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="reports" className="space-y-6"><ReportsTab /></TabsContent>
+          <TabsContent value="reports" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <ReportsTab />
+            </Suspense>
+          </TabsContent>
 
-          <TabsContent value="advanced" className="space-y-6"><AdvancedAnalyticsTab /></TabsContent>
+          <TabsContent value="advanced" className="space-y-6">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <AdvancedAnalyticsTab />
+            </Suspense>
+          </TabsContent>
 
           <TabsContent value="neuro" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <NeuroPortfolioDashboard />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <NeuroPortfolioDashboard />
+              </Suspense>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <NeuroRadarChart discProfile={null} interactions={[]} title="Balanço Neural Médio do Portfólio" />
                 <NeuroTimeline contactName="Portfólio Geral" interactions={[]} maxEntries={8} />
@@ -203,7 +214,9 @@ const Analytics = () => {
 
           <TabsContent value="disc" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <DISCAnalyticsPanel />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <DISCAnalyticsPanel />
+              </Suspense>
               <DISCTrainingMode />
               <DISCConversionMetrics />
             </motion.div>
@@ -211,7 +224,9 @@ const Analytics = () => {
 
           <TabsContent value="rfm" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <RfmExternalDashboard />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <RfmExternalDashboard />
+              </Suspense>
               <RFMAnalysisPanel />
             </motion.div>
           </TabsContent>
@@ -230,7 +245,9 @@ const Analytics = () => {
 
           <TabsContent value="nlp" className="space-y-6">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-              <NLPAnalyticsPanel />
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <NLPAnalyticsPanel />
+              </Suspense>
               <NLPTrainingMode />
               <NLPConversionMetrics />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><RapportRealtimeCoach /><MiltonianCalibration /></div>
