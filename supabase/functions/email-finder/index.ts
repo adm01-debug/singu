@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { rateLimit } from "../_shared/rate-limit.ts";
-import { verifyEmail } from "../email-verifier/index.ts";
+import { verifyEmail } from "../_shared/email-verify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
