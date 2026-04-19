@@ -161,9 +161,8 @@ export function useCompleteTask() {
       }
       toast.error('Erro ao concluir tarefa');
     },
-    onSuccess: () => {
-      toast.success('✅ Tarefa concluída');
-    },
+    // sucesso silencioso — caller decide o feedback (ver useActionToast.destructive em Tarefas/Inbox)
+
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ['tasks'] });
     },
