@@ -284,9 +284,11 @@ export const CrossRefTab = () => {
       )}
 
       {picked.length < 2 && (
-        <div className="intel-card p-8 text-center intel-mono text-xs text-muted-foreground">
-          ── SELECT_AT_LEAST_2_ENTITIES_TO_CROSS_REFERENCE ──
-        </div>
+        <IntelEmptyState
+          icon={GitCompare}
+          title="SELECT_AT_LEAST_2_ENTITIES"
+          description="Adicione 2 ou 3 entidades acima para cruzar interações, deals compartilhados e comparar metadata lado a lado."
+        />
       )}
     </div>
   );
