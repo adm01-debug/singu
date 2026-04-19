@@ -31,6 +31,8 @@ import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContatosContent } from './contatos/ContatosContent';
 import { SavedViewsBar } from '@/components/views/SavedViewsBar';
 import { useSavedViews } from '@/hooks/useSavedViews';
+import { useActionToast } from '@/hooks/useActionToast';
+import { useRestoreEntity } from '@/hooks/useRestoreEntity';
 
 interface ContatosViewState {
   searchTerm: string;
