@@ -13,7 +13,7 @@ interface DataGridProps<T> {
   columns: Column<T>[];
   rows: T[];
   getRowKey: (row: T) => string;
-  onRowClick?: (row: T) => void;
+  onRowClick?: (row: T, event?: React.MouseEvent) => void;
   emptyMessage?: string;
   className?: string;
 }
@@ -56,7 +56,7 @@ export function DataGrid<T extends Record<string, unknown>>({
           {rows.map((row, idx) => (
             <tr
               key={getRowKey(row)}
-              onClick={() => onRowClick?.(row)}
+              onClick={(e) => onRowClick?.(row, e)}
               className={cn(
                 'border-b border-border/50 transition-colors',
                 idx % 2 === 1 && 'bg-muted/10',
