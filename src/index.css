@@ -1003,3 +1003,89 @@ button, a, input, select, textarea, [role="button"] {
 .theme-transitioning {
   transition: background-color 0.3s ease, color 0.2s ease, border-color 0.2s ease;
 }
+
+/* ============================================
+   INTELLIGENCE PLATFORM TOKENS (additive, opt-in)
+   Aplicar via .intel-surface em containers do hub
+   ============================================ */
+:root {
+  --intel-bg: 222 47% 7%;
+  --intel-surface-1: 222 40% 10%;
+  --intel-surface-2: 222 35% 13%;
+  --intel-border: 222 25% 20%;
+  --intel-border-strong: 222 30% 28%;
+  --intel-accent: 188 95% 55%;
+  --intel-accent-soft: 188 70% 45%;
+  --intel-text: 220 25% 92%;
+  --intel-text-muted: 220 15% 60%;
+  --intel-text-dim: 220 12% 42%;
+  --sev-critical: 0 78% 60%;
+  --sev-warn: 38 92% 55%;
+  --sev-info: 188 95% 55%;
+  --sev-ok: 142 60% 50%;
+}
+
+.intel-surface {
+  background-color: hsl(var(--intel-bg));
+  color: hsl(var(--intel-text));
+  --background: var(--intel-bg);
+  --foreground: var(--intel-text);
+  --card: var(--intel-surface-1);
+  --card-foreground: var(--intel-text);
+  --border: var(--intel-border);
+  --muted: var(--intel-surface-2);
+  --muted-foreground: var(--intel-text-muted);
+}
+
+.intel-surface .intel-grid-bg {
+  background-image:
+    linear-gradient(hsl(var(--intel-border) / 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--intel-border) / 0.4) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.intel-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+  letter-spacing: -0.01em;
+}
+
+.intel-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--intel-text-dim));
+}
+
+.intel-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--intel-border-strong)), transparent);
+}
+
+.intel-card {
+  background-color: hsl(var(--intel-surface-1));
+  border: 1px solid hsl(var(--intel-border));
+  border-radius: 4px;
+}
+
+.intel-card-hover:hover {
+  border-color: hsl(var(--intel-accent) / 0.5);
+  background-color: hsl(var(--intel-surface-2));
+}
+
+.intel-corner-frame {
+  position: relative;
+}
+.intel-corner-frame::before,
+.intel-corner-frame::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: hsl(var(--intel-accent));
+  border-style: solid;
+}
+.intel-corner-frame::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.intel-corner-frame::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
