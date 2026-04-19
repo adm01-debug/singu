@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -14,6 +14,8 @@ import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
+import { MultiDiffPanel, type MultiDiffEntity } from '@/components/intel/MultiDiffPanel';
+import { EntityNotesPanel } from '@/components/intel/EntityNotesPanel';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
@@ -49,10 +51,18 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
   useImperativeHandle(ref, () => ({ open, getCurrent: () => current }), [open, current]);
 
   const [showDiff, setShowDiff] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showMultiDiff, setShowMultiDiff] = useState(false);
   const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
   const { data: previousData } = useEntity360(
-    showDiff ? previousEntry?.type ?? null : null,
-    showDiff ? previousEntry?.id ?? null : null,
+    showDiff || showMultiDiff ? previousEntry?.type ?? null : null,
+    showDiff || showMultiDiff ? previousEntry?.id ?? null : null,
+  );
+  const beforePreviousEntry =
+    stack.length >= 3 && cursor >= 2 ? stack[cursor - 2] : null;
+  const { data: beforePreviousData } = useEntity360(
+    showMultiDiff ? beforePreviousEntry?.type ?? null : null,
+    showMultiDiff ? beforePreviousEntry?.id ?? null : null,
   );
 
   const doSearch = useCallback(async () => {
