@@ -260,6 +260,20 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <StickyNote className="h-3 w-3" aria-hidden /> NOTE
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowTimeline((v) => !v)}
+                  className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                    showTimeline
+                      ? 'text-[hsl(var(--intel-accent))]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-label="Timeline mensal"
+                  aria-pressed={showTimeline}
+                  title="Timeline temporal agrupada por mês"
+                >
+                  <CalendarDays className="h-3 w-3" aria-hidden /> TIMELINE
+                </button>
                 {previousEntry && (
                   <button
                     type="button"
