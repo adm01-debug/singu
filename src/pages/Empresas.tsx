@@ -159,4 +159,26 @@ const Empresas = () => {
   );
 };
 
+interface EmpresasSavedViewsProps {
+  currentState: EmpresasViewState;
+  onApply: (s: EmpresasViewState) => void;
+}
+
+function EmpresasSavedViews({ currentState, onApply }: EmpresasSavedViewsProps) {
+  const sv = useSavedViews<EmpresasViewState>('empresas');
+  return (
+    <SavedViewsBar
+      scope="empresas"
+      views={sv.views}
+      currentState={currentState}
+      onSave={sv.save}
+      onApply={(v) => { sv.apply(v); onApply(v.state); }}
+      onRemove={sv.remove}
+      onToggleFavorite={sv.toggleFavorite}
+      onSetDefault={sv.setDefault}
+      shareUrl={sv.shareUrl}
+    />
+  );
+}
+
 export default Empresas;
