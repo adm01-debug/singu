@@ -1159,3 +1159,14 @@ html.intel-theme-amber .intel-surface kbd {
   color: hsl(var(--intel-accent));
 }
 
+/* Flash sutil quando o aside é focado via badge da status bar */
+@keyframes intel-aside-flash {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--intel-accent) / 0.0); }
+  30%  { box-shadow: 0 0 0 3px hsl(var(--intel-accent) / 0.5); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--intel-accent) / 0.0); }
+}
+.intel-aside-flash {
+  animation: intel-aside-flash 1.2s ease-out;
+  border-radius: 6px;
+}
+
