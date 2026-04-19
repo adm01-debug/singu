@@ -230,6 +230,33 @@ export const GraphTab = () => {
           </div>
         }
       >
+        {pathIds.length > 0 && (
+          <div
+            className="intel-card px-3 py-2 mb-2 border-[hsl(var(--intel-accent)/0.5)] bg-[hsl(var(--intel-accent)/0.05)]"
+            role="status"
+          >
+            <div className="flex items-center gap-2 flex-wrap">
+              <Route className="h-3 w-3 text-[hsl(var(--intel-accent))]" aria-hidden />
+              <span className="intel-eyebrow text-foreground">PATH_ACTIVE</span>
+              {pathIds.map((id, i) => {
+                const b = bookmarks.find((x) => x.id === id);
+                return (
+                  <span key={id} className="flex items-center gap-1.5">
+                    <span className="intel-mono text-[10px] px-1.5 py-0.5 rounded-sm bg-[hsl(var(--intel-accent)/0.15)] text-[hsl(var(--intel-accent))] border border-[hsl(var(--intel-accent)/0.4)]">
+                      {b?.name || id.slice(0, 8)}
+                    </span>
+                    {i < pathIds.length - 1 && (
+                      <span className="intel-mono text-[10px] text-muted-foreground">→</span>
+                    )}
+                  </span>
+                );
+              })}
+              <span className="intel-mono text-[10px] text-muted-foreground ml-auto">
+                BFS · share via URL
+              </span>
+            </div>
+          </div>
+        )}
         {isLoading ? (
           <IntelSkeleton lines={8} label="RENDERING_GRAPH" />
         ) : (
