@@ -264,6 +264,7 @@ const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?
 // Routes wrapper
 const AnimatedRoutes = () => {
   useWebVitals();
+  useViewTransitions();
   const { isOnline } = useOnlineStatus({
     onOffline: () => import('sonner').then(m => m.toast.warning('Conexão perdida', { description: 'Você está offline.' })),
     onOnline: () => import('sonner').then(m => m.toast.success('Conexão restaurada')),
