@@ -128,6 +128,7 @@ const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
 const AdminErrorLogs = lazy(() => import("./pages/admin/ErrorLogs"));
+const AdminComponentGallery = lazy(() => import("./pages/admin/ComponentGallery"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
 const DocsPage = lazy(() => import("./pages/DocsPage"));
@@ -743,6 +744,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminErrorLogs />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/component-gallery" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminComponentGallery />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>
