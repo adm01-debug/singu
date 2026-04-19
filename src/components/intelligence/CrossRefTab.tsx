@@ -15,6 +15,9 @@ import { CommonEventsTimeline } from '@/components/intel/CommonEventsTimeline';
 import { useCrossReference } from '@/hooks/useCrossReference';
 import { queryExternalData } from '@/lib/externalData';
 import { downloadCsv } from '@/lib/intelExport';
+import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
+import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
+import { jaccardIndex } from '@/lib/jaccard';
 import { format } from 'date-fns';
 
 interface MetaRow {
@@ -53,6 +56,18 @@ export const CrossRefTab = () => {
     if (!data?.temporalOverlap?.length) return null;
     return [...data.temporalOverlap].sort((a, b) => b.count - a.count)[0];
   }, [data]);
+
+  const overlap = useMemo(() => {
+    if (!data?.interactionsWithMatches?.length || picked.length < 2) {
+      return { index: 0, intersection: 0, union: 0 };
+    }
+    const groups: string[][] = picked.map((p) =>
+      data.interactionsWithMatches
+        .filter((i) => i.matchedIds.includes(p.id))
+        .map((i) => i.id)
+    );
+    return jaccardIndex(groups);
+  }, [data, picked]);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,13 +132,17 @@ export const CrossRefTab = () => {
     setSearch('');
   };
 
-  const exportData = () => {
-    if (!data) return;
-    downloadCsv(
+  const exportShared = (fmt: IntelExportFormat) => {
+    if (!data?.sharedInteractions.length) {
+      toast.error('Nada para exportar.');
+      return;
+    }
+    const ok = intelExportUniversal(
       data.sharedInteractions.map((i) => ({ ...i })),
-      `crossref-interacoes-${Date.now()}`
+      `crossref-interacoes-${Date.now()}`,
+      fmt,
     );
-    toast.success('CSV exportado com sucesso.');
+    if (ok) toast.success(`Exportado em ${fmt.toUpperCase()}.`);
   };
 
   const exportBundle = () => {
@@ -227,7 +246,7 @@ export const CrossRefTab = () => {
 
       {picked.length >= 2 && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="intel-card px-3 py-2">
               <MetricMono label="SHARED_INT" value={isLoading ? '…' : (data?.sharedInteractions.length ?? '—')} />
             </div>
@@ -236,6 +255,15 @@ export const CrossRefTab = () => {
             </div>
             <div className="intel-card px-3 py-2">
               <MetricMono label="OVERLAP_DAYS" value={isLoading ? '…' : (data?.temporalOverlap.length ?? '—')} />
+            </div>
+            <div
+              className="intel-card px-3 py-2"
+              title={`Jaccard = |A∩B| / |A∪B| · ${overlap.intersection}/${overlap.union}`}
+            >
+              <MetricMono
+                label="OVERLAP_IDX"
+                value={isLoading ? '…' : `${Math.round(overlap.index * 100)}%`}
+              />
             </div>
           </div>
 
@@ -290,16 +318,11 @@ export const CrossRefTab = () => {
             title="TEMPORAL_OVERLAP"
             meta="30D"
             actions={
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={exportData}
+              <ExportFormatMenu
+                onExport={exportShared}
                 disabled={!data?.sharedInteractions.length}
-                className="h-7 intel-mono text-[10px] gap-1.5"
-                aria-label="Exportar CSV"
-              >
-                <Download className="h-3 w-3" aria-hidden /> CSV
-              </Button>
+                label="EXPORT"
+              />
             }
           >
             {isLoading ? (

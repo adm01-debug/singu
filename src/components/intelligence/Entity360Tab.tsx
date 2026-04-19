@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -14,6 +14,8 @@ import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
+import { MultiDiffPanel, type MultiDiffEntity } from '@/components/intel/MultiDiffPanel';
+import { EntityNotesPanel } from '@/components/intel/EntityNotesPanel';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
@@ -49,10 +51,18 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
   useImperativeHandle(ref, () => ({ open, getCurrent: () => current }), [open, current]);
 
   const [showDiff, setShowDiff] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showMultiDiff, setShowMultiDiff] = useState(false);
   const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
   const { data: previousData } = useEntity360(
-    showDiff ? previousEntry?.type ?? null : null,
-    showDiff ? previousEntry?.id ?? null : null,
+    showDiff || showMultiDiff ? previousEntry?.type ?? null : null,
+    showDiff || showMultiDiff ? previousEntry?.id ?? null : null,
+  );
+  const beforePreviousEntry =
+    stack.length >= 3 && cursor >= 2 ? stack[cursor - 2] : null;
+  const { data: beforePreviousData } = useEntity360(
+    showMultiDiff ? beforePreviousEntry?.type ?? null : null,
+    showMultiDiff ? beforePreviousEntry?.id ?? null : null,
   );
 
   const doSearch = useCallback(async () => {
@@ -222,6 +232,20 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <Copy className="h-3 w-3" aria-hidden /> ID
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNotes((v) => !v)}
+                  className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                    showNotes
+                      ? 'text-[hsl(var(--intel-accent))]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-label="Anotações"
+                  aria-pressed={showNotes}
+                  title="Anotações da entidade"
+                >
+                  <StickyNote className="h-3 w-3" aria-hidden /> NOTE
+                </button>
                 {previousEntry && (
                   <button
                     type="button"
@@ -236,6 +260,22 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                     title={`Diff vs ${previousEntry.name}`}
                   >
                     <GitCompare className="h-3 w-3" aria-hidden /> DIFF
+                  </button>
+                )}
+                {beforePreviousEntry && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMultiDiff((v) => !v)}
+                    className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                      showMultiDiff
+                        ? 'text-[hsl(var(--intel-accent))]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-label="Comparar 3 entidades"
+                    aria-pressed={showMultiDiff}
+                    title="Comparar últimas 3 entidades"
+                  >
+                    <GitMerge className="h-3 w-3" aria-hidden /> 3DIFF
                   </button>
                 )}
                 <Link
@@ -321,6 +361,14 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
         </div>
       )}
 
+      {current && showNotes && (
+        <EntityNotesPanel
+          entityKey={`${current.type}:${current.id}`}
+          entityName={current.name}
+          onClose={() => setShowNotes(false)}
+        />
+      )}
+
       {current && showDiff && previousEntry && (
         <MetadataDiffPanel
           beforeName={previousEntry.name}
@@ -328,6 +376,29 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
           before={(previousData?.metadata || {}) as Record<string, unknown>}
           after={(data?.metadata || {}) as Record<string, unknown>}
           onClose={() => setShowDiff(false)}
+        />
+      )}
+
+      {current && showMultiDiff && previousEntry && beforePreviousEntry && (
+        <MultiDiffPanel
+          entities={[
+            {
+              id: beforePreviousEntry.id,
+              name: beforePreviousEntry.name,
+              metadata: (beforePreviousData?.metadata || {}) as Record<string, unknown>,
+            },
+            {
+              id: previousEntry.id,
+              name: previousEntry.name,
+              metadata: (previousData?.metadata || {}) as Record<string, unknown>,
+            },
+            {
+              id: current.id,
+              name: current.name,
+              metadata: (data?.metadata || {}) as Record<string, unknown>,
+            },
+          ] as MultiDiffEntity[]}
+          onClose={() => setShowMultiDiff(false)}
         />
       )}
     </div>

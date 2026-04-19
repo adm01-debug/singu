@@ -10,8 +10,9 @@ import { GraphLegend } from '@/components/intel/GraphLegend';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useInstantKpis } from '@/hooks/useInstantKpis';
+import { useGraphLayout } from '@/hooks/useGraphLayout';
 import { snapshotGraphCanvas } from '@/lib/graphSnapshot';
-import { Camera, Link as LinkIcon } from 'lucide-react';
+import { Camera, Link as LinkIcon, Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PERIODS = [
@@ -34,11 +35,34 @@ export const GraphTab = () => {
   const entityType = params.get('etype') || 'all';
   const minScore = Number(params.get('minScore') || '0');
   const containerRef = useRef<HTMLDivElement>(null);
+  const { saved, save: saveLayout } = useGraphLayout();
 
   const update = (k: string, v: string) => {
     const next = new URLSearchParams(params);
     if (v) next.set(k, v); else next.delete(k);
     setParams(next, { replace: true });
+  };
+
+  const persistLayout = () => {
+    saveLayout({
+      period,
+      etype: entityType === 'all' ? '' : entityType,
+      minScore,
+    });
+    toast.success('Layout salvo localmente.');
+  };
+
+  const restoreLayout = () => {
+    if (!saved) {
+      toast.info('Nenhum layout salvo.');
+      return;
+    }
+    const next = new URLSearchParams(params);
+    next.set('period', saved.period);
+    if (saved.etype) next.set('etype', saved.etype); else next.delete('etype');
+    next.set('minScore', String(saved.minScore));
+    setParams(next, { replace: true });
+    toast.success('Layout restaurado.');
   };
 
   const exportPng = () => {
@@ -141,6 +165,27 @@ export const GraphTab = () => {
               title="Exportar PNG"
             >
               <Camera className="h-3 w-3" aria-hidden /> PNG
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={persistLayout}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Salvar layout/filtros"
+              title="Salvar layout/filtros"
+            >
+              <Save className="h-3 w-3" aria-hidden /> LAYOUT
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={restoreLayout}
+              disabled={!saved}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Restaurar layout salvo"
+              title={saved ? `Restaurar (salvo ${new Date(saved.savedAt).toLocaleString('pt-BR')})` : 'Sem layout salvo'}
+            >
+              <RotateCcw className="h-3 w-3" aria-hidden /> RESTORE
             </Button>
             <Button
               size="sm"

@@ -18,6 +18,7 @@ import { IntelPresentationToggle } from '@/components/intel/IntelPresentationTog
 import { PinnedEntitiesPanel } from '@/components/intel/PinnedEntitiesPanel';
 import { RecentSnapshotsPanel } from '@/components/intel/RecentSnapshotsPanel';
 import { KeyboardMapOverlay } from '@/components/intel/KeyboardMapOverlay';
+import { IntelHealthPanel } from '@/components/intel/IntelHealthPanel';
 import { useIntelTelemetry, useIntelTabView } from '@/hooks/useIntelTelemetry';
 import { useIntelHotkeys } from '@/hooks/useIntelHotkeys';
 import { useIntelSnapshots } from '@/hooks/useIntelSnapshots';
@@ -285,6 +286,12 @@ const Intelligence = () => {
                 <RecentSnapshotsPanel onApply={applySnapshot} />
               </aside>
             </main>
+
+            {params.get('diag') === '1' && (
+              <div className="mt-4">
+                <IntelHealthPanel />
+              </div>
+            )}
 
             <IntelStatusBar />
           </div>

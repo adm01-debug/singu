@@ -14,7 +14,8 @@ import { useSavedAskViews } from '@/hooks/useSavedAskViews';
 import { useContextualSuggestions } from '@/hooks/useContextualSuggestions';
 import type { HistoryEntry } from '@/hooks/useEntityHistory';
 import { DataGrid } from '@/components/intel/DataGrid';
-import { downloadCsv } from '@/lib/intelExport';
+import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
+import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
 
 const HISTORY_KEY = 'intel-ask-history';
 const MAX_HISTORY = 10;
@@ -71,15 +72,21 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
     });
   }, []);
 
-  const exportLastTable = useCallback(() => {
+  const exportLastTable = useCallback((fmt: IntelExportFormat = 'csv') => {
     const lastWithData = [...messages].reverse().find((m) => Array.isArray(m.data) && m.data.length > 0);
     if (!lastWithData?.data) {
       toast.error('Nenhuma tabela disponível para exportar.');
       return;
     }
-    downloadCsv(lastWithData.data as Array<Record<string, unknown>>, `ask-crm-${Date.now()}`);
-    log({ kind: 'export', label: 'ask-crm', meta: { rows: lastWithData.data.length } });
-    toast.success('CSV exportado.');
+    const ok = intelExportUniversal(
+      lastWithData.data as Array<Record<string, unknown>>,
+      `ask-crm-${Date.now()}`,
+      fmt,
+    );
+    if (ok) {
+      log({ kind: 'export', label: `ask-crm:${fmt}`, meta: { rows: lastWithData.data.length } });
+      toast.success(`Exportado em ${fmt.toUpperCase()}.`);
+    }
   }, [messages, log]);
 
   const showHelp = useCallback(() => {
@@ -117,14 +124,38 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
     });
   }, [input, loading, ask, doClear, exportLastTable, showHelp, persistHistory, log]);
 
+  const lastUserQuery = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].content;
+    }
+    return history[0] ?? null;
+  }, [messages, history]);
+
   useEffect(() => {
     onRegisterBridge?.({
       clear: doClear,
-      exportLast: exportLastTable,
+      exportLast: () => exportLastTable('csv'),
       help: showHelp,
       run: (q) => submit(q),
     });
   }, [onRegisterBridge, doClear, exportLastTable, showHelp, submit]);
+
+  // Hotkey R: re-executar última query do Ask (fora de inputs)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      if (e.key.toLowerCase() !== 'r') return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || target?.isContentEditable) return;
+      if (!lastUserQuery || loading) return;
+      e.preventDefault();
+      submit(lastUserQuery);
+      toast.success('Re-executando última query…');
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lastUserQuery, loading, submit]);
 
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -148,7 +179,18 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 h-[calc(100vh-260px)] min-h-[480px]">
-      <SectionFrame title="QUERY_CONSOLE" meta="NL→SQL · ⌘K" className="flex flex-col">
+      <SectionFrame
+        title="QUERY_CONSOLE"
+        meta="NL→SQL · ⌘K · R"
+        className="flex flex-col"
+        actions={
+          <ExportFormatMenu
+            onExport={(fmt) => exportLastTable(fmt)}
+            disabled={!messages.some((m) => Array.isArray(m.data) && m.data.length > 0)}
+            label="EXPORT"
+          />
+        }
+      >
         <div className="flex-1 overflow-y-auto space-y-3 mb-3 min-h-[300px]" aria-live="polite">
           {messages.length === 0 && (
             <IntelEmptyState

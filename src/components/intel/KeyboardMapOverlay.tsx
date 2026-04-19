@@ -15,6 +15,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['⌘', 'P'], desc: 'Abrir command palette' },
   { keys: ['Alt', '←'], desc: 'Voltar entidade no Entity 360' },
   { keys: ['Alt', '→'], desc: 'Avançar entidade no Entity 360' },
+  { keys: ['R'], desc: 'Re-executar última query do Ask' },
   { keys: ['?'], desc: 'Abrir este painel de atalhos' },
   { keys: ['Esc'], desc: 'Fechar este painel' },
 ];
