@@ -323,7 +323,24 @@ export const CrossRefTab = () => {
             />
           )}
 
-          <SectionFrame title="SHARED_INTERACTIONS" count={data?.sharedInteractions.length} meta={isLoading ? 'LOADING…' : 'OK'}>
+          <SectionFrame
+            title="SHARED_INTERACTIONS"
+            count={data?.sharedInteractions.length}
+            meta={isLoading ? 'LOADING…' : 'OK'}
+            actions={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={exportBundle}
+                disabled={!data || (!data.sharedInteractions.length && !data.interactionsWithMatches?.length)}
+                className="h-7 intel-mono text-[10px] gap-1.5"
+                aria-label="Exportar bundle CSV"
+                title="Exporta comparison + common-events em 2 CSVs"
+              >
+                <Download className="h-3 w-3" aria-hidden /> BUNDLE
+              </Button>
+            }
+          >
             {isLoading ? (
               <IntelSkeleton lines={5} />
             ) : (
