@@ -32,9 +32,24 @@ function countNotes(): number {
   } catch { return 0; }
 }
 
+function focusPinnedPanel(): void {
+  const el = document.querySelector('[data-intel-aside="pinned"]') as HTMLElement | null;
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.classList.add('intel-aside-flash');
+    window.setTimeout(() => el.classList.remove('intel-aside-flash'), 1200);
+  }
+}
+
+function openCommandPalette(): void {
+  // Dispara o mesmo atalho que abre o IntelCommandPalette (Ctrl+P)
+  const ev = new KeyboardEvent('keydown', { key: 'p', ctrlKey: true, bubbles: true });
+  window.dispatchEvent(ev);
+}
+
 /**
  * Badge da status bar com contadores de bookmarks (★) e notas (📝) ativos.
- * Atualiza ao receber evento "storage" (entre abas) e a cada 3s (mesma aba).
+ * Click em ★ abre command palette; click em NOTE foca aside Pinned.
  */
 export const IntelBookmarksNotesBadge = () => {
   const [bookmarks, setBookmarks] = useState(0);
@@ -60,9 +75,12 @@ export const IntelBookmarksNotesBadge = () => {
 
   return (
     <span className="hidden sm:inline-flex items-center gap-2" aria-label="Bookmarks e notas">
-      <span
-        className="inline-flex items-center gap-1"
-        title={`${bookmarks} bookmark${bookmarks === 1 ? '' : 's'}`}
+      <button
+        type="button"
+        onClick={openCommandPalette}
+        className="inline-flex items-center gap-1 hover:text-[hsl(var(--intel-accent))] focus-visible:text-[hsl(var(--intel-accent))]"
+        title={`${bookmarks} bookmark${bookmarks === 1 ? '' : 's'} · clique para abrir command palette`}
+        aria-label={`${bookmarks} bookmarks ativos — abrir command palette`}
       >
         <Star
           className={`h-3 w-3 ${bookmarks > 0 ? 'text-[hsl(var(--intel-accent))]' : 'text-muted-foreground opacity-50'}`}
@@ -72,10 +90,13 @@ export const IntelBookmarksNotesBadge = () => {
         <span className={bookmarks > 0 ? 'text-[hsl(var(--intel-accent))]' : 'text-muted-foreground'}>
           ★{bookmarks}
         </span>
-      </span>
-      <span
-        className="inline-flex items-center gap-1"
-        title={`${notes} nota${notes === 1 ? '' : 's'} salva${notes === 1 ? '' : 's'}`}
+      </button>
+      <button
+        type="button"
+        onClick={focusPinnedPanel}
+        className="inline-flex items-center gap-1 hover:text-[hsl(var(--intel-accent))] focus-visible:text-[hsl(var(--intel-accent))]"
+        title={`${notes} nota${notes === 1 ? '' : 's'} salva${notes === 1 ? '' : 's'} · clique para focar painel`}
+        aria-label={`${notes} notas salvas — focar painel lateral`}
       >
         <StickyNote
           className={`h-3 w-3 ${notes > 0 ? 'text-[hsl(var(--intel-accent))]' : 'text-muted-foreground opacity-50'}`}
@@ -84,7 +105,7 @@ export const IntelBookmarksNotesBadge = () => {
         <span className={notes > 0 ? 'text-[hsl(var(--intel-accent))]' : 'text-muted-foreground'}>
           NOTE:{notes}
         </span>
-      </span>
+      </button>
     </span>
   );
 };

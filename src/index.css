@@ -1143,11 +1143,19 @@ html.intel-presentation .intel-surface [data-intel-hide-pres="true"] { display: 
 html.intel-theme-amber .intel-surface {
   --intel-accent: 38 95% 60%;
   --intel-accent-soft: 38 75% 50%;
+  --intel-border: 38 25% 22%;
+  --intel-border-strong: 38 35% 32%;
   --sev-info: 38 95% 60%;
+  --sev-ok: 142 60% 55%;
 }
 html.intel-theme-amber .intel-surface .intel-grid-bg {
   background-image:
-    linear-gradient(hsl(var(--intel-border) / 0.4) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(var(--intel-border) / 0.4) 1px, transparent 1px);
+    linear-gradient(hsl(var(--intel-border) / 0.45) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--intel-border) / 0.45) 1px, transparent 1px);
+}
+/* Garantir contraste WCAG AA: kbd/badges em amber */
+html.intel-theme-amber .intel-surface kbd {
+  border-color: hsl(var(--intel-border-strong));
+  color: hsl(var(--intel-accent));
 }
 
