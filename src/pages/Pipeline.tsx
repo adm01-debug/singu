@@ -98,7 +98,7 @@ function PipelineColumn({
 
   return (
     <div
-      className="flex-1 min-w-[220px] max-w-[280px]"
+      className="snap-center shrink-0 w-[85vw] sm:w-auto sm:flex-1 sm:min-w-[220px] sm:max-w-[280px]"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
@@ -346,7 +346,8 @@ export default function Pipeline() {
 
       <ForecastConfidencePanel />
 
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <p className="sm:hidden text-[11px] text-muted-foreground text-center -mb-1">← deslize para ver os estágios →</p>
+      <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory sm:snap-none -mx-4 px-4 sm:mx-0 sm:px-0">
         {STAGES.map((stage) => (
           <PipelineColumn
             key={stage.id}
