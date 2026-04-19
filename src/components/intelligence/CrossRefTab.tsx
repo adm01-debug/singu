@@ -71,6 +71,17 @@ export const CrossRefTab = () => {
     return jaccardIndex(groups);
   }, [data, picked]);
 
+  const insights = useMemo(() => {
+    if (picked.length < 2 || !data) return [];
+    return buildCrossRefInsights({
+      interactions: data.interactionsWithMatches || [],
+      temporalOverlap: data.temporalOverlap || [],
+      totalEntities: picked.length,
+      sharedDealsCount: data.sharedDeals?.length || 0,
+      overlapIndex: overlap.index,
+    });
+  }, [data, picked, overlap.index]);
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
