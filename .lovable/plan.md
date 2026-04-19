@@ -1,23 +1,23 @@
 
-Rodadas 1, 2 e 3 entregues (24 melhorias acumuladas). Para fechar o Intelligence Hub além do 10/10, proponho **Rodada 4** — 8 novas melhorias atômicas focadas em colaboração, exploração visual e integração cruzada com o resto do CRM.
+Rodadas 1-4 entregues (32 melhorias acumuladas). Para continuar rumo ao 10/10 sustentado, proponho **Rodada 5** — 8 novas melhorias atômicas focadas em workflows avançados, integração e qualidade enterprise.
 
-# Rodada 4 — Intelligence Hub
+# Rodada 5 — Intelligence Hub
 
-**1. Snapshots de sessão compartilháveis** — botão "💾 SNAPSHOT" no header do hub captura estado completo (tab + filtros + entidade aberta + bookmarks visíveis) em URL compactada (base64 JSON). Painel "RECENT_SNAPSHOTS" lista os 5 últimos snapshots locais com timestamp.
+**1. Anotações por entidade** — campo de texto livre persistido em `localStorage` (chave `intel-notes-v1` + entityKey) no Entity 360. Botão "📝 NOTE" abre painel inline com textarea + autosave (debounce 500ms) + timestamp da última edição. Útil para hipóteses de investigação.
 
-**2. Diff entre 2 entidades no Entity 360** — quando há ≥2 itens no histórico, botão "DIFF" compara metadata da entidade atual com a anterior, destacando campos adicionados/removidos/alterados (estilo git diff em mono).
+**2. Comparação de até 3 entidades em DIFF** — estender `MetadataDiffPanel` para aceitar N entidades (até 3) renderizadas em colunas lado-a-lado. Seletor no header do painel permite escolher quais 2-3 do histórico comparar.
 
-**3. Graph: foco em entidade pinned** — clicar em um bookmark do PinnedEntitiesPanel com modificador (Shift+click) abre o Graph filtrado naquela entidade (passa `?focusId=...&focusType=...`). NetworkVisualization respeita o focusId destacando o nó.
+**3. Graph: salvar layout/zoom** — botão "💾 LAYOUT" persiste em `localStorage` (chave `intel-graph-layout-v1`) o zoom + pan + filtros atuais. Botão "🔄 RESTORE" reaplica. Útil para retomar exploração visual exata.
 
-**4. CrossRef: exportar comparison + timeline juntos** — botão "EXPORT_BUNDLE" gera ZIP virtual com 2 CSVs (comparison.csv + common-events.csv) usando JSZip se disponível, fallback para download sequencial. Inclui metadata header com entidades selecionadas.
+**4. CrossRef: índice de sobreposição** — métrica calculada (Jaccard similarity) entre as entidades selecionadas usando interações compartilhadas. Exibido como `MetricMono` no topo do CrossRef ("OVERLAP_INDEX: 42%") com tooltip explicando fórmula `|A∩B| / |A∪B|`.
 
-**5. Ask: sugestões contextuais inteligentes** — substituir SUGGESTIONS estático por hook `useContextualSuggestions` que lê última entidade aberta no Entity 360 e gera 4 perguntas relacionadas (ex: "Últimas 10 interações com [nome]?", "Deals abertos da [empresa]?"). Fallback para genéricas quando não há contexto.
+**5. Ask: re-executar última query (`R`)** — atalho global `R` (fora de inputs) reexecuta automaticamente a última query do AskTab e foca a tab. Indicador visual no histórico mostra "● LIVE" no item recém-reexecutado.
 
-**6. Status bar: indicador de fonte de dados** — badge "DB:LIVE" / "DB:CACHE" / "DB:STALE" baseado em `dataUpdatedAt` da query principal vs idade. Tooltip explica significado. Cor segue paleta de severidade (verde/amarelo/vermelho).
+**6. Status bar: contador de queries em voo** — badge "⟳ N" mostrando `useIsFetching()` em tempo real, com pulso animado quando >0. Substitui implicitamente o estado idle do data source. Tooltip lista os queryKeys ativos (top 3).
 
-**7. Keyboard map overlay (`?`)** — pressionar `?` (fora de inputs) abre overlay modal listando TODOS os atalhos do hub: G/E/C/A, ⌘K, ⌘P, Alt+←/→, ?. Estilo terminal mono.
+**7. Export universal multi-formato** — utility `intelExportUniversal(data, name, format)` suportando `csv` | `json` | `tsv` | `markdown-table`. Adicionar dropdown ao lado dos botões EXPORT existentes (Ask, CrossRef) para escolher formato. Default permanece CSV.
 
-**8. Modo "presentation" + memória** — toggle no header "PRES" que oculta status bar, telemetria e debug; aumenta tipografia em 15%; força tabs em `?tab=` na URL para reabertura rápida. Persistido em `localStorage` (intel-pres-v1). Atualizar `mem://features/intelligence-hub.md`.
+**8. Health check do hub + memória** — painel acessível via `?diag=1` mostra: status de cada hook crítico (`useCrossReference`, `useEntity360`, `useAskCrm`), última latência, contagem de itens em cada `localStorage` do intel, versão do schema. Botão "RESET_INTEL_STATE" limpa todos os `intel-*` keys com confirmação. Atualizar `mem://features/intelligence-hub.md`.
 
 ## Restrições mantidas
 Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem mexer em CRM/Pipeline/ABM, sem `useEffect` para fetch.
