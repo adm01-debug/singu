@@ -132,13 +132,17 @@ export const CrossRefTab = () => {
     setSearch('');
   };
 
-  const exportData = () => {
-    if (!data) return;
-    downloadCsv(
+  const exportShared = (fmt: IntelExportFormat) => {
+    if (!data?.sharedInteractions.length) {
+      toast.error('Nada para exportar.');
+      return;
+    }
+    const ok = intelExportUniversal(
       data.sharedInteractions.map((i) => ({ ...i })),
-      `crossref-interacoes-${Date.now()}`
+      `crossref-interacoes-${Date.now()}`,
+      fmt,
     );
-    toast.success('CSV exportado com sucesso.');
+    if (ok) toast.success(`Exportado em ${fmt.toUpperCase()}.`);
   };
 
   const exportBundle = () => {
