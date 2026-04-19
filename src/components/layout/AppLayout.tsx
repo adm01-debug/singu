@@ -5,6 +5,7 @@ import { AppSidebar } from './AppSidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { GlobalCommandBar } from '@/components/command/GlobalCommandBar';
 import { QuickAddButton } from '@/components/quick-add/QuickAddButton';
 import { SlowQueryIndicator } from '@/components/feedback/SlowQueryIndicator';
 import { AIEmailComposerTrigger } from '@/components/ai/AIEmailComposerTrigger';
@@ -77,8 +78,19 @@ function getBreadcrumbs(pathname: string, pageTitle: string): { label: string; p
 
 function AppLayoutInner({ children, title }: AppLayoutProps) {
   const { isOpen, setIsOpen } = useGlobalSearch();
+  const [cmdBarOpen, setCmdBarOpen] = useState(false);
+  const [legacySearchOpen, setLegacySearchOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [deferredReady, setDeferredReady] = useState(false);
+
+  // Intercepta ⌘K: abre a Command Bar global em vez do GlobalSearch direto.
+  // GlobalSearch ainda fica acessível via "Buscar avançado" dentro do palette.
+  useEffect(() => {
+    if (isOpen) {
+      setIsOpen(false);
+      setCmdBarOpen(true);
+    }
+  }, [isOpen, setIsOpen]);
   const { state } = useSidebar();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -222,7 +234,13 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
       <MobileBottomNav />
 
       {/* Global Components */}
-      <GlobalSearch open={isOpen} onOpenChange={setIsOpen} voiceMode={voiceMode} onVoiceModeChange={setVoiceMode} />
+      <GlobalCommandBar
+        open={cmdBarOpen}
+        onOpenChange={setCmdBarOpen}
+        onOpenLegacySearch={() => setLegacySearchOpen(true)}
+        onOpenAsk={() => window.dispatchEvent(new CustomEvent('open-ask-crm'))}
+      />
+      <GlobalSearch open={legacySearchOpen} onOpenChange={setLegacySearchOpen} voiceMode={voiceMode} onVoiceModeChange={setVoiceMode} />
       <div className="hidden md:flex fixed bottom-8 right-8 lg:bottom-10 lg:right-10 z-50 flex-col items-end gap-3">
         <ScrollToTopButton className="relative" />
         <QuickAddButton className="relative z-10" />
