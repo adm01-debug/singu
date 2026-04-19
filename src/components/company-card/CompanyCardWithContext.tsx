@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Building2, Users, MoreVertical } from 'lucide-react';
@@ -149,3 +149,5 @@ function CompanyCardWithContextImpl({
     </motion.div>
   );
 }
+
+export const CompanyCardWithContext = memo(CompanyCardWithContextImpl);

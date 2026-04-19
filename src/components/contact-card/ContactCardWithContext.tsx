@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -329,3 +329,5 @@ function ContactCardWithContextImpl({
     </motion.div>
   );
 }
+
+export const ContactCardWithContext = memo(ContactCardWithContextImpl);
