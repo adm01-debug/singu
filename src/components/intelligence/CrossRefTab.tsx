@@ -15,6 +15,9 @@ import { CommonEventsTimeline } from '@/components/intel/CommonEventsTimeline';
 import { useCrossReference } from '@/hooks/useCrossReference';
 import { queryExternalData } from '@/lib/externalData';
 import { downloadCsv } from '@/lib/intelExport';
+import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
+import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
+import { jaccardIndex } from '@/lib/jaccard';
 import { format } from 'date-fns';
 
 interface MetaRow {
@@ -53,6 +56,18 @@ export const CrossRefTab = () => {
     if (!data?.temporalOverlap?.length) return null;
     return [...data.temporalOverlap].sort((a, b) => b.count - a.count)[0];
   }, [data]);
+
+  const overlap = useMemo(() => {
+    if (!data?.interactionsWithMatches?.length || picked.length < 2) {
+      return { index: 0, intersection: 0, union: 0 };
+    }
+    const groups: string[][] = picked.map((p) =>
+      data.interactionsWithMatches
+        .filter((i) => i.matchedIds.includes(p.id))
+        .map((i) => i.id)
+    );
+    return jaccardIndex(groups);
+  }, [data, picked]);
 
   useEffect(() => {
     let cancelled = false;
