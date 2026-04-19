@@ -1,26 +1,26 @@
 
-Rodadas 1 e 2 entregues. Proponho **Rodada 3** — 8 melhorias atômicas finais para fechar o Intelligence Hub em 10/10, sem pausas.
+Rodadas 1, 2 e 3 entregues (24 melhorias acumuladas). Para fechar o Intelligence Hub além do 10/10, proponho **Rodada 4** — 8 novas melhorias atômicas focadas em colaboração, exploração visual e integração cruzada com o resto do CRM.
 
-# Rodada 3 — Intelligence Hub
+# Rodada 4 — Intelligence Hub
 
-**1. Atalhos globais G/E/C/A** — pressionar uma letra (fora de inputs) salta direto para a aba correspondente. Tooltip nas tabs mostrando o atalho.
+**1. Snapshots de sessão compartilháveis** — botão "💾 SNAPSHOT" no header do hub captura estado completo (tab + filtros + entidade aberta + bookmarks visíveis) em URL compactada (base64 JSON). Painel "RECENT_SNAPSHOTS" lista os 5 últimos snapshots locais com timestamp.
 
-**2. Bookmarks de entidades** — botão "★" no Entity 360 salva entidade no `localStorage` (máx 10). Painel lateral "PINNED" lista bookmarks e permite reabertura com 1 clique.
+**2. Diff entre 2 entidades no Entity 360** — quando há ≥2 itens no histórico, botão "DIFF" compara metadata da entidade atual com a anterior, destacando campos adicionados/removidos/alterados (estilo git diff em mono).
 
-**3. Histórico de navegação Entity 360** — pilha real de navegação (não só breadcrumb único): voltar/avançar entre entidades visitadas na sessão, atalho `Alt+←` / `Alt+→`.
+**3. Graph: foco em entidade pinned** — clicar em um bookmark do PinnedEntitiesPanel com modificador (Shift+click) abre o Graph filtrado naquela entidade (passa `?focusId=...&focusType=...`). NetworkVisualization respeita o focusId destacando o nó.
 
-**4. Graph: snapshot PNG + share link** — botão "Exportar PNG" usa `html-to-image` (já presente?) ou `canvas.toDataURL` do SVG para baixar snapshot do grafo. Botão "Copiar link" gera URL com filtros atuais.
+**4. CrossRef: exportar comparison + timeline juntos** — botão "EXPORT_BUNDLE" gera ZIP virtual com 2 CSVs (comparison.csv + common-events.csv) usando JSZip se disponível, fallback para download sequencial. Inclui metadata header com entidades selecionadas.
 
-**5. CrossRef: timeline de eventos comuns** — abaixo do heatmap, lista cronológica das interações que envolvem TODAS as entidades selecionadas (interseção real, não apenas mesmo dia).
+**5. Ask: sugestões contextuais inteligentes** — substituir SUGGESTIONS estático por hook `useContextualSuggestions` que lê última entidade aberta no Entity 360 e gera 4 perguntas relacionadas (ex: "Últimas 10 interações com [nome]?", "Deals abertos da [empresa]?"). Fallback para genéricas quando não há contexto.
 
-**6. Ask: salvar query como "view"** — botão "Salvar" em respostas com dados → entrada nomeada em `localStorage`. Painel "SAVED_VIEWS" no rodapé do AskTab para reexecutar.
+**6. Status bar: indicador de fonte de dados** — badge "DB:LIVE" / "DB:CACHE" / "DB:STALE" baseado em `dataUpdatedAt` da query principal vs idade. Tooltip explica significado. Cor segue paleta de severidade (verde/amarelo/vermelho).
 
-**7. Status bar: latência média + p95** — calcular tempo médio das últimas 20 queries (via `useIntelTelemetry` events com `durationMs`) e p95. Exibir na status bar com cor por severidade (verde <500ms, amarelo <2s, vermelho ≥2s).
+**7. Keyboard map overlay (`?`)** — pressionar `?` (fora de inputs) abre overlay modal listando TODOS os atalhos do hub: G/E/C/A, ⌘K, ⌘P, Alt+←/→, ?. Estilo terminal mono.
 
-**8. Densidade configurável + memória** — toggle "COMPACT/COMFORTABLE" no header do hub, persistido em `localStorage`. Ajusta padding de `intel-card` e tamanhos via classe modificadora `.intel-density-compact`. Atualizar `mem://features/intelligence-hub.md`.
+**8. Modo "presentation" + memória** — toggle no header "PRES" que oculta status bar, telemetria e debug; aumenta tipografia em 15%; força tabs em `?tab=` na URL para reabertura rápida. Persistido em `localStorage` (intel-pres-v1). Atualizar `mem://features/intelligence-hub.md`.
 
 ## Restrições mantidas
-- Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem mexer em CRM/Pipeline/ABM, sem `useEffect` para fetch.
+Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem mexer em CRM/Pipeline/ABM, sem `useEffect` para fetch.
 
 ## Critério 10/10 por etapa
 (a) compila sem erro, (b) console limpo, (c) feature verificável, (d) constraints respeitadas. Memória atualizada ao fim.
