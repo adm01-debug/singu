@@ -7,6 +7,7 @@ import { LayoutGrid, BarChart3, Heart, Brain } from 'lucide-react';
 import { ScrollProgressBar } from '@/components/dashboard/ScrollProgressBar';
 import { WelcomeGreetingPopup } from '@/components/dashboard/WelcomeGreetingPopup';
 import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
+import { DailyBriefingCard } from '@/components/dashboard/DailyBriefingCard';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { FloatingQuickActions } from '@/components/quick-actions/FloatingQuickActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -98,6 +99,11 @@ const Dashboard = () => {
 
       <div className="p-4 md:p-6 space-y-5 md:space-y-6">
         <WelcomeGreetingPopup />
+        <DailyBriefingCard
+          contacts={contacts}
+          interactions={interactions}
+          weeklyInteractions={dashboardStats.weeklyInteractions}
+        />
         <OnboardingChecklist
           hasProfile={hasProfile}
           hasContacts={hasContacts}

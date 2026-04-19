@@ -29,6 +29,17 @@ import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContatosContent } from './contatos/ContatosContent';
+import { SavedViewsBar } from '@/components/views/SavedViewsBar';
+import { useSavedViews } from '@/hooks/useSavedViews';
+
+interface ContatosViewState {
+  searchTerm: string;
+  viewMode: ViewMode;
+  gridColumns: GridColumns;
+  activeFilters: Record<string, string[]>;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
 
 const filterConfigs = [
   { key: 'role', label: 'Papel', multiple: true, options: [{ value: 'owner', label: 'Proprietário', icon: Crown }, { value: 'manager', label: 'Gerente', icon: Briefcase }, { value: 'buyer', label: 'Comprador', icon: ShoppingCart }, { value: 'contact', label: 'Contato', icon: User }] },
@@ -157,6 +168,20 @@ const Contatos = () => {
         <SEOHead title="Contatos" description="Gestão inteligente de contatos e relacionamentos" />
         <Header title="Contatos" subtitle={`${filteredAndSortedContacts.length} de ${contacts.length} pessoas`} showAddButton addButtonLabel="Novo Contato" onAddClick={() => setIsFormOpen(true)} hideBack />
 
+        <div className="px-4 md:px-6 -mt-2 mb-3">
+          <ContatosSavedViews
+            currentState={{ searchTerm, viewMode, gridColumns, activeFilters, sortBy, sortOrder }}
+            onApply={(s) => {
+              setSearchTerm(s.searchTerm);
+              setViewMode(s.viewMode);
+              setGridColumns(s.gridColumns);
+              setActiveFilters(s.activeFilters);
+              setSortBy(s.sortBy);
+              setSortOrder(s.sortOrder);
+            }}
+          />
+        </div>
+
         <ContatosContent
           contacts={contacts} loading={loading} filteredAndSortedContacts={filteredAndSortedContacts}
           searchTerm={searchTerm} onSearchChange={handleSearchChange}
@@ -207,5 +232,27 @@ const Contatos = () => {
     </>
   );
 };
+
+interface ContatosSavedViewsProps {
+  currentState: ContatosViewState;
+  onApply: (s: ContatosViewState) => void;
+}
+
+function ContatosSavedViews({ currentState, onApply }: ContatosSavedViewsProps) {
+  const sv = useSavedViews<ContatosViewState>('contatos');
+  return (
+    <SavedViewsBar
+      scope="contatos"
+      views={sv.views}
+      currentState={currentState}
+      onSave={sv.save}
+      onApply={(v) => { sv.apply(v); onApply(v.state); }}
+      onRemove={sv.remove}
+      onToggleFavorite={sv.toggleFavorite}
+      onSetDefault={sv.setDefault}
+      shareUrl={sv.shareUrl}
+    />
+  );
+}
 
 export default Contatos;
