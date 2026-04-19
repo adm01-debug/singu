@@ -16,40 +16,44 @@ Módulo "command center" inspirado em Palantir, **additive** sobre Nexus Blue.
 
 ## Componentes (`src/components/intel/`)
 - Base: `EntityCard`, `MetricMono`, `IntelBadge`, `DataGrid`, `SectionFrame`, `IntelSkeleton`, `IntelErrorState`, `IntelEmptyState`, `GraphLegend`, `TemporalHeatmap`, `TypewriterText`
-- Status/telemetria: `IntelStatusBar` (hide em pres), `IntelTelemetryPanel` (`?debug=1`), `IntelLatencyBadge` (avg+p95 últimas 20 queries), `IntelDataSourceBadge` (LIVE/CACHE/STALE)
-- Comando/UX: `IntelCommandPalette` (⌘P), `IntelDensityToggle`, `IntelPresentationToggle`, `KeyboardMapOverlay` (`?`)
+- Status/telemetria: `IntelStatusBar` (hide em pres), `IntelTelemetryPanel` (`?debug=1`), `IntelLatencyBadge` (avg+p95), `IntelDataSourceBadge` (LIVE/CACHE/STALE), `IntelInflightBadge` (⟳N tempo real), `IntelHealthPanel` (`?diag=1`)
+- Comando/UX: `IntelCommandPalette` (⌘P), `IntelDensityToggle`, `IntelPresentationToggle`, `KeyboardMapOverlay` (`?`), `ExportFormatMenu` (csv/tsv/json/md)
 - Painéis aside: `PinnedEntitiesPanel` (Shift+click → Graph focus), `SavedViewsPanel`, `RecentSnapshotsPanel`
-- Análise: `CommonEventsTimeline` (interseção real), `MetadataDiffPanel` (added/removed/changed/equal)
+- Análise: `CommonEventsTimeline`, `MetadataDiffPanel` (2-way), `MultiDiffPanel` (até 3 entidades), `EntityNotesPanel` (autosave 500ms)
 
 ## Hooks (`src/hooks/`)
 - Dados: `useEntity360`, `useCrossReference` (com `interactionsWithMatches`)
 - Telemetria: `useIntelTelemetry`, `useIntelTabView`
 - Atalhos/navegação: `useIntelHotkeys` (G/E/C/A), `useEntityHistory` (Alt+←/→), `useEntityBookmarks` (★ máx 10)
-- Persistência: `useSavedAskViews` (máx 20), `useIntelDensity` (compact/comfort), `useIntelPresentation` (PRES), `useIntelSnapshots` (máx 5)
-- Contexto IA: `useContextualSuggestions(entity)` para sugestões dinâmicas no AskTab
+- Persistência: `useSavedAskViews`, `useIntelDensity`, `useIntelPresentation`, `useIntelSnapshots`, `useGraphLayout` (período+tipo+score), `useEntityNotes` (autosave 500ms, máx 4000 chars)
+- Contexto IA: `useContextualSuggestions(entity)`
 
 ## Lib (`src/lib/`)
-- `intelExport.ts` — `downloadCsv` RFC 4180 + BOM
+- `intelExport.ts` — `downloadCsv` RFC 4180 + BOM (legacy)
+- `intelExportUniversal.ts` — `intelExportUniversal(rows, name, fmt)` suporta `csv|tsv|json|markdown`
 - `graphSnapshot.ts` — captura PNG do canvas force-graph
-- `intelSnapshot.ts` — `encodeSnapshot/decodeSnapshot` base64+JSON, `pushRecentSnapshot`, `buildShareUrl(?snap=)`
-- `entityDiff.ts` — `computeMetadataDiff` ordenado por status
+- `intelSnapshot.ts` — `encodeSnapshot/decodeSnapshot` base64+JSON
+- `entityDiff.ts` — `computeMetadataDiff` (2-way ordenado)
+- `jaccard.ts` — `jaccardIndex(groups)` para OVERLAP_INDEX no CrossRef
+- `intelHealth.ts` — `inspectIntelStorage`, `resetIntelState`, `formatBytes`
 
 ## Tabs (`src/components/intelligence/`)
-- **GraphTab**: filtros URL + `?focusId/focusType` (vindo do PinnedEntitiesPanel Shift+click); botões PNG e SHARE
-- **Entity360Tab**: ref expõe `open()` e `getCurrent()`; ★ PIN; histórico Alt+←/→; **botão DIFF** compara metadata atual com a anterior do stack via `MetadataDiffPanel`
-- **CrossRefTab**: 2-3 entidades; metadata comparison; heatmap; `CommonEventsTimeline`; export CSV simples + **EXPORT_BUNDLE** (comparison.csv + common-events.csv com header `_entities`)
-- **AskTab**: ⌘K, histórico, comandos, typewriter, SAVE/SAVED_VIEWS; **SUGGESTED_QUERIES dinâmicas** via `useContextualSuggestions(contextEntity)` — fallback genérico
+- **GraphTab**: filtros URL + `?focusId/focusType`; PNG, SHARE, **LAYOUT (save)**, **RESTORE**
+- **Entity360Tab**: ★ PIN; Alt+←/→; **NOTE** (anotações), **DIFF** (2-way), **3DIFF** (multi até 3)
+- **CrossRefTab**: 2-3 entidades; metadata comparison; heatmap; CommonEventsTimeline; **OVERLAP_IDX (Jaccard %)**; EXPORT multi-formato + BUNDLE
+- **AskTab**: ⌘K, histórico, comandos, typewriter, SAVE; **hotkey R re-executa última**; SUGGESTED_QUERIES dinâmicas; EXPORT multi-formato
 
 ## Página (`src/pages/Intelligence.tsx`)
-- Header: SNAPSHOT (camera) + PRES + DENSITY + ⌘P + sessionId (last 3 com `data-intel-hide-pres`)
-- Layout 2 colunas: main (tabs) + aside (`PinnedEntitiesPanel` + `RecentSnapshotsPanel`)
-- `KeyboardMapOverlay` global (tecla `?`)
-- `?snap=<base64>` na URL aplica snapshot completo (tab + filtros + entidade)
-- `contextEntity` propagado para `AskTab` ao trocar tabs ou aplicar snapshot
+- Header: SNAPSHOT + PRES + DENSITY + ⌘P + sessionId
+- Layout 2 colunas + aside (`PinnedEntitiesPanel` + `RecentSnapshotsPanel`)
+- `KeyboardMapOverlay` global (`?`)
+- `?snap=<base64>` aplica snapshot completo
+- `?diag=1` mostra `IntelHealthPanel` (status hooks + storage + RESET_INTEL_STATE)
+- `contextEntity` propagado para `AskTab`
 
 ## Persistência
-- URL: `?tab`, `?debug=1`, `?period`, `?etype`, `?minScore`, `?focusId`, `?focusType`, `?snap`
-- `localStorage`: `intel-bookmarks-v1`, `intel-saved-views-v1`, `intel-density-v1`, `intel-pres-v1`, `intel-snapshots-v1`, `intel-ask-history`
+- URL: `?tab`, `?debug=1`, `?diag=1`, `?period`, `?etype`, `?minScore`, `?focusId`, `?focusType`, `?snap`
+- `localStorage`: `intel-bookmarks-v1`, `intel-saved-views-v1`, `intel-density-v1`, `intel-pres-v1`, `intel-snapshots-v1`, `intel-ask-history`, `intel-graph-layout-v1`, `intel-notes-v1:<entityKey>`
 - `sessionStorage`: `intel-telemetry-v1`
 
 ## Acessibilidade

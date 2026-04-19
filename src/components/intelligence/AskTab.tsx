@@ -180,7 +180,18 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 h-[calc(100vh-260px)] min-h-[480px]">
-      <SectionFrame title="QUERY_CONSOLE" meta="NL→SQL · ⌘K" className="flex flex-col">
+      <SectionFrame
+        title="QUERY_CONSOLE"
+        meta="NL→SQL · ⌘K · R"
+        className="flex flex-col"
+        actions={
+          <ExportFormatMenu
+            onExport={(fmt) => exportLastTable(fmt)}
+            disabled={!messages.some((m) => Array.isArray(m.data) && m.data.length > 0)}
+            label="EXPORT"
+          />
+        }
+      >
         <div className="flex-1 overflow-y-auto space-y-3 mb-3 min-h-[300px]" aria-live="polite">
           {messages.length === 0 && (
             <IntelEmptyState
