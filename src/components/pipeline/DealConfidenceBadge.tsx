@@ -1,14 +1,21 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ConfidenceLevel } from '@/hooks/useDealForecastConfidence';
+import { WhyScoreDrawer, type WhyScoreFactor } from '@/components/intelligence/WhyScoreDrawer';
 
 interface Props {
   confidence: number;
   level: ConfidenceLevel;
   expectedValue: number;
   className?: string;
+  /** Quando fornecido, badge vira clicável e abre WhyScoreDrawer. */
+  dealId?: string;
+  dealTitle?: string;
+  factors?: WhyScoreFactor[];
+  recommendations?: string[];
 }
 
 const LEVEL_STYLES: Record<ConfidenceLevel, string> = {
@@ -35,30 +42,70 @@ export function DealConfidenceBadge({
   level,
   expectedValue,
   className,
+  dealId,
+  dealTitle,
+  factors,
+  recommendations,
 }: Props) {
+  const [open, setOpen] = useState(false);
+  const interactive = !!dealId && !!factors;
+
+  const badge = (
+    <Badge
+      variant="outline"
+      className={cn(
+        'gap-1 border',
+        interactive ? 'cursor-pointer hover:opacity-80' : 'cursor-default',
+        LEVEL_STYLES[level],
+        className,
+      )}
+    >
+      <Sparkles className="h-3 w-3" />
+      {confidence}%
+    </Badge>
+  );
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Badge
-          variant="outline"
-          className={cn(
-            'gap-1 cursor-default border',
-            LEVEL_STYLES[level],
-            className,
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {interactive ? (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+              className="inline-flex"
+              aria-label={`Confiança de previsão ${confidence}%. Clique para ver detalhes.`}
+            >
+              {badge}
+            </button>
+          ) : (
+            badge
           )}
-        >
-          <Sparkles className="h-3 w-3" />
-          {confidence}%
-        </Badge>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[220px]">
-        <p className="font-medium text-xs">
-          Confiança {LEVEL_LABEL[level]} · {confidence}/100
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Valor esperado: {formatCurrency(expectedValue)}
-        </p>
-      </TooltipContent>
-    </Tooltip>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[220px]">
+          <p className="font-medium text-xs">
+            Confiança {LEVEL_LABEL[level]} · {confidence}/100
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Valor esperado: {formatCurrency(expectedValue)}
+          </p>
+          {interactive && (
+            <p className="text-xs text-muted-foreground mt-0.5">Clique para ver fatores</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+      {interactive && dealId && factors && (
+        <WhyScoreDrawer
+          open={open}
+          onOpenChange={setOpen}
+          scoreKey={`forecast-confidence:deal:${dealId}`}
+          title={dealTitle ? `Confiança · ${dealTitle}` : 'Confiança da previsão'}
+          subtitle={`${confidence}/100 — ${LEVEL_LABEL[level]} · valor esperado ${formatCurrency(expectedValue)}`}
+          score={confidence}
+          factors={factors}
+          recommendations={recommendations}
+        />
+      )}
+    </>
   );
 }

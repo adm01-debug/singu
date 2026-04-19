@@ -81,6 +81,7 @@ const DesignSystem = lazy(() => import("./pages/DesignSystem"));
 const MapaEmpresas = lazy(() => import("./pages/MapaEmpresas"));
 const Metas = lazy(() => import("./pages/Metas"));
 const Tarefas = lazy(() => import("./pages/Tarefas"));
+const Inbox = lazy(() => import("./pages/Inbox"));
 const Territorios = lazy(() => import("./pages/Territorios"));
 const TerritoryOptimization = lazy(() => import("./pages/TerritoryOptimization"));
 const ABM = lazy(() => import("./pages/ABM"));
@@ -315,6 +316,11 @@ const AnimatedRoutes = () => {
       <Route path="/interacoes" element={
         <RequireAuth>
           <LazyPage fallback={<InteractionsPageSkeleton />}><Interacoes /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/inbox" element={
+        <RequireAuth>
+          <LazyPage><Inbox /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/pipeline" element={

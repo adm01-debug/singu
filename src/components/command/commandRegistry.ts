@@ -30,6 +30,7 @@ export const COMMAND_ROUTES: CommandRoute[] = [
   { id: 'r-interacoes', label: 'Conversas', url: '/interacoes', icon: MessageSquare, section: 'CRM' },
   { id: 'r-calendario', label: 'Calendário', url: '/calendario', icon: CalendarDays, section: 'CRM' },
   { id: 'r-tarefas', label: 'Tarefas', url: '/tarefas', icon: CheckSquare, section: 'CRM' },
+  { id: 'r-inbox', label: 'Inbox', url: '/inbox', icon: MessageSquare, section: 'CRM', keywords: ['caixa', 'prioridades', 'follow-up'] },
   { id: 'r-deal-rooms', label: 'Deal Rooms', url: '/deal-rooms', icon: Briefcase, section: 'CRM' },
   // Inteligência
   { id: 'r-network', label: 'Network', url: '/network', icon: Share2, section: 'Inteligência' },
