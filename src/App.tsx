@@ -18,6 +18,7 @@ import { SkipNav } from "@/components/navigation/SkipNav";
 import { useWebVitals } from "@/hooks/useWebVitals";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useCircuitBreakerHandler } from "@/hooks/useCircuitBreakerHandler";
+import { useViewTransitions } from "@/hooks/useViewTransitions";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
@@ -264,6 +265,7 @@ const LazyPage = ({ children, fallback }: { children: React.ReactNode; fallback?
 // Routes wrapper
 const AnimatedRoutes = () => {
   useWebVitals();
+  useViewTransitions();
   const { isOnline } = useOnlineStatus({
     onOffline: () => import('sonner').then(m => m.toast.warning('Conexão perdida', { description: 'Você está offline.' })),
     onOnline: () => import('sonner').then(m => m.toast.success('Conexão restaurada')),
