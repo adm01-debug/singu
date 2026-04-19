@@ -21,6 +21,17 @@ import { useCompanyFilterOptions } from '@/hooks/useCompanyFilterOptions';
 import { useListNavigation, useKeyboardShortcutsEnhanced } from '@/hooks/useKeyboardShortcutsEnhanced';
 import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { EmpresasContent } from './empresas/EmpresasContent';
+import { SavedViewsBar } from '@/components/views/SavedViewsBar';
+import { useSavedViews } from '@/hooks/useSavedViews';
+
+interface EmpresasViewState {
+  localSearch: string;
+  viewMode: ViewMode;
+  gridColumns: GridColumns;
+  activeFilters: Record<string, string[]>;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
 
 const Empresas = () => {
   usePageTitle('Empresas');
