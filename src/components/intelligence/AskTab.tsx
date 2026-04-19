@@ -1,11 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2, Sparkles, History as HistoryIcon, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { IntelBadge } from '@/components/intel/IntelBadge';
+import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
+import { TypewriterText } from '@/components/intel/TypewriterText';
 import { useAskCrm } from '@/hooks/useAskCrm';
+import { useIntelTelemetry } from '@/hooks/useIntelTelemetry';
 import { DataGrid } from '@/components/intel/DataGrid';
 import { downloadCsv } from '@/lib/intelExport';
 
@@ -25,11 +28,20 @@ const COMMANDS = [
   { cmd: '/help', desc: 'Listar comandos' },
 ];
 
-export const AskTab = () => {
+interface AskTabProps {
+  onRegisterBridge?: (bridge: {
+    clear: () => void;
+    exportLast: () => void;
+    help: () => void;
+  }) => void;
+}
+
+export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
   const { messages, loading, ask, clearMessages } = useAskCrm();
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { log } = useIntelTelemetry();
 
   useEffect(() => {
     try {
@@ -65,8 +77,26 @@ export const AskTab = () => {
       return;
     }
     downloadCsv(lastWithData.data as Array<Record<string, unknown>>, `ask-crm-${Date.now()}`);
+    log({ kind: 'export', label: 'ask-crm', meta: { rows: lastWithData.data.length } });
     toast.success('CSV exportado.');
-  }, [messages]);
+  }, [messages, log]);
+
+  const showHelp = useCallback(() => {
+    toast.message('Comandos disponíveis', {
+      description: COMMANDS.map((c) => `${c.cmd} — ${c.desc}`).join('\n'),
+    });
+  }, []);
+
+  const doClear = useCallback(() => {
+    clearMessages();
+    toast.success('Console limpo.');
+    log({ kind: 'command', label: '/clear' });
+  }, [clearMessages, log]);
+
+  // Expor "bridge" para a Command Palette acionar comandos daqui de fora.
+  useEffect(() => {
+    onRegisterBridge?.({ clear: doClear, exportLast: exportLastTable, help: showHelp });
+  }, [onRegisterBridge, doClear, exportLastTable, showHelp]);
 
   const submit = useCallback(() => {
     const q = input.trim();
@@ -75,71 +105,89 @@ export const AskTab = () => {
 
     if (q.startsWith('/')) {
       const cmd = q.toLowerCase().split(/\s+/)[0];
-      if (cmd === '/clear') { clearMessages(); toast.success('Console limpo.'); return; }
+      log({ kind: 'command', label: cmd });
+      if (cmd === '/clear') { doClear(); return; }
       if (cmd === '/export') { exportLastTable(); return; }
-      if (cmd === '/help') {
-        toast.message('Comandos disponíveis', {
-          description: COMMANDS.map((c) => `${c.cmd} — ${c.desc}`).join('\n'),
-        });
-        return;
-      }
+      if (cmd === '/help') { showHelp(); return; }
       toast.error(`Comando desconhecido: ${cmd}`);
       return;
     }
 
     persistHistory(q);
-    ask(q);
-  }, [input, loading, ask, clearMessages, exportLastTable, persistHistory]);
+    const t0 = performance.now();
+    log({ kind: 'query', label: q.slice(0, 60) });
+    Promise.resolve(ask(q)).finally(() => {
+      log({ kind: 'query', label: 'ask:done', durationMs: Math.round(performance.now() - t0) });
+    });
+  }, [input, loading, ask, doClear, exportLastTable, showHelp, persistHistory, log]);
+
+  const lastAssistantId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'assistant') return messages[i].id;
+    }
+    return null;
+  }, [messages]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 h-[calc(100vh-260px)] min-h-[480px]">
       <SectionFrame title="QUERY_CONSOLE" meta="NL→SQL · ⌘K" className="flex flex-col">
         <div className="flex-1 overflow-y-auto space-y-3 mb-3 min-h-[300px]" aria-live="polite">
           {messages.length === 0 && (
-            <div className="text-center intel-mono text-xs text-muted-foreground py-12">
-              ── AWAITING_QUERY · digite /help para comandos ──
-            </div>
+            <IntelEmptyState
+              icon={Sparkles}
+              title="AWAITING_QUERY"
+              description="Pergunte em linguagem natural ou digite /help para ver os comandos disponíveis."
+            />
           )}
-          {messages.map((m) => (
-            <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : ''}>
-              <div
-                className={
-                  m.role === 'user'
-                    ? 'intel-card px-3 py-2 max-w-[80%] border-[hsl(var(--intel-accent)/0.5)]'
-                    : 'intel-card px-3 py-2 max-w-full w-full'
-                }
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <IntelBadge severity={m.error ? 'critical' : m.role === 'user' ? 'info' : 'ok'}>
-                    {m.role === 'user' ? 'OPERATOR' : 'SYSTEM'}
-                  </IntelBadge>
-                  <span className="intel-mono text-[10px] text-muted-foreground">
-                    {m.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-xs text-foreground whitespace-pre-wrap">{m.content}</p>
-                {m.data && Array.isArray(m.data) && m.data.length > 0 && (
-                  <div className="mt-2">
-                    <DataGrid
-                      columns={Object.keys(m.data[0]).slice(0, 5).map((k) => ({
-                        key: k, label: k.toUpperCase(), mono: true,
-                      }))}
-                      rows={m.data as Array<Record<string, unknown>>}
-                      getRowKey={(r) => JSON.stringify(r).slice(0, 40)}
-                    />
+          {messages.map((m) => {
+            const rows = Array.isArray(m.data) ? m.data.length : 0;
+            const isLastAssistant = m.id === lastAssistantId && m.role === 'assistant';
+            return (
+              <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : ''}>
+                <div
+                  className={
+                    m.role === 'user'
+                      ? 'intel-card px-3 py-2 max-w-[80%] border-[hsl(var(--intel-accent)/0.5)]'
+                      : 'intel-card px-3 py-2 max-w-full w-full'
+                  }
+                >
+                  <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                    <IntelBadge severity={m.error ? 'critical' : m.role === 'user' ? 'info' : 'ok'}>
+                      {m.role === 'user' ? 'OPERATOR' : 'SYSTEM'}
+                    </IntelBadge>
+                    <span className="intel-mono text-[10px] text-muted-foreground">
+                      {m.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    {rows > 0 && (
+                      <IntelBadge severity="info">{rows} REG</IntelBadge>
+                    )}
                   </div>
-                )}
-                {m.sql && (
-                  <details className="mt-2">
-                    <summary className="intel-eyebrow cursor-pointer">VIEW_SQL</summary>
-                    <pre className="intel-mono text-[10px] bg-muted/40 p-2 rounded mt-1 overflow-x-auto">
-                      {m.sql}
-                    </pre>
-                  </details>
-                )}
+                  <p className="text-xs text-foreground whitespace-pre-wrap">
+                    {isLastAssistant ? <TypewriterText text={m.content} /> : m.content}
+                  </p>
+                  {m.data && Array.isArray(m.data) && m.data.length > 0 && (
+                    <div className="mt-2">
+                      <DataGrid
+                        columns={Object.keys(m.data[0]).slice(0, 5).map((k) => ({
+                          key: k, label: k.toUpperCase(), mono: true,
+                        }))}
+                        rows={m.data as Array<Record<string, unknown>>}
+                        getRowKey={(r) => JSON.stringify(r).slice(0, 40)}
+                      />
+                    </div>
+                  )}
+                  {m.sql && (
+                    <details className="mt-2">
+                      <summary className="intel-eyebrow cursor-pointer">VIEW_SQL</summary>
+                      <pre className="intel-mono text-[10px] bg-muted/40 p-2 rounded mt-1 overflow-x-auto">
+                        {m.sql}
+                      </pre>
+                    </details>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {loading && (
             <div className="intel-card px-3 py-2 inline-flex items-center gap-2">
               <Loader2 className="h-3 w-3 animate-spin text-[hsl(var(--intel-accent))]" aria-hidden />
@@ -197,9 +245,11 @@ export const AskTab = () => {
           }
         >
           {history.length === 0 ? (
-            <div className="intel-mono text-[10px] text-muted-foreground text-center py-2">
-              ── EMPTY ──
-            </div>
+            <IntelEmptyState
+              icon={HistoryIcon}
+              title="EMPTY"
+              description="Suas últimas perguntas aparecerão aqui."
+            />
           ) : (
             <div className="space-y-1">
               {history.map((q, i) => (

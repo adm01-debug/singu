@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Search, Loader2, ChevronRight, ArrowLeft, Copy, ExternalLink, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { EntityCard } from '@/components/intel/EntityCard';
@@ -9,9 +10,16 @@ import { DataGrid } from '@/components/intel/DataGrid';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
+import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { queryExternalData } from '@/lib/externalData';
 import { format } from 'date-fns';
+
+const CRM_PATH: Record<Entity360Type, string> = {
+  contact: '/contatos',
+  company: '/empresas',
+  deal: '/pipeline',
+};
 
 interface Crumb { type: Entity360Type; id: string; name: string; }
 
