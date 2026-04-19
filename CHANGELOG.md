@@ -4,6 +4,36 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
+## [2.0.0] - 2026-04-19 — Excellence Sustained (40/40)
+
+Marco final consolidando 40 melhorias atômicas distribuídas em 8 rodadas (A-H). Sistema em estado de "excelência sustentada".
+
+### Rodada H — Acessibilidade WCAG AA, DX & Polimento (5 itens)
+- Component Gallery admin (`/admin/component-gallery`) — Storybook-lite com Button, Card, Badge, EmptyState, ActionToast, Loaders.
+- Auditoria WCAG 2.1 AA documentada em `mem://standards/accessibility-wcag-aa`.
+- Atalhos globais consolidados via `useKeyboardShortcutsEnhanced` + `KeyboardShortcutsCheatsheet` (?).
+- Saúde agregada via edge function `system-health` (DB local/externo, WhatsApp, email, voice).
+- ADR-011 (`docs/adr/011-rodada-h-accessibility-dx.md`) + este CHANGELOG.
+
+### Rodadas A-G — entregas anteriores
+- **G** Observabilidade profunda (RUM Web Vitals, CI workflow, useRestoreEntity para undo real, ARCHITECTURE.md, ADR-010).
+- **F** Hardening profundo (audit DB, telemetria de erros estruturada, painel `/admin/error-logs`).
+- **E** Confiabilidade (useActionToast destrutivo, circuit breaker em external-data, retry exponencial).
+- **D** Performance (memoização agressiva, React.memo em listas grandes, route prefetching).
+- **C** Resiliência UI (DashboardErrorBoundary, ExternalDataCard padronizado).
+- **B** UX premium (PageTransition, OnboardingTour, NotificationCenter).
+- **A** Fundações (TanStack Query exclusivo, FSD, RBAC com user_roles, audit trail).
+
+### Arquivos-chave criados/modificados na Rodada H
+- `src/pages/admin/ComponentGallery.tsx` (criado)
+- `src/App.tsx` (rota `/admin/component-gallery`)
+- `.lovable/memory/standards/accessibility-wcag-aa.md` (criado)
+- `.lovable/memory/features/ux-rodada-h-accessibility.md` (criado)
+- `docs/adr/011-rodada-h-accessibility-dx.md` (criado)
+- `CHANGELOG.md` (este arquivo)
+
+---
+
 ## [1.9.0] - 2026-04-12
 
 ### Qualidade de Código
