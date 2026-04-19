@@ -78,7 +78,7 @@ function TimeAgo({ date }: { date: string }) {
   );
 }
 
-export function ContactCardWithContext({
+function ContactCardWithContextImpl({
   contact,
   companyName,
   lastInteraction,

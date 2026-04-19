@@ -35,7 +35,7 @@ interface CompanyCardWithContextProps {
   onUpdate: (id: string, data: Partial<Company>) => Promise<Company | null>;
 }
 
-export function CompanyCardWithContext({
+function CompanyCardWithContextImpl({
   company, index, isSelected, isHighlighted, selectionMode,
   contactCount = 0, compact = false,
   onSelect, onEdit, onDelete, onUpdate,
