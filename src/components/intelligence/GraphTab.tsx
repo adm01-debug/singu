@@ -1,46 +1,132 @@
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { NetworkVisualization } from '@/components/network/NetworkVisualization';
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { MetricMono } from '@/components/intel/MetricMono';
+import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import { useInstantKpis } from '@/hooks/useInstantKpis';
 
+const PERIODS = [
+  { value: '7', label: '7D' },
+  { value: '30', label: '30D' },
+  { value: '90', label: '90D' },
+] as const;
+
+const ENTITY_TYPES = [
+  { value: 'all', label: 'TODOS' },
+  { value: 'contact', label: 'CONTATO' },
+  { value: 'company', label: 'EMPRESA' },
+  { value: 'deal', label: 'DEAL' },
+] as const;
+
 export const GraphTab = () => {
-  const { data: kpis } = useInstantKpis();
+  const { data: kpis, isLoading } = useInstantKpis();
+  const [params, setParams] = useSearchParams();
+  const period = params.get('period') || '30';
+  const entityType = params.get('etype') || 'all';
+  const minScore = Number(params.get('minScore') || '0');
+
+  const update = (k: string, v: string) => {
+    const next = new URLSearchParams(params);
+    if (v) next.set(k, v); else next.delete(k);
+    setParams(next, { replace: true });
+  };
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <div className="intel-card px-3 py-2">
-          <MetricMono label="NODES_CO" value={kpis?.total_companies ?? '—'} />
+          <MetricMono label="NODES_CO" value={isLoading ? '…' : (kpis?.total_companies ?? '—')} />
         </div>
         <div className="intel-card px-3 py-2">
-          <MetricMono label="NODES_CT" value={kpis?.total_contacts ?? '—'} />
+          <MetricMono label="NODES_CT" value={isLoading ? '…' : (kpis?.total_contacts ?? '—')} />
         </div>
         <div className="intel-card px-3 py-2">
-          <MetricMono label="EDGES_DL" value={kpis?.total_deals ?? '—'} />
+          <MetricMono label="EDGES_DL" value={isLoading ? '…' : (kpis?.total_deals ?? '—')} />
         </div>
         <div className="intel-card px-3 py-2">
-          <MetricMono label="ACTIVE_24H" value={kpis?.interactions_today ?? '—'} />
+          <MetricMono label="ACTIVE_24H" value={isLoading ? '…' : (kpis?.interactions_today ?? '—')} />
         </div>
       </div>
 
-      <SectionFrame title="RELATIONSHIP_GRAPH" meta="LIVE" cornerFrame>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.4 }}
-          className="hidden md:block"
-        >
-          <ErrorBoundary>
-            <NetworkVisualization height={560} />
-          </ErrorBoundary>
-        </motion.div>
-        <div className="md:hidden p-6 text-center">
-          <span className="intel-mono text-xs text-muted-foreground">
-            ── GRAPH_VIEW unavailable on mobile (≥768px) ──
-          </span>
+      <SectionFrame title="GRAPH_FILTERS" meta="OPERATIONAL">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <div className="intel-eyebrow mb-1.5">PERÍODO</div>
+            <div className="flex gap-1">
+              {PERIODS.map((p) => (
+                <Button
+                  key={p.value}
+                  size="sm"
+                  variant={period === p.value ? 'default' : 'outline'}
+                  onClick={() => update('period', p.value)}
+                  className="intel-mono text-[10px] h-7 px-2"
+                  aria-pressed={period === p.value}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="intel-eyebrow mb-1.5">TIPO_ENTIDADE</div>
+            <div className="flex flex-wrap gap-1">
+              {ENTITY_TYPES.map((t) => (
+                <Button
+                  key={t.value}
+                  size="sm"
+                  variant={entityType === t.value ? 'default' : 'outline'}
+                  onClick={() => update('etype', t.value === 'all' ? '' : t.value)}
+                  className="intel-mono text-[10px] h-7 px-2"
+                  aria-pressed={entityType === t.value}
+                >
+                  {t.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="intel-eyebrow mb-1.5 flex items-center justify-between">
+              <span>SCORE_MIN</span>
+              <span className="intel-mono text-foreground">{minScore}</span>
+            </div>
+            <Slider
+              value={[minScore]}
+              min={0}
+              max={100}
+              step={5}
+              onValueChange={(v) => update('minScore', String(v[0]))}
+              aria-label="Score mínimo"
+            />
+          </div>
         </div>
+      </SectionFrame>
+
+      <SectionFrame title="RELATIONSHIP_GRAPH" meta="LIVE" cornerFrame>
+        {isLoading ? (
+          <IntelSkeleton lines={8} label="RENDERING_GRAPH" />
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="hidden md:block"
+            >
+              <ErrorBoundary>
+                <NetworkVisualization height={560} />
+              </ErrorBoundary>
+            </motion.div>
+            <div className="md:hidden p-6 text-center">
+              <span className="intel-mono text-xs text-muted-foreground">
+                ── GRAPH_VIEW unavailable on mobile (≥768px) ──
+              </span>
+            </div>
+          </>
+        )}
       </SectionFrame>
     </div>
   );
