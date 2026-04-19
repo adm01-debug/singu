@@ -232,6 +232,20 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <Copy className="h-3 w-3" aria-hidden /> ID
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowNotes((v) => !v)}
+                  className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                    showNotes
+                      ? 'text-[hsl(var(--intel-accent))]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-label="Anotações"
+                  aria-pressed={showNotes}
+                  title="Anotações da entidade"
+                >
+                  <StickyNote className="h-3 w-3" aria-hidden /> NOTE
+                </button>
                 {previousEntry && (
                   <button
                     type="button"
@@ -246,6 +260,22 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                     title={`Diff vs ${previousEntry.name}`}
                   >
                     <GitCompare className="h-3 w-3" aria-hidden /> DIFF
+                  </button>
+                )}
+                {beforePreviousEntry && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMultiDiff((v) => !v)}
+                    className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                      showMultiDiff
+                        ? 'text-[hsl(var(--intel-accent))]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-label="Comparar 3 entidades"
+                    aria-pressed={showMultiDiff}
+                    title="Comparar últimas 3 entidades"
+                  >
+                    <GitMerge className="h-3 w-3" aria-hidden /> 3DIFF
                   </button>
                 )}
                 <Link
