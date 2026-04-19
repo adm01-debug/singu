@@ -151,6 +151,7 @@ const PlaybookDetailPage = lazy(() => import("./pages/PlaybookDetail"));
 const BattleCardDetailPage = lazy(() => import("./pages/BattleCardDetail"));
 const CustomerSuccessPage = lazy(() => import("./pages/CustomerSuccess"));
 const CustomerSuccessAccountPage = lazy(() => import("./pages/CustomerSuccessAccount"));
+const Intelligence = lazy(() => import("./pages/Intelligence"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -352,6 +353,11 @@ const AnimatedRoutes = () => {
       <Route path="/network" element={
         <RequireAuth>
           <LazyPage fallback={<NetworkPageSkeleton />}><Network /></LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/intelligence" element={
+        <RequireAuth>
+          <LazyPage><Intelligence /></LazyPage>
         </RequireAuth>
       } />
       <Route path="/relatorio/:id" element={
