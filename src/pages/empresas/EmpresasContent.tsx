@@ -13,6 +13,7 @@ import { CompanyListItem } from '@/components/companies/CompanyListItem';
 import { CompaniesTableView } from '@/components/companies/CompaniesTableView';
 import { ViewModeSwitcher, type ViewMode, type GridColumns } from '@/components/ui/view-mode-switcher';
 import { BulkActionsBar } from '@/components/bulk-actions/BulkActionsBar';
+import { KeyboardListHint } from '@/components/ui/keyboard-list-hint';
 import { SearchPresetsMenu } from '@/components/search/SearchPresetsMenu';
 import { BulkImportDialog } from '@/components/import/BulkImportDialog';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
