@@ -320,6 +320,16 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
           </SectionFrame>
         </div>
       )}
+
+      {current && showDiff && previousEntry && (
+        <MetadataDiffPanel
+          beforeName={previousEntry.name}
+          afterName={current.name}
+          before={(previousData?.metadata || {}) as Record<string, unknown>}
+          after={(data?.metadata || {}) as Record<string, unknown>}
+          onClose={() => setShowDiff(false)}
+        />
+      )}
     </div>
   );
 });
