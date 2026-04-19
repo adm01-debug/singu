@@ -11,8 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useInstantKpis } from '@/hooks/useInstantKpis';
 import { useGraphLayout } from '@/hooks/useGraphLayout';
+import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
 import { snapshotGraphCanvas } from '@/lib/graphSnapshot';
-import { Camera, Link as LinkIcon, Save, RotateCcw } from 'lucide-react';
+import { Camera, Link as LinkIcon, Save, RotateCcw, Route, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const PERIODS = [
@@ -36,6 +37,23 @@ export const GraphTab = () => {
   const minScore = Number(params.get('minScore') || '0');
   const containerRef = useRef<HTMLDivElement>(null);
   const { saved, save: saveLayout } = useGraphLayout();
+  const { items: bookmarks } = useEntityBookmarks();
+  const pathParam = params.get('path') || '';
+  const pathIds = pathParam ? pathParam.split(',').filter(Boolean) : [];
+  const canPath = bookmarks.length >= 2;
+
+  const togglePath = () => {
+    const next = new URLSearchParams(params);
+    if (pathIds.length > 0) {
+      next.delete('path');
+      toast.info('PATH desativado.');
+    } else {
+      const ids = bookmarks.slice(0, 2).map((b) => b.id);
+      next.set('path', ids.join(','));
+      toast.success(`PATH ativo: ${bookmarks[0].name} → ${bookmarks[1].name}`);
+    }
+    setParams(next, { replace: true });
+  };
 
   const update = (k: string, v: string) => {
     const next = new URLSearchParams(params);
@@ -186,6 +204,18 @@ export const GraphTab = () => {
               title={saved ? `Restaurar (salvo ${new Date(saved.savedAt).toLocaleString('pt-BR')})` : 'Sem layout salvo'}
             >
               <RotateCcw className="h-3 w-3" aria-hidden /> RESTORE
+            </Button>
+            <Button
+              size="sm"
+              variant={pathIds.length > 0 ? 'default' : 'outline'}
+              onClick={togglePath}
+              disabled={!canPath && pathIds.length === 0}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Highlight path entre 2 bookmarks"
+              title={canPath ? `BFS entre ${bookmarks[0]?.name} e ${bookmarks[1]?.name}` : 'Marque ≥2 bookmarks no Entity 360'}
+            >
+              {pathIds.length > 0 ? <X className="h-3 w-3" aria-hidden /> : <Route className="h-3 w-3" aria-hidden />}
+              PATH
             </Button>
             <Button
               size="sm"
