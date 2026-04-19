@@ -40,6 +40,8 @@ export const CrossRefTab = () => {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<Picked[]>([]);
   const [searching, setSearching] = useState(false);
+  const [metaRows, setMetaRows] = useState<MetaRow[]>([]);
+  const [loadingMeta, setLoadingMeta] = useState(false);
 
   const { data, isLoading, error, refetch } = useCrossReference({
     entityIds: picked.map((p) => p.id),
@@ -50,6 +52,43 @@ export const CrossRefTab = () => {
     if (!data?.temporalOverlap?.length) return null;
     return [...data.temporalOverlap].sort((a, b) => b.count - a.count)[0];
   }, [data]);
+
+  // Busca metadata de cada entidade selecionada para comparação lado-a-lado.
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (picked.length < 2) { setMetaRows([]); return; }
+      setLoadingMeta(true);
+      try {
+        const table = type === 'contact' ? 'contacts' : 'companies';
+        const rows = await Promise.all(
+          picked.map(async (p) => {
+            const { data: r } = await queryExternalData<Record<string, unknown>>({
+              table,
+              select: '*',
+              filters: [{ type: 'eq', column: 'id', value: p.id }],
+              range: { from: 0, to: 0 },
+            });
+            return { id: p.id, name: p.name, metadata: r?.[0] || {} };
+          })
+        );
+        if (!cancelled) setMetaRows(rows);
+      } catch {
+        if (!cancelled) setMetaRows([]);
+      } finally {
+        if (!cancelled) setLoadingMeta(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [picked, type]);
+
+  const compareFields = useMemo(() => {
+    if (metaRows.length < 2) return [];
+    return COMPARE_FIELDS.filter((f) =>
+      metaRows.some((m) => m.metadata[f.key] !== undefined && m.metadata[f.key] !== null && m.metadata[f.key] !== '')
+    );
+  }, [metaRows]);
 
   const doSearch = async () => {
     if (!search.trim()) return;
