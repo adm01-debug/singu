@@ -169,6 +169,27 @@ export const GraphTab = () => {
             <Button
               size="sm"
               variant="outline"
+              onClick={persistLayout}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Salvar layout/filtros"
+              title="Salvar layout/filtros"
+            >
+              <Save className="h-3 w-3" aria-hidden /> LAYOUT
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={restoreLayout}
+              disabled={!saved}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Restaurar layout salvo"
+              title={saved ? `Restaurar (salvo ${new Date(saved.savedAt).toLocaleString('pt-BR')})` : 'Sem layout salvo'}
+            >
+              <RotateCcw className="h-3 w-3" aria-hidden /> RESTORE
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={copyShareLink}
               className="h-7 intel-mono text-[10px] gap-1.5"
               aria-label="Copiar link com filtros"
