@@ -15,6 +15,8 @@ import { useContextualSuggestions } from '@/hooks/useContextualSuggestions';
 import type { HistoryEntry } from '@/hooks/useEntityHistory';
 import { DataGrid } from '@/components/intel/DataGrid';
 import { downloadCsv } from '@/lib/intelExport';
+import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
+import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
 
 const HISTORY_KEY = 'intel-ask-history';
 const MAX_HISTORY = 10;
@@ -71,15 +73,21 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
     });
   }, []);
 
-  const exportLastTable = useCallback(() => {
+  const exportLastTable = useCallback((fmt: IntelExportFormat = 'csv') => {
     const lastWithData = [...messages].reverse().find((m) => Array.isArray(m.data) && m.data.length > 0);
     if (!lastWithData?.data) {
       toast.error('Nenhuma tabela disponível para exportar.');
       return;
     }
-    downloadCsv(lastWithData.data as Array<Record<string, unknown>>, `ask-crm-${Date.now()}`);
-    log({ kind: 'export', label: 'ask-crm', meta: { rows: lastWithData.data.length } });
-    toast.success('CSV exportado.');
+    const ok = intelExportUniversal(
+      lastWithData.data as Array<Record<string, unknown>>,
+      `ask-crm-${Date.now()}`,
+      fmt,
+    );
+    if (ok) {
+      log({ kind: 'export', label: `ask-crm:${fmt}`, meta: { rows: lastWithData.data.length } });
+      toast.success(`Exportado em ${fmt.toUpperCase()}.`);
+    }
   }, [messages, log]);
 
   const showHelp = useCallback(() => {
