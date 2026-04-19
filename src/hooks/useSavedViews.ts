@@ -100,7 +100,7 @@ export function useSavedViews<T>(scope: string) {
     (view: SavedView<T>) => {
       const encoded = encodeState(view.state);
       if (encoded) {
-        params.set('view', encoded);
+        params.set('savedView', encoded);
         setParams(params, { replace: true });
       }
       return view.state;
@@ -113,14 +113,14 @@ export function useSavedViews<T>(scope: string) {
       const encoded = encodeState(view.state);
       if (typeof window === 'undefined') return '';
       const url = new URL(window.location.href);
-      url.searchParams.set('view', encoded);
+      url.searchParams.set('savedView', encoded);
       return url.toString();
     },
     [],
   );
 
   const fromUrl = useMemo<T | null>(() => {
-    const v = params.get('view');
+    const v = params.get('savedView');
     if (!v) return null;
     return decodeState<T>(v);
   }, [params]);
