@@ -352,6 +352,8 @@ export const CrossRefTab = () => {
             )}
           </SectionFrame>
 
+          {insights.length > 0 && <CrossRefInsightsPanel insights={insights} />}
+
           {!isLoading && (
             <CommonEventsTimeline
               interactions={data?.interactionsWithMatches || []}
