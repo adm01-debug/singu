@@ -1137,3 +1137,17 @@ html.intel-density-compact .intel-surface .text-xs { font-size: 0.6875rem; line-
 html.intel-presentation .intel-surface { font-size: 115%; }
 html.intel-presentation .intel-surface [data-intel-hide-pres="true"] { display: none !important; }
 
+/* ============================================
+   INTELLIGENCE THEMES (cyan default · amber alt)
+   ============================================ */
+html.intel-theme-amber .intel-surface {
+  --intel-accent: 38 95% 60%;
+  --intel-accent-soft: 38 75% 50%;
+  --sev-info: 38 95% 60%;
+}
+html.intel-theme-amber .intel-surface .intel-grid-bg {
+  background-image:
+    linear-gradient(hsl(var(--intel-border) / 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--intel-border) / 0.4) 1px, transparent 1px);
+}
+
