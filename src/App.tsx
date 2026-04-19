@@ -18,6 +18,7 @@ import { SkipNav } from "@/components/navigation/SkipNav";
 import { useWebVitals } from "@/hooks/useWebVitals";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useCircuitBreakerHandler } from "@/hooks/useCircuitBreakerHandler";
+import { useViewTransitions } from "@/hooks/useViewTransitions";
 import ScrollToTop from "@/components/ScrollToTop";
 import {
   ContactsPageSkeleton,
