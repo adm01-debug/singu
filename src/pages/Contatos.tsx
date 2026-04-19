@@ -233,4 +233,26 @@ const Contatos = () => {
   );
 };
 
+interface ContatosSavedViewsProps {
+  currentState: ContatosViewState;
+  onApply: (s: ContatosViewState) => void;
+}
+
+function ContatosSavedViews({ currentState, onApply }: ContatosSavedViewsProps) {
+  const sv = useSavedViews<ContatosViewState>('contatos');
+  return (
+    <SavedViewsBar
+      scope="contatos"
+      views={sv.views}
+      currentState={currentState}
+      onSave={sv.save}
+      onApply={(v) => { sv.apply(v); onApply(v.state); }}
+      onRemove={sv.remove}
+      onToggleFavorite={sv.toggleFavorite}
+      onSetDefault={sv.setDefault}
+      shareUrl={sv.shareUrl}
+    />
+  );
+}
+
 export default Contatos;
