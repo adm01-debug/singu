@@ -366,3 +366,67 @@ export const ContactDetailSkeleton = () => (
     </div>
   </SkeletonPageContainer>
 );
+
+// Pipeline (Kanban) Skeleton — imita as colunas reais do funil
+export const PipelinePageSkeleton = () => (
+  <SkeletonPageContainer>
+    <SkeletonPageHeader />
+    <SkeletonStatsGrid count={4} />
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {Array.from({ length: 5 }).map((_, colIdx) => (
+        <div key={colIdx} className="shrink-0 w-[280px] space-y-3">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40">
+            <Skeleton className="h-4 w-24" variant="shimmer" />
+            <Skeleton className="h-5 w-8 rounded-full" variant="shimmer" />
+          </div>
+          {Array.from({ length: 3 - (colIdx % 2) }).map((_, cardIdx) => (
+            <Card key={cardIdx} className="p-3 space-y-2">
+              <Skeleton className="h-4 w-3/4" variant="shimmer" />
+              <Skeleton className="h-3 w-1/2" variant="shimmer" />
+              <div className="flex items-center justify-between pt-1">
+                <Skeleton className="h-5 w-16 rounded-full" variant="shimmer" />
+                <SkeletonAvatar size="sm" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      ))}
+    </div>
+  </SkeletonPageContainer>
+);
+
+// Detalhe de entidade (Empresa/Contato) — header + tabs + duas colunas
+export const EntityDetailPageSkeleton = () => (
+  <SkeletonPageContainer>
+    <div className="flex items-start gap-4">
+      <Skeleton className="h-20 w-20 rounded-2xl" variant="shimmer" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-7 w-64" variant="shimmer" />
+        <Skeleton className="h-4 w-40" variant="shimmer" />
+        <div className="flex gap-2 pt-1">
+          <Skeleton className="h-6 w-16 rounded-full" variant="shimmer" />
+          <Skeleton className="h-6 w-20 rounded-full" variant="shimmer" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-24" variant="shimmer" />
+        <Skeleton className="h-9 w-9 rounded-md" variant="shimmer" />
+      </div>
+    </div>
+    <div className="flex gap-2 border-b">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Skeleton key={i} className="h-9 w-24" variant="shimmer" />
+      ))}
+    </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="lg:col-span-2 space-y-4">
+        <Card><CardContent className="p-4"><SkeletonText lines={5} /></CardContent></Card>
+        <Card><CardContent className="p-4"><SkeletonText lines={4} /></CardContent></Card>
+      </div>
+      <div className="space-y-4">
+        <Card><CardContent className="p-4"><SkeletonText lines={3} /></CardContent></Card>
+        <Card><CardContent className="p-4"><SkeletonText lines={3} /></CardContent></Card>
+      </div>
+    </div>
+  </SkeletonPageContainer>
+);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -78,7 +78,7 @@ function TimeAgo({ date }: { date: string }) {
   );
 }
 
-export function ContactCardWithContext({
+function ContactCardWithContextImpl({
   contact,
   companyName,
   lastInteraction,
@@ -329,3 +329,5 @@ export function ContactCardWithContext({
     </motion.div>
   );
 }
+
+export const ContactCardWithContext = memo(ContactCardWithContextImpl);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Building2, Users, MoreVertical } from 'lucide-react';
@@ -35,7 +35,7 @@ interface CompanyCardWithContextProps {
   onUpdate: (id: string, data: Partial<Company>) => Promise<Company | null>;
 }
 
-export function CompanyCardWithContext({
+function CompanyCardWithContextImpl({
   company, index, isSelected, isHighlighted, selectionMode,
   contactCount = 0, compact = false,
   onSelect, onEdit, onDelete, onUpdate,
@@ -149,3 +149,5 @@ export function CompanyCardWithContext({
     </motion.div>
   );
 }
+
+export const CompanyCardWithContext = memo(CompanyCardWithContextImpl);

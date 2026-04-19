@@ -138,9 +138,12 @@ export function BulkActionsBar({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-1rem)]"
+            role="region"
+            aria-label={`Barra de ações em massa — ${selectedCount} selecionados`}
+            aria-live="polite"
           >
-            <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-xl shadow-medium">
+            <div className="flex items-center gap-2 px-3 md:px-4 py-3 bg-card border border-border rounded-xl shadow-medium overflow-x-auto">
               {/* Selection info */}
               <div className="flex items-center gap-2 pr-4 border-r border-border">
                 <Button
