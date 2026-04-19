@@ -1133,3 +1133,7 @@ html.intel-density-compact .intel-surface .py-2 { padding-top: 0.25rem; padding-
 html.intel-density-compact .intel-surface .px-3 { padding-left: 0.5rem; padding-right: 0.5rem; }
 html.intel-density-compact .intel-surface .text-xs { font-size: 0.6875rem; line-height: 1.15; }
 
+/* Presentation mode: hides debug/status, scales typography */
+html.intel-presentation .intel-surface { font-size: 115%; }
+html.intel-presentation .intel-surface [data-intel-hide-pres="true"] { display: none !important; }
+
