@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/navigation/BackButton';
 import { UnifiedNotificationsBell } from '@/components/notifications/UnifiedNotificationsBell';
 import { SmartNotificationsBell } from '@/components/notifications/SmartNotificationsBell';
+import { GlobalDensityToggle } from '@/components/ui/global-density-toggle';
 
 interface HeaderProps {
   title: string;
@@ -80,6 +81,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
 
         <div className="flex items-center gap-2 md:gap-3 shrink-0">
           <div className="hidden md:inline-flex items-center gap-1">
+            <GlobalDensityToggle />
             <SmartNotificationsBell />
             <UnifiedNotificationsBell />
           </div>
