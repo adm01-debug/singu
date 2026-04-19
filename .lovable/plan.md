@@ -1,23 +1,27 @@
 
-Rodadas 1-5 entregues (40 melhorias acumuladas). Para a **Rodada 6** — 8 novas melhorias atômicas focadas em workflows colaborativos, exploração temporal e qualidade de dados.
+Rodada 6 já entregou 6/8. Faltam 2 itens da Rodada 6 + posso adicionar mais 6 atômicas para Rodada 7 (total 8 nesta execução), mantendo o ritmo 10/10.
 
-# Rodada 6 — Intelligence Hub
+# Rodada 6.5 + Rodada 7 — Intelligence Hub (8 melhorias)
 
-**1. Timeline temporal global** — nova visualização "TIMELINE" no Entity 360 que renderiza interações + deals + eventos de people-intelligence em uma única faixa cronológica vertical com agrupamento por mês. Botão "📅 TIMELINE" toggle no header.
+**Pendentes da Rodada 6:**
 
-**2. Quick-pivot entre tabs** — selecionar um item (interação no Entity 360, célula do heatmap no CrossRef, linha no Ask) com `Shift+click` abre `IntelCommandPalette` com ações sugeridas: "Abrir no Graph", "Comparar no CrossRef", "Investigar no Entity 360".
+**1. Graph: botão PATH (BFS entre 2 bookmarks)** — botão "🔗 PATH" no header do `GraphTab` ativo apenas com ≥2 bookmarks. Usa `lib/graphPath.ts` (já criado) sobre as edges do grafo, destaca caminho mais curto e atenua nós irrelevantes via prop nova `highlightPath` no `NetworkVisualization`. Estado em URL `?path=id1,id2`.
 
-**3. Graph: highlight de path entre 2 entidades** — quando há 2 bookmarks ativos, botão "🔗 PATH" no Graph destaca o caminho mais curto entre eles (BFS) e oculta nós irrelevantes. Estado persistido em URL (`?path=id1,id2`).
+**2. Ask: histórico exportável + replay individual** — no `AskHistoryPanel`: botão "⤓ EXPORT" usa `intelExportUniversal` (json/md) sobre as últimas 50 queries; cada item ganha botão "▶️ REPLAY" que reexecuta a query daquele item.
 
-**4. CrossRef: insights gerados** — painel "INSIGHTS" abaixo das métricas usa heurísticas locais (sem LLM) para gerar 3-5 observações sobre as entidades selecionadas (ex: "Atividade concentrada em segundas-feiras", "Pico de interações há 12 dias", "Sobreposição alta em deals fechados"). Sem novos backends.
+**Novas — Rodada 7:**
 
-**5. Ask: histórico exportável + replay** — botão no `AskHistoryPanel` para exportar últimas 50 queries em JSON/MD via `intelExportUniversal`. Cada item ganha botão ▶️ "REPLAY" individual.
+**3. CrossRef: aceitar `?pivot=type:id` na URL** — quando o `Entity360Tab` envia pivot via Shift+click (já implementado), o `CrossRefTab` lê o param, adiciona automaticamente a entidade ao seletor e limpa o param. Fecha o ciclo do quick-pivot.
 
-**6. Status bar: indicador de bookmarks/notes** — badges "★N" e "📝N" na status bar mostrando contadores de bookmarks ativos e notas salvas. Click navega para painel correspondente.
+**4. Painel "TOUR" reabrível via `?` overlay** — adicionar botão "▶ REPLAY TOUR" no `KeyboardMapOverlay` que aciona `useIntelTour().reopen()`. Usuário pode revisitar onboarding a qualquer momento.
 
-**7. Tema "obsidian" alternativo** — toggle no header "THEME" alterna entre `intel-theme-cyan` (atual) e `intel-theme-amber` (acentos âmbar/dourado). Persistido em `localStorage` (`intel-theme-v1`). Implementado via classe no `<html>`.
+**5. Tema: aplicar paleta amber também na status bar e badges** — auditoria fina dos tokens `--sev-info` e `--intel-accent-soft` em `IntelStatusBar`, `IntelBadge`, `IntelLatencyBadge`, `IntelDataSourceBadge` para garantir contraste WCAG AA no tema amber. Sem hard-coded colors.
 
-**8. Onboarding tour + memória** — primeiro acesso ao `/intelligence` mostra overlay tour de 4 passos (header→tabs→aside→status bar) usando o componente nativo do projeto se existir, senão um overlay próprio. Persistido em `localStorage` (`intel-tour-v1`). Atualizar `mem://features/intelligence-hub.md`.
+**6. Bookmarks badge: navegação com click** — clicar no "★N" do `IntelBookmarksNotesBadge` abre `IntelCommandPalette` filtrado em "Bookmarks". Clicar em "NOTE:N" foca o aside `PinnedEntitiesPanel` (scroll suave).
+
+**7. Timeline mensal: filtro por kind** — no `EntityMonthlyTimeline` adicionar chips "ALL / INTERACTION / DEAL / EVENT" para filtrar tipos de evento. Estado local + persistência em `localStorage` (`intel-timeline-filter-v1`).
+
+**8. Atualizar memória `mem://features/intelligence-hub.md`** — documentar Rodada 6 + 7 completas: timeline mensal, pivot, path, theme, tour, exports, badges. Versão final 10/10 sustentado.
 
 ## Restrições mantidas
 Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem mexer em CRM/Pipeline/ABM, sem `useEffect` para fetch.
