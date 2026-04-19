@@ -125,14 +125,38 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
     });
   }, [input, loading, ask, doClear, exportLastTable, showHelp, persistHistory, log]);
 
+  const lastUserQuery = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].content;
+    }
+    return history[0] ?? null;
+  }, [messages, history]);
+
   useEffect(() => {
     onRegisterBridge?.({
       clear: doClear,
-      exportLast: exportLastTable,
+      exportLast: () => exportLastTable('csv'),
       help: showHelp,
       run: (q) => submit(q),
     });
   }, [onRegisterBridge, doClear, exportLastTable, showHelp, submit]);
+
+  // Hotkey R: re-executar última query do Ask (fora de inputs)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      if (e.key.toLowerCase() !== 'r') return;
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || target?.isContentEditable) return;
+      if (!lastUserQuery || loading) return;
+      e.preventDefault();
+      submit(lastUserQuery);
+      toast.success('Re-executando última query…');
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lastUserQuery, loading, submit]);
 
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
