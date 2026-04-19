@@ -37,16 +37,23 @@ async function fetchPeopleIntel(contactId: string): Promise<Entity360TimelineEve
   try {
     const { data } = await supabase
       .from('people_intelligence_events')
-      .select('id, event_type, summary, detected_at, metadata')
+      .select('id, event_type, field_name, old_value, new_value, detected_at')
       .eq('contact_id', contactId)
       .order('detected_at', { ascending: false })
       .limit(20);
-    return (data || []).map((e) => ({
-      id: String(e.id),
-      occurred_at: String(e.detected_at),
-      kind: String(e.event_type || 'INTEL').toUpperCase().slice(0, 12),
-      title: String(e.summary || 'Evento de inteligência'),
-    }));
+    return (data || []).map((e) => {
+      const change = e.old_value && e.new_value
+        ? `${e.field_name || 'campo'}: "${e.old_value}" → "${e.new_value}"`
+        : e.new_value
+          ? `${e.field_name || 'campo'}: "${e.new_value}"`
+          : 'Evento de inteligência';
+      return {
+        id: String(e.id),
+        occurred_at: String(e.detected_at),
+        kind: String(e.event_type || 'INTEL').toUpperCase().slice(0, 12),
+        title: change,
+      };
+    });
   } catch {
     return [];
   }
