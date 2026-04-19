@@ -1,66 +1,59 @@
 
-Plano: aplicar estética "intelligence platform" Palantir-inspired (A) + adicionar módulo Intelligence Hub (B), respeitando constraints do SINGU (Nexus Blue como base, português, max 400 linhas, sem produtos/propostas).
+# Plano: Sequência de melhorias até 10/10 no Intelligence Hub
 
-## Parte A — Repaginação visual "Command Center"
+Vou executar uma trilha de **8 melhorias atômicas** sobre o módulo `/intelligence` recém-criado, sem pausas nem perguntas, no estilo "uma melhoria por vez com excelência" (preferência registrada do usuário).
 
-**Tokens (em `src/index.css` + `tailwind.config.ts`)**
-- Nova paleta dark-first: `--bg-deep: 222 47% 6%`, `--surface-1: 222 40% 9%`, `--surface-2: 222 35% 12%`, `--border-grid: 222 25% 18%`
-- Accent cyan operacional: `--accent-intel: 188 95% 55%` (mantém Nexus Blue `#4D96FF` como primary secundário)
-- Severidade: `--sev-critical`, `--sev-warn`, `--sev-info`, `--sev-ok`
-- Tipografia: adicionar `JetBrains Mono` para IDs/métricas/coordenadas (heading/body permanecem)
-- Grid sutil de fundo opcional (`bg-grid` utility) para áreas de "operação"
+## Sequência de execução
 
-**Componentes novos em `src/components/intel/`**
-- `EntityCard.tsx` — card denso com header (tipo+ID mono), metadados em chips, footer de ações
-- `MetricMono.tsx` — números grandes em mono com label uppercase
-- `IntelBadge.tsx` — badges quadrados de severidade
-- `DataGrid.tsx` — tabela densa com header sticky, colunas mono, zebra sutil
-- `SectionFrame.tsx` — wrapper com title bar + meta info (count, last update)
+**1. Fix crítico — Build/Type safety**
+- `useAskCrm` real não tem campos `data`/`sql`/`timestamp` no shape usado em `AskTab.tsx`. Validar interface real e ajustar (ou estender) sem quebrar o hook existente.
+- Verificar prop `height` em `NetworkVisualization` e `search` em `queryExternalData` (provável incompatibilidade silenciosa).
 
-**Aplicação seletiva (não quebra Nexus existente)**
-- Nova classe `.intel-surface` opt-in nas páginas do hub
-- Dashboard atual e CRM mantêm visual atual
+**2. Loading & Error states robustos**
+- Skeleton intel-themed em todos os 4 tabs (sem usar `<Skeleton>` shadcn padrão — criar `IntelSkeleton` mono).
+- Toasts em falhas via `sonner` já presente.
+- Retry button em erros de query.
 
-## Parte B — Módulo Intelligence Hub
+**3. Filtros operacionais no GraphTab**
+- Filtros: tipo de entidade (contact/company/deal), score mínimo (slider), período (7d/30d/90d).
+- URL state via `useSearchParams` (padrão SINGU já adotado).
 
-**Rota `/intelligence`** com 4 abas, todas reaproveitando dados/RPCs já existentes:
+**4. Entity360 — densidade real**
+- Adicionar workspace_accounts, contact_relatives e people_intelligence_events na timeline.
+- Tornar `related` clicável (navega entre entidades sem sair da view).
+- Histórico de navegação (breadcrumb intel-mono).
 
-1. **Graph** — grafo de relacionamento contatos↔empresas↔deals
-   - Reusa `NetworkVisualization` existente, repaginado com tokens intel
-   - Filtros: tipo de entidade, score mínimo, período
-   
-2. **Entity 360** — busca uma entidade (contato/empresa/deal) e mostra:
-   - Painel esquerdo: metadados completos (mono, denso)
-   - Centro: timeline cruzada (interações + emails + tasks + intel events)
-   - Direita: relacionamentos (familiares, workspace accounts, deals)
-   - Reusa `useContactDetails`, `useCompanyData`, `people_intelligence_events`
+**5. CrossRef — heatmap temporal**
+- Mini-heatmap visual dos `temporalOverlap` (grid 7×N).
+- Insight textual ("Maior sobreposição em DD/MM com X interações").
+- Export CSV dos resultados.
 
-3. **Cross-Reference** — cruzamento multi-entidade
-   - Seleciona 2-3 entidades → mostra interseções (interações comuns, deals compartilhados, padrões temporais)
-   - Query agregada via `external-data` proxy
+**6. AskTab — comandos rápidos + atalhos**
+- Atalho `⌘K` para focar input.
+- Histórico persistente em localStorage (10 últimas).
+- Comando `/clear`, `/export`, `/help`.
 
-4. **Ask** — chat NL já existente (`ask-crm`) repaginado em layout command-center fullscreen
+**7. Performance & a11y**
+- `React.memo` em DataGrid e EntityCard.
+- `aria-label` em botões icon-only.
+- Foco visível com ring `--intel-accent`.
+- Skip-to-content em Intelligence.tsx.
 
-**Sidebar:** adicionar item "Intelligence" entre "Network" e "BI Avançado"
+**8. Polimento visual final + memória**
+- Animação de entrada nas tabs (framer-motion stagger).
+- Sound design opcional (toggle): "click" sutil em interações via Web Audio API (off por padrão).
+- Status bar fixa no rodapé do hub: latência, último refresh, contagem de erros.
+- Atualizar `mem://features/intelligence-hub.md` com tudo que foi adicionado.
 
-## Arquivos a criar (~12)
-- `src/pages/Intelligence.tsx`
-- `src/components/intelligence/{GraphTab,Entity360Tab,CrossRefTab,AskTab}.tsx`
-- `src/components/intel/{EntityCard,MetricMono,IntelBadge,DataGrid,SectionFrame}.tsx`
-- `src/hooks/useEntity360.ts`, `useCrossReference.ts`
+## Restrições respeitadas
+- Português em toda UI nova
+- Max 400 linhas/arquivo (vou splittar componentes grandes)
+- Sem novos backends — só reuso de RPCs/edge functions
+- Sem mexer em CRM/Pipeline/ABM
+- Sem `any`, sem `dangerouslySetInnerHTML`
+- TanStack Query exclusivo (zero `useEffect` para fetch)
 
-## Arquivos a editar (~4)
-- `src/index.css` — tokens intel + utilities
-- `tailwind.config.ts` — fonte mono + cores intel
-- `src/components/layout/AppSidebar.tsx` — link novo
-- `src/App.tsx` — rota nova
+## Critério de "10/10"
+Cada uma das 8 etapas só fecha quando: (a) compila, (b) sem warning de console relacionado, (c) cumpre a feature descrita, (d) respeita constraints core. Ao fim, atualizo a memória e entrego resumo executivo.
 
-## O que NÃO faço
-- Não troco a paleta Nexus Blue existente (intel é additive)
-- Não toco em CRM/Pipeline/ABM atuais
-- Não copio marca/logo Palantir (só linguagem visual genérica de intelligence platform)
-- Não crio backend novo — só consome RPCs/edge functions existentes
-
-## Riscos
-- Grafo pesado em mobile (406px) → fallback para lista em <768px
-- Round 1 (RPCs) ainda aberto — Entity360 depende de `get_instant_kpis` etc. já validadas, ok prosseguir
+Aprove e eu executo as 8 em sequência sem pausas.
