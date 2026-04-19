@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Loader2, Sparkles, History as HistoryIcon, Trash2 } from 'lucide-react';
+import { Send, Loader2, Sparkles, History as HistoryIcon, Trash2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { TypewriterText } from '@/components/intel/TypewriterText';
+import { SavedViewsPanel } from '@/components/intel/SavedViewsPanel';
 import { useAskCrm } from '@/hooks/useAskCrm';
 import { useIntelTelemetry } from '@/hooks/useIntelTelemetry';
+import { useSavedAskViews } from '@/hooks/useSavedAskViews';
 import { DataGrid } from '@/components/intel/DataGrid';
 import { downloadCsv } from '@/lib/intelExport';
 
@@ -33,6 +35,7 @@ interface AskTabProps {
     clear: () => void;
     exportLast: () => void;
     help: () => void;
+    run: (q: string) => void;
   }) => void;
 }
 
@@ -42,6 +45,7 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
   const [history, setHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const { log } = useIntelTelemetry();
+  const { save: saveView } = useSavedAskViews();
 
   useEffect(() => {
     try {
@@ -50,7 +54,6 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
     } catch { /* ignore */ }
   }, []);
 
-  // Atalho ⌘K / Ctrl+K
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -93,15 +96,10 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
     log({ kind: 'command', label: '/clear' });
   }, [clearMessages, log]);
 
-  // Expor "bridge" para a Command Palette acionar comandos daqui de fora.
-  useEffect(() => {
-    onRegisterBridge?.({ clear: doClear, exportLast: exportLastTable, help: showHelp });
-  }, [onRegisterBridge, doClear, exportLastTable, showHelp]);
-
-  const submit = useCallback(() => {
-    const q = input.trim();
+  const submit = useCallback((override?: string) => {
+    const q = (override ?? input).trim();
     if (!q || loading) return;
-    setInput('');
+    if (override === undefined) setInput('');
 
     if (q.startsWith('/')) {
       const cmd = q.toLowerCase().split(/\s+/)[0];
@@ -121,12 +119,34 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
     });
   }, [input, loading, ask, doClear, exportLastTable, showHelp, persistHistory, log]);
 
+  useEffect(() => {
+    onRegisterBridge?.({
+      clear: doClear,
+      exportLast: exportLastTable,
+      help: showHelp,
+      run: (q) => submit(q),
+    });
+  }, [onRegisterBridge, doClear, exportLastTable, showHelp, submit]);
+
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].role === 'assistant') return messages[i].id;
     }
     return null;
   }, [messages]);
+
+  const handleSaveView = useCallback((query: string) => {
+    const name = window.prompt('Nome da view:', query.slice(0, 40));
+    if (name === null) return;
+    saveView(name, query);
+    log({ kind: 'command', label: '/save-view', meta: { len: query.length } });
+    toast.success('View salva.');
+  }, [saveView, log]);
+
+  const runFromPanel = useCallback((q: string) => {
+    setInput(q);
+    submit(q);
+  }, [submit]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3 h-[calc(100vh-260px)] min-h-[480px]">
@@ -160,6 +180,17 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
                     </span>
                     {rows > 0 && (
                       <IntelBadge severity="info">{rows} REG</IntelBadge>
+                    )}
+                    {m.role === 'user' && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveView(m.content)}
+                        className="ml-auto intel-mono text-[10px] text-muted-foreground hover:text-[hsl(var(--intel-accent))] inline-flex items-center gap-1"
+                        aria-label="Salvar como view"
+                        title="Salvar como view"
+                      >
+                        <Save className="h-3 w-3" aria-hidden /> SAVE
+                      </button>
                     )}
                   </div>
                   <p className="text-xs text-foreground whitespace-pre-wrap">
@@ -207,13 +238,13 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
             disabled={loading}
             aria-label="Pergunta em linguagem natural"
           />
-          <Button onClick={submit} disabled={loading || !input.trim()} size="sm" className="h-9" aria-label="Enviar">
+          <Button onClick={() => submit()} disabled={loading || !input.trim()} size="sm" className="h-9" aria-label="Enviar">
             <Send className="h-3 w-3" aria-hidden />
           </Button>
         </div>
       </SectionFrame>
 
-      <div className="space-y-3">
+      <div className="space-y-3 overflow-y-auto">
         <SectionFrame title="SUGGESTED_QUERIES" meta="HINTS">
           <div className="space-y-1.5">
             {SUGGESTIONS.map((s) => (
@@ -265,6 +296,8 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
             </div>
           )}
         </SectionFrame>
+
+        <SavedViewsPanel onRun={runFromPanel} />
       </div>
     </div>
   );

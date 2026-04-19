@@ -7,20 +7,23 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Network, User, GitCompare, MessageSquare, Activity, Command } from 'lucide-react';
 import { GraphTab } from '@/components/intelligence/GraphTab';
-import { Entity360Tab } from '@/components/intelligence/Entity360Tab';
+import { Entity360Tab, type Entity360Handle } from '@/components/intelligence/Entity360Tab';
 import { CrossRefTab } from '@/components/intelligence/CrossRefTab';
 import { AskTab } from '@/components/intelligence/AskTab';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelStatusBar } from '@/components/intel/IntelStatusBar';
 import { IntelCommandPalette } from '@/components/intel/IntelCommandPalette';
+import { IntelDensityToggle } from '@/components/intel/IntelDensityToggle';
+import { PinnedEntitiesPanel } from '@/components/intel/PinnedEntitiesPanel';
 import { useIntelTelemetry, useIntelTabView } from '@/hooks/useIntelTelemetry';
+import { useIntelHotkeys } from '@/hooks/useIntelHotkeys';
 import { toast } from 'sonner';
 
 const TABS = [
-  { value: 'graph', label: 'Graph', icon: Network, Component: GraphTab },
-  { value: 'entity', label: 'Entity 360', icon: User, Component: Entity360Tab },
-  { value: 'crossref', label: 'Cross-Ref', icon: GitCompare, Component: CrossRefTab },
-  { value: 'ask', label: 'Ask', icon: MessageSquare, Component: AskTab },
+  { value: 'graph', label: 'Graph', icon: Network, hotkey: 'G' },
+  { value: 'entity', label: 'Entity 360', icon: User, hotkey: 'E' },
+  { value: 'crossref', label: 'Cross-Ref', icon: GitCompare, hotkey: 'C' },
+  { value: 'ask', label: 'Ask', icon: MessageSquare, hotkey: 'A' },
 ] as const;
 
 type TabValue = typeof TABS[number]['value'];
@@ -46,24 +49,33 @@ const Intelligence = () => {
     [params, setParams]
   );
 
-  // Bridge para que a Command Palette consiga acionar comandos do AskTab.
+  useIntelHotkeys(setTab);
+
+  const entityRef = useRef<Entity360Handle | null>(null);
   const askBridgeRef = useRef<{
     clear: () => void;
     exportLast: () => void;
     help: () => void;
+    run: (q: string) => void;
   } | null>(null);
 
   const registerAskBridge = useCallback(
-    (bridge: { clear: () => void; exportLast: () => void; help: () => void }) => {
+    (bridge: { clear: () => void; exportLast: () => void; help: () => void; run: (q: string) => void }) => {
       askBridgeRef.current = bridge;
     },
     []
   );
 
+  const openBookmark = useCallback((b: { type: 'contact' | 'company' | 'deal'; id: string; name: string }) => {
+    setTab('entity');
+    // aguarda render da aba para chamar o ref
+    requestAnimationFrame(() => entityRef.current?.open(b));
+  }, [setTab]);
+
   const tabComponents = useMemo(
     () => ({
       graph: <GraphTab />,
-      entity: <Entity360Tab />,
+      entity: <Entity360Tab ref={entityRef} />,
       crossref: <CrossRefTab />,
       ask: <AskTab onRegisterBridge={registerAskBridge} />,
     }),
@@ -96,7 +108,7 @@ const Intelligence = () => {
       <div className="intel-surface min-h-screen">
         <div className="intel-grid-bg">
           <div className="px-4 md:px-6 py-4 md:py-6 max-w-[1600px] mx-auto">
-            <header className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+            <header className="flex items-center justify-between mb-4 pb-3 border-b border-border gap-3 flex-wrap">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="h-8 w-8 rounded-sm border border-[hsl(var(--intel-accent))] bg-[hsl(var(--intel-accent)/0.1)] flex items-center justify-center shrink-0">
                   <Activity className="h-4 w-4 text-[hsl(var(--intel-accent))]" aria-hidden />
@@ -114,6 +126,7 @@ const Intelligence = () => {
                 </div>
               </div>
               <div className="hidden md:flex items-center gap-3">
+                <IntelDensityToggle />
                 <span className="intel-eyebrow flex items-center gap-1">
                   <Command className="h-3 w-3" aria-hidden /> CTRL+P
                 </span>
@@ -122,40 +135,48 @@ const Intelligence = () => {
               </div>
             </header>
 
-            <main id="intel-main">
-              <Tabs value={tab} onValueChange={setTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-4">
-                  {TABS.map((t) => {
-                    const Icon = t.icon;
-                    return (
-                      <TabsTrigger
-                        key={t.value}
-                        value={t.value}
-                        className="intel-mono text-[11px] uppercase gap-1.5"
-                      >
-                        <Icon className="h-3 w-3" aria-hidden /> {t.label}
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-
-                <AnimatePresence mode="wait">
-                  {TABS.map((t) =>
-                    tab === t.value ? (
-                      <TabsContent key={t.value} value={t.value} forceMount>
-                        <motion.div
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{ duration: 0.18, ease: 'easeOut' }}
+            <main id="intel-main" className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-4">
+              <div>
+                <Tabs value={tab} onValueChange={setTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-4">
+                    {TABS.map((t) => {
+                      const Icon = t.icon;
+                      return (
+                        <TabsTrigger
+                          key={t.value}
+                          value={t.value}
+                          className="intel-mono text-[11px] uppercase gap-1.5"
+                          title={`${t.label} (${t.hotkey})`}
                         >
-                          {tabComponents[t.value]}
-                        </motion.div>
-                      </TabsContent>
-                    ) : null
-                  )}
-                </AnimatePresence>
-              </Tabs>
+                          <Icon className="h-3 w-3" aria-hidden /> {t.label}
+                          <span className="ml-1 opacity-60 hidden sm:inline">[{t.hotkey}]</span>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+
+                  <AnimatePresence mode="wait">
+                    {TABS.map((t) =>
+                      tab === t.value ? (
+                        <TabsContent key={t.value} value={t.value} forceMount>
+                          <motion.div
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -4 }}
+                            transition={{ duration: 0.18, ease: 'easeOut' }}
+                          >
+                            {tabComponents[t.value]}
+                          </motion.div>
+                        </TabsContent>
+                      ) : null
+                    )}
+                  </AnimatePresence>
+                </Tabs>
+              </div>
+
+              <aside className="hidden lg:block">
+                <PinnedEntitiesPanel onOpen={openBookmark} />
+              </aside>
             </main>
 
             <IntelStatusBar />
