@@ -59,7 +59,7 @@ export const AskTab = () => {
                         key: k, label: k.toUpperCase(), mono: true,
                       }))}
                       rows={m.data as Array<Record<string, unknown>>}
-                      getRowKey={(r, ) => JSON.stringify(r).slice(0, 40)}
+                      getRowKey={(r) => JSON.stringify(r).slice(0, 40)}
                     />
                   </div>
                 )}
