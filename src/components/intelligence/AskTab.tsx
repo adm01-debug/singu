@@ -245,7 +245,7 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
       <div className="space-y-3 overflow-y-auto">
         <SectionFrame title="SUGGESTED_QUERIES" meta="HINTS">
           <div className="space-y-1.5">
-            {SUGGESTIONS.map((s) => (
+            {suggestions.map((s) => (
               <button
                 key={s}
                 onClick={() => { setInput(s); inputRef.current?.focus(); }}
