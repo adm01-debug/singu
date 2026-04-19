@@ -168,6 +168,20 @@ const Contatos = () => {
         <SEOHead title="Contatos" description="Gestão inteligente de contatos e relacionamentos" />
         <Header title="Contatos" subtitle={`${filteredAndSortedContacts.length} de ${contacts.length} pessoas`} showAddButton addButtonLabel="Novo Contato" onAddClick={() => setIsFormOpen(true)} hideBack />
 
+        <div className="px-4 md:px-6 -mt-2 mb-3">
+          <ContatosSavedViews
+            currentState={{ searchTerm, viewMode, gridColumns, activeFilters, sortBy, sortOrder }}
+            onApply={(s) => {
+              setSearchTerm(s.searchTerm);
+              setViewMode(s.viewMode);
+              setGridColumns(s.gridColumns);
+              setActiveFilters(s.activeFilters);
+              setSortBy(s.sortBy);
+              setSortOrder(s.sortOrder);
+            }}
+          />
+        </div>
+
         <ContatosContent
           contacts={contacts} loading={loading} filteredAndSortedContacts={filteredAndSortedContacts}
           searchTerm={searchTerm} onSearchChange={handleSearchChange}
