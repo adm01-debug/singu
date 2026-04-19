@@ -118,6 +118,20 @@ const Empresas = () => {
       <SEOHead title="Empresas" description="Gestão de empresas e organizações" />
       <Header title="Empresas" subtitle={filteredAndSortedCompanies.length === (activeSearch ? totalCount : companies.length) ? `${activeSearch ? totalCount : companies.length} empresas` : `${filteredAndSortedCompanies.length} de ${activeSearch ? totalCount : companies.length} empresas`} showAddButton addButtonLabel="Nova Empresa" onAddClick={() => setIsFormOpen(true)} hideBack />
 
+      <div className="px-4 md:px-6 -mt-2 mb-3">
+        <EmpresasSavedViews
+          currentState={{ localSearch, viewMode, gridColumns, activeFilters, sortBy, sortOrder }}
+          onApply={(s) => {
+            setLocalSearch(s.localSearch);
+            setViewMode(s.viewMode);
+            setGridColumns(s.gridColumns);
+            setActiveFilters(s.activeFilters);
+            setSortBy(s.sortBy);
+            setSortOrder(s.sortOrder);
+          }}
+        />
+      </div>
+
       <EmpresasContent
         companies={companies} loading={loading} filteredAndSortedCompanies={filteredAndSortedCompanies}
         localSearch={localSearch} onSearchChange={setLocalSearch} clearSearch={clearSearch} isSearching={isSearching}
