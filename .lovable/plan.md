@@ -1,71 +1,66 @@
 
-Vou explorar o projeto "palantine" para entender sua arquitetura, funções e design antes de propor a cópia.
+Plano: aplicar estética "intelligence platform" Palantir-inspired (A) + adicionar módulo Intelligence Hub (B), respeitando constraints do SINGU (Nexus Blue como base, português, max 400 linhas, sem produtos/propostas).
 
-Primeiro preciso localizar o projeto e mapear:
-1. Stack e estrutura de diretórios
-2. Funcionalidades principais (rotas/módulos)
-3. Sistema de design (tokens, componentes)
-4. Edge functions e schema de banco
-5. Hooks e padrões arquiteturais
+## Parte A — Repaginação visual "Command Center"
 
-Depois vou comparar com o SINGU (projeto atual) para identificar:
-- O que já existe (não duplicar)
-- O que é novo (copiar)
-- O que conflita (decidir prioridade)
+**Tokens (em `src/index.css` + `tailwind.config.ts`)**
+- Nova paleta dark-first: `--bg-deep: 222 47% 6%`, `--surface-1: 222 40% 9%`, `--surface-2: 222 35% 12%`, `--border-grid: 222 25% 18%`
+- Accent cyan operacional: `--accent-intel: 188 95% 55%` (mantém Nexus Blue `#4D96FF` como primary secundário)
+- Severidade: `--sev-critical`, `--sev-warn`, `--sev-info`, `--sev-ok`
+- Tipografia: adicionar `JetBrains Mono` para IDs/métricas/coordenadas (heading/body permanecem)
+- Grid sutil de fundo opcional (`bg-grid` utility) para áreas de "operação"
 
-Como o pedido é amplo ("copie arquitetura, funções e design"), preciso saber o escopo real antes de mergulhar. Copiar um sistema inteiro sem critério vai:
-- Quebrar a stack atual (SINGU é CRM Nexus Blue, design flat minimal — pode ser incompatível com Palantine)
-- Conflitar com memórias core (português obrigatório, sem produtos/propostas, máx 400 linhas)
-- Gerar centenas de arquivos sem necessidade
+**Componentes novos em `src/components/intel/`**
+- `EntityCard.tsx` — card denso com header (tipo+ID mono), metadados em chips, footer de ações
+- `MetricMono.tsx` — números grandes em mono com label uppercase
+- `IntelBadge.tsx` — badges quadrados de severidade
+- `DataGrid.tsx` — tabela densa com header sticky, colunas mono, zebra sutil
+- `SectionFrame.tsx` — wrapper com title bar + meta info (count, last update)
 
-Vou apresentar um plano de exploração + decisão de escopo.
+**Aplicação seletiva (não quebra Nexus existente)**
+- Nova classe `.intel-surface` opt-in nas páginas do hub
+- Dashboard atual e CRM mantêm visual atual
 
----
+## Parte B — Módulo Intelligence Hub
 
-# Plano: Análise e portabilidade do Palantine → SINGU
+**Rota `/intelligence`** com 4 abas, todas reaproveitando dados/RPCs já existentes:
 
-## Fase 1 — Descoberta (read-only, ~5 min)
+1. **Graph** — grafo de relacionamento contatos↔empresas↔deals
+   - Reusa `NetworkVisualization` existente, repaginado com tokens intel
+   - Filtros: tipo de entidade, score mínimo, período
+   
+2. **Entity 360** — busca uma entidade (contato/empresa/deal) e mostra:
+   - Painel esquerdo: metadados completos (mono, denso)
+   - Centro: timeline cruzada (interações + emails + tasks + intel events)
+   - Direita: relacionamentos (familiares, workspace accounts, deals)
+   - Reusa `useContactDetails`, `useCompanyData`, `people_intelligence_events`
 
-1. Localizar projeto via `cross_project--search_project` com query "palantine"
-2. Listar estrutura raiz e `src/` para mapear stack
-3. Ler `ARCHITECTURE.md` / `README.md` se existirem
-4. Listar `src/pages/` para inventário de rotas/módulos
-5. Listar `supabase/functions/` para edge functions
-6. Ler `tailwind.config.ts` + `index.css` para design tokens
-7. Listar `src/components/ui/` para componentes custom
+3. **Cross-Reference** — cruzamento multi-entidade
+   - Seleciona 2-3 entidades → mostra interseções (interações comuns, deals compartilhados, padrões temporais)
+   - Query agregada via `external-data` proxy
 
-## Fase 2 — Comparação com SINGU
+4. **Ask** — chat NL já existente (`ask-crm`) repaginado em layout command-center fullscreen
 
-Cruzar inventário do Palantine com o que SINGU já tem (61 edge functions, módulos Pipeline/ABM/Lead Scoring/etc) e classificar cada item:
-- **NOVO** — não existe no SINGU, candidato a portar
-- **DUPLICADO** — já existe, descartar
-- **CONFLITANTE** — existe versão diferente, precisa decisão
-- **PROIBIDO** — viola memória core (ex: módulo Produtos)
+**Sidebar:** adicionar item "Intelligence" entre "Network" e "BI Avançado"
 
-## Fase 3 — Decisão de escopo (PRECISO DA SUA RESPOSTA)
+## Arquivos a criar (~12)
+- `src/pages/Intelligence.tsx`
+- `src/components/intelligence/{GraphTab,Entity360Tab,CrossRefTab,AskTab}.tsx`
+- `src/components/intel/{EntityCard,MetricMono,IntelBadge,DataGrid,SectionFrame}.tsx`
+- `src/hooks/useEntity360.ts`, `useCrossReference.ts`
 
-"Copiar tudo" não é viável — viola constraints do projeto. Preciso que você escolha:
+## Arquivos a editar (~4)
+- `src/index.css` — tokens intel + utilities
+- `tailwind.config.ts` — fonte mono + cores intel
+- `src/components/layout/AppSidebar.tsx` — link novo
+- `src/App.tsx` — rota nova
 
-**Opção A — Auditoria + Relatório (recomendado)**
-Entrego documento `PALANTINE_AUDIT.md` em `/mnt/documents/` com:
-- Inventário completo (rotas, funções, design tokens)
-- Tabela comparativa Palantine × SINGU
-- Recomendações priorizadas (quick wins vs. grandes refatorações)
-- Você escolhe o que portar em rounds futuros
+## O que NÃO faço
+- Não troco a paleta Nexus Blue existente (intel é additive)
+- Não toco em CRM/Pipeline/ABM atuais
+- Não copio marca/logo Palantir (só linguagem visual genérica de intelligence platform)
+- Não crio backend novo — só consome RPCs/edge functions existentes
 
-**Opção B — Portar módulos específicos**
-Você me diz quais (ex: "só o módulo X e o design system"). Aí faço plano cirúrgico.
-
-**Opção C — Clonar design system apenas**
-Tokens de cor, tipografia, componentes UI, sem lógica de negócio.
-
-## Riscos de "copiar tudo cego"
-
-- Round 1 ainda não fechou (auditoria de 58 RPCs em curso)
-- SINGU tem 100+ memórias arquiteturais que seriam violadas
-- Constraint "máx 400 linhas/arquivo" e "português obrigatório" podem não bater com Palantine
-- Risco de quebrar build atual sem ganho claro
-
-## Próximo passo
-
-Aguardando sua escolha (A/B/C) **antes** de executar Fase 1. Se escolher B ou C, me diga o escopo exato.
+## Riscos
+- Grafo pesado em mobile (406px) → fallback para lista em <768px
+- Round 1 (RPCs) ainda aberto — Entity360 depende de `get_instant_kpis` etc. já validadas, ok prosseguir
