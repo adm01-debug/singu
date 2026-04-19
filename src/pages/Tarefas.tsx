@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAllTasks, useOverdueTasks, useCompleteTask, Task } from '@/hooks/useTasks';
+import { useAllTasks, useOverdueTasks, useCompleteTask, useReopenTask, Task } from '@/hooks/useTasks';
+import { useActionToast } from '@/hooks/useActionToast';
 import { TaskCard } from './tarefas/TaskCard';
 import { CreateTaskDialog } from './tarefas/CreateTaskDialog';
 
@@ -20,6 +21,17 @@ export default function Tarefas() {
   const { data: allTasks, isLoading } = useAllTasks();
   const { data: overdueTasks } = useOverdueTasks();
   const completeTask = useCompleteTask();
+  const reopenTask = useReopenTask();
+  const { destructive } = useActionToast();
+
+  const handleComplete = (id: string, title?: string) => {
+    completeTask.mutate(id);
+    destructive({
+      message: '✅ Tarefa concluída',
+      description: title,
+      onUndo: () => reopenTask.mutate(id),
+    });
+  };
 
   const categorizedTasks = useMemo(() => {
     const tasks = allTasks || [];
@@ -111,7 +123,7 @@ export default function Tarefas() {
                 <Card><CardContent className="py-12 text-center"><CheckSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" /><p className="text-sm text-muted-foreground">{searchTerm ? 'Nenhuma tarefa encontrada com esse termo' : tab === 'completed' ? 'Nenhuma tarefa concluída' : tab === 'overdue' ? 'Nenhuma tarefa atrasada! 🎉' : 'Nenhuma tarefa pendente'}</p></CardContent></Card>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  <div className="space-y-3">{filteredTasks.map(task => <TaskCard key={task.id} task={task} onComplete={(id) => completeTask.mutate(id)} />)}</div>
+                  <div className="space-y-3">{filteredTasks.map(task => <TaskCard key={task.id} task={task} onComplete={(id) => handleComplete(id, task.title)} />)}</div>
                 </AnimatePresence>
               )}
             </TabsContent>

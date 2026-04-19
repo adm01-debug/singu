@@ -5,7 +5,8 @@ import { Header } from '@/components/layout/Header';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useInteractions } from '@/hooks/useInteractions';
-import { useOverdueTasks, usePendingTasks, useCompleteTask } from '@/hooks/useTasks';
+import { useOverdueTasks, usePendingTasks, useCompleteTask, useReopenTask } from '@/hooks/useTasks';
+import { useActionToast } from '@/hooks/useActionToast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,8 @@ function Inbox() {
   const { data: overdue = [], isLoading: loadingOverdue } = useOverdueTasks();
   const { data: pending = [], isLoading: loadingPending } = usePendingTasks();
   const completeTask = useCompleteTask();
+  const reopenTask = useReopenTask();
+  const { destructive } = useActionToast();
 
   const [filter, setFilter] = useState<ChannelFilter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -147,11 +150,11 @@ function Inbox() {
   const selected = items.find((i) => i.id === selectedId) ?? items[0] ?? null;
 
   const handleCompleteTask = (taskId: string) => {
-    completeTask.mutate(taskId, {
-      onSuccess: () => {
-        toast.success('Tarefa concluída! 🎉');
-        setSelectedId(null);
-      },
+    completeTask.mutate(taskId);
+    setSelectedId(null);
+    destructive({
+      message: 'Tarefa concluída! 🎉',
+      onUndo: () => reopenTask.mutate(taskId),
     });
   };
 

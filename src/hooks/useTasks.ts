@@ -3,6 +3,8 @@ import { callExternalRpc, queryExternalData } from '@/lib/externalData';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 
+type TaskListSnapshot = { queryKey: readonly unknown[]; data: Task[] | undefined }[];
+
 export interface Task {
   id: string;
   contact_id?: string;
@@ -130,19 +132,62 @@ export function useCreateTask() {
 
 export function useCompleteTask() {
   const qc = useQueryClient();
-  return useMutation({
+  return useMutation<unknown, Error, string, { snapshot: TaskListSnapshot }>({
     mutationFn: async (taskId: string) => {
       const { data, error } = await callExternalRpc('complete_task', { p_task_id: taskId });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success('✅ Tarefa concluída');
+    // Optimistic update: marca como concluída em todas as queries de tasks instantaneamente
+    onMutate: async (taskId) => {
+      await qc.cancelQueries({ queryKey: ['tasks'] });
+      const queries = qc.getQueriesData<Task[]>({ queryKey: ['tasks'] });
+      const snapshot: TaskListSnapshot = queries.map(([key, data]) => ({ queryKey: key, data }));
+      const nowIso = new Date().toISOString();
+      for (const [key, data] of queries) {
+        if (!Array.isArray(data)) continue;
+        qc.setQueryData<Task[]>(
+          key,
+          data.map((t) => (t.id === taskId ? { ...t, status: 'completed', completed_at: nowIso } : t)),
+        );
+      }
+      return { snapshot };
     },
-    onError: (err) => {
+    onError: (err, _taskId, context) => {
       logger.error('[Tasks] Complete failed:', err);
+      // Rollback
+      if (context?.snapshot) {
+        for (const { queryKey, data } of context.snapshot) qc.setQueryData(queryKey, data);
+      }
       toast.error('Erro ao concluir tarefa');
+    },
+    // sucesso silencioso — caller decide o feedback (ver useActionToast.destructive em Tarefas/Inbox)
+
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+}
+
+/**
+ * Reabre uma tarefa concluída (usado pelo Undo do toast destrutivo).
+ */
+export function useReopenTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: string) => {
+      const { data, error } = await callExternalRpc('reopen_task', { p_task_id: taskId });
+      if (error) {
+        // Fallback: update direto na tabela
+        const { updateExternalData } = await import('@/lib/externalData');
+        const res = await updateExternalData('tasks', taskId, { status: 'pending', completed_at: null });
+        if (res.error) throw res.error;
+        return res.data;
+      }
+      return data;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['tasks'] });
     },
   });
 }

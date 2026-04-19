@@ -12,6 +12,7 @@ import { DealRiskBadge } from '@/components/pipeline/DealRiskBadge';
 import { DealRiskDrawer } from '@/components/pipeline/DealRiskDrawer';
 import { DealConfidenceBadge } from '@/components/pipeline/DealConfidenceBadge';
 import { ForecastConfidencePanel } from '@/components/pipeline/ForecastConfidencePanel';
+import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -341,27 +342,37 @@ export default function Pipeline() {
         <p className="text-muted-foreground text-sm">Gerencie seus deals com drag & drop</p>
       </div>
 
-      <SummaryCards forecast={forecast} />
+      <DashboardErrorBoundary sectionName="Resumo do Pipeline">
+        <SummaryCards forecast={forecast} />
+      </DashboardErrorBoundary>
 
-      <ForecastConfidencePanel />
+      <DashboardErrorBoundary sectionName="Confiança do Forecast">
+        <ForecastConfidencePanel />
+      </DashboardErrorBoundary>
 
       <p className="sm:hidden text-[11px] text-muted-foreground text-center -mb-1">← deslize para ver os estágios →</p>
-      <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory sm:snap-none -mx-4 px-4 sm:mx-0 sm:px-0">
-        {STAGES.map((stage) => (
-          <PipelineColumn
-            key={stage.id}
-            stage={stage}
-            deals={dealsByStage[stage.id] || []}
-            onDrop={handleDrop}
-            onOpenRisk={setRiskDeal}
-          />
-        ))}
-      </div>
+      <DashboardErrorBoundary sectionName="Kanban de Deals">
+        <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory sm:snap-none -mx-4 px-4 sm:mx-0 sm:px-0">
+          {STAGES.map((stage) => (
+            <PipelineColumn
+              key={stage.id}
+              stage={stage}
+              deals={dealsByStage[stage.id] || []}
+              onDrop={handleDrop}
+              onOpenRisk={setRiskDeal}
+            />
+          ))}
+        </div>
+      </DashboardErrorBoundary>
 
         {/* Velocity & Stalled Deals */}
         <div className="grid gap-4 md:grid-cols-2">
-          <VelocityPanel />
-          <StalledDealsPanel />
+          <DashboardErrorBoundary sectionName="Velocidade do Pipeline">
+            <VelocityPanel />
+          </DashboardErrorBoundary>
+          <DashboardErrorBoundary sectionName="Deals Estagnados">
+            <StalledDealsPanel />
+          </DashboardErrorBoundary>
         </div>
       </div>
 
