@@ -175,7 +175,29 @@ export function useMoveDeal() {
       const { error } = await updateExternalData('deals', dealId, updates);
       if (error) throw error;
     },
-    onSuccess: () => {
+    // Optimistic update: aplica imediatamente no cache antes do servidor confirmar
+    onMutate: async ({ dealId, newStage, probability }) => {
+      await queryClient.cancelQueries({ queryKey: ['deals-pipeline'] });
+      const previous = queryClient.getQueriesData<PipelineDeal[]>({ queryKey: ['deals-pipeline'] });
+      queryClient.setQueriesData<PipelineDeal[]>({ queryKey: ['deals-pipeline'] }, (old) => {
+        if (!old) return old;
+        return old.map((d) =>
+          d.id === dealId
+            ? { ...d, pipeline_stage: newStage, ...(probability !== undefined ? { probabilidade: probability } : {}) }
+            : d
+        );
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      // Rollback em caso de erro
+      if (context?.previous) {
+        for (const [key, data] of context.previous) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['deals-pipeline'] });
       queryClient.invalidateQueries({ queryKey: ['pipeline-summary'] });
       queryClient.invalidateQueries({ queryKey: ['weighted-forecast'] });
