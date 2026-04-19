@@ -1,22 +1,22 @@
 
-Status atual: 30/30 melhorias entregues (Rodadas A+B+C+D+E+F). Para continuar rumo à perfeição absoluta, proponho **Rodada G — Observabilidade Profunda & Hardening Final**, com 5 melhorias atômicas focadas em camadas ainda não cobertas: documentação viva, instrumentação real-user, hardening de edge functions, automação CI e DX de testes.
+Status: 35/35 melhorias entregues (Rodadas A-G). Para sustentar a excelência e cobrir camadas ainda intocadas, proponho **Rodada H — Acessibilidade, i18n-readiness & DX Final**, com 5 melhorias atômicas finais.
 
-# Rodada G — Observabilidade Profunda & Hardening Final
+# Rodada H — Acessibilidade WCAG AA, Resiliência DX & Polimento Profundo
 
-**1. Adoção real do `useActionToast.destructive` em deletes de UI** — fechar pendência da Rodada F item 4: wire-up nos handlers `handleDelete` de Contatos, Empresas e Tarefas (UI), passando `onUndo` que dispara `useRestoreContact/Company/Task` (snapshot já existe nos hooks `deleteContact`/`deleteCompany`). Implementar `useRestoreTask` reaproveitando `insertExternalData('tasks', snapshot)`.
+**1. Auditoria WCAG 2.1 AA em superfícies críticas** — varrer Pipeline, Contatos, Empresas, Inbox, Tarefas e Dashboard adicionando: `aria-label` em IconButtons sem texto, `role="status"` em loaders, `aria-live="polite"` em toasts, foco visível (`focus-visible:ring-2`) em todos interativos, `aria-current="page"` em nav ativo, skip-link `<a href="#main">`. Documentar checklist em `mem://standards/accessibility-wcag-aa`.
 
-**2. Rate limit + structured logs em 3 edge functions críticas** — auditar `external-data`, `ask-crm` e `meeting-summary`: garantir uso do `rateLimiter.ts` compartilhado (limites por função), `requestId` em todos os logs e CORS padrão `@supabase/supabase-js/cors`. Documentar inventário em `mem://architecture/edge-functions/security`.
+**2. Storybook-lite local — `/admin/component-gallery`** — página admin que renderiza variantes de primitivas críticas (Button, Card, EmptyState, ActionToast, SearchableSelect, BulkActionsBar, WhyScoreDrawer) com props controláveis. Substitui necessidade de Storybook completo. Acelera QA visual e onboarding de novos devs.
 
-**3. Real User Monitoring (RUM) — Web Vitals → error_logs** — instrumentar `web-vitals` (LCP/CLS/INP/FCP/TTFB) capturando samples e enviando ao mesmo pipeline de `errorReporting` quando exceder thresholds (LCP>2.5s, CLS>0.1, INP>200ms). Painel `/admin/error-logs` ganha aba "Performance" filtrando por `source=web-vitals`.
+**3. Hook `useKeyboardShortcuts` global + cheat-sheet** — centralizar atalhos hoje espalhados (⌘K busca, ⌘⇧E email, G+P pipeline, G+C contatos, ?+? help). Modal `KeyboardCheatsheet` aberto com `?` exibindo todos. Garante consistência e descoberta.
 
-**4. CI workflow para Vitest + bundle size** — `.github/workflows/ci.yml` rodando: `npm ci`, `npm run build`, `node scripts/check-bundle-size.mjs`, `npx vitest run`. Falha gate impede merge com testes vermelhos ou bundle acima do orçamento. README ganha badges de status.
+**4. Edge function `health-aggregate`** — endpoint único que agrega saúde de: external-data (latência), ask-crm (rate limit usage), meeting-summary (last error), database linter status, web-vitals p75. Retorna JSON `{status: "healthy"|"degraded"|"down", checks: [...]}`. Painel `/admin/system-health` consome e mostra semáforo.
 
-**5. Documentação viva: ARCHITECTURE.md + ADR sintético** — gerar `docs/ARCHITECTURE.md` consolidando: stack, fluxo de dados (external-data proxy), camadas de resiliência (circuit breaker + retry + fallback), rotas críticas, módulos por área. Adicionar ADR-009 em `docs/adr/` registrando decisão de "30/30 + Rodada G — Excellence sustentada".
+**5. ADR-011 + CHANGELOG.md sintético** — formalizar `docs/adr/011-rodada-h-accessibility-dx.md` e criar `CHANGELOG.md` na raiz consolidando todas as 40 melhorias por rodada (A-H), com data, escopo e arquivos-chave. Vira referência única para auditoria executiva.
 
 ## Restrições mantidas
 Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes.
 
 ## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature/teste verificável, (d) sem regressão. Memória final em `mem://features/ux-rodada-g-observabilidade.md` consolidando **35/35 melhorias**.
+(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão. Memória final em `mem://features/ux-rodada-h-accessibility.md` consolidando **40/40 melhorias**.
 
 Aprove e executo as 5 em sequência sem pausas.
