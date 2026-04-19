@@ -14,7 +14,6 @@ import { useSavedAskViews } from '@/hooks/useSavedAskViews';
 import { useContextualSuggestions } from '@/hooks/useContextualSuggestions';
 import type { HistoryEntry } from '@/hooks/useEntityHistory';
 import { DataGrid } from '@/components/intel/DataGrid';
-import { downloadCsv } from '@/lib/intelExport';
 import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
 import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
 
