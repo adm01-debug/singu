@@ -29,6 +29,17 @@ import { useSuccessCelebration } from '@/hooks/useSuccessCelebration';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContatosContent } from './contatos/ContatosContent';
+import { SavedViewsBar } from '@/components/views/SavedViewsBar';
+import { useSavedViews } from '@/hooks/useSavedViews';
+
+interface ContatosViewState {
+  searchTerm: string;
+  viewMode: ViewMode;
+  gridColumns: GridColumns;
+  activeFilters: Record<string, string[]>;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
 
 const filterConfigs = [
   { key: 'role', label: 'Papel', multiple: true, options: [{ value: 'owner', label: 'Proprietário', icon: Crown }, { value: 'manager', label: 'Gerente', icon: Briefcase }, { value: 'buyer', label: 'Comprador', icon: ShoppingCart }, { value: 'contact', label: 'Contato', icon: User }] },
