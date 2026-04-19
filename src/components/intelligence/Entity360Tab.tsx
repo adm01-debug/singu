@@ -46,7 +46,14 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
     setResults([]);
   }, [push]);
 
-  useImperativeHandle(ref, () => ({ open }), [open]);
+  useImperativeHandle(ref, () => ({ open, getCurrent: () => current }), [open, current]);
+
+  const [showDiff, setShowDiff] = useState(false);
+  const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
+  const { data: previousData } = useEntity360(
+    showDiff ? previousEntry?.type ?? null : null,
+    showDiff ? previousEntry?.id ?? null : null,
+  );
 
   const doSearch = useCallback(async () => {
     if (!search.trim()) return;
