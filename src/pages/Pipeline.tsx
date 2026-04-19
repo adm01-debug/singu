@@ -1,5 +1,6 @@
 import React, { useMemo, useCallback, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PipelinePageSkeleton } from '@/components/skeletons/PageSkeletons';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

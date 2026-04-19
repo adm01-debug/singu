@@ -18,6 +18,7 @@ import {
   AlertTriangle, RotateCcw, Target,
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { EntityDetailPageSkeleton } from '@/components/skeletons/PageSkeletons';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
