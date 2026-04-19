@@ -18,6 +18,8 @@ import { downloadCsv } from '@/lib/intelExport';
 import { intelExportUniversal, type IntelExportFormat } from '@/lib/intelExportUniversal';
 import { ExportFormatMenu } from '@/components/intel/ExportFormatMenu';
 import { jaccardIndex } from '@/lib/jaccard';
+import { CrossRefInsightsPanel } from '@/components/intel/CrossRefInsightsPanel';
+import { buildCrossRefInsights } from '@/lib/crossRefInsights';
 import { format } from 'date-fns';
 
 interface MetaRow {
