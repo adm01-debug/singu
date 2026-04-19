@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Search, Loader2, Download } from 'lucide-react';
+import { Plus, X, Search, Loader2, Download, GitCompare } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { DataGrid } from '@/components/intel/DataGrid';
@@ -9,11 +9,28 @@ import { MetricMono } from '@/components/intel/MetricMono';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
+import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { TemporalHeatmap } from '@/components/intel/TemporalHeatmap';
 import { useCrossReference } from '@/hooks/useCrossReference';
 import { queryExternalData } from '@/lib/externalData';
 import { downloadCsv } from '@/lib/intelExport';
 import { format } from 'date-fns';
+
+interface MetaRow {
+  id: string;
+  name: string;
+  metadata: Record<string, unknown>;
+}
+
+const COMPARE_FIELDS = [
+  { key: 'created_at', label: 'CRIADO_EM', format: (v: unknown) => v ? format(new Date(String(v)), 'dd/MM/yyyy') : '—' },
+  { key: 'updated_at', label: 'ATUALIZADO', format: (v: unknown) => v ? format(new Date(String(v)), 'dd/MM/yyyy') : '—' },
+  { key: 'relationship_score', label: 'SCORE', format: (v: unknown) => v != null ? String(v) : '—' },
+  { key: 'industry', label: 'INDUSTRY', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'role', label: 'ROLE', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'email', label: 'EMAIL', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'phone', label: 'PHONE', format: (v: unknown) => v ? String(v) : '—' },
+];
 
 interface Picked { id: string; name: string; }
 
@@ -23,6 +40,8 @@ export const CrossRefTab = () => {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<Picked[]>([]);
   const [searching, setSearching] = useState(false);
+  const [metaRows, setMetaRows] = useState<MetaRow[]>([]);
+  const [loadingMeta, setLoadingMeta] = useState(false);
 
   const { data, isLoading, error, refetch } = useCrossReference({
     entityIds: picked.map((p) => p.id),
@@ -33,6 +52,43 @@ export const CrossRefTab = () => {
     if (!data?.temporalOverlap?.length) return null;
     return [...data.temporalOverlap].sort((a, b) => b.count - a.count)[0];
   }, [data]);
+
+  // Busca metadata de cada entidade selecionada para comparação lado-a-lado.
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      if (picked.length < 2) { setMetaRows([]); return; }
+      setLoadingMeta(true);
+      try {
+        const table = type === 'contact' ? 'contacts' : 'companies';
+        const rows = await Promise.all(
+          picked.map(async (p) => {
+            const { data: r } = await queryExternalData<Record<string, unknown>>({
+              table,
+              select: '*',
+              filters: [{ type: 'eq', column: 'id', value: p.id }],
+              range: { from: 0, to: 0 },
+            });
+            return { id: p.id, name: p.name, metadata: r?.[0] || {} };
+          })
+        );
+        if (!cancelled) setMetaRows(rows);
+      } catch {
+        if (!cancelled) setMetaRows([]);
+      } finally {
+        if (!cancelled) setLoadingMeta(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [picked, type]);
+
+  const compareFields = useMemo(() => {
+    if (metaRows.length < 2) return [];
+    return COMPARE_FIELDS.filter((f) =>
+      metaRows.some((m) => m.metadata[f.key] !== undefined && m.metadata[f.key] !== null && m.metadata[f.key] !== '')
+    );
+  }, [metaRows]);
 
   const doSearch = async () => {
     if (!search.trim()) return;
@@ -155,6 +211,52 @@ export const CrossRefTab = () => {
 
           {error && <IntelErrorState onRetry={() => refetch()} />}
 
+          <SectionFrame title="METADATA_COMPARISON" meta={loadingMeta ? 'LOADING…' : `${compareFields.length} FIELDS`}>
+            {loadingMeta ? (
+              <IntelSkeleton lines={4} label="LOADING_META" />
+            ) : compareFields.length === 0 ? (
+              <IntelEmptyState title="NO_COMPARABLE_FIELDS" description="Não há campos comuns preenchidos entre as entidades selecionadas." />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs intel-mono border-collapse">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="intel-eyebrow text-left py-1.5 pr-2 w-32">CAMPO</th>
+                      {metaRows.map((m) => (
+                        <th key={m.id} className="text-left py-1.5 px-2 text-foreground truncate max-w-[180px]" title={m.name}>
+                          {m.name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compareFields.map((f) => {
+                      const values = metaRows.map((m) => f.format(m.metadata[f.key]));
+                      const allEqual = values.every((v) => v === values[0]);
+                      return (
+                        <tr key={f.key} className="border-b border-border/30">
+                          <td className="intel-eyebrow py-1 pr-2">{f.label}</td>
+                          {values.map((v, i) => (
+                            <td
+                              key={`${f.key}-${i}`}
+                              className={`py-1 px-2 truncate max-w-[180px] ${allEqual ? 'text-muted-foreground' : 'text-[hsl(var(--intel-accent))]'}`}
+                            >
+                              {v}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <p className="intel-mono text-[10px] text-muted-foreground mt-2">
+                  Valores em <span className="text-[hsl(var(--intel-accent))]">cyan</span> indicam diferenças entre as entidades.
+                </p>
+              </div>
+            )}
+          </SectionFrame>
+
+
           <SectionFrame
             title="TEMPORAL_OVERLAP"
             meta="30D"
@@ -228,9 +330,11 @@ export const CrossRefTab = () => {
       )}
 
       {picked.length < 2 && (
-        <div className="intel-card p-8 text-center intel-mono text-xs text-muted-foreground">
-          ── SELECT_AT_LEAST_2_ENTITIES_TO_CROSS_REFERENCE ──
-        </div>
+        <IntelEmptyState
+          icon={GitCompare}
+          title="SELECT_AT_LEAST_2_ENTITIES"
+          description="Adicione 2 ou 3 entidades acima para cruzar interações, deals compartilhados e comparar metadata lado a lado."
+        />
       )}
     </div>
   );

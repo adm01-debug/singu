@@ -1,16 +1,20 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Network, User, GitCompare, MessageSquare, Activity } from 'lucide-react';
+import { Network, User, GitCompare, MessageSquare, Activity, Command } from 'lucide-react';
 import { GraphTab } from '@/components/intelligence/GraphTab';
 import { Entity360Tab } from '@/components/intelligence/Entity360Tab';
 import { CrossRefTab } from '@/components/intelligence/CrossRefTab';
 import { AskTab } from '@/components/intelligence/AskTab';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelStatusBar } from '@/components/intel/IntelStatusBar';
+import { IntelCommandPalette } from '@/components/intel/IntelCommandPalette';
+import { useIntelTelemetry, useIntelTabView } from '@/hooks/useIntelTelemetry';
+import { toast } from 'sonner';
 
 const TABS = [
   { value: 'graph', label: 'Graph', icon: Network, Component: GraphTab },
@@ -19,15 +23,76 @@ const TABS = [
   { value: 'ask', label: 'Ask', icon: MessageSquare, Component: AskTab },
 ] as const;
 
+type TabValue = typeof TABS[number]['value'];
+
+const isValidTab = (v: string | null): v is TabValue =>
+  !!v && TABS.some((t) => t.value === v);
+
 const Intelligence = () => {
   usePageTitle('Intelligence Hub');
-  const [tab, setTab] = useState<string>('graph');
+  const [params, setParams] = useSearchParams();
+  const tabFromUrl = params.get('tab');
+  const tab: TabValue = isValidTab(tabFromUrl) ? tabFromUrl : 'graph';
   const [sessionId] = useState(() => Math.random().toString(36).slice(2, 10).toUpperCase());
+  const { log } = useIntelTelemetry();
+  useIntelTabView(tab, log);
+
+  const setTab = useCallback(
+    (next: string) => {
+      const np = new URLSearchParams(params);
+      np.set('tab', next);
+      setParams(np, { replace: true });
+    },
+    [params, setParams]
+  );
+
+  // Bridge para que a Command Palette consiga acionar comandos do AskTab.
+  const askBridgeRef = useRef<{
+    clear: () => void;
+    exportLast: () => void;
+    help: () => void;
+  } | null>(null);
+
+  const registerAskBridge = useCallback(
+    (bridge: { clear: () => void; exportLast: () => void; help: () => void }) => {
+      askBridgeRef.current = bridge;
+    },
+    []
+  );
+
+  const tabComponents = useMemo(
+    () => ({
+      graph: <GraphTab />,
+      entity: <Entity360Tab />,
+      crossref: <CrossRefTab />,
+      ask: <AskTab onRegisterBridge={registerAskBridge} />,
+    }),
+    [registerAskBridge]
+  );
 
   return (
     <AppLayout>
-      <SEOHead title="Intelligence Hub" description="Centro de inteligência: grafo, entidade 360, cruzamentos e busca natural" />
+      <SEOHead
+        title="Intelligence Hub"
+        description="Centro de inteligência: grafo, entidade 360, cruzamentos e busca natural"
+      />
       <a href="#intel-main" className="intel-skip-link">Pular para o conteúdo</a>
+      <IntelCommandPalette
+        onChangeTab={setTab}
+        onClearAsk={() => {
+          if (askBridgeRef.current) {
+            askBridgeRef.current.clear();
+          } else {
+            setTab('ask');
+            toast.info('Abra a aba Ask para limpar o console.');
+          }
+        }}
+        onExportAsk={() => {
+          if (askBridgeRef.current) askBridgeRef.current.exportLast();
+          else toast.info('Abra a aba Ask para exportar.');
+        }}
+        onHelp={() => askBridgeRef.current?.help()}
+      />
       <div className="intel-surface min-h-screen">
         <div className="intel-grid-bg">
           <div className="px-4 md:px-6 py-4 md:py-6 max-w-[1600px] mx-auto">
@@ -49,6 +114,9 @@ const Intelligence = () => {
                 </div>
               </div>
               <div className="hidden md:flex items-center gap-3">
+                <span className="intel-eyebrow flex items-center gap-1">
+                  <Command className="h-3 w-3" aria-hidden /> CTRL+P
+                </span>
                 <span className="intel-eyebrow">SESSION</span>
                 <span className="intel-mono text-xs text-foreground">{sessionId}</span>
               </div>
@@ -81,7 +149,7 @@ const Intelligence = () => {
                           exit={{ opacity: 0, y: -4 }}
                           transition={{ duration: 0.18, ease: 'easeOut' }}
                         >
-                          <t.Component />
+                          {tabComponents[t.value]}
                         </motion.div>
                       </TabsContent>
                     ) : null

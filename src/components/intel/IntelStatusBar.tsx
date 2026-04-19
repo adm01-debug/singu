@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useIsFetching, useIsMutating } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { Activity, Wifi, WifiOff, Clock } from 'lucide-react';
+import { IntelTelemetryPanel } from './IntelTelemetryPanel';
 
 /**
  * Barra de status fixa no rodapé do Intelligence Hub.
- * Mostra: estado online, queries em andamento, último refresh, latência aproximada.
- * 100% client-side, sem novas chamadas de rede.
+ * Mostra: estado online, queries em andamento, último refresh, painel de debug (?debug=1).
  */
 export const IntelStatusBar = () => {
   const fetching = useIsFetching();
   const mutating = useIsMutating();
+  const [params] = useSearchParams();
+  const debug = params.get('debug') === '1';
   const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [now, setNow] = useState(Date.now());
@@ -41,9 +44,9 @@ export const IntelStatusBar = () => {
     <div
       role="status"
       aria-live="polite"
-      className="sticky bottom-0 left-0 right-0 z-10 mt-3 -mx-4 md:-mx-6 px-4 md:px-6 py-1.5 border-t border-border bg-[hsl(var(--intel-bg)/0.95)] backdrop-blur"
+      className="sticky bottom-0 left-0 right-0 z-10 mt-3 -mx-4 md:-mx-6 border-t border-border bg-[hsl(var(--intel-bg)/0.95)] backdrop-blur"
     >
-      <div className="max-w-[1600px] mx-auto flex items-center justify-between intel-mono text-[10px] text-muted-foreground gap-3">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-1.5 flex items-center justify-between intel-mono text-[10px] text-muted-foreground gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <span className="flex items-center gap-1.5">
             {online ? (
@@ -66,6 +69,7 @@ export const IntelStatusBar = () => {
           <span>LAST_REFRESH: {ageLabel}</span>
         </div>
       </div>
+      {debug && <IntelTelemetryPanel />}
     </div>
   );
 };
