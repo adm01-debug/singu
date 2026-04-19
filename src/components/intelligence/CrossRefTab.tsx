@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, X, Search, Loader2, Download } from 'lucide-react';
+import { Plus, X, Search, Loader2, Download, GitCompare } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { DataGrid } from '@/components/intel/DataGrid';
@@ -9,11 +9,28 @@ import { MetricMono } from '@/components/intel/MetricMono';
 import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
+import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { TemporalHeatmap } from '@/components/intel/TemporalHeatmap';
 import { useCrossReference } from '@/hooks/useCrossReference';
 import { queryExternalData } from '@/lib/externalData';
 import { downloadCsv } from '@/lib/intelExport';
 import { format } from 'date-fns';
+
+interface MetaRow {
+  id: string;
+  name: string;
+  metadata: Record<string, unknown>;
+}
+
+const COMPARE_FIELDS = [
+  { key: 'created_at', label: 'CRIADO_EM', format: (v: unknown) => v ? format(new Date(String(v)), 'dd/MM/yyyy') : '—' },
+  { key: 'updated_at', label: 'ATUALIZADO', format: (v: unknown) => v ? format(new Date(String(v)), 'dd/MM/yyyy') : '—' },
+  { key: 'relationship_score', label: 'SCORE', format: (v: unknown) => v != null ? String(v) : '—' },
+  { key: 'industry', label: 'INDUSTRY', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'role', label: 'ROLE', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'email', label: 'EMAIL', format: (v: unknown) => v ? String(v) : '—' },
+  { key: 'phone', label: 'PHONE', format: (v: unknown) => v ? String(v) : '—' },
+];
 
 interface Picked { id: string; name: string; }
 
