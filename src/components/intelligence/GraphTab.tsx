@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/feedback/ErrorBoundary';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { MetricMono } from '@/components/intel/MetricMono';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
+import { GraphLegend } from '@/components/intel/GraphLegend';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useInstantKpis } from '@/hooks/useInstantKpis';
@@ -114,8 +115,15 @@ export const GraphTab = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="hidden md:block"
+              className="hidden md:block relative"
             >
+              <GraphLegend
+                items={[
+                  { label: 'Empresa', color: 'hsl(188 95% 55%)', count: kpis?.total_companies },
+                  { label: 'Contato', color: 'hsl(280 80% 65%)', count: kpis?.total_contacts },
+                  { label: 'Deal', color: 'hsl(45 95% 60%)', count: kpis?.total_deals },
+                ]}
+              />
               <ErrorBoundary>
                 <NetworkVisualization height={560} />
               </ErrorBoundary>
