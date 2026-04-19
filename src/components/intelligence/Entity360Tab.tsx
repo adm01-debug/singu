@@ -361,6 +361,14 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
         </div>
       )}
 
+      {current && showNotes && (
+        <EntityNotesPanel
+          entityKey={`${current.type}:${current.id}`}
+          entityName={current.name}
+          onClose={() => setShowNotes(false)}
+        />
+      )}
+
       {current && showDiff && previousEntry && (
         <MetadataDiffPanel
           beforeName={previousEntry.name}
@@ -368,6 +376,29 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
           before={(previousData?.metadata || {}) as Record<string, unknown>}
           after={(data?.metadata || {}) as Record<string, unknown>}
           onClose={() => setShowDiff(false)}
+        />
+      )}
+
+      {current && showMultiDiff && previousEntry && beforePreviousEntry && (
+        <MultiDiffPanel
+          entities={[
+            {
+              id: beforePreviousEntry.id,
+              name: beforePreviousEntry.name,
+              metadata: (beforePreviousData?.metadata || {}) as Record<string, unknown>,
+            },
+            {
+              id: previousEntry.id,
+              name: previousEntry.name,
+              metadata: (previousData?.metadata || {}) as Record<string, unknown>,
+            },
+            {
+              id: current.id,
+              name: current.name,
+              metadata: (data?.metadata || {}) as Record<string, unknown>,
+            },
+          ] as MultiDiffEntity[]}
+          onClose={() => setShowMultiDiff(false)}
         />
       )}
     </div>
