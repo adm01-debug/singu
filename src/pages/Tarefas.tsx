@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAllTasks, useOverdueTasks, useCompleteTask, Task } from '@/hooks/useTasks';
+import { useAllTasks, useOverdueTasks, useCompleteTask, useReopenTask, Task } from '@/hooks/useTasks';
+import { useActionToast } from '@/hooks/useActionToast';
 import { TaskCard } from './tarefas/TaskCard';
 import { CreateTaskDialog } from './tarefas/CreateTaskDialog';
 
