@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -13,6 +13,7 @@ import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
+import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
@@ -27,6 +28,7 @@ const CRM_PATH: Record<Entity360Type, string> = {
 
 export interface Entity360Handle {
   open: (entry: HistoryEntry) => void;
+  getCurrent: () => HistoryEntry | null;
 }
 
 export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
