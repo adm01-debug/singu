@@ -11,18 +11,14 @@ import { SavedViewsPanel } from '@/components/intel/SavedViewsPanel';
 import { useAskCrm } from '@/hooks/useAskCrm';
 import { useIntelTelemetry } from '@/hooks/useIntelTelemetry';
 import { useSavedAskViews } from '@/hooks/useSavedAskViews';
+import { useContextualSuggestions } from '@/hooks/useContextualSuggestions';
+import type { HistoryEntry } from '@/hooks/useEntityHistory';
 import { DataGrid } from '@/components/intel/DataGrid';
 import { downloadCsv } from '@/lib/intelExport';
 
 const HISTORY_KEY = 'intel-ask-history';
 const MAX_HISTORY = 10;
 
-const SUGGESTIONS = [
-  'Top 10 contatos por score de relacionamento',
-  'Quais empresas têm deals abertos acima de 100k?',
-  'Quantas interações tive nos últimos 7 dias?',
-  'Mostre os 5 deals mais antigos no pipeline',
-];
 
 const COMMANDS = [
   { cmd: '/clear', desc: 'Limpar console' },
@@ -37,15 +33,17 @@ interface AskTabProps {
     help: () => void;
     run: (q: string) => void;
   }) => void;
+  contextEntity?: HistoryEntry | null;
 }
 
-export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
+export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) => {
   const { messages, loading, ask, clearMessages } = useAskCrm();
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const { log } = useIntelTelemetry();
   const { save: saveView } = useSavedAskViews();
+  const suggestions = useContextualSuggestions(contextEntity);
 
   useEffect(() => {
     try {
@@ -247,7 +245,7 @@ export const AskTab = ({ onRegisterBridge }: AskTabProps) => {
       <div className="space-y-3 overflow-y-auto">
         <SectionFrame title="SUGGESTED_QUERIES" meta="HINTS">
           <div className="space-y-1.5">
-            {SUGGESTIONS.map((s) => (
+            {suggestions.map((s) => (
               <button
                 key={s}
                 onClick={() => { setInput(s); inputRef.current?.focus(); }}

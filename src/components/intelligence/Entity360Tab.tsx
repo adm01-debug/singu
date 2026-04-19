@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -13,6 +13,7 @@ import { IntelBadge } from '@/components/intel/IntelBadge';
 import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
+import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
@@ -27,6 +28,7 @@ const CRM_PATH: Record<Entity360Type, string> = {
 
 export interface Entity360Handle {
   open: (entry: HistoryEntry) => void;
+  getCurrent: () => HistoryEntry | null;
 }
 
 export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
@@ -44,7 +46,14 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
     setResults([]);
   }, [push]);
 
-  useImperativeHandle(ref, () => ({ open }), [open]);
+  useImperativeHandle(ref, () => ({ open, getCurrent: () => current }), [open, current]);
+
+  const [showDiff, setShowDiff] = useState(false);
+  const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
+  const { data: previousData } = useEntity360(
+    showDiff ? previousEntry?.type ?? null : null,
+    showDiff ? previousEntry?.id ?? null : null,
+  );
 
   const doSearch = useCallback(async () => {
     if (!search.trim()) return;
@@ -213,6 +222,22 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <Copy className="h-3 w-3" aria-hidden /> ID
                 </button>
+                {previousEntry && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDiff((v) => !v)}
+                    className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                      showDiff
+                        ? 'text-[hsl(var(--intel-accent))]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-label={`Comparar com ${previousEntry.name}`}
+                    aria-pressed={showDiff}
+                    title={`Diff vs ${previousEntry.name}`}
+                  >
+                    <GitCompare className="h-3 w-3" aria-hidden /> DIFF
+                  </button>
+                )}
                 <Link
                   to={`${CRM_PATH[current.type]}/${current.id}`}
                   className="intel-mono text-[10px] text-muted-foreground hover:text-[hsl(var(--intel-accent))] inline-flex items-center gap-1"
@@ -294,6 +319,16 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
             )}
           </SectionFrame>
         </div>
+      )}
+
+      {current && showDiff && previousEntry && (
+        <MetadataDiffPanel
+          beforeName={previousEntry.name}
+          afterName={current.name}
+          before={(previousData?.metadata || {}) as Record<string, unknown>}
+          after={(data?.metadata || {}) as Record<string, unknown>}
+          onClose={() => setShowDiff(false)}
+        />
       )}
     </div>
   );

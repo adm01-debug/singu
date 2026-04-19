@@ -126,6 +126,36 @@ export const CrossRefTab = () => {
     toast.success('CSV exportado com sucesso.');
   };
 
+  const exportBundle = () => {
+    if (!data) return;
+    const ts = Date.now();
+    const meta = picked.map((p) => `${p.id}:${p.name}`).join(' | ');
+
+    const sharedRows = data.sharedInteractions.map((i) => ({
+      _entities: meta,
+      ...i,
+    }));
+    const commonRows = (data.interactionsWithMatches || [])
+      .filter((i) => i.matchedIds.length >= picked.length)
+      .map((i) => ({
+        _entities: meta,
+        id: i.id,
+        occurred_at: i.occurred_at,
+        type: i.type,
+        channel: i.channel,
+        matched_count: i.matchedIds.length,
+        matched_ids: i.matchedIds.join(';'),
+      }));
+
+    if (sharedRows.length === 0 && commonRows.length === 0) {
+      toast.error('Nada para exportar no bundle.');
+      return;
+    }
+    if (sharedRows.length > 0) downloadCsv(sharedRows, `crossref-comparison-${ts}`);
+    if (commonRows.length > 0) downloadCsv(commonRows, `crossref-common-events-${ts}`);
+    toast.success(`Bundle exportado (${sharedRows.length} + ${commonRows.length} linhas).`);
+  };
+
   return (
     <div className="space-y-3">
       <SectionFrame title="CROSS_REFERENCE_BUILDER" meta={`${picked.length}/3 SELECTED`}>
@@ -293,7 +323,24 @@ export const CrossRefTab = () => {
             />
           )}
 
-          <SectionFrame title="SHARED_INTERACTIONS" count={data?.sharedInteractions.length} meta={isLoading ? 'LOADING…' : 'OK'}>
+          <SectionFrame
+            title="SHARED_INTERACTIONS"
+            count={data?.sharedInteractions.length}
+            meta={isLoading ? 'LOADING…' : 'OK'}
+            actions={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={exportBundle}
+                disabled={!data || (!data.sharedInteractions.length && !data.interactionsWithMatches?.length)}
+                className="h-7 intel-mono text-[10px] gap-1.5"
+                aria-label="Exportar bundle CSV"
+                title="Exporta comparison + common-events em 2 CSVs"
+              >
+                <Download className="h-3 w-3" aria-hidden /> BUNDLE
+              </Button>
+            }
+          >
             {isLoading ? (
               <IntelSkeleton lines={5} />
             ) : (

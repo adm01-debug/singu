@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Activity, Wifi, WifiOff, Clock } from 'lucide-react';
 import { IntelTelemetryPanel } from './IntelTelemetryPanel';
 import { IntelLatencyBadge } from './IntelLatencyBadge';
+import { IntelDataSourceBadge } from './IntelDataSourceBadge';
 
 /**
  * Barra de status fixa no rodapé do Intelligence Hub.
@@ -45,6 +46,7 @@ export const IntelStatusBar = () => {
     <div
       role="status"
       aria-live="polite"
+      data-intel-hide-pres="true"
       className="sticky bottom-0 left-0 right-0 z-10 mt-3 -mx-4 md:-mx-6 border-t border-border bg-[hsl(var(--intel-bg)/0.95)] backdrop-blur"
     >
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-1.5 flex items-center justify-between intel-mono text-[10px] text-muted-foreground gap-3">
@@ -65,6 +67,7 @@ export const IntelStatusBar = () => {
             <span>QUERIES: {fetching} · MUT: {mutating}</span>
           </span>
           <IntelLatencyBadge />
+          <IntelDataSourceBadge />
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Clock className="h-3 w-3" aria-hidden />
