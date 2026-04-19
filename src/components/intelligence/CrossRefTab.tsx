@@ -11,6 +11,7 @@ import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { TemporalHeatmap } from '@/components/intel/TemporalHeatmap';
+import { CommonEventsTimeline } from '@/components/intel/CommonEventsTimeline';
 import { useCrossReference } from '@/hooks/useCrossReference';
 import { queryExternalData } from '@/lib/externalData';
 import { downloadCsv } from '@/lib/intelExport';
@@ -53,7 +54,6 @@ export const CrossRefTab = () => {
     return [...data.temporalOverlap].sort((a, b) => b.count - a.count)[0];
   }, [data]);
 
-  // Busca metadata de cada entidade selecionada para comparação lado-a-lado.
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -256,7 +256,6 @@ export const CrossRefTab = () => {
             )}
           </SectionFrame>
 
-
           <SectionFrame
             title="TEMPORAL_OVERLAP"
             meta="30D"
@@ -286,6 +285,13 @@ export const CrossRefTab = () => {
               </>
             )}
           </SectionFrame>
+
+          {!isLoading && (
+            <CommonEventsTimeline
+              interactions={data?.interactionsWithMatches || []}
+              totalEntities={picked.length}
+            />
+          )}
 
           <SectionFrame title="SHARED_INTERACTIONS" count={data?.sharedInteractions.length} meta={isLoading ? 'LOADING…' : 'OK'}>
             {isLoading ? (
