@@ -119,7 +119,7 @@ const Empresas = () => {
       destructive({
         message: `${cp.name || 'Empresa'} excluída`,
         description: 'Clique em Desfazer para restaurar',
-        onUndo: () => restore('companies', snapshot, [['companies']]),
+        onUndo: () => { void restore('companies', snapshot, [['companies']]); },
       });
     }
   };

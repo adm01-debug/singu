@@ -158,7 +158,7 @@ const Contatos = () => {
       destructive({
         message: `${ct.first_name} excluído`,
         description: 'Clique em Desfazer para restaurar',
-        onUndo: () => restore('contacts', snapshot, [['contacts']]),
+        onUndo: () => { void restore('contacts', snapshot, [['contacts']]); },
       });
       logActivity({ type: 'deleted', entityType: 'contact', entityId: ct.id, entityName: ct.first_name });
     }
