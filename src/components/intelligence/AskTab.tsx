@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Loader2, Sparkles, History as HistoryIcon, Trash2, Save } from 'lucide-react';
+import { Send, Loader2, Sparkles, History as HistoryIcon, Trash2, Save, Play, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { IntelBadge } from '@/components/intel/IntelBadge';
@@ -305,13 +305,30 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
           meta={`${history.length}/${MAX_HISTORY}`}
           actions={
             history.length > 0 ? (
-              <button
-                onClick={() => { setHistory([]); localStorage.removeItem(HISTORY_KEY); }}
-                className="intel-mono text-[10px] text-muted-foreground hover:text-destructive"
-                aria-label="Limpar histórico"
-              >
-                <Trash2 className="h-3 w-3" aria-hidden />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => {
+                    const ok = intelExportUniversal(
+                      history.map((q, i) => ({ idx: i + 1, query: q })),
+                      `ask-history-${Date.now()}`,
+                      'json',
+                    );
+                    if (ok) toast.success('Histórico exportado em JSON.');
+                  }}
+                  className="intel-mono text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  aria-label="Exportar histórico em JSON"
+                  title="Exportar histórico (JSON)"
+                >
+                  <Download className="h-3 w-3" aria-hidden /> EXPORT
+                </button>
+                <button
+                  onClick={() => { setHistory([]); localStorage.removeItem(HISTORY_KEY); }}
+                  className="intel-mono text-[10px] text-muted-foreground hover:text-destructive"
+                  aria-label="Limpar histórico"
+                >
+                  <Trash2 className="h-3 w-3" aria-hidden />
+                </button>
+              </div>
             ) : null
           }
         >
@@ -324,14 +341,28 @@ export const AskTab = ({ onRegisterBridge, contextEntity = null }: AskTabProps) 
           ) : (
             <div className="space-y-1">
               {history.map((q, i) => (
-                <button
+                <div
                   key={`${q}-${i}`}
-                  onClick={() => { setInput(q); inputRef.current?.focus(); }}
-                  className="w-full text-left intel-card intel-card-hover px-2 py-1 text-[11px] flex items-start gap-1.5"
+                  className="intel-card intel-card-hover px-2 py-1 text-[11px] flex items-start gap-1.5"
                 >
-                  <HistoryIcon className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" aria-hidden />
-                  <span className="text-foreground truncate">{q}</span>
-                </button>
+                  <button
+                    onClick={() => { setInput(q); inputRef.current?.focus(); }}
+                    className="flex-1 text-left flex items-start gap-1.5 min-w-0"
+                    aria-label={`Carregar query: ${q}`}
+                  >
+                    <HistoryIcon className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" aria-hidden />
+                    <span className="text-foreground truncate">{q}</span>
+                  </button>
+                  <button
+                    onClick={() => submit(q)}
+                    disabled={loading}
+                    className="text-muted-foreground hover:text-[hsl(var(--intel-accent))] disabled:opacity-40 shrink-0"
+                    aria-label={`Replay: ${q}`}
+                    title="Re-executar"
+                  >
+                    <Play className="h-3 w-3" aria-hidden />
+                  </button>
+                </div>
               ))}
             </div>
           )}

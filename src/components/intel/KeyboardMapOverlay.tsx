@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Keyboard, X } from 'lucide-react';
+import { Keyboard, X, PlayCircle } from 'lucide-react';
+import { useIntelTour } from '@/hooks/useIntelTour';
 
 interface Shortcut {
   keys: string[];
@@ -27,6 +28,7 @@ const SHORTCUTS: Shortcut[] = [
  */
 export const KeyboardMapOverlay = () => {
   const [open, setOpen] = useState(false);
+  const { reopen: reopenTour } = useIntelTour();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -96,9 +98,19 @@ export const KeyboardMapOverlay = () => {
             </li>
           ))}
         </ul>
-        <p className="intel-mono text-[10px] text-muted-foreground mt-3">
-          ── PRESSIONE <kbd className="px-1 border border-border rounded-sm">Esc</kbd> PARA FECHAR ──
-        </p>
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/40 gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => { reopenTour(); setOpen(false); }}
+            className="intel-mono text-[10px] inline-flex items-center gap-1 px-2 py-1 border border-border rounded-sm text-foreground hover:border-[hsl(var(--intel-accent))] hover:text-[hsl(var(--intel-accent))]"
+            aria-label="Replay onboarding tour"
+          >
+            <PlayCircle className="h-3 w-3" aria-hidden /> REPLAY TOUR
+          </button>
+          <p className="intel-mono text-[10px] text-muted-foreground">
+            ── <kbd className="px-1 border border-border rounded-sm">Esc</kbd> FECHAR ──
+          </p>
+        </div>
       </div>
     </div>
   );

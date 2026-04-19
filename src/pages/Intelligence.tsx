@@ -285,7 +285,7 @@ const Intelligence = () => {
                 </Tabs>
               </div>
 
-              <aside className="hidden lg:block space-y-3">
+              <aside className="hidden lg:block space-y-3" data-intel-aside="pinned">
                 <PinnedEntitiesPanel onOpen={openBookmark} onFocusInGraph={focusInGraph} />
                 <RecentSnapshotsPanel onApply={applySnapshot} />
               </aside>

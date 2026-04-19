@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SectionFrame } from './SectionFrame';
@@ -18,14 +18,53 @@ interface MonthGroup {
   events: Entity360TimelineEvent[];
 }
 
+type KindFilter = 'all' | 'interaction' | 'deal' | 'event';
+const FILTER_KEY = 'intel-timeline-filter-v1';
+
+const FILTERS: { value: KindFilter; label: string }[] = [
+  { value: 'all', label: 'ALL' },
+  { value: 'interaction', label: 'INTERACTION' },
+  { value: 'deal', label: 'DEAL' },
+  { value: 'event', label: 'EVENT' },
+];
+
+function readFilter(): KindFilter {
+  try {
+    const raw = localStorage.getItem(FILTER_KEY);
+    if (raw === 'interaction' || raw === 'deal' || raw === 'event' || raw === 'all') return raw;
+  } catch { /* ignore */ }
+  return 'all';
+}
+
+function matchesKind(kind: string, f: KindFilter): boolean {
+  if (f === 'all') return true;
+  const k = kind.toLowerCase();
+  if (f === 'interaction') return k.includes('interac') || k.includes('call') || k.includes('email') || k.includes('whatsapp') || k.includes('meeting');
+  if (f === 'deal') return k.includes('deal') || k.includes('opportunity') || k.includes('pipeline');
+  if (f === 'event') return k.includes('event') || k.includes('intel') || k.includes('change') || k.includes('role') || k.includes('company');
+  return true;
+}
+
 /**
  * Visualização vertical agrupada por mês (estilo "log temporal") para o Entity 360.
  * Renderiza interações + deals + eventos de people-intelligence numa faixa única.
+ * Filtro por kind persistido em localStorage.
  */
 export const EntityMonthlyTimeline = ({ events, onClose }: EntityMonthlyTimelineProps) => {
+  const [filter, setFilter] = useState<KindFilter>(() => readFilter());
+
+  useEffect(() => {
+    try { localStorage.setItem(FILTER_KEY, filter); } catch { /* ignore */ }
+  }, [filter]);
+
+  const filtered = useMemo(
+    () => events.filter((e) => matchesKind(e.kind, filter)),
+    [events, filter]
+  );
+
   const groups = useMemo<MonthGroup[]>(() => {
     const map = new Map<string, MonthGroup>();
-    [...events]
+    [...filtered]
       .sort((a, b) => b.occurred_at.localeCompare(a.occurred_at))
       .forEach((ev) => {
         let date: Date;
@@ -41,31 +80,54 @@ export const EntityMonthlyTimeline = ({ events, onClose }: EntityMonthlyTimeline
         map.get(key)!.events.push(ev);
       });
     return Array.from(map.values());
-  }, [events]);
+  }, [filtered]);
 
   return (
     <SectionFrame
       title="TIMELINE_MENSAL"
-      meta={`${events.length} EVENTS · ${groups.length} MESES`}
+      meta={`${filtered.length}/${events.length} EVENTS · ${groups.length} MESES`}
       cornerFrame
       actions={
-        onClose ? (
-          <button
-            type="button"
-            onClick={onClose}
-            className="intel-mono text-[10px] text-muted-foreground hover:text-foreground"
-            aria-label="Fechar timeline"
-          >
-            ✕ FECHAR
-          </button>
-        ) : undefined
+        <div className="flex items-center gap-1.5">
+          <div className="flex gap-0.5" role="group" aria-label="Filtrar tipo de evento">
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setFilter(f.value)}
+                aria-pressed={filter === f.value}
+                className={`intel-mono text-[10px] px-1.5 py-0.5 border rounded-sm ${
+                  filter === f.value
+                    ? 'border-[hsl(var(--intel-accent))] text-[hsl(var(--intel-accent))] bg-[hsl(var(--intel-accent)/0.1)]'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="intel-mono text-[10px] text-muted-foreground hover:text-foreground ml-1"
+              aria-label="Fechar timeline"
+            >
+              ✕ FECHAR
+            </button>
+          )}
+        </div>
       }
     >
       {groups.length === 0 ? (
         <IntelEmptyState
           icon={CalendarDays}
           title="NO_EVENTS"
-          description="Sem eventos cronológicos para exibir nesta entidade."
+          description={
+            filter === 'all'
+              ? 'Sem eventos cronológicos para exibir nesta entidade.'
+              : `Sem eventos do tipo ${filter.toUpperCase()} nesta entidade.`
+          }
         />
       ) : (
         <ol className="relative pl-4 max-h-[520px] overflow-y-auto" aria-label="Linha do tempo">
