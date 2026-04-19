@@ -376,17 +376,25 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 ]}
                 rows={(data?.related || []) as unknown as Array<Record<string, unknown>>}
                 getRowKey={(r) => `${r.type}-${r.id}`}
-                onRowClick={(r) => {
+                onRowClick={(r, e) => {
                   const t = String(r.type).toLowerCase();
-                  if (t === 'contact' || t === 'company' || t === 'deal') {
-                    open({ type: t as Entity360Type, id: String(r.id), name: String(r.name) });
-                  }
+                  if (t !== 'contact' && t !== 'company' && t !== 'deal') return;
+                  const entry: HistoryEntry = { type: t as Entity360Type, id: String(r.id), name: String(r.name) };
+                  if (e?.shiftKey) { pivotToCrossRef(e, entry); return; }
+                  open(entry);
                 }}
                 emptyMessage="NO_RELATIONS"
               />
             )}
           </SectionFrame>
         </div>
+      )}
+
+      {current && showTimeline && (
+        <EntityMonthlyTimeline
+          events={data?.timeline || []}
+          onClose={() => setShowTimeline(false)}
+        />
       )}
 
       {current && showNotes && (
