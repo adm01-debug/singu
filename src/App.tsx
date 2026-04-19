@@ -127,6 +127,7 @@ const AdminSegurancaPage = lazy(() => import("./pages/admin/AdminSegurancaPage")
 const AdminSecretsManagement = lazy(() => import("./pages/AdminSecretsManagement"));
 const AdminKnowledgeExport = lazy(() => import("./pages/AdminKnowledgeExport"));
 const AdminAuditTrail = lazy(() => import("./pages/AdminAuditTrail"));
+const AdminErrorLogs = lazy(() => import("./pages/admin/ErrorLogs"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const StatusPage = lazy(() => import("./pages/StatusPage"));
 const DocsPage = lazy(() => import("./pages/DocsPage"));
@@ -177,6 +178,11 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Rodada F — telemetria de erros: pluga QueryCache/MutationCache no errorReporting central
+import("@/lib/queryErrorReporter").then(({ attachQueryErrorReporter }) => {
+  attachQueryErrorReporter(queryClient);
+}).catch(() => undefined);
 
 // Easter eggs — loaded after idle (with graceful fallback on import failure)
 const EasterEggsProvider = lazy(() =>
@@ -728,6 +734,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminKnowledgeExport />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/error-logs" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminErrorLogs />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>
