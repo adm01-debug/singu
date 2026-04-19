@@ -49,6 +49,10 @@ const DealCard = React.memo(function DealCard({
           score={risk.score}
           level={risk.level}
           onClick={() => onOpenRisk(deal)}
+          dealId={deal.id}
+          dealTitle={deal.titulo}
+          factors={risk.factors}
+          recommendations={risk.recommendations}
         />
       </div>
       {deal.company_name && (
@@ -60,6 +64,9 @@ const DealCard = React.memo(function DealCard({
           confidence={conf.confidence}
           level={conf.level}
           expectedValue={conf.expectedCloseValue}
+          dealId={deal.id}
+          dealTitle={deal.titulo}
+          factors={conf.factors}
         />
       </div>
       {(deal.dias_no_estagio_atual ?? 0) > 7 && (

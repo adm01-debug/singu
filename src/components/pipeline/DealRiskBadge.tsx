@@ -1,14 +1,22 @@
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Activity, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RiskLevel } from '@/hooks/useDealSlipRisk';
+import { WhyScoreDrawer, type WhyScoreFactor } from '@/components/intelligence/WhyScoreDrawer';
 
 interface Props {
   score: number;
   level: RiskLevel;
+  /** Override opcional: se fornecido, substitui a abertura do WhyScoreDrawer. */
   onClick?: (e: React.MouseEvent) => void;
   className?: string;
+  /** Quando fornecido (junto com factors), badge abre WhyScoreDrawer. */
+  dealId?: string;
+  dealTitle?: string;
+  factors?: WhyScoreFactor[];
+  recommendations?: string[];
 }
 
 const config: Record<RiskLevel, { label: string; cls: string; Icon: typeof Activity }> = {
@@ -29,8 +37,20 @@ const config: Record<RiskLevel, { label: string; cls: string; Icon: typeof Activ
   },
 };
 
-export function DealRiskBadge({ score, level, onClick, className }: Props) {
+export function DealRiskBadge({
+  score,
+  level,
+  onClick,
+  className,
+  dealId,
+  dealTitle,
+  factors,
+  recommendations,
+}: Props) {
   const { label, cls, Icon } = config[level];
+  const [open, setOpen] = useState(false);
+  const canOpenWhy = !onClick && !!dealId && !!factors;
+
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
@@ -39,7 +59,11 @@ export function DealRiskBadge({ score, level, onClick, className }: Props) {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onClick?.(e);
+              if (onClick) {
+                onClick(e);
+              } else if (canOpenWhy) {
+                setOpen(true);
+              }
             }}
             className={cn('inline-flex', className)}
             aria-label={`Risco ${label}: ${score}/100`}
@@ -55,6 +79,19 @@ export function DealRiskBadge({ score, level, onClick, className }: Props) {
           <p className="text-[10px] text-muted-foreground">Clique para ver detalhes</p>
         </TooltipContent>
       </Tooltip>
+      {canOpenWhy && dealId && factors && (
+        <WhyScoreDrawer
+          open={open}
+          onOpenChange={setOpen}
+          scoreKey={`slip-risk:deal:${dealId}`}
+          title={dealTitle ? `Slip Risk · ${dealTitle}` : 'Slip Risk'}
+          subtitle={`${score}/100 — ${label}`}
+          score={score}
+          factors={factors}
+          recommendations={recommendations}
+          band={level === 'high' ? 'low' : level === 'attention' ? 'mid' : 'high'}
+        />
+      )}
     </TooltipProvider>
   );
 }
