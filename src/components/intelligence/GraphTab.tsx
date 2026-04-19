@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import { NetworkVisualization } from '@/components/network/NetworkVisualization';
@@ -9,6 +10,9 @@ import { GraphLegend } from '@/components/intel/GraphLegend';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useInstantKpis } from '@/hooks/useInstantKpis';
+import { snapshotGraphCanvas } from '@/lib/graphSnapshot';
+import { Camera, Link as LinkIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 const PERIODS = [
   { value: '7', label: '7D' },
@@ -29,11 +33,27 @@ export const GraphTab = () => {
   const period = params.get('period') || '30';
   const entityType = params.get('etype') || 'all';
   const minScore = Number(params.get('minScore') || '0');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const update = (k: string, v: string) => {
     const next = new URLSearchParams(params);
     if (v) next.set(k, v); else next.delete(k);
     setParams(next, { replace: true });
+  };
+
+  const exportPng = () => {
+    const ok = snapshotGraphCanvas(containerRef.current, `graph-snapshot-${Date.now()}`);
+    if (ok) toast.success('Snapshot PNG baixado.');
+    else toast.error('Não foi possível capturar o grafo.');
+  };
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copiado com filtros atuais.');
+    } catch {
+      toast.error('Falha ao copiar link.');
+    }
   };
 
   return (
@@ -106,12 +126,41 @@ export const GraphTab = () => {
         </div>
       </SectionFrame>
 
-      <SectionFrame title="RELATIONSHIP_GRAPH" meta="LIVE" cornerFrame>
+      <SectionFrame
+        title="RELATIONSHIP_GRAPH"
+        meta="LIVE"
+        cornerFrame
+        actions={
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={exportPng}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Exportar grafo como PNG"
+              title="Exportar PNG"
+            >
+              <Camera className="h-3 w-3" aria-hidden /> PNG
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={copyShareLink}
+              className="h-7 intel-mono text-[10px] gap-1.5"
+              aria-label="Copiar link com filtros"
+              title="Copiar link com filtros"
+            >
+              <LinkIcon className="h-3 w-3" aria-hidden /> SHARE
+            </Button>
+          </div>
+        }
+      >
         {isLoading ? (
           <IntelSkeleton lines={8} label="RENDERING_GRAPH" />
         ) : (
           <>
             <motion.div
+              ref={containerRef}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4 }}

@@ -3,6 +3,7 @@ import { useIsFetching, useIsMutating } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { Activity, Wifi, WifiOff, Clock } from 'lucide-react';
 import { IntelTelemetryPanel } from './IntelTelemetryPanel';
+import { IntelLatencyBadge } from './IntelLatencyBadge';
 
 /**
  * Barra de status fixa no rodapé do Intelligence Hub.
@@ -63,6 +64,7 @@ export const IntelStatusBar = () => {
             />
             <span>QUERIES: {fetching} · MUT: {mutating}</span>
           </span>
+          <IntelLatencyBadge />
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Clock className="h-3 w-3" aria-hidden />

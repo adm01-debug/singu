@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Loader2, ChevronRight, ArrowLeft, Copy, ExternalLink, User } from 'lucide-react';
+import {
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
 import { EntityCard } from '@/components/intel/EntityCard';
@@ -12,6 +14,8 @@ import { IntelSkeleton } from '@/components/intel/IntelSkeleton';
 import { IntelErrorState } from '@/components/intel/IntelErrorState';
 import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
+import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
+import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
 import { queryExternalData } from '@/lib/externalData';
 import { format } from 'date-fns';
 
@@ -21,17 +25,26 @@ const CRM_PATH: Record<Entity360Type, string> = {
   deal: '/pipeline',
 };
 
-interface Crumb { type: Entity360Type; id: string; name: string; }
+export interface Entity360Handle {
+  open: (entry: HistoryEntry) => void;
+}
 
-export const Entity360Tab = () => {
+export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
   const [type, setType] = useState<Entity360Type>('contact');
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<Array<{ id: string; name: string }>>([]);
-  const [history, setHistory] = useState<Crumb[]>([]);
   const [searching, setSearching] = useState(false);
 
-  const current = history[history.length - 1] || null;
+  const { current, push, back, forward, canBack, canForward, stack, cursor } = useEntityHistory();
+  const { isPinned, toggle: togglePin } = useEntityBookmarks();
   const { data, isLoading, error, refetch } = useEntity360(current?.type ?? null, current?.id ?? null);
+
+  const open = useCallback((c: HistoryEntry) => {
+    push(c);
+    setResults([]);
+  }, [push]);
+
+  useImperativeHandle(ref, () => ({ open }), [open]);
 
   const doSearch = useCallback(async () => {
     if (!search.trim()) return;
@@ -58,13 +71,12 @@ export const Entity360Tab = () => {
     }
   }, [search, type]);
 
-  const open = (c: Crumb) => {
-    setHistory((h) => [...h, c]);
-    setResults([]);
-  };
-
-  const back = () => setHistory((h) => h.slice(0, -1));
-  const reset = () => { setHistory([]); setResults([]); };
+  useEffect(() => {
+    if (type !== (current?.type ?? type)) {
+      // muda de tipo apenas limpa busca; histórico preserva
+      setResults([]);
+    }
+  }, [type, current?.type]);
 
   return (
     <div className="space-y-3">
@@ -76,7 +88,7 @@ export const Entity360Tab = () => {
                 key={t}
                 size="sm"
                 variant={type === t ? 'default' : 'outline'}
-                onClick={() => { setType(t); reset(); }}
+                onClick={() => { setType(t); setResults([]); }}
                 className="intel-mono text-[10px] uppercase h-8"
                 aria-pressed={type === t}
               >
@@ -113,19 +125,38 @@ export const Entity360Tab = () => {
           </div>
         )}
 
-        {history.length > 0 && (
-          <nav aria-label="Trilha de navegação" className="mt-3 flex items-center gap-1.5 flex-wrap">
-            <Button size="sm" variant="ghost" onClick={back} className="h-7 intel-mono text-[10px]" aria-label="Voltar">
-              <ArrowLeft className="h-3 w-3 mr-1" aria-hidden /> VOLTAR
+        {stack.length > 0 && (
+          <nav aria-label="Histórico de navegação" className="mt-3 flex items-center gap-1.5 flex-wrap">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={back}
+              disabled={!canBack}
+              className="h-7 intel-mono text-[10px]"
+              aria-label="Voltar (Alt+←)"
+              title="Voltar (Alt+←)"
+            >
+              <ArrowLeft className="h-3 w-3 mr-1" aria-hidden /> BACK
             </Button>
-            {history.map((h, i) => (
-              <span key={`${h.id}-${i}`} className="flex items-center gap-1.5">
-                {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground" aria-hidden />}
-                <span className="intel-mono text-[10px] text-foreground truncate max-w-[140px]">
-                  {h.type.toUpperCase()}/{h.name}
-                </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={forward}
+              disabled={!canForward}
+              className="h-7 intel-mono text-[10px]"
+              aria-label="Avançar (Alt+→)"
+              title="Avançar (Alt+→)"
+            >
+              FWD <ArrowRight className="h-3 w-3 ml-1" aria-hidden />
+            </Button>
+            <span className="intel-mono text-[10px] text-muted-foreground ml-2">
+              [{cursor + 1}/{stack.length}]
+            </span>
+            {current && (
+              <span className="intel-mono text-[10px] text-foreground truncate max-w-[260px]">
+                {current.type.toUpperCase()}/{current.name}
               </span>
-            ))}
+            )}
           </nav>
         )}
       </SectionFrame>
@@ -145,7 +176,31 @@ export const Entity360Tab = () => {
             meta={isLoading ? 'LOADING…' : error ? 'ERROR' : 'OK'}
             className="lg:col-span-1"
             actions={
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    togglePin({ type: current.type, id: current.id, name: current.name });
+                    toast.success(
+                      isPinned(current.type, current.id) ? 'Removido dos bookmarks.' : 'Bookmark adicionado.'
+                    );
+                  }}
+                  className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                    isPinned(current.type, current.id)
+                      ? 'text-[hsl(var(--intel-accent))]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-label={isPinned(current.type, current.id) ? 'Remover bookmark' : 'Adicionar bookmark'}
+                  title="Bookmark"
+                  aria-pressed={isPinned(current.type, current.id)}
+                >
+                  <Star
+                    className="h-3 w-3"
+                    aria-hidden
+                    fill={isPinned(current.type, current.id) ? 'currentColor' : 'none'}
+                  />
+                  PIN
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -242,4 +297,6 @@ export const Entity360Tab = () => {
       )}
     </div>
   );
-};
+});
+
+Entity360Tab.displayName = 'Entity360Tab';
