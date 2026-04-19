@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge, CalendarDays,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -16,6 +16,7 @@ import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
 import { MultiDiffPanel, type MultiDiffEntity } from '@/components/intel/MultiDiffPanel';
 import { EntityNotesPanel } from '@/components/intel/EntityNotesPanel';
+import { EntityMonthlyTimeline } from '@/components/intel/EntityMonthlyTimeline';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
