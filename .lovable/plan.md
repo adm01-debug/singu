@@ -1,59 +1,28 @@
 
-# Plano: Sequência de melhorias até 10/10 no Intelligence Hub
+As 8 melhorias do plano anterior já foram entregues na última iteração (skeletons intel, filtros URL no Graph, breadcrumb + drill-in no Entity 360, heatmap + CSV no CrossRef, ⌘K + histórico + comandos no Ask, a11y, status bar, animações). Para continuar rumo ao 10/10, proponho a **Rodada 2** — 8 novas melhorias atômicas, cada uma com excelência, sem pausas.
 
-Vou executar uma trilha de **8 melhorias atômicas** sobre o módulo `/intelligence` recém-criado, sem pausas nem perguntas, no estilo "uma melhoria por vez com excelência" (preferência registrada do usuário).
+# Rodada 2 — Intelligence Hub
 
-## Sequência de execução
+**1. Persistência de aba ativa em URL** — `?tab=graph|entity|crossref|ask` via `useSearchParams`. Permite deep-link e refresh sem perder contexto.
 
-**1. Fix crítico — Build/Type safety**
-- `useAskCrm` real não tem campos `data`/`sql`/`timestamp` no shape usado em `AskTab.tsx`. Validar interface real e ajustar (ou estender) sem quebrar o hook existente.
-- Verificar prop `height` em `NetworkVisualization` e `search` em `queryExternalData` (provável incompatibilidade silenciosa).
+**2. Empty states ricos** — substituir os "── NO_DATA ──" genéricos por componente `IntelEmptyState` com ícone, título, descrição e CTA contextual (ex: "Buscar contato" no Entity 360 vazio).
 
-**2. Loading & Error states robustos**
-- Skeleton intel-themed em todos os 4 tabs (sem usar `<Skeleton>` shadcn padrão — criar `IntelSkeleton` mono).
-- Toasts em falhas via `sonner` já presente.
-- Retry button em erros de query.
+**3. Comando palette global do hub (`Ctrl+P`)** — overlay tipo cmd+k que permite saltar entre tabs, abrir entidade por ID, executar `/clear`, `/export`. Reusa `cmdk` já presente no projeto.
 
-**3. Filtros operacionais no GraphTab**
-- Filtros: tipo de entidade (contact/company/deal), score mínimo (slider), período (7d/30d/90d).
-- URL state via `useSearchParams` (padrão SINGU já adotado).
+**4. Graph: legenda + tooltip de nós** — overlay no canto do `NetworkVisualization` explicando cores por tipo + contagem de cada categoria filtrada.
 
-**4. Entity360 — densidade real**
-- Adicionar workspace_accounts, contact_relatives e people_intelligence_events na timeline.
-- Tornar `related` clicável (navega entre entidades sem sair da view).
-- Histórico de navegação (breadcrumb intel-mono).
+**5. Entity 360: cópia rápida + ações** — botão "copiar ID" (mono), "abrir no CRM" (link para `/contatos/:id` etc.) em cada metadata header.
 
-**5. CrossRef — heatmap temporal**
-- Mini-heatmap visual dos `temporalOverlap` (grid 7×N).
-- Insight textual ("Maior sobreposição em DD/MM com X interações").
-- Export CSV dos resultados.
+**6. CrossRef: comparação lado-a-lado de metadata** — tabela com 1 coluna por entidade selecionada e linhas com campos comuns (criação, score, última interação) destacando diferenças.
 
-**6. AskTab — comandos rápidos + atalhos**
-- Atalho `⌘K` para focar input.
-- Histórico persistente em localStorage (10 últimas).
-- Comando `/clear`, `/export`, `/help`.
+**7. Ask: streaming visual + token count** — indicador de "digitando" caractere-a-caractere na resposta system (efeito typewriter com `requestAnimationFrame`) + contador de linhas/registros retornados em badge.
 
-**7. Performance & a11y**
-- `React.memo` em DataGrid e EntityCard.
-- `aria-label` em botões icon-only.
-- Foco visível com ring `--intel-accent`.
-- Skip-to-content em Intelligence.tsx.
+**8. Telemetria local + memória** — hook `useIntelTelemetry` que loga em `console.debug` + sessionStorage: tab views, queries executadas, exports, tempo médio de resposta. Painel oculto via `?debug=1`. Atualizar `mem://features/intelligence-hub.md`.
 
-**8. Polimento visual final + memória**
-- Animação de entrada nas tabs (framer-motion stagger).
-- Sound design opcional (toggle): "click" sutil em interações via Web Audio API (off por padrão).
-- Status bar fixa no rodapé do hub: latência, último refresh, contagem de erros.
-- Atualizar `mem://features/intelligence-hub.md` com tudo que foi adicionado.
+## Restrições mantidas
+- Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem mexer em CRM/Pipeline/ABM.
 
-## Restrições respeitadas
-- Português em toda UI nova
-- Max 400 linhas/arquivo (vou splittar componentes grandes)
-- Sem novos backends — só reuso de RPCs/edge functions
-- Sem mexer em CRM/Pipeline/ABM
-- Sem `any`, sem `dangerouslySetInnerHTML`
-- TanStack Query exclusivo (zero `useEffect` para fetch)
+## Critério 10/10
+Cada etapa fecha com: (a) compila, (b) console limpo, (c) feature funcional verificável, (d) constraints respeitadas. Memória atualizada ao fim.
 
-## Critério de "10/10"
-Cada uma das 8 etapas só fecha quando: (a) compila, (b) sem warning de console relacionado, (c) cumpre a feature descrita, (d) respeita constraints core. Ao fim, atualizo a memória e entrego resumo executivo.
-
-Aprove e eu executo as 8 em sequência sem pausas.
+Aprove e executo as 8 em sequência sem pausas.
