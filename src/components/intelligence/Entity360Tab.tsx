@@ -222,6 +222,22 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <Copy className="h-3 w-3" aria-hidden /> ID
                 </button>
+                {previousEntry && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDiff((v) => !v)}
+                    className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                      showDiff
+                        ? 'text-[hsl(var(--intel-accent))]'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-label={`Comparar com ${previousEntry.name}`}
+                    aria-pressed={showDiff}
+                    title={`Diff vs ${previousEntry.name}`}
+                  >
+                    <GitCompare className="h-3 w-3" aria-hidden /> DIFF
+                  </button>
+                )}
                 <Link
                   to={`${CRM_PATH[current.type]}/${current.id}`}
                   className="intel-mono text-[10px] text-muted-foreground hover:text-[hsl(var(--intel-accent))] inline-flex items-center gap-1"
