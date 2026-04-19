@@ -28,16 +28,22 @@ export default function ErrorLogsAdmin() {
   const [logs, setLogs] = useState<ErrorReport[]>(() => getErrorLogs());
   const [search, setSearch] = useState('');
   const [severity, setSeverity] = useState<'all' | ErrorReport['severity']>('all');
+  const [source, setSource] = useState<'all' | 'errors' | 'web-vitals'>('all');
 
   const filtered = useMemo(() => {
     return logs
       .filter((l) => severity === 'all' || l.severity === severity)
+      .filter((l) => {
+        if (source === 'all') return true;
+        const isVital = l.metadata && (l.metadata as Record<string, unknown>).source === 'web-vitals';
+        return source === 'web-vitals' ? !!isVital : !isVital;
+      })
       .filter((l) =>
         !search.trim() ? true : (l.message + (l.stack ?? '') + l.url).toLowerCase().includes(search.toLowerCase()),
       )
       .slice(-100)
       .reverse();
-  }, [logs, search, severity]);
+  }, [logs, search, severity, source]);
 
   if (isLoading) return null;
   if (!isAdmin) return <Navigate to="/" replace />;
