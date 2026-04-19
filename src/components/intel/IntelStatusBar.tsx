@@ -6,6 +6,7 @@ import { IntelTelemetryPanel } from './IntelTelemetryPanel';
 import { IntelLatencyBadge } from './IntelLatencyBadge';
 import { IntelDataSourceBadge } from './IntelDataSourceBadge';
 import { IntelInflightBadge } from './IntelInflightBadge';
+import { IntelBookmarksNotesBadge } from './IntelBookmarksNotesBadge';
 
 /**
  * Barra de status fixa no rodapé do Intelligence Hub.
@@ -70,6 +71,7 @@ export const IntelStatusBar = () => {
           <IntelLatencyBadge />
           <IntelDataSourceBadge />
           <IntelInflightBadge />
+          <IntelBookmarksNotesBadge />
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <Clock className="h-3 w-3" aria-hidden />

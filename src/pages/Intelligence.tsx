@@ -15,6 +15,8 @@ import { IntelStatusBar } from '@/components/intel/IntelStatusBar';
 import { IntelCommandPalette } from '@/components/intel/IntelCommandPalette';
 import { IntelDensityToggle } from '@/components/intel/IntelDensityToggle';
 import { IntelPresentationToggle } from '@/components/intel/IntelPresentationToggle';
+import { IntelThemeToggle } from '@/components/intel/IntelThemeToggle';
+import { IntelTourOverlay } from '@/components/intel/IntelTourOverlay';
 import { PinnedEntitiesPanel } from '@/components/intel/PinnedEntitiesPanel';
 import { RecentSnapshotsPanel } from '@/components/intel/RecentSnapshotsPanel';
 import { KeyboardMapOverlay } from '@/components/intel/KeyboardMapOverlay';
@@ -185,6 +187,7 @@ const Intelligence = () => {
       />
       <a href="#intel-main" className="intel-skip-link">Pular para o conteúdo</a>
       <KeyboardMapOverlay />
+      <IntelTourOverlay />
       <IntelCommandPalette
         onChangeTab={setTab}
         onClearAsk={() => {
@@ -234,6 +237,7 @@ const Intelligence = () => {
                 </Button>
                 <IntelPresentationToggle />
                 <IntelDensityToggle />
+                <IntelThemeToggle />
                 <span className="intel-eyebrow flex items-center gap-1" data-intel-hide-pres="true">
                   <Command className="h-3 w-3" aria-hidden /> CTRL+P
                 </span>

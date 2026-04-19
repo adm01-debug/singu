@@ -1,9 +1,9 @@
 import { useState, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge,
+  Search, Loader2, ArrowLeft, ArrowRight, Copy, ExternalLink, User, Star, GitCompare, StickyNote, GitMerge, CalendarDays,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SectionFrame } from '@/components/intel/SectionFrame';
@@ -16,6 +16,7 @@ import { IntelEmptyState } from '@/components/intel/IntelEmptyState';
 import { MetadataDiffPanel } from '@/components/intel/MetadataDiffPanel';
 import { MultiDiffPanel, type MultiDiffEntity } from '@/components/intel/MultiDiffPanel';
 import { EntityNotesPanel } from '@/components/intel/EntityNotesPanel';
+import { EntityMonthlyTimeline } from '@/components/intel/EntityMonthlyTimeline';
 import { useEntity360, type Entity360Type } from '@/hooks/useEntity360';
 import { useEntityHistory, type HistoryEntry } from '@/hooks/useEntityHistory';
 import { useEntityBookmarks } from '@/hooks/useEntityBookmarks';
@@ -53,6 +54,8 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
   const [showDiff, setShowDiff] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showMultiDiff, setShowMultiDiff] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [, setSearchParams] = useSearchParams();
   const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
   const { data: previousData } = useEntity360(
     showDiff || showMultiDiff ? previousEntry?.type ?? null : null,
@@ -64,6 +67,17 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
     showMultiDiff ? beforePreviousEntry?.type ?? null : null,
     showMultiDiff ? beforePreviousEntry?.id ?? null : null,
   );
+
+  // Quick-pivot: Shift+click em qualquer evento da timeline envia para o CrossRef
+  const pivotToCrossRef = useCallback((e: React.MouseEvent, entry: HistoryEntry) => {
+    if (!e.shiftKey) return;
+    e.preventDefault();
+    const np = new URLSearchParams(window.location.search);
+    np.set('tab', 'crossref');
+    np.set('pivot', `${entry.type}:${entry.id}`);
+    setSearchParams(np, { replace: true });
+    toast.success(`Pivot para Cross-Ref: ${entry.name}`);
+  }, [setSearchParams]);
 
   const doSearch = useCallback(async () => {
     if (!search.trim()) return;
@@ -246,6 +260,20 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 >
                   <StickyNote className="h-3 w-3" aria-hidden /> NOTE
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowTimeline((v) => !v)}
+                  className={`intel-mono text-[10px] inline-flex items-center gap-1 ${
+                    showTimeline
+                      ? 'text-[hsl(var(--intel-accent))]'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  aria-label="Timeline mensal"
+                  aria-pressed={showTimeline}
+                  title="Timeline temporal agrupada por mês"
+                >
+                  <CalendarDays className="h-3 w-3" aria-hidden /> TIMELINE
+                </button>
                 {previousEntry && (
                   <button
                     type="button"
@@ -348,17 +376,25 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
                 ]}
                 rows={(data?.related || []) as unknown as Array<Record<string, unknown>>}
                 getRowKey={(r) => `${r.type}-${r.id}`}
-                onRowClick={(r) => {
+                onRowClick={(r, e) => {
                   const t = String(r.type).toLowerCase();
-                  if (t === 'contact' || t === 'company' || t === 'deal') {
-                    open({ type: t as Entity360Type, id: String(r.id), name: String(r.name) });
-                  }
+                  if (t !== 'contact' && t !== 'company' && t !== 'deal') return;
+                  const entry: HistoryEntry = { type: t as Entity360Type, id: String(r.id), name: String(r.name) };
+                  if (e?.shiftKey) { pivotToCrossRef(e, entry); return; }
+                  open(entry);
                 }}
                 emptyMessage="NO_RELATIONS"
               />
             )}
           </SectionFrame>
         </div>
+      )}
+
+      {current && showTimeline && (
+        <EntityMonthlyTimeline
+          events={data?.timeline || []}
+          onClose={() => setShowTimeline(false)}
+        />
       )}
 
       {current && showNotes && (
