@@ -31,6 +31,8 @@ import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { ContatosContent } from './contatos/ContatosContent';
 import { SavedViewsBar } from '@/components/views/SavedViewsBar';
 import { useSavedViews } from '@/hooks/useSavedViews';
+import { useActionToast } from '@/hooks/useActionToast';
+import { useRestoreEntity } from '@/hooks/useRestoreEntity';
 
 interface ContatosViewState {
   searchTerm: string;
@@ -86,6 +88,8 @@ const Contatos = () => {
   const celebration = useMiniCelebration();
   const { celebrate } = useSuccessCelebration();
   const { logActivity } = useActivityLogger();
+  const { destructive } = useActionToast();
+  const { restore } = useRestoreEntity();
 
   const handleRefresh = useCallback(async () => { await fetchContacts(); }, [fetchContacts]);
 
@@ -148,8 +152,16 @@ const Contatos = () => {
   const handleDelete = async () => {
     if (!deletingContact) return;
     const ct = deletingContact; setDeletingContact(null); hapticHeavy();
+    const snapshot = { ...ct } as Record<string, unknown>;
     const success = await deleteContact(ct.id);
-    if (success) { accessibleToast.success(`${ct.first_name} excluído com sucesso`); logActivity({ type: 'deleted', entityType: 'contact', entityId: ct.id, entityName: ct.first_name }); }
+    if (success) {
+      destructive({
+        message: `${ct.first_name} excluído`,
+        description: 'Clique em Desfazer para restaurar',
+        onUndo: () => { void restore('contacts', snapshot, [['contacts']]); },
+      });
+      logActivity({ type: 'deleted', entityType: 'contact', entityId: ct.id, entityName: ct.first_name });
+    }
   };
 
   const handleSelect = (id: string, selected: boolean) => {

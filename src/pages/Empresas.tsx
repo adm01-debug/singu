@@ -23,6 +23,8 @@ import type { ViewMode, GridColumns } from '@/components/ui/view-mode-switcher';
 import { EmpresasContent } from './empresas/EmpresasContent';
 import { SavedViewsBar } from '@/components/views/SavedViewsBar';
 import { useSavedViews } from '@/hooks/useSavedViews';
+import { useActionToast } from '@/hooks/useActionToast';
+import { useRestoreEntity } from '@/hooks/useRestoreEntity';
 
 interface EmpresasViewState {
   localSearch: string;
@@ -38,6 +40,8 @@ const Empresas = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { companies, loading, totalCount, searchTerm: activeSearch, setSearchTerm: triggerSearch, createCompany, updateCompany, deleteCompany } = useCompanies();
+  const { destructive } = useActionToast();
+  const { restore } = useRestoreEntity();
 
   const [secondaryReady, setSecondaryReady] = useState(false);
   useEffect(() => { if (!loading && companies.length > 0) { const t = setTimeout(() => setSecondaryReady(true), 800); return () => clearTimeout(t); } }, [loading, companies.length]);
@@ -106,7 +110,19 @@ const Empresas = () => {
 
   const handleCreate = async (data: Parameters<typeof createCompany>[0]) => { setIsSubmitting(true); const result = await createCompany(data); setIsSubmitting(false); if (result) { setIsFormOpen(false); hapticSuccess(); if (companies.length === 0) celebrate('confetti'); } };
   const handleUpdate = async (data: Parameters<typeof updateCompany>[1]) => { if (!editingCompany) return; setIsSubmitting(true); const result = await updateCompany(editingCompany.id, data); setIsSubmitting(false); if (result) setEditingCompany(null); };
-  const handleDelete = async () => { if (!deletingCompany) return; hapticHeavy(); await deleteCompany(deletingCompany.id); setDeletingCompany(null); };
+  const handleDelete = async () => {
+    if (!deletingCompany) return;
+    const cp = deletingCompany; setDeletingCompany(null); hapticHeavy();
+    const snapshot = { ...cp } as Record<string, unknown>;
+    const success = await deleteCompany(cp.id);
+    if (success) {
+      destructive({
+        message: `${cp.name || 'Empresa'} excluída`,
+        description: 'Clique em Desfazer para restaurar',
+        onUndo: () => { void restore('companies', snapshot, [['companies']]); },
+      });
+    }
+  };
 
   const handleSelect = (id: string, selected: boolean) => { if (id === '__clear__') { setSelectedIds(new Set()); return; } setSelectedIds(prev => { const next = new Set(prev); if (selected) next.add(id); else next.delete(id); return next; }); };
   const handleSelectAll = () => { setSelectedIds(selectedIds.size === filteredAndSortedCompanies.length ? new Set() : new Set(filteredAndSortedCompanies.map(c => c.id))); };

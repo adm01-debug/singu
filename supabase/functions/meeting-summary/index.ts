@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,10 +7,17 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const limiter = rateLimit({ windowMs: 60_000, max: 10, message: "Rate limit excedido para meeting-summary." });
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  const requestId = crypto.randomUUID();
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const limited = limiter.check(ip);
+  if (limited) return limited;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -206,9 +214,9 @@ Responda APENAS com JSON válido no formato:
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("Unexpected error:", err);
+    console.error(JSON.stringify({ requestId, level: "error", fn: "meeting-summary", err: String(err) }));
     return new Response(
-      JSON.stringify({ error: "Erro interno" }),
+      JSON.stringify({ error: "Erro interno", requestId }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
