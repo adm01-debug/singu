@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, X, Search, Loader2, Download, GitCompare } from 'lucide-react';
@@ -41,6 +42,7 @@ const COMPARE_FIELDS = [
 interface Picked { id: string; name: string; }
 
 export const CrossRefTab = () => {
+  const [params, setParams] = useSearchParams();
   const [type, setType] = useState<'contact' | 'company'>('contact');
   const [picked, setPicked] = useState<Picked[]>([]);
   const [search, setSearch] = useState('');
@@ -48,6 +50,39 @@ export const CrossRefTab = () => {
   const [searching, setSearching] = useState(false);
   const [metaRows, setMetaRows] = useState<MetaRow[]>([]);
   const [loadingMeta, setLoadingMeta] = useState(false);
+
+  // Aceita ?pivot=type:id (vindo de Shift+click no Entity 360)
+  useEffect(() => {
+    const pivot = params.get('pivot');
+    if (!pivot) return;
+    const [pType, pId] = pivot.split(':');
+    if ((pType === 'contact' || pType === 'company') && pId) {
+      setType(pType);
+      (async () => {
+        try {
+          const table = pType === 'contact' ? 'contacts' : 'companies';
+          const nameCol = pType === 'contact' ? 'full_name' : 'name';
+          const { data: rows } = await queryExternalData<Record<string, unknown>>({
+            table,
+            select: `id, ${nameCol}`,
+            filters: [{ type: 'eq', column: 'id', value: pId }],
+            range: { from: 0, to: 0 },
+          });
+          const name = rows?.[0]?.[nameCol] ? String(rows[0][nameCol]) : pId.slice(0, 8);
+          setPicked((prev) =>
+            prev.some((p) => p.id === pId) ? prev : [...prev, { id: pId, name }].slice(0, 3)
+          );
+        } catch {
+          setPicked((prev) =>
+            prev.some((p) => p.id === pId) ? prev : [...prev, { id: pId, name: pId.slice(0, 8) }].slice(0, 3)
+          );
+        }
+      })();
+    }
+    const next = new URLSearchParams(params);
+    next.delete('pivot');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
 
   const { data, isLoading, error, refetch } = useCrossReference({
     entityIds: picked.map((p) => p.id),
