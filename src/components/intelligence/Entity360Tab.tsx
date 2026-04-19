@@ -130,9 +130,45 @@ export const Entity360Tab = () => {
         )}
       </SectionFrame>
 
+      {!current && results.length === 0 && (
+        <IntelEmptyState
+          icon={User}
+          title="ENTITY_360"
+          description="Busque um contato, empresa ou deal acima para ver metadata, timeline e relações em uma única tela."
+        />
+      )}
+
       {current && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <SectionFrame title="METADATA" meta={isLoading ? 'LOADING…' : error ? 'ERROR' : 'OK'} className="lg:col-span-1">
+          <SectionFrame
+            title="METADATA"
+            meta={isLoading ? 'LOADING…' : error ? 'ERROR' : 'OK'}
+            className="lg:col-span-1"
+            actions={
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(current.id);
+                    toast.success('ID copiado.');
+                  }}
+                  className="intel-mono text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                  aria-label="Copiar ID"
+                  title="Copiar ID"
+                >
+                  <Copy className="h-3 w-3" aria-hidden /> ID
+                </button>
+                <Link
+                  to={`${CRM_PATH[current.type]}/${current.id}`}
+                  className="intel-mono text-[10px] text-muted-foreground hover:text-[hsl(var(--intel-accent))] inline-flex items-center gap-1"
+                  aria-label="Abrir no CRM"
+                  title="Abrir no CRM"
+                >
+                  <ExternalLink className="h-3 w-3" aria-hidden /> CRM
+                </Link>
+              </div>
+            }
+          >
             {isLoading && <IntelSkeleton lines={6} label="FETCHING_META" />}
             {!isLoading && error && <IntelErrorState onRetry={() => refetch()} />}
             {!isLoading && !error && (
@@ -174,7 +210,7 @@ export const Entity360Tab = () => {
                   </div>
                 ))}
                 {(!data?.timeline || data.timeline.length === 0) && (
-                  <div className="text-center py-6 intel-mono text-xs text-muted-foreground">── NO_EVENTS ──</div>
+                  <IntelEmptyState title="NO_EVENTS" description="Esta entidade ainda não tem eventos registrados." />
                 )}
               </div>
             )}
