@@ -148,7 +148,7 @@ export default function ComponentGallery() {
                   icon={Inbox}
                   title="Nenhum item por aqui"
                   description="Quando houver dados, eles aparecerão neste painel."
-                  action={{ label: 'Adicionar primeiro item', onClick: () => toast.success('Ação disparada') }}
+                  actions={[{ label: 'Adicionar primeiro item', onClick: () => toast.success('Ação disparada') }]}
                 />
               </CardContent>
             </Card>
@@ -170,7 +170,10 @@ export default function ComponentGallery() {
                 </Button>
                 <Button
                   variant="destructive"
-                  onClick={() => toast.destructive('Item excluído', { onUndo: () => toast.success('Restaurado') })}
+                  onClick={() => toast.destructive({
+                    message: 'Item excluído',
+                    onUndo: () => toast.success('Restaurado'),
+                  })}
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" /> destructive (com undo)
                 </Button>
