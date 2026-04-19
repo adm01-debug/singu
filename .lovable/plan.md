@@ -1,24 +1,22 @@
 
-Rodadas A, B e C estão **100% completas** (14/14 melhorias entregues). Para continuar rumo à perfeição 10/10, proponho uma **Rodada D — Polimento Final & Delight** com 6 melhorias atômicas focadas em micro-interações, performance percebida e fechamento de gaps de excelência.
+Status: Rodadas A+B+C+D = 20/20 entregues. Para continuar rumo à perfeição, proponho **Rodada E — Excelência Operacional & Confiabilidade**, focada em 5 melhorias atômicas que elevam o produto de "polido" para "enterprise-grade indestrutível".
 
-# Rodada D — Polimento Final & Delight
+# Rodada E — Excelência Operacional & Confiabilidade
 
-**1. Empty States ilustrados universais** — componente `EmptyState` reutilizável com ilustração SVG inline, título, descrição e CTA primário. Substituir os ~12 estados vazios genéricos espalhados (Contatos, Empresas, Pipeline, Inbox, Tarefas, Sequências) por variantes contextuais com sugestão de ação.
+**1. Adoção do `useActionToast` em mutations destrutivas reais** — o hook foi criado mas só é útil se aplicado. Wire-up em: exclusão de Contato, exclusão de Empresa, exclusão de Tarefa, completar Tarefa (undo), mover Deal para "Perdido". Cada um implementa rollback real via TanStack Query (snapshot + restore se Undo for clicado dentro de 5s).
 
-**2. Skeleton loaders contextuais** — auditar 8 superfícies que ainda usam spinner genérico ou flash branco e substituir por skeletons que imitam o layout final (StatCards, ListaContatos, KanbanColumns, InboxList). Reduz CLS e melhora percepção de velocidade.
+**2. Optimistic updates expandidos** — replicar o padrão aplicado em `useMoveDeal` para 4 mutations de alto uso: completar tarefa, favoritar contato, atualizar stage de lead, marcar interação como lida. Padrão `onMutate→snapshot→setQueriesData→onError rollback→onSettled invalidate`.
 
-**3. Toast feedback unificado com undo** — wrapper `useActionToast` que padroniza success/error/info com ação "Desfazer" (5s timeout) para operações destrutivas (excluir, mover deal, completar tarefa). Reusa Sonner já configurado.
+**3. Error Boundaries granulares por seção** — auditar páginas críticas (Pipeline, Contatos, Empresas, Inbox, Dashboard) e envolver cada seção independente em `<DashboardErrorBoundary>` (já existe). Garante que falha em "WhyScoreDrawer" não derruba o Pipeline inteiro.
 
-**4. Optimistic updates em mutations críticas** — auditoria de mutations TanStack Query em Pipeline (drag-drop), Tarefas (completar), Contatos (favoritar) para aplicar `onMutate` + `setQueryData` otimista com rollback em erro. Ganho de UX percebido instantâneo.
+**4. Loading states com `Suspense` boundaries** — substituir `if(loading) return <Skeleton/>` por `<Suspense fallback={<Skeleton/>}>` em 3 rotas pesadas (Intelligence, ABM, Analytics). Permite streaming progressivo das seções.
 
-**5. Focus management & a11y polish** — auditar tab-order e focus-trap em dialogs/sheets críticos (NovoContato, NovaInteracao, BulkActionsBar, WhyScoreDrawer). Adicionar `aria-live` regions para feedback assíncrono. Validar contraste WCAG AA em estados hover/active.
-
-**6. Performance audit final** — `React.memo` em DealCard, ContatoCard, EmpresaCard (alto volume); `useMemo` em derivações pesadas dos hooks de Inbox/Pipeline; lazy split adicional para rotas admin (audit-trail, knowledge-export, docs). Validar que LCP <2.5s no Dashboard.
+**5. Performance budget enforcement** — script `scripts/check-bundle-size.mjs` que roda em build e falha se chunk principal > 350KB gzip. Documentar em `mem://standards/performance-budget`. Adicionar lazy split em rotas admin pesadas que ainda não foram split (audit-trail, knowledge-export, docs).
 
 ## Restrições mantidas
-Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes (Sonner, Skeleton, Sheet, Dialog).
+Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes.
 
 ## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão. Ao final, salvar memória `mem://features/ux-rodada-d-polimento.md` e marcar projeto como **Excellence 10/10 atingida**.
+(a) compila, (b) console limpo, (c) feature verificável manualmente, (d) sem regressão. Memória final em `mem://features/ux-rodada-e-confiabilidade.md` consolidando 25/25 melhorias.
 
-Aprove e executo as 6 em sequência sem pausas.
+Aprove e executo as 5 em sequência sem pausas.
