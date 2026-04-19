@@ -106,6 +106,21 @@ export default function ErrorLogsAdmin() {
           ))}
         </div>
 
+        <div className="flex gap-2 flex-wrap items-center">
+          <span className="text-xs text-muted-foreground">Fonte:</span>
+          {(['all', 'errors', 'web-vitals'] as const).map((s) => (
+            <Button
+              key={s}
+              variant={source === s ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSource(s)}
+              className="capitalize"
+            >
+              {s === 'all' ? 'Todos' : s === 'errors' ? 'Erros' : 'Performance'}
+            </Button>
+          ))}
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Eventos</CardTitle>
