@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -79,18 +79,31 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        <div className="flex items-center gap-1 md:gap-3 shrink-0">
           <div className="hidden md:inline-flex items-center gap-1">
             <GlobalDensityToggle />
             <SmartNotificationsBell />
             <UnifiedNotificationsBell />
           </div>
 
+          {/* Trigger ⌘K visível em mobile como ícone */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden h-8 w-8"
+            aria-label="Buscar (⌘K)"
+            onClick={() => {
+              const ev = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+              window.dispatchEvent(ev);
+            }}
+          >
+            <Search className="w-4 h-4" aria-hidden="true" />
+          </Button>
+
           {showAddButton && (
-            <Button onClick={onAddClick} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1.5" aria-hidden="true" />
+            <Button onClick={onAddClick} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground h-8 text-xs px-2 sm:px-3">
+              <Plus className="w-3.5 h-3.5 sm:mr-1.5" aria-hidden="true" />
               <span className="hidden sm:inline">{addButtonLabel || 'Adicionar'}</span>
-              <span className="sm:hidden">Novo</span>
             </Button>
           )}
         </div>

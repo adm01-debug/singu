@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Inbox as InboxIcon, Mail, MessageSquare, Phone, CheckSquare, Bell,
   AlertTriangle, ArrowRight, Trophy, Filter,
@@ -68,6 +69,7 @@ function Inbox() {
 
   const [filter, setFilter] = useState<ChannelFilter>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
 
   const items = useMemo<InboxItem[]>(() => {
     const list: InboxItem[] = [];
@@ -187,7 +189,7 @@ function Inbox() {
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,380px)_1fr] gap-3">
             {/* Lista */}
             <Card className="overflow-hidden">
-              <ScrollArea className="h-[calc(100vh-220px)]">
+              <ScrollArea className="h-[calc(100dvh-260px)] lg:h-[calc(100dvh-220px)]">
                 {loading && (
                   <div className="p-3 space-y-2">
                     {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
@@ -201,7 +203,10 @@ function Inbox() {
                     <button
                       key={it.id}
                       type="button"
-                      onClick={() => setSelectedId(it.id)}
+                      onClick={() => {
+                        setSelectedId(it.id);
+                        if (window.matchMedia('(max-width: 1023px)').matches) setMobilePreviewOpen(true);
+                      }}
                       className={cn(
                         'w-full text-left p-3 border-b border-border/50 hover:bg-muted/50 transition-colors',
                         isActive && 'bg-muted',
@@ -239,6 +244,21 @@ function Inbox() {
           </div>
         )}
       </div>
+
+      {/* Drawer mobile com preview */}
+      <Sheet open={mobilePreviewOpen} onOpenChange={setMobilePreviewOpen}>
+        <SheetContent side="bottom" className="lg:hidden h-[85dvh] overflow-y-auto">
+          <SheetHeader className="mb-3">
+            <SheetTitle>Detalhes</SheetTitle>
+          </SheetHeader>
+          {selected && (
+            <InboxPreview
+              item={selected}
+              onCompleteTask={(id) => { handleCompleteTask(id); setMobilePreviewOpen(false); }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </AppLayout>
   );
 }
