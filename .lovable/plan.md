@@ -1,24 +1,39 @@
 
-Faltam 1 item da Rodada B + Rodada C inteira (5 itens). Vou executar 6 melhorias atômicas em sequência.
+Resta apenas a Etapa 6 da Rodada C: **Mobile responsiveness audit**. Vou executar como melhoria atômica final para fechar a Rodada C em 10/10.
 
-# Rodada B (final) + Rodada C — Transformação
+# Rodada C — Etapa 6 (final): Mobile Responsiveness Audit
 
-**1. WhyScoreDrawer wire-up universal** (fechar Rodada B) — integrar `WhyScoreDrawer` em `LeadScoreBadge`, `DealConfidenceBadge` (Pipeline), `ChurnRiskWidget` e `DealRiskBadge`. Padronizar `scoreKey` como `<modulo>:<entidade>:<id>`. Cada badge recebe prop `factors` calculada localmente a partir dos dados já existentes.
+**Escopo focado nas 4 superfícies de maior fricção em mobile (375px–768px):**
 
-**2. SavedViewsBar em Empresas e Pipeline** — replicar integração já feita em Contatos para `Empresas.tsx` e `Pipeline.tsx`. Cada um define seu schema de state (filtros + view mode + ordenação). Reusa hook `useSavedViews` e componente `SavedViewsBar`.
+**1. Pipeline (Kanban)** — `src/pages/Pipeline.tsx`
+- Adicionar `overflow-x-auto snap-x snap-mandatory` no container das colunas
+- Cada coluna com `snap-center min-w-[85vw] sm:min-w-[280px]` em mobile
+- Hint visual "← deslize →" no topo em telas <640px
+- Header sticky com totais condensados em mobile
 
-**3. Bulk Actions universais** — novo hook `useBulkSelection<T>` + componente `BulkActionsBar` (flutuante no rodapé) com ações: Atribuir, Adicionar tag, Exportar CSV, Excluir. Wire-up em Contatos e Empresas (modo lista/tabela). Checkbox por linha + "selecionar tudo" + contador.
+**2. Inbox (`/inbox`)** — `src/pages/Inbox.tsx`
+- Hoje usa `lg:grid-cols-[380px_1fr]` (ok), mas preview some em <lg
+- Adicionar **drawer mobile** (Sheet) que abre ao tocar num item em <lg
+- Filtros por canal já têm `overflow-x-auto` ✅
+- Reduzir altura da ScrollArea para `calc(100dvh-260px)` (usar `dvh`)
 
-**4. Keyboard-first navigation** — hook `useListKeyboardNav` (j/k navegação, enter abre, x seleciona, ? mostra atalhos). Hint visual discreto no rodapé das listas. Aplicar em Contatos e Empresas. Reusa primitiva de KeyboardMapOverlay do Intelligence.
+**3. Header / Command Bar** — `src/components/layout/Header.tsx`
+- Trigger ⌘K visível em mobile como ícone (atualmente só desktop)
+- Botão "Novo X" colapsa em ícone-only em <sm
+- Subtitle truncate em mobile
 
-**5. Inbox unificada `/inbox`** — nova rota com 3 colunas: lista priorizada (interações pendentes + tarefas vencidas + notificações), preview central, ações laterais. Filtros por canal (Email/WhatsApp/Voice/Tarefa). Modo "Zero Inbox" com celebração ao zerar. Reusa dados existentes via TanStack Query.
+**4. AppSidebar** — confirmar drawer overlay funciona em mobile (já é Sheet via shadcn). Auditoria visual + ajuste de z-index se necessário.
 
-**6. Mobile responsiveness audit** — auditoria fina de Pipeline (kanban com swipe horizontal mobile), Inbox (stack vertical em mobile), Header (command bar trigger visível em mobile), Sidebar (drawer overlay). Adicionar breakpoints `sm:` faltantes e testar em 375px/768px.
+**Bônus rápidos:**
+- `KeyboardListHint` já está `hidden md:flex` ✅
+- `BulkActionsBar` revisar posicionamento `bottom-4` em mobile (não cobrir nav inferior)
+- `DailyBriefingCard` em Index.tsx: stack vertical das métricas em <sm
+- `SavedViewsBar`: scroll horizontal das chips em mobile
 
-## Restrições
-Português, max 400 linhas/arquivo, sem `any`, sem novos backends, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes.
+## Restrições mantidas
+Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas (Sheet/ScrollArea já existentes).
 
-## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature verificável, (d) constraints respeitadas. Memória final em `mem://features/ux-rodada-c-transformacao.md`.
+## Critério 10/10
+(a) compila, (b) console limpo, (c) testado mentalmente em 375px e 768px, (d) sem regressão desktop. Memória atualizada em `mem://features/ux-rodada-c-transformacao.md` marcando Rodada C **completa**.
 
-Aprove e executo as 6 em sequência sem pausas.
+Aprove e executo a etapa 6 fechando a Rodada C em 10/10.
