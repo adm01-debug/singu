@@ -54,6 +54,8 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
   const [showDiff, setShowDiff] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showMultiDiff, setShowMultiDiff] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [, setSearchParams] = useSearchParams();
   const previousEntry = stack.length >= 2 && cursor > 0 ? stack[cursor - 1] : null;
   const { data: previousData } = useEntity360(
     showDiff || showMultiDiff ? previousEntry?.type ?? null : null,
@@ -65,6 +67,17 @@ export const Entity360Tab = forwardRef<Entity360Handle>((_props, ref) => {
     showMultiDiff ? beforePreviousEntry?.type ?? null : null,
     showMultiDiff ? beforePreviousEntry?.id ?? null : null,
   );
+
+  // Quick-pivot: Shift+click em qualquer evento da timeline envia para o CrossRef
+  const pivotToCrossRef = useCallback((e: React.MouseEvent, entry: HistoryEntry) => {
+    if (!e.shiftKey) return;
+    e.preventDefault();
+    const np = new URLSearchParams(window.location.search);
+    np.set('tab', 'crossref');
+    np.set('pivot', `${entry.type}:${entry.id}`);
+    setSearchParams(np, { replace: true });
+    toast.success(`Pivot para Cross-Ref: ${entry.name}`);
+  }, [setSearchParams]);
 
   const doSearch = useCallback(async () => {
     if (!search.trim()) return;
