@@ -211,6 +211,52 @@ export const CrossRefTab = () => {
 
           {error && <IntelErrorState onRetry={() => refetch()} />}
 
+          <SectionFrame title="METADATA_COMPARISON" meta={loadingMeta ? 'LOADING…' : `${compareFields.length} FIELDS`}>
+            {loadingMeta ? (
+              <IntelSkeleton lines={4} label="LOADING_META" />
+            ) : compareFields.length === 0 ? (
+              <IntelEmptyState title="NO_COMPARABLE_FIELDS" description="Não há campos comuns preenchidos entre as entidades selecionadas." />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs intel-mono border-collapse">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="intel-eyebrow text-left py-1.5 pr-2 w-32">CAMPO</th>
+                      {metaRows.map((m) => (
+                        <th key={m.id} className="text-left py-1.5 px-2 text-foreground truncate max-w-[180px]" title={m.name}>
+                          {m.name}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compareFields.map((f) => {
+                      const values = metaRows.map((m) => f.format(m.metadata[f.key]));
+                      const allEqual = values.every((v) => v === values[0]);
+                      return (
+                        <tr key={f.key} className="border-b border-border/30">
+                          <td className="intel-eyebrow py-1 pr-2">{f.label}</td>
+                          {values.map((v, i) => (
+                            <td
+                              key={`${f.key}-${i}`}
+                              className={`py-1 px-2 truncate max-w-[180px] ${allEqual ? 'text-muted-foreground' : 'text-[hsl(var(--intel-accent))]'}`}
+                            >
+                              {v}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <p className="intel-mono text-[10px] text-muted-foreground mt-2">
+                  Valores em <span className="text-[hsl(var(--intel-accent))]">cyan</span> indicam diferenças entre as entidades.
+                </p>
+              </div>
+            )}
+          </SectionFrame>
+
+
           <SectionFrame
             title="TEMPORAL_OVERLAP"
             meta="30D"
