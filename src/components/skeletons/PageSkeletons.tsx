@@ -34,4 +34,6 @@ export {
   SettingsPageSkeleton,
   NetworkPageSkeleton,
   ContactDetailSkeleton,
+  PipelinePageSkeleton,
+  EntityDetailPageSkeleton,
 } from './PageSpecificSkeletons';
