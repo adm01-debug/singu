@@ -73,7 +73,14 @@ async function callExternalData(body: Record<string, unknown>): Promise<Record<s
     }
 
     const result = await response.json();
-    if (result?.error) throw new Error(result.error);
+    if (result?.error) {
+      // Soft fallback from upstream gateway failures — degrade gracefully without tripping breaker
+      if (result?.fallback === true) {
+        logger.warn('External data fallback:', result.error);
+        return result;
+      }
+      throw new Error(result.error);
+    }
 
     return result;
   });
