@@ -78,13 +78,16 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
               <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
+
+          <Separator />
+          <WebhookQuotaBar webhookId={webhook.id} />
         </CardContent>
       </Card>
 
       {showLogs && (
         <IncomingWebhookLogsDialog
           open={showLogs} onOpenChange={setShowLogs}
-          webhookId={webhook.id} webhookName={webhook.name}
+          webhookId={webhook.id} webhookName={webhook.name} webhookToken={webhook.token}
         />
       )}
     </>

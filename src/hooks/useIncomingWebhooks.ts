@@ -19,6 +19,9 @@ export interface IncomingWebhook {
   created_by: string;
   created_at: string;
   updated_at: string;
+  webhook_secret: string | null;
+  require_signature: boolean;
+  replay_window_seconds: number;
 }
 
 export interface IncomingWebhookLog {
