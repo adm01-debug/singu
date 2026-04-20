@@ -40,6 +40,9 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
     JSON.stringify(existing?.field_mapping ?? { first_name: 'name', email: 'email' }, null, 2),
   );
   const [mappingError, setMappingError] = useState<string | null>(null);
+  const [requireSignature, setRequireSignature] = useState(existing?.require_signature ?? false);
+  const [webhookSecret, setWebhookSecret] = useState(existing?.webhook_secret ?? '');
+  const [replayWindow, setReplayWindow] = useState(existing?.replay_window_seconds ?? 300);
 
   const handleSave = async () => {
     let mapping: Record<string, string> = {};
@@ -58,6 +61,9 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
       is_active: isActive,
       allowed_origins: allowedOrigins.split(',').map(s => s.trim()).filter(Boolean),
       field_mapping: mapping,
+      require_signature: requireSignature,
+      webhook_secret: requireSignature ? (webhookSecret || null) : null,
+      replay_window_seconds: replayWindow,
     });
     onOpenChange(false);
   };
@@ -116,6 +122,37 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
               <code>{'{ "destino": "caminho.no.payload" }'}</code> — ex: <code>{'{ "first_name": "lead.nome" }'}</code>
             </p>
             {mappingError && <p className="text-xs text-destructive mt-1">{mappingError}</p>}
+          </div>
+
+          <div className="border-t border-border/40 pt-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Switch checked={requireSignature} onCheckedChange={setRequireSignature} id="wh-hmac" />
+              <Label htmlFor="wh-hmac" className="font-medium">Exigir assinatura HMAC</Label>
+            </div>
+            {requireSignature && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-6">
+                <div className="md:col-span-2">
+                  <Label>Webhook secret</Label>
+                  <Input
+                    type="password"
+                    value={webhookSecret ?? ''}
+                    onChange={e => setWebhookSecret(e.target.value)}
+                    placeholder="ex: whk_3f9..."
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Origem deve enviar <code>X-Lovable-Signature: sha256=&lt;hmac&gt;</code> e <code>X-Lovable-Timestamp: &lt;ms&gt;</code>.
+                  </p>
+                </div>
+                <div>
+                  <Label>Janela anti-replay (s)</Label>
+                  <Input
+                    type="number" min={60} max={3600}
+                    value={replayWindow}
+                    onChange={e => setReplayWindow(Number(e.target.value) || 300)}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <Alert>

@@ -71,6 +71,9 @@ export function useIncomingWebhooks() {
           is_active: input.is_active ?? true,
           allowed_origins: input.allowed_origins ?? [],
           field_mapping: (input.field_mapping ?? {}) as never,
+          require_signature: input.require_signature ?? false,
+          webhook_secret: input.webhook_secret ?? null,
+          replay_window_seconds: input.replay_window_seconds ?? 300,
         }).eq('id', input.id);
         if (error) throw error;
       } else {
@@ -82,6 +85,9 @@ export function useIncomingWebhooks() {
           is_active: input.is_active ?? true,
           allowed_origins: input.allowed_origins ?? [],
           field_mapping: (input.field_mapping ?? {}) as never,
+          require_signature: input.require_signature ?? false,
+          webhook_secret: input.webhook_secret ?? null,
+          replay_window_seconds: input.replay_window_seconds ?? 300,
           created_by: user.id,
         });
         if (error) throw error;
