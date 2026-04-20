@@ -3,6 +3,7 @@ import { z } from "npm:zod@3.23.8";
 import { withAuth, jsonError, jsonOk, handleCorsAndMethod } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
 import { extractTraceId, tracedLogger } from "../_shared/tracing.ts";
+import { assertVersionMatch } from "../_shared/version-guard.ts";
 
 const limiter = rateLimit({ windowMs: 60_000, max: 100, message: "Rate limit exceeded for external data. Please wait." });
 
@@ -476,9 +477,10 @@ Deno.serve(async (req) => {
       if (error) throw new Error(`update_with_version failed: ${error.message}`);
 
       const rows = Array.isArray(data) ? data : [];
-      if (rows.length === 0) {
-        log.warn("concurrent edit detected", { table, id, version });
-        return jsonError('CONCURRENT_EDIT', 409, req);
+      const conflict = assertVersionMatch(rows, { entity: table, id, attemptedVersion: version, req });
+      if (conflict) {
+        log.warn("concurrent_edit_detected", { table, id, attemptedVersion: version });
+        return conflict;
       }
       return jsonOk({ data: rows[0] }, req);
     }
