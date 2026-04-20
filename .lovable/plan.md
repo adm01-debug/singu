@@ -1,22 +1,20 @@
 
-Status atual: **55/55 melhorias entregues** (Rodadas A–K). Para continuar a evolução sem retrabalho, proponho **Rodada L — Governança Multi-tenant & Compliance de Integrações (5 → 60/60)**, focada em camadas ainda não cobertas.
+Status atual: **60/60 melhorias entregues** (Rodadas A–L). Para continuar evoluindo o módulo de Conexões sem retrabalho, proponho **Rodada M — Federação, Schema Discovery & Developer Experience (5 → 65/65)**.
 
-# Rodada L — Governança, Auditoria & Compliance do Módulo Conexões
+# Rodada M — Federação, Schema Discovery & DX
 
-**1. Auditoria completa de mudanças em `connection_configs` e `incoming_webhooks`** — adicionar trigger DB que registra em `audit_log` toda CREATE/UPDATE/DELETE de conexão e webhook (quem, quando, diff de config com secrets mascarados). Aba "Histórico" no `ConnectionFormDialog` reusa `AuditTrailViewer` existente filtrado por `entity_type='connection_config'`.
+**1. Schema discovery automático nas conexões Supabase externas** — botão "Descobrir schema" em `ConnectionCard` (tipo `supabase_external`) que chama nova edge function `connection-introspect` usando `service_role_key`. Lista tabelas/colunas via `information_schema` e popula um JSON `discovered_schema` em `connection_configs`. UI mostra árvore expansível (tabelas → colunas → tipos) reusando `ScrollArea` + `Collapsible`. Útil para configurar `field_mapping` de webhooks sem advinhação.
 
-**2. Assinatura HMAC SHA-256 nos webhooks de saída + verificação no `incoming-webhook`** — gerar header `X-Lovable-Signature: sha256=<hmac>` usando `webhook_secret` por conexão. Edge function valida assinatura quando `require_signature=true` no webhook, retornando 401 em caso de mismatch. Protege contra replay com janela de 5 min via header `X-Lovable-Timestamp`.
+**2. Templates de webhook por sistema de origem** — biblioteca `WEBHOOK_TEMPLATES` (Bitrix24, n8n, Stripe, GitHub, genérico Lovable) com `field_mapping` e `target_entity` pré-configurados. Botão "Usar template" em `IncomingWebhookFormDialog` aplica mapping com 1 clique. Acelera onboarding de novas integrações de minutos para segundos.
 
-**3. Quotas e billing por conexão** — nova tabela `connection_quotas` (`connection_id, period_start, calls_limit, calls_used, overage_blocked`). Trigger no `incoming_webhook_logs` incrementa contador; retorna 429 quando excedido. UI em `ConnectionCard` mostra barra de progresso de uso mensal + alerta a 80%.
+**3. Playground OpenAPI/cURL generator** — em cada `IncomingWebhookCard`, botão "Ver exemplos" abre `Sheet` com snippets prontos: cURL, fetch JS, Python requests, n8n HTTP node config, Bitrix24 outbound webhook. Snippets já incluem URL, headers HMAC (se ativo), payload de exemplo do `field_mapping` e timestamp atual. Copy-to-clipboard por bloco.
 
-**4. Modo "dry-run" + replay de payloads** — botão "Testar com payload real" em `IncomingWebhookLogsDialog` que reenvia payload histórico sem persistir (flag `?dry_run=true`). Útil para validar mudanças de `field_mapping` sem efeitos colaterais. Também permite "Replay" forçado (com persistência) para casos de falha humana.
+**4. MCP server expandido com 5 novas tools** — adicionar ao `mcp-server`: `create_contact`, `update_deal_stage`, `add_interaction`, `search_companies_by_intent`, `get_pipeline_summary`. Cada tool com Zod schema, validação de permissão por token e log em `mcp_tool_calls` (nova tabela). Documentação inline auto-gerada via `tools/list`.
 
-**5. ADR-015 + memória `mem://features/ux-rodada-l-governanca-compliance.md`** — documentar padrão HMAC, política de retenção de logs (90d), modelo de quotas, rastreabilidade LGPD e SLA de auditoria. CHANGELOG v2.4.0 — Connections Governance. Consolida **60/60 melhorias**.
+**5. ADR-016 + memória `mem://features/ux-rodada-m-federacao-dx.md`** — documentar padrão de introspection, formato de templates, contrato MCP estendido. CHANGELOG v2.5.0 — Connections Federation & DX. Consolida **65/65 melhorias**.
 
 ## Restrições mantidas
-Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas (`AuditTrailViewer`, `EmptyState`, `Sheet`, `useActionToast`).
+Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas (`Sheet`, `Collapsible`, `ScrollArea`, `EmptyState`).
 
 ## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão, (e) RLS auditado, (f) sem secret vazado em log.
-
-Aprove e executo as 5 em sequência sem pausas.
+(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão, (e) RLS auditado, (f) sem secret vazado, (g) edge function testada via curl.
