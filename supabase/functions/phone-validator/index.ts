@@ -1,6 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { z } from "https://esm.sh/zod@3.23.8";
-import { parsePhoneNumberFromString } from "https://esm.sh/libphonenumber-js@1.11.7/max";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@3.23.8";
+import { parsePhoneNumberFromString } from "npm:libphonenumber-js@1.11.7/max";
 import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {

@@ -1,6 +1,6 @@
 // Edge function: revops-snapshot-builder
 // Cron diário 04:00 UTC. Consolida funil ponta-a-ponta por usuário ativo, gera snapshots e alertas.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

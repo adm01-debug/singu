@@ -1,6 +1,6 @@
 // Lead Scorer — calcula score server-side com decay temporal por dimensão.
 // Modos: { contact_id } -> recalcula 1, { batch: true, limit?: n } -> processa fila.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { handleCorsAndMethod, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
 
