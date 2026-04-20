@@ -137,3 +137,59 @@ Antes de deployar uma função (manual ou automaticamente):
    - Log `request_received` aparece em `supabase functions logs <fn>`
 5. **Rollback** — em caso de regressão, reverter o arquivo via histórico do
    Lovable e redeployar. Edge functions são stateless: rollback é imediato.
+6. **Lint guard automático** — rodar `node scripts/check-edge-imports.mjs`
+   antes de commitar. Falha (exit 1) se algum import `https://esm.sh/...`
+   for introduzido em `supabase/functions/**/*.ts`. Previne regressão da
+   migração `npm:` que quebrou o boot de funções no passado.
+
+---
+
+## Métricas de Qualidade & SLOs
+
+### SLOs (Service Level Objectives)
+
+| Métrica | Alvo | Como medir |
+|---------|------|------------|
+| Disponibilidade `external-data` | ≥ 99.5% requests com HTTP 200 (inclui `fallback:true`) | Supabase logs + dashboard |
+| Latência `select` (P95) | < 2.0s | `query_telemetry.duration_ms` |
+| Latência `update_with_version` (P95) | < 3.0s | `query_telemetry.duration_ms` |
+| Taxa de conflito 409 | < 5% / min | logs `level=warn msg=concurrent_edit_detected` |
+| Taxa de erro 5xx | < 1% / min | logs `level=error` |
+
+### Indicadores de alerta
+
+- **>5% de 409/min** → provavelmente um job automatizado editando registros
+  em paralelo com humanos. Investigar `automation_logs` e `audit_log` para
+  identificar o agente.
+- **>1% de 5xx/min** → incidente real. Acionar runbook de incidente,
+  checar saúde do banco externo via `/health`.
+- **100% das responses como `fallback:true`** → banco externo (Cloudflare)
+  está down. UI permanece funcional mas sem dados — comunicar usuários.
+
+### Comandos de diagnóstico
+
+```bash
+# Listar todos os erros recentes da função externa
+supabase functions logs external-data --search "level=error"
+
+# Filtrar por traceId específico (correlação ponta-a-ponta)
+supabase functions logs external-data --search "traceId=<uuid>"
+
+# Detectar conflitos de optimistic locking
+supabase functions logs external-data --search "concurrent_edit_detected"
+```
+
+```sql
+-- Top 10 queries mais lentas das últimas 24h
+SELECT operation, table_name, duration_ms, occurred_at
+FROM query_telemetry
+WHERE occurred_at > now() - interval '24 hours'
+ORDER BY duration_ms DESC
+LIMIT 10;
+
+-- Taxa de conflitos 409 por hora
+SELECT date_trunc('hour', occurred_at) AS hour, COUNT(*) AS conflicts
+FROM query_telemetry
+WHERE error_code = '409' AND occurred_at > now() - interval '24 hours'
+GROUP BY 1 ORDER BY 1 DESC;
+```
