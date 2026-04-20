@@ -19,4 +19,5 @@ Excelência sustentada: 70/70 melhorias atômicas (Rodadas A-N). Gate a11y no CI
 - [Rodada H — Acessibilidade WCAG AA](mem://features/ux-rodada-h-accessibility) — 40/40: SkipNav, RouteAnnouncer, useAccessibleToast, foco visível.
 - [Standards — Accessibility WCAG AA](mem://standards/accessibility-wcag-aa) — Auditoria documentada de superfícies críticas.
 - [System Health Check](mem://features/system-health-check) — Edge function `system-health` + widget admin + `/status` público.
+- [Error Budget Dashboard](mem://features/error-budget-dashboard) — `/admin/error-budget` com SLO 99.5%, sparkline 30d, alertas auto 50/75/100% (`system_alerts`), retenção 60d, RUNBOOK v2.2.0.
 - [User preferences](mem://~user) — Execução autônoma e sequencial de melhorias.

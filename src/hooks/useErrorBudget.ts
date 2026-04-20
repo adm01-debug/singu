@@ -1,6 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface DailyUptimePoint {
+  date: string;
+  uptime_pct: number;
+  samples: number;
+}
+
+export interface ActiveErrorBudgetAlert {
+  id: string;
+  severity: 'warning' | 'high' | 'critical';
+  threshold_pct: number;
+  consumed_pct: number;
+  message: string;
+  created_at: string;
+}
+
 export interface ErrorBudgetData {
   slo_target_pct: number;
   window_hours: number;
@@ -15,6 +30,8 @@ export interface ErrorBudgetData {
   degraded_samples: number;
   sample_interval_minutes: number;
   computed_at: string;
+  daily_uptime: DailyUptimePoint[];
+  active_alerts: ActiveErrorBudgetAlert[];
 }
 
 export function useErrorBudget() {

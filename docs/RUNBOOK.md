@@ -2,13 +2,14 @@
 
 > **Documento único e autoritativo** para deploy, rollback, monitoramento e resposta a incidentes em produção.
 >
-> **Versão**: v2.0.0 — _Rodada Q: maturidade SRE (error budget, RACI, capacidade, chaos, blast radius)._
+> **Versão**: v2.2.0 — _Rodada R: observabilidade ativa do error budget (sparkline 30d, retenção 60d, alertas automáticos 50/75/100%)._
 
 ## 📜 Changelog
 
 | Versão | Data | Autor | Mudanças |
 |---|---|---|---|
-| **v2.1.0** | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` operacional; placeholders datados; template de postmortem com guard-rails + exemplo preenchido (`postmortem-example.md`); snapshots persistidos em `system_health_snapshots` via cron 5min |
+| **v2.2.0** | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` ganha sparkline de uptime diário (30d) com linha de SLO; retenção automática de snapshots >60d via cron semanal `system-health-snapshots-cleanup`; alertas automáticos `error_budget_50/75/100` em `system_alerts` (idempotentes 24h, exibidos no painel) |
+| v2.1.0 | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` operacional; placeholders datados; template de postmortem com guard-rails + exemplo preenchido (`postmortem-example.md`); snapshots persistidos em `system_health_snapshots` via cron 5min |
 | v2.0.0 | 2026-04-20 | @lovable-sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
 | v1.0.0 | 2026-04-13 | @lovable-docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
 
@@ -468,6 +469,24 @@ GROUP BY 1 ORDER BY 1 DESC;
 ```
 
 > Conta apenas `unhealthy` para o budget; `degraded` é warning track.
+
+### Alertas automáticos de Error Budget
+
+A edge function `error-budget` insere registros idempotentes em `public.system_alerts` (RLS admin-only) sempre que o consumo cruza um threshold. Janela de deduplicação: **24h por nível**.
+
+| Threshold | Severidade | `alert_type` | Ação esperada |
+|---|---|---|---|
+| ≥ 50% | `warning` | `error_budget_50` | Reduzir mudanças não-críticas; revisar incidentes do mês |
+| ≥ 75% | `high` | `error_budget_75` | Revisão por 2 engenheiros em todo deploy; preparar freeze |
+| ≥ 100% | `critical` | `error_budget_100` | **Freeze ativo**; postmortem obrigatório por incidente |
+
+Os alertas ativos (não-reconhecidos) aparecem no topo de `/admin/error-budget`. Reconhecimento: `UPDATE system_alerts SET acknowledged_at=now(), acknowledged_by=auth.uid() WHERE id=...` (apenas admin).
+
+### Retenção e cleanup
+
+- Snapshots: cron `system-health-snapshot-5min` (a cada 5min) → tabela `system_health_snapshots`
+- Cleanup: cron `system-health-snapshots-cleanup` (domingos 03:00 UTC) chama `public.cleanup_old_health_snapshots()` que apaga snapshots >60 dias e alertas reconhecidos >90 dias.
+- Sparkline 30d: visualização contínua no painel mesmo em dias sem amostra (preenchidos como 100%).
 
 ---
 
