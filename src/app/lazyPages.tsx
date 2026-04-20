@@ -70,6 +70,7 @@ export const AdminErrorLogs = lazy(() => import("@/pages/admin/ErrorLogs"));
 export const AdminComponentGallery = lazy(() => import("@/pages/admin/ComponentGallery"));
 export const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 export const AdminSegurancaPage = lazy(() => import("@/pages/admin/AdminSegurancaPage"));
+export const AdminFeatureFlagsPage = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
 
 export const Deduplicacao = lazy(() => import("@/pages/Deduplicacao"));
 export const ErpViewer = lazy(() => import("@/pages/ErpViewer"));

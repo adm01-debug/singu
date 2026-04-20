@@ -1247,6 +1247,7 @@ export type Database = {
           twitter: string | null
           updated_at: string
           user_id: string
+          version: number
           website: string | null
           youtube: string | null
         }
@@ -1310,6 +1311,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id: string
+          version?: number
           website?: string | null
           youtube?: string | null
         }
@@ -1373,6 +1375,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id?: string
+          version?: number
           website?: string | null
           youtube?: string | null
         }
@@ -2015,6 +2018,7 @@ export type Database = {
           twitter: string | null
           updated_at: string
           user_id: string
+          version: number
           whatsapp: string | null
         }
         Insert: {
@@ -2045,6 +2049,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id: string
+          version?: number
           whatsapp?: string | null
         }
         Update: {
@@ -2075,6 +2080,7 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id?: string
+          version?: number
           whatsapp?: string | null
         }
         Relationships: [
@@ -4132,6 +4138,33 @@ export type Database = {
           id?: string
           template_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          name: string
+          roles: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          name: string
+          roles?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          name?: string
+          roles?: string[]
+          updated_at?: string
         }
         Relationships: []
       }

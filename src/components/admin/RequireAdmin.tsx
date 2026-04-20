@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ShieldAlert } from "lucide-react";
 import { logger } from "@/lib/logger";
 
 interface RequireAdminProps {
@@ -11,8 +13,8 @@ interface RequireAdminProps {
 }
 
 /**
- * Gate component that checks user_roles table for 'admin' role.
- * Redirects non-admins to the home page.
+ * Gate component que checa user_roles para 'admin'.
+ * Redireciona não-admins para home. Mostra banner MFA quando admin sem 2FA.
  */
 export function RequireAdmin({ children }: RequireAdminProps) {
   const { user } = useAuth();
@@ -33,8 +35,35 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: mfaEnrolled } = useQuery({
+    queryKey: ["mfa-enrolled", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) return true; // fail-open: não mostrar banner em caso de erro
+      return (data?.totp?.length ?? 0) > 0 || (data?.all?.length ?? 0) > 0;
+    },
+    enabled: !!user && !!isAdmin,
+    staleTime: 10 * 60 * 1000,
+  });
+
   if (isLoading) return <PageLoadingFallback />;
   if (!isAdmin) return <Navigate to="/" replace />;
 
-  return <>{children}</>;
+  return (
+    <>
+      {mfaEnrolled === false && (
+        <Alert variant="destructive" className="mb-4">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>MFA não configurado</AlertTitle>
+          <AlertDescription>
+            Como administrador, você deve ativar autenticação em duas etapas.{" "}
+            <Link to="/configuracoes/seguranca" className="underline font-medium">
+              Configurar agora
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
+      {children}
+    </>
+  );
 }
