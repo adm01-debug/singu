@@ -112,9 +112,22 @@ Deno.serve(async (req) => {
       return jsonError("Consulta não permitida. Apenas leituras são aceitas.", 403, req);
     }
 
-    // Ensure user_id filter is present
-    if (!parsed_ai.sql.includes(userId)) {
+    // Tabelas de integrações são globais (admin) — não exigem filtro user_id
+    const sqlLower = parsed_ai.sql.toLowerCase();
+    const isAdminQuery = CONNECTION_TABLES.some(t => sqlLower.includes(t));
+    if (!isAdminQuery && !parsed_ai.sql.includes(userId)) {
       return jsonError("Consulta deve filtrar por usuário autenticado.", 403, req);
+    }
+
+    // Se for query admin, valida papel
+    if (isAdminQuery) {
+      const supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { data: roleRow } = await supabaseAuth
+        .from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+      if (!roleRow) return jsonError("Apenas administradores podem consultar dados de integrações.", 403, req);
     }
 
     // Step 2: Execute the query
