@@ -5,6 +5,22 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.2.0] - 2026-04-20 — Rodada J: Connections Hardening (50/50)
+
+### Added
+- Rate limiting (`_shared/rate-limit.ts`) em `incoming-webhook` (60/min por IP) e `mcp-server` (120/min por token).
+- Validação Zod em ambos endpoints públicos (payload ≤256KB no webhook, JSON-RPC 2.0 estrito no MCP).
+- Coluna `encrypted_config bytea` + trigger `connection_configs_encrypt_trigger` cifrando tokens via `pgcrypto`.
+- Funções `encrypt_connection_config` / `decrypt_connection_config` SECURITY DEFINER (admin-only).
+- Bloco `connections` no `health-aggregate` v3.1.0 (total, active, falhas 24h, erros webhook 24h).
+- Página `/admin/conexoes/logs` — viewer cronológico unificado com filtros e Sheet de inspeção JSON.
+- ADR-013 (`docs/adr/013-connections-module-hardening.md`).
+
+### Security
+- Tokens sensíveis (`token`, `api_key`, `secret`, `password`, `service_role_key`, `webhook_secret`) mascarados como `***` na coluna `config` em texto puro.
+- `secret_refs` é zerado após cifragem; nunca persiste em plain text.
+- Endpoints públicos retornam `429 Retry-After` em excesso de chamadas.
+
 ## [2.1.0] - 2026-04-20 — Rodada I: Polimento Final (45/45)
 
 ### Added

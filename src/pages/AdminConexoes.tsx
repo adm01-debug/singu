@@ -34,11 +34,16 @@ export default function AdminConexoes() {
   return (
     <AdminLayout>
       <div className="space-y-6 max-w-7xl">
-        <header className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Conexões</h1>
-          <p className="text-muted-foreground">
-            Central de integrações: bancos externos, Bitrix24, n8n, MCP do Claude e webhooks entrantes.
-          </p>
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold tracking-tight">Conexões</h1>
+            <p className="text-muted-foreground">
+              Central de integrações: bancos externos, Bitrix24, n8n, MCP do Claude e webhooks entrantes.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <a href="/admin/conexoes/logs">Ver logs unificados</a>
+          </Button>
         </header>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
