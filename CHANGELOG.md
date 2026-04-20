@@ -5,6 +5,23 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.6.0] - 2026-04-20 — Rodada N: Connections AI & Self-Healing (70/70)
+
+### Added
+- Edge function `ai-suggest-mapping` — recebe `example_payload + target_entity` e devolve `field_mapping` com confiança por campo (Lovable AI Gateway, `google/gemini-2.5-flash`). Fallback determinístico (matching por nome) garantido.
+- Edge function `connection-anomaly-detector` — agrega `incoming_webhook_logs` últimos 7d em série temporal diária; IA detecta `error_spike`, `latency_degradation`, `volume_drop/spike`, `suspicious_window`. Fallback determinístico (3× média).
+- Tabela `connection_anomalies` (RLS admin; INSERT restrito a `service_role`).
+- Hook `useConnectionAnomalies` (TanStack Query) + componente `AnomaliesWidget` na página `/admin/conexoes/logs`.
+- Botão "Sugerir mapping com IA" no `IncomingWebhookFormDialog` — admin cola payload de exemplo e aplica mapping com 1 clique.
+- Self-healing por schema drift no `incoming-webhook`: erro de coluna/tipo dispara `ai-suggest-mapping` em background; se confiança ≥ 0.8, cria `smart_notification` (canal `mapping_drift`) — sempre human-in-the-loop.
+- Chat `ask-crm` estendido com whitelist de tabelas de integrações (`connection_*`, `incoming_webhook_*`, `mcp_tool_calls`); validação extra exige papel `admin`.
+- ADR-017 (`docs/adr/017-connections-ai-self-healing.md`) + memória `ux-rodada-n-ia-self-healing`.
+
+### Notes
+- Threshold de confiança IA para auto-healing: 0.8.
+- Rate limit `ai-suggest-mapping`: 15 req/min/IP.
+- Mudanças destrutivas em mapping NUNCA são aplicadas automaticamente.
+
 ## [2.5.0] - 2026-04-20 — Rodada M: Connections Federation & DX (65/65)
 
 ### Added

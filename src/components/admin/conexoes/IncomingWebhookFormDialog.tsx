@@ -10,8 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIncomingWebhooks, type WebhookTargetEntity } from '@/hooks/useIncomingWebhooks';
-import { Loader2, Save, Info, Sparkles } from 'lucide-react';
+import { Loader2, Save, Info, Sparkles, Wand2 } from 'lucide-react';
 import { WEBHOOK_TEMPLATES, getTemplateById } from './webhookTemplates';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -44,6 +46,26 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
   const [requireSignature, setRequireSignature] = useState(existing?.require_signature ?? false);
   const [webhookSecret, setWebhookSecret] = useState(existing?.webhook_secret ?? '');
   const [replayWindow, setReplayWindow] = useState(existing?.replay_window_seconds ?? 300);
+  const [examplePayload, setExamplePayload] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAiSuggest = async () => {
+    let payload: Record<string, unknown>;
+    try { payload = JSON.parse(examplePayload); } catch { toast.error('Cole um JSON de exemplo válido'); return; }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-suggest-mapping', {
+        body: { example_payload: payload, target_entity: targetEntity, source_hint: name || undefined },
+      });
+      if (error) throw error;
+      const mapping = data?.mapping ?? {};
+      setFieldMappingRaw(JSON.stringify(mapping, null, 2));
+      const conf = Math.round((data?.overall_confidence ?? 0) * 100);
+      toast.success(`Mapping sugerido (confiança ${conf}%)${data?.fallback ? ' · fallback determinístico' : ''}`);
+    } catch (e) {
+      toast.error(`Falha IA: ${e instanceof Error ? e.message : 'erro'}`);
+    } finally { setAiLoading(false); }
+  };
 
   const handleSave = async () => {
     let mapping: Record<string, string> = {};
@@ -132,6 +154,22 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
             <Label>Origens permitidas (CSV, opcional)</Label>
             <Input value={allowedOrigins} onChange={e => setAllowedOrigins(e.target.value)} placeholder="lovable.app, meusite.com" />
             <p className="text-xs text-muted-foreground mt-1">Vazio = aceitar de qualquer origem.</p>
+          </div>
+
+          <div className="border border-dashed border-border/60 rounded-md p-3 bg-muted/20 space-y-2">
+            <Label className="flex items-center gap-1.5 text-xs">
+              <Wand2 className="w-3.5 h-3.5" /> Auto-mapeamento por IA (opcional)
+            </Label>
+            <Textarea
+              value={examplePayload}
+              onChange={e => setExamplePayload(e.target.value)}
+              rows={4} className="font-mono text-xs"
+              placeholder='Cole aqui um payload JSON real recebido da origem para a IA sugerir o mapping…'
+            />
+            <Button type="button" size="sm" variant="outline" onClick={handleAiSuggest} disabled={aiLoading || !examplePayload.trim()}>
+              {aiLoading ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 mr-1" />}
+              Sugerir mapping com IA
+            </Button>
           </div>
 
           <div>

@@ -9,39 +9,34 @@ const InputSchema = z.object({
   question: z.string().min(3).max(500),
 });
 
-const SYSTEM_PROMPT = `Você é o assistente inteligente do SINGU CRM. O usuário fará perguntas em linguagem natural sobre seus dados de CRM.
+const CONNECTION_TABLES = [
+  "connection_configs", "connection_test_logs", "incoming_webhooks",
+  "incoming_webhook_logs", "connection_quotas", "connection_anomalies", "mcp_tool_calls",
+];
 
-Você tem acesso às seguintes tabelas do banco de dados (todas filtradas pelo user_id do usuário autenticado):
+const SYSTEM_PROMPT = `Você é o assistente inteligente do SINGU CRM. O usuário fará perguntas em linguagem natural sobre dados do CRM e integrações.
 
-TABELAS DISPONÍVEIS:
-- contacts: first_name, last_name, email, phone, role, role_title, company_id, relationship_score (0-100), relationship_stage, sentiment, tags[], birthday, created_at, updated_at
-- companies: name, cnpj, industry, city, state, phone, email, status, tags[], is_customer, is_supplier, annual_revenue, employee_count, created_at
-- interactions: contact_id, type (email/call/meeting/whatsapp/note), subject, notes, sentiment (positive/neutral/negative), duration_minutes, created_at
-- deals: title, value, stage (lead/qualified/proposal/negotiation/won/lost), contact_id, company_id, expected_close_date, probability, created_at
-- tasks: title, description, status (pending/in_progress/completed/cancelled), priority (low/medium/high/urgent), due_date, contact_id, company_id, created_at
+TABELAS DE CRM (filtrar SEMPRE por user_id = '{USER_ID}'):
+- contacts, companies, interactions, deals, tasks (campos típicos de CRM B2B).
+
+TABELAS DE INTEGRAÇÕES (admin — NÃO filtrar por user_id):
+- connection_configs(name, connection_type, is_active, last_test_status, last_test_latency_ms, last_tested_at)
+- connection_test_logs(connection_id, status, latency_ms, message, created_at)
+- incoming_webhooks(name, target_entity, is_active, total_calls, total_errors, last_called_at)
+- incoming_webhook_logs(webhook_id, status, http_status, latency_ms, error_message, created_at)
+- connection_quotas(webhook_id, calls_used, calls_limit, period_start)
+- connection_anomalies(webhook_id, anomaly_type, severity, explanation, detected_at, acknowledged_at)
+- mcp_tool_calls(tool_name, status, latency_ms, created_at)
 
 REGRAS:
-1. Gere APENAS consultas SELECT — nunca INSERT, UPDATE, DELETE, DROP, ALTER, etc.
-2. SEMPRE filtre por user_id = '{USER_ID}' para segurança
-3. Use ILIKE para buscas textuais com %termo%
-4. Limite resultados a no máximo 20 rows
-5. Para datas relativas: use NOW(), INTERVAL, date_trunc()
-6. Para contagem, use COUNT(*) com alias descritivo
-7. Retorne campos úteis, não SELECT *
-
-Responda com um JSON:
-{
-  "sql": "SELECT ...",
-  "explanation": "Explicação curta do que a query faz",
-  "display_type": "table|number|list"
-}
-
-Se a pergunta não for sobre dados do CRM ou não puder ser respondida com as tabelas disponíveis, retorne:
-{
-  "sql": null,
-  "explanation": "Motivo pelo qual não pode responder",
-  "display_type": "text"
-}`;
+1. Gere APENAS SELECT — nunca INSERT/UPDATE/DELETE/DDL.
+2. CRM: SEMPRE filtre por user_id = '{USER_ID}'.
+3. Integrações: NÃO adicione filtro user_id (são globais).
+4. Use ILIKE %termo% para buscas textuais.
+5. Limite a 20 rows.
+6. Datas relativas: NOW() - INTERVAL.
+7. Retorne JSON: {"sql":"...", "explanation":"...", "display_type":"table|number|list"}.
+   Se não puder responder: {"sql":null, "explanation":"...", "display_type":"text"}.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -117,9 +112,22 @@ Deno.serve(async (req) => {
       return jsonError("Consulta não permitida. Apenas leituras são aceitas.", 403, req);
     }
 
-    // Ensure user_id filter is present
-    if (!parsed_ai.sql.includes(userId)) {
+    // Tabelas de integrações são globais (admin) — não exigem filtro user_id
+    const sqlLower = parsed_ai.sql.toLowerCase();
+    const isAdminQuery = CONNECTION_TABLES.some(t => sqlLower.includes(t));
+    if (!isAdminQuery && !parsed_ai.sql.includes(userId)) {
       return jsonError("Consulta deve filtrar por usuário autenticado.", 403, req);
+    }
+
+    // Se for query admin, valida papel
+    if (isAdminQuery) {
+      const supabaseAuth = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { data: roleRow } = await supabaseAuth
+        .from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+      if (!roleRow) return jsonError("Apenas administradores podem consultar dados de integrações.", 403, req);
     }
 
     // Step 2: Execute the query
