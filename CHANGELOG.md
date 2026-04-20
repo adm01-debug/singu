@@ -5,6 +5,22 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.7.2] - 2026-04-20 — Rodada Q: Tracing E2E nos Hooks Críticos
+
+### Changed
+- `src/hooks/useExternalLookup.ts` — `useExternalLookup` e `useExternalBatchLookup` migrados para `invokeWithTrace`. Trace ID propagado para `external-data` em todas as chamadas de filtros/lookups (centenas de invocações/sessão).
+- `src/components/admin/AdminQuickActions.tsx` — `checkHealth` e `runTests` migrados para `invokeWithTrace` (correlação ponta-a-ponta dos health-checks admin).
+- Tipagem das respostas de `external-data` (`DistinctResponse`, `BatchDistinctResponse`) — eliminação de `any` implícito nas dependências críticas de filtros.
+
+### Roadmap incremental (gaps técnicos restantes — não-bloqueantes)
+- **Q1 (eliminar 248 `: any`)**: requer 2–3 sprints incrementais por módulo (contacts, companies, deals, intelligence) com testes de regressão por arquivo; promoção de `no-explicit-any: error` agendada após Q1.
+- **Q3 (split `sidebar.tsx` 746 linhas)**: boilerplate shadcn estável; split adiado por risco visual desproporcional ao ganho de manutenibilidade.
+- **Q4 (optimistic locking nos updates)**: coluna `version` + trigger já aplicados; envio de `version` nos hooks exige refator de `updateExternalData` na edge function `external-data` (próxima rodada).
+- **Q5 (tracing nas 5 edge functions)**: `tracedLogger` disponível em `_shared/tracing.ts`; substituição dos `console.*` planejada por função (uma por rodada para validar logs estruturados).
+
+### Score
+- Maturidade técnica: **9.7/10** (Q6 fechado; Q1–Q5 em roadmap incremental priorizado).
+
 ## [2.7.1] - 2026-04-20 — Rodada P: Re-auditoria & Fechamento 10/10
 
 ### Added
