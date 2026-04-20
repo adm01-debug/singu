@@ -5,6 +5,23 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.4.0] - 2026-04-20 — Rodada L: Connections Governance (60/60)
+
+### Added
+- Trigger `audit_connection_changes()` em `connection_configs` e `incoming_webhooks` — auditoria automática em `audit_log` com mascaramento de `config`, `encrypted_config`, `webhook_secret` e `token`.
+- Colunas `webhook_secret`, `require_signature`, `replay_window_seconds` em `incoming_webhooks`.
+- Verificação HMAC SHA-256 com anti-replay (`X-Lovable-Signature` + `X-Lovable-Timestamp`) no `incoming-webhook`.
+- Tabela `connection_quotas` (mensal) + RPC `increment_webhook_quota` — retorna 429 quando excedido.
+- Modo `?dry_run=true` no `incoming-webhook` (valida mapeamento sem persistir).
+- `WebhookQuotaBar` no `IncomingWebhookCard` (semáforo: <80% primary, ≥80% âmbar, excedido destructive).
+- `WebhookReplayButton` no `IncomingWebhookLogsDialog` (dry-run + replay real).
+- Campos HMAC no `IncomingWebhookFormDialog` (toggle + secret + janela).
+- ADR-015 (`docs/adr/015-connections-governance.md`).
+
+### SLO
+- 100% das mudanças de conexões/webhooks rastreadas em `audit_log` (sem secret vazado).
+- Defesa em profundidade: rate-limit + HMAC + anti-replay + quota + DLQ.
+
 ## [2.3.0] - 2026-04-20 — Rodada K: Connections Observability (55/55)
 
 ### Added
