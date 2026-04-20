@@ -113,6 +113,7 @@ const AdminFieldMapping = lazy(() => import("./pages/AdminFieldMapping"));
 const AdminEmailDiagnostics = lazy(() => import("./pages/AdminEmailDiagnostics"));
 const AdminVoiceDiagnostics = lazy(() => import("./pages/AdminVoiceDiagnostics"));
 const AdminLuxConfig = lazy(() => import("./pages/AdminLuxConfig"));
+const AdminConexoes = lazy(() => import("./pages/AdminConexoes"));
 const Deduplicacao = lazy(() => import("./pages/Deduplicacao"));
 const ErpViewer = lazy(() => import("./pages/ErpViewer"));
 const Documentos = lazy(() => import("./pages/Documentos"));
@@ -716,6 +717,15 @@ const AnimatedRoutes = () => {
           <LazyPage>
             <RequireAdminLazy>
               <AdminSecretsManagement />
+            </RequireAdminLazy>
+          </LazyPage>
+        </RequireAuth>
+      } />
+      <Route path="/admin/conexoes" element={
+        <RequireAuth>
+          <LazyPage>
+            <RequireAdminLazy>
+              <AdminConexoes />
             </RequireAdminLazy>
           </LazyPage>
         </RequireAuth>

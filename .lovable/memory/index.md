@@ -10,6 +10,7 @@ Não implementar módulos de Produtos nem Propostas (escopo proibido).
 Excelência sustentada: 45/45 melhorias atômicas (Rodadas A-I). Gate a11y no CI.
 
 ## Memories
+- [Connections Module](mem://features/connections-module) — /admin/conexoes: integrações Supabase/Bitrix24/n8n/MCP Claude + webhooks entrantes com tester, logs e MCP server JSON-RPC.
 - [Rodada I — Polimento Final](mem://features/ux-rodada-i-polimento-profundo) — 45/45: testes axe, registry de atalhos, Gallery v2, health-aggregate, ADR-012.
 - [Rodada H — Acessibilidade WCAG AA](mem://features/ux-rodada-h-accessibility) — 40/40: SkipNav, RouteAnnouncer, useAccessibleToast, foco visível.
 - [Standards — Accessibility WCAG AA](mem://standards/accessibility-wcag-aa) — Auditoria documentada de superfícies críticas.
