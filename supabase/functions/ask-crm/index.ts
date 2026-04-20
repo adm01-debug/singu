@@ -44,6 +44,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: scopedCorsHeaders(req) });
   }
 
+  const traceId = extractTraceId(req);
+  const log = tracedLogger(traceId, "ask-crm");
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const limited = limiter.check(ip);
   if (limited) return limited;
