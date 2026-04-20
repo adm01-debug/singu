@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { scopedCorsHeaders, jsonError, jsonOk } from "../_shared/auth.ts";
+import { extractTraceId, tracedLogger } from "../_shared/tracing.ts";
 
 interface DailyAgg {
   date: string;
@@ -34,6 +35,9 @@ Se não houver anomalias, retorne {"anomalies": []}.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: scopedCorsHeaders(req) });
+
+  const traceId = extractTraceId(req);
+  const log = tracedLogger(traceId, "connection-anomaly-detector");
 
   // Aceita POST com header secreto (cron) ou admin autenticado
   const cronSecret = req.headers.get("x-cron-secret");
@@ -123,7 +127,7 @@ Deno.serve(async (req) => {
 
     return jsonOk({ inserted: totalInserted, scanned: webhooks.length, isCron }, req);
   } catch (e) {
-    console.error("anomaly-detector error:", e);
+    log.error("anomaly-detector uncaught error", { error: e instanceof Error ? e.message : String(e) });
     return jsonError(e instanceof Error ? e.message : "Erro desconhecido", 500, req);
   }
 });

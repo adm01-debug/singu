@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) return jsonError("Limite de requisições excedido.", 429, req);
       if (aiResponse.status === 402) return jsonError("Créditos insuficientes.", 402, req);
-      console.error("AI error:", aiResponse.status);
+      log.error("AI gateway error", { status: aiResponse.status });
       return jsonError("Erro ao processar pergunta", 500, req);
     }
 
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      console.error("Query execution error:", error);
+      log.error("Query execution failed", { error: error.message, sql: parsed_ai.sql });
       return jsonOk({
         answer: parsed_ai.explanation,
         data: null,
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
       sql: parsed_ai.sql,
     }, req);
   } catch (error) {
-    console.error("ask-crm error:", error);
+    log.error("ask-crm uncaught error", { error: error instanceof Error ? error.message : String(error) });
     return jsonError(error instanceof Error ? error.message : "Erro desconhecido", 500, req);
   }
 });
