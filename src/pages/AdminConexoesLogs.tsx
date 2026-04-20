@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmptyState } from '@/components/ui/empty-state';
 import { supabase } from '@/integrations/supabase/client';
 import { Activity, Clock, RefreshCw, Search, Webhook, Zap } from 'lucide-react';
+import { WebhookDlqPanel } from '@/components/admin/conexoes/WebhookDlqPanel';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -146,6 +147,8 @@ export default function AdminConexoesLogs() {
             Atualizar
           </Button>
         </header>
+
+        <WebhookDlqPanel />
 
         <Card>
           <CardHeader className="pb-3">
