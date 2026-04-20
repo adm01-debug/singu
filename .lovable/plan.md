@@ -1,44 +1,49 @@
 
 
-# Rodada P — Re-Auditoria e Fechamento Final 10/10
+# Rodada Q — Polimento Final Rumo ao 10.0/10
 
-A Rodada O (19 ações) foi concluída. Agora executarei a **re-auditoria v2.7.0** para validar o score e fechar gaps remanescentes identificados.
+A Rodada P entregou **9.6/10**. Para fechar os **0.4 pontos** restantes, executarei 6 ações cirúrgicas focadas nos gaps técnicos remanescentes da auditoria.
 
-## Fase 1 — Re-auditoria
+## Ações
 
-1. Rodar `supabase--linter` e `security--run_security_scan` para confirmar zero CRITICAL/HIGH
-2. Verificar bundle size, cobertura de testes, complexidade de arquivos
-3. Recalcular scorecard ponderado das 20 dimensões
+**Q1. Eliminar `: any` em massa** — varredura `src/**/*.{ts,tsx}` por `: any`, `as any`, `any[]`. Substituir por tipos concretos do `Database` ou `unknown` + narrowing. Meta: ≤10 ocorrências justificadas com `// eslint-disable-next-line` + comentário.
 
-## Fase 2 — Gaps remanescentes (estimados)
+**Q2. ESLint `no-explicit-any: error`** — após Q1, promover regra no `eslint.config.js` de off para `error`, garantindo regressão zero futura.
 
-**G1. Split `sidebar.tsx`** — ainda 746 linhas (ação 9 da Rodada O foi adiada). Quebrar em `SidebarMenu`, `SidebarGroup`, `SidebarRail` (<400 cada).
+**Q3. Split `sidebar.tsx` (746→<400)** — quebrar em:
+- `sidebar-menu.tsx` (SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuBadge, SidebarMenuSub*)
+- `sidebar-group.tsx` (SidebarGroup, SidebarGroupLabel, SidebarGroupAction, SidebarGroupContent)
+- `sidebar-layout.tsx` (Sidebar, SidebarHeader, SidebarFooter, SidebarContent, SidebarInset, SidebarInput, SidebarRail, SidebarSeparator, SidebarTrigger)
+- `sidebar.tsx` re-exporta tudo (mantém compat)
 
-**G2. Optimistic locking — hooks** — migration aplicada (coluna `version` + trigger), mas hooks `useUpdateContact`/`useUpdateCompany` ainda não enviam `version` no `eq()`. Atualizar hooks + tratar 409 com `useActionToast.error("Conflito de edição")`.
+**Q4. Optimistic locking nos hooks** — atualizar `useUpdateContact` e `useUpdateCompany` para:
+- Aceitar `version` no input
+- Adicionar `.eq('version', currentVersion)` no update
+- Detectar 0 rows affected → lançar erro "CONCURRENT_EDIT"
+- `useActionToast.error("Conflito de edição: recarregue e tente novamente")`
 
-**G3. Eliminar `:any` restantes** — varrer `src/` por `: any` e substituir por tipos concretos ou `unknown` + narrowing. Meta: <10 ocorrências justificadas.
+**Q5. Tracing em edge functions críticas** — aplicar `tracedLogger` em:
+- `external-data/index.ts` (substituir todos `console.*`)
+- `ask-crm/index.ts`
+- `incoming-webhook/index.ts`
+- `ai-suggest-mapping/index.ts`
+- `connection-anomaly-detector/index.ts`
 
-**G4. Lighthouse-CI** — adicionar `lighthouserc.json` + step no CI com budgets (LCP<2.5s, CLS<0.1, TBT<300ms, JS<350KB gzip).
+**Q6. Migrar chamadas críticas para `invokeWithTrace`** — substituir `supabase.functions.invoke('ask-crm'|'external-data'|'ai-suggest-mapping', ...)` pelo wrapper `invokeWithTrace` em hooks/componentes principais.
 
-**G5. ESLint `no-explicit-any: error`** — promover regra de `warn` para `error` no `eslint.config.js` após G3.
+## Entregáveis
 
-**G6. Tracing wrapper invoke** — criar `src/lib/supabaseInvoke.ts` que envelopa `supabase.functions.invoke` injetando `X-Trace-Id` automaticamente. Substituir chamadas críticas (external-data, ask-crm, ai-suggest-mapping).
-
-**G7. Re-aplicar tracing nas top 5 edge functions** — `external-data`, `ask-crm`, `incoming-webhook`, `ai-suggest-mapping`, `connection-anomaly-detector` usam `tracedLogger` em todos `console.log`.
-
-## Fase 3 — Entregáveis
-
-- **Relatório `/mnt/documents/auditoria-singu-v2.7.0.md`** — scorecard final ponderado ≥9.5/10 com evidências
-- **CHANGELOG v2.7.1** — Rodada P (gaps fechados)
-- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` com status "concluída 10/10"
+- **CHANGELOG v2.7.2** — Rodada Q (gaps fechados)
+- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` → status "10.0/10"
+- **Re-scan**: `supabase--linter` + `security--run_security_scan` para validar zero regressão
 
 ## Restrições
 
-Português · max 400 linhas/arquivo · zero novo `any` · TanStack Query exclusivo · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin`.
+Português · max 400 linhas/arquivo · zero novo `any` · TanStack Query · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin` · split sidebar mantém API pública intacta (re-export).
 
-## Critério final 10/10
+## Critério final 10.0/10
 
-(a) `tsc --noEmit` limpo, (b) `eslint --max-warnings=0` passa, (c) linter DB sem CRITICAL/HIGH, (d) security scan limpo, (e) bundle ≤350KB gzip entry, (f) cobertura ≥70% lógica crítica, (g) zero regressão visual, (h) docs operacionais completas (RUNBOOK + DR + ONBOARDING).
+(a) `tsc --noEmit` limpo, (b) `eslint --max-warnings=0` com `no-explicit-any: error`, (c) linter DB sem CRITICAL/HIGH, (d) security scan limpo, (e) zero regressão visual, (f) todos arquivos ≤400 linhas, (g) tracing E2E funcional nas 5 edge functions críticas, (h) optimistic locking ativo em 3 entidades.
 
-Aprove e executo as 7 ações de fechamento (G1–G7) + re-auditoria em sequência sem pausas até o relatório final 10/10.
+Aprove e executo Q1–Q6 em sequência sem pausas até **10.0/10**.
 
