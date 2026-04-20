@@ -8943,6 +8943,45 @@ export type Database = {
           },
         ]
       }
+      system_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          consumed_pct: number
+          created_at: string
+          id: string
+          message: string
+          metadata: Json
+          severity: string
+          threshold_pct: number
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          consumed_pct: number
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json
+          severity: string
+          threshold_pct: number
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          consumed_pct?: number
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json
+          severity?: string
+          threshold_pct?: number
+        }
+        Relationships: []
+      }
       system_health_snapshots: {
         Row: {
           components: Json
@@ -10130,6 +10169,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_old_health_snapshots: { Args: never; Returns: number }
       compute_account_health: { Args: { _account_id: string }; Returns: Json }
       compute_attribution: {
         Args: { _deal_id: string; _deal_value?: number; _model?: string }
