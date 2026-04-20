@@ -1,12 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, RefreshCw, Copy, Activity, ShieldCheck } from 'lucide-react';
+import { Edit, Trash2, RefreshCw, Copy, Activity, ShieldCheck, Code2 } from 'lucide-react';
 import { useIncomingWebhooks, type IncomingWebhook } from '@/hooks/useIncomingWebhooks';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { IncomingWebhookLogsDialog } from './IncomingWebhookLogsDialog';
 import { WebhookQuotaBar } from './WebhookQuotaBar';
+import { WebhookSnippetsSheet } from './WebhookSnippetsSheet';
 import { Separator } from '@/components/ui/separator';
 
 interface Props {
