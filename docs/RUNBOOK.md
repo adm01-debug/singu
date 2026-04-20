@@ -2,13 +2,14 @@
 
 > **Documento único e autoritativo** para deploy, rollback, monitoramento e resposta a incidentes em produção.
 >
-> **Versão**: v2.0.0 — _Rodada Q: maturidade SRE (error budget, RACI, capacidade, chaos, blast radius)._
+> **Versão**: v2.2.0 — _Rodada R: observabilidade ativa do error budget (sparkline 30d, retenção 60d, alertas automáticos 50/75/100%)._
 
 ## 📜 Changelog
 
 | Versão | Data | Autor | Mudanças |
 |---|---|---|---|
-| **v2.1.0** | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` operacional; placeholders datados; template de postmortem com guard-rails + exemplo preenchido (`postmortem-example.md`); snapshots persistidos em `system_health_snapshots` via cron 5min |
+| **v2.2.0** | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` ganha sparkline de uptime diário (30d) com linha de SLO; retenção automática de snapshots >60d via cron semanal `system-health-snapshots-cleanup`; alertas automáticos `error_budget_50/75/100` em `system_alerts` (idempotentes 24h, exibidos no painel) |
+| v2.1.0 | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` operacional; placeholders datados; template de postmortem com guard-rails + exemplo preenchido (`postmortem-example.md`); snapshots persistidos em `system_health_snapshots` via cron 5min |
 | v2.0.0 | 2026-04-20 | @lovable-sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
 | v1.0.0 | 2026-04-13 | @lovable-docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
 
