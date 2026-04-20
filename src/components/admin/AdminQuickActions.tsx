@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeWithTrace } from '@/lib/supabaseInvoke';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -17,7 +18,7 @@ export function AdminQuickActions() {
   const checkHealth = useCallback(async () => {
     setActionLoading('health', true);
     try {
-      const { data, error } = await supabase.functions.invoke('health', { body: {} });
+      const { data, error } = await invokeWithTrace<{ status?: string }>('health', { body: {} });
       if (error) throw error;
       const status = data?.status || 'unknown';
       if (status === 'healthy') {
@@ -67,7 +68,7 @@ export function AdminQuickActions() {
       const results: { name: string; ok: boolean }[] = [];
 
       // Test health endpoint
-      const { error: healthErr } = await supabase.functions.invoke('health', { body: {} });
+      const { error: healthErr } = await invokeWithTrace('health', { body: {} });
       results.push({ name: 'Health Check', ok: !healthErr });
 
       // Test DB connection
@@ -75,7 +76,7 @@ export function AdminQuickActions() {
       results.push({ name: 'Database Local', ok: !dbErr });
 
       // Test external data
-      const { error: extErr } = await supabase.functions.invoke('external-data', {
+      const { error: extErr } = await invokeWithTrace('external-data', {
         body: { action: 'select', table: 'contacts', select: 'id', range: { from: 0, to: 0 } },
       });
       results.push({ name: 'Banco Externo', ok: !extErr });
