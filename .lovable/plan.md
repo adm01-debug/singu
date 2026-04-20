@@ -1,82 +1,68 @@
 
-# Plano: Bateria de Testes Abrangentes — Documentação SRE v2.0.0
+# Plano: Resolver os 3 findings amarelos da auditoria SRE v2.0.0 → 10/10
 
-## Escopo
+## Contexto
 
-Validar **exclusivamente** o que foi implementado na última rodada (Runbook v2.0.0 + arquivos satélites). Como são entregas **documentais** (não-executáveis), o teste é estrutural, semântico e de integração com a base de código existente.
+A auditoria 30/30 aprovou a entrega com 3 ressalvas amarelas. Esta rodada elimina cada uma com excelência, em sequência, sem pausas.
 
-## Arquivos sob teste
+## Findings a corrigir
 
-1. `docs/RUNBOOK.md` (v2.0.0)
-2. `docs/postmortem-template.md` (novo)
-3. `docs/dr-drills/README.md` (novo)
+| # | Finding | Severidade | Solução |
+|---|---|---|---|
+| F1 | Placeholders `AAAA-MM-DD` no changelog do RUNBOOK | Amarelo | Substituir por data real (2026-04-20) e autor "@lovable-sre" na entrada v2.0.0 |
+| F2 | Placeholders genéricos no `postmortem-template.md` | Amarelo (esperado — é template) | Adicionar nota explícita "Este é um template — substitua AAAA-MM-DD ao usar" + exemplo preenchido como apêndice para reduzir ambiguidade |
+| F3 | Referência a `/admin/error-budget` sem página real | Amarelo | Implementar página mínima funcional `src/pages/admin/ErrorBudget.tsx` consumindo `system-health` histórico, com cálculo de budget consumido na janela de 30 dias e indicador de freeze |
 
-## Bateria de Testes — 6 Camadas × 30 cenários
+## Execução sequencial
 
-### Camada 1 — Integridade Estrutural (5 testes)
-- T1.1 Os 3 arquivos existem e têm tamanho >0
-- T1.2 RUNBOOK.md tem header de versão semântica (v2.0.0) + tabela de changelog
-- T1.3 Quick Reference Card está no topo (primeiras 80 linhas)
-- T1.4 Sumário/índice presente e navegável (anchors válidos)
-- T1.5 Encoding UTF-8 sem caracteres corrompidos
+### Etapa 1 — F1: Datar o changelog (RUNBOOK.md)
+- Editar header de versão: substituir `AAAA-MM-DD` por `2026-04-20`
+- Preencher coluna autor com `@lovable-sre`
+- Adicionar linha v1.0.0 retroativa (rodada anterior) para histórico completo
 
-### Camada 2 — Cobertura SRE das 10 Ações Aprovadas (10 testes)
-- T2.1 Error Budget Policy: 99.5% / 3.6h-mês / freeze >50%
-- T2.2 Matriz RACI: 4 papéis × 6 atividades
-- T2.3 Template de Postmortem extraído + linkado do RUNBOOK
-- T2.4 Tabela de Capacidade: ≥4 sinais (interactions, edge fn, IA tokens, DB pool)
-- T2.5 Calendário Game Days: 4 cenários Q1-Q4
-- T2.6 Backup Verification Protocol mensal documentado
-- T2.7 Dependency Map / Blast Radius (diagrama ASCII + tabela)
-- T2.8 On-Call Handoff Checklist com 10 itens
-- T2.9 Quick Reference Card com rollback + kill switch + health
-- T2.10 Changelog v2.0.0 com data/autor/mudança
+### Etapa 2 — F2: Robustecer template de postmortem
+- Adicionar bloco no topo: "⚠️ Este é um template. Substitua AAAA-MM-DD, @nome e {Título} ao usar."
+- Criar `docs/postmortem-example.md` com incidente fictício 100% preenchido (referência viva)
+- Linkar exemplo no topo do template
 
-### Camada 3 — Consistência com Código (6 testes)
-- T3.1 Endpoint health citado é `system-health` (não `health` legado)
-- T3.2 Funções referenciadas existem em `supabase/functions/` (external-data, ask-crm, lead-routing, voice-agent, etc.)
-- T3.3 Páginas admin citadas existem em `src/pages/admin/` (audit-trail, error-logs, lux-config, etc.)
-- T3.4 Comandos de rollback alinhados com CI/CD real do projeto
-- T3.5 SLOs (99.5%) coerentes com `mem://standards/performance-budget`
-- T3.6 Severidades (P0-P3) coerentes com `mem://features/ux-rodada-f-hardening`
+### Etapa 3 — F3: Página `/admin/error-budget`
+**Arquivos novos:**
+- `src/pages/admin/ErrorBudget.tsx` — página com 4 cards: SLO target (99.5%), uptime real 30d, budget consumido (%), status freeze (🟢/🟡/🔴)
+- `src/hooks/useErrorBudget.ts` — TanStack Query consumindo `system-health` + cálculo client-side
+- `supabase/functions/error-budget/index.ts` — edge function que agrega últimas 720h de health checks (pg_cron já roda system-health), retorna `{ uptime_pct, downtime_minutes, budget_consumed_pct, freeze_active }`
 
-### Camada 4 — Cross-References (4 testes)
-- T4.1 RUNBOOK→postmortem-template (link relativo válido)
-- T4.2 RUNBOOK→dr-drills/README (link relativo válido)
-- T4.3 RUNBOOK→LOAD_TESTING.md, FIELD_MAPPING.md (links existentes)
-- T4.4 Memórias citadas existem (`mem://...`)
+**Roteamento:**
+- Adicionar rota `<Route path="/admin/error-budget">` em `App.tsx` protegida por `useIsAdmin`
+- Adicionar item "Error Budget" no menu admin (sidebar)
 
-### Camada 5 — Qualidade Editorial (3 testes)
-- T5.1 100% PT-BR (regra Core do projeto)
-- T5.2 Sem TODO/FIXME/placeholders esquecidos
-- T5.3 Tabelas markdown bem formadas (pipe alignment)
+**Persistência:**
+- Migration: criar tabela `system_health_snapshots` (id, timestamp, status, components jsonb) populada pelo `system-health` em cada execução
+- Cron de 5min: invocar `system-health` e snapshot
 
-### Camada 6 — Usabilidade em Incidente Real (2 testes-cenário)
-- T6.1 **Cenário "P0 às 3h da manhã"**: plantonista abre RUNBOOK → consegue rollback em <30s lendo só o Quick Ref Card?
-- T6.2 **Cenário "Postmortem 48h após"**: template gera documento auto-suficiente sem consultar fontes externas?
+### Etapa 4 — Atualizar RUNBOOK
+- Remover marker "TODO" da referência `/admin/error-budget`
+- Adicionar seção "Como interpretar o painel" no Quick Reference Card
 
-## Execução
+### Etapa 5 — Re-auditoria
+- Re-executar os 30 testes
+- Confirmar 30/30 verde sem amarelos
+- Atualizar memória `mem://features/ux-rodada-o-auditoria-10-10` com o status final
 
-Tudo via tools read-only:
-- `code--view` nos 3 arquivos novos/editados
-- `code--search_files` para validar referências cruzadas (endpoints, funções, páginas)
-- `code--list_dir` em `supabase/functions/` e `src/pages/admin/` para confirmar existência
-- `code--exec wc -l` e `grep` para métricas estruturais
+## Arquivos tocados
 
-## Entregáveis
+**Editados:**
+- `docs/RUNBOOK.md`
+- `docs/postmortem-template.md`
+- `src/App.tsx` (rota)
+- `src/components/AppSidebar.tsx` (menu admin)
 
-Relatório PT-BR formato tabela:
-
-| # | Camada | Teste | Status | Evidência |
-|---|--------|-------|--------|-----------|
-| T1.1 | Estrutural | Arquivos existem | ✅/❌ | `wc -l`... |
-
-Mais:
-- **Score final** (X/30)
-- **Bugs encontrados** (se houver) com severidade
-- **Recomendações de correção** priorizadas
-- **Veredito**: aprovação 10/10, aprovação com ressalvas, ou reprovação
+**Novos:**
+- `docs/postmortem-example.md`
+- `src/pages/admin/ErrorBudget.tsx`
+- `src/hooks/useErrorBudget.ts`
+- `supabase/functions/error-budget/index.ts`
+- Migration: `system_health_snapshots` + cron
 
 ## Critério de fechamento
 
-(a) 30 cenários executados, (b) cada um com evidência concreta (linha/grep/diff), (c) bugs classificados por severidade, (d) veredito explícito sobre se a entrega SRE v2.0.0 está pronta para produção ou requer iteração.
+(a) Changelog v2.0.0 datado e autorado, (b) template de postmortem com guard-rails + exemplo preenchido, (c) `/admin/error-budget` funcional mostrando uptime real e status de freeze, (d) re-auditoria 30/30 sem ressalvas, (e) memória atualizada confirmando 10/10.
