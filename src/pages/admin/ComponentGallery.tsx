@@ -199,6 +199,69 @@ export default function ComponentGallery() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* ExternalDataCard — 5 estados */}
+          <TabsContent value="external" className="grid md:grid-cols-2 gap-4">
+            <ExternalDataCard title="Loading" icon={<Database className="h-4 w-4" />} isLoading>
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Circuit Open"
+              icon={<Database className="h-4 w-4" />}
+              error={new CircuitOpenError('breaker open')}
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Erro genérico"
+              icon={<Database className="h-4 w-4" />}
+              error={new Error('Falha ao buscar dados')}
+              onRetry={() => toast.info('Retry disparado')}
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Empty"
+              icon={<Database className="h-4 w-4" />}
+              hasData={false}
+              emptyMessage="Sem dados para exibir"
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard title="Com dados" icon={<Database className="h-4 w-4" />} hasData>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Receita do mês</CardTitle></CardHeader>
+                <CardContent><p className="text-2xl font-bold">R$ 124.500</p></CardContent>
+              </Card>
+            </ExternalDataCard>
+          </TabsContent>
+
+          {/* BulkActionsBar mock */}
+          <TabsContent value="bulk">
+            <Card>
+              <CardHeader>
+                <CardTitle>BulkActionsBar</CardTitle>
+                <CardDescription>Barra fixa de ações em lote (mock estático).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="secondary">12 selecionados</Badge>
+                    <span className="text-muted-foreground">de 247</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="gap-1">
+                      <Star className="h-4 w-4" /> Favoritar
+                    </Button>
+                    <Button size="sm" variant="outline">Mover</Button>
+                    <Button size="sm" variant="destructive" className="gap-1">
+                      <Trash2 className="h-4 w-4" /> Excluir
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
