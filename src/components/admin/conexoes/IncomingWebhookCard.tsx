@@ -18,6 +18,7 @@ interface Props {
 export function IncomingWebhookCard({ webhook, onEdit }: Props) {
   const { remove, rotateToken } = useIncomingWebhooks();
   const [showLogs, setShowLogs] = useState(false);
+  const [showSnippets, setShowSnippets] = useState(false);
 
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const url = `https://${projectId}.functions.supabase.co/incoming-webhook/${webhook.token}`;
@@ -56,6 +57,9 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
             <div className="flex items-center gap-1 shrink-0">
               <Button size="sm" variant="ghost" onClick={() => setShowLogs(true)} title="Logs">
                 <Activity className="w-4 h-4" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowSnippets(true)} title="Ver exemplos de integração">
+                <Code2 className="w-4 h-4" />
               </Button>
               <Button size="sm" variant="ghost" onClick={onEdit} title="Editar">
                 <Edit className="w-4 h-4" />
