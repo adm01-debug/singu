@@ -1506,6 +1506,98 @@ export type Database = {
         }
         Relationships: []
       }
+      connection_configs: {
+        Row: {
+          config: Json
+          connection_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean
+          last_test_latency_ms: number | null
+          last_test_message: string | null
+          last_test_status: string | null
+          last_tested_at: string | null
+          name: string
+          secret_refs: Json
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          connection_type: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_test_latency_ms?: number | null
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          name: string
+          secret_refs?: Json
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          connection_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_test_latency_ms?: number | null
+          last_test_message?: string | null
+          last_test_status?: string | null
+          last_tested_at?: string | null
+          name?: string
+          secret_refs?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      connection_test_logs: {
+        Row: {
+          connection_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          latency_ms: number | null
+          message: string | null
+          status: string
+          tested_by: string | null
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          status: string
+          tested_by?: string | null
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          status?: string
+          tested_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_test_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connection_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_cadence: {
         Row: {
           auto_remind: boolean | null
@@ -4473,6 +4565,107 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      incoming_webhook_logs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          latency_ms: number | null
+          payload: Json | null
+          response: Json | null
+          source_ip: string | null
+          status: string
+          user_agent: string | null
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          payload?: Json | null
+          response?: Json | null
+          source_ip?: string | null
+          status: string
+          user_agent?: string | null
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          payload?: Json | null
+          response?: Json | null
+          source_ip?: string | null
+          status?: string
+          user_agent?: string | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incoming_webhooks: {
+        Row: {
+          allowed_origins: string[] | null
+          created_at: string
+          created_by: string
+          description: string | null
+          field_mapping: Json
+          id: string
+          is_active: boolean
+          last_called_at: string | null
+          name: string
+          target_entity: string
+          token: string
+          total_calls: number
+          total_errors: number
+          updated_at: string
+        }
+        Insert: {
+          allowed_origins?: string[] | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          field_mapping?: Json
+          id?: string
+          is_active?: boolean
+          last_called_at?: string | null
+          name: string
+          target_entity: string
+          token: string
+          total_calls?: number
+          total_errors?: number
+          updated_at?: string
+        }
+        Update: {
+          allowed_origins?: string[] | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          field_mapping?: Json
+          id?: string
+          is_active?: boolean
+          last_called_at?: string | null
+          name?: string
+          target_entity?: string
+          token?: string
+          total_calls?: number
+          total_errors?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       insights: {
         Row: {
