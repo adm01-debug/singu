@@ -1,3 +1,4 @@
+// Edge function: error-budget — agrega janela de 30d de system_health_snapshots
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 function getScopedOrigin(req: Request): string {
