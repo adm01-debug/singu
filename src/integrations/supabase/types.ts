@@ -1513,6 +1513,8 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          encrypted_config: string | null
+          encryption_version: number
           id: string
           is_active: boolean
           last_test_latency_ms: number | null
@@ -1529,6 +1531,8 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          encrypted_config?: string | null
+          encryption_version?: number
           id?: string
           is_active?: boolean
           last_test_latency_ms?: number | null
@@ -1545,6 +1549,8 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          encrypted_config?: string | null
+          encryption_version?: number
           id?: string
           is_active?: boolean
           last_test_latency_ms?: number | null
@@ -9671,6 +9677,7 @@ export type Database = {
       }
     }
     Functions: {
+      _connection_encryption_key: { Args: never; Returns: string }
       buyer_add_comment: {
         Args: { _body: string; _label?: string; _token: string }
         Returns: string
@@ -9697,7 +9704,12 @@ export type Database = {
         Args: { _days_ahead?: number; _user_id: string }
         Returns: Json
       }
+      decrypt_connection_config: {
+        Args: { p_encrypted: string }
+        Returns: Json
+      }
       dismiss_revops_alert: { Args: { _alert_id: string }; Returns: boolean }
+      encrypt_connection_config: { Args: { p_config: Json }; Returns: string }
       enqueue_smart_notification: {
         Args: {
           _action_url?: string
