@@ -1,7 +1,56 @@
 # SINGU CRM — Runbook Operacional
 
 > **Documento único e autoritativo** para deploy, rollback, monitoramento e resposta a incidentes em produção.
-> Última revisão: Rodada P (consolidação `RUNBOOK.md` + `runbook.md`).
+>
+> **Versão**: v2.0.0 — _Rodada Q: maturidade SRE (error budget, RACI, capacidade, chaos, blast radius)._
+
+## 📜 Changelog
+
+| Versão | Data | Autor | Mudanças |
+|---|---|---|---|
+| **v2.0.0** | AAAA-MM-DD | @sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
+| v1.0.0 | _consolidação P_ | @docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
+
+## 🆘 Quick Reference Card (1 página)
+
+> **Para uso sob pressão durante incidente.** Mais detalhes nas seções abaixo.
+
+```
+┌─ HEALTH ────────────────────────────────────────────────────┐
+│ curl https://dialogue-diamond.lovable.app/functions/v1/...  │
+│   .../system-health                                          │
+│ UI admin: header → SystemHealthWidget                        │
+│ Pública:  /status                                            │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ ROLLBACK ───────────────────────────────────────────────────┐
+│ Frontend:      Lovable → Histórico → Reverter (<2min)        │
+│ Edge function: Reverter código + redeploy automático (<5min) │
+│ DB migration:  forward-only (criar migration que desfaz)     │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ KILL SWITCHES (sem deploy) ─────────────────────────────────┐
+│ UPDATE connection_configs SET is_active=false                │
+│   WHERE provider IN ('lux','evolution','firecrawl',          │
+│                      'enrichlayer');                         │
+│ Voice AI: invalidar ELEVENLABS_API_KEY em Cloud→Secrets      │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ SEVERIDADE (resumo) ────────────────────────────────────────┐
+│ P1: health unhealthy >5min OU >50% sem login OU dado perdido │
+│ P2: módulo core >5% erro OU latência P95 >2× SLO por 15min   │
+│ P3: módulo secundário degradado <20% usuários                │
+│ P4: bug visual sem impacto                                   │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ ESCALATION ─────────────────────────────────────────────────┐
+│ 1) Plantonista (imediato P0/P1)                              │
+│ 2) Tech Lead (após 15min)                                    │
+│ 3) CTO (após 1h ou se PII exposta)                           │
+│ 4) Suporte Lovable (infra externa)                           │
+│ Detalhes: DISASTER_RECOVERY.md §Cadeia de escalation         │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ## 📚 Documentos relacionados
 
@@ -9,6 +58,8 @@
 - [`LOAD_TESTING.md`](./LOAD_TESTING.md) — Testes de carga k6, baselines de capacidade
 - [`SECURITY.md`](./SECURITY.md) — Políticas, RLS, hardening
 - [`EDGE_FUNCTIONS_API.md`](./EDGE_FUNCTIONS_API.md) — Contratos de cada função
+- [`postmortem-template.md`](./postmortem-template.md) — Template blameless de post-mortem
+- [`dr-drills/README.md`](./dr-drills/README.md) — Calendário de game days e protocolo de restore mensal
 - [`adr/`](./adr/) — 18 Architecture Decision Records
 
 ## 📋 Índice
@@ -19,12 +70,19 @@
 4. [Edge Functions — Inventário](#-edge-functions--inventário)
 5. [Banco de Dados](#-banco-de-dados)
 6. [Monitoramento, Tracing & SLOs](#-monitoramento-tracing--slos)
-7. [Severidades de Incidente](#-severidades-de-incidente)
-8. [Resposta a Incidentes](#-resposta-a-incidentes)
-9. [Playbook de Comunicação](#-playbook-de-comunicação)
-10. [Troubleshooting (12 cenários)](#-troubleshooting)
-11. [Feature Flags & Kill Switches](#-feature-flags--kill-switches)
-12. [Segurança & Rotação de Secrets](#-segurança--rotação-de-secrets)
+7. [Error Budget Policy](#-error-budget-policy)
+8. [Severidades de Incidente](#-severidades-de-incidente)
+9. [Matriz RACI de Incidentes](#-matriz-raci-de-incidentes)
+10. [Resposta a Incidentes](#-resposta-a-incidentes)
+11. [Playbook de Comunicação](#-playbook-de-comunicação)
+12. [Troubleshooting (12 cenários)](#-troubleshooting)
+13. [Feature Flags & Kill Switches](#-feature-flags--kill-switches)
+14. [Segurança & Rotação de Secrets](#-segurança--rotação-de-secrets)
+15. [Capacity Planning](#-capacity-planning)
+16. [Dependency Map & Blast Radius](#-dependency-map--blast-radius)
+17. [Chaos Engineering & Game Days](#-chaos-engineering--game-days)
+18. [Backup Verification](#-backup-verification)
+19. [On-Call Handoff Checklist](#-on-call-handoff-checklist)
 
 ---
 
