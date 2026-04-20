@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { trackScoreChange } from '@/lib/trackScoreChange';
-import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
+import { queryExternalData, insertExternalData, updateExternalData, updateExternalDataWithVersion, deleteExternalData, ConcurrentEditError } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
 
@@ -130,7 +130,7 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
     }
   };
 
-  const updateContact = async (id: string, updates: ContactUpdate) => {
+  const updateContact = async (id: string, updates: ContactUpdate, expectedVersion?: number) => {
     const previous = queryClient.getQueryData<Contact[]>(queryKey);
     queryClient.setQueryData<Contact[]>(queryKey, prev =>
       prev?.map(c => c.id === id ? { ...c, ...updates } as Contact : c) ?? []
@@ -142,7 +142,9 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
       for (const [k, v] of Object.entries(updates as Record<string, unknown>)) {
         if (!LOCAL_ONLY_FIELDS.has(k)) cleanUpdates[k] = v;
       }
-      const { data, error } = await updateExternalData<Contact>('contacts', id, cleanUpdates);
+      const { data, error } = expectedVersion !== undefined
+        ? await updateExternalDataWithVersion<Contact>('contacts', id, expectedVersion, cleanUpdates)
+        : await updateExternalData<Contact>('contacts', id, cleanUpdates);
       if (error) throw error;
       if (data) {
         queryClient.setQueryData<Contact[]>(queryKey, prev =>
@@ -159,7 +161,16 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
     } catch (error) {
       logger.error('Error updating contact:', error);
       if (previous) queryClient.setQueryData<Contact[]>(queryKey, previous);
-      toast({ title: 'Erro ao atualizar contato', description: 'As alterações foram revertidas.', variant: 'destructive' });
+      if (error instanceof ConcurrentEditError) {
+        toast({
+          title: 'Conflito de edição',
+          description: 'Outro usuário modificou este contato. Recarregue a página e tente novamente.',
+          variant: 'destructive',
+        });
+        await queryClient.invalidateQueries({ queryKey });
+      } else {
+        toast({ title: 'Erro ao atualizar contato', description: 'As alterações foram revertidas.', variant: 'destructive' });
+      }
       return null;
     }
   };
