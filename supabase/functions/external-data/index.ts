@@ -531,6 +531,14 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── Upstream gateway failure (Cloudflare 502/503/504 HTML) ──
+    const isUpstreamGateway = /502 Bad Gateway|503 Service|504 Gateway|cloudflare|<html/i.test(message);
+    if (isUpstreamGateway) {
+      log.warn("upstream gateway failure — returning fallback", { message: message.slice(0, 200) });
+      // Return 200 with fallback flag so client degrades gracefully and circuit breaker does not trip on transient upstream blips
+      return jsonOk({ error: 'SERVICE_UNAVAILABLE', fallback: true, data: [], count: 0 }, req);
+    }
+
     const status = message.includes('timeout') ? 504 : 500;
     return jsonError(message, status, req);
   }
