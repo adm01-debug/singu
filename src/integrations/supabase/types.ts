@@ -3649,6 +3649,13 @@ export type Database = {
             referencedRelation: "document_signatures"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "document_views_signature_id_fkey"
+            columns: ["signature_id"]
+            isOneToOne: false
+            referencedRelation: "document_signatures_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       documents: {
@@ -4367,6 +4374,13 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms_public"
             referencedColumns: ["id"]
           },
         ]
@@ -5261,6 +5275,13 @@ export type Database = {
             referencedRelation: "landing_pages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "landing_page_submissions_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       landing_pages: {
@@ -5498,6 +5519,13 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_magnets_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms_public"
             referencedColumns: ["id"]
           },
         ]
@@ -9879,6 +9907,132 @@ export type Database = {
       }
     }
     Views: {
+      csat_surveys_public: {
+        Row: {
+          channel: string | null
+          expires_at: string | null
+          id: string | null
+          public_token: string | null
+          score: number | null
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          channel?: string | null
+          expires_at?: string | null
+          id?: string | null
+          public_token?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          channel?: string | null
+          expires_at?: string | null
+          id?: string | null
+          public_token?: string | null
+          score?: number | null
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      document_signatures_public: {
+        Row: {
+          expires_at: string | null
+          id: string | null
+          rendered_html: string | null
+          signature_token: string | null
+          signed_at: string | null
+          signer_email: string | null
+          signer_name: string | null
+          status: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          expires_at?: string | null
+          id?: string | null
+          rendered_html?: string | null
+          signature_token?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_name?: string | null
+          status?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          expires_at?: string | null
+          id?: string | null
+          rendered_html?: string | null
+          signature_token?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_name?: string | null
+          status?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
+      forms_public: {
+        Row: {
+          description: string | null
+          fields: Json | null
+          id: string | null
+          name: string | null
+          redirect_url: string | null
+          slug: string | null
+          success_message: string | null
+        }
+        Insert: {
+          description?: string | null
+          fields?: Json | null
+          id?: string | null
+          name?: string | null
+          redirect_url?: string | null
+          slug?: string | null
+          success_message?: string | null
+        }
+        Update: {
+          description?: string | null
+          fields?: Json | null
+          id?: string | null
+          name?: string | null
+          redirect_url?: string | null
+          slug?: string | null
+          success_message?: string | null
+        }
+        Relationships: []
+      }
+      landing_pages_public: {
+        Row: {
+          blocks: Json | null
+          description: string | null
+          id: string | null
+          redirect_url: string | null
+          slug: string | null
+          theme: Json | null
+          title: string | null
+        }
+        Insert: {
+          blocks?: Json | null
+          description?: string | null
+          id?: string | null
+          redirect_url?: string | null
+          slug?: string | null
+          theme?: Json | null
+          title?: string | null
+        }
+        Update: {
+          blocks?: Json | null
+          description?: string | null
+          id?: string | null
+          redirect_url?: string | null
+          slug?: string | null
+          theme?: Json | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions_safe: {
         Row: {
           created_at: string | null
