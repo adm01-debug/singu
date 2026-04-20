@@ -217,6 +217,8 @@ Deno.serve(async (req) => {
     const table = typeof body.table === 'string' ? body.table : undefined;
     const operation = action || 'select';
 
+    log.info("request_received", { method: req.method, action: operation, table });
+
     // ─── WHOAMI (debug — exposes only the external DB host, never keys) ───
     if (operation === 'whoami') {
       const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL') || '';

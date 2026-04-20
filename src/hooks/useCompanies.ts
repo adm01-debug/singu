@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { queryExternalData, insertExternalData, updateExternalData, updateExternalDataWithVersion, deleteExternalData, ConcurrentEditError } from '@/lib/externalData';
+import { showConcurrentEditToast } from '@/lib/concurrentEditToast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
 
@@ -355,12 +356,7 @@ export function useCompanies(options?: { enabled?: boolean }) {
       if (previous) queryClient.setQueryData<CompaniesPage>(queryKey, previous);
       logger.error('Error updating company:', error);
       if (error instanceof ConcurrentEditError) {
-        toast({
-          title: 'Conflito de edição',
-          description: 'Outro usuário modificou esta empresa. Recarregue a página e tente novamente.',
-          variant: 'destructive',
-        });
-        await queryClient.invalidateQueries({ queryKey });
+        showConcurrentEditToast({ entity: 'empresa', queryClient, queryKey });
       } else {
         toast({ title: 'Erro ao atualizar empresa', description: 'Verifique os dados e tente novamente.', variant: 'destructive' });
       }

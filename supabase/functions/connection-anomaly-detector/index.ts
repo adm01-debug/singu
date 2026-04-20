@@ -44,6 +44,8 @@ Deno.serve(async (req) => {
   const expectedSecret = Deno.env.get("CRON_SECRET");
   const isCron = !!expectedSecret && cronSecret === expectedSecret;
 
+  log.info("request_received", { method: req.method, isCron });
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
