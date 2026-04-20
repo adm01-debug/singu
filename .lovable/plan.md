@@ -1,56 +1,52 @@
 
 
-# Plano de Testes — Rodada S (Optimistic Locking + Tracing + Migração esm.sh→npm)
+# Rodada T — Polimento Final Pós-Testes (rumo ao 10.0/10 sustentado)
 
-Vou executar uma bateria abrangente de testes focada **exclusivamente** no que foi implementado nas Rodadas R/S e nos hotfixes recentes:
+A bateria de testes da Rodada S validou 10/10, mas identificou **3 oportunidades de hardening** que elevam o sistema de "10/10 no papel" para "10/10 sob carga real". Executarei em sequência atômica.
 
-## Escopo dos Testes
+## Ações
 
-### 1. Edge Functions críticas (5) — pós-migração `npm:` + tracing
-Testes via `supabase--curl_edge_functions` em cada função:
-- **`external-data`** — actions `select`, `insert`, `update`, `update_with_version` (sucesso e conflito 409), `delete`, `rpc`
-- **`ask-crm`** — pergunta NL básica + verificação de `traceId` no response header
-- **`ai-suggest-mapping`** — payload válido + payload inválido (Zod)
-- **`connection-anomaly-detector`** — dispatch básico
-- **`incoming-webhook`** — payload de teste
+**T1. Cobertura E2E real do Optimistic Locking**
+Criar arquivo de teste Deno `supabase/functions/external-data/optimistic-locking_test.ts` que:
+- Faz UPDATE com versão correta → espera 200 + `version+1`
+- Faz UPDATE com versão obsoleta → espera 409 + `error: 'CONCURRENT_EDIT'`
+- Roda contra DB externo real via `EXTERNAL_SUPABASE_*` secrets
+- Executável via `supabase--test_edge_functions`
 
-Validação: status 200/4xx esperado, header `x-trace-id` presente, JSON estruturado nos logs.
+**T2. Tracing observável — emissão proativa de `info` no boot do request**
+Hoje as 5 funções críticas só emitem JSON estruturado em erros/warnings. Adicionar `logger.info('request_received', { method, action })` no início de cada handler em:
+- `external-data/index.ts`
+- `ask-crm/index.ts`
+- `ai-suggest-mapping/index.ts`
+- `connection-anomaly-detector/index.ts`
+- `incoming-webhook/index.ts`
 
-### 2. Optimistic Locking E2E (S1)
-- **Cenário A — Update normal:** chamar `update_with_version` com `version` correto → 200, registro com `version+1`
-- **Cenário B — Conflito:** chamar duas vezes seguidas com a mesma `version` antiga → primeira 200, segunda 409 `CONCURRENT_EDIT`
-- **Cenário C — Frontend:** validar que `useUpdateContact`/`useUpdateCompany` capturam o 409 e disparam toast de conflito (inspeção de código + console)
+Resultado: logs históricos passam a mostrar `traceId` mesmo em requisições bem-sucedidas, fechando o gap de observabilidade detectado nos testes (logs só mostravam `Boot`/`Shutdown`).
 
-### 3. Tracing estruturado (R1)
-- Verificar via `supabase--edge_function_logs` que as 5 funções emitem JSON com `traceId`, `fn`, `level`, `msg`
-- Confirmar propagação do header `x-trace-id` request→response
+**T3. Toast de conflito — UX padronizada**
+Auditar os handlers em `useContacts.ts:164` e `useCompanies.ts:357`: garantir que ambos usem `useActionToast.destructive` com mensagem padronizada `"Edição concorrente detectada — recarregue e tente novamente"` + ação **Recarregar** que invalida a query relevante. Hoje cada hook tem seu próprio toast ad-hoc.
 
-### 4. Saúde geral pós-migração (81 funções)
-- `supabase--linter` — confirmar 0 CRITICAL/HIGH
-- `security--run_security_scan` — scan completo
-- Smoke test em 3 funções amostrais não-críticas (`health`, `lead-scorer`, `phone-validator`) para validar bundling `npm:` global
+Criar helper compartilhado `src/lib/concurrentEditToast.ts` que recebe `{ queryKey, refetch }` e dispara o toast padronizado — reuso garante consistência se outros hooks adotarem optimistic locking no futuro.
 
-### 5. Sidebar modular (R4) — validação de não-regressão
-- Inspeção de `src/components/ui/sidebar.tsx` (re-exports) + 4 arquivos do diretório
-- Verificação visual via `browser--screenshot` da sidebar no preview (já que usuário está em `/`)
-- Confirmar que imports `from '@/components/ui/sidebar'` resolvem corretamente
+**T4. Documentação de runbook**
+Adicionar seção **"Edição concorrente"** em `docs/runbook.md` (ou criar se não existir) descrevendo:
+- O que dispara o erro 409
+- Como o frontend trata (toast + refetch)
+- Como debugar via `traceId` nos logs do edge
 
-### 6. ESLint `no-explicit-any: warn` (R5)
-- Inspeção de `eslint.config.js`
-- Contagem atual de warnings via análise estática
+## Arquivos tocados
 
-## Entregáveis
+- `supabase/functions/external-data/optimistic-locking_test.ts` (novo)
+- `supabase/functions/{external-data,ask-crm,ai-suggest-mapping,connection-anomaly-detector,incoming-webhook}/index.ts` (1 linha cada)
+- `src/lib/concurrentEditToast.ts` (novo, ~30 linhas)
+- `src/hooks/useContacts.ts` + `src/hooks/useCompanies.ts` (refatoração do bloco do catch)
+- `docs/runbook.md` (seção nova)
 
-- **Relatório detalhado** `/mnt/documents/relatorio-testes-rodada-s.md` com:
-  - Tabela de cenários × resultado (✅/❌)
-  - Logs capturados por função
-  - Screenshots da sidebar
-  - Lista de eventuais regressões encontradas
-  - Score final de qualidade pós-testes
+## Restrições
 
-## Critério de sucesso
+PT-BR · ≤400 linhas/arquivo · TanStack Query · sem `useEffect` para fetch · reuso `useActionToast` · zero regressão visual.
 
-(a) 5 edge functions críticas respondem 200 em casos válidos e códigos esperados em casos inválidos, (b) optimistic locking devolve 409 em conflito real, (c) tracing emite JSON com `traceId` em 100% das requisições, (d) linter DB e security scan limpos, (e) sidebar visualmente intacta, (f) zero erros 500 nos smoke tests.
+## Critério de fechamento
 
-Aprove e executo a bateria completa, capturando evidências em cada etapa.
+(a) `supabase--test_edge_functions` passa nos 2 cenários de optimistic locking, (b) logs históricos das 5 fns mostram entradas `request_received` com `traceId`, (c) toast de conflito unificado nos 2 hooks com ação **Recarregar**, (d) runbook documentado, (e) zero regressão no linter/security.
 
