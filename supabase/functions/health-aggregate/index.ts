@@ -181,17 +181,18 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
   const start = Date.now();
-  const [database_local, database_external, whatsapp, voice_ai, email_pipeline, alerts_count] =
+  const [database_local, database_external, whatsapp, voice_ai, email_pipeline, connections, alerts_count] =
     await Promise.all([
       checkLocalDb(),
       checkExternalDb(),
       checkWhatsApp(),
       checkVoiceAI(),
       checkEmailPipeline(),
+      checkConnectionsModule(),
       getActiveAlerts(),
     ]);
 
-  const components = { database_local, database_external, whatsapp, email_pipeline, voice_ai };
+  const components = { database_local, database_external, whatsapp, email_pipeline, voice_ai, connections };
   const considered = Object.values(components).filter((c) => c.status !== "not_configured");
   const hasDown = considered.some((c) => c.status === "down");
   const hasDegraded = considered.some((c) => c.status === "degraded");
@@ -204,7 +205,7 @@ Deno.serve(async (req) => {
       total_latency_ms: Date.now() - start,
       components,
       alerts_count,
-      version: "3.0.0",
+      version: "3.1.0",
     }),
     {
       status: overall === "unhealthy" ? 503 : 200,
