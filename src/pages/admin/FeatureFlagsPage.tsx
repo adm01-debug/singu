@@ -8,7 +8,7 @@ import { useFeatureFlags } from "@/hooks/useFeatureFlag";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useActionToast } from "@/hooks/useActionToast";
-import { EmptyState } from "@/components/feedback/EmptyState";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PageLoadingFallback } from "@/components/feedback/PageLoadingFallback";
 import { Flag, Plus } from "lucide-react";
 
