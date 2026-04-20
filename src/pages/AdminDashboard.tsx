@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   HeartPulse, Database, Plug, Shield, ArrowRight,
   Activity, AlertTriangle, Mail, Mic, Sparkles,
-  BookOpen, Map, Key, Settings, FileText, Plug,
+  BookOpen, Map, Key, Settings, FileText,
 } from 'lucide-react';
 
 // ── Status Cards Row ──
