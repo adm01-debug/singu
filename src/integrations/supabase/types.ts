@@ -1563,6 +1563,50 @@ export type Database = {
         }
         Relationships: []
       }
+      connection_quotas: {
+        Row: {
+          alert_sent_80: boolean
+          calls_limit: number
+          calls_used: number
+          created_at: string
+          id: string
+          overage_blocked: boolean
+          period_start: string
+          updated_at: string
+          webhook_id: string
+        }
+        Insert: {
+          alert_sent_80?: boolean
+          calls_limit?: number
+          calls_used?: number
+          created_at?: string
+          id?: string
+          overage_blocked?: boolean
+          period_start?: string
+          updated_at?: string
+          webhook_id: string
+        }
+        Update: {
+          alert_sent_80?: boolean
+          calls_limit?: number
+          calls_used?: number
+          created_at?: string
+          id?: string
+          overage_blocked?: boolean
+          period_start?: string
+          updated_at?: string
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_quotas_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connection_test_logs: {
         Row: {
           connection_id: string
@@ -4689,11 +4733,14 @@ export type Database = {
           is_active: boolean
           last_called_at: string | null
           name: string
+          replay_window_seconds: number
+          require_signature: boolean
           target_entity: string
           token: string
           total_calls: number
           total_errors: number
           updated_at: string
+          webhook_secret: string | null
         }
         Insert: {
           allowed_origins?: string[] | null
@@ -4705,11 +4752,14 @@ export type Database = {
           is_active?: boolean
           last_called_at?: string | null
           name: string
+          replay_window_seconds?: number
+          require_signature?: boolean
           target_entity: string
           token: string
           total_calls?: number
           total_errors?: number
           updated_at?: string
+          webhook_secret?: string | null
         }
         Update: {
           allowed_origins?: string[] | null
@@ -4721,11 +4771,14 @@ export type Database = {
           is_active?: boolean
           last_called_at?: string | null
           name?: string
+          replay_window_seconds?: number
+          require_signature?: boolean
           target_entity?: string
           token?: string
           total_calls?: number
           total_errors?: number
           updated_at?: string
+          webhook_secret?: string | null
         }
         Relationships: []
       }
@@ -9816,6 +9869,7 @@ export type Database = {
       immutable_unaccent: { Args: { "": string }; Returns: string }
       increment_form_view: { Args: { _slug: string }; Returns: undefined }
       increment_magnet_view: { Args: { _slug: string }; Returns: undefined }
+      increment_webhook_quota: { Args: { _webhook_id: string }; Returns: Json }
       record_buyer_view: {
         Args: { _label?: string; _token: string }
         Returns: boolean

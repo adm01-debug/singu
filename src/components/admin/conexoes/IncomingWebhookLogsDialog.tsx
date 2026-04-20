@@ -4,15 +4,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIncomingWebhookLogs } from '@/hooks/useIncomingWebhooks';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { WebhookReplayButton } from './WebhookReplayButton';
 
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   webhookId: string;
   webhookName: string;
+  webhookToken: string;
 }
 
-export function IncomingWebhookLogsDialog({ open, onOpenChange, webhookId, webhookName }: Props) {
+export function IncomingWebhookLogsDialog({ open, onOpenChange, webhookId, webhookName, webhookToken }: Props) {
   const { data: logs = [], isLoading } = useIncomingWebhookLogs(webhookId);
 
   return (
@@ -48,6 +50,7 @@ export function IncomingWebhookLogsDialog({ open, onOpenChange, webhookId, webho
                     <pre className="mt-1 bg-muted/40 p-2 rounded font-mono overflow-x-auto">
                       {JSON.stringify(l.payload, null, 2)}
                     </pre>
+                    <WebhookReplayButton webhookToken={webhookToken} payload={l.payload} />
                   </details>
                 )}
               </div>

@@ -1,12 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Edit, Trash2, RefreshCw, Copy, Activity } from 'lucide-react';
+import { Edit, Trash2, RefreshCw, Copy, Activity, ShieldCheck } from 'lucide-react';
 import { useIncomingWebhooks, type IncomingWebhook } from '@/hooks/useIncomingWebhooks';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { IncomingWebhookLogsDialog } from './IncomingWebhookLogsDialog';
+import { WebhookQuotaBar } from './WebhookQuotaBar';
+import { Separator } from '@/components/ui/separator';
 
 interface Props {
   webhook: IncomingWebhook;
@@ -37,6 +38,11 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
                   {webhook.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
                 <Badge variant="outline" className="text-xs">{webhook.target_entity}</Badge>
+                {webhook.require_signature && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <ShieldCheck className="w-3 h-3" /> HMAC
+                  </Badge>
+                )}
               </div>
               {webhook.description && (
                 <p className="text-sm text-muted-foreground mb-2">{webhook.description}</p>
@@ -72,13 +78,16 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
               <Copy className="w-3.5 h-3.5" />
             </Button>
           </div>
+
+          <Separator />
+          <WebhookQuotaBar webhookId={webhook.id} />
         </CardContent>
       </Card>
 
       {showLogs && (
         <IncomingWebhookLogsDialog
           open={showLogs} onOpenChange={setShowLogs}
-          webhookId={webhook.id} webhookName={webhook.name}
+          webhookId={webhook.id} webhookName={webhook.name} webhookToken={webhook.token}
         />
       )}
     </>
