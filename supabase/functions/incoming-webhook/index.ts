@@ -123,6 +123,15 @@ Deno.serve(async (req) => {
     if (error) {
       httpStatus = 500;
       errorMessage = error.message;
+      // Enfileira na DLQ para reprocessamento com backoff
+      await admin.from("incoming_webhook_dlq").insert({
+        webhook_id: webhook.id,
+        payload,
+        source_ip: sourceIp,
+        user_agent: userAgent,
+        last_error: error.message,
+        next_retry_at: new Date(Date.now() + 2 * 60_000).toISOString(),
+      });
     } else insertResult = data;
   } else {
     insertResult = { received: true, payload: finalRow };
