@@ -109,7 +109,7 @@ const Empresas = () => {
   const { celebrate } = useSuccessCelebration();
 
   const handleCreate = async (data: Parameters<typeof createCompany>[0]) => { setIsSubmitting(true); const result = await createCompany(data); setIsSubmitting(false); if (result) { setIsFormOpen(false); hapticSuccess(); if (companies.length === 0) celebrate('confetti'); } };
-  const handleUpdate = async (data: Parameters<typeof updateCompany>[1]) => { if (!editingCompany) return; setIsSubmitting(true); const result = await updateCompany(editingCompany.id, data); setIsSubmitting(false); if (result) setEditingCompany(null); };
+  const handleUpdate = async (data: Parameters<typeof updateCompany>[1]) => { if (!editingCompany) return; setIsSubmitting(true); const result = await updateCompany(editingCompany.id, data, editingCompany.version); setIsSubmitting(false); if (result) setEditingCompany(null); };
   const handleDelete = async () => {
     if (!deletingCompany) return;
     const cp = deletingCompany; setDeletingCompany(null); hapticHeavy();
