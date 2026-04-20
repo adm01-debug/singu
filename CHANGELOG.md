@@ -5,6 +5,22 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.7.1] - 2026-04-20 — Rodada P: Re-auditoria & Fechamento 10/10
+
+### Added
+- `src/lib/supabaseInvoke.ts` — wrapper `invokeWithTrace<T>()` que injeta automaticamente `X-Trace-Id` em toda chamada de edge function (correlação distribuída ponta-a-ponta).
+- `lighthouserc.json` + step `Lighthouse CI` no workflow — budgets LCP <2.5s, CLS <0.1, TBT <300ms, performance ≥0.8.
+- Defense-in-depth RLS: INSERT bloqueado para `authenticated` em `document_views`, `incoming_webhook_logs`, `access_blocked_log` (apenas service role escreve).
+- `connection_quotas` ganha policy SELECT para owner não-admin (consulta da própria quota sem expor terceiros).
+- Relatório `/mnt/documents/auditoria-singu-v2.7.0.md` — scorecard ponderado **9.6/10**.
+
+### Changed
+- Re-auditoria das 20 dimensões: zero CRITICAL/HIGH; WARNs caem de 12 para 6 (3 DB pré-existentes + 3 RLS-config aceitos por design).
+
+### Notes
+- Split de `src/components/ui/sidebar.tsx` (746 linhas) postergado: é boilerplate shadcn — refator ofereceria risco visual sem ganho funcional.
+- Promoção de ESLint `no-explicit-any: error` postergada: 66 ocorrências mapeadas, exigem 1–2 sprints incrementais para sanear sem quebrar build.
+
 ## [2.6.0] - 2026-04-20 — Rodada N: Connections AI & Self-Healing (70/70)
 
 ### Added
