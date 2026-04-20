@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
   const limited = limiter.check(sourceIp);
   if (limited) return limited;
 
+  log.info("request_received", { method: req.method, sourceIp, userAgent });
+
   const url = new URL(req.url);
   const pathToken = url.pathname.split("/").pop();
   const headerToken = req.headers.get("x-webhook-token");

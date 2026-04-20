@@ -52,6 +52,8 @@ Deno.serve(async (req) => {
   const auth = await withAuth(req);
   if (auth instanceof Response) return auth;
 
+  log.info("request_received", { method: req.method });
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");

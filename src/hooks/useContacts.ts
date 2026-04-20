@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import { trackScoreChange } from '@/lib/trackScoreChange';
 import { queryExternalData, insertExternalData, updateExternalData, updateExternalDataWithVersion, deleteExternalData, ConcurrentEditError } from '@/lib/externalData';
+import { showConcurrentEditToast } from '@/lib/concurrentEditToast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
 
@@ -162,12 +163,7 @@ export function useContacts(companyId?: string, options?: { enabled?: boolean })
       logger.error('Error updating contact:', error);
       if (previous) queryClient.setQueryData<Contact[]>(queryKey, previous);
       if (error instanceof ConcurrentEditError) {
-        toast({
-          title: 'Conflito de edição',
-          description: 'Outro usuário modificou este contato. Recarregue a página e tente novamente.',
-          variant: 'destructive',
-        });
-        await queryClient.invalidateQueries({ queryKey });
+        showConcurrentEditToast({ entity: 'contato', queryClient, queryKey });
       } else {
         toast({ title: 'Erro ao atualizar contato', description: 'As alterações foram revertidas.', variant: 'destructive' });
       }
