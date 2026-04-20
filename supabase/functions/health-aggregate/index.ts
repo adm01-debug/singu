@@ -134,6 +134,48 @@ async function getActiveAlerts(): Promise<number> {
   }
 }
 
+interface ConnectionsHealth {
+  status: "up" | "degraded" | "down" | "not_configured";
+  total: number;
+  active: number;
+  test_failures_24h: number;
+  webhook_errors_24h: number;
+  details?: string;
+}
+
+async function checkConnectionsModule(): Promise<ConnectionsHealth> {
+  try {
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+    const since = new Date(Date.now() - 24 * 3_600_000).toISOString();
+
+    const [{ count: total }, { count: active }, { count: failures }, { count: whErrors }] = await Promise.all([
+      supabase.from("connection_configs").select("*", { count: "exact", head: true }),
+      supabase.from("connection_configs").select("*", { count: "exact", head: true }).eq("is_active", true),
+      supabase.from("connection_test_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+      supabase.from("incoming_webhook_logs").select("*", { count: "exact", head: true }).eq("status", "error").gte("created_at", since),
+    ]);
+
+    const totalCount = total ?? 0;
+    if (totalCount === 0) {
+      return { status: "not_configured", total: 0, active: 0, test_failures_24h: 0, webhook_errors_24h: 0 };
+    }
+
+    const status: ConnectionsHealth["status"] =
+      (failures ?? 0) > 10 || (whErrors ?? 0) > 20 ? "degraded" : "up";
+
+    return {
+      status,
+      total: totalCount,
+      active: active ?? 0,
+      test_failures_24h: failures ?? 0,
+      webhook_errors_24h: whErrors ?? 0,
+      details: `${active ?? 0}/${totalCount} ativas · ${failures ?? 0} falhas teste · ${whErrors ?? 0} erros webhook (24h)`,
+    };
+  } catch (e) {
+    return { status: "down", total: 0, active: 0, test_failures_24h: 0, webhook_errors_24h: 0, details: String(e) };
+  }
+}
+
 Deno.serve(async (req) => {
   const cors = makeCors(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
