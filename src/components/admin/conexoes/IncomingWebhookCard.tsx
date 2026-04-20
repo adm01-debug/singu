@@ -1,12 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, RefreshCw, Copy, Activity, ShieldCheck } from 'lucide-react';
+import { Edit, Trash2, RefreshCw, Copy, Activity, ShieldCheck, Code2 } from 'lucide-react';
 import { useIncomingWebhooks, type IncomingWebhook } from '@/hooks/useIncomingWebhooks';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { IncomingWebhookLogsDialog } from './IncomingWebhookLogsDialog';
 import { WebhookQuotaBar } from './WebhookQuotaBar';
+import { WebhookSnippetsSheet } from './WebhookSnippetsSheet';
 import { Separator } from '@/components/ui/separator';
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 export function IncomingWebhookCard({ webhook, onEdit }: Props) {
   const { remove, rotateToken } = useIncomingWebhooks();
   const [showLogs, setShowLogs] = useState(false);
+  const [showSnippets, setShowSnippets] = useState(false);
 
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const url = `https://${projectId}.functions.supabase.co/incoming-webhook/${webhook.token}`;
@@ -56,6 +58,9 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
               <Button size="sm" variant="ghost" onClick={() => setShowLogs(true)} title="Logs">
                 <Activity className="w-4 h-4" />
               </Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowSnippets(true)} title="Ver exemplos de integração">
+                <Code2 className="w-4 h-4" />
+              </Button>
               <Button size="sm" variant="ghost" onClick={onEdit} title="Editar">
                 <Edit className="w-4 h-4" />
               </Button>
@@ -88,6 +93,12 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
         <IncomingWebhookLogsDialog
           open={showLogs} onOpenChange={setShowLogs}
           webhookId={webhook.id} webhookName={webhook.name} webhookToken={webhook.token}
+        />
+      )}
+      {showSnippets && (
+        <WebhookSnippetsSheet
+          open={showSnippets} onOpenChange={setShowSnippets}
+          webhook={webhook} url={url}
         />
       )}
     </>

@@ -10,7 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIncomingWebhooks, type WebhookTargetEntity } from '@/hooks/useIncomingWebhooks';
-import { Loader2, Save, Info } from 'lucide-react';
+import { Loader2, Save, Info, Sparkles } from 'lucide-react';
+import { WEBHOOK_TEMPLATES, getTemplateById } from './webhookTemplates';
 
 interface Props {
   open: boolean;
@@ -79,6 +80,28 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
         </DialogHeader>
 
         <div className="space-y-4">
+          {!webhookId && (
+            <div className="bg-muted/30 border border-border/40 rounded-md p-3">
+              <Label className="flex items-center gap-1.5 text-xs">
+                <Sparkles className="w-3.5 h-3.5" /> Usar template (opcional)
+              </Label>
+              <Select onValueChange={(id) => {
+                const t = getTemplateById(id);
+                if (!t) return;
+                setName(t.name);
+                setDescription(t.description);
+                setTargetEntity(t.target_entity);
+                setFieldMappingRaw(JSON.stringify(t.field_mapping, null, 2));
+              }}>
+                <SelectTrigger className="mt-1 h-9"><SelectValue placeholder="Preencher campos a partir de um preset" /></SelectTrigger>
+                <SelectContent>
+                  {WEBHOOK_TEMPLATES.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <Label>Nome *</Label>

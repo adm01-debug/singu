@@ -1513,6 +1513,8 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          discovered_at: string | null
+          discovered_schema: Json | null
           encrypted_config: string | null
           encryption_version: number
           id: string
@@ -1531,6 +1533,8 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          discovered_at?: string | null
+          discovered_schema?: Json | null
           encrypted_config?: string | null
           encryption_version?: number
           id?: string
@@ -1549,6 +1553,8 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          discovered_at?: string | null
+          discovered_schema?: Json | null
           encrypted_config?: string | null
           encryption_version?: number
           id?: string
@@ -6048,6 +6054,47 @@ export type Database = {
           webhook_url?: string
         }
         Relationships: []
+      }
+      mcp_tool_calls: {
+        Row: {
+          arguments_summary: Json
+          connection_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          status: string
+          tool_name: string
+        }
+        Insert: {
+          arguments_summary?: Json
+          connection_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          status: string
+          tool_name: string
+        }
+        Update: {
+          arguments_summary?: Json
+          connection_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          status?: string
+          tool_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mcp_tool_calls_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connection_configs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meeting_summaries: {
         Row: {
