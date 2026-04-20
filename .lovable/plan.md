@@ -1,38 +1,47 @@
 
 
-# Rodada U — Hardening Final Sustentado (10.0/10 → 10.0/10 perpétuo)
+# Rodada V — Hardening Preventivo de Longo Prazo (10.0/10 sustentado)
 
-A Rodada T fechou os gaps identificados nos testes da S. O sistema está em **10.0/10**. Para sustentar esse score sob evolução contínua, executarei 4 ações de hardening preventivo focadas em **garantias automatizadas** (não em novas features).
+As Rodadas R/S/T/U fecharam todos os gaps táticos. Para a Rodada V, foco em **4 ações estratégicas** que blindam o sistema contra regressões futuras conforme novos módulos forem adicionados.
 
 ## Ações sequenciais
 
-**U1. CI guard de optimistic locking**
-Criar `supabase/functions/_shared/version-guard.ts` — helper reutilizável `assertVersionMatch(current, expected, entity)` que padroniza o lançamento do erro 409 `CONCURRENT_EDIT` com payload uniforme `{ error, entity, currentVersion, attemptedVersion, traceId }`. Refatorar `external-data/index.ts` action `update_with_version` para usar o helper. Benefício: qualquer nova tabela com `version` herda o contrato sem reimplementar.
+**V1. Padronizar payload `CONCURRENT_EDIT` como JSON estruturado**
+Hoje `version-guard.ts` retorna `jsonError("CONCURRENT_EDIT entity=... id=... attemptedVersion=...", 409)` — string concatenada. Refatorar para emitir JSON estruturado `{ error: "CONCURRENT_EDIT", entity, id, attemptedVersion, traceId }` via novo helper `jsonConflict()` em `_shared/auth.ts`. Atualizar `src/lib/externalData.ts` `ConcurrentEditError` para parsear o novo shape mantendo retrocompatibilidade com a string atual (durante transição). Benefício: frontend ganha contexto rico (entity/id) sem regex parsing.
 
-**U2. Toast de conflito — cobrir hooks restantes**
-Auditar via `code--search_files` todos os hooks que fazem `update_*` em entidades versionadas (`useDeals`, `useTasks`, `useInteractions` se existirem). Para cada um que ainda use toast genérico no catch de 409, trocar por `showConcurrentEditToast({ entity, queryClient, queryKey })`. Garante UX 100% consistente em conflitos de edição.
+**V2. Teste E2E do `version-guard` helper**
+Criar `supabase/functions/_shared/version-guard_test.ts` com 3 cenários:
+- `assertVersionMatch([{id:'x'}], opts)` → retorna `null` (versão bateu)
+- `assertVersionMatch([], opts)` → retorna `Response` 409 com payload correto
+- `assertVersionMatch(null as any, opts)` → retorna 409 (defensivo)
 
-**U3. Teste E2E do fallback Cloudflare 502**
-Adicionar caso novo em `optimistic-locking_test.ts` (ou novo arquivo `cloudflare-fallback_test.ts`) que simula resposta HTML do Cloudflare via mock e valida que `external-data` retorna `{ fallback: true, data: [], count: 0 }` com HTTP 200 — protege a resiliência implementada nos hotfixes recentes contra regressão futura.
+Garante que qualquer refator futuro do helper não quebre o contrato.
 
-**U4. Runbook — seções complementares**
-Estender `docs/runbook.md` com:
-- **Seção "Tracing & Correlação"** — como extrair `traceId` do header `x-trace-id` da resposta, comando `supabase functions logs <fn> --search "traceId=..."` e exemplo de payload JSON estruturado emitido pelas 5 funções críticas.
-- **Seção "Deploy de Edge Functions"** — checklist anti-regressão (preferir `npm:` sobre `esm.sh`, remover `deno.lock` em caso de erro de bundling, validar com smoke test após deploy).
+**V3. Lint rule customizada — bloquear `esm.sh` em novas edge functions**
+Criar script `scripts/check-edge-imports.mjs` que escaneia `supabase/functions/**/*.ts` e falha (exit 1) se encontrar `from "https://esm.sh/...`. Adicionar ao `package.json` como `"check:edge-imports"` e referenciar no runbook seção "Deploy". Previne regressão da migração `npm:` que motivou a Rodada R.
+
+**V4. Runbook — seção "Métricas de Qualidade & SLOs"**
+Adicionar em `docs/runbook.md`:
+- **SLO de disponibilidade**: 99.5% das requests `external-data` retornam 200 (incluindo `fallback:true`)
+- **SLO de latência**: P95 < 2s para `select`, P95 < 3s para `update_with_version`
+- **Indicadores de alerta**: >5% 409/min (job concorrente), >1% 5xx/min (incidente real), 100% fallback (banco externo down)
+- **Comandos de diagnóstico**: `supabase functions logs external-data --search "level=error"` + query SQL de exemplo no `query_telemetry`
 
 ## Arquivos tocados
 
-- `supabase/functions/_shared/version-guard.ts` (novo, ~25 linhas)
-- `supabase/functions/external-data/index.ts` (refator do bloco `update_with_version`, ~10 linhas)
-- `supabase/functions/external-data/cloudflare-fallback_test.ts` (novo, ~40 linhas)
-- `src/hooks/use*.ts` que tratem 409 (refator condicional, 0–3 arquivos)
-- `docs/runbook.md` (2 seções novas)
+- `supabase/functions/_shared/auth.ts` (novo helper `jsonConflict`, +15 linhas)
+- `supabase/functions/_shared/version-guard.ts` (refator interno, ~5 linhas)
+- `src/lib/externalData.ts` (parser robusto do erro 409, ~10 linhas)
+- `supabase/functions/_shared/version-guard_test.ts` (novo, ~40 linhas)
+- `scripts/check-edge-imports.mjs` (novo, ~25 linhas)
+- `package.json` (1 entrada em `scripts`)
+- `docs/runbook.md` (seção SLOs)
 
 ## Restrições
 
-PT-BR · ≤400 linhas/arquivo · sem novas dependências · zero regressão visual · reuso `showConcurrentEditToast` · nenhum `useEffect` para fetch.
+PT-BR · ≤400 linhas/arquivo · sem novas dependências · zero regressão visual · retrocompat com `ConcurrentEditError` atual · nenhum `useEffect` para fetch.
 
 ## Critério de fechamento
 
-(a) `version-guard` cobre 100% das chamadas `update_with_version`, (b) busca por `409` ou `CONCURRENT_EDIT` nos hooks retorna apenas chamadas a `showConcurrentEditToast`, (c) novo teste de fallback passa em `supabase--test_edge_functions`, (d) runbook documenta tracing + deploy, (e) linter DB e security scan permanecem 0 CRITICAL/HIGH.
+(a) `version-guard_test.ts` passa em `supabase--test_edge_functions`, (b) erro 409 chega no frontend como JSON com campos `entity`/`id` acessíveis, (c) `node scripts/check-edge-imports.mjs` retorna exit 0 no estado atual, (d) runbook documenta SLOs e comandos de diagnóstico, (e) linter DB e security scan permanecem 0 CRITICAL/HIGH.
 
