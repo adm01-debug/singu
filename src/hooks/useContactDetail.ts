@@ -296,10 +296,18 @@ export function useContactDetail(contactId: string | undefined) {
     if (!user || !contactId) return null;
 
     try {
-      const { data: updatedContact, error } = await supabase
+      let query = supabase
         .from('contacts')
         .update(updates)
-        .eq('id', contactId)
+        .eq('id', contactId);
+
+      // Optimistic locking: se temos a versão atual, enviar para evitar sobrescrever edição concorrente
+      const currentVersion = data.contact?.version;
+      if (currentVersion !== undefined && currentVersion !== null) {
+        query = query.eq('version', currentVersion);
+      }
+
+      const { data: updatedContact, error } = await query
         .select()
         .single();
 

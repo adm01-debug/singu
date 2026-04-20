@@ -140,7 +140,7 @@ const Contatos = () => {
   const handleUpdate = async (data: Parameters<typeof updateContact>[1], event?: React.MouseEvent) => {
     if (!editingContact) return;
     setIsSubmitting(true);
-    const result = await updateContact(editingContact.id, data);
+    const result = await updateContact(editingContact.id, data, editingContact.version);
     setIsSubmitting(false);
     if (result) {
       setEditingContact(null);
