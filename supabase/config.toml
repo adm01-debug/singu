@@ -136,3 +136,12 @@ verify_jwt = false
 
 [functions.deal-room-buyer-view]
 verify_jwt = false
+
+[functions.connection-tester]
+verify_jwt = false
+
+[functions.incoming-webhook]
+verify_jwt = false
+
+[functions.mcp-server]
+verify_jwt = false
