@@ -46,6 +46,26 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
   const [requireSignature, setRequireSignature] = useState(existing?.require_signature ?? false);
   const [webhookSecret, setWebhookSecret] = useState(existing?.webhook_secret ?? '');
   const [replayWindow, setReplayWindow] = useState(existing?.replay_window_seconds ?? 300);
+  const [examplePayload, setExamplePayload] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAiSuggest = async () => {
+    let payload: Record<string, unknown>;
+    try { payload = JSON.parse(examplePayload); } catch { toast.error('Cole um JSON de exemplo válido'); return; }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-suggest-mapping', {
+        body: { example_payload: payload, target_entity: targetEntity, source_hint: name || undefined },
+      });
+      if (error) throw error;
+      const mapping = data?.mapping ?? {};
+      setFieldMappingRaw(JSON.stringify(mapping, null, 2));
+      const conf = Math.round((data?.overall_confidence ?? 0) * 100);
+      toast.success(`Mapping sugerido (confiança ${conf}%)${data?.fallback ? ' · fallback determinístico' : ''}`);
+    } catch (e) {
+      toast.error(`Falha IA: ${e instanceof Error ? e.message : 'erro'}`);
+    } finally { setAiLoading(false); }
+  };
 
   const handleSave = async () => {
     let mapping: Record<string, string> = {};
