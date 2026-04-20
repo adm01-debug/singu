@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Activity, ShieldCheck, AlertTriangle, OctagonAlert, Info } from 'lucide-react';
+import { Activity, ShieldCheck, AlertTriangle, OctagonAlert, Info, Bell, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UptimeSparkline } from '@/components/admin/UptimeSparkline';
 
 function StatCard({
   title,
@@ -113,6 +114,35 @@ export default function ErrorBudget() {
         </Alert>
       )}
 
+      {data.active_alerts && data.active_alerts.length > 0 && (
+        <Card variant={data.active_alerts.some(a => a.severity === 'critical') ? 'destructive' : 'warning'}>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Bell className="w-4 h-4" />
+              Alertas ativos ({data.active_alerts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.active_alerts.map((a) => (
+              <div key={a.id} className="flex items-start gap-2 text-sm">
+                <Badge
+                  variant={a.severity === 'critical' ? 'destructive' : a.severity === 'high' ? 'secondary' : 'outline'}
+                  className="shrink-0 mt-0.5"
+                >
+                  {a.threshold_pct}%
+                </Badge>
+                <div className="flex-1">
+                  <p>{a.message}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Disparado em {new Date(a.created_at).toLocaleString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="SLO Target"
@@ -142,6 +172,19 @@ export default function ErrorBudget() {
           tone={freezeBadge.tone}
         />
       </div>
+
+      {data.daily_uptime && data.daily_uptime.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="w-4 h-4" /> Uptime diário (30d)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <UptimeSparkline data={data.daily_uptime} sloTarget={data.slo_target_pct} />
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
