@@ -1,50 +1,56 @@
 
 
-# Rodada S — Fechamento Final 10.0/10 (Q1 + Q4)
+# Plano de Testes — Rodada S (Optimistic Locking + Tracing + Migração esm.sh→npm)
 
-A Rodada R fechou Q3 (sidebar split), Q5 (tracing 5 edge functions) e Q2 parcial (eslint warn). Score atual: **9.8/10**. Restam **2 gaps** para 10.0/10.
+Vou executar uma bateria abrangente de testes focada **exclusivamente** no que foi implementado nas Rodadas R/S e nos hotfixes recentes:
 
-## Ações
+## Escopo dos Testes
 
-**S1. Optimistic Locking — Implementação completa (Q4)**
+### 1. Edge Functions críticas (5) — pós-migração `npm:` + tracing
+Testes via `supabase--curl_edge_functions` em cada função:
+- **`external-data`** — actions `select`, `insert`, `update`, `update_with_version` (sucesso e conflito 409), `delete`, `rpc`
+- **`ask-crm`** — pergunta NL básica + verificação de `traceId` no response header
+- **`ai-suggest-mapping`** — payload válido + payload inválido (Zod)
+- **`connection-anomaly-detector`** — dispatch básico
+- **`incoming-webhook`** — payload de teste
 
-Backend (`supabase/functions/external-data/index.ts`):
-- Adicionar action `update_with_version` que recebe `{ table, id, version, patch }`
-- Executa `UPDATE ... WHERE id=$1 AND version=$2 RETURNING *`
-- Se 0 rows → retorna `409 { error: 'CONCURRENT_EDIT' }`
-- Se 1 row → incrementa version (trigger DB já cuida) e retorna registro novo
+Validação: status 200/4xx esperado, header `x-trace-id` presente, JSON estruturado nos logs.
 
-Frontend:
-- `src/hooks/useUpdateContact.ts` → aceitar `version` no input, chamar `update_with_version`, capturar 409 → `useActionToast.error("Conflito de edição: outro usuário modificou este contato. Recarregue a página.")`
-- `src/hooks/useUpdateCompany.ts` → idem
-- Componentes que chamam estes hooks (ContatoDetalhe, EmpresaDetalhe, formulários inline) → passar `version` atual junto com o patch
+### 2. Optimistic Locking E2E (S1)
+- **Cenário A — Update normal:** chamar `update_with_version` com `version` correto → 200, registro com `version+1`
+- **Cenário B — Conflito:** chamar duas vezes seguidas com a mesma `version` antiga → primeira 200, segunda 409 `CONCURRENT_EDIT`
+- **Cenário C — Frontend:** validar que `useUpdateContact`/`useUpdateCompany` capturam o 409 e disparam toast de conflito (inspeção de código + console)
 
-**S2. Eliminar `: any` — Fase 2 final (Q1 + Q2)**
+### 3. Tracing estruturado (R1)
+- Verificar via `supabase--edge_function_logs` que as 5 funções emitem JSON com `traceId`, `fn`, `level`, `msg`
+- Confirmar propagação do header `x-trace-id` request→response
 
-Varrer top arquivos com `: any` restantes (~248 ocorrências) e substituir:
-- Tipos de tabela → `Database['public']['Tables'][T]['Row']`
-- Payloads dinâmicos → `Record<string, unknown>` + type guards
-- Callbacks de events → tipos do React (`React.ChangeEvent<HTMLInputElement>`)
-- RPC responses → interfaces locais com campos esperados
+### 4. Saúde geral pós-migração (81 funções)
+- `supabase--linter` — confirmar 0 CRITICAL/HIGH
+- `security--run_security_scan` — scan completo
+- Smoke test em 3 funções amostrais não-críticas (`health`, `lead-scorer`, `phone-validator`) para validar bundling `npm:` global
 
-Meta desta rodada: **≤20 ocorrências** justificadas (esm.sh imports, libs sem types).
+### 5. Sidebar modular (R4) — validação de não-regressão
+- Inspeção de `src/components/ui/sidebar.tsx` (re-exports) + 4 arquivos do diretório
+- Verificação visual via `browser--screenshot` da sidebar no preview (já que usuário está em `/`)
+- Confirmar que imports `from '@/components/ui/sidebar'` resolvem corretamente
 
-Após zerar: promover `eslint.config.js` `no-explicit-any` de `warn` → `error` e rodar `tsc --noEmit` + `eslint --max-warnings=0`.
+### 6. ESLint `no-explicit-any: warn` (R5)
+- Inspeção de `eslint.config.js`
+- Contagem atual de warnings via análise estática
 
 ## Entregáveis
 
-- **CHANGELOG v2.7.4** — Rodada S (Q1 fechado, Q2 strict, Q4 fechado)
-- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` → **10.0/10 ✅**
-- **Re-scan**: `supabase--linter` + `security--run_security_scan` (zero CRITICAL/HIGH)
-- **Relatório final**: `/mnt/documents/auditoria-singu-v2.7.4-final.md`
+- **Relatório detalhado** `/mnt/documents/relatorio-testes-rodada-s.md` com:
+  - Tabela de cenários × resultado (✅/❌)
+  - Logs capturados por função
+  - Screenshots da sidebar
+  - Lista de eventuais regressões encontradas
+  - Score final de qualidade pós-testes
 
-## Restrições
+## Critério de sucesso
 
-Português · max 400 linhas/arquivo · TanStack Query · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin` · zero regressão visual.
+(a) 5 edge functions críticas respondem 200 em casos válidos e códigos esperados em casos inválidos, (b) optimistic locking devolve 409 em conflito real, (c) tracing emite JSON com `traceId` em 100% das requisições, (d) linter DB e security scan limpos, (e) sidebar visualmente intacta, (f) zero erros 500 nos smoke tests.
 
-## Critério final 10.0/10
-
-(a) `tsc --noEmit` 100% limpo, (b) `eslint --max-warnings=0` com `no-explicit-any: error`, (c) linter DB sem CRITICAL/HIGH, (d) security scan limpo, (e) optimistic locking testável end-to-end (2 abas → toast de conflito), (f) zero regressão visual ou comportamental.
-
-Aprove e executo S1 → S2 em sequência sem pausas até **10.0/10 ✅**.
+Aprove e executo a bateria completa, capturando evidências em cada etapa.
 
