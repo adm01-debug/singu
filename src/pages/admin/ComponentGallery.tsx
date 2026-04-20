@@ -10,8 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { Navigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Inbox, Sparkles, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import { ExternalDataCard } from '@/components/ui/external-data-card';
+import { Inbox, Sparkles, AlertTriangle, CheckCircle2, Loader2, Database, Trash2, Star } from 'lucide-react';
 import { useActionToast } from '@/hooks/useActionToast';
+import { CircuitOpenError } from '@/lib/circuitBreaker';
 
 type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -46,6 +48,8 @@ export default function ComponentGallery() {
             <TabsTrigger value="empty">EmptyState</TabsTrigger>
             <TabsTrigger value="toast">ActionToast</TabsTrigger>
             <TabsTrigger value="loaders">Loaders</TabsTrigger>
+            <TabsTrigger value="external">ExternalDataCard</TabsTrigger>
+            <TabsTrigger value="bulk">BulkActionsBar</TabsTrigger>
           </TabsList>
 
           {/* Button */}
@@ -192,6 +196,69 @@ export default function ComponentGallery() {
                 </div>
                 <div className="h-2 w-48 bg-muted rounded animate-pulse" aria-hidden="true" />
                 <div className="h-12 w-12 rounded-full bg-muted animate-pulse" aria-hidden="true" />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ExternalDataCard — 5 estados */}
+          <TabsContent value="external" className="grid md:grid-cols-2 gap-4">
+            <ExternalDataCard title="Loading" icon={<Database className="h-4 w-4" />} isLoading>
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Circuit Open"
+              icon={<Database className="h-4 w-4" />}
+              error={new CircuitOpenError('external-data', 30000)}
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Erro genérico"
+              icon={<Database className="h-4 w-4" />}
+              error={new Error('Falha ao buscar dados')}
+              onRetry={() => toast.info('Retry disparado')}
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard
+              title="Empty"
+              icon={<Database className="h-4 w-4" />}
+              hasData={false}
+              emptyMessage="Sem dados para exibir"
+            >
+              <div />
+            </ExternalDataCard>
+            <ExternalDataCard title="Com dados" icon={<Database className="h-4 w-4" />} hasData>
+              <Card>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">Receita do mês</CardTitle></CardHeader>
+                <CardContent><p className="text-2xl font-bold">R$ 124.500</p></CardContent>
+              </Card>
+            </ExternalDataCard>
+          </TabsContent>
+
+          {/* BulkActionsBar mock */}
+          <TabsContent value="bulk">
+            <Card>
+              <CardHeader>
+                <CardTitle>BulkActionsBar</CardTitle>
+                <CardDescription>Barra fixa de ações em lote (mock estático).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="secondary">12 selecionados</Badge>
+                    <span className="text-muted-foreground">de 247</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="gap-1">
+                      <Star className="h-4 w-4" /> Favoritar
+                    </Button>
+                    <Button size="sm" variant="outline">Mover</Button>
+                    <Button size="sm" variant="destructive" className="gap-1">
+                      <Trash2 className="h-4 w-4" /> Excluir
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
