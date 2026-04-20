@@ -10,8 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { Navigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Inbox, Sparkles, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
+import { ExternalDataCard } from '@/components/ui/external-data-card';
+import { Inbox, Sparkles, AlertTriangle, CheckCircle2, Loader2, Database, Trash2, Star } from 'lucide-react';
 import { useActionToast } from '@/hooks/useActionToast';
+import { CircuitOpenError } from '@/lib/circuitBreaker';
 
 type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -46,6 +48,8 @@ export default function ComponentGallery() {
             <TabsTrigger value="empty">EmptyState</TabsTrigger>
             <TabsTrigger value="toast">ActionToast</TabsTrigger>
             <TabsTrigger value="loaders">Loaders</TabsTrigger>
+            <TabsTrigger value="external">ExternalDataCard</TabsTrigger>
+            <TabsTrigger value="bulk">BulkActionsBar</TabsTrigger>
           </TabsList>
 
           {/* Button */}

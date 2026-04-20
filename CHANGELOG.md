@@ -4,6 +4,21 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
+
+## [2.1.0] - 2026-04-20 — Rodada I: Polimento Final (45/45)
+
+### Added
+- Testes a11y automatizados via `vitest-axe` em `src/test/a11y/critical-components.test.tsx` (Button, Badge, EmptyState, Form).
+- Registry público de atalhos contextuais (`src/lib/keyboardShortcutRegistry.ts`) com `registerShortcut`, `useScopedShortcut`, `getRegisteredShortcuts(scope)`.
+- Component Gallery v2: tabs `external` (5 estados de ExternalDataCard) e `bulk` (BulkActionsBar).
+- ADR-012 (`docs/adr/012-rodada-i-polimento-final.md`) registrando padrão de versionamento e gate a11y.
+
+### Changed
+- CHANGELOG.md reformatado para Keep-a-Changelog estrito (Added/Changed/Fixed/Security por versão).
+
+### Security
+- Gate a11y impede merge com violations `serious`/`critical` via CI.
+
 ## [2.0.0] - 2026-04-19 — Excellence Sustained (40/40)
 
 Marco final consolidando 40 melhorias atômicas distribuídas em 8 rodadas (A-H). Sistema em estado de "excelência sustentada".
