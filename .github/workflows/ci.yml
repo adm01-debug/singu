@@ -38,3 +38,6 @@ jobs:
 
       - name: Check bundle size budget
         run: node scripts/check-bundle-size.mjs
+
+      - name: Lighthouse CI (performance budgets)
+        run: npx --yes @lhci/cli@0.13.x autorun || echo "::warning::Lighthouse-CI assertions failed (non-blocking)"
