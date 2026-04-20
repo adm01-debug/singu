@@ -4572,6 +4572,62 @@ export type Database = {
           },
         ]
       }
+      incoming_webhook_dlq: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          next_retry_at: string
+          payload: Json
+          resolved_at: string | null
+          source_ip: string | null
+          status: string
+          updated_at: string
+          user_agent: string | null
+          webhook_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json
+          resolved_at?: string | null
+          source_ip?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          webhook_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          next_retry_at?: string
+          payload?: Json
+          resolved_at?: string | null
+          source_ip?: string | null
+          status?: string
+          updated_at?: string
+          user_agent?: string | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_webhook_dlq_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incoming_webhook_logs: {
         Row: {
           created_at: string
@@ -9733,6 +9789,17 @@ export type Database = {
       get_buyer_document_path: {
         Args: { _document_id: string; _token: string }
         Returns: string
+      }
+      get_connection_metrics: {
+        Args: { _connection_id: string }
+        Returns: {
+          failures: number
+          p50: number
+          p95: number
+          p99: number
+          success_rate: number
+          total_calls: number
+        }[]
       }
       get_deal_room_by_token: { Args: { _token: string }; Returns: Json }
       get_team_member_ids: {
