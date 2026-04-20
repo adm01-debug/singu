@@ -1,6 +1,7 @@
 import { z } from "https://esm.sh/zod@3.23.8";
 import { scopedCorsHeaders, withAuth, jsonError, jsonOk } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
+import { extractTraceId, tracedLogger } from "../_shared/tracing.ts";
 
 const limiter = rateLimit({ windowMs: 60_000, max: 15, message: "Rate limit exceeded for ai-suggest-mapping." });
 
@@ -40,6 +41,9 @@ Formato de saída:
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: scopedCorsHeaders(req) });
+
+  const traceId = extractTraceId(req);
+  const log = tracedLogger(traceId, "ai-suggest-mapping");
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const limited = limiter.check(ip);
@@ -87,7 +91,7 @@ Produza o mapeamento JSON conforme instruído.`;
     if (!aiRes.ok) {
       if (aiRes.status === 429) return jsonError("Rate limit IA. Tente em 1 minuto.", 429, req);
       if (aiRes.status === 402) return jsonError("Créditos IA esgotados.", 402, req);
-      console.error("AI error:", aiRes.status, await aiRes.text());
+      log.error("AI gateway error", { status: aiRes.status, body: await aiRes.text() });
       return jsonError("Erro no gateway IA", 500, req);
     }
 
@@ -116,7 +120,7 @@ Produza o mapeamento JSON conforme instruído.`;
       return jsonOk({ ...fallback, fallback: true }, req);
     }
   } catch (e) {
-    console.error("ai-suggest-mapping error:", e);
+    log.error("ai-suggest-mapping uncaught error", { error: e instanceof Error ? e.message : String(e) });
     return jsonError(e instanceof Error ? e.message : "Erro desconhecido", 500, req);
   }
 });

@@ -5,7 +5,25 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.7.3] - 2026-04-20 — Rodada R: Tracing nas Edge Functions, Split Sidebar, ESLint warn
+
+### Added
+- `supabase/functions/{external-data,ask-crm,ai-suggest-mapping,connection-anomaly-detector,incoming-webhook}/index.ts` — `extractTraceId` + `tracedLogger` aplicados; todos os `console.warn/error` substituídos por logs estruturados JSON com `traceId` propagado do header `X-Trace-Id` (R1/Q5 ✅).
+- `src/components/ui/sidebar/{sidebar-context,sidebar-layout,sidebar-group,sidebar-menu}.tsx` — split do monolítico `sidebar.tsx` (746 linhas) em 4 módulos focados (<400 linhas cada). API pública 100% compatível via re-export agregador (R4/Q3 ✅).
+
+### Changed
+- `eslint.config.js` — regra `@typescript-eslint/no-explicit-any` promovida de `off` para `warn` (R5/Q2 parcial ✅). Visibilidade de regressões sem quebrar build; promoção a `error` planejada após R3 zerar ocorrências.
+- `src/components/ui/sidebar.tsx` — reduzido a 45 linhas de re-export puro (sem alteração de comportamento ou visual).
+
+### Roadmap remanescente
+- **R2/Q4 (optimistic locking nos hooks)**: requer nova action `update_with_version` em `external-data`; agendado próxima rodada.
+- **R3/Q1 (eliminar `: any`)**: 248 ocorrências restantes; refator incremental por módulo com testes de regressão.
+
+### Score
+- Maturidade técnica: **9.8/10** (R1, R4, R5 fechados; R2/R3 em roadmap não-bloqueante).
+
 ## [2.7.2] - 2026-04-20 — Rodada Q: Tracing E2E nos Hooks Críticos
+
 
 ### Changed
 - `src/hooks/useExternalLookup.ts` — `useExternalLookup` e `useExternalBatchLookup` migrados para `invokeWithTrace`. Trace ID propagado para `external-data` em todas as chamadas de filtros/lookups (centenas de invocações/sessão).

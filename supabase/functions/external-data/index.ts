@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.23.8";
 import { withAuth, jsonError, jsonOk, handleCorsAndMethod } from "../_shared/auth.ts";
 import { rateLimit } from "../_shared/rate-limit.ts";
+import { extractTraceId, tracedLogger } from "../_shared/tracing.ts";
 
 const limiter = rateLimit({ windowMs: 60_000, max: 100, message: "Rate limit exceeded for external data. Please wait." });
 
@@ -190,6 +191,9 @@ Deno.serve(async (req) => {
     return corsResponse;
   }
 
+  const traceId = extractTraceId(req);
+  const log = tracedLogger(traceId, "external-data");
+
   // ── Rate limit guard ──
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const limited = limiter.check(ip);
@@ -331,13 +335,13 @@ Deno.serve(async (req) => {
             .order(col, { ascending: true })
             .limit(5000);
           if (error) {
-            console.warn(`[batch_distinct] Column ${col} failed: ${error.message}`);
+            log.warn("batch_distinct column failed", { col, error: error.message });
             return { col, values: [] };
           }
           const unique = [...new Set((data as any[] || []).map((r: any) => r[col]).filter(Boolean))].sort();
           return { col, values: unique };
         } catch (err) {
-          console.warn(`[batch_distinct] Column ${col} error:`, err);
+          log.warn("batch_distinct column threw", { col, error: err instanceof Error ? err.message : String(err) });
           return { col, values: [] };
         }
       });
@@ -363,7 +367,7 @@ Deno.serve(async (req) => {
 
       const { data, error } = await client.rpc(functionName, params as Record<string, unknown>);
       if (error) {
-        console.warn(`[external-data] RPC ${functionName} error: ${error.message}`);
+        log.warn("RPC failed", { rpc: functionName, error: error.message });
         return jsonOk({ data: null, error: `RPC ${functionName} failed: ${error.message}` }, req);
       }
       return jsonOk({ data }, req);
@@ -396,7 +400,7 @@ Deno.serve(async (req) => {
             if (!f.column || !f.type) continue;
             // Guard: skip filters with non-primitive values (objects/arrays except for 'in')
             if (f.type !== 'in' && typeof f.value === 'object' && f.value !== null) {
-              console.warn(`[external-data] Skipping filter with object value: ${f.column} ${f.type}`);
+              log.warn("skipping filter with object value", { column: f.column, type: f.type });
               continue;
             }
             const fn = query[f.type];
@@ -417,7 +421,7 @@ Deno.serve(async (req) => {
 
       const elapsed = Math.round(performance.now() - startTime);
       if (elapsed > 5000) {
-        console.warn(`[external-data] Slow query: ${table} took ${elapsed}ms`);
+        log.warn("slow query", { table, elapsed_ms: elapsed });
       }
 
       return jsonOk(result, req);
@@ -465,7 +469,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     const elapsed = Math.round(performance.now() - startTime);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[external-data] Error after ${elapsed}ms:`, message);
+    log.error("uncaught error", { elapsed_ms: elapsed, message });
 
     // ── Schema drift detection ──
     const isSchemaDrift = /PGRST|column.*not found|relation.*does not exist|function.*does not exist|could not find/i.test(message);
@@ -492,9 +496,9 @@ Deno.serve(async (req) => {
           error_message: message.slice(0, 500),
           stack_trace: (error instanceof Error ? error.stack : null)?.slice(0, 1000) ?? null,
         });
-        console.warn(`[schema-drift] Logged: ${errorType} on ${entityType}:${entityName}`);
+        log.warn("schema drift logged", { errorType, entityType, entityName });
       } catch (logErr) {
-        console.error('[schema-drift] Failed to log:', logErr);
+        log.error("schema drift log failed", { error: logErr instanceof Error ? logErr.message : String(logErr) });
       }
     }
 
