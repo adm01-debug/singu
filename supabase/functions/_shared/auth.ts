@@ -72,6 +72,26 @@ export function jsonError(message: string, status: number, req?: Request): Respo
   );
 }
 
+/**
+ * jsonConflict — Resposta padronizada HTTP 409 para conflitos de versão (optimistic locking).
+ * Emite payload JSON estruturado para o frontend reconhecer via campo `error: "CONCURRENT_EDIT"`.
+ */
+export function jsonConflict(
+  payload: { entity: string; id: string; attemptedVersion: number; traceId?: string },
+  req?: Request,
+): Response {
+  return new Response(
+    JSON.stringify({
+      error: "CONCURRENT_EDIT",
+      entity: payload.entity,
+      id: payload.id,
+      attemptedVersion: payload.attemptedVersion,
+      traceId: payload.traceId,
+    }),
+    { status: 409, headers: { ...resolveCors(req), "Content-Type": "application/json" } },
+  );
+}
+
 /** Standard JSON success response with CORS headers (scoped when req provided). */
 export function jsonOk(data: unknown, req?: Request): Response {
   return new Response(
