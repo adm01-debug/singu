@@ -5,6 +5,20 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.3.0] - 2026-04-20 — Rodada K: Connections Observability (55/55)
+
+### Added
+- Tabela `incoming_webhook_dlq` (DLQ admin-only) + Edge Function `process-webhook-dlq` com retry exponencial (2^n min, max 5 tentativas).
+- Cron `process-webhook-dlq-every-5min` (jobid 10) reprocessando entradas elegíveis automaticamente.
+- RPC `get_connection_metrics(connection_id)` — p50/p95/p99/success_rate dos últimos 7d (admin-only).
+- `ConnectionMetricsSparkline` no `ConnectionCard` — sparkline Recharts + badge semáforo (≥95% / ≥80% / <80%).
+- Triggers `notify_connection_failures` (5+ falhas seguidas) e `notify_webhook_errors` (10+ erros/h) → `smart_notifications`.
+- `WebhookDlqPanel` em `/admin/conexoes/logs` com botões "Reprocessar agora" e "Reprocessar lote".
+- ADR-014 (`docs/adr/014-connections-observability.md`).
+
+### SLO
+- 99.5% de sucesso de webhook em janela de 7 dias (medido via `success_rate`).
+
 ## [2.2.0] - 2026-04-20 — Rodada J: Connections Hardening (50/50)
 
 ### Added

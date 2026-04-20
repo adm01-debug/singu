@@ -7,9 +7,10 @@ Dark/Light theme com tokens HSL semânticos. Nunca usar cores diretas em compone
 Lovable Cloud (Supabase) com RLS em todas as tabelas. RBAC via `user_roles` + `has_role()`.
 Edge functions usam `Deno.serve()` + scopedCorsHeaders. Nunca raw SQL via RPC.
 Não implementar módulos de Produtos nem Propostas (escopo proibido).
-Excelência sustentada: 45/45 melhorias atômicas (Rodadas A-I). Gate a11y no CI.
+Excelência sustentada: 55/55 melhorias atômicas (Rodadas A-K). Gate a11y no CI.
 
 ## Memories
+- [Rodada K — Observabilidade Conexões](mem://features/ux-rodada-k-observabilidade-integracoes) — 55/55: DLQ + retry exponencial, sparkline P50/95/99, alertas em smart_notifications, SLO 99.5%, ADR-014.
 - [Connections Module](mem://features/connections-module) — /admin/conexoes: integrações Supabase/Bitrix24/n8n/MCP Claude + webhooks entrantes com tester, logs e MCP server JSON-RPC.
 - [Rodada I — Polimento Final](mem://features/ux-rodada-i-polimento-profundo) — 45/45: testes axe, registry de atalhos, Gallery v2, health-aggregate, ADR-012.
 - [Rodada H — Acessibilidade WCAG AA](mem://features/ux-rodada-h-accessibility) — 40/40: SkipNav, RouteAnnouncer, useAccessibleToast, foco visível.
