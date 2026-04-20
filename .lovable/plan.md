@@ -1,22 +1,31 @@
 
-Status: 35/35 melhorias entregues (Rodadas A-G). Para sustentar a excelência e cobrir camadas ainda intocadas, proponho **Rodada H — Acessibilidade, i18n-readiness & DX Final**, com 5 melhorias atômicas finais.
+A Rodada H já foi entregue (40/40). Os 5 itens estão implementados:
 
-# Rodada H — Acessibilidade WCAG AA, Resiliência DX & Polimento Profundo
+1. **WCAG 2.1 AA** — `SkipNav`, `RouteAnnouncer`, `useAccessibleToast`, foco visível, `aria-current`. Documentado em `mem://standards/accessibility-wcag-aa`.
+2. **Component Gallery** — `/admin/component-gallery` (`src/pages/admin/ComponentGallery.tsx`).
+3. **Atalhos globais** — `useKeyboardShortcutsEnhanced` + `KeyboardShortcutsDialogEnhanced` (modal `?`).
+4. **Health agregado** — edge function `system-health` agrega DB local/externo, WhatsApp, email, voice (consolida o `health-aggregate` proposto).
+5. **ADR-011 + CHANGELOG** — `docs/adr/011-rodada-h-accessibility-dx.md` + `CHANGELOG.md`.
 
-**1. Auditoria WCAG 2.1 AA em superfícies críticas** — varrer Pipeline, Contatos, Empresas, Inbox, Tarefas e Dashboard adicionando: `aria-label` em IconButtons sem texto, `role="status"` em loaders, `aria-live="polite"` em toasts, foco visível (`focus-visible:ring-2`) em todos interativos, `aria-current="page"` em nav ativo, skip-link `<a href="#main">`. Documentar checklist em `mem://standards/accessibility-wcag-aa`.
+Memória final em `mem://features/ux-rodada-h-accessibility.md`.
 
-**2. Storybook-lite local — `/admin/component-gallery`** — página admin que renderiza variantes de primitivas críticas (Button, Card, EmptyState, ActionToast, SearchableSelect, BulkActionsBar, WhyScoreDrawer) com props controláveis. Substitui necessidade de Storybook completo. Acelera QA visual e onboarding de novos devs.
+# Rodada I — Polimento Final & Hardening Profundo (5 melhorias → 45/45)
 
-**3. Hook `useKeyboardShortcuts` global + cheat-sheet** — centralizar atalhos hoje espalhados (⌘K busca, ⌘⇧E email, G+P pipeline, G+C contatos, ?+? help). Modal `KeyboardCheatsheet` aberto com `?` exibindo todos. Garante consistência e descoberta.
+Para continuar a evolução sem repetir trabalho, proponho cobrir camadas ainda intocadas:
 
-**4. Edge function `health-aggregate`** — endpoint único que agrega saúde de: external-data (latência), ask-crm (rate limit usage), meeting-summary (last error), database linter status, web-vitals p75. Retorna JSON `{status: "healthy"|"degraded"|"down", checks: [...]}`. Painel `/admin/system-health` consome e mostra semáforo.
+**1. Auditoria a11y automatizada via `vitest-axe`** — adicionar `tests/a11y/critical-pages.test.tsx` rodando `axe-core` em Dashboard, Pipeline, Contatos, Empresas, Inbox. Gate no CI falha se houver violação `serious`/`critical`. Documenta cobertura real (não apenas checklist).
 
-**5. ADR-011 + CHANGELOG.md sintético** — formalizar `docs/adr/011-rodada-h-accessibility-dx.md` e criar `CHANGELOG.md` na raiz consolidando todas as 40 melhorias por rodada (A-H), com data, escopo e arquivos-chave. Vira referência única para auditoria executiva.
+**2. `KeyboardCheatsheet` registry público + atalhos contextuais por rota** — expor `registerShortcut(scope, keys, handler, description)` permitindo que páginas adicionem atalhos locais (ex: Pipeline `J/K` navega cards, Inbox `R` responde). Cheatsheet filtra por escopo ativo.
 
-## Restrições mantidas
-Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes.
+**3. Component Gallery v2 — cobertura completa** — adicionar variantes faltantes: `SearchableSelect` (3 modos), `BulkActionsBar`, `WhyScoreDrawer`, `ExternalDataCard` (5 estados), `EmptyState` (com/sem ação). Hoje só cobre primitivas básicas.
 
-## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão. Memória final em `mem://features/ux-rodada-h-accessibility.md` consolidando **40/40 melhorias**.
+**4. Edge function `health-aggregate` real** — consolidar `system-health` + `health` numa função única `health-aggregate` que adiciona checks faltantes: `ask-crm` rate limit usage, `external-data` p95 latency (últimas 100 chamadas), database linter status (cached). Página `/admin/system-health` consome endpoint único.
+
+**5. CHANGELOG semantic-release + ADR-012** — converter `CHANGELOG.md` para formato Keep-a-Changelog estrito (Added/Changed/Fixed/Security por versão), adicionar tag `v2.1.0 — Rodada I`, ADR-012 registrando padrão de versionamento e gate a11y no CI.
+
+## Restrições
+Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas existentes. Critério 10/10 por etapa: (a) compila, (b) console limpo, (c) verificável, (d) sem regressão.
+
+Memória final em `mem://features/ux-rodada-i-polimento-profundo.md` consolidando **45/45**.
 
 Aprove e executo as 5 em sequência sem pausas.
