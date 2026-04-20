@@ -8,8 +8,9 @@
 
 | Versão | Data | Autor | Mudanças |
 |---|---|---|---|
-| **v2.0.0** | AAAA-MM-DD | @sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
-| v1.0.0 | _consolidação P_ | @docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
+| **v2.1.0** | 2026-04-20 | @lovable-sre | Painel `/admin/error-budget` operacional; placeholders datados; template de postmortem com guard-rails + exemplo preenchido (`postmortem-example.md`); snapshots persistidos em `system_health_snapshots` via cron 5min |
+| v2.0.0 | 2026-04-20 | @lovable-sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
+| v1.0.0 | 2026-04-13 | @lovable-docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
 
 ## 🆘 Quick Reference Card (1 página)
 
@@ -452,7 +453,7 @@ SLO de disponibilidade = **99.5%** → **3.6h de downtime permitido por mês** (
 ### Tracking
 
 - Fonte primária: histórico de `system-health` (cron `check-health-alerts` agrega minutos `unhealthy`/`degraded`).
-- Dashboard: `/admin/error-budget` (TODO se ainda não existir).
+- Dashboard: [`/admin/error-budget`](/admin/error-budget) — 4 cards (SLO target, uptime 30d, budget consumido, status freeze). Atualizado a cada 5 min via snapshot de `system-health`. Cores: 🟢 <50% consumido • 🟡 50–100% (atenção) • 🔴 ≥100% (freeze ativo, deploys bloqueados).
 - Query semanal:
 
 ```sql
