@@ -5,6 +5,22 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.5.0] - 2026-04-20 — Rodada M: Connections Federation & DX (65/65)
+
+### Added
+- Edge function `connection-introspect` — descobre schema (`information_schema.tables/columns`) de Supabases externos e persiste em `connection_configs.discovered_schema`.
+- Componente `SchemaDiscoveryCard` — árvore expansível (tabela → colunas → tipo/nullability) com `Collapsible` + `ScrollArea`.
+- Biblioteca `WEBHOOK_TEMPLATES` (Bitrix24, n8n, Stripe, GitHub, Lovable form) — botão "Usar template" no `IncomingWebhookFormDialog`.
+- `WebhookSnippetsSheet` — snippets prontos cURL/fetch JS/Python/n8n/Bitrix24 com URL real, headers HMAC condicionais e payload baseado no `field_mapping`.
+- MCP server v1.2.0 — 5 novas tools: `create_contact`, `update_deal_stage`, `add_interaction`, `search_companies_by_intent`, `get_pipeline_summary`.
+- Tabela `mcp_tool_calls` — log de cada chamada MCP (status, latency_ms, error). RLS admin-read.
+- Coluna `connection_configs.discovered_schema` + `discovered_at`.
+- ADR-016 (`docs/adr/016-connections-federation-dx.md`).
+
+### Notes
+- Rate limit 10 req/min em `connection-introspect`. Limite de 50 tabelas × 80 colunas para conter payload.
+- Snippets HMAC só aparecem se `webhook.require_signature = true`.
+
 ## [2.4.0] - 2026-04-20 — Rodada L: Connections Governance (60/60)
 
 ### Added
