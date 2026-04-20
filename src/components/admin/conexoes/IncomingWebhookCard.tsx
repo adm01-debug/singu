@@ -38,6 +38,11 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
                   {webhook.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
                 <Badge variant="outline" className="text-xs">{webhook.target_entity}</Badge>
+                {webhook.require_signature && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <ShieldCheck className="w-3 h-3" /> HMAC
+                  </Badge>
+                )}
               </div>
               {webhook.description && (
                 <p className="text-sm text-muted-foreground mb-2">{webhook.description}</p>
