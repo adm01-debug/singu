@@ -1,0 +1,149 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://esm.sh/zod@3.23.8";
+import { rateLimit } from "../_shared/rate-limit.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+/**
+ * connection-introspect
+ * Descobre schema (tabelas/colunas) de uma conexão Supabase externa.
+ * Auth: JWT do admin via Authorization header.
+ * Persiste resultado em connection_configs.discovered_schema.
+ */
+
+const limiter = rateLimit({ windowMs: 60_000, max: 10, message: "Limite de introspections atingido." });
+
+const BodySchema = z.object({
+  connection_id: z.string().uuid(),
+});
+
+interface ColumnInfo {
+  column_name: string;
+  data_type: string;
+  is_nullable: string;
+}
+interface TableInfo {
+  table_name: string;
+  columns: ColumnInfo[];
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const limited = limiter.check(`introspect:${ip}`);
+  if (limited) return limited;
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: claims, error: claimsErr } = await userClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsErr || !claims?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = claims.claims.sub;
+
+    const admin = createClient(supabaseUrl, serviceKey);
+    const { data: roleCheck } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!roleCheck) {
+      return new Response(JSON.stringify({ error: "Apenas admins" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const parsed = BodySchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: parsed.error.flatten() }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: conn, error: connErr } = await admin
+      .from("connection_configs")
+      .select("id,connection_type,config")
+      .eq("id", parsed.data.connection_id)
+      .single();
+
+    if (connErr || !conn) {
+      return new Response(JSON.stringify({ error: "Conexão não encontrada" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (conn.connection_type !== "supabase_external") {
+      return new Response(JSON.stringify({ error: "Apenas conexões supabase_external suportam introspection" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const config = (conn.config ?? {}) as Record<string, unknown>;
+    const externalUrl = String(config.url ?? "");
+    const externalKey = String(config.service_role_key ?? config.anon_key ?? "");
+
+    if (!externalUrl || !externalKey) {
+      return new Response(JSON.stringify({ error: "Credenciais incompletas (url + service_role_key)" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const externalClient = createClient(externalUrl, externalKey);
+    // Tenta via RPC information_schema; fallback: lista limitada
+    const tables: TableInfo[] = [];
+    const { data: tablesData } = await externalClient
+      .from("information_schema.tables" as never)
+      .select("table_name")
+      .eq("table_schema", "public")
+      .limit(100);
+
+    const tableList: string[] = Array.isArray(tablesData)
+      ? tablesData.map((t: { table_name: string }) => t.table_name)
+      : [];
+
+    for (const tableName of tableList.slice(0, 50)) {
+      const { data: cols } = await externalClient
+        .from("information_schema.columns" as never)
+        .select("column_name,data_type,is_nullable")
+        .eq("table_schema", "public")
+        .eq("table_name", tableName)
+        .limit(80);
+      tables.push({
+        table_name: tableName,
+        columns: Array.isArray(cols) ? (cols as ColumnInfo[]) : [],
+      });
+    }
+
+    const schemaJson = { tables, discovered_at: new Date().toISOString(), table_count: tables.length };
+
+    await admin
+      .from("connection_configs")
+      .update({ discovered_schema: schemaJson, discovered_at: new Date().toISOString() })
+      .eq("id", conn.id);
+
+    return new Response(JSON.stringify({ success: true, schema: schemaJson }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Erro desconhecido";
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
