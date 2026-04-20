@@ -12,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   HeartPulse, Database, Plug, Shield, ArrowRight,
   Activity, AlertTriangle, Mail, Mic, Sparkles,
-  BookOpen, Map, Key, Settings, FileText,
+  BookOpen, Map, Key, Settings, FileText, Plug,
 } from 'lucide-react';
 
 // ── Status Cards Row ──
@@ -87,6 +87,7 @@ function ToolCard({ title, description, icon: Icon, to }: {
 }
 
 const ADMIN_TOOLS = [
+  { title: 'Conexões', description: 'Supabase externos, Bitrix24, n8n, MCP Claude e webhooks', icon: Plug, to: '/admin/conexoes' },
   { title: 'Telemetria de Queries', description: 'Monitor de performance do banco externo', icon: Activity, to: '/admin/telemetria' },
   { title: 'Schema Drift Monitor', description: 'Detectar inconsistências de schema', icon: AlertTriangle, to: '/admin/schema-drift' },
   { title: 'Field Mapping Docs', description: 'Documentação de mapeamento campo-a-campo', icon: Map, to: '/admin/field-mapping' },
