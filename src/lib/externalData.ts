@@ -111,6 +111,38 @@ export async function updateExternalData<T = Record<string, unknown>>(table: str
   }
 }
 
+/** Sentinela emitida quando um UPDATE versionado falha por edição concorrente. */
+export class ConcurrentEditError extends Error {
+  constructor(public readonly table: string, public readonly id: string) {
+    super('CONCURRENT_EDIT');
+    this.name = 'ConcurrentEditError';
+  }
+}
+
+/**
+ * UPDATE versionado (optimistic locking).
+ * Lança {@link ConcurrentEditError} quando a versão informada já não corresponde
+ * ao estado atual do registro (HTTP 409 do edge function).
+ */
+export async function updateExternalDataWithVersion<T = Record<string, unknown>>(
+  table: string,
+  id: string,
+  version: number,
+  updates: Record<string, unknown>,
+): Promise<{ data: T | null; error: Error | null }> {
+  try {
+    const result = await callExternalData({ action: 'update_with_version', table, id, version, updates });
+    return { data: (result?.data as T) || null, error: null };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (/\b409\b/.test(msg) || /CONCURRENT_EDIT/i.test(msg)) {
+      return { data: null, error: new ConcurrentEditError(table, id) };
+    }
+    logger.error('Error updating external data with version:', err);
+    return { data: null, error: err as Error };
+  }
+}
+
 export async function deleteExternalData(table: string, id: string): Promise<{ success: boolean; error: Error | null }> {
   try {
     await callExternalData({ action: 'delete', table, id });

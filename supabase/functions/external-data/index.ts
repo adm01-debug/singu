@@ -452,6 +452,35 @@ Deno.serve(async (req) => {
       return jsonOk({ data }, req);
     }
 
+    // ─── UPDATE WITH VERSION (Optimistic Locking) ───
+    if (operation === 'update_with_version') {
+      const id = typeof body.id === 'string' ? body.id : undefined;
+      const version = typeof body.version === 'number' ? body.version : undefined;
+      const updates = body.updates;
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!id || !uuidRegex.test(id)) return jsonError('Invalid "id" for update_with_version', 400, req);
+      if (version === undefined || !Number.isFinite(version)) return jsonError('Missing or invalid "version" (number) for update_with_version', 400, req);
+      if (!updates || typeof updates !== 'object') return jsonError('Missing or invalid "updates" for update_with_version', 400, req);
+
+      // Conditional update: only succeeds if version matches.
+      // The DB trigger increments version automatically on UPDATE.
+      const { data, error } = await client
+        .from(table)
+        .update(updates)
+        .eq('id', id)
+        .eq('version', version)
+        .select();
+
+      if (error) throw new Error(`update_with_version failed: ${error.message}`);
+
+      const rows = Array.isArray(data) ? data : [];
+      if (rows.length === 0) {
+        log.warn("concurrent edit detected", { table, id, version });
+        return jsonError('CONCURRENT_EDIT', 409, req);
+      }
+      return jsonOk({ data: rows[0] }, req);
+    }
+
     // ─── DELETE ───
     if (operation === 'delete') {
       const id = body.id;
