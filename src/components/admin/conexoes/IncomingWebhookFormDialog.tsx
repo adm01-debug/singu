@@ -10,8 +10,10 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIncomingWebhooks, type WebhookTargetEntity } from '@/hooks/useIncomingWebhooks';
-import { Loader2, Save, Info, Sparkles } from 'lucide-react';
+import { Loader2, Save, Info, Sparkles, Wand2 } from 'lucide-react';
 import { WEBHOOK_TEMPLATES, getTemplateById } from './webhookTemplates';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
