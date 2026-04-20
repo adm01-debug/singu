@@ -1506,6 +1506,75 @@ export type Database = {
         }
         Relationships: []
       }
+      connection_anomalies: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          anomaly_type: string
+          confidence: number | null
+          connection_id: string | null
+          created_at: string
+          detected_at: string
+          explanation: string
+          id: string
+          metrics: Json
+          model_used: string | null
+          severity: string
+          webhook_id: string | null
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          anomaly_type: string
+          confidence?: number | null
+          connection_id?: string | null
+          created_at?: string
+          detected_at?: string
+          explanation: string
+          id?: string
+          metrics?: Json
+          model_used?: string | null
+          severity?: string
+          webhook_id?: string | null
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          anomaly_type?: string
+          confidence?: number | null
+          connection_id?: string | null
+          created_at?: string
+          detected_at?: string
+          explanation?: string
+          id?: string
+          metrics?: Json
+          model_used?: string | null
+          severity?: string
+          webhook_id?: string | null
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_anomalies_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connection_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connection_anomalies_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "incoming_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connection_configs: {
         Row: {
           config: Json
