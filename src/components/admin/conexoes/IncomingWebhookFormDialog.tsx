@@ -156,6 +156,22 @@ export function IncomingWebhookFormDialog({ open, onOpenChange, webhookId }: Pro
             <p className="text-xs text-muted-foreground mt-1">Vazio = aceitar de qualquer origem.</p>
           </div>
 
+          <div className="border border-dashed border-border/60 rounded-md p-3 bg-muted/20 space-y-2">
+            <Label className="flex items-center gap-1.5 text-xs">
+              <Wand2 className="w-3.5 h-3.5" /> Auto-mapeamento por IA (opcional)
+            </Label>
+            <Textarea
+              value={examplePayload}
+              onChange={e => setExamplePayload(e.target.value)}
+              rows={4} className="font-mono text-xs"
+              placeholder='Cole aqui um payload JSON real recebido da origem para a IA sugerir o mapping…'
+            />
+            <Button type="button" size="sm" variant="outline" onClick={handleAiSuggest} disabled={aiLoading || !examplePayload.trim()}>
+              {aiLoading ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Wand2 className="w-3.5 h-3.5 mr-1" />}
+              Sugerir mapping com IA
+            </Button>
+          </div>
+
           <div>
             <Label>Mapeamento de campos (JSON)</Label>
             <Textarea
