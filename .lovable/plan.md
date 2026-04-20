@@ -1,62 +1,55 @@
 
-# Plano: Re-auditoria SRE v2.1.0 → Confirmar 10/10 e identificar próxima fronteira
+# Plano: Fechar 10/10 SRE — Resolver bug B2 + executar próxima fronteira
 
 ## Contexto
 
-Na rodada anterior os 3 findings amarelos foram resolvidos (changelog datado, template com guard-rail + exemplo, painel `/admin/error-budget` operacional). Antes de declarar 10/10 final, precisamos:
+Re-auditoria anterior: 12/15. Bug B2 (edge function `error-budget` retornando 404) ainda bloqueia o painel. Este plano fecha o bug e executa as 3 melhorias incrementais propostas, em sequência única.
 
-1. **Re-auditar** os 30 cenários originais para confirmar que os amarelos viraram verdes
-2. **Validar a nova superfície** (página, hook, edge function, cron, snapshots) com testes específicos
-3. **Identificar próxima camada de excelência** caso surjam novos gaps menores
+## Execução sequencial
 
-## Bateria de Re-auditoria — 3 Camadas × 15 cenários
+### Etapa 1 — Corrigir B2: Re-deploy do `error-budget`
+- Re-deployar explicitamente a função `error-budget` (código já existe e está correto)
+- Validar com `curl_edge_functions` retornando 200
+- Verificar logs para confirmar execução limpa
 
-### Camada A — Fechamento dos 3 findings amarelos (5 testes)
-- A1 Changelog do RUNBOOK sem `AAAA-MM-DD` (grep deve retornar 0 ocorrências em linhas de versão)
-- A2 Entrada v2.0.0 com data `2026-04-20` e autor `@lovable-sre`
-- A3 `postmortem-template.md` com bloco "ESTE É UM TEMPLATE" no topo
-- A4 `postmortem-example.md` existe e está 100% preenchido (sem placeholders)
-- A5 Referência `/admin/error-budget` no RUNBOOK sem marker "TODO"
+### Etapa 2 — Melhoria #1: Gráfico histórico de uptime (sparkline 30d)
+- Estender edge function `error-budget` para retornar série temporal diária (`daily_uptime: [{date, uptime_pct}]`)
+- Adicionar componente `UptimeSparkline.tsx` usando Recharts (AreaChart, 30 pontos)
+- Integrar no `ErrorBudget.tsx` abaixo dos 4 stat cards, com linha de SLO 99.5% como referência
 
-### Camada B — Validação da nova superfície Error Budget (7 testes)
-- B1 Tabela `system_health_snapshots` existe com RLS admin-only (consulta Supabase)
-- B2 Edge function `error-budget` deployada e respondendo 200 (curl com auth)
-- B3 Cron job `system-health-snapshot-5min` registrado em `cron.job`
-- B4 `system-health` modificada para inserir snapshot (grep do INSERT)
-- B5 Página `src/pages/admin/ErrorBudget.tsx` renderiza 4 stat cards + alertas + guia
-- B6 Rota `/admin/error-budget` registrada em `AppRoutes.tsx` com guard `<Admin>`
-- B7 Item "Error Budget" presente no `AdminSidebar` com ícone `Gauge`
+### Etapa 3 — Melhoria #2: Retention policy automática (>60d)
+- Migration: criar função `cleanup_old_health_snapshots()` que deleta snapshots >60 dias
+- Cron job semanal `system-health-snapshots-cleanup` (domingo 03:00 UTC)
+- Adicionar índice em `system_health_snapshots(timestamp DESC)` para acelerar tanto agregação quanto cleanup
 
-### Camada C — Qualidade contínua e próxima fronteira (3 testes)
-- C1 Memória `mem://features/error-budget-dashboard` criada e linkada no índice
-- C2 Sem regressões: linter Supabase sem CRITICAL/HIGH novos
-- C3 Snapshots começando a popular (consulta `SELECT count(*) FROM system_health_snapshots`)
+### Etapa 4 — Melhoria #3: Alerta proativo em 50% do budget
+- Estender `error-budget/index.ts` para inserir registro em `system_alerts` (tabela existente) quando `budget_consumed_pct` cruzar 50%, 75%, 100%
+- Lógica idempotente: só insere se ainda não houver alerta do mesmo nível nas últimas 24h
+- Severidade: 50% → warning, 75% → high, 100% → critical
+- Banner no topo do `ErrorBudget.tsx` listando alertas ativos da tabela
 
-## Próxima fronteira (preview)
+### Etapa 5 — Documentação e memória
+- RUNBOOK: adicionar seção "Alertas automáticos de Error Budget" descrevendo os 3 thresholds
+- Atualizar `mem://features/error-budget-dashboard` com sparkline + retention + alertas
+- Bump RUNBOOK para v2.2.0 com entrada datada
 
-Caso 15/15 verde, identifico até **3 melhorias incrementais** opcionais para uma futura rodada (ex.: gráfico histórico de uptime, retention policy automática para snapshots >60d, alerta proativo quando budget cruza 50%). Apenas listadas — sem executar nesta rodada.
+### Etapa 6 — Auditoria final 10/10
+- Re-rodar os 15 testes da rodada anterior (esperado: 15/15 verde)
+- Adicionar 5 novos testes específicos das melhorias (sparkline renderiza, cleanup agendado, alertas inseridos)
+- Total: 20/20 = 10/10 confirmado
 
-## Execução
+## Arquivos tocados
 
-Tudo via tools read-only:
-- `code--exec` com `grep`, `wc`, listagem
-- `supabase--read_query` para tabela, cron e contagem de snapshots
-- `supabase--curl_edge_functions` para validar `error-budget` ao vivo
-- `supabase--linter` para regressões
-- `code--view` nos arquivos novos/editados
+**Editados:**
+- `supabase/functions/error-budget/index.ts` (série temporal + alertas)
+- `src/pages/admin/ErrorBudget.tsx` (sparkline + banner alertas)
+- `src/hooks/useErrorBudget.ts` (tipo expandido)
+- `docs/RUNBOOK.md` (v2.2.0 + seção alertas)
 
-## Entregáveis
-
-Relatório PT-BR formato tabela:
-
-| # | Camada | Teste | Status | Evidência |
-|---|--------|-------|--------|-----------|
-
-Mais:
-- **Score final** (X/15)
-- **Veredito 10/10**: confirmado ou ações remanescentes
-- **3 próximas melhorias** (apenas listadas para aprovação futura)
+**Novos:**
+- `src/components/admin/UptimeSparkline.tsx`
+- Migration: função cleanup + cron semanal + índice
 
 ## Critério de fechamento
 
-(a) 15 cenários executados com evidência concreta, (b) confirmação explícita de que os 3 amarelos viraram verdes, (c) painel Error Budget validado ponta-a-ponta (DB + edge + UI + cron), (d) próxima fronteira sugerida sem executar.
+(a) `curl /functions/v1/error-budget` retorna 200 com payload completo, (b) sparkline renderiza 30 pontos no painel, (c) cron de cleanup ativo, (d) alertas inseridos automaticamente nos 3 thresholds, (e) auditoria 20/20 confirmando 10/10 SRE.
