@@ -95,6 +95,12 @@ export function IncomingWebhookCard({ webhook, onEdit }: Props) {
           webhookId={webhook.id} webhookName={webhook.name} webhookToken={webhook.token}
         />
       )}
+      {showSnippets && (
+        <WebhookSnippetsSheet
+          open={showSnippets} onOpenChange={setShowSnippets}
+          webhook={webhook} url={url}
+        />
+      )}
     </>
   );
 }

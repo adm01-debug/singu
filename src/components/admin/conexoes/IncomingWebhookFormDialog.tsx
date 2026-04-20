@@ -10,7 +10,8 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useIncomingWebhooks, type WebhookTargetEntity } from '@/hooks/useIncomingWebhooks';
-import { Loader2, Save, Info } from 'lucide-react';
+import { Loader2, Save, Info, Sparkles } from 'lucide-react';
+import { WEBHOOK_TEMPLATES, getTemplateById } from './webhookTemplates';
 
 interface Props {
   open: boolean;
