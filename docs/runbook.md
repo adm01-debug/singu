@@ -67,3 +67,73 @@ Limites padrão estão no início de cada função (`limiter = rateLimit({...})`
 
 Se um usuário legítimo bate o limite, considere ajustar `max` ou `windowMs`
 na função afetada e redeployar.
+
+---
+
+## Tracing & Correlação
+
+### Como obter o `traceId` de uma requisição
+
+Toda resposta das 5 edge functions críticas (`external-data`, `ask-crm`,
+`ai-suggest-mapping`, `connection-anomaly-detector`, `incoming-webhook`) inclui
+o header `x-trace-id` com um UUID v4 gerado por request.
+
+```bash
+curl -i -X POST "$SUPABASE_URL/functions/v1/external-data" \
+  -H "apikey: $ANON_KEY" -H "Authorization: Bearer $JWT" \
+  -d '{"action":"select","table":"contacts","limit":1}' \
+  | grep -i x-trace-id
+# x-trace-id: 1f676f77-5cee-453a-827f-ba647b873c96
+```
+
+### Como buscar todos os logs de uma request específica
+
+```bash
+supabase functions logs external-data --search "traceId=1f676f77-5cee-453a-827f-ba647b873c96"
+```
+
+### Formato do log estruturado emitido
+
+Cada entrada é uma linha JSON com os campos abaixo (exemplo real do log):
+
+```json
+{
+  "level": "info",
+  "traceId": "1f676f77-5cee-453a-827f-ba647b873c96",
+  "fn": "external-data",
+  "msg": "request_received",
+  "method": "POST",
+  "action": "select",
+  "table": "companies"
+}
+```
+
+Mensagens-chave para correlacionar incidentes:
+- `request_received` — entrada de toda request (emitido pelo `tracedLogger`)
+- `concurrent_edit_detected` — conflito de optimistic locking (HTTP 409)
+- `upstream_gateway_error` — Cloudflare HTML detectado (HTTP 200 com `fallback:true`)
+- `uncaught error` — exceção não tratada (HTTP 500)
+
+---
+
+## Deploy de Edge Functions
+
+### Checklist anti-regressão
+
+Antes de deployar uma função (manual ou automaticamente):
+
+1. **Imports** — preferir `npm:pacote@versao` ao invés de `https://esm.sh/...`.
+   O bundler do Supabase resolve `npm:` nativamente; `esm.sh` ocasionalmente
+   retorna 502 e quebra o boot da função.
+2. **Lock file** — se o deploy falhar com `Module not found` ou erro de bundling,
+   apagar `supabase/functions/deno.lock` e redeployar. O lock será regenerado.
+3. **Tracing** — toda nova função deve usar `tracedLogger(req, "<fn-name>")`
+   e emitir `log.info("request_received", { ... })` no início do handler para
+   garantir observabilidade desde o primeiro request bem-sucedido.
+4. **Smoke test pós-deploy** — chamar a função via `supabase--curl_edge_functions`
+   com um payload válido mínimo e verificar:
+   - HTTP 200 (ou erro semântico esperado, ex: 401 sem JWT)
+   - Header `x-trace-id` presente
+   - Log `request_received` aparece em `supabase functions logs <fn>`
+5. **Rollback** — em caso de regressão, reverter o arquivo via histórico do
+   Lovable e redeployar. Edge functions são stateless: rollback é imediato.
