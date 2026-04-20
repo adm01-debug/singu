@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders, requireCronSecret, jsonError, jsonOk } from "../_shared/auth.ts";
 
 interface TemplateStats {

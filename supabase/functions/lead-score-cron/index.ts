@@ -1,6 +1,6 @@
 // Lead Score Cron — varre todos os contatos com atividade recente e recalcula.
 // Aciona-se via cron (header x-cron-secret) ou manualmente por admin.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { scopedCorsHeaders, jsonError, jsonOk, requireCronSecret } from "../_shared/auth.ts";
 
 Deno.serve(async (req: Request) => {
