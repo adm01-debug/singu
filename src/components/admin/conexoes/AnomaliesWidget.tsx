@@ -30,7 +30,7 @@ export function AnomaliesWidget() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-500" />
+          <AlertTriangle className="w-4 h-4 text-warning" />
           Anomalias detectadas pela IA
           {anomalies.length > 0 && <Badge variant="destructive">{anomalies.length}</Badge>}
         </CardTitle>
