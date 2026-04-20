@@ -16,6 +16,8 @@ export interface ConnectionConfig {
   last_test_status: string | null;
   last_test_latency_ms: number | null;
   last_test_message: string | null;
+  discovered_schema: Record<string, unknown> | null;
+  discovered_at: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
