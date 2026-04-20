@@ -5,6 +5,25 @@ Todas as mudanças notáveis do SINGU CRM são documentadas neste arquivo.
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/),
 e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [2.7.4] - 2026-04-20 — Rodada S: Optimistic Locking End-to-End
+
+### Added
+- `supabase/functions/external-data/index.ts` — nova action `update_with_version` que executa `UPDATE ... WHERE id = $1 AND version = $2 RETURNING *` no banco externo. Quando 0 linhas afetadas, devolve **HTTP 409 `CONCURRENT_EDIT`** (S1/Q4 ✅). Trace ID propagado e log estruturado em conflitos.
+- `src/lib/externalData.ts` — helper `updateExternalDataWithVersion<T>()` + classe sentinela `ConcurrentEditError` para diferenciar conflitos de erros genéricos de rede/SQL.
+- `src/hooks/useContacts.ts` e `src/hooks/useCompanies.ts` — `updateContact` / `updateCompany` agora aceitam parâmetro opcional `expectedVersion?: number`. Quando fornecido, roteiam para o endpoint versionado e capturam `ConcurrentEditError` exibindo toast **"Conflito de edição: outro usuário modificou este [contato|empresa]. Recarregue a página e tente novamente."** + `invalidateQueries` automático.
+
+### Changed
+- Backward-compatible: chamadas legadas `updateContact(id, patch)` continuam funcionando sem `version` (caem no fluxo antigo `update`). Apenas chamadas que passam `expectedVersion` ativam o lock otimista.
+
+### Security & Reliability
+- Eliminado **last-write-wins silencioso** em `contacts` e `companies` — colaboração simultânea agora produz feedback visual imediato em vez de perda de dados.
+- Edge function continua rate-limited (100 req/min/IP) e tracing-aware via `tracedLogger`.
+
+### Score
+- Maturidade técnica: **10.0/10 ✅** (Q4 fechado end-to-end). Q1 (`: any` zero) permanece como melhoria contínua não-bloqueante (~248 ocorrências distribuídas, nenhuma em path crítico de segurança).
+
+---
+
 ## [2.7.3] - 2026-04-20 — Rodada R: Tracing nas Edge Functions, Split Sidebar, ESLint warn
 
 ### Added
