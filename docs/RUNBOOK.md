@@ -470,6 +470,24 @@ GROUP BY 1 ORDER BY 1 DESC;
 
 > Conta apenas `unhealthy` para o budget; `degraded` é warning track.
 
+### Alertas automáticos de Error Budget
+
+A edge function `error-budget` insere registros idempotentes em `public.system_alerts` (RLS admin-only) sempre que o consumo cruza um threshold. Janela de deduplicação: **24h por nível**.
+
+| Threshold | Severidade | `alert_type` | Ação esperada |
+|---|---|---|---|
+| ≥ 50% | `warning` | `error_budget_50` | Reduzir mudanças não-críticas; revisar incidentes do mês |
+| ≥ 75% | `high` | `error_budget_75` | Revisão por 2 engenheiros em todo deploy; preparar freeze |
+| ≥ 100% | `critical` | `error_budget_100` | **Freeze ativo**; postmortem obrigatório por incidente |
+
+Os alertas ativos (não-reconhecidos) aparecem no topo de `/admin/error-budget`. Reconhecimento: `UPDATE system_alerts SET acknowledged_at=now(), acknowledged_by=auth.uid() WHERE id=...` (apenas admin).
+
+### Retenção e cleanup
+
+- Snapshots: cron `system-health-snapshot-5min` (a cada 5min) → tabela `system_health_snapshots`
+- Cleanup: cron `system-health-snapshots-cleanup` (domingos 03:00 UTC) chama `public.cleanup_old_health_snapshots()` que apaga snapshots >60 dias e alertas reconhecidos >90 dias.
+- Sparkline 30d: visualização contínua no painel mesmo em dias sem amostra (preenchidos como 100%).
+
 ---
 
 ## 👥 Matriz RACI de Incidentes
