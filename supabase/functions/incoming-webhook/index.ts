@@ -1,10 +1,25 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { z } from "https://esm.sh/zod@3.23.8";
+import { rateLimit } from "../_shared/rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-token",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+// Rate limit: 60 requisições por minuto por IP.
+const limiter = rateLimit({
+  windowMs: 60_000,
+  max: 60,
+  message: "Muitas requisições. Aguarde antes de tentar novamente.",
+});
+
+// Aceita objeto JSON arbitrário, mas força tamanho razoável (≤ 256 KB serializado).
+const PayloadSchema = z.record(z.unknown()).refine(
+  (v) => JSON.stringify(v).length <= 256 * 1024,
+  { message: "Payload excede 256KB" },
+);
 
 /**
  * Endpoint público para receber dados de outros sistemas Lovable.
@@ -14,6 +29,14 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const t0 = Date.now();
+
+  const sourceIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? req.headers.get("cf-connecting-ip") ?? "unknown";
+  const userAgent = req.headers.get("user-agent") ?? "unknown";
+
+  // 1) Rate limit por IP
+  const limited = limiter.check(sourceIp);
+  if (limited) return limited;
 
   const url = new URL(req.url);
   const pathToken = url.pathname.split("/").pop();
@@ -25,11 +48,17 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const sourceIp = req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? "unknown";
-  const userAgent = req.headers.get("user-agent") ?? "unknown";
-
-  let payload: Record<string, unknown> = {};
-  try { payload = await req.json(); } catch { /* empty body */ }
+  // 2) Parse + validação Zod do payload
+  let rawPayload: unknown = {};
+  try { rawPayload = await req.json(); } catch { rawPayload = {}; }
+  const parsed = PayloadSchema.safeParse(rawPayload);
+  if (!parsed.success) {
+    return new Response(
+      JSON.stringify({ error: "Payload inválido", details: parsed.error.flatten() }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+  const payload = parsed.data;
 
   if (!token) {
     return new Response(JSON.stringify({ error: "Token obrigatório" }), {
