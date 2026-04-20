@@ -208,7 +208,7 @@ export default function ComponentGallery() {
             <ExternalDataCard
               title="Circuit Open"
               icon={<Database className="h-4 w-4" />}
-              error={new CircuitOpenError('breaker open')}
+              error={new CircuitOpenError('external-data', 30000)}
             >
               <div />
             </ExternalDataCard>
