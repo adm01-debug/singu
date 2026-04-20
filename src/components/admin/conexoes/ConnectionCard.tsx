@@ -2,8 +2,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { Edit, Trash2, TestTube2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useConnections, type ConnectionConfig } from '@/hooks/useConnections';
+import { ConnectionMetricsSparkline } from './ConnectionMetricsSparkline';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -72,6 +74,8 @@ export function ConnectionCard({ connection, onEdit }: Props) {
             ><Trash2 className="w-4 h-4" /></Button>
           </div>
         </div>
+        <Separator className="my-3" />
+        <ConnectionMetricsSparkline connectionId={connection.id} />
       </CardContent>
     </Card>
   );
