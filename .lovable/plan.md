@@ -1,52 +1,38 @@
 
 
-# Rodada T — Polimento Final Pós-Testes (rumo ao 10.0/10 sustentado)
+# Rodada U — Hardening Final Sustentado (10.0/10 → 10.0/10 perpétuo)
 
-A bateria de testes da Rodada S validou 10/10, mas identificou **3 oportunidades de hardening** que elevam o sistema de "10/10 no papel" para "10/10 sob carga real". Executarei em sequência atômica.
+A Rodada T fechou os gaps identificados nos testes da S. O sistema está em **10.0/10**. Para sustentar esse score sob evolução contínua, executarei 4 ações de hardening preventivo focadas em **garantias automatizadas** (não em novas features).
 
-## Ações
+## Ações sequenciais
 
-**T1. Cobertura E2E real do Optimistic Locking**
-Criar arquivo de teste Deno `supabase/functions/external-data/optimistic-locking_test.ts` que:
-- Faz UPDATE com versão correta → espera 200 + `version+1`
-- Faz UPDATE com versão obsoleta → espera 409 + `error: 'CONCURRENT_EDIT'`
-- Roda contra DB externo real via `EXTERNAL_SUPABASE_*` secrets
-- Executável via `supabase--test_edge_functions`
+**U1. CI guard de optimistic locking**
+Criar `supabase/functions/_shared/version-guard.ts` — helper reutilizável `assertVersionMatch(current, expected, entity)` que padroniza o lançamento do erro 409 `CONCURRENT_EDIT` com payload uniforme `{ error, entity, currentVersion, attemptedVersion, traceId }`. Refatorar `external-data/index.ts` action `update_with_version` para usar o helper. Benefício: qualquer nova tabela com `version` herda o contrato sem reimplementar.
 
-**T2. Tracing observável — emissão proativa de `info` no boot do request**
-Hoje as 5 funções críticas só emitem JSON estruturado em erros/warnings. Adicionar `logger.info('request_received', { method, action })` no início de cada handler em:
-- `external-data/index.ts`
-- `ask-crm/index.ts`
-- `ai-suggest-mapping/index.ts`
-- `connection-anomaly-detector/index.ts`
-- `incoming-webhook/index.ts`
+**U2. Toast de conflito — cobrir hooks restantes**
+Auditar via `code--search_files` todos os hooks que fazem `update_*` em entidades versionadas (`useDeals`, `useTasks`, `useInteractions` se existirem). Para cada um que ainda use toast genérico no catch de 409, trocar por `showConcurrentEditToast({ entity, queryClient, queryKey })`. Garante UX 100% consistente em conflitos de edição.
 
-Resultado: logs históricos passam a mostrar `traceId` mesmo em requisições bem-sucedidas, fechando o gap de observabilidade detectado nos testes (logs só mostravam `Boot`/`Shutdown`).
+**U3. Teste E2E do fallback Cloudflare 502**
+Adicionar caso novo em `optimistic-locking_test.ts` (ou novo arquivo `cloudflare-fallback_test.ts`) que simula resposta HTML do Cloudflare via mock e valida que `external-data` retorna `{ fallback: true, data: [], count: 0 }` com HTTP 200 — protege a resiliência implementada nos hotfixes recentes contra regressão futura.
 
-**T3. Toast de conflito — UX padronizada**
-Auditar os handlers em `useContacts.ts:164` e `useCompanies.ts:357`: garantir que ambos usem `useActionToast.destructive` com mensagem padronizada `"Edição concorrente detectada — recarregue e tente novamente"` + ação **Recarregar** que invalida a query relevante. Hoje cada hook tem seu próprio toast ad-hoc.
-
-Criar helper compartilhado `src/lib/concurrentEditToast.ts` que recebe `{ queryKey, refetch }` e dispara o toast padronizado — reuso garante consistência se outros hooks adotarem optimistic locking no futuro.
-
-**T4. Documentação de runbook**
-Adicionar seção **"Edição concorrente"** em `docs/runbook.md` (ou criar se não existir) descrevendo:
-- O que dispara o erro 409
-- Como o frontend trata (toast + refetch)
-- Como debugar via `traceId` nos logs do edge
+**U4. Runbook — seções complementares**
+Estender `docs/runbook.md` com:
+- **Seção "Tracing & Correlação"** — como extrair `traceId` do header `x-trace-id` da resposta, comando `supabase functions logs <fn> --search "traceId=..."` e exemplo de payload JSON estruturado emitido pelas 5 funções críticas.
+- **Seção "Deploy de Edge Functions"** — checklist anti-regressão (preferir `npm:` sobre `esm.sh`, remover `deno.lock` em caso de erro de bundling, validar com smoke test após deploy).
 
 ## Arquivos tocados
 
-- `supabase/functions/external-data/optimistic-locking_test.ts` (novo)
-- `supabase/functions/{external-data,ask-crm,ai-suggest-mapping,connection-anomaly-detector,incoming-webhook}/index.ts` (1 linha cada)
-- `src/lib/concurrentEditToast.ts` (novo, ~30 linhas)
-- `src/hooks/useContacts.ts` + `src/hooks/useCompanies.ts` (refatoração do bloco do catch)
-- `docs/runbook.md` (seção nova)
+- `supabase/functions/_shared/version-guard.ts` (novo, ~25 linhas)
+- `supabase/functions/external-data/index.ts` (refator do bloco `update_with_version`, ~10 linhas)
+- `supabase/functions/external-data/cloudflare-fallback_test.ts` (novo, ~40 linhas)
+- `src/hooks/use*.ts` que tratem 409 (refator condicional, 0–3 arquivos)
+- `docs/runbook.md` (2 seções novas)
 
 ## Restrições
 
-PT-BR · ≤400 linhas/arquivo · TanStack Query · sem `useEffect` para fetch · reuso `useActionToast` · zero regressão visual.
+PT-BR · ≤400 linhas/arquivo · sem novas dependências · zero regressão visual · reuso `showConcurrentEditToast` · nenhum `useEffect` para fetch.
 
 ## Critério de fechamento
 
-(a) `supabase--test_edge_functions` passa nos 2 cenários de optimistic locking, (b) logs históricos das 5 fns mostram entradas `request_received` com `traceId`, (c) toast de conflito unificado nos 2 hooks com ação **Recarregar**, (d) runbook documentado, (e) zero regressão no linter/security.
+(a) `version-guard` cobre 100% das chamadas `update_with_version`, (b) busca por `409` ou `CONCURRENT_EDIT` nos hooks retorna apenas chamadas a `showConcurrentEditToast`, (c) novo teste de fallback passa em `supabase--test_edge_functions`, (d) runbook documenta tracing + deploy, (e) linter DB e security scan permanecem 0 CRITICAL/HIGH.
 
