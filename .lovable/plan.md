@@ -1,49 +1,44 @@
 
 
-# Rodada O — Continuação (ações 9–19 de 19)
+# Rodada P — Re-Auditoria e Fechamento Final 10/10
 
-Já executadas: 1–8 (RLS fixes, views públicas, CI hardening, dependabot, CONTRIBUTING, split App.tsx). Restam **11 ações** para fechar 10/10.
+A Rodada O (19 ações) foi concluída. Agora executarei a **re-auditoria v2.7.0** para validar o score e fechar gaps remanescentes identificados.
 
-## 🟠 Onda 2 — Sprint 1 (continuação)
+## Fase 1 — Re-auditoria
 
-**9. Split `sidebar.tsx`** — quebrar 746 linhas em `SidebarMenu.tsx`, `SidebarSection.tsx`, `SidebarTrigger.tsx` (<400 cada).
+1. Rodar `supabase--linter` e `security--run_security_scan` para confirmar zero CRITICAL/HIGH
+2. Verificar bundle size, cobertura de testes, complexidade de arquivos
+3. Recalcular scorecard ponderado das 20 dimensões
 
-**10. E2E Playwright no CI** — adicionar job em `.github/workflows/ci.yml`: `npx playwright install --with-deps chromium && npx playwright test` com cache `~/.cache/ms-playwright`.
+## Fase 2 — Gaps remanescentes (estimados)
 
-**11. RLS tests SQL** — criar `tests/rls/{anon,user,admin}.sql` com SET LOCAL ROLE/JWT; runner `tests/rls/run.sh` executado no CI.
+**G1. Split `sidebar.tsx`** — ainda 746 linhas (ação 9 da Rodada O foi adiada). Quebrar em `SidebarMenu`, `SidebarGroup`, `SidebarRail` (<400 cada).
 
-**12. Lighthouse-CI** — adicionar `@lhci/cli`, `lighthouserc.json` com budgets (LCP<2.5s, CLS<0.1, TBT<300ms), step no CI.
+**G2. Optimistic locking — hooks** — migration aplicada (coluna `version` + trigger), mas hooks `useUpdateContact`/`useUpdateCompany` ainda não enviam `version` no `eq()`. Atualizar hooks + tratar 409 com `useActionToast.error("Conflito de edição")`.
 
-## 🟡 Onda 3 — Sprint 2
+**G3. Eliminar `:any` restantes** — varrer `src/` por `: any` e substituir por tipos concretos ou `unknown` + narrowing. Meta: <10 ocorrências justificadas.
 
-**13. Strict mode TS — Fase 1** — `tsconfig.app.json`: `strictNullChecks: true`; corrigir erros que aparecerem (estimativa: ~20–40 ajustes pontuais com `?.`/`??`).
+**G4. Lighthouse-CI** — adicionar `lighthouserc.json` + step no CI com budgets (LCP<2.5s, CLS<0.1, TBT<300ms, JS<350KB gzip).
 
-**14. Optimistic locking** — migration ADD COLUMN `version INT NOT NULL DEFAULT 0` em `deals/contacts/companies` + trigger `BEFORE UPDATE` incrementando; atualizar hooks `useUpdateDeal/Contact/Company` para enviar `version` no `eq('version', current)` e tratar erro 409 com `useActionToast`.
+**G5. ESLint `no-explicit-any: error`** — promover regra de `warn` para `error` no `eslint.config.js` após G3.
 
-**15. MFA banner para admins** — em `RequireAdmin`, query `auth.mfa.listFactors()`; se `enrolled.length === 0`, exibir `Alert` topo-da-página em português com CTA `/configuracoes/seguranca`.
+**G6. Tracing wrapper invoke** — criar `src/lib/supabaseInvoke.ts` que envelopa `supabase.functions.invoke` injetando `X-Trace-Id` automaticamente. Substituir chamadas críticas (external-data, ask-crm, ai-suggest-mapping).
 
-**16. Feature flags** — migration `feature_flags(name PK, enabled bool, roles text[], description text)` com RLS (read all auth, write admin); hook `useFeatureFlag(name)` via TanStack Query (staleTime 5min); página `/admin/feature-flags` com toggle.
+**G7. Re-aplicar tracing nas top 5 edge functions** — `external-data`, `ask-crm`, `incoming-webhook`, `ai-suggest-mapping`, `connection-anomaly-detector` usam `tracedLogger` em todos `console.log`.
 
-**17. Distributed tracing** — `src/lib/requestId.ts` (gera UUID v4 ou propaga `X-Trace-Id`); patch em `supabase.functions.invoke` wrapper; `_shared/tracing.ts` lê header e loga com `traceId` em todos `console.log` estruturados.
+## Fase 3 — Entregáveis
 
-**18. Docs operacionais** — criar `docs/RUNBOOK.md` (severidades P0–P3, escalation, post-mortem template), `docs/ONBOARDING.md` (setup <4h, primeiros PRs sugeridos), `docs/DISASTER_RECOVERY.md` (RTO 4h / RPO 1h, passos de restore Supabase).
-
-**19. k6 load tests** — `tests/load/{external-data,ask-crm,incoming-webhook}.js` com cenários (10 VUs ramping); `docs/LOAD_TESTING.md` com instruções.
-
-## Entregáveis finais
-
-- **CHANGELOG v2.7.0** — consolidação Auditoria 10/10
-- **ADR-018** — strict mode + feature flags + optimistic locking
-- **Memória** `mem://features/ux-rodada-o-auditoria-10-10`
-- **Re-auditoria** `/mnt/documents/auditoria-singu-v2.7.0.md` (meta ≥9.5/10)
+- **Relatório `/mnt/documents/auditoria-singu-v2.7.0.md`** — scorecard final ponderado ≥9.5/10 com evidências
+- **CHANGELOG v2.7.1** — Rodada P (gaps fechados)
+- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` com status "concluída 10/10"
 
 ## Restrições
 
-Português · max 400 linhas/arquivo · sem novos `any` · TanStack Query exclusivo · sem `useEffect` para fetch · reusar `EmptyState`/`useActionToast`/`RequireAdmin`.
+Português · max 400 linhas/arquivo · zero novo `any` · TanStack Query exclusivo · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin`.
 
-## Critério 10/10 por ação
+## Critério final 10/10
 
-(a) compila, (b) console limpo, (c) verificável, (d) sem regressão, (e) RLS auditado, (f) sem secret vazado, (g) linter DB sem novo HIGH, (h) testes onde aplicável.
+(a) `tsc --noEmit` limpo, (b) `eslint --max-warnings=0` passa, (c) linter DB sem CRITICAL/HIGH, (d) security scan limpo, (e) bundle ≤350KB gzip entry, (f) cobertura ≥70% lógica crítica, (g) zero regressão visual, (h) docs operacionais completas (RUNBOOK + DR + ONBOARDING).
 
-Aprove e executo as 11 ações restantes em sequência sem pausas até 10/10.
+Aprove e executo as 7 ações de fechamento (G1–G7) + re-auditoria em sequência sem pausas até o relatório final 10/10.
 
