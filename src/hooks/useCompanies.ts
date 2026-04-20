@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
-import { queryExternalData, insertExternalData, updateExternalData, deleteExternalData } from '@/lib/externalData';
+import { queryExternalData, insertExternalData, updateExternalData, updateExternalDataWithVersion, deleteExternalData, ConcurrentEditError } from '@/lib/externalData';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { logger } from "@/lib/logger";
 
@@ -330,7 +330,7 @@ export function useCompanies(options?: { enabled?: boolean }) {
     }
   };
 
-  const updateCompany = async (id: string, updates: CompanyUpdate) => {
+  const updateCompany = async (id: string, updates: CompanyUpdate, expectedVersion?: number) => {
     const previous = queryClient.getQueryData<CompaniesPage>(queryKey);
     queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
       prev ? { ...prev, companies: prev.companies.map(c => c.id === id ? { ...c, ...updates } as Company : c) } : prev
@@ -339,7 +339,9 @@ export function useCompanies(options?: { enabled?: boolean }) {
       const input = updates as Record<string, unknown>;
       const clean = stripLocal(input);
       delete clean.id;
-      const { data, error } = await updateExternalData<Company>('companies', id, clean);
+      const { data, error } = expectedVersion !== undefined
+        ? await updateExternalDataWithVersion<Company>('companies', id, expectedVersion, clean)
+        : await updateExternalData<Company>('companies', id, clean);
       if (error) throw error;
       if (data) {
         queryClient.setQueryData<CompaniesPage>(queryKey, prev =>
@@ -352,7 +354,16 @@ export function useCompanies(options?: { enabled?: boolean }) {
     } catch (error) {
       if (previous) queryClient.setQueryData<CompaniesPage>(queryKey, previous);
       logger.error('Error updating company:', error);
-      toast({ title: 'Erro ao atualizar empresa', description: 'Verifique os dados e tente novamente.', variant: 'destructive' });
+      if (error instanceof ConcurrentEditError) {
+        toast({
+          title: 'Conflito de edição',
+          description: 'Outro usuário modificou esta empresa. Recarregue a página e tente novamente.',
+          variant: 'destructive',
+        });
+        await queryClient.invalidateQueries({ queryKey });
+      } else {
+        toast({ title: 'Erro ao atualizar empresa', description: 'Verifique os dados e tente novamente.', variant: 'destructive' });
+      }
       return null;
     }
   };
