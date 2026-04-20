@@ -1,5 +1,9 @@
 # Post-Mortem — {Título do Incidente}
 
+> ⚠️ **ESTE É UM TEMPLATE.** Ao usar, copie este arquivo para `docs/postmortems/AAAA-MM-DD-slug.md` e substitua **todos** os placeholders: `AAAA-MM-DD`, `@nome`, `{Título}`, `Xh Ymin`, `R$ X`, etc. Não publique com placeholders intactos.
+>
+> 📖 **Referência viva**: veja [`postmortem-example.md`](./postmortem-example.md) para um incidente fictício 100% preenchido como modelo de qualidade.
+
 > **Cultura blameless**: este documento foca em sistemas e processos, não em pessoas. Erros são oportunidades de aprendizado.
 
 ## Metadados

@@ -2,13 +2,14 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Activity, AlertTriangle, Mail, Mic, Sparkles,
-  Shield, BookOpen, Map, FileText, Plug, Flag,
+  Shield, BookOpen, Map, FileText, Plug, Flag, Gauge,
 } from 'lucide-react';
 
 const ADMIN_LINKS: { to: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/admin/conexoes', label: 'Conexões', icon: Plug },
   { to: '/admin/telemetria', label: 'Telemetria', icon: Activity },
+  { to: '/admin/error-budget', label: 'Error Budget', icon: Gauge },
   { to: '/admin/schema-drift', label: 'Schema Drift', icon: AlertTriangle },
   { to: '/admin/field-mapping', label: 'Field Mapping', icon: Map },
   { to: '/admin/email-diagnostics', label: 'Email Pipeline', icon: Mail },

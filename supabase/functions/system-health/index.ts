@@ -176,6 +176,21 @@ Deno.serve(async (req) => {
     version: "2.0.0",
   };
 
+  // Persistir snapshot (best-effort) para alimentar /admin/error-budget
+  try {
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    await supabase.from("system_health_snapshots").insert({
+      status: overallStatus,
+      total_latency_ms: response.total_latency_ms,
+      components,
+    });
+  } catch (_) {
+    // Não bloqueia resposta se persistência falhar
+  }
+
   return new Response(JSON.stringify(response), {
     status: overallStatus === "unhealthy" ? 503 : 200,
     headers: { ...corsHeaders, "Content-Type": "application/json" },

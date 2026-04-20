@@ -8943,6 +8943,33 @@ export type Database = {
           },
         ]
       }
+      system_health_snapshots: {
+        Row: {
+          components: Json
+          created_at: string
+          id: string
+          status: string
+          timestamp: string
+          total_latency_ms: number | null
+        }
+        Insert: {
+          components?: Json
+          created_at?: string
+          id?: string
+          status: string
+          timestamp?: string
+          total_latency_ms?: number | null
+        }
+        Update: {
+          components?: Json
+          created_at?: string
+          id?: string
+          status?: string
+          timestamp?: string
+          total_latency_ms?: number | null
+        }
+        Relationships: []
+      }
       ticket_comments: {
         Row: {
           content: string
