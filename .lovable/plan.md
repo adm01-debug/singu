@@ -1,58 +1,50 @@
 
 
-# Rodada R — Fechamento dos Gaps Q1–Q5 (rumo ao 10.0/10)
+# Rodada S — Fechamento Final 10.0/10 (Q1 + Q4)
 
-A Rodada Q fechou apenas Q6 (tracing wrapper). Restam **5 gaps** documentados no roadmap. Executarei agora em sequência atômica.
+A Rodada R fechou Q3 (sidebar split), Q5 (tracing 5 edge functions) e Q2 parcial (eslint warn). Score atual: **9.8/10**. Restam **2 gaps** para 10.0/10.
 
 ## Ações
 
-**R1. Tracing nas 5 edge functions críticas (Q5)** — substituir `console.log/warn/error` por `tracedLogger(traceId, fnName)` em:
-- `supabase/functions/external-data/index.ts`
-- `supabase/functions/ask-crm/index.ts`
-- `supabase/functions/incoming-webhook/index.ts`
-- `supabase/functions/ai-suggest-mapping/index.ts`
-- `supabase/functions/connection-anomaly-detector/index.ts`
+**S1. Optimistic Locking — Implementação completa (Q4)**
 
-Cada uma extrai `traceId` via `extractTraceId(req)` no início e devolve `withTraceResponseHeader` nas respostas.
+Backend (`supabase/functions/external-data/index.ts`):
+- Adicionar action `update_with_version` que recebe `{ table, id, version, patch }`
+- Executa `UPDATE ... WHERE id=$1 AND version=$2 RETURNING *`
+- Se 0 rows → retorna `409 { error: 'CONCURRENT_EDIT' }`
+- Se 1 row → incrementa version (trigger DB já cuida) e retorna registro novo
 
-**R2. Optimistic locking nos hooks (Q4)** — atualizar:
-- `useUpdateContact` → aceitar `version`, fazer update com `.eq('version', currentVersion).select()`, detectar array vazio → `throw new Error('CONCURRENT_EDIT')`
-- `useUpdateCompany` → idem
-- `onError` chama `useActionToast.error("Conflito de edição: outro usuário modificou este registro. Recarregue e tente novamente.")`
+Frontend:
+- `src/hooks/useUpdateContact.ts` → aceitar `version` no input, chamar `update_with_version`, capturar 409 → `useActionToast.error("Conflito de edição: outro usuário modificou este contato. Recarregue a página.")`
+- `src/hooks/useUpdateCompany.ts` → idem
+- Componentes que chamam estes hooks (ContatoDetalhe, EmpresaDetalhe, formulários inline) → passar `version` atual junto com o patch
 
-Como o acesso é via `external-data` proxy, criar action `update_with_version` no Edge Function que executa o UPDATE versionado e retorna count.
+**S2. Eliminar `: any` — Fase 2 final (Q1 + Q2)**
 
-**R3. Eliminar `: any` em massa — Fase 1 (Q1)** — varrer top 20 arquivos com mais ocorrências, substituir por:
-- Tipos do `Database['public']['Tables'][...]['Row']` quando aplicável
-- `unknown` + type guards quando dinâmico
-- Interfaces locais quando estrutura conhecida
+Varrer top arquivos com `: any` restantes (~248 ocorrências) e substituir:
+- Tipos de tabela → `Database['public']['Tables'][T]['Row']`
+- Payloads dinâmicos → `Record<string, unknown>` + type guards
+- Callbacks de events → tipos do React (`React.ChangeEvent<HTMLInputElement>`)
+- RPC responses → interfaces locais com campos esperados
 
-Meta desta rodada: reduzir de ~248 para ≤80 ocorrências.
+Meta desta rodada: **≤20 ocorrências** justificadas (esm.sh imports, libs sem types).
 
-**R4. Split `sidebar.tsx` (Q3)** — quebrar `src/components/ui/sidebar.tsx` (746 linhas) em:
-- `sidebar-context.tsx` (Provider, useSidebar hook, constants)
-- `sidebar-layout.tsx` (Sidebar, SidebarHeader, SidebarFooter, SidebarContent, SidebarInset, SidebarInput, SidebarRail, SidebarSeparator, SidebarTrigger)
-- `sidebar-group.tsx` (SidebarGroup, SidebarGroupLabel, SidebarGroupAction, SidebarGroupContent)
-- `sidebar-menu.tsx` (SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarMenuAction, SidebarMenuBadge, SidebarMenuSkeleton, SidebarMenuSub*)
-- `sidebar.tsx` → re-exporta tudo (mantém API pública 100% compatível)
-
-Cada arquivo <400 linhas. Zero alteração visual ou comportamental.
-
-**R5. ESLint `no-explicit-any: warn` (Q2 parcial)** — promover de off para `warn` (não `error` ainda, pois R3 não zera 100%). Garante visibilidade de regressões sem quebrar build. Promoção para `error` na Rodada S após R3 atingir zero.
+Após zerar: promover `eslint.config.js` `no-explicit-any` de `warn` → `error` e rodar `tsc --noEmit` + `eslint --max-warnings=0`.
 
 ## Entregáveis
 
-- **CHANGELOG v2.7.3** — Rodada R (Q1 fase1, Q2 warn, Q3, Q4, Q5)
-- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` → 9.9/10
-- **Re-scan**: `supabase--linter` + `security--run_security_scan`
+- **CHANGELOG v2.7.4** — Rodada S (Q1 fechado, Q2 strict, Q4 fechado)
+- **Memória atualizada** `mem://features/ux-rodada-o-auditoria-10-10` → **10.0/10 ✅**
+- **Re-scan**: `supabase--linter` + `security--run_security_scan` (zero CRITICAL/HIGH)
+- **Relatório final**: `/mnt/documents/auditoria-singu-v2.7.4-final.md`
 
 ## Restrições
 
-Português · max 400 linhas/arquivo · TanStack Query · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin` · split sidebar mantém imports `from '@/components/ui/sidebar'` funcionando.
+Português · max 400 linhas/arquivo · TanStack Query · sem `useEffect` para fetch · reusar `useActionToast`/`EmptyState`/`RequireAdmin` · zero regressão visual.
 
-## Critério de fechamento
+## Critério final 10.0/10
 
-(a) `tsc --noEmit` limpo, (b) eslint sem novos errors, (c) zero CRITICAL/HIGH no linter DB, (d) sidebar visualmente idêntica, (e) tracing E2E logando `traceId` nas 5 edge functions, (f) optimistic locking testável (2 abas → segunda recebe toast de conflito).
+(a) `tsc --noEmit` 100% limpo, (b) `eslint --max-warnings=0` com `no-explicit-any: error`, (c) linter DB sem CRITICAL/HIGH, (d) security scan limpo, (e) optimistic locking testável end-to-end (2 abas → toast de conflito), (f) zero regressão visual ou comportamental.
 
-Aprove e executo R1–R5 em sequência sem pausas.
+Aprove e executo S1 → S2 em sequência sem pausas até **10.0/10 ✅**.
 
