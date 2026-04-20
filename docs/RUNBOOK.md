@@ -1,7 +1,56 @@
 # SINGU CRM — Runbook Operacional
 
 > **Documento único e autoritativo** para deploy, rollback, monitoramento e resposta a incidentes em produção.
-> Última revisão: Rodada P (consolidação `RUNBOOK.md` + `runbook.md`).
+>
+> **Versão**: v2.0.0 — _Rodada Q: maturidade SRE (error budget, RACI, capacidade, chaos, blast radius)._
+
+## 📜 Changelog
+
+| Versão | Data | Autor | Mudanças |
+|---|---|---|---|
+| **v2.0.0** | AAAA-MM-DD | @sre | Quick Reference Card, Error Budget Policy, Matriz RACI, Capacity Planning, Game Days, Backup Verification, Dependency Map, On-Call Handoff, link para `postmortem-template.md` e `dr-drills/` |
+| v1.0.0 | _consolidação P_ | @docs | Merge `RUNBOOK.md` + `runbook.md`; health check `system-health` v2; inventário de 90+ funções; 12 cenários de troubleshooting; kill switches |
+
+## 🆘 Quick Reference Card (1 página)
+
+> **Para uso sob pressão durante incidente.** Mais detalhes nas seções abaixo.
+
+```
+┌─ HEALTH ────────────────────────────────────────────────────┐
+│ curl https://dialogue-diamond.lovable.app/functions/v1/...  │
+│   .../system-health                                          │
+│ UI admin: header → SystemHealthWidget                        │
+│ Pública:  /status                                            │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ ROLLBACK ───────────────────────────────────────────────────┐
+│ Frontend:      Lovable → Histórico → Reverter (<2min)        │
+│ Edge function: Reverter código + redeploy automático (<5min) │
+│ DB migration:  forward-only (criar migration que desfaz)     │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ KILL SWITCHES (sem deploy) ─────────────────────────────────┐
+│ UPDATE connection_configs SET is_active=false                │
+│   WHERE provider IN ('lux','evolution','firecrawl',          │
+│                      'enrichlayer');                         │
+│ Voice AI: invalidar ELEVENLABS_API_KEY em Cloud→Secrets      │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ SEVERIDADE (resumo) ────────────────────────────────────────┐
+│ P1: health unhealthy >5min OU >50% sem login OU dado perdido │
+│ P2: módulo core >5% erro OU latência P95 >2× SLO por 15min   │
+│ P3: módulo secundário degradado <20% usuários                │
+│ P4: bug visual sem impacto                                   │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ ESCALATION ─────────────────────────────────────────────────┐
+│ 1) Plantonista (imediato P0/P1)                              │
+│ 2) Tech Lead (após 15min)                                    │
+│ 3) CTO (após 1h ou se PII exposta)                           │
+│ 4) Suporte Lovable (infra externa)                           │
+│ Detalhes: DISASTER_RECOVERY.md §Cadeia de escalation         │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ## 📚 Documentos relacionados
 
@@ -9,6 +58,8 @@
 - [`LOAD_TESTING.md`](./LOAD_TESTING.md) — Testes de carga k6, baselines de capacidade
 - [`SECURITY.md`](./SECURITY.md) — Políticas, RLS, hardening
 - [`EDGE_FUNCTIONS_API.md`](./EDGE_FUNCTIONS_API.md) — Contratos de cada função
+- [`postmortem-template.md`](./postmortem-template.md) — Template blameless de post-mortem
+- [`dr-drills/README.md`](./dr-drills/README.md) — Calendário de game days e protocolo de restore mensal
 - [`adr/`](./adr/) — 18 Architecture Decision Records
 
 ## 📋 Índice
@@ -19,12 +70,19 @@
 4. [Edge Functions — Inventário](#-edge-functions--inventário)
 5. [Banco de Dados](#-banco-de-dados)
 6. [Monitoramento, Tracing & SLOs](#-monitoramento-tracing--slos)
-7. [Severidades de Incidente](#-severidades-de-incidente)
-8. [Resposta a Incidentes](#-resposta-a-incidentes)
-9. [Playbook de Comunicação](#-playbook-de-comunicação)
-10. [Troubleshooting (12 cenários)](#-troubleshooting)
-11. [Feature Flags & Kill Switches](#-feature-flags--kill-switches)
-12. [Segurança & Rotação de Secrets](#-segurança--rotação-de-secrets)
+7. [Error Budget Policy](#-error-budget-policy)
+8. [Severidades de Incidente](#-severidades-de-incidente)
+9. [Matriz RACI de Incidentes](#-matriz-raci-de-incidentes)
+10. [Resposta a Incidentes](#-resposta-a-incidentes)
+11. [Playbook de Comunicação](#-playbook-de-comunicação)
+12. [Troubleshooting (12 cenários)](#-troubleshooting)
+13. [Feature Flags & Kill Switches](#-feature-flags--kill-switches)
+14. [Segurança & Rotação de Secrets](#-segurança--rotação-de-secrets)
+15. [Capacity Planning](#-capacity-planning)
+16. [Dependency Map & Blast Radius](#-dependency-map--blast-radius)
+17. [Chaos Engineering & Game Days](#-chaos-engineering--game-days)
+18. [Backup Verification](#-backup-verification)
+19. [On-Call Handoff Checklist](#-on-call-handoff-checklist)
 
 ---
 
@@ -367,3 +425,241 @@ UI de auditoria: `/admin/secrets-management` (hashes SHA-256, sem expor valor).
 | Linter Supabase sem CRITICAL/HIGH | DBA | _registrar data_ |
 
 Registrar evidências em `docs/security-audits/AAAA-Q{1-4}.md`.
+
+---
+
+## 💰 Error Budget Policy
+
+### Cálculo
+
+SLO de disponibilidade = **99.5%** → **3.6h de downtime permitido por mês** (43.2 min/semana).
+
+| Período | Budget total | 50% consumido | 100% consumido |
+|---|---|---|---|
+| Mensal | 3h 36min | 1h 48min | 3h 36min |
+| Semanal | 50min | 25min | 50min |
+| Diário | 7min 12s | 3min 36s | 7min 12s |
+
+### Política de Freeze
+
+| Consumo do budget mensal | Política |
+|---|---|
+| < 50% | Operação normal — deploys diários liberados |
+| 50% – 80% | **Alerta amarelo** — apenas deploys de baixo risco (UI, copy, hotfixes); revisão obrigatória por 2 engenheiros |
+| 80% – 100% | **Freeze de feature** — somente correções P1/P2 e hotfixes de segurança |
+| > 100% (estourado) | **Freeze total** — postmortem obrigatório; bloqueio até reset mensal; revisão de SLO se padrão se repetir 2 meses seguidos |
+
+### Tracking
+
+- Fonte primária: histórico de `system-health` (cron `check-health-alerts` agrega minutos `unhealthy`/`degraded`).
+- Dashboard: `/admin/error-budget` (TODO se ainda não existir).
+- Query semanal:
+
+```sql
+-- Minutos não-healthy nos últimos 30 dias (agregação manual via logs)
+SELECT
+  date_trunc('day', occurred_at) AS dia,
+  SUM(CASE WHEN status = 'unhealthy' THEN duration_minutes ELSE 0 END) AS unhealthy_min,
+  SUM(CASE WHEN status = 'degraded' THEN duration_minutes ELSE 0 END) AS degraded_min
+FROM health_check_history
+WHERE occurred_at > now() - interval '30 days'
+GROUP BY 1 ORDER BY 1 DESC;
+```
+
+> Conta apenas `unhealthy` para o budget; `degraded` é warning track.
+
+---
+
+## 👥 Matriz RACI de Incidentes
+
+Papéis e responsabilidades durante incidentes P1/P2. Uma pessoa pode acumular papéis em incidentes pequenos, mas IC é sempre uma única pessoa.
+
+| Atividade | Incident Commander | Comms Lead | Scribe | SME (Subject Matter Expert) |
+|---|---|---|---|---|
+| Declarar severidade e abrir war room | **R/A** | I | I | C |
+| Investigar causa raiz | A | I | I | **R** |
+| Decidir mitigação (rollback, kill switch, hotfix) | **R/A** | I | I | C |
+| Comunicar status interno e externo | A | **R** | C | I |
+| Manter timeline minuto-a-minuto | A | I | **R** | C |
+| Validar resolução (health verde 30min) | **R/A** | I | I | C |
+| Escrever post-mortem em ≤48h | A | C | C | **R** |
+
+**Legenda**: R=Responsible (executa), A=Accountable (responde), C=Consulted, I=Informed.
+
+### Definição dos papéis
+
+- **Incident Commander (IC)** — coordena tudo, toma decisões finais; foco em "o que fazer agora", não "como consertar".
+- **Comms Lead** — escreve mensagens para status page, e-mail e canais internos; protege IC de interrupções de stakeholders.
+- **Scribe** — registra timeline em tempo real (hora, evento, decisão); fonte primária para o post-mortem.
+- **SME** — engenheiro com expertise no módulo afetado; executa investigação técnica e mitigação.
+
+> Em horário comercial, o plantonista assume IC por padrão. Em P1 noturno, o primeiro a responder vira IC até passar o bastão.
+
+---
+
+## 📈 Capacity Planning
+
+Sinais para escalar antes que vire incidente.
+
+| Sinal | Threshold | Ação |
+|---|---|---|
+| `interactions` rows | > 5M | Particionar por mês (`PARTITION BY RANGE (created_at)`) |
+| `audit_log` rows | > 10M | Arquivar registros >1 ano em cold storage (parquet) |
+| Edge function invocações sustentadas | > 100/min por 1h | Revisar rate limit, considerar cache no cliente |
+| Tokens Lovable AI consumidos | > R$ 200/dia | Ativar cache em `ask-crm`/`ai-writing-assistant` (TTL 1h) |
+| Pool de conexões DB | > 80% sustentado por 15min | Investigar long-running queries, aumentar `pool_size` ou refatorar |
+| Latência P95 `external-data` | > 1.5s por 30min | Verificar índices no banco externo, ajustar `LISTING_SELECT` |
+| Storage usage | > 80% da quota | Limpar avatares órfãos, comprimir mídias antigas |
+| Cold start rate | > 15% das invocações | Considerar warm-up cron a cada 5min nas funções críticas |
+| Taxa de 409 `CONCURRENT_EDIT` | > 5%/min sustentado | Investigar job que escreve em paralelo; revisar UX de edição |
+| Realtime subscriptions ativas | > 500 simultâneas | Avaliar throttling/sharding por canal |
+
+Revisão mensal pelo Tech Lead; thresholds reavaliados a cada 6 meses.
+
+---
+
+## 🌐 Dependency Map & Blast Radius
+
+### Diagrama de cascata
+
+```
+Lovable AI Gateway (LOVABLE_API_KEY) DOWN
+  ├─ ai-writing-assistant      ❌ (sem fallback)
+  ├─ ai-email-refine           ❌ (sem fallback)
+  ├─ ask-crm                   ❌ (sem fallback)
+  ├─ conversational-search     ❌ (sem fallback)
+  ├─ semantic-search           ⚠️  degradado → fallback trigram local
+  ├─ meeting-summary           ❌ (sem fallback)
+  ├─ disc-analyzer             ❌ (sem fallback)
+  ├─ lead-scorer               ⚠️  degradado → fallback heurístico client-side
+  ├─ next-best-action          ❌ (sem fallback)
+  └─ ai-suggest-mapping        ❌ (sem fallback; UI mostra erro)
+
+Banco Externo (EXTERNAL_SUPABASE_*) DOWN
+  ├─ external-data             ⚠️  retorna {fallback:true, data:[]} HTTP 200
+  ├─ Empresas (UI)             ⚠️  lista vazia + banner informativo
+  ├─ Contatos (UI)             ⚠️  lista vazia + banner informativo
+  ├─ Pipeline (deals)          ⚠️  cards vazios
+  ├─ system-health             ⚠️  database_external: down
+  └─ email_pipeline (depende)  ⚠️  email_pipeline: degraded
+
+Evolution API (WhatsApp) DOWN
+  ├─ evolution-webhook         ❌ (sem mensagens entrantes)
+  ├─ Conversas (UI)            ⚠️  banner "WhatsApp indisponível"
+  ├─ sequence-processor        ⚠️  steps WhatsApp pulados, retry 1h
+  └─ system-health             ⚠️  whatsapp: down
+
+ElevenLabs DOWN
+  ├─ voice-agent               ❌
+  ├─ voice-to-text             ❌
+  ├─ elevenlabs-tts            ❌
+  └─ Voice AI (UI)             ⚠️  módulo escondido se health=down
+
+Pipeline Email (Pub/Sub Gmail) DOWN
+  ├─ incoming-webhook          ❌ (sem novos emails sincronizados)
+  ├─ email_logs                ⚠️  sem novos registros → email_pipeline: degraded após 1h
+  ├─ Interações (email)        ⚠️  histórico estagnado
+  └─ email-thread-summary      ✅ (opera sobre dados já sincronizados)
+```
+
+### Tabela de impacto cruzado
+
+| Falha | Módulos OK | Módulos degradados | Módulos OFF |
+|---|---|---|---|
+| Lovable AI Gateway | Contatos, Empresas, Pipeline, Tarefas | Semantic search, Lead scoring | Ask CRM, todas funções IA |
+| Banco externo | Auth, Tarefas locais, Notificações | — | Empresas, Contatos, Pipeline (cards vazios) |
+| Evolution API | Email, Voice, IA | Sequências (steps WhatsApp pulam) | WhatsApp inbox |
+| ElevenLabs | Tudo exceto voz | — | Voice AI module (escondido) |
+| Pipeline Email | Tudo exceto sincronização nova | Histórico de email estagnado | Captura de novos emails |
+
+> **Regra de design**: nenhuma falha isolada de integração externa deve derrubar Auth, Contatos locais, Tarefas ou Notificações. Se isso acontecer = bug arquitetural.
+
+---
+
+## 🎲 Chaos Engineering & Game Days
+
+Ver índice completo e calendário em [`dr-drills/README.md`](./dr-drills/README.md).
+
+### Resumo do calendário
+
+| Trimestre | Cenário | Duração |
+|---|---|---|
+| Q1 | Matar `external-data` em horário comercial | 1h |
+| Q2 | Revogar `EVOLUTION_API_KEY` | 45min |
+| Q3 | Simular schema drift externo | 1h |
+| Q4 | Load test 2× pico via k6 | 2h |
+
+### Princípios
+
+1. **Anunciar com 48h de antecedência** — todos os engenheiros + comms team.
+2. **Janela definida** — abortar se incidente real concorrente.
+3. **Hipótese antes** — escrever o que esperamos que aconteça (predição vs. realidade revela gaps).
+4. **Action items obrigatórios** — todo drill gera ≥1 melhoria; resolver em ≤30 dias.
+5. **Drill não é teste de pessoas** — blameless igual incidente real.
+
+---
+
+## 💾 Backup Verification
+
+Ver protocolo completo em [`dr-drills/README.md`](./dr-drills/README.md#-protocolo-de-verificação-de-backup-mensal).
+
+**Resumo**:
+- **Frequência**: mensal (1ª terça, 10h-12h BRT).
+- **Owner**: @dba.
+- **Procedimento**: restaurar PITR de 24h em projeto staging, rodar `system-health`, validar contagem de 5 tabelas críticas, validar RLS, destruir staging.
+- **Evidência**: `docs/dr-drills/AAAA-MM-restore.md`.
+- **Critério de sucesso**: restore em <30min, contagens com diff <5% vs. mês anterior, RLS intacta.
+
+> Backup que não é testado **não é backup** — é wishful thinking.
+
+---
+
+## 🤝 On-Call Handoff Checklist
+
+Plantonista que sai preenche e envia ao plantonista que entra (canal `#oncall-handoff` ou e-mail).
+
+### Template
+
+```
+# Handoff — De @saída para @entrada
+Período coberto: AAAA-MM-DD HH:MM → AAAA-MM-DD HH:MM BRT
+Próximo handoff: AAAA-MM-DD HH:MM BRT
+
+## 1. Incidentes em aberto
+- [ ] Nenhum   /   [ ] Listar: ID, severidade, status, próximo passo
+
+## 2. Deploys agendados nas próximas 24h
+- [ ] Nenhum   /   [ ] Listar: módulo, hora, owner
+
+## 3. Alertas em snooze / suprimidos
+- [ ] Nenhum   /   [ ] Listar: alerta, motivo, expira em
+
+## 4. Secrets em rotação esta semana
+- [ ] Nenhum   /   [ ] Listar: secret, owner, deadline
+
+## 5. Drills agendados (game day / restore)
+- [ ] Nenhum   /   [ ] Data, cenário, owner
+
+## 6. Mudanças de schema pendentes (banco externo)
+- [ ] Nenhuma   /   [ ] Listar: tabela, mudança, ETA, impacto previsto
+
+## 7. Rate limits ajustados recentemente
+- [ ] Nenhum   /   [ ] Função, valor antigo → novo, motivo
+
+## 8. Feature flags / kill switches ativados
+- [ ] Nenhum   /   [ ] Provider, desde quando, motivo, plano de reativação
+
+## 9. Links rápidos
+- system-health: https://dialogue-diamond.lovable.app/functions/v1/system-health
+- Status page:   https://dialogue-diamond.lovable.app/status
+- Logs:          Lovable Cloud → Edge Functions → Logs
+- Error logs UI: /admin/error-logs
+- Schema drift:  /admin/schema-drift
+
+## 10. Cadeia de escalation (validar telefones atualizados)
+- Tech Lead: @nome — tel
+- CTO:       @nome — tel
+- Suporte Lovable: status.lovable.dev
+```
+
+> **Regra**: handoff não enviado = plantonista que sai ainda é responsável até confirmação explícita do entrante.
