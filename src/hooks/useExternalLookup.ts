@@ -1,14 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeWithTrace } from '@/lib/supabaseInvoke';
 import { logger } from '@/lib/logger';
 
+interface DistinctResponse { values?: string[] }
+interface BatchDistinctResponse { results?: Record<string, string[]> }
+
 async function fetchDistinctValues(table: string, column: string): Promise<string[]> {
-  const { data, error } = await supabase.functions.invoke('external-data', {
+  const { data, error, traceId } = await invokeWithTrace<DistinctResponse>('external-data', {
     body: { action: 'distinct', table, column },
   });
 
   if (error) {
-    logger.error(`Failed to fetch distinct ${column}:`, error);
+    logger.error(`Failed to fetch distinct ${column}:`, { traceId, error: error.message });
     return [];
   }
 
@@ -27,12 +30,12 @@ export function useExternalLookup(table: string, column: string, enabled = true)
 
 /** Fetch multiple distinct columns in a single Edge Function call */
 async function fetchBatchDistinct(table: string, columns: string[]): Promise<Record<string, string[]>> {
-  const { data, error } = await supabase.functions.invoke('external-data', {
+  const { data, error, traceId } = await invokeWithTrace<BatchDistinctResponse>('external-data', {
     body: { action: 'batch_distinct', table, columns },
   });
 
   if (error) {
-    logger.error('Failed to fetch batch distinct:', error);
+    logger.error('Failed to fetch batch distinct:', { traceId, error: error.message });
     return {};
   }
 
