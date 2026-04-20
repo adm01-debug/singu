@@ -71,6 +71,7 @@ export const AdminComponentGallery = lazy(() => import("@/pages/admin/ComponentG
 export const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 export const AdminSegurancaPage = lazy(() => import("@/pages/admin/AdminSegurancaPage"));
 export const AdminFeatureFlagsPage = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
+export const AdminErrorBudget = lazy(() => import("@/pages/admin/ErrorBudget"));
 
 export const Deduplicacao = lazy(() => import("@/pages/Deduplicacao"));
 export const ErpViewer = lazy(() => import("@/pages/ErpViewer"));
