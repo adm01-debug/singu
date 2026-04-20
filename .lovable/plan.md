@@ -1,20 +1,20 @@
 
-Status atual: **60/60 melhorias entregues** (Rodadas A–L). Para continuar evoluindo o módulo de Conexões sem retrabalho, proponho **Rodada M — Federação, Schema Discovery & Developer Experience (5 → 65/65)**.
+Status atual: **65/65 melhorias entregues** (Rodadas A–M). Para continuar evoluindo sem retrabalho, proponho **Rodada N — Inteligência Artificial nas Conexões & Self-Healing (5 → 70/70)**.
 
-# Rodada M — Federação, Schema Discovery & DX
+# Rodada N — IA nas Conexões, Auto-mapeamento & Self-Healing
 
-**1. Schema discovery automático nas conexões Supabase externas** — botão "Descobrir schema" em `ConnectionCard` (tipo `supabase_external`) que chama nova edge function `connection-introspect` usando `service_role_key`. Lista tabelas/colunas via `information_schema` e popula um JSON `discovered_schema` em `connection_configs`. UI mostra árvore expansível (tabelas → colunas → tipos) reusando `ScrollArea` + `Collapsible`. Útil para configurar `field_mapping` de webhooks sem advinhação.
+**1. Auto-mapeamento de campos via IA** — em `IncomingWebhookFormDialog`, botão "Sugerir mapping com IA" envia `example_payload` + `target_entity` schema para nova edge function `ai-suggest-mapping` (Lovable AI Gateway, `google/gemini-2.5-flash`). Retorna `field_mapping` JSON pronto com confiança por campo. Reduz onboarding de webhook desconhecido de minutos para 5 segundos.
 
-**2. Templates de webhook por sistema de origem** — biblioteca `WEBHOOK_TEMPLATES` (Bitrix24, n8n, Stripe, GitHub, genérico Lovable) com `field_mapping` e `target_entity` pré-configurados. Botão "Usar template" em `IncomingWebhookFormDialog` aplica mapping com 1 clique. Acelera onboarding de novas integrações de minutos para segundos.
+**2. Detecção de anomalias em latência/erros via IA** — edge function `connection-anomaly-detector` (cron diário) lê `incoming_webhook_logs` últimos 7d, envia série temporal agregada para IA detectar padrões anômalos (picos de erro, degradação gradual, janelas suspeitas). Resultados em nova tabela `connection_anomalies` exibidos em widget no `/admin/conexoes/logs` com severidade e explicação textual.
 
-**3. Playground OpenAPI/cURL generator** — em cada `IncomingWebhookCard`, botão "Ver exemplos" abre `Sheet` com snippets prontos: cURL, fetch JS, Python requests, n8n HTTP node config, Bitrix24 outbound webhook. Snippets já incluem URL, headers HMAC (se ativo), payload de exemplo do `field_mapping` e timestamp atual. Copy-to-clipboard por bloco.
+**3. Self-healing automático para webhooks com schema drift** — quando `incoming-webhook` falha por campo ausente no payload, dispara `ai-suggest-mapping` em background com payload real recebido. Se confiança ≥0.8, propõe atualização do mapping ao admin via `smart_notifications` (canal `mapping_drift`) com botão "Aceitar correção" que aplica mudança auditada.
 
-**4. MCP server expandido com 5 novas tools** — adicionar ao `mcp-server`: `create_contact`, `update_deal_stage`, `add_interaction`, `search_companies_by_intent`, `get_pipeline_summary`. Cada tool com Zod schema, validação de permissão por token e log em `mcp_tool_calls` (nova tabela). Documentação inline auto-gerada via `tools/list`.
+**4. Chat conversacional sobre conexões** — adicionar contexto "conexões" ao `ask-crm` existente, permitindo perguntas tipo "qual conexão está mais lenta hoje?", "mostre webhooks com erro nas últimas 2h", "qual quota está mais próxima do limite?". Reusa infra de NL→SQL com whitelist de tabelas (`connection_*`, `incoming_webhook_*`, `mcp_tool_calls`).
 
-**5. ADR-016 + memória `mem://features/ux-rodada-m-federacao-dx.md`** — documentar padrão de introspection, formato de templates, contrato MCP estendido. CHANGELOG v2.5.0 — Connections Federation & DX. Consolida **65/65 melhorias**.
+**5. ADR-017 + memória `mem://features/ux-rodada-n-ia-self-healing.md`** — documentar contratos IA, política de auto-healing (sempre human-in-the-loop), thresholds de confiança e modelo de detecção de anomalias. CHANGELOG v2.6.0 — Connections AI & Self-Healing. Consolida **70/70 melhorias**.
 
 ## Restrições mantidas
-Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas (`Sheet`, `Collapsible`, `ScrollArea`, `EmptyState`).
+Português, max 400 linhas/arquivo, sem `any`, TanStack Query exclusivo, sem `useEffect` para fetch, reusar primitivas (`Sheet`, `EmptyState`, `useActionToast`, `smart_notifications`, `ask-crm`).
 
 ## Critério 10/10 por etapa
-(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão, (e) RLS auditado, (f) sem secret vazado, (g) edge function testada via curl.
+(a) compila, (b) console limpo, (c) feature verificável, (d) sem regressão, (e) RLS auditado, (f) sem secret vazado, (g) IA sempre com fallback determinístico, (h) human-in-the-loop em mudanças destrutivas.
