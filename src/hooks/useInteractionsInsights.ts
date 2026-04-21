@@ -29,6 +29,24 @@ export interface InsightsKpis {
   unhandledObjections: number;
 }
 
+export interface SentimentTrendPoint {
+  week: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+  mixed: number;
+  total: number;
+  positivePct: number;
+}
+
+export interface SentimentTrendSummary {
+  bestWeek: { week: string; positivePct: number } | null;
+  worstWeek: { week: string; positivePct: number } | null;
+  deltaPct: number;
+  direction: "up" | "stable" | "down";
+  totalInteractions: number;
+}
+
 const periodToDays: Record<Period, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
 function startOfWeekIso(d: Date): string {
