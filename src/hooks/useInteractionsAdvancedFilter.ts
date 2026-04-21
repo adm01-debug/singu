@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
+import type { SortKey } from '@/lib/sortInteractions';
 
 export interface AdvancedFilters {
   q: string;
@@ -9,9 +10,15 @@ export interface AdvancedFilters {
   canais: string[];
   de?: Date;
   ate?: Date;
+  sort: SortKey;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'de', 'ate'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'de', 'ate', 'sort'] as const;
+
+const VALID_SORTS: SortKey[] = ['recent', 'oldest', 'relevance', 'entity'];
+function parseSort(v: string | null): SortKey {
+  return (VALID_SORTS as string[]).includes(v ?? '') ? (v as SortKey) : 'recent';
+}
 
 function parseDate(v: string | null): Date | undefined {
   if (!v) return undefined;
