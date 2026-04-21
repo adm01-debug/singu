@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine,
 } from "recharts";
+import type { TooltipProps } from "recharts";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
