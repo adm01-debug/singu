@@ -101,4 +101,27 @@ describe('CanaisQuickFilter', () => {
     render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
     expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
   });
+
+  it('auto mode: Limpar canais calls onChange with empty array', () => {
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={['email', 'whatsapp']} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: /Limpar seleção de canais/i }));
+    expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('manual mode: Limpar canais clears pending without calling onChange', () => {
+    localStorage.setItem('channel-sync-mode', 'manual');
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: /Limpar seleção de canais/i }));
+    expect(onChange).not.toHaveBeenCalled();
+    // Aplicar continua visível pra confirmar a divergência
+    expect(screen.getByText('Aplicar')).toBeInTheDocument();
+  });
+
+  it('Limpar canais button is hidden when no channels are selected', () => {
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    expect(screen.queryByRole('button', { name: /Limpar seleção de canais/i })).not.toBeInTheDocument();
+  });
 });
