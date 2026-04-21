@@ -146,6 +146,17 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         totalCount={interactions.length}
       />
 
+      <ActiveFiltersBar
+        filters={adv}
+        setFilter={setFilter}
+        clear={clear}
+        activeCount={activeCount}
+        totalCount={interactions.length}
+        visibleCount={sortedForView.length}
+        contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
+        companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
+      />
+
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
 
       {loading ? <InteractionsListSkeleton /> : (
