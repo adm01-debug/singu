@@ -28,6 +28,8 @@ import { PaginationBar } from '@/components/interactions/PaginationBar';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
 import { countByChannel } from '@/lib/countByChannel';
+import { groupInteractions } from '@/lib/groupInteractions';
+import { TimelineGroupCard } from '@/components/interactions/TimelineGroupCard';
 
 function normalize(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -116,27 +118,71 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return sortArray(result, sortBy as keyof Interaction, sortOrder, { dateFields: ['created_at', 'follow_up_date'], numericFields: ['duration', 'response_time'] });
   }, [advancedFiltered, activeFilters, sortBy, sortOrder]);
 
+  const companyMap = useMemo(() => {
+    const m = new Map<string, string>();
+    (Array.isArray(companies) ? companies : []).forEach(c => {
+      if (c?.id) m.set(c.id, c.name ?? '');
+    });
+    return m;
+  }, [companies]);
+
+  // Mapa contato->company_id pra inferir empresa quando interaction.company_id estiver vazio.
+  const contactToCompany = useMemo(() => {
+    const m = new Map<string, string | null>();
+    contactMap.forEach((c) => {
+      const anyC = c as unknown as { company_id?: string | null };
+      m.set(c.id, anyC.company_id ?? null);
+    });
+    return m;
+  }, [contactMap]);
+
   const sortedForView = useMemo(() => {
     const mapped = filteredAndSorted.map(i => {
       const c = contactMap.get(i.contact_id);
+      const inferredCompanyId = i.company_id || contactToCompany.get(i.contact_id) || null;
       return {
         ...i,
         date: i.created_at,
         contact_name: c ? `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() : null,
-        company_name: null as string | null,
+        company_id: inferredCompanyId,
+        company_name: inferredCompanyId ? (companyMap.get(inferredCompanyId) ?? null) : null,
       };
     });
     return sortInteractions(mapped, adv.sort, debouncedQ);
-  }, [filteredAndSorted, contactMap, adv.sort, debouncedQ]);
+  }, [filteredAndSorted, contactMap, companyMap, contactToCompany, adv.sort, debouncedQ]);
+
+  // Modo agrupado (URL-driven). Quando ativo, paginação opera em grupos.
+  const isGrouped = adv.view !== 'list';
+  const groups = useMemo(
+    () => isGrouped
+      ? groupInteractions(
+          sortedForView,
+          adv.view === 'by-contact' ? 'by-contact' : 'by-company',
+          adv.sort,
+          debouncedQ,
+        )
+      : [],
+    [sortedForView, isGrouped, adv.view, adv.sort, debouncedQ],
+  );
 
   // Paginação derivada (URL-driven). Defaults: page=1, perPage=25.
-  const total = sortedForView.length;
+  const total = isGrouped ? groups.length : sortedForView.length;
   const totalPages = Math.max(1, Math.ceil(total / adv.perPage));
   const safePage = Math.min(adv.page, totalPages);
   const start = (safePage - 1) * adv.perPage;
   const visibleInteractions = useMemo(
-    () => sortedForView.slice(start, start + adv.perPage),
-    [sortedForView, start, adv.perPage]
+    () => isGrouped ? [] : sortedForView.slice(start, start + adv.perPage),
+    [sortedForView, start, adv.perPage, isGrouped],
+  );
+  const visibleGroups = useMemo(
+    () => isGrouped ? groups.slice(start, start + adv.perPage) : [],
+    [groups, start, adv.perPage, isGrouped],
+  );
+  const visibleEventsCount = useMemo(
+    () => isGrouped
+      ? visibleGroups.reduce((acc, g) => acc + g.events.length, 0)
+      : visibleInteractions.length,
+    [isGrouped, visibleGroups, visibleInteractions],
   );
 
   // Clamp: se a URL pediu uma página além do total, corrige via replace.
