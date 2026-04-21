@@ -1,55 +1,49 @@
 
-# Plano: Persistência dos filtros da Ficha 360 já existe — adicionar UI consumidora
+# Plano: Botão "Todos os canais" na FiltrosInteracoesBar
 
-## Status atual (verificado)
+## Objetivo
 
-O hook `useFicha360Filters` **já implementa toda a persistência na URL**:
-- `?periodo=7|30|90|365` (omite quando é `90`, o default)
-- `?canais=whatsapp,call,email,...` (CSV, omite quando vazio)
-- Leitura via `useSearchParams` + restauração automática na montagem
-- `setDays`, `setChannels`, `clear`, `activeCount` expostos
+Adicionar um atalho de um clique para voltar ao padrão da barra de filtros da Ficha 360 (todos os canais visíveis, ou seja, `channels = []`), distinto do "Limpar" atual que zera período E canais.
 
-E o componente `FiltrosInteracoesBar` consome essas props corretamente.
+## Status atual
 
-**Lacuna real:** preciso confirmar se o hook está realmente plugado na seção "Últimas Interações" da Ficha 360 (página de detalhe de Contato/Empresa). Se já estiver, a feature está pronta e basta validar; se não, falta apenas conectar o hook ao componente que renderiza essa seção.
-
-## Investigação necessária (antes de implementar)
-
-1. Localizar onde "Últimas Interações" da Ficha 360 é renderizada (provavelmente em `ContatoDetalhe.tsx` ou `EmpresaDetalhe.tsx`, ou um subcomponente tipo `UltimasInteracoesSection`).
-2. Verificar se ele já chama `useFicha360Filters()` e passa para `FiltrosInteracoesBar`.
-3. Caso use `useState` local em vez do hook, fazer o swap.
+`FiltrosInteracoesBar` já tem botão "Limpar" que chama `onClear` (zera período `90d` E canais). Não há ação rápida para zerar **só** os canais mantendo o período escolhido pelo usuário — caso comum: estou em 7d filtrando WhatsApp e quero voltar a ver todos os canais nos mesmos 7d.
 
 ## Implementação
 
-### Caso A — já está plugado (mais provável)
-Nenhuma mudança de código. Apenas validar:
-- Abrir `/contato/<id>?periodo=7&canais=whatsapp,email`
-- Confirmar que o seletor de 7d e os chips WhatsApp/Email aparecem ativos sem cliques
-- Trocar período/canais e ver a URL mudar com `replace: true` (sem poluir histórico)
+### Arquivo: `src/components/ficha-360/FiltrosInteracoesBar.tsx`
 
-### Caso B — usa `useState` local
-- Substituir `useState` por `useFicha360Filters()`
-- Repassar `days`, `channels`, `setDays`, `setChannels`, `clear`, `activeCount` para `FiltrosInteracoesBar`
-- Aplicar a filtragem usando `days` e `channels` exatamente como hoje
-- Sem mudança de visual, sem nova query
+1. Logo após o grupo de chips de canais (antes do botão "Limpar"), adicionar um botão `ghost` size `sm` rotulado **"Todos os canais"** com ícone `Layers` (lucide), visível apenas quando `channels.length > 0`.
+2. Ao clicar: `onChannelsChange([])` — mantém o período atual, remove `?canais=` da URL (já tratado pelo hook).
+3. Acessibilidade: `aria-label="Mostrar todos os canais"`, `title` igual.
+4. Manter "Limpar" como está (zera tudo) — só aparece quando `activeCount > 0` (já é o caso).
+5. Quando ambos visíveis, ordem: chips → "Todos os canais" → "Limpar".
+
+### Detalhes visuais
+
+- Mesmo tamanho/peso do "Limpar" (`variant="ghost" size="sm" h-6 px-2 text-xs text-muted-foreground gap-1`)
+- Ícone `Layers` 3×3 à esquerda
+- Sem badge, sem cor de destaque (é uma ação secundária discreta)
+
+### Edge cases
+
+- `channels = []` → botão não renderiza (não há o que zerar)
+- Período custom + canais selecionados → ambos botões visíveis lado a lado, com semânticas distintas
+- Sem mudança no hook `useFicha360Filters` (já suporta `setChannels([])`)
 
 ### Padrões obrigatórios
+
 - PT-BR
-- `useSearchParams` com `{ replace: true }` (já no hook)
-- Defaults omitidos da URL (período `90`, canais vazio)
+- Tokens semânticos
+- Flat (sem shadow)
 - Zero novas queries
-- Zero regressão em outras seções da Ficha 360
+- Zero regressão na aba Insights, sentimento, KPIs ou drawers
 
-## Arquivos potencialmente tocados
+## Arquivo tocado
 
-**Editar (no máximo 1):**
-- O componente que hoje renderiza "Últimas Interações" da Ficha 360, caso ainda use estado local
-
-**Sem mudanças em:**
-- `useFicha360Filters.ts` (já completo)
-- `FiltrosInteracoesBar.tsx` (já completo)
-- Qualquer hook de fetch (a filtragem é client-side sobre o array já carregado)
+**Editado (1):**
+- `src/components/ficha-360/FiltrosInteracoesBar.tsx` — adicionar botão "Todos os canais" entre chips e "Limpar"
 
 ## Critério de fechamento
 
-(a) Abrir um link com `?periodo=7&canais=whatsapp,email` na Ficha 360 restaura automaticamente o seletor de 7d e os chips WhatsApp/Email ativos, (b) trocar período ou canais atualiza a URL sem empilhar histórico (`replace: true`), (c) defaults (período 90d, canais vazio) ficam fora da URL para mantê-la limpa, (d) "Limpar" remove os params, (e) compartilhar o link reproduz exatamente o mesmo recorte para outro usuário, (f) zero novas queries de rede, (g) zero regressão em sentimento, KPIs, drawers ou outras abas.
+(a) Quando há ≥1 canal selecionado, aparece botão "Todos os canais" com ícone Layers, (b) clicar restaura `channels = []` mantendo o período atual e remove `?canais=` da URL, (c) "Limpar" continua zerando período E canais, (d) sem canais selecionados o botão some, (e) zero novas queries, (f) zero regressão.
