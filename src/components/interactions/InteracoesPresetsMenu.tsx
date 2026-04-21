@@ -1,9 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useSearchPresets } from '@/hooks/useSearchPresets';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useSearchPresets, type PresetSortMode } from '@/hooks/useSearchPresets';
 import { toast } from 'sonner';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { ImportPresetsDialog } from './ImportPresetsDialog';
@@ -52,7 +59,7 @@ function parseDate(iso?: string): Date | undefined {
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   filters, setFilter, clear, activeCount,
 }: Props) {
-  const { presets, savePreset, deletePreset } = useSearchPresets('interactions');
+  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
@@ -90,7 +97,8 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     toast.success('Busca salva!');
   };
 
-  const applyPreset = (presetFilters: Record<string, string[]>) => {
+  const applyPreset = (preset: typeof presets[number]) => {
+    const presetFilters = preset.filters;
     clear();
     const payload: SerializedPayload = {
       q: presetFilters.q?.[0] ?? '',
@@ -113,6 +121,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       ? (payload.sort as SortVal)
       : 'recent';
     setFilter('sort', nextSort);
+    markAsUsed(preset.id);
     setOpen(false);
     toast.success('Busca aplicada');
   };
@@ -179,8 +188,25 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
           </div>
 
           {presets.length > 0 && (
+            <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+              <span className="text-xs text-muted-foreground shrink-0">Ordenar:</span>
+              <Select value={sortMode} onValueChange={(v) => setSortMode(v as PresetSortMode)}>
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="favoritos" className="text-xs">Favoritos</SelectItem>
+                  <SelectItem value="mais-usados" className="text-xs">Mais usados</SelectItem>
+                  <SelectItem value="recentes" className="text-xs">Mais recentes</SelectItem>
+                  <SelectItem value="alfabetica" className="text-xs">Alfabética</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {sortedPresets.length > 0 && (
             <div className="max-h-64 overflow-y-auto divide-y divide-border">
-              {presets.map(preset => {
+              {sortedPresets.map(preset => {
                 const payload: SerializedPayload = {
                   q: preset.filters.q?.[0] ?? '',
                   contact: preset.filters.contact?.[0] ?? '',
@@ -189,15 +215,37 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   de: preset.filters.de?.[0],
                   ate: preset.filters.ate?.[0],
                 };
+                const usage = preset.usageCount ?? 0;
                 return (
                   <div
                     key={preset.id}
                     className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                    onClick={() => applyPreset(preset.filters)}
+                    onClick={() => applyPreset(preset)}
                   >
+                    <button
+                      type="button"
+                      className="mr-2 flex-shrink-0 p-0.5 rounded hover:bg-muted"
+                      title={preset.isFavorite ? 'Remover dos favoritos' : 'Marcar como favorito'}
+                      aria-label={preset.isFavorite ? 'Remover dos favoritos' : 'Marcar como favorito'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(preset.id);
+                      }}
+                    >
+                      <Star
+                        className={
+                          preset.isFavorite
+                            ? 'w-3.5 h-3.5 fill-primary text-primary'
+                            : 'w-3.5 h-3.5 text-muted-foreground'
+                        }
+                      />
+                    </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{summarize(payload)}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {summarize(payload)}
+                        {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
+                      </p>
                     </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
                       <Button

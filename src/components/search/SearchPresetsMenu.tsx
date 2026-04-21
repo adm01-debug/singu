@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -7,7 +7,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useSearchPresets, type SearchPreset } from '@/hooks/useSearchPresets';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useSearchPresets, type SearchPreset, type PresetSortMode } from '@/hooks/useSearchPresets';
 import { toast } from 'sonner';
 
 interface SearchPresetsMenuProps {
@@ -33,7 +40,16 @@ export function SearchPresetsMenu({
   title = 'Presets de Busca',
   description = 'Salve e reutilize combinações de filtros',
 }: SearchPresetsMenuProps) {
-  const { presets, savePreset, deletePreset } = useSearchPresets(context);
+  const {
+    presets,
+    sortedPresets,
+    sortMode,
+    setSortMode,
+    savePreset,
+    deletePreset,
+    toggleFavorite,
+    markAsUsed,
+  } = useSearchPresets(context);
   const [isNaming, setIsNaming] = useState(false);
   const [presetName, setPresetName] = useState('');
 
@@ -52,6 +68,11 @@ export function SearchPresetsMenu({
     setPresetName('');
     setIsNaming(false);
     toast.success('Preset salvo!');
+  };
+
+  const handleApply = (preset: SearchPreset) => {
+    markAsUsed(preset.id);
+    onApplyPreset(preset);
   };
 
   return (
@@ -80,36 +101,76 @@ export function SearchPresetsMenu({
           </p>
         </div>
 
-        {/* Saved presets */}
+        {/* Sort selector */}
         {presets.length > 0 && (
+          <div className="px-3 py-2 border-b border-border flex items-center gap-2">
+            <span className="text-xs text-muted-foreground shrink-0">Ordenar:</span>
+            <Select value={sortMode} onValueChange={(v) => setSortMode(v as PresetSortMode)}>
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="favoritos" className="text-xs">Favoritos</SelectItem>
+                <SelectItem value="mais-usados" className="text-xs">Mais usados</SelectItem>
+                <SelectItem value="recentes" className="text-xs">Mais recentes</SelectItem>
+                <SelectItem value="alfabetica" className="text-xs">Alfabética</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Saved presets */}
+        {sortedPresets.length > 0 && (
           <div className="max-h-48 overflow-y-auto divide-y divide-border">
-            {presets.map(preset => (
-              <div
-                key={preset.id}
-                className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                onClick={() => onApplyPreset(preset)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {Object.values(preset.filters).flat().length} filtros
-                    {preset.searchTerm && ` · "${preset.searchTerm}"`}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deletePreset(preset.id);
-                    toast('Preset removido');
-                  }}
+            {sortedPresets.map(preset => {
+              const usage = preset.usageCount ?? 0;
+              return (
+                <div
+                  key={preset.id}
+                  className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
+                  onClick={() => handleApply(preset)}
                 >
-                  <Trash2 className="w-3 h-3 text-muted-foreground" />
-                </Button>
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className="mr-2 flex-shrink-0 p-0.5 rounded hover:bg-muted"
+                    title={preset.isFavorite ? 'Remover dos favoritos' : 'Marcar como favorito'}
+                    aria-label={preset.isFavorite ? 'Remover dos favoritos' : 'Marcar como favorito'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(preset.id);
+                    }}
+                  >
+                    <Star
+                      className={
+                        preset.isFavorite
+                          ? 'w-3.5 h-3.5 fill-primary text-primary'
+                          : 'w-3.5 h-3.5 text-muted-foreground'
+                      }
+                    />
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {Object.values(preset.filters).flat().length} filtros
+                      {preset.searchTerm && ` · "${preset.searchTerm}"`}
+                      {usage >= 3 && ` · Usado ${usage}x`}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deletePreset(preset.id);
+                      toast('Preset removido');
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3 text-muted-foreground" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         )}
 
