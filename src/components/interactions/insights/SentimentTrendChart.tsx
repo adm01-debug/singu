@@ -202,11 +202,23 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
       })()}
       {summary && (
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <Badge variant="outline" className={cn("gap-1 text-[10px]", DIRECTION_CLASS[summary.direction])}>
-            <Icon className="h-3 w-3" />
-            {DIRECTION_LABEL[summary.direction]} {deltaSign}
-            {summary.deltaPct}pp
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn("gap-1 text-[10px]", DIRECTION_CLASS[summary.direction])}>
+              <Icon className="h-3 w-3" />
+              {DIRECTION_LABEL[summary.direction]} {deltaSign}
+              {summary.deltaPct}pp
+            </Badge>
+            <Button
+              type="button"
+              variant={smoothEnabled ? "secondary" : "ghost"}
+              size="xs"
+              onClick={() => setSmoothEnabled((v) => !v)}
+              aria-pressed={smoothEnabled}
+              title="Suavizar com média móvel de 3 semanas"
+            >
+              Suavizar {smoothEnabled ? "✓" : ""}
+            </Button>
+          </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-success">
