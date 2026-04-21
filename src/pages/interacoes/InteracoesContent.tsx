@@ -184,15 +184,3 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   );
 }
 
-// Inline simplified fuzzy search hook to avoid import issues
-function useFuzzySearchLocal(items: Interaction[]) {
-  const [query, setQuery] = useState('');
-  const isSearching = query.length > 0;
-  const results = useMemo(() => {
-    if (!query.trim()) return items;
-    const lower = query.toLowerCase();
-    return items.filter(i => i.title.toLowerCase().includes(lower) || i.content?.toLowerCase().includes(lower) || i.tags?.some(t => t.toLowerCase().includes(lower)));
-  }, [items, query]);
-  const clearSearch = () => setQuery('');
-  return { query, setQuery, results, isSearching, clearSearch };
-}
