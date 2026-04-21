@@ -38,6 +38,16 @@ function formatWeek(w: string): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
+function formatWeekRange(weekStartIso: string): string {
+  const iso = normalizeWeek(weekStartIso);
+  const start = new Date(iso);
+  if (isNaN(start.getTime())) return formatWeek(weekStartIso);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
 function normalizeWeek(w: string): string {
   // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada
   if (typeof w !== "string" || w.length === 0) return w;
