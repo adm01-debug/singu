@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, AlertCircle, User } from 'lucide-react';
+import { ArrowLeft, ExternalLink, AlertCircle, User, FlaskConical } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { PageHeader } from '@/components/navigation/PageHeader';
@@ -24,10 +24,13 @@ import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { ProntidaoTrendChart } from '@/components/ficha-360/ProntidaoTrendChart';
+import { SimulationModePanel } from '@/components/ficha-360/SimulationModePanel';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProntidaoTrend } from '@/lib/prontidaoTrend';
 import { computeProximosPassos } from '@/lib/proximosPassos';
+import { applySimulation } from '@/lib/prontidaoSimulation';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
+import { useSimulationStore } from '@/stores/useSimulationStore';
 import { useMemo } from 'react';
 
 const sentimentClass = (s?: string | null) => {
@@ -64,34 +67,55 @@ const Ficha360 = () => {
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
-  const prontidao = useMemo(
+  const simEnabled = useSimulationStore((s) => s.enabled);
+  const simOverrides = useSimulationStore((s) => s.overrides);
+
+  // Score real (sem simulação) — sempre calculado para comparativo no painel
+  const realProntidao = useMemo(
     () => computeProntidaoScore({ profile, intelligence, weights }),
     [profile, intelligence, weights],
+  );
+
+  // Profile/intel "efetivos" (com simulação aplicada quando ligada)
+  const { profile: effectiveProfile, intelligence: effectiveIntel } = useMemo(() => {
+    if (!simEnabled) return { profile, intelligence };
+    return applySimulation(profile, intelligence, simOverrides);
+  }, [simEnabled, simOverrides, profile, intelligence]);
+
+  const prontidao = useMemo(
+    () =>
+      computeProntidaoScore({
+        profile: effectiveProfile,
+        intelligence: effectiveIntel,
+        weights,
+      }),
+    [effectiveProfile, effectiveIntel, weights],
   );
 
   const trend = useMemo(
     () =>
       computeProntidaoTrend({
         interactions: recentInteractions,
-        profile,
-        intelligence,
+        profile: effectiveProfile,
+        intelligence: effectiveIntel,
         weights,
         weeks: 8,
       }),
-    [recentInteractions, profile, intelligence, weights],
+    [recentInteractions, effectiveProfile, effectiveIntel, weights],
   );
 
   const passos = useMemo(
     () =>
       computeProximosPassos({
-        profile,
-        intelligence,
+        profile: effectiveProfile,
+        intelligence: effectiveIntel,
         recentInteractions,
         prontidao,
         birthday: rapportIntel?.birthday ?? null,
-        email: typeof intelligence?.email === 'string' ? intelligence.email : null,
+        email:
+          typeof effectiveIntel?.email === 'string' ? (effectiveIntel.email as string) : null,
       }),
-    [profile, intelligence, recentInteractions, prontidao, rapportIntel],
+    [effectiveProfile, effectiveIntel, recentInteractions, prontidao, rapportIntel],
   );
 
   if (!id) {
@@ -145,6 +169,24 @@ const Ficha360 = () => {
           <Ficha360Skeleton />
         ) : (
           <>
+            {/* Painel de simulação (sandbox) */}
+            <SimulationModePanel
+              realScore={realProntidao.score}
+              simulatedScore={prontidao.score}
+            />
+
+            {/* Banner de aviso quando simulação ativa */}
+            {simEnabled && (
+              <div className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning flex items-center gap-2">
+                <FlaskConical className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>
+                  Modo de testes ativo — score, breakdown, tendência e próximos passos refletem
+                  cenário simulado, não os dados reais. A próxima ação sugerida pela IA continua
+                  usando dados reais do CRM.
+                </span>
+              </div>
+            )}
+
             {/* Header sticky */}
             <Card className="sticky top-0 z-10">
               <CardContent className="p-4 md:p-5">
@@ -188,13 +230,17 @@ const Ficha360 = () => {
             </Card>
 
             {/* Score de Prontidão */}
-            <ScoreProntidaoCard data={prontidao} contactId={id} />
+            <ScoreProntidaoCard data={prontidao} contactId={id} simulated={simEnabled} />
 
-            {/* Próxima ação sugerida (IA + melhor horário + registrar interação) */}
+            {/* Próxima ação sugerida (IA + melhor horário + registrar interação) — usa contato real */}
             {id && <ProximaAcaoCTA contactId={id} contactName={fullName} />}
 
             {/* Tendência semanal do Score de Prontidão */}
-            <ProntidaoTrendChart data={trend} currentScore={prontidao.score} />
+            <ProntidaoTrendChart
+              data={trend}
+              currentScore={prontidao.score}
+              simulated={simEnabled}
+            />
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
