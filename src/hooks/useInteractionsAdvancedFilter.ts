@@ -17,7 +17,7 @@ export interface AdvancedFilters {
   sort: SortKey;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'page', 'perPage'] as const;
 
 const VALID_DIRECAO: DirecaoFilter[] = ['all', 'inbound', 'outbound'];
 function parseDirecao(v: string | null): DirecaoFilter {
@@ -27,6 +27,17 @@ function parseDirecao(v: string | null): DirecaoFilter {
 const VALID_SORTS: SortKey[] = ['recent', 'oldest', 'relevance', 'entity'];
 function parseSort(v: string | null): SortKey {
   return (VALID_SORTS as string[]).includes(v ?? '') ? (v as SortKey) : 'recent';
+}
+
+export const VALID_PER_PAGE = [10, 25, 50, 100] as const;
+export const DEFAULT_PER_PAGE = 25;
+function parsePage(v: string | null): number {
+  const n = parseInt(v ?? '', 10);
+  return Number.isFinite(n) && n >= 1 ? n : 1;
+}
+function parsePerPage(v: string | null): number {
+  const n = parseInt(v ?? '', 10);
+  return (VALID_PER_PAGE as readonly number[]).includes(n) ? n : DEFAULT_PER_PAGE;
 }
 
 function parseDate(v: string | null): Date | undefined {
