@@ -31,6 +31,7 @@ import { computeProximosPassos } from '@/lib/proximosPassos';
 import { applySimulation } from '@/lib/prontidaoSimulation';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useSimulationStore } from '@/stores/useSimulationStore';
+import { useBestContactTime } from '@/hooks/useBestContactTime';
 import { useMemo } from 'react';
 
 const sentimentClass = (s?: string | null) => {
@@ -69,6 +70,8 @@ const Ficha360 = () => {
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
   const simOverrides = useSimulationStore((s) => s.overrides);
+  // Reaproveita cache do ProximaAcaoCTA — zero query nova
+  const { data: bestTime } = useBestContactTime(id ?? '', !!id);
 
   // Score real (sem simulação) — sempre calculado para comparativo no painel
   const realProntidao = useMemo(
@@ -252,7 +255,12 @@ const Ficha360 = () => {
               </div>
               <div className="space-y-4">
                 <FrequenciaContatoCard profile={profile} intelligence={intelligence} />
-                <ProximosPassosCard contactId={id} contactName={fullName} passos={passos} />
+                <ProximosPassosCard
+                  contactId={id}
+                  contactName={fullName}
+                  passos={passos}
+                  bestTime={bestTime}
+                />
                 <UltimasInteracoesCard
                   interactions={recentInteractions}
                   contactId={id}
