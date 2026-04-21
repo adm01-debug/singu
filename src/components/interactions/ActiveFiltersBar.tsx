@@ -129,6 +129,21 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
         </Badge>
       )}
 
+      {filters.sentimento && SENTIMENTO_META[filters.sentimento] && (() => {
+        const meta = SENTIMENTO_META[filters.sentimento];
+        const Icon = meta.Icon;
+        return (
+          <Badge
+            variant="secondary"
+            closeable
+            onClose={wrap(() => setFilter('sentimento', undefined))}
+            icon={<Icon className="w-3 h-3" />}
+          >
+            Sentimento {meta.label}
+          </Badge>
+        );
+      })()}
+
       {filters.ate instanceof Date && (
         <Badge variant="secondary" closeable onClose={wrap(() => setFilter('ate', undefined))} icon={<Calendar className="w-3 h-3" />}>
           Período até {fmtDate(filters.ate)}
