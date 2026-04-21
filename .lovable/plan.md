@@ -1,72 +1,82 @@
 
 
-# Plano: Padronizar layout do tooltip do SentimentTrendChart
+# Plano: Teste manual de sincronização URL → UI da Ficha 360
 
 ## Diagnóstico
 
-O `WeeklySentimentTooltip` em `src/components/interactions/insights/SentimentTrendChart.tsx` evoluiu em camadas (mini-barras, switch, veredito, cores semânticas, fallback). O resultado é funcional mas visualmente heterogêneo: bullets em formatos diferentes, espaçamentos ad-hoc, mistura de `text-[10px]`/`text-xs`, classes de cor inline em vez de tokens semânticos consistentes, e linhas de sentimento com layout que varia conforme o estado (com/sem mini-barra, com/sem "—").
+O hook `useFicha360Filters()` já está integrado à seção "Últimas Interações" da Ficha 360 e lê `?periodo=` e `?canais=` da URL como fonte de verdade. Falta um **roteiro de teste manual** reproduzível para validar visualmente que abrir um deep link restaura o estado dos seletores e chips.
 
-## O que será construído
+## Entregável
 
-Toda a mudança em `src/components/interactions/insights/SentimentTrendChart.tsx`. Sem novos hooks/dependências.
+Novo arquivo `docs/qa/ficha360-deep-link-filtros.md` em PT-BR, em formato passo a passo com critérios objetivos de aprovação. Sem mudanças em código de produção.
 
-### 1. Constantes de tokens unificadas
+## Estrutura do documento
 
-No topo do arquivo, consolidar mapas de sentimento existentes em uma única estrutura `SENTIMENT_TOKENS`:
+### 1. Pré-requisitos
+- Usuário autenticado na preview.
+- Existir ao menos 1 contato acessível.
+- Substituir `<contactId>` pelo UUID de um contato real (ex.: copiar de `/contatos`).
 
-```ts
-const SENTIMENT_TOKENS: Record<SentimentKey, {
-  label: string;        // PT-BR: "Positivo" | "Neutro" | "Negativo" | "Misto"
-  swatch: string;       // bg-success | bg-muted-foreground | bg-destructive | bg-warning
-  text: string;         // text-success | text-muted-foreground | text-destructive | text-warning
-  bar: string;          // bg-success/70 ... (mini-barra com leve transparência)
-}>
+### 2. Roteiro principal (caminho feliz)
+
+Passo 1 — Acessar o deep link:
+```
+/ficha-360/<contactId>?periodo=7&canais=whatsapp,email
 ```
 
-Remove duplicação entre `SENTIMENT_ROWS`, mapas do veredito e classes inline espalhadas.
+Passo 2 — Validar **seletor de período** (`FiltrosInteracoesBar`):
+- Botão `7d` aparece ativo (`bg-primary text-primary-foreground`, `aria-pressed="true"`).
+- Botões `30d`, `90d`, `1a` aparecem inativos.
 
-### 2. Layout de linha padronizado
+Passo 3 — Validar **seletor de canais**:
+- Badges `WhatsApp` e `Email` aparecem em variant `default` (ativos, `aria-pressed="true"`).
+- Badges `Ligação`, `Reunião`, `Nota` em variant `outline` (inativos).
+- Botão "Todos os canais" visível (porque há canais ativos).
 
-Cada linha de sentimento (positivo/neutro/negativo/misto) passa a usar o **mesmo grid** de 3 colunas com `gap-2 text-xs`:
+Passo 4 — Validar **chips de filtros ativos** (`FiltrosAtivosChips`):
+- Chip `Período: 7d` com ícone calendário e botão de fechar.
+- Chip `WhatsApp` com ícone de mensagem e botão de fechar.
+- Chip `Email` com ícone de envelope e botão de fechar.
+- Botão `Limpar tudo` visível (≥ 2 chips ativos).
+- Contador `X de Y interaç(ões)` reflete a contagem filtrada.
 
-```text
-[swatch 8px] [Label .................. ] [count tabular] [pct tabular text-muted]
-```
+Passo 5 — Validar **lista** (`UltimasInteracoesCard`):
+- Apenas interações dos últimos 7 dias com canal `whatsapp` ou `email`.
+- Caso vazio: empty state contextual "Nenhuma interação nos filtros" + "Ajuste o período ou os canais selecionados acima."
 
-Estrutura:
-- **Swatch**: `<span className="h-2 w-2 rounded-sm shrink-0" />` colorido via `SENTIMENT_TOKENS[k].swatch` — formato quadrado uniforme (substitui bullets redondos inconsistentes).
-- **Label**: `flex-1 truncate text-foreground` em PT-BR.
-- **Count**: `tabular-nums font-medium text-foreground min-w-[1.5rem] text-right`.
-- **Percentual**: `tabular-nums text-muted-foreground text-[10px] min-w-[2.5rem] text-right` no formato `{pct}%`.
+### 3. Cenários complementares
 
-Mini-barra horizontal **mantida** abaixo da linha como faixa fina (`h-0.5 mt-0.5 rounded-full bg-{color}/70`) com largura proporcional ao `pct` — preserva o feedback visual de proporção sem inflar a altura.
+**3.1 Recarregar a página (F5)** — todos os 4 pontos acima permanecem idênticos (URL é fonte de verdade, sem perda de estado).
 
-Linhas com `count === 0` continuam respeitando o switch "Mostrar zerados": ocultas por padrão; quando exibidas, swatch/label/count em `opacity-50` e pct mostrado como `0%` (não mais "—") para padronização.
+**3.2 Voltar/avançar do navegador** — após mudar para `?periodo=30`, usar back: chips e seletores voltam a `7d + whatsapp,email`.
 
-### 3. Tipografia e espaçamento consistentes
+**3.3 Compartilhar o link** — copiar URL da barra, colar em aba anônima logada: estado idêntico.
 
-- **Header** (range da semana + total): `text-xs font-medium text-foreground` + total em `tabular-nums`.
-- **% Positivo + MM3**: container `text-xs` (não mais `text-[10px]`), valor de pct mantém `pctClass()` semântico via `cn()`, MM3 em `text-muted-foreground`.
-- **Veredito**: container `text-xs` com swatch quadrado (mesmo componente das linhas) em vez de bullet redondo; texto do sentimento na cor semântica via `SENTIMENT_TOKENS[k].text`; sufixo `({pct}% das conversas)` em `text-muted-foreground text-[10px]`.
-- **Switch "Mostrar zerados"**: `text-[10px] text-muted-foreground` mantido.
-- **Anotações**: `text-[10px] text-muted-foreground` mantido.
-- **Separadores**: todos os blocos separados por `border-t border-border/60 pt-2 mt-2` (mesma espessura, mesma opacidade).
+**3.4 Remover chip pela UI** — clicar no `X` do chip `Email`: URL passa a `?periodo=7&canais=whatsapp`, badge Email fica `outline`, lista re-filtra.
 
-### 4. Container do tooltip
+**3.5 Clicar "Limpar tudo"** — URL perde `periodo` e `canais`, seletor volta para `90d`, todos os badges de canal ficam `outline`, chips somem.
 
-Padronizar wrapper único:
-- `rounded-md border border-border bg-popover text-popover-foreground shadow-sm p-3 min-w-[220px] max-w-[280px] pointer-events-auto space-y-2`.
-- Remove paddings/margens ad-hoc internos (substituídos por `space-y-2` + separadores explícitos onde necessário).
+### 4. Casos de borda
 
-### 5. Sem alterações em
+- `?periodo=999` (inválido) → fallback para `90d` (default), nenhum chip de período.
+- `?canais=` (vazio) ou `?canais=,,,` → tratado como sem canais ativos.
+- `?canais=WHATSAPP,Email` (case misto) → normalizado para lowercase, badges corretos ativos.
+- `?canais=invalido` → badge não existe na barra, mas chip exibe label cru com ícone genérico de FileText (comportamento atual de `FiltrosAtivosChips`).
 
-- Cálculo de `total`, `positivePct`, MM3, veredito (lógica de empate e prioridade), `computePositivePct`, `pctClass`, `formatWeekRange`, fallback defensivo.
-- Switch "Mostrar zerados" (estado, `localStorage`, `onCheckedChange`).
-- Bloco de anotações (lógica de exibição).
-- Hooks de fetch, agregação, séries, eixos, legenda, switch de % positivo no chart, evolução, confiança, IP masking.
-- Cores semânticas existentes (apenas centralizadas em `SENTIMENT_TOKENS`).
+### 5. Critérios de aprovação (checklist)
+
+Lista marcável de 10 itens objetivos (estado do seletor de período, estado dos badges de canal, presença/ausência de cada chip esperado, contador, lista filtrada, persistência em F5, navegação back/forward, deep link em aba anônima, remoção via chip, "Limpar tudo").
+
+### 6. Como reportar falha
+
+Template curto: URL exata, screenshot da barra+chips+lista, valor esperado vs observado, console errors (se houver).
+
+## Sem alterações em
+
+- `useFicha360Filters.ts`, `FiltrosInteracoesBar.tsx`, `FiltrosAtivosChips.tsx`, `UltimasInteracoesCard.tsx`, `Ficha360.tsx` ou qualquer código de produção.
+- Suíte E2E (`e2e/smoke.spec.ts`) — este é teste **manual** complementar, não automatizado.
 
 ## Critérios de aceite
 
-(a) Existe `SENTIMENT_TOKENS` no topo do arquivo centralizando label PT-BR, swatch, text e bar para os 4 sentimentos; (b) cada linha de sentimento usa swatch quadrado `h-2 w-2 rounded-sm`, label `flex-1 truncate`, count `tabular-nums font-medium`, percentual `tabular-nums text-muted-foreground text-[10px]`, todos no mesmo grid `gap-2 text-xs`; (c) mini-barra horizontal proporcional preservada como `h-0.5` colorida com `/70`; (d) linhas zeradas (quando exibidas via switch) usam `opacity-50` e pct `0%` em vez de "—"; (e) header, % positivo, MM3, veredito, switch e anotações alinhados em `text-xs`/`text-[10px]` consistentes, todos os números com `tabular-nums`; (f) veredito usa o mesmo swatch quadrado das linhas (não bullet redondo); (g) container do tooltip único: `rounded-md border border-border bg-popover text-popover-foreground shadow-sm p-3 min-w-[220px] max-w-[280px] space-y-2`, separadores `border-t border-border/60` uniformes; (h) PT-BR mantido (Positivo/Neutro/Negativo/Misto); (i) sem mudanças em cálculos, switch, fallback, hooks, séries, eixos, evolução, confiança ou demais funcionalidades; (j) sem novas dependências, sem `any`, sem `dangerouslySetInnerHTML`, flat; (k) arquivo permanece ≤550 linhas.
+(a) Existe `docs/qa/ficha360-deep-link-filtros.md` em PT-BR; (b) contém pré-requisitos, roteiro principal de 5 passos com expectativas visuais objetivas para seletor de período, badges de canal, chips ativos e lista; (c) inclui ≥4 cenários complementares (reload, back/forward, link compartilhado, remoção via chip, limpar tudo); (d) inclui casos de borda para período inválido, canais vazios, case misto e canal desconhecido; (e) checklist final com ≥10 itens marcáveis; (f) template de report de falha; (g) sem mudanças em código de produção; (h) flat, sem emojis.
 
