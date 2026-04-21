@@ -281,6 +281,12 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         </div>
       )}
 
+      <SentimentQuickFilter
+        value={adv.sentimento}
+        onChange={(v) => setFilter('sentimento', v)}
+        counts={sentimentCounts}
+      />
+
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
 
       {loading ? <InteractionsListSkeleton /> : (
