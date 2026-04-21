@@ -54,5 +54,41 @@ export function useSearchPresets(context: string = 'contacts') {
     setPresets(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   }, []);
 
-  return { presets, savePreset, deletePreset, updatePreset };
+  /**
+   * Importa presets em lote. Respeita limite de 10 e faz dedup de nomes.
+   * Retorna contagem de adicionados e ignorados (por limite).
+   */
+  const importPresets = useCallback((items: Array<Omit<SearchPreset, 'id' | 'createdAt'>>): { added: number; skipped: number } => {
+    let added = 0;
+    let skipped = 0;
+    setPresets(prev => {
+      const next = [...prev];
+      const existingNames = new Set(next.map(p => p.name));
+      for (const item of items) {
+        if (next.length >= 10) {
+          skipped++;
+          continue;
+        }
+        let finalName = item.name;
+        if (existingNames.has(finalName)) {
+          let i = 2;
+          while (existingNames.has(`${item.name} (${i})`)) i++;
+          finalName = `${item.name} (${i})`;
+        }
+        const newPreset: SearchPreset = {
+          ...item,
+          name: finalName,
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+        };
+        next.unshift(newPreset);
+        existingNames.add(finalName);
+        added++;
+      }
+      return next.slice(0, 10);
+    });
+    return { added, skipped };
+  }, []);
+
+  return { presets, savePreset, deletePreset, updatePreset, importPresets };
 }

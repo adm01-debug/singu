@@ -1,4 +1,7 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, lazy, Suspense, useEffect } from 'react';
+import { toast } from 'sonner';
+import { base64UrlToBundle, type PresetBundle } from '@/lib/searchPresetTransport';
+import { useSearchPresets } from '@/hooks/useSearchPresets';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { MessageSquare, Phone, Mail, Users, Video, FileText, AlertCircle, Plus } from 'lucide-react';
@@ -91,6 +94,42 @@ const Interacoes = () => {
     setSearchParams(next, { replace: true });
   };
 
+  // Auto-import via ?preset=<base64url>
+  const { importPresets } = useSearchPresets('interactions');
+  const [pendingBundle, setPendingBundle] = useState<PresetBundle | null>(null);
+
+  useEffect(() => {
+    const b64 = searchParams.get('preset');
+    if (!b64) return;
+    const bundle = base64UrlToBundle(b64);
+    if (!bundle) {
+      toast.error('Link de busca inválido');
+      const next = new URLSearchParams(searchParams);
+      next.delete('preset');
+      setSearchParams(next, { replace: true });
+      return;
+    }
+    setPendingBundle(bundle);
+  }, [searchParams, setSearchParams]);
+
+  const clearPresetParam = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('preset');
+    setSearchParams(next, { replace: true });
+    setPendingBundle(null);
+  };
+
+  const confirmImport = () => {
+    if (!pendingBundle) return;
+    const { added, skipped } = importPresets(pendingBundle.presets);
+    if (added > 0) {
+      toast.success(`${added} busca${added > 1 ? 's' : ''} importada${added > 1 ? 's' : ''}` + (skipped > 0 ? ` · ${skipped} ignorada(s)` : ''));
+    } else {
+      toast.error('Limite de 10 buscas atingido');
+    }
+    clearPresetParam();
+  };
+
   return (
     <AppLayout>
       <SEOHead title="Interações" description="Histórico completo de comunicações e engajamentos" />
@@ -118,6 +157,32 @@ const Interacoes = () => {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm contacts={contacts} onSubmit={handleCreate} onCancel={() => setIsFormOpen(false)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
       <Dialog open={!!editingInteraction} onOpenChange={(open) => !open && setEditingInteraction(null)}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm interaction={editingInteraction} contacts={contacts} onSubmit={handleUpdate} onCancel={() => setEditingInteraction(null)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
       <AlertDialog open={!!deletingInteraction} onOpenChange={(open) => !open && setDeletingInteraction(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Excluir interação?</AlertDialogTitle><AlertDialogDescription>Tem certeza que deseja excluir esta interação? Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+      <AlertDialog open={!!pendingBundle} onOpenChange={(open) => !open && clearPresetParam()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Importar busca compartilhada?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingBundle && (
+                <>
+                  Este link contém <strong>{pendingBundle.presets.length}</strong> busca{pendingBundle.presets.length > 1 ? 's' : ''}:
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {pendingBundle.presets.slice(0, 5).map((p, i) => (
+                      <li key={i} className="text-foreground">• {p.name}</li>
+                    ))}
+                    {pendingBundle.presets.length > 5 && (
+                      <li className="text-muted-foreground">…e mais {pendingBundle.presets.length - 5}</li>
+                    )}
+                  </ul>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={clearPresetParam}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmImport}>Importar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {celebration.MiniCelebrationComponent}
     </AppLayout>
   );
