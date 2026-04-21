@@ -6,6 +6,7 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     info: vi.fn(),
+    message: vi.fn(),
   },
 }));
 
