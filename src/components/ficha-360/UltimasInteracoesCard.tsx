@@ -50,6 +50,7 @@ function formatDate(iso?: string | null): string {
 
 export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive }: Props) => {
   const items = Array.isArray(interactions) ? interactions : [];
+  const { visible, hasMore, sentinelRef } = useInfiniteList(items, 15, [items]);
 
   return (
     <Card>
