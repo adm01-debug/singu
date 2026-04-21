@@ -21,6 +21,13 @@ import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/
 import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
 import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
 import { CopyScriptMenu } from './CopyScriptMenu';
+import { PassoFeedbackMenu } from './PassoFeedbackMenu';
+import {
+  useProximoPassoFeedbacks,
+  getLastOutcome,
+  getRecentSkipUntil,
+  type PassoOutcome,
+} from '@/hooks/useProximoPassoFeedback';
 import type { SentimentTone } from '@/lib/scriptGenerator';
 
 interface Props {
