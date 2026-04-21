@@ -253,6 +253,30 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
           <SheetDescription>
             {theme ? `${theme.mentions} menções em ${theme.count} conversas` : ""}
           </SheetDescription>
+          <div
+            className="flex items-center gap-1.5 pt-1"
+            role="group"
+            aria-label="Tamanho do trecho exibido"
+            title="Tamanho do trecho exibido"
+          >
+            <span className="text-[10px] text-muted-foreground mr-1">Trecho:</span>
+            {(["short", "medium", "long"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPreset(p)}
+                aria-pressed={preset === p}
+                className={cn(
+                  "h-6 px-2 rounded text-[11px] font-medium border transition-colors",
+                  preset === p
+                    ? "bg-primary/10 border-primary/40 text-foreground"
+                    : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
+                )}
+              >
+                {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
+              </button>
+            ))}
+          </div>
         </SheetHeader>
 
         <div className="mt-6 space-y-3">
