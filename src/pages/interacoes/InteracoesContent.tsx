@@ -78,6 +78,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       if (adv.contact && i.contact_id !== adv.contact) return false;
       if (adv.company && i.company_id !== adv.company) return false;
       if (adv.canais.length > 0 && !adv.canais.includes(i.type)) return false;
+      if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
+      if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
       const ts = new Date(i.created_at).getTime();
       if (deTs !== null && ts < deTs) return false;
       if (ateTs !== null && ts > ateTs) return false;
@@ -119,7 +121,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const { visible: visibleInteractions, hasMore, sentinelRef } = useInfiniteList(
     sortedForView,
     50,
-    [adv.q, adv.contact, adv.company, adv.canais.join(','), adv.de?.getTime(), adv.ate?.getTime(), adv.sort, activeFilters, sortBy, sortOrder]
+    [adv.q, adv.contact, adv.company, adv.canais.join(','), adv.direcao, adv.de?.getTime(), adv.ate?.getTime(), adv.sort, activeFilters, sortBy, sortOrder]
   );
 
   return (

@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
 import { CanaisQuickFilter } from './CanaisQuickFilter';
+import { DirecaoQuickFilter } from './DirecaoQuickFilter';
 import { SortSelect } from './SortSelect';
 
 interface ContactOption { id: string; label: string }
@@ -62,6 +63,11 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
         <CanaisQuickFilter
           canais={filters.canais}
           onChange={(next) => setFilter('canais', next)}
+        />
+
+        <DirecaoQuickFilter
+          value={filters.direcao}
+          onChange={(v) => setFilter('direcao', v)}
         />
 
         <EntityPicker
