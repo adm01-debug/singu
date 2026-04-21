@@ -17,6 +17,7 @@ import { AdvancedFilters, type FilterConfig, type SortOption } from '@/component
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { sortArray } from '@/lib/sorting-utils';
+import { sortInteractions } from '@/lib/sortInteractions';
 import type { Interaction } from '@/hooks/useInteractions';
 import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';

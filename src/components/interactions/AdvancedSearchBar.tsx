@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
 import { CanaisQuickFilter } from './CanaisQuickFilter';
+import { SortSelect } from './SortSelect';
 
 interface ContactOption { id: string; label: string }
 interface CompanyOption { id: string; label: string }
@@ -81,6 +82,12 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
 
         <DatePopover label="De" value={filters.de} onChange={(d) => setFilter('de', d)} />
         <DatePopover label="Até" value={filters.ate} onChange={(d) => setFilter('ate', d)} />
+
+        <SortSelect
+          value={filters.sort}
+          onChange={(v) => setFilter('sort', v)}
+          hasQuery={!!filters.q.trim()}
+        />
 
         <InteracoesPresetsMenu
           filters={filters}
