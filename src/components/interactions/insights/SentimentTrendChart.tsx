@@ -72,12 +72,16 @@ const DIRECTION_CLASS: Record<SentimentTrendSummary["direction"], string> = {
 
 const DIRECTION_ICON = { up: TrendingUp, stable: Minus, down: TrendingDown } as const;
 
-const SENTIMENT_ROWS: Array<{ key: "positive" | "neutral" | "negative" | "mixed"; label: string; color: string }> = [
-  { key: "positive", label: "Positivo", color: CHART_COLORS.positive },
-  { key: "neutral", label: "Neutro", color: CHART_COLORS.neutral },
-  { key: "negative", label: "Negativo", color: CHART_COLORS.negative },
-  { key: "mixed", label: "Misto", color: CHART_COLORS.mixed },
-];
+type SentimentKey = "positive" | "neutral" | "negative" | "mixed";
+
+const SENTIMENT_TOKENS: Record<SentimentKey, { label: string; swatch: string; text: string; bar: string }> = {
+  positive: { label: "Positivo", swatch: "bg-success", text: "text-success", bar: "bg-success/70" },
+  neutral: { label: "Neutro", swatch: "bg-muted-foreground", text: "text-muted-foreground", bar: "bg-muted-foreground/70" },
+  negative: { label: "Negativo", swatch: "bg-destructive", text: "text-destructive", bar: "bg-destructive/70" },
+  mixed: { label: "Misto", swatch: "bg-warning", text: "text-warning", bar: "bg-warning/70" },
+};
+
+const SENTIMENT_ORDER: SentimentKey[] = ["positive", "neutral", "negative", "mixed"];
 
 function pctClass(pct: number): string {
   if (pct >= 60) return "text-success";
