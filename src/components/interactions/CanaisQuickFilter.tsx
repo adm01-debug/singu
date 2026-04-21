@@ -234,7 +234,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-wrap items-center gap-1">
-        {CHANNELS.map((opt) => {
+        {CHANNELS.map((opt, idx) => {
           const Icon = opt.icon;
           const inPending = pending.includes(opt.value);
           const inApplied = safe.includes(opt.value);
@@ -242,39 +242,49 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           const hasCounts = !!counts;
           const count = hasCounts ? (counts?.[opt.value] ?? 0) : undefined;
           const isEmpty = hasCounts && count === 0 && !inPending;
+          const shortcutLabel = `Alt+${idx + 1}`;
           const chip = (
-            <Badge
-              key={opt.value}
-              variant={inPending ? 'default' : 'outline'}
-              role="button"
-              aria-pressed={inPending}
-              title={opt.label}
-              onClick={() => toggleCanal(opt.value)}
-              className={cn(
-                'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
-                !inPending && 'hover:bg-muted',
-                isDifferent && 'border-dashed',
-                isEmpty && 'opacity-50',
-              )}
-            >
-              <Icon className="w-3 h-3" />
-              <span className="hidden sm:inline">{opt.label}</span>
-              {typeof count === 'number' && (
-                <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
-                  {count > 999 ? '999+' : count}
+            <div className="relative inline-flex">
+              <Badge
+                variant={inPending ? 'default' : 'outline'}
+                role="button"
+                aria-pressed={inPending}
+                aria-keyshortcuts={`Alt+${idx + 1}`}
+                title={opt.label}
+                onClick={() => toggleCanal(opt.value)}
+                className={cn(
+                  'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
+                  !inPending && 'hover:bg-muted',
+                  isDifferent && 'border-dashed',
+                  isEmpty && 'opacity-50',
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                <span className="hidden sm:inline">{opt.label}</span>
+                {typeof count === 'number' && (
+                  <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
+                    {count > 999 ? '999+' : count}
+                  </span>
+                )}
+              </Badge>
+              {altPressed && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -bottom-1 -right-1 rounded border border-border bg-background px-1 text-[9px] font-mono leading-tight text-muted-foreground shadow-sm"
+                >
+                  {idx + 1}
                 </span>
               )}
-            </Badge>
+            </div>
           );
-          if (isEmpty) {
-            return (
-              <Tooltip key={opt.value}>
-                <TooltipTrigger asChild>{chip}</TooltipTrigger>
-                <TooltipContent side="top">Sem interações neste canal</TooltipContent>
-              </Tooltip>
-            );
-          }
-          return chip;
+          return (
+            <Tooltip key={opt.value}>
+              <TooltipTrigger asChild>{chip}</TooltipTrigger>
+              <TooltipContent side="top">
+                {isEmpty ? `Sem interações neste canal (${shortcutLabel})` : `${opt.label} (${shortcutLabel})`}
+              </TooltipContent>
+            </Tooltip>
+          );
         })}
 
         <Tooltip>
