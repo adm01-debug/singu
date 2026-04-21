@@ -318,7 +318,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <div
                     key={preset.id}
                     className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                    onClick={() => applyPreset(preset)}
+                    onClick={() => { if (editingId !== preset.id) applyPreset(preset); }}
                   >
                     <button
                       type="button"
