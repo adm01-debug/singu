@@ -657,6 +657,17 @@
    NEXUS UTILITY CLASSES
    ============================================ */
 @layer utilities {
+  /* Foco visível para fatias SVG do gráfico de sentimento (Recharts não aplica focus-ring nativo) */
+  .sentiment-pie-focus path:focus {
+    outline: none;
+  }
+  .sentiment-pie-focus path:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    stroke: hsl(var(--foreground));
+    stroke-width: 2;
+  }
+
   /* Animations */
   .animate-in-up {
     animation: slideInUp 0.4s ease-out forwards;
