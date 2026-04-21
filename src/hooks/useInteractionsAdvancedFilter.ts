@@ -121,6 +121,7 @@ export function useInteractionsAdvancedFilter() {
     density: parseDensity(searchParams.get('density')),
     page: parsePage(searchParams.get('page')),
     perPage: parsePerPage(searchParams.get('perPage')),
+    sentimento: parseSentimento(searchParams.get('sentimento')),
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
