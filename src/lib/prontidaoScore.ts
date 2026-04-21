@@ -45,9 +45,24 @@ interface IntelligenceLike {
   best_time?: string | null;
 }
 
+export interface ProntidaoWeights {
+  cadence: number;
+  recency: number;
+  sentiment: number;
+  channel: number;
+}
+
+export const DEFAULT_PRONTIDAO_WEIGHTS: ProntidaoWeights = {
+  cadence: 30,
+  recency: 30,
+  sentiment: 25,
+  channel: 15,
+};
+
 interface ComputeInput {
   profile: ProfileLike | null | undefined;
   intelligence: IntelligenceLike | null | undefined;
+  weights?: ProntidaoWeights;
 }
 
 function daysSince(iso?: string | null): number | null {
@@ -57,10 +72,10 @@ function daysSince(iso?: string | null): number | null {
   return Math.max(0, Math.floor((Date.now() - t) / 86400000));
 }
 
-function scoreCadence(cadence: number | null | undefined, lastDays: number | null): ProntidaoFactor {
+function scoreCadence(cadence: number | null | undefined, lastDays: number | null, weight: number): ProntidaoFactor {
   if (cadence == null || lastDays == null) {
     return {
-      score: 50, weight: 30, label: 'Cadência', status: 'unknown',
+      score: 50, weight, label: 'Cadência', status: 'unknown',
       detail: 'Cadência não definida',
     };
   }
@@ -71,12 +86,12 @@ function scoreCadence(cadence: number | null | undefined, lastDays: number | nul
   if (ratio <= 1.0) { score = 100; status = 'good'; detail = `Em dia (${lastDays}d / ${cadence}d)`; }
   else if (ratio <= 1.5) { score = 60; status = 'warn'; detail = `Próximo do limite (${lastDays}d / ${cadence}d)`; }
   else if (ratio <= 2.0) { score = 30; status = 'bad'; detail = `Atrasado (${lastDays}d / ${cadence}d)`; }
-  return { score, weight: 30, label: 'Cadência', status, detail };
+  return { score, weight, label: 'Cadência', status, detail };
 }
 
-function scoreRecency(lastDays: number | null): ProntidaoFactor {
+function scoreRecency(lastDays: number | null, weight: number): ProntidaoFactor {
   if (lastDays == null) {
-    return { score: 30, weight: 30, label: 'Recência', status: 'unknown', detail: 'Sem registro de contato' };
+    return { score: 30, weight, label: 'Recência', status: 'unknown', detail: 'Sem registro de contato' };
   }
   let score = 5; let status: ProntidaoStatus = 'bad'; let detail = `Há ${lastDays} dias`;
   if (lastDays <= 3) { score = 100; status = 'good'; }
@@ -84,25 +99,25 @@ function scoreRecency(lastDays: number | null): ProntidaoFactor {
   else if (lastDays <= 14) { score = 60; status = 'warn'; }
   else if (lastDays <= 30) { score = 40; status = 'warn'; }
   else if (lastDays <= 60) { score = 20; status = 'bad'; }
-  return { score, weight: 30, label: 'Recência', status, detail };
+  return { score, weight, label: 'Recência', status, detail };
 }
 
-function scoreSentiment(sentiment?: string | null): ProntidaoFactor {
+function scoreSentiment(sentiment: string | null | undefined, weight: number): ProntidaoFactor {
   const v = (sentiment || '').toLowerCase();
-  if (!v) return { score: 50, weight: 25, label: 'Sentimento', status: 'unknown', detail: 'Sem dados' };
-  if (v.includes('pos')) return { score: 100, weight: 25, label: 'Sentimento', status: 'good', detail: 'Positivo' };
-  if (v.includes('neg')) return { score: 20, weight: 25, label: 'Sentimento', status: 'bad', detail: 'Negativo' };
-  if (v.includes('mix')) return { score: 50, weight: 25, label: 'Sentimento', status: 'warn', detail: 'Misto' };
-  return { score: 60, weight: 25, label: 'Sentimento', status: 'warn', detail: 'Neutro' };
+  if (!v) return { score: 50, weight, label: 'Sentimento', status: 'unknown', detail: 'Sem dados' };
+  if (v.includes('pos')) return { score: 100, weight, label: 'Sentimento', status: 'good', detail: 'Positivo' };
+  if (v.includes('neg')) return { score: 20, weight, label: 'Sentimento', status: 'bad', detail: 'Negativo' };
+  if (v.includes('mix')) return { score: 50, weight, label: 'Sentimento', status: 'warn', detail: 'Misto' };
+  return { score: 60, weight, label: 'Sentimento', status: 'warn', detail: 'Neutro' };
 }
 
-function scoreChannel(channel?: string | null, time?: string | null): ProntidaoFactor {
+function scoreChannel(channel: string | null | undefined, time: string | null | undefined, weight: number): ProntidaoFactor {
   const hasCh = !!(channel && channel.trim());
   const hasTime = !!(time && time.trim());
-  if (hasCh && hasTime) return { score: 100, weight: 15, label: 'Canal preferido', status: 'good', detail: `${channel} · ${time}` };
-  if (hasCh) return { score: 60, weight: 15, label: 'Canal preferido', status: 'warn', detail: `${channel} (sem horário)` };
-  if (hasTime) return { score: 60, weight: 15, label: 'Canal preferido', status: 'warn', detail: `Horário: ${time}` };
-  return { score: 30, weight: 15, label: 'Canal preferido', status: 'unknown', detail: 'Não definido' };
+  if (hasCh && hasTime) return { score: 100, weight, label: 'Canal preferido', status: 'good', detail: `${channel} · ${time}` };
+  if (hasCh) return { score: 60, weight, label: 'Canal preferido', status: 'warn', detail: `${channel} (sem horário)` };
+  if (hasTime) return { score: 60, weight, label: 'Canal preferido', status: 'warn', detail: `Horário: ${time}` };
+  return { score: 30, weight, label: 'Canal preferido', status: 'unknown', detail: 'Não definido' };
 }
 
 function levelFromScore(score: number): { level: ProntidaoLevel; label: string } {
@@ -150,13 +165,17 @@ function buildRecommendation(
   return { recommendation, nextActionHint };
 }
 
-export function computeProntidaoScore({ profile, intelligence }: ComputeInput): ProntidaoResult {
+export function computeProntidaoScore({ profile, intelligence, weights }: ComputeInput): ProntidaoResult {
+  const w0 = weights ?? DEFAULT_PRONTIDAO_WEIGHTS;
+  const sum = w0.cadence + w0.recency + w0.sentiment + w0.channel;
+  const w: ProntidaoWeights = sum > 0 ? w0 : DEFAULT_PRONTIDAO_WEIGHTS;
+
   const lastDays = daysSince(profile?.last_contact_at);
   const breakdown: ProntidaoBreakdown = {
-    cadence: scoreCadence(profile?.cadence_days, lastDays),
-    recency: scoreRecency(lastDays),
-    sentiment: scoreSentiment(profile?.sentiment ?? intelligence?.sentiment),
-    channel: scoreChannel(intelligence?.best_channel, intelligence?.best_time),
+    cadence: scoreCadence(profile?.cadence_days, lastDays, w.cadence),
+    recency: scoreRecency(lastDays, w.recency),
+    sentiment: scoreSentiment(profile?.sentiment ?? intelligence?.sentiment, w.sentiment),
+    channel: scoreChannel(intelligence?.best_channel, intelligence?.best_time, w.channel),
   };
 
   const totalWeight = breakdown.cadence.weight + breakdown.recency.weight + breakdown.sentiment.weight + breakdown.channel.weight;
