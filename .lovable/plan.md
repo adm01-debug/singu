@@ -1,101 +1,100 @@
 
 
-# Plano: Sincronização correta dos chips de canal com a URL em `/interacoes`
+# Plano: Preservar foco no campo de busca ao remover chips em `/interacoes`
 
 ## Contexto
 
-Os chips de canal são renderizados em dois lugares:
-- **`CanaisQuickFilter`** (na barra de busca avançada): chips para ativar/desativar canais.
-- **`ActiveFiltersBar`** (abaixo da barra): badges fechaveis representando o estado ativo, incluindo os canais selecionados.
+Hoje, ao clicar no `X` de um chip no `ActiveFiltersBar` (Busca, Pessoa, Empresa, Canais, Período), o filtro é removido via `setFilter`, que atualiza a URL e re-renderiza a lista. O **foco vai para o `<body>`** (ou some), porque o próprio botão `X` desaparece quando o chip é desmontado.
 
-A fonte da verdade é `filters.canais` (vindo de `useInteractionsAdvancedFilter`, parseado da URL `?canais=email,call`). Há também um `channelPersistence` em `localStorage` que pode reaplicar canais ao recarregar/limpar.
-
-Suspeitas de inconsistência a investigar e corrigir:
-1. **Remover um chip pelo X em `ActiveFiltersBar`** chama `setFilter('canais', canais.filter(...))`. Quando a lista resultante fica vazia, precisa virar `[]` na URL (parâmetro removido), não permanecer com valor antigo.
-2. **`CanaisQuickFilter`** pode estar lendo de `localStorage` (via `channelPersistence`) e não da URL como fonte primária — gerando "chip ativo visualmente" enquanto a URL não reflete.
-3. **Persistência em `localStorage`** pode reaplicar canais após o usuário remover um chip, criando regressão imediata.
-4. **Normalização**: chips devem comparar canais sempre em **lowercase**, sem duplicatas, com whitelist (`whatsapp|call|email|meeting|video_call|note`).
+Consequências:
+- Usuário que estava digitando perde o cursor.
+- Em listas longas, o navegador pode rolar para o topo.
+- Quebra fluxo de "digitar → remover chip → continuar digitando".
 
 ## Decisão de escopo
 
-- **Fonte única da verdade**: a URL (`filters.canais`). `CanaisQuickFilter` recebe `value` e `onChange` via props e NÃO lê `localStorage` internamente.
-- **`channelPersistence`** continua existindo, mas só é consultado **uma vez na primeira montagem** quando a URL não tem `?canais=`. Após qualquer interação do usuário (toggle/close), passa a refletir exatamente a URL. Remoção total (`canais=[]`) **limpa** o `localStorage` (já é o comportamento de `writeAppliedCanais([])`).
-- **`ActiveFiltersBar`**: ao clicar no X de um chip de canal, chamar `setFilter('canais', next)` onde `next = canais.filter(c => c !== removed)`. Se `next.length === 0`, o setter já remove o param da URL (graças à serialização condicional em `useInteractionsAdvancedFilter`). Verificar e garantir que esse caminho esteja correto.
-- **`CanaisQuickFilter`**: derivar `activeSet = new Set(filters.canais)` a cada render. Toggle calcula `next` e chama o callback. Remover qualquer leitura/escrita direta de `localStorage` dentro do componente — fica responsabilidade da página (`InteracoesContent.tsx`) ou do hook.
-- **Sincronização do `localStorage`** com a URL: criar um `useEffect` no `InteracoesContent` (ou no próprio hook) que, sempre que `filters.canais` mudar por ação do usuário, chame `writeAppliedCanais(filters.canais)`. Quando a URL é limpa via "Limpar tudo" do `ActiveFiltersBar`, isso já zera o `localStorage`.
-- **Normalização**: ao parsear `?canais=`, manter o filtro de whitelist e dedup (`Array.from(new Set(...))`). Confirmar que `parseCanais` em `useInteractionsAdvancedFilter` faz isso; se não, ajustar.
-- **Comparação case-insensitive**: garantir que toggle e close comparem com `toLowerCase()` antes de inserir/remover.
+Após remover qualquer chip do `ActiveFiltersBar`, **devolver o foco ao input de busca** (`<input>` da `SearchBar` em `/interacoes`) preservando:
+- Posição de scroll da página (sem `scrollIntoView` agressivo).
+- Conteúdo digitado no input (não mexer no `value`).
+- Posição do cursor: cursor vai para o **final do texto** (comportamento padrão esperado).
+
+Aplica-se a **todos os chips** do `ActiveFiltersBar` (Busca, Direção, Pessoa, Empresa, cada Canal, Período desde, Período até) e ao botão **"Limpar tudo"**. Não se aplica ao botão "Limpar período" (já existente) — também recebe o mesmo tratamento por consistência.
+
+## Estratégia técnica
+
+1. Expor um **ref do input de busca** no `InteracoesContent` (ou no componente que renderiza a `SearchBar`).
+2. Passar uma callback `onAfterRemove?: () => void` para o `ActiveFiltersBar`.
+3. Cada handler de chip (`onClose` das badges + `onClick` do "Limpar tudo" e "Limpar período") chama `setFilter(...)` e em seguida invoca `onAfterRemove?.()`.
+4. `onAfterRemove` no parent faz:
+   ```ts
+   requestAnimationFrame(() => {
+     const el = searchInputRef.current;
+     if (!el) return;
+     const len = el.value.length;
+     el.focus({ preventScroll: true });
+     try { el.setSelectionRange(len, len); } catch { /* noop */ }
+   });
+   ```
+   - `preventScroll: true` evita rolagem para o input.
+   - `requestAnimationFrame` garante que o foco aconteça **após** o re-render disparado por `setFilter`.
+   - `setSelectionRange(len, len)` posiciona cursor ao final.
 
 ## Implementação
 
-### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
+### 1. `src/components/interactions/ActiveFiltersBar.tsx`
+- Adicionar prop `onAfterRemove?: () => void`.
+- Criar helper interno `wrap(fn)` que executa `fn()` e depois chama `onAfterRemove?.()`.
+- Aplicar `wrap()` em todos os `onClose` e nos `onClick` de "Limpar período" e "Limpar tudo".
+- Sem mudanças de UI, sem novas deps.
 
-- Revisar `parseCanais`: aplicar whitelist (`VALID_CHANNELS`), dedup, lowercase.
-- Garantir que `setFilter('canais', [])` remova o param da URL (serialização condicional `if (Array.isArray(v) && v.length > 0)`).
-- Confirmar que `applyAll` segue mesma regra.
-
-### 2. `src/components/interactions/CanaisQuickFilter.tsx`
-
-- Remover qualquer leitura de `localStorage` (se existir).
-- Props: `value: string[]`, `onChange: (next: string[]) => void`.
-- Toggle:
+### 2. `src/pages/interacoes/InteracoesContent.tsx` (ou container que renderiza `SearchBar` + `ActiveFiltersBar`)
+- Localizar onde a `SearchBar`/input de busca é renderizado e expor um `ref` (`useRef<HTMLInputElement | null>(null)`).
+- Se a `SearchBar` é um componente próprio, garantir que aceita `inputRef` via prop e o repasse ao `<input>`. Se ainda não aceitar, adicionar essa prop opcional.
+- Definir `handleAfterRemove`:
   ```ts
-  const toggle = (c: string) => {
-    const lower = c.toLowerCase();
-    const set = new Set(value.map(v => v.toLowerCase()));
-    if (set.has(lower)) set.delete(lower);
-    else set.add(lower);
-    onChange(Array.from(set));
-  };
+  const handleAfterRemove = useCallback(() => {
+    requestAnimationFrame(() => {
+      const el = searchInputRef.current;
+      if (!el) return;
+      const len = el.value?.length ?? 0;
+      el.focus({ preventScroll: true });
+      try { el.setSelectionRange(len, len); } catch { /* noop */ }
+    });
+  }, []);
   ```
-- Visual ativo: `value.includes(c.toLowerCase())`.
+- Passar `onAfterRemove={handleAfterRemove}` ao `<ActiveFiltersBar />`.
 
-### 3. `src/components/interactions/ActiveFiltersBar.tsx`
+### 3. `src/components/interactions/SearchBar.tsx` (se aplicável)
+- Adicionar prop opcional `inputRef?: React.Ref<HTMLInputElement>` e encaminhar ao `<input>` (via `ref` direto ou `useImperativeHandle` se necessário). Compatível com uso atual (prop opcional).
 
-- Já chama `setFilter('canais', canais.filter(x => x !== c))`. Validar que `c` está em lowercase no momento da remoção (vem do array já normalizado pelo parser, então deve estar OK — apenas adicionar comentário inline).
-- Sem mudança funcional aqui se o parser já normaliza; só garantia.
+## Testes
 
-### 4. `src/pages/interacoes/InteracoesContent.tsx`
+**Editar/criar** `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx`:
+1. Ao clicar no `X` de um chip, `onAfterRemove` é chamado **uma vez** após o respectivo `setFilter`.
+2. Clicar em "Limpar tudo" chama `onAfterRemove`.
+3. Clicar em "Limpar período" chama `onAfterRemove`.
+4. Sem prop `onAfterRemove`: nenhum erro é lançado (graceful no-op).
 
-- Encontrar onde `CanaisQuickFilter` é renderizado e passar `value={filters.canais}` e `onChange={(next) => setFilter('canais', next)}`.
-- Adicionar `useEffect` que sincroniza `filters.canais` → `writeAppliedCanais(filters.canais)`. Ao montar com URL vazia, ler `readAppliedCanais()` uma única vez (guardado em `useRef` para evitar loops) e aplicar via `setFilter('canais', stored)` se não for nulo.
-
-### 5. Testes
-
-**Editar** `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` (ou criar novo teste focado):
-1. `setFilter('canais', [])` remove o param `canais` da URL.
-2. `setFilter('canais', ['email','EMAIL','whatsapp'])` é normalizado para `['email','whatsapp']` (dedup + lowercase).
-3. URL `?canais=email,garbage,call` produz `['email','call']` (whitelist filtra inválidos).
-4. Remover último canal via `ActiveFiltersBar` (simulando `setFilter('canais', [])`) limpa a URL.
-
-**Criar** `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`:
-1. Renderiza chip ativo quando `value` contém o canal.
-2. Click em chip ativo chama `onChange` sem aquele canal.
-3. Click em chip inativo chama `onChange` com aquele canal adicionado.
-4. Não lê `localStorage` (mock e verificar que não foi chamado).
-
-**Editar** `src/lib/__tests__/channelPersistence.test.ts`: garantir que cobertura atual continua válida (não muda comportamento do helper, só seu uso).
+**Não testar** o `focus` real em jsdom (instável). Cobrimos a invocação da callback; o efeito do `focus({preventScroll})` é trivial.
 
 ## Padrões obrigatórios
 
-- PT-BR, tokens semânticos HSL, flat (sem shadows/gradients), zero novas deps.
-- Backward compat: URL `?canais=email,call` continua funcionando idêntica.
-- Fonte única da verdade: URL. `localStorage` é cache opcional de "última seleção", não fonte.
-- A11y: chips mantêm `aria-pressed` e labels existentes.
+- PT-BR, flat, zero novas deps.
+- Backward-compat: `onAfterRemove` e `inputRef` são opcionais.
+- A11y: `preventScroll: true` evita reposicionamento; cursor ao final é o comportamento padrão esperado para inputs de texto.
+- ≤400 linhas por arquivo.
 
 ## Arquivos tocados
 
-**Editados (4):**
-- `src/hooks/useInteractionsAdvancedFilter.ts` — confirmar/ajustar normalização e serialização condicional de `canais`.
-- `src/components/interactions/CanaisQuickFilter.tsx` — remover leitura de `localStorage`, toggle baseado em props.
-- `src/components/interactions/ActiveFiltersBar.tsx` — comentário/ajuste pontual se necessário (sem mudança funcional esperada).
-- `src/pages/interacoes/InteracoesContent.tsx` — wiring `value`/`onChange`, sincronização one-shot com `localStorage` via `useEffect`+`useRef`.
+**Editados (2–3):**
+- `src/components/interactions/ActiveFiltersBar.tsx` — nova prop `onAfterRemove`, wrap em todos os handlers de remoção.
+- `src/pages/interacoes/InteracoesContent.tsx` — `searchInputRef`, `handleAfterRemove`, passa para `ActiveFiltersBar` e `SearchBar`.
+- `src/components/interactions/SearchBar.tsx` — adicionar `inputRef` opcional (somente se ainda não aceitar).
 
-**Editados/criados (2 testes):**
-- `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` — 4 novos casos de normalização e remoção.
-- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — novo, cobre toggle e ausência de acesso a `localStorage`.
+**Editado (1) — testes:**
+- `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx` — 4 casos cobrindo invocação de `onAfterRemove`.
 
 ## Critério de fechamento
 
-(a) Chips de canal em `/interacoes` refletem exatamente o que está em `?canais=`; (b) clicar X em um chip de canal no `ActiveFiltersBar` remove esse canal e, se for o último, remove o param da URL inteiro; (c) `CanaisQuickFilter` não lê `localStorage` — usa `value` via props; (d) `localStorage` é atualizado **depois** de cada mudança e só consultado uma vez na montagem inicial quando a URL está vazia; (e) parser normaliza canais com whitelist + lowercase + dedup; (f) testes cobrem normalização, remoção, toggle e ausência de leitura indevida de `localStorage`; (g) PT-BR, flat, zero novas deps.
+(a) Remover qualquer chip do `ActiveFiltersBar` (Busca, Direção, Pessoa, Empresa, Canais, Período desde, Período até) devolve foco ao input de busca; (b) "Limpar tudo" e "Limpar período" também devolvem foco; (c) `focus({ preventScroll: true })` evita rolagem da página; (d) cursor posicionado ao final do texto digitado; (e) sem `onAfterRemove`, comportamento atual preservado (no-op); (f) testes cobrem a invocação da callback em todos os caminhos; (g) PT-BR, flat, zero novas deps.
 
