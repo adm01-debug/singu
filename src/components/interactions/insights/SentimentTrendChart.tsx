@@ -419,7 +419,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               <ReferenceLine yAxisId="count" x={normalizeWeek(summary.worstWeek.week)} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
-            {smoothEnabled && (
+            {smoothEnabled && showPositivePctLine && (
               <Line
                 yAxisId="pct"
                 type="monotone"
