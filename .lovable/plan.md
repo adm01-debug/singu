@@ -1,83 +1,109 @@
 
-# Plano: Gráfico de tendência do Score de Prontidão (semanal) na Ficha 360
+# Plano: Modo de Testes (sandbox de cenários) na Ficha 360
 
 ## Contexto
 
-A Ficha 360 já mostra o Score de Prontidão **atual** (0–100) calculado em tempo real por `computeProntidaoScore` a partir de `profile + intelligence` (cadência, recência, sentimento, canal). Falta visualizar a **evolução temporal** para entender se a preparação está melhorando, estável ou piorando.
+`computeProntidaoScore` é puro e já depende só de `profile` + `intelligence` + `weights`. Hoje não há jeito de validar visualmente "se eu mudar o sentimento para negativo, o score cai e a recomendação muda?" sem editar dados reais. Vamos adicionar um **modo simulação** que injeta um `profile`/`intelligence` sintético no recálculo, sem tocar no banco.
 
-Existem duas fontes possíveis de série temporal:
-1. **`score_history` (tabela)** — já consumida por `useScoreHistory(contactId)` no `ScoreHistoryChart`. Armazena apenas o lead score genérico, não o Score de Prontidão (que é derivado, não persistido).
-2. **`useExternalInteractions` agregado por semana** — proxy realista: como o Prontidão é dominado por cadência + recência + sentimento, podemos reconstruir a curva semanal recalculando o score retroativamente em cada semana usando as interações que existiam até aquela semana.
+## Decisão de escopo
 
-**Decisão**: opção 2 — reconstrução client-side a partir de interações já carregadas em `useFicha360`, **zero novas queries de rede**. Coerente com a memória "client-side fast feedback" e mantém o padrão da feature de pesos personalizáveis (mesma lógica recalcula ao vivo quando o usuário muda pesos).
+- **Local**: client-side puro, ativado por toggle. Persiste em `sessionStorage` (não polui sessões futuras nem outros contatos).
+- **Reaproveita**: `computeProntidaoScore`, `computeProntidaoTrend`, `ScoreProntidaoCard`, `ProntidaoTrendChart` — todos já recalculam ao vivo via `useMemo`.
+- **Não afeta**: dados reais, edge functions, `ProximaAcaoCTA` (continua usando contato real — a IA não deve ser alimentada com cenário fake).
+- **Indicador**: quando ativo, banner amarelo no topo + badge "Simulação" nos cards afetados.
 
 ## Implementação
 
-### 1. Novo helper: `src/lib/prontidaoTrend.ts` (~110 linhas)
-
-Função pura que reconstrói a série semanal:
+### 1. Novo store: `src/stores/useSimulationStore.ts` (~70 linhas)
 
 ```ts
-export interface ProntidaoTrendPoint {
-  weekStart: string;     // ISO yyyy-MM-dd (segunda-feira)
-  weekLabel: string;     // "12/05" formato dd/MM
-  score: number;         // 0-100
-  level: ProntidaoLevel; // frio|morno|quente|pronto
-  interactionCount: number;
+interface SimulationOverrides {
+  cadence_days: number | null;
+  last_contact_at_days_ago: number | null; // mais legível que ISO
+  sentiment: 'positivo' | 'neutro' | 'misto' | 'negativo' | null;
+  best_channel: string | null;
+  best_time: string | null;
 }
-
-export function computeProntidaoTrend(args: {
-  interactions: ExternalInteraction[];
-  profile: ProfileLike | null;
-  intelligence: IntelligenceLike | null;
-  weights?: ProntidaoWeights;
-  weeks?: number; // default 8
-}): ProntidaoTrendPoint[]
+interface State {
+  enabled: boolean;
+  overrides: SimulationOverrides;
+  presetName: string | null;
+  setEnabled(v: boolean): void;
+  setOverride<K extends keyof SimulationOverrides>(k: K, v: SimulationOverrides[K]): void;
+  applyPreset(name: string, o: SimulationOverrides): void;
+  reset(): void;
+}
 ```
 
-Lógica:
-- Gera N janelas semanais retroativas (default 8) terminando hoje.
-- Para cada semana W: monta um `profile` sintético com `last_contact_at` = última interação ≤ fim de W, `sentiment` = sentimento mais recente até W, mantém `cadence_days` e `intelligence` originais (best_channel/best_time são estáveis).
-- Chama `computeProntidaoScore` reaproveitando os mesmos pesos.
-- Retorna pontos ordenados cronologicamente. Semanas sem nenhuma interação prévia → `score: null` filtrado fora ou marcado como "sem dados".
+- Zustand com `persist` + `createJSONStorage(() => sessionStorage)` (chave `singu-prontidao-sim`).
+- Default: `enabled=false`, todos overrides `null`.
 
-### 2. Novo componente: `src/components/ficha-360/ProntidaoTrendChart.tsx` (~150 linhas)
+### 2. Novo helper: `src/lib/prontidaoSimulation.ts` (~50 linhas)
 
-Card flat com:
-- **Header**: ícone `TrendingUp` + título "Tendência do Score de Prontidão" + badge de tendência (calculada por slope linear simples nos últimos 4 pontos: ↑ Melhorando / → Estável / ↓ Piorando) com cor semântica.
-- **Stat row** (3 mini-stats): Score atual, Variação 4 semanas (`+X pts` / `-X pts`), Pico do período.
-- **Gráfico**: `Recharts AreaChart` com `weekLabel` no X, score 0–100 no Y. Gradiente sutil sob a área, linha primary, dots pequenos, tooltip PT-BR mostrando "Semana de DD/MM • Score: X • Nível: {label} • {N} interações".
-- **Linhas de referência horizontais** nos thresholds 40 (morno) e 70 (quente) com `strokeDasharray` discreto.
-- **Empty state** quando `< 2` pontos com dados: mensagem "Histórico insuficiente. Registre mais interações para ver a evolução."
-- **Acessibilidade**: envolto em `AccessibleChart` com tabela sr-only (semana → score).
-- `React.memo`, tokens semânticos, flat (sem shadow).
+- `applySimulation(profile, intelligence, overrides)` retorna `{ profile, intelligence }` mesclados:
+  - `cadence_days`: override quando não-null
+  - `last_contact_at`: ISO calculado a partir de `Date.now() - daysAgo*86400000`
+  - `sentiment` em `profile`
+  - `best_channel`/`best_time` em `intelligence`
+- Cenários presets exportados:
+  - **"Sentimento negativo"**: `sentiment='negativo'`
+  - **"Sem cadência"**: `cadence_days=null` + `last_contact_at_days_ago=null`
+  - **"Última interação antiga"**: `last_contact_at_days_ago=90`
+  - **"Atrasado vs cadência"**: `cadence_days=7`, `last_contact_at_days_ago=21`
+  - **"Tudo verde"**: `cadence_days=7`, `daysAgo=2`, `sentiment='positivo'`, `best_channel='WhatsApp'`, `best_time='manhã'`
+  - **"Sem canal preferido"**: `best_channel=null`, `best_time=null`
 
-### 3. Integração: `src/pages/Ficha360.tsx`
+### 3. Novo componente: `src/components/ficha-360/SimulationModePanel.tsx` (~220 linhas)
 
-- Importar `useProntidaoWeightsStore`, `computeProntidaoTrend`, `ProntidaoTrendChart`.
-- `const trend = useMemo(() => computeProntidaoTrend({ interactions: recentInteractions, profile, intelligence, weights, weeks: 8 }), [recentInteractions, profile, intelligence, weights])`.
-- Montar `<ProntidaoTrendChart data={trend} currentScore={prontidao.score} />` **logo abaixo** do `ProximaAcaoCTA` (ou na coluna direita do cabeçalho, dependendo do layout — colocar abaixo do CTA mantém leitura natural: Score → Por que → Próxima ação → Tendência).
-- Garantir que `interactionsLimit` em `useFicha360` cubra ao menos 8 semanas de histórico (atual = 50, suficiente).
+Card colapsável (variant `outlined`, header com ícone `FlaskConical` + Switch "Modo de testes"):
+
+- **Header**: Switch para ligar/desligar + botão `Restaurar`.
+- **Quando ativo**:
+  - Linha de **presets** (chips clicáveis): 6 presets do helper.
+  - Grid 2 colunas com controles:
+    - **Sentimento**: `Select` (positivo/neutro/misto/negativo/sem dado).
+    - **Cadência (dias)**: `Input` numérico + checkbox "sem cadência".
+    - **Última interação (dias atrás)**: `Slider` 0–180 + label "Há X dias" / "Sem registro".
+    - **Canal preferido**: `Input` texto (ou null).
+    - **Melhor horário**: `Input` texto (ou null).
+  - Rodapé: badge "Score simulado: X (era Y)" comparando com cálculo real, e indicação do preset ativo.
+- Tudo PT-BR, tokens semânticos, flat, `React.memo`.
+
+### 4. Integração: `src/pages/Ficha360.tsx`
+
+- Importar `useSimulationStore`, `applySimulation`, `SimulationModePanel`.
+- Calcular **dois** profiles/intel: `realProfile/realIntel` (originais) e `effectiveProfile/effectiveIntel` (com simulação aplicada se `enabled`).
+- Substituir as entradas de `computeProntidaoScore`, `computeProntidaoTrend` e `computeProximosPassos` pelas versões `effective*`.
+- Manter `ProximaAcaoCTA` consumindo o contato real (não recebe simulação — IA usa dados reais do CRM).
+- Inserir `<SimulationModePanel realProfile={profile} realIntel={intelligence} realScore={realProntidao.score} simulatedScore={prontidao.score} />` **logo após** `PageHeader` e antes do header sticky, para destaque.
+- Quando `enabled`, adicionar **banner sticky no topo**: `<div className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground flex items-center gap-2"><FlaskConical /> Modo de testes ativo — score e recomendações refletem cenário simulado, não os dados reais.</div>`
+
+### 5. Marcadores visuais nos cards afetados (opcional, via prop)
+
+- `ScoreProntidaoCard` e `ProntidaoTrendChart` recebem prop opcional `simulated?: boolean`; quando `true`, exibem badge `"Simulação"` (variant outline, `text-warning`) ao lado do título. Implementação leve, sem refactor.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos (sem cores fixas; usar `hsl(var(--primary|success|warning|destructive|muted-foreground))`)
-- Flat (sem shadow, gradiente sutil só no `<defs>` da área do gráfico)
-- `React.memo` no chart
-- Zero novas queries de rede (reaproveita `useFicha360.recentInteractions`)
-- Reaproveita `computeProntidaoScore` + `ProntidaoWeights` do store → respeita pesos personalizados
-- `AccessibleChart` para WCAG 2.1 §1.1.1
+- Tokens semânticos (warning/muted/primary)
+- Flat, sem shadow/gradient
+- `React.memo` no painel
+- Zero novas queries de rede
+- `sessionStorage` (não persiste entre dias)
+- Backward compat: nada muda quando `enabled=false`
 
 ## Arquivos tocados
 
-**Criados (2):**
-- `src/lib/prontidaoTrend.ts`
-- `src/components/ficha-360/ProntidaoTrendChart.tsx`
+**Criados (3):**
+- `src/stores/useSimulationStore.ts`
+- `src/lib/prontidaoSimulation.ts`
+- `src/components/ficha-360/SimulationModePanel.tsx`
 
-**Editado (1):**
-- `src/pages/Ficha360.tsx` — calcular trend e montar chart abaixo do `ProximaAcaoCTA`
+**Editados (3):**
+- `src/pages/Ficha360.tsx` — calcular `effective*`, montar painel + banner
+- `src/components/ficha-360/ScoreProntidaoCard.tsx` — prop `simulated` + badge
+- `src/components/ficha-360/ProntidaoTrendChart.tsx` — prop `simulated` + badge
 
 ## Critério de fechamento
 
-(a) Novo card "Tendência do Score de Prontidão" aparece na Ficha 360 abaixo do CTA Próxima Ação, (b) gráfico de área com 8 semanas, eixo X com labels dd/MM e Y de 0 a 100, (c) badge de tendência (↑ Melhorando / → Estável / ↓ Piorando) calculada por slope dos últimos 4 pontos, (d) tooltip PT-BR mostrando semana, score, nível e contagem de interações, (e) linhas de referência nos thresholds 40 e 70, (f) mudar pesos no `ProntidaoWeightsEditor` recalcula a curva inteira ao vivo, (g) empty state quando histórico < 2 pontos, (h) tabela sr-only via `AccessibleChart`, (i) zero novas queries de rede, (j) zero regressão no `ScoreProntidaoCard`, `ProximaAcaoCTA` ou no `ScoreHistoryChart` existente.
+(a) Painel "Modo de testes" aparece no topo da Ficha 360 com Switch on/off, (b) ao ligar, banner warning sticky aparece e cards afetados ganham badge "Simulação", (c) 6 presets clicáveis aplicam cenários instantaneamente, (d) controles individuais (sentimento/cadência/dias atrás/canal/horário) recalculam score, breakdown, recomendação, fator mais fraco e curva de tendência ao vivo, (e) painel mostra "Score simulado: X (era Y)" comparando com real, (f) `ProximaAcaoCTA` continua usando dados reais (não é afetado pela simulação), (g) ao desligar Switch ou clicar Restaurar, tudo volta ao estado real sem refresh, (h) preferência persiste em sessionStorage só durante a sessão, (i) zero novas queries de rede, (j) zero regressão em qualquer card existente quando o modo está desligado.
