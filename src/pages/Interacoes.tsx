@@ -157,6 +157,32 @@ const Interacoes = () => {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm contacts={contacts} onSubmit={handleCreate} onCancel={() => setIsFormOpen(false)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
       <Dialog open={!!editingInteraction} onOpenChange={(open) => !open && setEditingInteraction(null)}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm interaction={editingInteraction} contacts={contacts} onSubmit={handleUpdate} onCancel={() => setEditingInteraction(null)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
       <AlertDialog open={!!deletingInteraction} onOpenChange={(open) => !open && setDeletingInteraction(null)}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Excluir interação?</AlertDialogTitle><AlertDialogDescription>Tem certeza que deseja excluir esta interação? Esta ação não pode ser desfeita.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+      <AlertDialog open={!!pendingBundle} onOpenChange={(open) => !open && clearPresetParam()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Importar busca compartilhada?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingBundle && (
+                <>
+                  Este link contém <strong>{pendingBundle.presets.length}</strong> busca{pendingBundle.presets.length > 1 ? 's' : ''}:
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {pendingBundle.presets.slice(0, 5).map((p, i) => (
+                      <li key={i} className="text-foreground">• {p.name}</li>
+                    ))}
+                    {pendingBundle.presets.length > 5 && (
+                      <li className="text-muted-foreground">…e mais {pendingBundle.presets.length - 5}</li>
+                    )}
+                  </ul>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={clearPresetParam}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmImport}>Importar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {celebration.MiniCelebrationComponent}
     </AppLayout>
   );

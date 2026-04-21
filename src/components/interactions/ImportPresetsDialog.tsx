@@ -43,7 +43,7 @@ export const ImportPresetsDialog = React.memo(function ImportPresetsDialog({ ope
       return;
     }
     const result = parseBundle(raw);
-    if (!result.ok) {
+    if (result.ok === false) {
       setError(result.reason);
       setBundle(null);
       return;
