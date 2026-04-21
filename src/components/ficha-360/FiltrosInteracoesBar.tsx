@@ -31,6 +31,9 @@ interface Props {
   totalCount: number;
   channelCounts?: Record<string, number>;
   channelCountsReady?: boolean;
+  isDirty?: boolean;
+  onApply?: () => void;
+  onDiscard?: () => void;
 }
 
 export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
@@ -44,10 +47,24 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   totalCount,
   channelCounts,
   channelCountsReady = false,
+  isDirty = false,
+  onApply,
+  onDiscard,
 }: Props) {
   const toggleChannel = (value: string) => {
     if (channels.includes(value)) onChannelsChange(channels.filter((c) => c !== value));
     else onChannelsChange([...channels, value]);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onApply) return;
+    if (e.key === 'Enter' && isDirty) {
+      e.preventDefault();
+      onApply();
+    } else if (e.key === 'Escape' && isDirty && onDiscard) {
+      e.preventDefault();
+      onDiscard();
+    }
   };
 
   return (
