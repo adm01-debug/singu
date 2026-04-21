@@ -1,9 +1,11 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 
@@ -40,36 +42,26 @@ const BADGE_VARIANTS: Record<SentimentOverall, "default" | "secondary" | "destru
 const MAX_EXAMPLES = 20;
 
 function SentimentExamplesDrawerImpl({ bucket, interactionIds, onClose }: Props) {
-  const [examples, setExamples] = useState<Example[]>([]);
-  const [loading, setLoading] = useState(false);
-
   const ids = Array.isArray(interactionIds) ? interactionIds : [];
   const totalCount = ids.length;
-  const limitedIds = ids.slice(0, MAX_EXAMPLES);
+  const limitedIds = useMemo(() => ids.slice(0, MAX_EXAMPLES), [ids]);
+  const idsKey = limitedIds.join(",");
 
-  useEffect(() => {
-    if (!bucket || limitedIds.length === 0) {
-      setExamples([]);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    (async () => {
+  // TanStack Query: cache 5min por (bucket, idsKey). Evita refetch ao reabrir o mesmo recorte.
+  const { data: examples = [], isLoading } = useQuery({
+    queryKey: ["sentiment-examples", bucket, idsKey],
+    enabled: !!bucket && limitedIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<Example[]> => {
       const { data, error } = await supabase
         .from("interactions")
         .select("id, title, type, created_at, content, contact_id, sentiment")
         .in("id", limitedIds)
         .order("created_at", { ascending: false });
-      if (!cancelled) {
-        if (!error && Array.isArray(data)) setExamples(data as Example[]);
-        setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bucket, limitedIds.join(",")]);
+      if (error) throw error;
+      return Array.isArray(data) ? (data as Example[]) : [];
+    },
+  });
 
   return (
     <Sheet open={!!bucket} onOpenChange={(o) => !o && onClose()}>
@@ -85,15 +77,29 @@ function SentimentExamplesDrawerImpl({ bucket, interactionIds, onClose }: Props)
         </SheetHeader>
 
         <div className="mt-6 space-y-3">
-          {loading && (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Carregando exemplos…
-            </div>
+          {isLoading && (
+            <>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-md border border-border/60 bg-card p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-4 w-14" />
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-11/12" />
+                  <Skeleton className="h-3 w-3/4" />
+                  <div className="flex items-center justify-between pt-1">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-7 w-20" />
+                  </div>
+                </div>
+              ))}
+            </>
           )}
-          {!loading && examples.length === 0 && (
+          {!isLoading && examples.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-8">Nenhum exemplo disponível.</p>
           )}
-          {!loading && examples.map((ex) => (
+          {!isLoading && examples.map((ex) => (
             <article key={ex.id} className="rounded-md border border-border/60 bg-card p-3 space-y-2">
               <header className="flex items-center justify-between gap-2">
                 <h4 className="text-sm font-medium text-foreground truncate">{ex.title ?? "Sem título"}</h4>
@@ -118,7 +124,7 @@ function SentimentExamplesDrawerImpl({ bucket, interactionIds, onClose }: Props)
               </footer>
             </article>
           ))}
-          {!loading && totalCount > MAX_EXAMPLES && (
+          {!isLoading && totalCount > MAX_EXAMPLES && (
             <p className="text-[11px] text-muted-foreground text-center pt-2">
               Mostrando {MAX_EXAMPLES} de {totalCount} conversas
             </p>
