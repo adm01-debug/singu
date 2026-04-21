@@ -1,109 +1,115 @@
 
-# Plano: Modo de Testes (sandbox de cenários) na Ficha 360
+# Plano: Formulário rápido por sugestão em "Próximos Passos" com data/hora e canal pré-preenchidos
 
 ## Contexto
 
-`computeProntidaoScore` é puro e já depende só de `profile` + `intelligence` + `weights`. Hoje não há jeito de validar visualmente "se eu mudar o sentimento para negativo, o score cai e a recomendação muda?" sem editar dados reais. Vamos adicionar um **modo simulação** que injeta um `profile`/`intelligence` sintético no recálculo, sem tocar no banco.
+Hoje, em `ProximosPassosCard`, cada sugestão tem um botão "Criar tarefa" que dispara `useCreateTask` com `title`, `description`, `priority` e `task_type`, **sem data/hora** — a tarefa nasce sem `due_date`. O canal já vem da regra (ex.: `whatsapp`, `meeting`), mas o usuário não consegue ajustar nada antes de salvar.
 
-## Decisão de escopo
+Vamos transformar cada item em um **mini-formulário expansível** (Collapsible), pré-preenchido com canal recomendado, data sugerida (baseada em prioridade) e horário (vindo de `useBestContactTime`), permitindo ajuste rápido antes de criar.
 
-- **Local**: client-side puro, ativado por toggle. Persiste em `sessionStorage` (não polui sessões futuras nem outros contatos).
-- **Reaproveita**: `computeProntidaoScore`, `computeProntidaoTrend`, `ScoreProntidaoCard`, `ProntidaoTrendChart` — todos já recalculam ao vivo via `useMemo`.
-- **Não afeta**: dados reais, edge functions, `ProximaAcaoCTA` (continua usando contato real — a IA não deve ser alimentada com cenário fake).
-- **Indicador**: quando ativo, banner amarelo no topo + badge "Simulação" nos cards afetados.
+## Decisões de pré-preenchimento
+
+### Canal
+- Usa `passo.channel` (já vem da regra: cadência, follow-up, aniversário, etc.).
+- Editável via `Select` com as 5 opções: WhatsApp, E-mail, Ligação, Reunião, LinkedIn.
+
+### Data sugerida (heurística determinística)
+- **`alta`** → hoje (se ainda dá tempo no dia, senão amanhã).
+- **`media`** → amanhã.
+- **`baixa`** → daqui a 3 dias.
+- Casos especiais por `passo.id`:
+  - `aniversario` → data exata do aniversário (extrai dias do detalhe; se "hoje", hoje).
+  - `agendar-reuniao` → próximo dia útil às 10h.
+  - `whatsapp-followup` → hoje no horário ótimo.
+
+### Horário sugerido
+- Se `useBestContactTime(contactId)` retorna `hour_of_day` válido → usa esse horário (ex.: 14:00).
+- Senão fallback por canal: `meeting` 10:00, `call` 14:00, `whatsapp/email/linkedin` 09:00.
+- Se `bestTime.day_of_week` bate com algum dia próximo dentro de 7 dias e a prioridade não é `alta`, ajusta a data para esse dia (otimiza recomendação).
+
+Lógica isolada em `src/lib/proximoPassoDefaults.ts` (função pura, testável).
 
 ## Implementação
 
-### 1. Novo store: `src/stores/useSimulationStore.ts` (~70 linhas)
+### 1. Novo helper: `src/lib/proximoPassoDefaults.ts` (~80 linhas)
 
 ```ts
-interface SimulationOverrides {
-  cadence_days: number | null;
-  last_contact_at_days_ago: number | null; // mais legível que ISO
-  sentiment: 'positivo' | 'neutro' | 'misto' | 'negativo' | null;
-  best_channel: string | null;
-  best_time: string | null;
+export interface BestTimeHint {
+  day_of_week?: number | null;
+  hour_of_day?: number | null;
 }
-interface State {
-  enabled: boolean;
-  overrides: SimulationOverrides;
-  presetName: string | null;
-  setEnabled(v: boolean): void;
-  setOverride<K extends keyof SimulationOverrides>(k: K, v: SimulationOverrides[K]): void;
-  applyPreset(name: string, o: SimulationOverrides): void;
-  reset(): void;
+
+export interface PassoDefaults {
+  date: string;        // yyyy-MM-dd
+  time: string;        // HH:mm
+  channel: ProximoPassoChannel;
+  dueDateIso: string;  // ISO completo combinando date+time
 }
+
+export function computePassoDefaults(
+  passo: ProximoPasso,
+  bestTime: BestTimeHint | null | undefined,
+  now: Date = new Date(),
+): PassoDefaults
 ```
 
-- Zustand com `persist` + `createJSONStorage(() => sessionStorage)` (chave `singu-prontidao-sim`).
-- Default: `enabled=false`, todos overrides `null`.
+- Retorna data/hora/canal coerentes com prioridade + bestTime + tipo de passo.
+- Combina date+time em ISO local (`new Date(yyyy, mm-1, dd, HH, MM).toISOString()`).
 
-### 2. Novo helper: `src/lib/prontidaoSimulation.ts` (~50 linhas)
+### 2. Novo subcomponente: `src/components/ficha-360/ProximoPassoQuickForm.tsx` (~180 linhas)
 
-- `applySimulation(profile, intelligence, overrides)` retorna `{ profile, intelligence }` mesclados:
-  - `cadence_days`: override quando não-null
-  - `last_contact_at`: ISO calculado a partir de `Date.now() - daysAgo*86400000`
-  - `sentiment` em `profile`
-  - `best_channel`/`best_time` em `intelligence`
-- Cenários presets exportados:
-  - **"Sentimento negativo"**: `sentiment='negativo'`
-  - **"Sem cadência"**: `cadence_days=null` + `last_contact_at_days_ago=null`
-  - **"Última interação antiga"**: `last_contact_at_days_ago=90`
-  - **"Atrasado vs cadência"**: `cadence_days=7`, `last_contact_at_days_ago=21`
-  - **"Tudo verde"**: `cadence_days=7`, `daysAgo=2`, `sentiment='positivo'`, `best_channel='WhatsApp'`, `best_time='manhã'`
-  - **"Sem canal preferido"**: `best_channel=null`, `best_time=null`
+Form inline (renderizado dentro de cada `<li>` quando expandido):
 
-### 3. Novo componente: `src/components/ficha-360/SimulationModePanel.tsx` (~220 linhas)
+- **Layout grid 2 cols** (responsivo: 1 col em mobile):
+  - **Data**: `<Input type="date">` (Shadcn input, min=hoje).
+  - **Hora**: `<Input type="time">` step=900 (15 min).
+  - **Canal**: `<Select>` com 5 opções + ícones, default = `passo.channel`.
+  - **Prioridade**: `<Select>` (Alta/Média/Baixa) default = `passo.priority`.
+- **Linha de hint** (text-xs muted): "Sugerido: {canal} em {data formatada} às {hora}{ • baseado no melhor horário do contato | quando aplicável}".
+- **Rodapé** com 2 botões:
+  - `Confirmar` (primary, com Loader2 quando pending) → chama `useCreateTask` com `due_date: dueDateIso`, `task_type: channel`, `priority`, `title`, `description`.
+  - `Cancelar` (ghost) → fecha o form.
+- Após sucesso: toast "Tarefa criada para {data} às {hora}", form fecha, item ganha badge "✓ Tarefa criada" por 4s (estado local).
+- `React.memo`, PT-BR, tokens semânticos, flat.
 
-Card colapsável (variant `outlined`, header com ícone `FlaskConical` + Switch "Modo de testes"):
+### 3. Refatorar `src/components/ficha-360/ProximosPassosCard.tsx`
 
-- **Header**: Switch para ligar/desligar + botão `Restaurar`.
-- **Quando ativo**:
-  - Linha de **presets** (chips clicáveis): 6 presets do helper.
-  - Grid 2 colunas com controles:
-    - **Sentimento**: `Select` (positivo/neutro/misto/negativo/sem dado).
-    - **Cadência (dias)**: `Input` numérico + checkbox "sem cadência".
-    - **Última interação (dias atrás)**: `Slider` 0–180 + label "Há X dias" / "Sem registro".
-    - **Canal preferido**: `Input` texto (ou null).
-    - **Melhor horário**: `Input` texto (ou null).
-  - Rodapé: badge "Score simulado: X (era Y)" comparando com cálculo real, e indicação do preset ativo.
-- Tudo PT-BR, tokens semânticos, flat, `React.memo`.
+- Adicionar prop `bestTime?: BestTimeHint` (vinda de `useBestContactTime` no `Ficha360`).
+- Estado `expandedId: string | null` (apenas um form aberto por vez).
+- Estado `createdIds: Set<string>` para badge "Tarefa criada".
+- Substituir o botão único `Criar tarefa` por:
+  - Botão `Criar tarefa` que **abre o form** (toggle do `expandedId`) com chevron.
+  - Quando expandido, renderiza `<ProximoPassoQuickForm passo={p} bestTime={bestTime} contactId={contactId} onCreated={() => { setExpandedId(null); setCreatedIds(prev => new Set(prev).add(p.id)); }} onCancel={() => setExpandedId(null)} />`.
+- Botão `Copiar script` permanece igual.
+- Remover o `handleCreateTask` antigo / `busyId` (movido para o form).
 
 ### 4. Integração: `src/pages/Ficha360.tsx`
 
-- Importar `useSimulationStore`, `applySimulation`, `SimulationModePanel`.
-- Calcular **dois** profiles/intel: `realProfile/realIntel` (originais) e `effectiveProfile/effectiveIntel` (com simulação aplicada se `enabled`).
-- Substituir as entradas de `computeProntidaoScore`, `computeProntidaoTrend` e `computeProximosPassos` pelas versões `effective*`.
-- Manter `ProximaAcaoCTA` consumindo o contato real (não recebe simulação — IA usa dados reais do CRM).
-- Inserir `<SimulationModePanel realProfile={profile} realIntel={intelligence} realScore={realProntidao.score} simulatedScore={prontidao.score} />` **logo após** `PageHeader` e antes do header sticky, para destaque.
-- Quando `enabled`, adicionar **banner sticky no topo**: `<div className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-foreground flex items-center gap-2"><FlaskConical /> Modo de testes ativo — score e recomendações refletem cenário simulado, não os dados reais.</div>`
-
-### 5. Marcadores visuais nos cards afetados (opcional, via prop)
-
-- `ScoreProntidaoCard` e `ProntidaoTrendChart` recebem prop opcional `simulated?: boolean`; quando `true`, exibem badge `"Simulação"` (variant outline, `text-warning`) ao lado do título. Implementação leve, sem refactor.
+- Importar `useBestContactTime`.
+- `const { data: bestTime } = useBestContactTime(id);` (já é cacheado pelo `ProximaAcaoCTA`, então é a mesma queryKey — zero query nova).
+- Passar `bestTime` para `<ProximosPassosCard ... bestTime={bestTime} />`.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos (warning/muted/primary)
-- Flat, sem shadow/gradient
-- `React.memo` no painel
-- Zero novas queries de rede
-- `sessionStorage` (não persiste entre dias)
-- Backward compat: nada muda quando `enabled=false`
+- Tokens semânticos (sem cores fixas)
+- Flat (sem shadow/gradient)
+- `React.memo` no quick form
+- Zero novas queries de rede (`useBestContactTime` já é chamado pelo `ProximaAcaoCTA` na mesma página → cache hit)
+- Reaproveita `useCreateTask` existente
+- Formulário inline (Collapsible), não modal — fluxo "edit-in-place" sem perder contexto
+- Backward compat: `ProximosPassosCard` aceita `bestTime` como opcional
 
 ## Arquivos tocados
 
-**Criados (3):**
-- `src/stores/useSimulationStore.ts`
-- `src/lib/prontidaoSimulation.ts`
-- `src/components/ficha-360/SimulationModePanel.tsx`
+**Criados (2):**
+- `src/lib/proximoPassoDefaults.ts`
+- `src/components/ficha-360/ProximoPassoQuickForm.tsx`
 
-**Editados (3):**
-- `src/pages/Ficha360.tsx` — calcular `effective*`, montar painel + banner
-- `src/components/ficha-360/ScoreProntidaoCard.tsx` — prop `simulated` + badge
-- `src/components/ficha-360/ProntidaoTrendChart.tsx` — prop `simulated` + badge
+**Editados (2):**
+- `src/components/ficha-360/ProximosPassosCard.tsx` — abrir form inline + estado de expansão + badge "criada"
+- `src/pages/Ficha360.tsx` — passar `bestTime` ao card
 
 ## Critério de fechamento
 
-(a) Painel "Modo de testes" aparece no topo da Ficha 360 com Switch on/off, (b) ao ligar, banner warning sticky aparece e cards afetados ganham badge "Simulação", (c) 6 presets clicáveis aplicam cenários instantaneamente, (d) controles individuais (sentimento/cadência/dias atrás/canal/horário) recalculam score, breakdown, recomendação, fator mais fraco e curva de tendência ao vivo, (e) painel mostra "Score simulado: X (era Y)" comparando com real, (f) `ProximaAcaoCTA` continua usando dados reais (não é afetado pela simulação), (g) ao desligar Switch ou clicar Restaurar, tudo volta ao estado real sem refresh, (h) preferência persiste em sessionStorage só durante a sessão, (i) zero novas queries de rede, (j) zero regressão em qualquer card existente quando o modo está desligado.
+(a) Cada item de "Próximos Passos" tem botão "Criar tarefa" que **expande inline** um form com 4 campos: data, hora, canal, prioridade — todos pré-preenchidos, (b) data padrão segue heurística por prioridade (alta=hoje, média=amanhã, baixa=+3d) com casos especiais (aniversário usa data exata, reunião próximo dia útil 10h), (c) hora padrão vem de `useBestContactTime` quando disponível, com fallback por canal, (d) canal padrão vem do `passo.channel` mas pode ser ajustado, (e) confirmar cria tarefa via `useCreateTask` com `due_date` ISO combinado + `task_type` + `priority`, (f) toast "Tarefa criada para {data} às {hora}", form fecha, item ganha badge "✓ Tarefa criada" por 4s, (g) cancelar fecha sem criar, (h) só um form aberto por vez (acordeon), (i) zero novas queries de rede, (j) zero regressão no botão "Copiar script", no `ProximaAcaoCTA` ou no fluxo de simulação.
