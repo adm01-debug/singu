@@ -386,3 +386,114 @@ describe('normalizeString', () => {
   it('handles empty', () => expect(normalizeString('')).toBe(''));
   it('handles plain ASCII', () => expect(normalizeString('hello')).toBe('hello'));
 });
+
+// ── Transport (export/import) ──
+import {
+  buildBundle,
+  parseBundle,
+  bundleToBase64Url,
+  base64UrlToBundle,
+  dedupeNameAgainst,
+  PRESET_KIND,
+  PRESET_VERSION,
+} from '../searchPresetTransport';
+
+describe('searchPresetTransport', () => {
+  const sample = {
+    name: 'Minha busca',
+    filters: { canais: ['whatsapp', 'email'], q: ['urgente'] },
+    sortBy: '',
+    sortOrder: 'desc' as const,
+  };
+
+  describe('buildBundle / parseBundle', () => {
+    it('round-trips a single preset', () => {
+      const bundle = buildBundle([sample]);
+      const json = JSON.stringify(bundle);
+      const parsed = parseBundle(json);
+      expect(parsed.ok).toBe(true);
+      if (parsed.ok) {
+        expect(parsed.bundle.presets).toHaveLength(1);
+        expect(parsed.bundle.presets[0].name).toBe('Minha busca');
+        expect(parsed.bundle.kind).toBe(PRESET_KIND);
+        expect(parsed.bundle.v).toBe(PRESET_VERSION);
+      }
+    });
+
+    it('rejects invalid JSON', () => {
+      const r = parseBundle('not json');
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.reason).toContain('JSON');
+    });
+
+    it('rejects wrong version', () => {
+      const r = parseBundle(JSON.stringify({ v: 99, kind: PRESET_KIND, presets: [] }));
+      expect(r.ok).toBe(false);
+    });
+
+    it('rejects wrong kind', () => {
+      const r = parseBundle(JSON.stringify({ v: 1, kind: 'other-kind', presets: [sample] }));
+      expect(r.ok).toBe(false);
+    });
+
+    it('rejects non-array presets', () => {
+      const r = parseBundle(JSON.stringify({ v: 1, kind: PRESET_KIND, presets: 'nope' }));
+      expect(r.ok).toBe(false);
+    });
+
+    it('rejects items without name', () => {
+      const bad = { v: 1, kind: PRESET_KIND, presets: [{ filters: {}, sortBy: '', sortOrder: 'desc' }] };
+      const r = parseBundle(JSON.stringify(bad));
+      expect(r.ok).toBe(false);
+    });
+
+    it('drops items with invalid filter shape but keeps valid ones', () => {
+      const mix = {
+        v: 1,
+        kind: PRESET_KIND,
+        presets: [sample, { name: 'bad', filters: 'invalid', sortBy: '', sortOrder: 'desc' }],
+      };
+      const r = parseBundle(JSON.stringify(mix));
+      expect(r.ok).toBe(true);
+      if (r.ok) expect(r.bundle.presets).toHaveLength(1);
+    });
+  });
+
+  describe('base64url round-trip', () => {
+    it('encodes and decodes back to same bundle', () => {
+      const bundle = buildBundle([sample]);
+      const b64 = bundleToBase64Url(bundle);
+      expect(b64).not.toContain('+');
+      expect(b64).not.toContain('/');
+      expect(b64).not.toContain('=');
+      const back = base64UrlToBundle(b64);
+      expect(back).not.toBeNull();
+      expect(back?.presets[0].name).toBe('Minha busca');
+    });
+
+    it('returns null for invalid base64', () => {
+      expect(base64UrlToBundle('!!!not-base64!!!')).toBeNull();
+    });
+
+    it('handles unicode names', () => {
+      const u = { ...sample, name: 'Açõés çom emoji 🚀' };
+      const b64 = bundleToBase64Url(buildBundle([u]));
+      const back = base64UrlToBundle(b64);
+      expect(back?.presets[0].name).toBe('Açõés çom emoji 🚀');
+    });
+  });
+
+  describe('dedupeNameAgainst', () => {
+    it('returns name unchanged when free', () => {
+      expect(dedupeNameAgainst(['Bar'], 'Foo')).toBe('Foo');
+    });
+
+    it('appends (2) when collision', () => {
+      expect(dedupeNameAgainst(['Foo'], 'Foo')).toBe('Foo (2)');
+    });
+
+    it('appends (3) when (2) also taken', () => {
+      expect(dedupeNameAgainst(['Foo', 'Foo (2)'], 'Foo')).toBe('Foo (3)');
+    });
+  });
+});
