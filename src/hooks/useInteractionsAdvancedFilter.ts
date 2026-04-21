@@ -15,6 +15,8 @@ export interface AdvancedFilters {
   de?: Date;
   ate?: Date;
   sort: SortKey;
+  page: number;
+  perPage: number;
 }
 
 const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'page', 'perPage'] as const;
