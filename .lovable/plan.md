@@ -1,85 +1,91 @@
 
-# Plano: Chips de filtros ativos e resumo na lista de /interacoes
+# Plano: Infinite scroll na aba Lista de /interacoes
 
 ## Objetivo
 
-Exibir, **logo abaixo da barra de busca** em `/interacoes`, uma faixa com **chips clicáveis dos filtros ativos** (texto, pessoa, empresa, canais, datas) e um **resumo de resultados** (`N de M interações`). Cada chip pode ser removido com 1 clique, sem abrir a busca avançada.
+Substituir o carregamento único da lista em `/interacoes` por **infinite scroll** que respeita filtros avançados (q, contact, company, canais, de, ate) e ordenação atual (recent/oldest/relevance/entity), carregando lotes de 50 itens conforme o usuário rola.
+
+## Decisão de arquitetura: client-side incremental
+
+Os filtros (q, relevância textual) e a ordenação (relevance, entity) **dependem de campos calculados em memória** (`contact_name`, `company_name`, score por ocorrência). Refatorar para paginação server-side exigiria mudar RPC, índices e suporte a ordenação por nome de entidade — fora de escopo.
+
+**Estratégia:** manter o fetch atual (já carrega lista completa via `useInteractions`/external view), aplicar filtros + ordenação como hoje, e **revelar progressivamente** os itens em fatias de 50 com `IntersectionObserver`. Isso resolve o problema real (DOM gigante travando scroll) sem refazer a camada de dados.
 
 ## Reutilização
 
-- `useInteractionsAdvancedFilter` — `filters`, `setFilter`, `clear`, `activeCount` já expostos
-- `Badge` (closeable + onClose) já existente em `src/components/ui/badge.tsx`
-- Labels de canal já mapeados em `CanaisQuickFilter`
-- Contagem `sortedForView.length` / `filteredAndSorted.length` já disponíveis em `InteracoesContent`
+- `useLazySection` (IntersectionObserver com rootMargin) — copiamos o pattern para um hook genérico
+- `sortedForView` em `InteracoesContent` — array já filtrado e ordenado
+- `Skeleton` de `@/components/ui/skeleton` para sentinel de loading
 
-Sem novo hook, sem novo fetch.
+Sem novo fetch, sem nova RPC, sem mudança em hooks de dados.
 
 ## Arquitetura
 
 ```text
 InteracoesContent
  ├─ AdvancedSearchBar (existente)
- ├─ [NOVO] ActiveFiltersBar
- │     ├─ Resumo: "Mostrando N de M" (+ "filtrado de T total" se houver filtros)
- │     └─ Chips removíveis:
- │         • Busca: "kickoff"  ✕   → setFilter('q', '')
- │         • Pessoa: "<nome>"  ✕   → setFilter('contact', '')
- │         • Empresa: "<nome>" ✕   → setFilter('company', '')
- │         • Canal: WhatsApp   ✕   → remove do array canais
- │         • De: 01/03/25      ✕   → setFilter('de', undefined)
- │         • Até: 31/03/25     ✕   → setFilter('ate', undefined)
- │         • [Limpar tudo] (só se 2+ filtros)
- └─ Lista (existente)
+ ├─ ActiveFiltersBar (existente)
+ ├─ [REFATORADO] Lista renderiza apenas sortedForView.slice(0, visibleCount)
+ ├─ [NOVO] <InfiniteScrollSentinel onIntersect={loadMore} hasMore={...} />
+ │     └─ usa IntersectionObserver com rootMargin "400px"
+ └─ Reset visibleCount → PAGE_SIZE quando filtros/ordenação mudam
 ```
-
-Quando `activeCount === 0`, mostra apenas o resumo simples ("M interações").
 
 ## Implementação
 
-### 1. Novo `src/components/interactions/ActiveFiltersBar.tsx` (≤140 linhas)
+### 1. Novo hook `src/hooks/useInfiniteList.ts` (≤60 linhas)
 
-- Props:
-  ```ts
-  {
-    filters: AdvancedFilters;
-    setFilter: <K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => void;
-    clear: () => void;
-    activeCount: number;
-    totalCount: number;     // total bruto carregado
-    visibleCount: number;   // após filtros e ordenação
-  }
-  ```
-- Mapa de labels canal idêntico ao `CanaisQuickFilter` (whatsapp/call/email/meeting/video_call/note)
-- Chips usam `Badge variant="secondary" closeable onClose={...}`, ícone à esquerda quando aplicável (Search, User, Building2, Calendar e ícone do canal)
-- Datas formatadas via `format(d, 'dd MMM yy', { locale: ptBR })`
-- Botão "Limpar tudo" (`Button variant="ghost" size="xs"`) aparece se `activeCount >= 2`
-- Resumo à esquerda em `text-xs text-muted-foreground`:
-  - Sem filtros: `"M interações"` (ou `"Nenhuma interação"`)
-  - Com filtros: `"Mostrando N de M"` quando N < M; `"M resultados"` quando N === M
+```ts
+export function useInfiniteList<T>(items: T[], pageSize = 50, deps: unknown[] = [])
+  : { visible: T[]; hasMore: boolean; loadMore: () => void; sentinelRef: RefObject<HTMLDivElement> }
+```
+
+- `useState<number>(pageSize)` para contagem visível
+- `useEffect` reseta para `pageSize` quando `deps` mudam (filtros, sort, q)
+- `IntersectionObserver` no sentinel: ao intersectar, incrementa em `pageSize`
+- `hasMore = visibleCount < items.length`
+- Defensivo: `Array.isArray(items)` antes de fatiar
+
+### 2. Novo `src/components/interactions/InfiniteScrollSentinel.tsx` (≤40 linhas)
+
+- Props: `sentinelRef`, `hasMore`, `loading?`, `totalLoaded`, `total`
+- Quando `hasMore`: renderiza 3 `Skeleton` + texto "Carregando mais…"
+- Quando `!hasMore && total > 0`: texto discreto "Fim da lista — N interações exibidas"
 - `React.memo`
-- PT-BR, sem `any`, `Array.isArray()` defensivo em `canais`, tokens semânticos, flat
 
-### 2. Integração em `src/pages/interacoes/InteracoesContent.tsx`
+### 3. Integração em `src/pages/interacoes/InteracoesContent.tsx`
 
-- Importar `ActiveFiltersBar`
-- Renderizar **logo após** `<AdvancedSearchBar />` e **antes** da lista
-- Passar `totalCount={interactions.length}` (lista bruta antes do filtro) e `visibleCount={sortedForView.length}`
+- Importar `useInfiniteList` e `InfiniteScrollSentinel`
+- Substituir uso direto de `sortedForView` na lista por `visible` retornado pelo hook
+- Passar deps: `[adv.q, adv.contact, adv.company, adv.canais.join(','), adv.de, adv.ate, adv.sort]`
+- Renderizar `<InfiniteScrollSentinel />` após o último item
+- Manter `ActiveFiltersBar` recebendo `visibleCount={visible.length}` para o resumo "Mostrando N de M" refletir o exibido
 
-### 3. Edge cases
+### 4. Edge cases
 
-- Datas inválidas tratadas pelo `format` apenas se `instanceof Date`
-- Chip de canal desconhecido mostra o próprio valor capitalizado
-- Quando `q` é só espaços, não cria chip
-- A11y: cada chip com `aria-label="Remover filtro <descrição>"` no botão de fechar (já provido por `Badge closeable`)
+- Lista <= 50 itens: sentinel mostra "Fim da lista" imediatamente, sem skeletons
+- Mudança de filtro com lista grande: reset para 50 (scroll-to-top do contêiner não é forçado — preserva contexto se for ajuste fino)
+- `IntersectionObserver` desconectado em cleanup
+- `rootMargin: '400px'` para pré-carregar antes de chegar ao final
+
+### 5. Padrões obrigatórios
+
+- PT-BR
+- Sem `any`, sem `dangerouslySetInnerHTML`
+- `Array.isArray()` defensivo
+- Tokens semânticos, flat
+- Zero novas queries de rede
+- `React.memo` no sentinel
 
 ## Arquivos tocados
 
-**Novos (1):**
-- `src/components/interactions/ActiveFiltersBar.tsx`
+**Novos (2):**
+- `src/hooks/useInfiniteList.ts`
+- `src/components/interactions/InfiniteScrollSentinel.tsx`
 
 **Editados (1):**
-- `src/pages/interacoes/InteracoesContent.tsx` — montar o componente abaixo da busca
+- `src/pages/interacoes/InteracoesContent.tsx` — usar `visible` no map e montar sentinel
 
 ## Critério de fechamento
 
-(a) Faixa visível em `/interacoes` abaixo da busca com resumo `N de M`, (b) cada filtro ativo (q, contact, company, cada canal, de, até) aparece como chip removível independente, (c) clique no "✕" do chip remove apenas aquele filtro e atualiza URL imediatamente, (d) botão "Limpar tudo" aparece com 2+ filtros, (e) sem filtros mostra apenas contagem total, (f) zero novas queries de rede, (g) zero regressão em ordenação, presets ou paginação.
+(a) Lista de `/interacoes` (aba Lista) inicia com 50 itens, (b) ao rolar próximo do fim, mais 50 são revelados automaticamente, (c) qualquer mudança em filtros ou ordenação reseta para 50, (d) sentinel mostra skeleton enquanto há mais e texto "Fim da lista" quando esgotado, (e) `ActiveFiltersBar` resumo permanece coerente com o total filtrado, (f) zero novas queries de rede, (g) zero regressão em chips, presets, ordenação ou busca.
