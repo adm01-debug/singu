@@ -1,95 +1,123 @@
 
 
-# Plano: Filtros e ordenação em "Próximos Passos" da Ficha 360
+# Plano: Exportar e importar presets de buscas avançadas em /interacoes
 
 ## Contexto
 
-Hoje o `ProximosPassosCard` lista todos os passos sugeridos em ordem fixa (definida por `computeProximosPassos`). Quando há 5–7 sugestões com prioridades e canais variados, fica difícil focar no que importa agora (ex: "só alta prioridade" ou "só WhatsApp"). Vamos adicionar uma barra leve de filtros + ordenação inline no header do card, persistida na URL para sobreviver a refresh e ser compartilhável.
+Hoje o `InteracoesPresetsMenu` (popover "Buscas") deixa salvar/aplicar/remover presets via `useSearchPresets('interactions')` em `localStorage`. Não há jeito de levar um preset de um navegador para outro. Vamos adicionar **exportar** (arquivo JSON ou link compartilhável) e **importar** (colar JSON ou abrir link), usando apenas o navegador — sem backend.
 
 ## Decisão de escopo
 
-- **Filtros disponíveis**: prioridade (alta/média/baixa, multi-select) + canal (whatsapp/email/call/meeting/linkedin, multi-select).
-- **Ordenação**: 3 opções — `Sugerido` (default, mantém ordem do `computeProximosPassos`), `Prioridade` (alta→baixa) e `Canal` (alfabético, agrupando por canal).
-- **Persistência**: query params `?nbaPrio=alta,media&nbaCanal=whatsapp&nbaSort=prioridade` (prefixo `nba` para não colidir com filtros existentes da Ficha 360 como `?periodo=` e `?canais=`). Reusa `useSearchParams` (mesmo padrão de `useFicha360Filters`).
-- **UI compacta**: chips toggle no estilo `CanaisQuickFilter` para canal/prioridade + `Select` de ordenação no estilo `SortSelect`. Tudo flat, tokens semânticos, PT-BR.
-- **Contador inteligente**: `"3 de 7 sugestões"` no header quando há filtro ativo, com botão "Limpar" se ≥1 filtro estiver ligado.
-- **Empty state contextual**: se filtros zerarem a lista mas houver passos disponíveis, mostrar "Nenhuma sugestão com esses filtros" + botão "Limpar filtros". Sem filtros e lista vazia = empty state atual (intocado).
-- **Zero impacto em outros fluxos**: `ProximaAcaoCTA` (que pega o primeiro passo de prioridade alta) usa a lista **original** (não filtrada), pois é o "destaque do topo". Só a lista exibida abaixo é filtrada.
+- **Dois caminhos por preset individual:**
+  1. **Exportar JSON** → baixa `busca-{slug}.json` com payload assinado por versão.
+  2. **Copiar link** → URL `/interacoes?preset=<base64url>` que, ao abrir em outro navegador, oferece importar.
+- **Importar em massa**: ação no rodapé do menu — abre dialog com tabs "Colar JSON" / "Importar arquivo". Permite múltiplos presets em um único JSON.
+- **Auto-import por URL**: ao detectar `?preset=…`, mostra `<Dialog>` "Importar busca compartilhada?" com preview (nome + summary). Confirmar adiciona ao `localStorage` e remove o param. Cancelar só limpa o param.
+- **Formato versionado** (`v: 1`) para evolução futura sem quebrar imports antigos:
+  ```json
+  { "v": 1, "kind": "interacoes-search-preset", "exportedAt": "...", "presets": [{ "name": "...", "filters": {...}, "sortBy": "", "sortOrder": "desc" }] }
+  ```
+- **Validação rigorosa**: shape check com Zod-like guard manual (sem nova dep), ignora campos desconhecidos, rejeita arquivo inválido com toast claro. Reaproveita estrutura `SearchPreset['filters']` já usada no menu.
+- **Limite de 10 presets** (já enforced no hook) → import respeita: se ultrapassar, toast "Limite de 10 buscas atingido — remova alguns antes de importar" e importa só os primeiros que couberem.
+- **Dedup por nome**: ao importar, se já existir preset com o mesmo nome, sufixo `(importado)` ou `(2)`.
+- **Escopo só para `/interacoes`**: aproveitamos o padrão e deixamos o tipo genérico para reaproveitar em Contatos/Empresas em entrega futura, mas a UI desta entrega só toca no `InteracoesPresetsMenu`.
 
 ## Implementação
 
-### 1. Novo hook: `src/hooks/useProximosPassosFilters.ts` (~90 linhas)
+### 1. Novo helper `src/lib/searchPresetTransport.ts` (~140 linhas)
 
 ```ts
-export type NbaPriority = 'alta' | 'media' | 'baixa';
-export type NbaSort = 'sugerido' | 'prioridade' | 'canal';
+export const PRESET_KIND = 'interacoes-search-preset';
+export const PRESET_VERSION = 1;
 
-export function useProximosPassosFilters() {
-  // lê/escreve em searchParams (nbaPrio, nbaCanal, nbaSort)
-  // retorna { priorities, channels, sort, setPriorities, setChannels, setSort, clear, activeCount }
+export interface ExportablePreset {
+  name: string;
+  filters: Record<string, string[]>;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
 }
+export interface PresetBundle {
+  v: number; kind: string; exportedAt: string;
+  presets: ExportablePreset[];
+}
+
+export function buildBundle(presets: ExportablePreset[]): PresetBundle;
+export function parseBundle(raw: string): { ok: true; bundle: PresetBundle } | { ok: false; reason: string };
+export function bundleToBase64Url(bundle: PresetBundle): string;       // JSON → utf8 → base64url
+export function base64UrlToBundle(b64: string): PresetBundle | null;
+export function downloadBundleAsFile(bundle: PresetBundle, filename: string): void;
+export function dedupeNameAgainst(existing: string[], proposed: string): string;
 ```
 
-- Padrão idêntico ao `useFicha360Filters` (URL como single source of truth, `replace: true`).
-- `sort = 'sugerido'` é default e não polui a URL.
+- Validação manual: checa `v === 1`, `kind === PRESET_KIND`, `Array.isArray(presets)`, cada item tem `name:string`, `filters:object`, etc.
+- `base64url` puro (substitui `+/=` por `-_` e remove `=`) para link curto e seguro.
+- `downloadBundleAsFile` cria `Blob` `application/json` e dispara `<a download>` (mesmo padrão do `intelExportUniversal`).
 
-### 2. Novo helper: `src/lib/filterProximosPassos.ts` (~40 linhas)
+### 2. Estender `useSearchPresets` (sem quebrar API atual)
 
+Adicionar:
 ```ts
-export function filterAndSortPassos(
-  passos: ProximoPasso[],
-  opts: { priorities: NbaPriority[]; channels: string[]; sort: NbaSort }
-): ProximoPasso[]
+importPresets(items: Omit<SearchPreset,'id'|'createdAt'>[]): { added: number; skipped: number };
 ```
 
-- Pure function, deterministic. Map `alta/media/baixa` → string match. Ordena por `PRIORITY_RANK` (alta=3, media=2, baixa=1) ou alfabeticamente por `channel`.
+- Respeita limite de 10. Faz dedup de `name` contra `presets` existentes via `dedupeNameAgainst`.
+- Não substitui presets existentes — só adiciona.
 
-### 3. Novo componente: `src/components/ficha-360/ProximosPassosFiltersBar.tsx` (~140 linhas)
+### 3. Refatorar `InteracoesPresetsMenu.tsx`
 
-- Linha 1 (chips compactos):
-  - **Prioridade**: 3 badges toggle (Alta/Média/Baixa) com cor semântica (destructive/default/secondary), no estilo `CanaisQuickFilter`.
-  - Separador vertical sutil.
-  - **Canal**: 5 badges toggle (WhatsApp/Email/Ligação/Reunião/LinkedIn) com ícones `lucide-react`.
-- Linha 2 (rodapé do filtro, condicional):
-  - Texto "{shown} de {total} sugestões" + botão "Limpar" (só se `activeCount ≥ 1`).
-  - À direita: `<Select>` de ordenação (Sugerido / Prioridade / Canal).
-- `React.memo`, PT-BR, tokens semânticos.
+- **Por linha de preset (na lista)**: adicionar dois ícones extras no `group-hover` (à esquerda do `Trash2`):
+  - `<Download />` → baixa JSON daquele preset (1 item).
+  - `<Link2 />` → copia link `${origin}/interacoes?preset=<b64>` para clipboard, toast "Link copiado".
+- **No rodapé do popover**: novo botão `<Upload /> Importar buscas` que abre `<ImportPresetsDialog>`.
+- **Botão "Exportar todas"** (só aparece se `presets.length >= 1`): baixa bundle com todas.
 
-### 4. Refatorar `ProximosPassosCard.tsx`
+### 4. Novo componente `src/components/interactions/ImportPresetsDialog.tsx` (~180 linhas)
 
-- Importar `useProximosPassosFilters`, `filterAndSortPassos`, `ProximosPassosFiltersBar`.
-- Manter `passos` original para `ProximaAcaoCTA` (já usa `passos[0]` no `Ficha360.tsx`, fora do card — sem mudança).
-- Calcular `displayPassos = filterAndSortPassos(passos, { priorities, channels, sort })`.
-- Renderizar `<ProximosPassosFiltersBar>` no header, abaixo do `CardTitle`, **só se `passos.length >= 2`** (não polui quando há 1 sugestão).
-- Iterar sobre `displayPassos` (não `passos`) na lista renderizada.
-- Empty state contextual: se `passos.length > 0 && displayPassos.length === 0` → mostrar mini-empty "Nenhuma sugestão com esses filtros" + botão "Limpar filtros".
-- Manter intactos: badges de outcome, `AgendarReuniaoForm`, `ProximoPassoQuickForm`, `CopyScriptMenu`, `PassoFeedbackMenu`, `createdIds`, etc.
+`<Dialog>` com `<Tabs>`:
+- **Aba "Colar JSON"**: `<Textarea>` (até 50 KB) + botão "Importar".
+- **Aba "Arquivo"**: `<Input type="file" accept="application/json,.json">` + drop zone leve.
 
-### 5. Sem mudanças em `Ficha360.tsx`
+Pré-visualização (após parse válido): lista com nome de cada preset + checkbox para escolher quais importar (default: todos marcados). Rodapé: "Importar selecionados (n)" + Cancelar.
 
-- `ProximaAcaoCTA` continua recebendo `passos` (lista bruta do `computeProximosPassos`) — o filtro é puramente visual no card abaixo.
+Erros de parse mostram alerta inline em destrutivo. Sucesso: toast "n busca(s) importada(s)" + fecha.
+
+### 5. Auto-import via URL em `Interacoes.tsx`
+
+- `useEffect` único: lê `?preset=` do `useSearchParams`. Se válido, abre `<ConfirmImportDialog>` com preview (nome + summary). Remove o param logo após decidir (Confirmar ou Cancelar) com `setSearchParams({}, { replace: true })`.
+- Se base64 inválido: toast `'Link de busca inválido'` + remove o param.
+- Componente reutiliza `useSearchPresets('interactions').importPresets`.
+
+### 6. Testes leves em `src/lib/__tests__/search-presets-filters.test.ts`
+
+Adicionar describe `transport`:
+- `buildBundle → parseBundle` round-trip.
+- `bundleToBase64Url → base64UrlToBundle` round-trip.
+- `parseBundle` rejeita: JSON inválido, `v` errado, `kind` errado, `presets` não-array, item sem `name`.
+- `dedupeNameAgainst` produz `Foo`, `Foo (2)`, `Foo (3)`.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos (sem cores fixas)
-- Flat (sem shadow/gradient)
-- `React.memo` no FiltersBar
-- URL como source of truth (mesmo padrão do `useFicha360Filters`)
+- Tokens semânticos, flat (sem shadow/gradient)
+- `React.memo` no Dialog
 - Zero novas queries de rede
-- Backward compat: lista exibida idêntica quando nenhum filtro está ativo (sort=`sugerido` preserva ordem original)
+- Zero novas dependências (sem zod externo, sem libs de QR/clipboard extras — usa `navigator.clipboard`)
+- Backward compat: presets atuais no `localStorage` continuam válidos, formato de export é só uma serialização paralela
+- A11y: dialogs com título/descrição, foco no primeiro input
 
 ## Arquivos tocados
 
-**Criados (3):**
-- `src/hooks/useProximosPassosFilters.ts`
-- `src/lib/filterProximosPassos.ts`
-- `src/components/ficha-360/ProximosPassosFiltersBar.tsx`
+**Criados (2):**
+- `src/lib/searchPresetTransport.ts`
+- `src/components/interactions/ImportPresetsDialog.tsx`
 
-**Editados (1):**
-- `src/components/ficha-360/ProximosPassosCard.tsx` — barra de filtros + lista filtrada + empty state contextual
+**Editados (3):**
+- `src/hooks/useSearchPresets.ts` — adicionar `importPresets`
+- `src/components/interactions/InteracoesPresetsMenu.tsx` — botões de export por linha + rodapé importar/exportar todas
+- `src/pages/Interacoes.tsx` — auto-import por `?preset=` com dialog de confirmação
+- `src/lib/__tests__/search-presets-filters.test.ts` — testes do transporte
 
 ## Critério de fechamento
 
-(a) Header do card mostra chips de prioridade (Alta/Média/Baixa) e canal (WhatsApp/Email/Ligação/Reunião/LinkedIn) clicáveis quando há ≥2 sugestões, (b) `Select` de ordenação com opções Sugerido/Prioridade/Canal, default Sugerido, (c) filtros e ordenação persistem em `?nbaPrio=…&nbaCanal=…&nbaSort=…` na URL e sobrevivem a refresh, (d) header mostra "{shown} de {total} sugestões" + botão "Limpar" quando há filtro ativo, (e) lista filtrada vazia exibe mini-empty contextual com CTA "Limpar filtros", (f) `ProximaAcaoCTA` não é afetado (continua usando a lista bruta), (g) zero regressão em `AgendarReuniaoForm`, `ProximoPassoQuickForm`, `CopyScriptMenu`, `PassoFeedbackMenu`, badges de outcome ou Modo de Testes, (h) PT-BR, tokens semânticos, flat.
+(a) Cada preset na lista tem ícones "Baixar JSON" e "Copiar link" no hover; (b) rodapé do popover tem "Importar buscas" e "Exportar todas"; (c) link `/interacoes?preset=<b64>` aberto em outro navegador exibe dialog de confirmação com nome + resumo e, ao confirmar, persiste no `localStorage`; (d) import valida shape (`v=1`, `kind`, `presets` array) e rejeita arquivos inválidos com toast claro; (e) dedup de nomes evita colisão (`Foo (2)`); (f) limite de 10 presets respeitado no import com mensagem clara; (g) zero regressão no salvar/aplicar/remover atual, no `useInteractionsAdvancedFilter`, no `SearchPresetsMenu` (Contatos/Empresas) ou no `useSearchPresets`; (h) PT-BR, tokens semânticos, flat, sem novas deps.
 
