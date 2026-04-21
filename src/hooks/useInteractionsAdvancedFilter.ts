@@ -8,6 +8,7 @@ import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence'
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
 export type DensityMode = 'comfortable' | 'compact';
+export type SentimentoFilter = 'positive' | 'neutral' | 'negative' | 'mixed';
 
 export interface AdvancedFilters {
   q: string;
@@ -22,9 +23,15 @@ export interface AdvancedFilters {
   density: DensityMode;
   page: number;
   perPage: number;
+  sentimento?: SentimentoFilter;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage', 'sentimento'] as const;
+
+const VALID_SENTIMENTOS: SentimentoFilter[] = ['positive', 'neutral', 'negative', 'mixed'];
+function parseSentimento(v: string | null): SentimentoFilter | undefined {
+  return (VALID_SENTIMENTOS as string[]).includes(v ?? '') ? (v as SentimentoFilter) : undefined;
+}
 
 const DENSITY_STORAGE_KEY = 'singu-interactions-density-v1';
 const PERPAGE_STORAGE_KEY = 'singu-interactions-perPage-v1';
