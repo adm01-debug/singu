@@ -79,4 +79,27 @@ describe('useInteractionsAdvancedFilter.applyAll', () => {
     });
     expect(result.current.filters.de).toBeInstanceOf(Date);
   });
+
+  it('view default = list e setFilter view persiste na URL e zera page', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes?page=3'),
+    });
+    expect(result.current.filters.view).toBe('list');
+    act(() => {
+      result.current.setFilter('view', 'by-contact');
+    });
+    expect(result.current.filters.view).toBe('by-contact');
+    expect(result.current.filters.page).toBe(1);
+  });
+
+  it('view=list não polui a URL via applyAll', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes?view=by-contact'),
+    });
+    act(() => {
+      result.current.applyAll({ view: 'list', q: 'x' });
+    });
+    expect(result.current.filters.view).toBe('list');
+    expect(result.current.filters.q).toBe('x');
+  });
 });
