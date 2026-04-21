@@ -1,107 +1,77 @@
 
-# Plano: Próximos Passos Sugeridos na Ficha 360
+# Plano: Salvar e reutilizar buscas avançadas em /interacoes
 
 ## Objetivo
 
-Adicionar um card **"Próximos Passos"** na Ficha 360 que gera de 3 a 5 sugestões acionáveis (ex.: *"Agendar reunião quinta 14h"*, *"Enviar WhatsApp pela manhã"*, *"Retomar por e-mail"*) com base em sinais já carregados pela tela: últimas interações, melhor canal/horário, sentimento, cadência e score de prontidão.
+Adicionar um menu suspenso na barra de busca avançada de `/interacoes` que permite **salvar a combinação atual** de filtros (texto, contato, empresa, canais, datas) com um nome e **reaplicá-la em 1 clique** depois. Persistência local por usuário/navegador, com até 10 presets.
 
-## Reutilização total (zero novo fetch)
+## Reutilização
 
-| Sinal | Hook já em uso |
-|---|---|
-| Últimas interações | `useFicha360 → recentInteractions` |
-| Melhor canal + horário | `useContactIntelligence → best_channel`, `best_time` |
-| Cadência/recência/sentimento | `useContactView360 → profile` |
-| Score de prontidão | `computeProntidaoScore` (já calculado no topo) |
-| Próxima ação IA salva | `useNextBestAction` (já existe) |
+- `useSearchPresets(context)` — hook genérico já existente em `src/hooks/useSearchPresets.ts` (localStorage, máx 10, CRUD pronto).
+- `AdvancedFilters` (URL state) já existente em `useInteractionsAdvancedFilter.ts` — apenas leremos/escreveremos via `setFilter`/`clear`.
+- Padrão visual de presets já existente em `SearchPresetsMenu.tsx` (Empresas/Contatos) — adaptaremos a forma de payload, não o visual.
 
-Sem nova edge function, sem nova tabela, sem novo fetch. Todas as sugestões locais são geradas por função pura `useMemo`. A sugestão IA vem do hook existente `useNextBestAction`.
+Sem nova tabela, sem edge function, sem fetch novo.
 
 ## Arquitetura
 
 ```text
-Ficha 360
- └─ Coluna direita (acima de "Últimas Interações")
-     └─ ProximosPassosCard  (NOVO)
-         ├─ Sugestão IA (topo, destaque) — useNextBestAction
-         │    "Gerar com IA" se ainda não há
-         └─ Lista de 3–5 sugestões locais (regras determinísticas)
-              ├─ Ícone canal + título + horário recomendado
-              ├─ Justificativa curta (1 linha)
-              └─ CTA: [Criar tarefa] [Copiar script]
+AdvancedSearchBar (header sticky em /interacoes)
+ └─ [novo] InteracoesPresetsMenu  (Popover ao lado de "Limpar tudo")
+     ├─ Trigger: Bookmark + contador (n)
+     ├─ Lista de presets (clique → aplica todos os campos via setFilter)
+     ├─ Ação por item: aplicar / excluir
+     └─ Rodapé: "Salvar busca atual" + input de nome (inline)
+
+Storage: localStorage 'relateiq-search-presets-interactions' (via useSearchPresets('interactions'))
+Payload por preset:
+{
+  id, name, createdAt,
+  filters: { q, contact, company, canais[], de(ISO|null), ate(ISO|null) }
+}
 ```
 
 ## Implementação
 
-### 1. Lib `src/lib/proximosPassos.ts` (≤200 linhas, função pura)
+### 1. Novo componente `InteracoesPresetsMenu.tsx` (≤200 linhas)
 
-```ts
-export interface ProximoPasso {
-  id: string;                    // estável p/ key
-  channel: 'whatsapp'|'email'|'call'|'meeting'|'linkedin';
-  title: string;                 // "Enviar WhatsApp"
-  detail: string;                // "Pela manhã (10h–12h), seu melhor horário"
-  reason: string;                // "Sentimento positivo na última conversa"
-  priority: 'alta'|'media'|'baixa';
-  scriptHint?: string;           // texto curto opcional p/ copiar
-}
+`src/components/interactions/InteracoesPresetsMenu.tsx`
 
-computeProximosPassos({
-  profile, intelligence, recentInteractions, prontidao
-}): ProximoPasso[]   // máx 5, ordenadas por prioridade
-```
+- Props: `filters: AdvancedFilters`, `setFilter`, `clear`, `activeCount`
+- Usa `useSearchPresets('interactions')` (já existe)
+- Adapta o payload: serializa `Date → ISO string` ao salvar e converte de volta ao aplicar
+- UI:
+  - Botão `outline` com `Bookmark` + badge de contador
+  - `Popover` à direita: cabeçalho "Buscas salvas", lista compacta com nome + resumo (ex.: *"3 canais · 14 dias · 'kickoff'"*), botão lixeira por linha
+  - Empty state PT-BR: *"Nenhuma busca salva. Aplique filtros e clique em 'Salvar busca atual'."*
+  - Rodapé: botão "Salvar busca atual" → expande para `Input` + confirmar (Enter); desabilitado se `activeCount === 0`
+  - Toast de sucesso/remoção
+- Função `applyPreset(p)`:
+  1. `clear()` (zera URL params atuais)
+  2. Para cada chave do preset, chama `setFilter(key, value)` (datas convertidas de ISO → `Date`)
 
-**Regras determinísticas (resumo):**
+### 2. Integração em `AdvancedSearchBar.tsx`
 
-- **Reabrir conversa** se `daysSinceLast > cadence_days × 1.5` → prioridade alta, canal = `intelligence.best_channel ?? lastChannel`
-- **Agendar reunião** se `prontidao.level ∈ {quente,pronto}` E sem `meeting` nos últimos 30d → alta
-- **WhatsApp follow-up** se última interação é WhatsApp sem resposta inbound → média
-- **Retomar por e-mail** se sem interações em 14d e contato tem email → média
-- **Enviar conteúdo/parabéns** se aniversário em ≤7d → alta
-- **Pedir feedback** se última for `meeting` há 1–7d e sem retorno → média
-- **Detalhe de horário**: usa `intelligence.best_time` (ex.: "manhã", "14h-16h")
+- Importar `InteracoesPresetsMenu`
+- Renderizar imediatamente **antes** do botão "Limpar tudo" (mesma linha do header)
+- Passar `filters`, `setFilter`, `clear`, `activeCount`
 
-Todas as regras com `Array.isArray()` defensivo e fallback gracioso.
+### 3. Edge cases & padrões
 
-### 2. Componente `ProximosPassosCard.tsx` (≤200 linhas)
-
-`src/components/ficha-360/ProximosPassosCard.tsx`
-
-- Header: ícone `ListChecks` + título "Próximos Passos" + badge contador
-- **Bloco 1 — Sugestão IA** (se `nextAction` existe):
-  - Mini-card com ícone `Sparkles`, ação, urgência e botão "Ver detalhes" (abre o `NextBestActionCard` existente — opcional via scroll)
-  - Se não existe: botão "Gerar com IA" (chama `generate()` do `useNextBestAction`)
-- **Bloco 2 — Sugestões locais** (lista compacta):
-  - Cada item: ícone canal + título + horário/dia + razão (1 linha)
-  - Ações por item: `[Criar tarefa]` (usa `useCreateTask`), `[Copiar script]` (se `scriptHint`)
-  - Badge de prioridade (cor semântica)
-- Empty state: "Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações."
-- `React.memo`, flat design, tokens semânticos, PT-BR
-
-### 3. Integração em `Ficha360.tsx`
-
-- Importar `computeProximosPassos` e `ProximosPassosCard`
-- `const passos = useMemo(() => computeProximosPassos({...}), [profile, intelligence, recentInteractions, prontidao])`
-- Renderizar `<ProximosPassosCard contactId={id} contactName={...} passos={passos} />` na **coluna direita**, logo **acima** do card de últimas interações (vizinhança natural)
-
-### 4. Padrões obrigatórios
-
-- PT-BR
-- Sem `any`, sem `dangerouslySetInnerHTML`
-- `Array.isArray()` antes de iterar interações
-- Tokens semânticos (success/warning/destructive)
-- Flat design, sem sombras/gradientes
-- Função pura testável, sem efeitos colaterais
+- `Array.isArray()` defensivo em `canais`
+- Datas: `Date` é serializável via `toISOString()`; ao aplicar, `new Date(iso)` validado com `isNaN`
+- Nome do preset: trim, max 60 chars
+- Sem `any`, sem `dangerouslySetInnerHTML`, PT-BR, flat design, tokens semânticos
+- `React.memo` no menu
 
 ## Arquivos tocados
 
-**Novos (2):**
-- `src/lib/proximosPassos.ts` — regras determinísticas
-- `src/components/ficha-360/ProximosPassosCard.tsx` — UI
+**Novos (1):**
+- `src/components/interactions/InteracoesPresetsMenu.tsx`
 
 **Editados (1):**
-- `src/pages/Ficha360.tsx` — incluir card na coluna direita
+- `src/components/interactions/AdvancedSearchBar.tsx` — incluir o novo menu na barra
 
 ## Critério de fechamento
 
-(a) Card "Próximos Passos" visível na coluna direita acima das últimas interações, (b) bloco IA reutilizando `useNextBestAction` (com botão "Gerar" quando vazio), (c) lista de 3–5 sugestões locais determinísticas com canal, horário recomendado, razão e prioridade, (d) ações "Criar tarefa" e "Copiar script" funcionais, (e) empty state quando não há sinais, (f) zero novas queries de rede, (g) zero regressão nos demais cards.
+(a) Menu "Buscas salvas" visível na barra de busca avançada de `/interacoes`, (b) salvar combinação atual nomeada com até 10 entradas, (c) clicar num preset reaplica todos os campos (texto, contato, empresa, canais, datas) e atualiza URL, (d) excluir preset com confirmação via toast, (e) empty state quando não há presets, (f) zero novas queries de rede, (g) zero regressão na busca existente.
