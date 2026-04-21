@@ -299,6 +299,9 @@ export function useInteractionsAdvancedFilter() {
         && next.perPage !== DEFAULT_PER_PAGE) {
       sp.set('perPage', String(next.perPage));
     }
+    if (next.sentimento && (VALID_SENTIMENTOS as string[]).includes(next.sentimento)) {
+      sp.set('sentimento', next.sentimento);
+    }
     // page nunca é persistida via applyAll: qualquer mudança em filtros deve voltar pra página 1.
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
