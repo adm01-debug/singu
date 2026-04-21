@@ -1,106 +1,110 @@
 
-# Plano: Exemplos por categoria de sentimento na aba Insights de /interacoes
+# Plano: Card "Objeções em destaque" na aba Insights
+
+## Objetivo
+
+Adicionar um **card de destaque** no topo da seção de objeções da aba Insights de `/interacoes`, evidenciando as 3 objeções mais críticas (mais frequentes E menos tratadas) com contadores, taxa de tratamento, resposta sugerida pela IA e link para conversas de exemplo.
 
 ## Status atual
 
-A aba **Insights** em `/interacoes` já está funcional e usa o pipeline de IA existente (`conversation_analyses`, gerado automaticamente para interações com transcrição ≥80 chars):
+`ObjectionsRanking` já lista todas as objeções com:
+- Contador de menções
+- Barra de % tratada (handled/count)
+- Resposta sugerida (apenas quando `unhandled > 0`)
+- Badge de categoria
 
-- KPIs: conversas analisadas, sentimento dominante, coaching score, objeções não tratadas
-- Gráficos: distribuição de sentimento (pizza/bar) e tendência semanal
-- Ranking de **temas** com drawer de exemplos clicáveis por tema
-- Ranking de **objeções** recorrentes com handled/unhandled
-
-**Lacuna real:** os 4 buckets de sentimento (Positivo / Neutro / Negativo / Misto) **não são clicáveis** — não há como abrir a lista de conversas que compõem aquele bucket. O drawer de exemplos só existe para temas.
-
-Esta entrega fecha essa lacuna reaproveitando o padrão `ThemeExamplesDrawer`.
+**Lacuna:** sem hierarquia visual — uma objeção crítica (10× mencionada, 0% tratada) aparece com o mesmo peso visual de uma trivial (2× mencionada, 100% tratada). Não há "spotlight" das que precisam de ação imediata, e a resposta sugerida fica escondida no fim de cada item.
 
 ## Reutilização
 
-- `ThemeExamplesDrawer` — copiar estrutura para `SentimentExamplesDrawer`
-- `useInteractionsInsights` — já retorna `list` (todas as `ConversationAnalysis` do período) com `sentiment_overall` e `interaction_id`
-- `Sheet`, `Badge`, `Link` para `/contatos/:id/ficha-360` — já em uso
+- `useInteractionsInsights` → `topObjections: ObjectionAggregate[]` (já tem count, handled, unhandled, suggestedResponse, examples)
+- `Card`, `Badge`, `Button` do design system
+- Padrão de cores semânticas já em uso (`success`/`warning`/`destructive`)
+- `SentimentExamplesDrawer` (criado na rodada anterior) como referência para drawer de exemplos por objeção (futuro — não nesta entrega)
 
-Sem novo fetch agregado, sem novo hook de dados, sem nova RPC.
+Sem novo fetch, sem novo hook, sem nova RPC.
 
 ## Arquitetura
 
 ```text
 InsightsPanel
  ├─ KPIs (existente)
- ├─ SentimentDistributionChart (existente)
- │     └─ [NOVO] onSelect(bucket) → abre drawer
- ├─ SentimentTrendChart (existente)
- ├─ ThemesRanking + ThemeExamplesDrawer (existente)
- ├─ ObjectionsRanking (existente)
- └─ [NOVO] SentimentExamplesDrawer
-       ├─ recebe bucket selecionado + ids das análises desse bucket
-       └─ busca interactions(id, title, type, created_at, content, contact_id, sentiment)
-            limit 20, order by created_at desc
+ ├─ Charts (existente)
+ ├─ ThemesRanking (existente)
+ ├─ [NOVO] ObjectionsSpotlight  ← topo da coluna de objeções
+ │     ├─ Header: "Objeções que pedem ação"
+ │     └─ 3 cards destacados (criticidade decrescente)
+ │         ├─ Ícone de severidade (Flame/AlertTriangle/Info)
+ │         ├─ Texto da objeção + badge categoria
+ │         ├─ Métricas: N× mencionada · X% tratada
+ │         ├─ Barra de progresso colorida por severidade
+ │         └─ Bloco "Resposta sugerida" expandido (ou "✓ Bem tratada")
+ └─ ObjectionsRanking (existente, abaixo do spotlight, lista completa)
 ```
+
+## Score de criticidade
+
+```ts
+criticality = unhandled * 2 + count
+```
+
+Pondera dobrado as não tratadas (impacto direto em pipeline) e soma frequência (volume = relevância). Garante que uma objeção 5× mencionada com 5 unhandled (score 15) supere uma 8× com 0 unhandled (score 8).
+
+Severidade visual:
+- **alta** (`unhandled >= 3` ou taxa <= 30%): borda + ícone `destructive`, Flame
+- **média** (`unhandled >= 1` ou taxa <= 70%): borda + ícone `warning`, AlertTriangle
+- **baixa** (resto): borda + ícone `success`, CheckCircle2
 
 ## Implementação
 
-### 1. `useInteractionsInsights.ts` — expor agrupamento por bucket
+### 1. Novo `src/components/interactions/insights/ObjectionsSpotlight.tsx` (≤140 linhas)
 
-Já existe `list: ConversationAnalysis[]`. Adicionar derivação memoizada:
+- Props: `objections: ObjectionAggregate[]`
+- Calcula `criticality` e ordena desc, pega top 3
+- Empty state: se array vazio, retorna `null` (o ranking abaixo já mostra "Nenhuma objeção")
+- Cada card:
+  - Layout em `Card` flat, borda colorida por severidade
+  - Header: ícone (Flame/AlertTriangle/CheckCircle2) + objeção truncada + badge categoria
+  - Métricas em linha: `<N>× mencionada` · `<handled>/<count> tratadas` · `<X>% taxa`
+  - Barra de progresso (h-2) com cor semântica (destructive/warning/success)
+  - Quando `suggestedResponse` E `unhandled > 0`: bloco destacado com fundo `bg-warning/8`, ícone Lightbulb, texto da resposta sugerida (não truncado, max 3 linhas)
+  - Quando `unhandled === 0`: bloco verde discreto "✓ Esta objeção está sendo bem tratada"
+- `React.memo`
+- PT-BR, sem `any`, tokens semânticos, flat
 
-```ts
-sentimentBuckets: Record<SentimentOverall, string[]> // interaction_ids
-```
+### 2. Integração em `InsightsPanel.tsx`
 
-Construído no mesmo `useMemo` que já calcula `sentimentDistribution`. Zero overhead.
+Localizar o bloco da coluna de objeções (provavelmente `<Card><CardHeader>Objeções recorrentes</CardHeader>…</Card>`) e:
 
-### 2. Novo `src/components/interactions/insights/SentimentExamplesDrawer.tsx` (≤120 linhas)
+- Renderizar `<ObjectionsSpotlight objections={topObjections} />` **acima** do card existente que envolve `ObjectionsRanking`
+- Manter `ObjectionsRanking` intacto (lista completa abaixo do spotlight, sem regressão)
 
-Espelho de `ThemeExamplesDrawer`, com:
+### 3. Edge cases
 
-- Props: `bucket: SentimentOverall | null`, `interactionIds: string[]`, `onClose: () => void`
-- Título: "Conversas com sentimento {Positivo|Neutro|Negativo|Misto}" + `Badge` colorido pelo bucket
-- Subtítulo: `${interactionIds.length} conversas no período`
-- `useEffect` busca em `interactions` com `.in('id', interactionIds.slice(0, 20))` (limita payload)
-- Cards de exemplo idênticos ao Theme drawer: título, snippet, tipo + data, link "Ficha 360"
-- Loading com `Loader2` + cleanup `cancelled`
-- Vazio: "Nenhum exemplo disponível"
-- Sem `any`, defensivo com `Array.isArray`, PT-BR
+- Menos de 3 objeções: renderiza só as que existem (1 ou 2 cards)
+- Zero objeções: `null` (ranking abaixo já cobre vazio)
+- Objeção sem `suggestedResponse` e com `unhandled > 0`: bloco neutro "Sem resposta sugerida disponível ainda"
+- Texto longo de objeção: `line-clamp-2` no título, tooltip nativo via `title` attr
+- Resposta sugerida longa: `line-clamp-3` com expansão `whitespace-pre-wrap`
 
-### 3. `SentimentDistributionChart.tsx` — tornar buckets clicáveis
-
-- Adicionar prop opcional `onSelectBucket?: (key: SentimentOverall) => void`
-- Aplicar `cursor-pointer` e handler de clique nas fatias/barras (Recharts `onClick` no `Cell`/`Bar`)
-- Tooltip já existente preservado
-- A11y: `role="button"` com `aria-label="Ver conversas com sentimento {label}"` ao redor de cada item legenda também (caso o gráfico tenha legenda lateral)
-
-### 4. `InsightsPanel.tsx` — orquestrar drawer de sentimento
-
-- Novo state: `selectedBucket: SentimentOverall | null`
-- Passar `onSelectBucket={setSelectedBucket}` ao `SentimentDistributionChart`
-- Renderizar `<SentimentExamplesDrawer bucket={selectedBucket} interactionIds={sentimentBuckets[selectedBucket] ?? []} onClose={() => setSelectedBucket(null)} />` ao final, ao lado do `ThemeExamplesDrawer`
-
-### 5. Edge cases
-
-- Bucket sem conversas: drawer não abre (clique no-op se `count === 0`)
-- Mudança de período (`7d/30d/90d`): drawer fecha automaticamente via `useEffect` watch em `period`
-- Limite de 20 exemplos para evitar lista gigante; rodapé discreto "Mostrando 20 de N" quando aplicável
-
-### 6. Padrões obrigatórios
+### 4. Padrões obrigatórios
 
 - PT-BR
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- `Array.isArray()` defensivo
-- Tokens semânticos (cores de sentimento via `success`/`muted`/`destructive`/`warning`)
-- Zero novas queries de rede além da busca pontual ao abrir o drawer
-- `React.memo` no novo drawer
+- `Array.isArray()` defensivo no início
+- Tokens semânticos (`success`/`warning`/`destructive`/`muted`)
+- Flat (sem shadow), bordas sutis
+- Zero novas queries de rede
+- `React.memo`
 
 ## Arquivos tocados
 
 **Novos (1):**
-- `src/components/interactions/insights/SentimentExamplesDrawer.tsx`
+- `src/components/interactions/insights/ObjectionsSpotlight.tsx`
 
-**Editados (3):**
-- `src/hooks/useInteractionsInsights.ts` — adicionar `sentimentBuckets` ao retorno
-- `src/components/interactions/insights/SentimentDistributionChart.tsx` — clique por bucket
-- `src/components/interactions/insights/InsightsPanel.tsx` — montar drawer e estado
+**Editados (1):**
+- `src/components/interactions/insights/InsightsPanel.tsx` — montar o spotlight acima do ranking
 
 ## Critério de fechamento
 
-(a) Buckets de sentimento na aba Insights ficam clicáveis (cursor + a11y), (b) clique abre Sheet com até 20 conversas daquele bucket no período, (c) cada exemplo mostra título, snippet, tipo, data, badge de sentimento e link para Ficha 360, (d) loading e empty states tratados, (e) bucket vazio não abre drawer, (f) trocar período (7/30/90) fecha o drawer, (g) zero novas queries agregadas (só fetch pontual ao abrir), (h) zero regressão em temas, objeções, KPIs ou tendência.
+(a) Spotlight aparece no topo da seção de objeções com até 3 cards ordenados por criticidade (`unhandled*2 + count`), (b) cada card mostra severidade visual (cor/ícone), contadores, taxa de tratamento e barra de progresso, (c) resposta sugerida da IA é exibida em bloco destacado quando há objeções não tratadas, (d) objeções 100% tratadas mostram badge positivo "Bem tratada", (e) ranking completo abaixo permanece sem regressão, (f) zero novas queries de rede, (g) zero regressão em sentimento, temas, KPIs ou tendência.
