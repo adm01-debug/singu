@@ -1,54 +1,79 @@
 
 
-# Plano: Anotações por semana no chart de sentimento
+# Plano: Mascaramento opcional de IP na listagem e detalhes
 
 ## Diagnóstico
 
-- O `SentimentTrendChart.tsx` plota séries semanais com volume, MA e faixa de evolução, mas não há forma de marcar eventos contextuais (campanhas, mudanças de abordagem, releases) que ajudem a explicar variações.
-- Anotações precisam ser persistidas por contato e por semana (`week_start`), com texto curto, categoria e cor — visíveis a todos os usuários da org com permissão de leitura ao contato, editáveis por quem criou ou admins.
-- Como o chart aparece em `interactions/insights` (visão por contato/empresa via filtros do hook `useInteractionsInsights`), o escopo da anotação será **por contato** (campo opcional `company_id` para anotações de empresa), com `scope` enum `contact|company|global` futuro — começamos só com `contact` para casar com o uso atual.
+- O IP aparece em vários pontos da UI: `IPRestrictionManager.tsx` (badge "Seu IP atual"), lista de IPs permitidos, `IncomingWebhookLogsDialog.tsx` (`l.source_ip`), e provavelmente em logs de auditoria/segurança.
+- Hoje IPs são exibidos crus, o que pode expor dados sensíveis em screenshots, gravações de tela ou compartilhamento de telas.
+- A busca/filtragem por IP precisa continuar funcionando mesmo com mascaramento ativo — o filtro deve operar sobre o valor original, não sobre a string mascarada.
+
+## Escopo
+
+Mascaramento como **preferência de exibição global** (toggle persistente em `localStorage`), aplicado em todos os pontos onde IP é renderizado. Filtros e buscas continuam usando o IP original.
 
 ## O que será construído
 
-### 1. Backend (Lovable Cloud)
+### 1. Utilitário `src/lib/ipMasking.ts` (novo, ~40 linhas)
 
-**Tabela `sentiment_annotations`** (migração):
-- `id uuid pk`, `created_by uuid` (auth.uid), `contact_id uuid not null`, `week_start date not null` (segunda-feira da semana ISO)
-- `category text not null check in ('campanha','abordagem','release','reuniao','outro')`
-- `title text not null` (≤80 chars), `description text` (≤500 chars, opcional)
-- `created_at timestamptz default now()`, `updated_at timestamptz default now()` (trigger)
-- Índice `(contact_id, week_start)`
-- RLS:
-  - SELECT: usuários autenticados podem ver anotações (mesma política dos demais módulos do CRM por contato)
-  - INSERT: `auth.uid() = created_by`
-  - UPDATE/DELETE: `auth.uid() = created_by` OR `has_role(auth.uid(), 'admin')`
+```ts
+export function maskIPv4(ip: string): string  // 192.168.1.10 → 192.168.*.*
+export function maskIPv6(ip: string): string  // mantém prefixo /48, mascara resto
+export function maskIP(ip: string | null | undefined): string  // detecta v4/v6
+export function matchIP(ip: string, query: string): boolean    // substring no ORIGINAL
+```
 
-### 2. Hook `useSentimentAnnotations(contactId)`
+Regras:
+- IPv4: mantém os 2 primeiros octetos, mascara os 2 últimos com `*`.
+- IPv6: mantém os 3 primeiros grupos, substitui restantes por `*`.
+- Inválido / vazio: retorna `'—'`.
+- `matchIP(ip, query)` faz `ip.toLowerCase().includes(query.toLowerCase())` no valor cru, ignorando o mascaramento.
 
-`src/hooks/useSentimentAnnotations.ts` — TanStack Query:
-- `list`: query por `contact_id`, retorna `Map<weekStartISO, Annotation[]>`
-- `create`, `update`, `delete`: mutations com invalidate da query
-- StaleTime 5min, sem `useEffect`
+### 2. Hook `src/hooks/useIPMaskingPreference.ts` (novo, ~30 linhas)
 
-### 3. UI no `SentimentTrendChart.tsx`
+- Estado global via `localStorage` chave `singu:mask-ips` (default `false`).
+- Expõe `{ masked: boolean, toggle: () => void, setMasked: (v: boolean) => void }`.
+- Sincroniza entre abas via evento `storage`.
+- Sem `useEffect` para fetch (apenas para listener de storage, que é uso correto).
 
-- **Marcadores no chart**: `<ReferenceDot>` por semana com anotação, no topo do `yAxisId="pct"` (y=100), cor por categoria, raio 5, com `onClick` abrindo popover.
-- **Tooltip enriquecido**: quando a semana tem anotações, lista até 2 títulos com cor da categoria.
-- **Botão "Anotar" no header** (ghost size xs, `Pin` icon) ao lado de "Suavizar": abre `Dialog` para criar nova anotação com `Select` de semana (apenas semanas presentes em `data`), `Select` de categoria, `Input` título, `Textarea` descrição.
-- **Drawer/lista lateral compacta** (collapsible abaixo do chart, fechado por padrão): exibe todas as anotações ordenadas por `week_start desc`, com badge de categoria, texto, autor e ações editar/excluir (visíveis para owner/admin).
+### 3. Componente `src/components/security/IPDisplay.tsx` (novo, ~25 linhas)
 
-### 4. Tipos e mapeamento
+Componente de apresentação reutilizável:
+```tsx
+<IPDisplay ip={ip} className="font-mono" showToggle={false} />
+```
+- Lê `useIPMaskingPreference()`.
+- Renderiza `maskIP(ip)` ou `ip` conforme preferência.
+- `title` HTML mostra sempre o IP completo no hover (acessibilidade — usuário consegue ver quando precisa).
+- Quando `showToggle`, renderiza um pequeno botão `Eye/EyeOff` ao lado para alternar globalmente.
 
-- `AnnotationCategory` enum local com `label`, `color` (hsl token semântico), `icon` (lucide).
-- Categorias: campanha (primary), abordagem (warning), release (success), reuniao (accent), outro (muted).
+### 4. Toggle global no header de Segurança
 
-### 5. Constraints
+Em `src/pages/Security.tsx`, adicionar no `<header>` um pequeno controle:
+- `Switch` + label "Mascarar IPs" (size sm, à direita do título).
+- Persistência via `useIPMaskingPreference`.
 
-- Sem mudanças em `useInteractionsInsights.ts`, agregação semanal, MA, faixa de evolução, stat cards, barras de volume.
-- Sem `any`, sem `dangerouslySetInnerHTML`, PT-BR, flat.
-- `SentimentTrendChart.tsx` permanece ≤350 linhas (extrair `AnnotationDialog.tsx` e `AnnotationList.tsx` em arquivos próprios dentro de `interactions/insights/`).
+### 5. Aplicação nos pontos de exibição
+
+**`src/components/security/IPRestrictionManager.tsx`:**
+- Badge "Seu IP atual": substituir `{ipInfo.ip}` por `<IPDisplay ip={ipInfo.ip} />`.
+- Lista: substituir `<p className="text-sm font-mono">{ip.ip_address}</p>` por `<IPDisplay ip={ip.ip_address} className="text-sm font-mono" />`.
+- Filtro de busca (se houver) continua usando `ip.ip_address` cru.
+
+**`src/components/admin/conexoes/IncomingWebhookLogsDialog.tsx`:**
+- Substituir `<span className="text-muted-foreground">{l.source_ip}</span>` por `<IPDisplay ip={l.source_ip} className="text-muted-foreground" />`.
+
+**Outros pontos** (a localizar via `code--search_files` por `ip_address|source_ip|client_ip` durante implementação):
+- Logs de auditoria, sessões ativas, dispositivos conhecidos, notificações de novo dispositivo.
+- Aplicar `<IPDisplay>` em todos.
+
+### 6. Filtragem preserva IP original
+
+Em qualquer input de busca por IP (ex.: `IPRestrictionManager` se tiver, e em logs):
+- A função de filtro recebe `ip.ip_address` (cru) e o `query`, usa `matchIP(ip.ip_address, query)`.
+- Resultado: usuário digita `192.168` e encontra IPs que começam com isso, mesmo que a UI esteja mostrando `192.168.*.*`.
 
 ## Critérios de aceite
 
-(a) Existe tabela `sentiment_annotations` com RLS adequada (criador ou admin edita/remove; autenticados leem); (b) hook `useSentimentAnnotations` expõe list/create/update/delete via TanStack Query com invalidação correta; (c) no chart, semanas com anotação exibem `ReferenceDot` colorido por categoria no topo, e o tooltip da semana lista títulos das anotações; (d) botão "Anotar" no header abre dialog para criar anotação com seleção de semana (limitada às semanas com dados), categoria, título (obrigatório, ≤80) e descrição (opcional, ≤500); (e) lista colapsível abaixo do chart mostra todas as anotações com badge de categoria, autor, data e ações editar/excluir respeitando permissão; (f) sem mudanças em hooks de agregação, MA, faixa de evolução, stat cards, barras de volume; (g) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (h) `SentimentTrendChart.tsx` ≤350 linhas (componentes extraídos quando necessário); (i) sem regressão em layout responsivo, legenda, ReferenceLines existentes ou seletor de período.
+(a) Existe `src/lib/ipMasking.ts` com `maskIPv4`, `maskIPv6`, `maskIP` e `matchIP`; (b) hook `useIPMaskingPreference` persiste em `localStorage` (`singu:mask-ips`) e sincroniza entre abas; (c) componente `<IPDisplay>` renderiza IP mascarado ou cru conforme preferência, com `title` mostrando sempre o IP completo; (d) toggle "Mascarar IPs" aparece no header de `/security` e alterna a preferência globalmente; (e) `IPRestrictionManager` (badge "Seu IP atual" + lista) e `IncomingWebhookLogsDialog` (logs) usam `<IPDisplay>`; (f) outros pontos identificados via busca (`ip_address|source_ip|client_ip`) recebem o mesmo tratamento; (g) buscas/filtros por IP continuam funcionando contra o valor original via `matchIP`, independentemente do estado de mascaramento; (h) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (i) sem mudanças em hooks de fetch, RLS, tabelas, ou estrutura de dados; (j) sem regressão em layout responsivo, copy, ou demais funcionalidades dos componentes tocados.
 
