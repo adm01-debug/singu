@@ -1,74 +1,73 @@
 
-# Plano: Chips de filtros ativos + contador no topo de "Últimas Interações"
+# Plano: Filtro "Direção" (Recebido / Enviado) na página de Interações
 
-## Objetivo
+## Contexto e decisão
 
-Exibir, acima da lista de "Últimas Interações" da Ficha 360, uma barra de chips removíveis representando cada filtro ativo (período ≠ 90d e cada canal selecionado), com um contador no formato **"12 de 48"** mostrando quantas interações estão visíveis vs. total.
+A página `/interacoes` já tem um filtro `canais` que cobre exatamente "tipo de interação" — WhatsApp, Ligação, Email, Reunião, Vídeo, Nota, Social. Adicionar um segundo filtro de "tipo" seria redundante. O eixo que ainda não existe e agrega valor real é **direção da interação** (quem iniciou): hoje só aparece como badge "Recebido" no card, sem possibilidade de filtrar.
 
-## Status atual
-
-- `FiltrosInteracoesBar` (já existente) tem chips clicáveis para selecionar canais e botões de período, mas chips ativos ficam misturados com inativos — não há linha resumo com "X de Y" + remoção individual destacada acima da lista.
-- Já existe rodapé `"Mostrando X de Y interação(ões)"`, mas embaixo da barra de filtros, não como header da lista.
-- `useFicha360Filters` já expõe `days`, `channels`, `setDays`, `setChannels`, `clear`, `activeCount` e default (`days = 90`, `channels = []`).
+A `Interaction` tem o campo `initiated_by` com valores `'us' | 'them'`. Vamos transformar isso em um filtro de primeira classe.
 
 ## Implementação
 
-### 1. Novo componente: `src/components/ficha-360/FiltrosAtivosChips.tsx` (~80 linhas)
+### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
 
-Componente memoizado que recebe:
-```ts
-{
-  days: Ficha360Period;
-  channels: string[];
-  shownCount: number;
-  totalCount: number;
-  onRemoveDays: () => void;       // reseta para 90 (default)
-  onRemoveChannel: (c: string) => void;
-  onClearAll: () => void;
-}
-```
+- Adicionar `direcao: 'all' | 'inbound' | 'outbound'` ao tipo `AdvancedFilters` (default `'all'`).
+- Ler/escrever `?direcao=inbound|outbound` na URL (omitir quando `'all'`, igual aos outros defaults).
+- Incluir `'direcao'` em `KEYS` (limpar) e contar em `activeCount` quando ≠ `'all'`.
 
-Renderiza:
-- **Contador à esquerda**: `<span>` com `"<strong>{shown}</strong> de {total}"` em `text-xs text-muted-foreground` (oculto se `total === 0`).
-- **Chip de período** (apenas quando `days !== 90`): `Badge variant="secondary" closeable` com ícone `Calendar`, label `"Período: 7d|30d|1a"`, `onClose={onRemoveDays}`.
-- **Chips de canal** (um por canal em `channels`): `Badge variant="secondary" closeable` com ícone do canal (mesmo mapa de `FiltrosInteracoesBar`: WhatsApp/Phone/Mail/Calendar/FileText) e label PT-BR.
-- **Botão "Limpar tudo"** (`Button variant="ghost" size="xs"`, `ml-auto`) só quando há ≥2 chips ativos.
-- Não renderiza nada quando não há filtros ativos E `total === 0`.
-- Quando há contador mas sem filtros ativos, renderiza apenas o contador (linha discreta).
+### 2. `src/pages/interacoes/InteracoesContent.tsx`
 
-### 2. Plugar no consumidor
+- No `advancedFiltered`, adicionar regra:
+  ```ts
+  if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
+  if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
+  ```
+- Incluir `adv.direcao` nas deps de `useInfiniteList` para resetar paginação ao trocar.
 
-Localizar onde `FiltrosInteracoesBar` é usado dentro da seção "Últimas Interações" da Ficha 360 (provavelmente em `src/pages/Ficha360.tsx` ou um wrapper tipo `UltimasInteracoesSection.tsx`). Inserir `<FiltrosAtivosChips ... />` **logo acima** do `<UltimasInteracoesCard />` (e abaixo do `FiltrosInteracoesBar`), passando:
-- `days`, `channels` direto do `useFicha360Filters()`
-- `shownCount` = comprimento da lista já filtrada client-side (a mesma usada para alimentar o card)
-- `totalCount` = comprimento da lista pré-filtro client-side (antes de aplicar `channels`/`days`); se a query já vem filtrada por `days/channels`, usar o `recentInteractions.length` como `total` e `shownCount` igual — nesse caso o contador vira "N de N" e ainda é útil como resumo.
-- `onRemoveDays = () => setDays(90)`
-- `onRemoveChannel = (c) => setChannels(channels.filter(x => x !== c))`
-- `onClearAll = clear`
+### 3. Novo componente: `src/components/interactions/DirecaoQuickFilter.tsx` (~50 linhas)
 
-### 3. Pequeno ajuste em `FiltrosInteracoesBar`
+- Toggle com 3 opções: **Todas** · **Recebidas** (ícone `ArrowDownLeft`) · **Enviadas** (ícone `ArrowUpRight`).
+- Padrão visual idêntico ao seletor de período da Ficha 360 (`inline-flex` com `border` e `bg-card`, botões `h-8` ativos com `bg-primary text-primary-foreground`).
+- Props: `{ value: 'all' | 'inbound' | 'outbound'; onChange: (v) => void }`.
+- `React.memo`, PT-BR, tokens semânticos.
 
-Remover a linha rodapé `"Mostrando X de Y..."` (deduplicada agora pelo header de chips) — ou manter e apenas ocultar via prop `hideSummary`. Preferência: remover, já que o novo header cumpre o papel com mais clareza.
+### 4. `src/components/interactions/AdvancedSearchBar.tsx`
 
-### 4. Padrões obrigatórios
+- Importar e montar `<DirecaoQuickFilter value={filters.direcao} onChange={(v) => setFilter('direcao', v)} />` logo após `<CanaisQuickFilter />` (linha 62-65), mantendo a ordem visual lógica: busca → canais → direção → pessoa → empresa → datas.
+
+### 5. `src/components/interactions/ActiveFiltersBar.tsx`
+
+- Quando `filters.direcao !== 'all'`, renderizar um `Badge variant="secondary" closeable` com:
+  - Ícone `ArrowDownLeft` (inbound) ou `ArrowUpRight` (outbound)
+  - Label "Recebidas" ou "Enviadas"
+  - `onClose={() => setFilter('direcao', 'all')}`
+- Posicionar logo após o chip de busca, antes dos chips de canais.
+
+### 6. (Opcional) `src/components/interactions/InteracoesPresetsMenu.tsx`
+
+Sem mudanças obrigatórias — presets existentes continuam válidos. Usuário pode salvar novos presets já incluindo direção naturalmente, pois o preset persiste a URL inteira.
+
+## Padrões obrigatórios
 
 - PT-BR
 - Tokens semânticos (sem cores fixas)
 - Flat (sem shadow)
 - `React.memo` no novo componente
-- Reaproveitar `Badge closeable` (já existe em `src/components/ui/badge.tsx`)
-- Zero novas queries
-- Zero regressão em sentimento, KPIs, drawers, paginação progressiva ou outras abas
+- Zero novas queries de rede (filtro é puramente client-side sobre o array já carregado)
+- Persistência na URL coerente com os outros filtros (`?direcao=inbound`, omitido quando `all`)
+- Zero regressão em paginação progressiva, presets, sort, ActiveFiltersBar ou outras páginas
 
 ## Arquivos tocados
 
 **Criado (1):**
-- `src/components/ficha-360/FiltrosAtivosChips.tsx`
+- `src/components/interactions/DirecaoQuickFilter.tsx`
 
-**Editados (2):**
-- `src/pages/Ficha360.tsx` (ou wrapper equivalente da seção) — montar `FiltrosAtivosChips` acima do card
-- `src/components/ficha-360/FiltrosInteracoesBar.tsx` — remover (ou condicionar) o rodapé "Mostrando X de Y" para evitar duplicação
+**Editados (4):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — campo `direcao`, parsing/escrita URL, activeCount, KEYS
+- `src/pages/interacoes/InteracoesContent.tsx` — filtro em `advancedFiltered` + dep de `useInfiniteList`
+- `src/components/interactions/AdvancedSearchBar.tsx` — montar toggle ao lado de `CanaisQuickFilter`
+- `src/components/interactions/ActiveFiltersBar.tsx` — chip removível para `direcao`
 
 ## Critério de fechamento
 
-(a) Acima da lista aparece header com contador `"X de Y interações"`, (b) cada filtro ativo (período ≠ 90d, cada canal) vira um chip com ícone + label removível via "×", (c) remover um chip atualiza URL e lista sem recarregar dados, (d) "Limpar tudo" aparece quando há ≥2 chips, (e) sem filtros ativos só o contador aparece (ou nada se total = 0), (f) zero duplicação com o rodapé antigo da `FiltrosInteracoesBar`, (g) zero novas queries, (h) zero regressão em paginação, sentimento, KPIs ou drawers.
+(a) Novo toggle "Todas / Recebidas / Enviadas" aparece na barra de busca avançada, (b) selecionar uma opção filtra a lista pelo `initiated_by` correspondente e atualiza a URL com `?direcao=inbound|outbound`, (c) "Todas" remove o param, (d) chip removível aparece em `ActiveFiltersBar` com ícone direcional e label PT-BR, (e) "Limpar tudo" zera direção junto com os demais, (f) `activeCount` reflete o filtro de direção, (g) paginação progressiva reseta ao trocar a direção, (h) recarregar com URL pré-preenchida restaura o estado, (i) zero novas queries de rede, (j) zero regressão em presets, sort, canais, ActiveFiltersBar ou outras páginas.
