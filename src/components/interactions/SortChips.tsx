@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Sparkles, Users } from 'lucide-react';
+import { ArrowDown, ArrowUp, Info, Sparkles, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -94,6 +94,23 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">{label}</span>
+                  {key === 'relevance' && !disabled && (
+                    <Tooltip delayDuration={150}>
+                      <TooltipTrigger asChild>
+                        <span
+                          data-testid="relevance-info-icon"
+                          aria-hidden="true"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center ml-0.5 cursor-help"
+                        >
+                          <Info className="w-3 h-3 text-muted-foreground/70" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+                        Pontuação por ocorrências do termo: título conta 3×, tags 2×, conteúdo 1×. Empate desempata pela mais recente.
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                   {altDown && !disabled && (
                     <kbd className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 rounded bg-foreground text-background text-[9px] font-mono font-semibold flex items-center justify-center pointer-events-none">
                       {shortcut}
