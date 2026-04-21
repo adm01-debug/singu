@@ -1,82 +1,93 @@
 
 
-# Plano: Contadores por canal nos chips do `CanaisQuickFilter`
+# Plano: Atalhos de teclado para alternar chips de canal
 
 ## Contexto
 
-Hoje os chips em `CanaisQuickFilter` (WhatsApp, Ligação, Email, Reunião, Vídeo, Nota) mostram só o ícone. O usuário quer ver, ao lado de cada ícone, **quantas interações** existem para aquele canal no dataset atual de `/interacoes`, sem precisar abrir a busca avançada.
+O usuário quer alternar canais (WhatsApp, Ligação, Email, Reunião, Vídeo, Nota) sem sair do campo de busca. `Ctrl+K` já está reservado globalmente para abrir o GlobalSearch (`useGlobalSearch.ts`), então **não posso reusar essa combinação**. Vou propor um esquema próximo, descobrível e que funciona inclusive com o foco dentro de inputs.
 
 ## Decisão de escopo
 
-- Contagem é calculada a partir do **dataset já carregado** na página `/interacoes` (mesma fonte que alimenta a tabela), respeitando os filtros não-canal já aplicados (busca, contato, empresa, datas, direção). Ou seja: se o usuário tem `direcao=inbound` ativo, os contadores refletem só as inbound — assim o número bate com o que ele veria ao clicar no chip.
-- Os contadores **ignoram o próprio filtro de canal**, para que o usuário veja o "potencial" de cada canal antes de selecionar (caso contrário, todos os outros mostrariam 0 quando um chip está ativo).
-- Renderização: `WhatsApp 12` ao lado do ícone, em fonte tabular pequena (`text-[10px] tabular-nums`). Quando contagem = 0, o chip fica com opacidade reduzida (`opacity-50`) e tooltip "Sem interações neste canal" — mas continua clicável (caso o dataset mude).
-- Quando contagem > 999, exibe `999+`.
-- Loading state: enquanto o dataset carrega, mostra `·` no lugar do número (sem skeleton pesado).
+- Atalhos: **`Alt+1`…`Alt+6`** alternam o chip correspondente (1=WhatsApp, 2=Ligação, 3=Email, 4=Reunião, 5=Vídeo, 6=Nota). **`Alt+0`** limpa todos os canais.
+- Funciona **mesmo com foco em `<input>`/`<textarea>`** (diferente do `useScopedShortcut` atual, que ignora inputs). Isso é o ponto-chave do pedido: alternar sem tirar o foco da busca.
+- `Alt` foi escolhido porque:
+  - Não conflita com `Ctrl+K` (GlobalSearch), `Ctrl+B` (sidebar), `?` (cheatsheet), `j/k/Enter/x` (list nav).
+  - Em inputs, `Alt+número` não produz caracteres em layouts pt-BR/EN comuns (vs. `Shift+número` que digita `!@#$%¨&`).
+- Comportamento por modo:
+  - **Auto**: alterna direto via `onChange`.
+  - **Manual**: alterna `pending` (igual ao clique no chip), respeitando o contrato de "Aplicar".
+- Tooltip de cada chip ganha sufixo `(Alt+N)`. Cheatsheet (`?`) lista os 7 atalhos novos sob a categoria "Filtros de canal".
+- Toast leve (`toast.message`) ao alternar via teclado, com nome do canal e estado novo (ex.: "WhatsApp ativado"), `duration: 1500`. Evita confusão de "apertei algo e não sei o que aconteceu".
+- Badge visual `Alt+N` aparece no canto inferior do chip apenas quando o usuário pressiona `Alt` (escuta `keydown`/`keyup` em `Alt`), pra não poluir o layout normal.
 
 ## Implementação
 
-### 1. Novo helper: `src/lib/countByChannel.ts`
+### 1. `src/components/interactions/CanaisQuickFilter.tsx`
 
-```ts
-export function countByChannel(
-  items: Array<{ channel?: string | null; tipo?: string | null }>,
-  excludeCanaisFilter: string[] = [], // não usado aqui, mas documenta o contrato
-): Record<string, number> {
-  const counts: Record<string, number> = {};
-  if (!Array.isArray(items)) return counts;
-  for (const it of items) {
-    const c = (it.channel ?? it.tipo ?? '').toLowerCase();
-    if (!c) continue;
-    counts[c] = (counts[c] ?? 0) + 1;
-  }
-  return counts;
-}
-```
-
-### 2. `CanaisQuickFilter.tsx`
-
-- Nova prop opcional: `counts?: Record<string, number>` (default `{}`).
-- Renderiza ao lado do ícone, dentro do botão do chip:
-  ```tsx
-  {typeof counts[id] === 'number' && (
-    <span className="ml-1 text-[10px] tabular-nums opacity-70">
-      {counts[id] > 999 ? '999+' : counts[id]}
-    </span>
-  )}
+- Adicionar `useEffect` que registra listener global `keydown`:
+  ```ts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key === '0') { e.preventDefault(); clearAll(); return; }
+      const idx = parseInt(e.key, 10);
+      if (Number.isNaN(idx) || idx < 1 || idx > CANAL_CONFIG.length) return;
+      e.preventDefault();
+      const canal = CANAL_CONFIG[idx - 1];
+      toggle(canal.id);
+      const isActive = (mode === 'auto' ? safe : pending).includes(canal.id);
+      // estado pós-toggle é o oposto
+      toast.message(`${canal.label} ${!isActive ? 'ativado' : 'desativado'}`, { duration: 1500 });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [mode, safe, pending, toggle, clearAll]);
   ```
-- Se `counts[id] === 0`, adiciona `opacity-50` ao botão e tooltip "Sem interações neste canal".
-- Backward compat: sem a prop, comporta-se como hoje.
+- Adicionar `useState<boolean>` `altPressed`, escutando `Alt` keydown/keyup/blur, para mostrar badge `Alt+N` sobreposto ao chip.
+- Atualizar tooltip de cada chip: `${label} (Alt+${index + 1})`.
+- Atualizar tooltip do botão "Limpar canais": adicionar `(Alt+0)`.
 
-### 3. Página `/interacoes` (`src/pages/Interacoes.tsx` ou equivalente)
+### 2. `src/components/keyboard/KeyboardShortcutsCheatsheet.tsx` (ou registry equivalente)
 
-- Onde já existe o dataset filtrado (sem o filtro de canal aplicado), calcular `useMemo(() => countByChannel(datasetSemCanal), [datasetSemCanal])` e passar para `<CanaisQuickFilter counts={...} />`.
-- Se hoje só existe o dataset **com** filtro de canal aplicado, criar uma derivação extra: aplicar todos os filtros **exceto** `canais` antes de contar. Isso é barato (filter sobre array já em memória).
+Localizar onde os atalhos são listados (provavelmente `useKeyboardShortcutsEnhanced.ts`) e adicionar categoria **"Filtros de canal"** com:
+- `Alt+1` → WhatsApp
+- `Alt+2` → Ligação
+- `Alt+3` → Email
+- `Alt+4` → Reunião
+- `Alt+5` → Vídeo
+- `Alt+6` → Nota
+- `Alt+0` → Limpar canais
 
-### 4. Testes: `CanaisQuickFilter.test.tsx`
+Se o registry está em `keyboardShortcutRegistry.ts`, registrar via `registerShortcut` no mount do `CanaisQuickFilter` (com cleanup) — assim a cheatsheet pega automaticamente.
+
+### 3. Testes: `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`
 
 3 testes novos:
-1. Sem `counts`, chips renderizam só ícone (comportamento atual preservado).
-2. Com `counts={ email: 12, whatsapp: 0 }`, chip Email mostra "12" e WhatsApp tem `opacity-50`.
-3. Contagem > 999 renderiza "999+".
+1. **Alt+1 alterna WhatsApp em modo auto**: dispatch `keydown` com `altKey: true, key: '1'` → `onChange` chamado com `['whatsapp']`.
+2. **Alt+0 limpa canais**: com `canais=['email']`, `Alt+0` chama `onChange([])`.
+3. **Funciona com foco em input**: renderiza um `<input>` ao lado, foca nele, dispara `Alt+3` → `onChange` chamado com `['email']` (confirma que não é bloqueado por foco em input).
+4. **Modo manual: Alt+N só altera pending**: `Alt+1` em modo manual → `onChange` NÃO é chamado, mas chip WhatsApp aparece selecionado.
+
+### 4. (Opcional) Documentação rápida no header da `AdvancedSearchBar`
+
+Hint discreto: já existe `KeyboardListHint`/`KeyboardHint` no design system. Não vou inflar a UI — a descoberta fica via tooltip dos chips + cheatsheet `?`.
 
 ## Padrões obrigatórios
 
-- PT-BR, tokens semânticos, flat, sem novas deps.
-- Sem nova query: reusa o dataset que já está em memória.
-- Backward compat: prop opcional.
+- PT-BR, tokens semânticos, flat, zero novas deps.
+- Não conflita com atalhos globais existentes (`Ctrl+K`, `Ctrl+B`, `?`, `j/k/Enter/x`).
+- Funciona com foco em inputs (requisito explícito).
+- Cleanup correto do listener no unmount.
+- Backward compat total: nada quebra se ninguém pressionar `Alt`.
 
 ## Arquivos tocados
 
-**Criados (1):**
-- `src/lib/countByChannel.ts`
-
-**Editados (3):**
-- `src/components/interactions/CanaisQuickFilter.tsx` — prop `counts` + render de número.
-- `src/pages/Interacoes.tsx` (ou arquivo equivalente que renderiza a `AdvancedSearchBar`) — calcular contagens e passar via prop.
-- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — 3 testes novos.
+**Editados (2-3):**
+- `src/components/interactions/CanaisQuickFilter.tsx` — listener global, badge `Alt+N`, tooltips atualizadas.
+- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — 4 testes novos.
+- (Se aplicável) `src/hooks/useKeyboardShortcutsEnhanced.ts` ou registry — registrar atalhos para aparecerem na cheatsheet `?`.
 
 ## Critério de fechamento
 
-(a) Cada chip mostra o número de interações daquele canal no dataset filtrado (ignorando o próprio filtro de canal); (b) chips com 0 ficam com opacidade reduzida e tooltip explicativo; (c) >999 vira "999+"; (d) sem novas queries — tudo derivado em memória; (e) backward compat preservado quando `counts` não é passado; (f) testes cobrem render com/sem counts e edge cases; (g) PT-BR, flat, tokens semânticos, zero novas deps.
+(a) `Alt+1`…`Alt+6` alternam os chips correspondentes mesmo com foco em input; (b) `Alt+0` limpa canais; (c) toast curto confirma a ação; (d) badges `Alt+N` aparecem nos chips ao segurar `Alt`; (e) tooltips dos chips listam o atalho; (f) cheatsheet `?` lista os 7 atalhos sob "Filtros de canal"; (g) modos auto e manual respeitam seus contratos; (h) sem conflito com `Ctrl+K`/`Ctrl+B`/`?`; (i) testes cobrem auto, limpar, foco em input e modo manual; (j) PT-BR, flat, tokens semânticos, zero novas deps.
 
