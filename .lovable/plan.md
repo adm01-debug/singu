@@ -1,110 +1,110 @@
 
-# Plano: Card "Objeções em destaque" na aba Insights
+# Plano: Drawer de excertos por tema na aba Insights
 
 ## Objetivo
 
-Adicionar um **card de destaque** no topo da seção de objeções da aba Insights de `/interacoes`, evidenciando as 3 objeções mais críticas (mais frequentes E menos tratadas) com contadores, taxa de tratamento, resposta sugerida pela IA e link para conversas de exemplo.
+Evoluir o `ThemeExamplesDrawer` para exibir **5 excertos curtos** de mensagens/transcrições onde o tema realmente aparece, em vez do snippet genérico do `content` da interação inteira. Cada excerto mostra a frase com a palavra-chave do tema **destacada**, contexto antes/depois, e link para abrir a interação na Ficha 360.
 
 ## Status atual
 
-`ObjectionsRanking` já lista todas as objeções com:
-- Contador de menções
-- Barra de % tratada (handled/count)
-- Resposta sugerida (apenas quando `unhandled > 0`)
-- Badge de categoria
-
-**Lacuna:** sem hierarquia visual — uma objeção crítica (10× mencionada, 0% tratada) aparece com o mesmo peso visual de uma trivial (2× mencionada, 100% tratada). Não há "spotlight" das que precisam de ação imediata, e a resposta sugerida fica escondida no fim de cada item.
+`ThemeExamplesDrawer` já abre por tema e busca em `interactions(id, title, type, created_at, content, contact_id, sentiment)` usando `theme.examples` (até 5 IDs). Limita-se a mostrar `content` truncado em 3 linhas — **não** identifica onde o tema é mencionado dentro da transcrição. Em interações com transcrição longa (calls), o card mostra apenas o início, perdendo o contexto da menção.
 
 ## Reutilização
 
-- `useInteractionsInsights` → `topObjections: ObjectionAggregate[]` (já tem count, handled, unhandled, suggestedResponse, examples)
-- `Card`, `Badge`, `Button` do design system
-- Padrão de cores semânticas já em uso (`success`/`warning`/`destructive`)
-- `SentimentExamplesDrawer` (criado na rodada anterior) como referência para drawer de exemplos por objeção (futuro — não nesta entrega)
+- `Sheet`, `Badge`, `Button`, `Link` (já em uso)
+- `useTopicsCatalog` → fornece `keywords[]` por `topic_key` (já existente em `useConversationIntel`)
+- `theme.examples` (interaction_ids já agregados em `useInteractionsInsights`)
+- Padrão de fetch defensivo do drawer atual
 
-Sem novo fetch, sem novo hook, sem nova RPC.
+Sem novo hook de dados, sem nova RPC, sem nova edge function.
 
 ## Arquitetura
 
 ```text
-InsightsPanel
- ├─ KPIs (existente)
- ├─ Charts (existente)
- ├─ ThemesRanking (existente)
- ├─ [NOVO] ObjectionsSpotlight  ← topo da coluna de objeções
- │     ├─ Header: "Objeções que pedem ação"
- │     └─ 3 cards destacados (criticidade decrescente)
- │         ├─ Ícone de severidade (Flame/AlertTriangle/Info)
- │         ├─ Texto da objeção + badge categoria
- │         ├─ Métricas: N× mencionada · X% tratada
- │         ├─ Barra de progresso colorida por severidade
- │         └─ Bloco "Resposta sugerida" expandido (ou "✓ Bem tratada")
- └─ ObjectionsRanking (existente, abaixo do spotlight, lista completa)
+ThemeExamplesDrawer (refatorado)
+ ├─ useTopicsCatalog → resolve keywords do tema selecionado
+ ├─ Fetch interactions(id, title, type, created_at, content,
+ │    transcription, contact_id, sentiment) WHERE id IN theme.examples
+ └─ extractExcerpts(text, keywords, maxPerInteraction=2, totalCap=5)
+       → distribui excertos entre as interações para chegar a 5 no total
+       → cada excerto: ~140 chars centrados na ocorrência, com "…" nas bordas
 ```
 
-## Score de criticidade
+## Algoritmo `extractExcerpts` (≤60 linhas, em util novo)
+
+`src/lib/insights/extractExcerpts.ts`:
 
 ```ts
-criticality = unhandled * 2 + count
+interface Excerpt {
+  interactionId: string;
+  text: string;          // já com bordas "…"
+  matchTerm: string;     // palavra exata encontrada (para highlight)
+  position: number;      // offset original (sort estável)
+}
+
+extractExcerpts(
+  sources: { id: string; text: string }[],
+  keywords: string[],
+  opts: { totalCap: number; maxPerSource: number; window: number }
+): Excerpt[]
 ```
 
-Pondera dobrado as não tratadas (impacto direto em pipeline) e soma frequência (volume = relevância). Garante que uma objeção 5× mencionada com 5 unhandled (score 15) supere uma 8× com 0 unhandled (score 8).
+- Normaliza keywords (lowercase + sem acento) e cria regex `\b(k1|k2|…)\b` (escape, case-insensitive)
+- Para cada `source.text` (preferindo `transcription` > `content`), itera matches:
+  - Pega janela `[max(0, idx - 60), idx + matchLen + 80]`
+  - Trim + prefixa "…" se cortou no início, sufixa "…" se cortou no fim
+  - Coleta `matchTerm` exato encontrado (case original) para highlight
+- Limita a `maxPerSource` por interação, para diversificar
+- Para alcançar `totalCap=5`, faz 2 passadas: 1ª pega 1 por interação, 2ª preenche restante até cap
+- Retorna lista achatada na ordem das interações originais
 
-Severidade visual:
-- **alta** (`unhandled >= 3` ou taxa <= 30%): borda + ícone `destructive`, Flame
-- **média** (`unhandled >= 1` ou taxa <= 70%): borda + ícone `warning`, AlertTriangle
-- **baixa** (resto): borda + ícone `success`, CheckCircle2
+## Componente: highlight inline
 
-## Implementação
+`MarkExcerpt`: helper local (≤25 linhas) que recebe `text` + `term` e renderiza spans, marcando com `<mark className="bg-warning/30 text-foreground rounded px-0.5">` cada ocorrência (case-insensitive, sem regex injection — `term` já é literal vindo do extractor).
 
-### 1. Novo `src/components/interactions/insights/ObjectionsSpotlight.tsx` (≤140 linhas)
+Sem `dangerouslySetInnerHTML`. Split por regex e map para `<>{plain}<mark>{hit}</mark></>`.
 
-- Props: `objections: ObjectionAggregate[]`
-- Calcula `criticality` e ordena desc, pega top 3
-- Empty state: se array vazio, retorna `null` (o ranking abaixo já mostra "Nenhuma objeção")
-- Cada card:
-  - Layout em `Card` flat, borda colorida por severidade
-  - Header: ícone (Flame/AlertTriangle/CheckCircle2) + objeção truncada + badge categoria
-  - Métricas em linha: `<N>× mencionada` · `<handled>/<count> tratadas` · `<X>% taxa`
-  - Barra de progresso (h-2) com cor semântica (destructive/warning/success)
-  - Quando `suggestedResponse` E `unhandled > 0`: bloco destacado com fundo `bg-warning/8`, ícone Lightbulb, texto da resposta sugerida (não truncado, max 3 linhas)
-  - Quando `unhandled === 0`: bloco verde discreto "✓ Esta objeção está sendo bem tratada"
-- `React.memo`
-- PT-BR, sem `any`, tokens semânticos, flat
+## Refatoração do `ThemeExamplesDrawer`
 
-### 2. Integração em `InsightsPanel.tsx`
+1. Adicionar `transcription` ao select da query existente
+2. Buscar `useTopicsCatalog()` para resolver keywords do tema atual (match por `label` normalizado, fallback para `theme.label` como única keyword caso o catálogo não tenha o tópico)
+3. Após receber `examples`, computar `excerpts = extractExcerpts(sources, keywords, { totalCap: 5, maxPerSource: 2, window: 140 })`
+4. UI:
+   - Topo do conteúdo do Sheet: cabeçalho "5 excertos das transcrições" + contador real (`X excertos de Y conversas`)
+   - Lista de excerto: card flat com:
+     - `<MarkExcerpt text={ex.text} term={ex.matchTerm} />` em texto serif/normal `text-sm`
+     - Footer `text-[10px]`: título da interação + tipo + data + botão "Ficha 360"
+   - Empty: "Nenhuma menção encontrada na transcrição. Mostrando interações relacionadas." + fallback ao layout antigo (cards de interação) — preserva valor quando o LLM marcou o tema mas não bate com keywords literais
+5. Mantém loading + cleanup `cancelled` existentes
 
-Localizar o bloco da coluna de objeções (provavelmente `<Card><CardHeader>Objeções recorrentes</CardHeader>…</Card>`) e:
+## Edge cases
 
-- Renderizar `<ObjectionsSpotlight objections={topObjections} />` **acima** do card existente que envolve `ObjectionsRanking`
-- Manter `ObjectionsRanking` intacto (lista completa abaixo do spotlight, sem regressão)
+- Tema sem entrada no catálogo: usa `[theme.label]` como única keyword
+- Transcrição vazia: cai para `content`
+- Nenhum match em nenhuma interação: empty state + cards-fallback (modo atual)
+- Texto sem espaços ao cortar (URLs longas): trunca duro e adiciona "…"
+- Keywords com caracteres regex (`+`, `.`): escape obrigatório no util
+- Acentuação: comparação normalizada, mas exibição mantém texto original
 
-### 3. Edge cases
-
-- Menos de 3 objeções: renderiza só as que existem (1 ou 2 cards)
-- Zero objeções: `null` (ranking abaixo já cobre vazio)
-- Objeção sem `suggestedResponse` e com `unhandled > 0`: bloco neutro "Sem resposta sugerida disponível ainda"
-- Texto longo de objeção: `line-clamp-2` no título, tooltip nativo via `title` attr
-- Resposta sugerida longa: `line-clamp-3` com expansão `whitespace-pre-wrap`
-
-### 4. Padrões obrigatórios
+## Padrões obrigatórios
 
 - PT-BR
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- `Array.isArray()` defensivo no início
-- Tokens semânticos (`success`/`warning`/`destructive`/`muted`)
-- Flat (sem shadow), bordas sutis
-- Zero novas queries de rede
-- `React.memo`
+- `Array.isArray()` defensivo
+- Tokens semânticos (`warning`, `muted`, `border-border/60`)
+- Flat, sem shadow
+- Zero novas queries de rede além dos catálogo+interações já necessários
+- `React.memo` no item de excerto
 
 ## Arquivos tocados
 
-**Novos (1):**
-- `src/components/interactions/insights/ObjectionsSpotlight.tsx`
+**Novos (2):**
+- `src/lib/insights/extractExcerpts.ts` — util puro, testável
+- `src/lib/insights/__tests__/extractExcerpts.test.ts` — Vitest cobrindo: 1 keyword/1 match, múltiplas interações, regex escape, sem match, totalCap, maxPerSource, acentos
 
 **Editados (1):**
-- `src/components/interactions/insights/InsightsPanel.tsx` — montar o spotlight acima do ranking
+- `src/components/interactions/insights/ThemeExamplesDrawer.tsx` — buscar transcrição + catálogo, gerar excertos, renderizar com highlight, fallback
 
 ## Critério de fechamento
 
-(a) Spotlight aparece no topo da seção de objeções com até 3 cards ordenados por criticidade (`unhandled*2 + count`), (b) cada card mostra severidade visual (cor/ícone), contadores, taxa de tratamento e barra de progresso, (c) resposta sugerida da IA é exibida em bloco destacado quando há objeções não tratadas, (d) objeções 100% tratadas mostram badge positivo "Bem tratada", (e) ranking completo abaixo permanece sem regressão, (f) zero novas queries de rede, (g) zero regressão em sentimento, temas, KPIs ou tendência.
+(a) Ao abrir um tema na aba Insights, o drawer mostra até 5 excertos curtos da transcrição com a palavra-chave destacada em `mark`, (b) cada excerto mostra contexto ~140 chars com "…" nas bordas, (c) excertos são distribuídos entre interações (máx 2 por interação até atingir 5 no total), (d) sem matches → fallback para o layout antigo (cards de interação) com aviso, (e) keywords vêm de `conversation_topics_catalog` quando disponíveis, fallback para o próprio label do tema, (f) zero novas RPCs/edge functions, (g) testes do extrator cobrindo regex injection, sem matches, acentuação e cap, (h) zero regressão em sentimento, objeções, KPIs, ou no spotlight.
