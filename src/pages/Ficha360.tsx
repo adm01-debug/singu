@@ -13,6 +13,7 @@ import { useFicha360 } from '@/hooks/useFicha360';
 import { useFicha360Filters } from '@/hooks/useFicha360Filters';
 import { PerfilComportamentalCard } from '@/components/ficha-360/PerfilComportamentalCard';
 import { TagsInteresseCard } from '@/components/ficha-360/TagsInteresseCard';
+import { HistoricoTagsCard } from '@/components/ficha-360/HistoricoTagsCard';
 import { DadosPessoaisCard } from '@/components/ficha-360/DadosPessoaisCard';
 import { FrequenciaContatoCard } from '@/components/ficha-360/FrequenciaContatoCard';
 import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesCard';
@@ -161,6 +162,7 @@ const Ficha360 = () => {
               <div className="space-y-4">
                 <PerfilComportamentalCard profile={profile} />
                 <TagsInteresseCard rapportIntel={rapportIntel} rapportPoints={rapportPoints} />
+                <HistoricoTagsCard contactId={id} />
                 <DadosPessoaisCard rapportIntel={rapportIntel} />
               </div>
               <div className="space-y-4">
