@@ -96,10 +96,12 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; t
 const ExcerptItem = memo(function ExcerptItem({
   excerpt,
   interaction,
+  terms,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
+  terms: string[];
   onClose: () => void;
 }) {
   return (
@@ -107,7 +109,7 @@ const ExcerptItem = memo(function ExcerptItem({
       <div className="flex gap-2">
         <Quote className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />
         <p className="text-sm text-foreground leading-relaxed">
-          <MarkExcerpt text={excerpt.text} term={excerpt.matchTerm} />
+          <MarkExcerpt text={excerpt.text} terms={terms} />
         </p>
       </div>
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
