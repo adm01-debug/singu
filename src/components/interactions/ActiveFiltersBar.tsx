@@ -22,6 +22,7 @@ interface Props {
   visibleCount: number;
   contactLabel?: string | null;
   companyLabel?: string | null;
+  onAfterRemove?: () => void;
 }
 
 function pad2(n: number): string {
