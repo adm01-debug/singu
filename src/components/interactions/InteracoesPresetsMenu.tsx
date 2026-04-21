@@ -38,6 +38,7 @@ interface Props {
   setFilter: <K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => void;
   clear: () => void;
   activeCount: number;
+  onApplyAll?: (next: Partial<AdvancedFilters>) => void;
 }
 
 interface SerializedPayload {
@@ -69,7 +70,7 @@ function parseDate(iso?: string): Date | undefined {
 }
 
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
-  filters, setFilter, clear, activeCount,
+  filters, setFilter, clear, activeCount, onApplyAll,
 }: Props) {
   const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
@@ -143,7 +144,6 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
   const applyPreset = (preset: typeof presets[number]) => {
     const presetFilters = preset.filters;
-    clear();
     const payload: SerializedPayload = {
       q: presetFilters.q?.[0] ?? '',
       contact: presetFilters.contact?.[0] ?? '',
@@ -153,21 +153,41 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       ate: presetFilters.ate?.[0],
       sort: presetFilters.sort?.[0],
     };
-    setFilter('q', payload.q);
-    setFilter('contact', payload.contact);
-    setFilter('company', payload.company);
-    setFilter('canais', payload.canais);
-    setFilter('de', parseDate(payload.de));
-    setFilter('ate', parseDate(payload.ate));
     const validSorts = ['recent', 'oldest', 'relevance', 'entity'] as const;
     type SortVal = typeof validSorts[number];
     const nextSort: SortVal = (validSorts as readonly string[]).includes(payload.sort ?? '')
       ? (payload.sort as SortVal)
       : 'recent';
-    setFilter('sort', nextSort);
+    const nextFilters: Partial<AdvancedFilters> = {
+      q: payload.q,
+      contact: payload.contact,
+      company: payload.company,
+      canais: payload.canais,
+      de: parseDate(payload.de),
+      ate: parseDate(payload.ate),
+      sort: nextSort,
+    };
+
+    if (onApplyAll) {
+      onApplyAll(nextFilters);
+    } else {
+      // Fallback: replace via clear + setFilter (compat)
+      clear();
+      setFilter('q', payload.q);
+      setFilter('contact', payload.contact);
+      setFilter('company', payload.company);
+      setFilter('canais', payload.canais);
+      setFilter('de', parseDate(payload.de));
+      setFilter('ate', parseDate(payload.ate));
+      setFilter('sort', nextSort);
+    }
+
     markAsUsed(preset.id);
     setOpen(false);
-    toast.success('Busca aplicada');
+    toast.success('Preset aplicado');
+    requestAnimationFrame(() => {
+      window.dispatchEvent(new CustomEvent('focus-interactions-search'));
+    });
   };
 
   const exportOne = (preset: typeof presets[number]) => {
