@@ -71,7 +71,7 @@ const Ficha360 = () => {
         recentInteractions,
         prontidao,
         birthday: rapportIntel?.birthday ?? null,
-        email: intelligence?.email ?? null,
+        email: typeof intelligence?.email === 'string' ? intelligence.email : null,
       }),
     [profile, intelligence, recentInteractions, prontidao, rapportIntel],
   );
