@@ -75,8 +75,10 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
         <p className="text-[10px] text-muted-foreground mt-0.5">sem conversas</p>
       ) : (
         <>
+          <p className="text-[10px] font-medium text-foreground mt-1">
+            Volume: {total} {total === 1 ? "interação" : "interações"}
+          </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {total} {total === 1 ? "conversa" : "conversas"} ·{" "}
             <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
           </p>
           <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
