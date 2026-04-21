@@ -52,11 +52,6 @@ export function useExternalInteractions(
         value: unknown;
       }> = [{ type: 'eq', column: 'contact_id', value: contactId }];
 
-      if (typeof days === 'number' && days > 0) {
-        const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-        filters.push({ type: 'gte', column: 'data_interacao', value: since });
-      }
-
       if (normalizedChannels.length > 0) {
         filters.push({ type: 'in', column: 'channel', value: normalizedChannels });
       }
