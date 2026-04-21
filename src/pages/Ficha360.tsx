@@ -18,6 +18,9 @@ import { FrequenciaContatoCard } from '@/components/ficha-360/FrequenciaContatoC
 import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesCard';
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
+import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
+import { computeProntidaoScore } from '@/lib/prontidaoScore';
+import { useMemo } from 'react';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
@@ -51,6 +54,11 @@ const Ficha360 = () => {
     channelCounts,
     isLoading,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
+
+  const prontidao = useMemo(
+    () => computeProntidaoScore({ profile, intelligence }),
+    [profile, intelligence],
+  );
 
   if (!id) {
     return (
@@ -144,6 +152,9 @@ const Ficha360 = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Score de Prontidão */}
+            <ScoreProntidaoCard data={prontidao} />
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
