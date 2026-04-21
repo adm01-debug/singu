@@ -240,7 +240,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         clear={clear}
         activeCount={activeCount}
         totalCount={interactions.length}
-        visibleCount={visibleInteractions.length}
+        visibleCount={visibleEventsCount}
         contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
         companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
       />
@@ -249,41 +249,49 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
 
       {loading ? <InteractionsListSkeleton /> : (
         <>
-          <div className="relative">
-            <div className="absolute left-[27px] top-0 bottom-0 w-0.5 bg-border" />
-            <div className="space-y-4">
-              {visibleInteractions.map((interaction, index) => {
-                const contact = contactMap.get(interaction.contact_id);
-                const Icon = interactionIcons[interaction.type] || MessageSquare;
-                return (
-                  <motion.div key={interaction.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }} className="relative pl-16 group">
-                    <div className={`absolute left-2 top-4 w-10 h-10 rounded-full flex items-center justify-center ${interactionColors[interaction.type]} border-4 border-background z-10`}><Icon className="w-4 h-4" /></div>
-                    <Card className="card-hover"><CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <Badge variant="outline" className={`text-xs ${interactionColors[interaction.type].replace('bg-', 'border-').replace('/10', '/50')}`}>{interactionLabels[interaction.type]}</Badge>
-                            <SentimentIndicator sentiment={(interaction.sentiment as SentimentType) || 'neutral'} size="sm" />
-                            {interaction.follow_up_required && <Badge variant="outline" className="text-xs text-warning border-warning bg-warning/10"><AlertCircle className="w-3 h-3 mr-1" />Follow-up</Badge>}
-                            {interaction.initiated_by === 'them' && <Badge variant="secondary" className="text-xs">Recebido</Badge>}
-                          </div>
-                          <h3 className="font-semibold text-foreground">{interaction.title}</h3>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right text-xs text-muted-foreground"><div className="flex items-center gap-1 justify-end"><Calendar className="w-3 h-3" />{format(new Date(interaction.created_at), "d MMM 'às' HH:mm", { locale: ptBR })}</div><div>{formatDistanceToNow(new Date(interaction.created_at), { locale: ptBR, addSuffix: true })}</div></div>
-                          <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => onSetEditingInteraction(interaction)}><Edit className="w-4 h-4 mr-2" />Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onSetDeletingInteraction(interaction)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Excluir</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-                        </div>
-                      </div>
-                      {interaction.content && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{interaction.content}</p>}
-                      {interaction.duration && <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3"><Clock className="w-3 h-3" />Duração: {Math.floor(interaction.duration / 60)} min</div>}
-                      {interaction.tags && interaction.tags.length > 0 && <div className="flex flex-wrap gap-1.5 mb-4">{interaction.tags.map(tag => <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>)}</div>}
-                      {contact && <div className="flex items-center gap-3 pt-3 border-t border-border"><OptimizedAvatar src={contact.avatar_url} alt={`${contact.first_name} ${contact.last_name}`} fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`} size="sm" /><div><p className="text-sm font-medium text-foreground">{contact.first_name} {contact.last_name}</p><p className="text-xs text-muted-foreground">{contact.role_title}</p></div></div>}
-                    </CardContent></Card>
-                  </motion.div>
-                );
-              })}
+          {isGrouped ? (
+            <div className="space-y-3">
+              {visibleGroups.map((g, idx) => (
+                <TimelineGroupCard key={g.entity_id} group={g} defaultOpen={idx < 3} />
+              ))}
             </div>
-          </div>
+          ) : (
+            <div className="relative">
+              <div className="absolute left-[27px] top-0 bottom-0 w-0.5 bg-border" />
+              <div className="space-y-4">
+                {visibleInteractions.map((interaction, index) => {
+                  const contact = contactMap.get(interaction.contact_id);
+                  const Icon = interactionIcons[interaction.type] || MessageSquare;
+                  return (
+                    <motion.div key={interaction.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.3) }} className="relative pl-16 group">
+                      <div className={`absolute left-2 top-4 w-10 h-10 rounded-full flex items-center justify-center ${interactionColors[interaction.type]} border-4 border-background z-10`}><Icon className="w-4 h-4" /></div>
+                      <Card className="card-hover"><CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge variant="outline" className={`text-xs ${interactionColors[interaction.type].replace('bg-', 'border-').replace('/10', '/50')}`}>{interactionLabels[interaction.type]}</Badge>
+                              <SentimentIndicator sentiment={(interaction.sentiment as SentimentType) || 'neutral'} size="sm" />
+                              {interaction.follow_up_required && <Badge variant="outline" className="text-xs text-warning border-warning bg-warning/10"><AlertCircle className="w-3 h-3 mr-1" />Follow-up</Badge>}
+                              {interaction.initiated_by === 'them' && <Badge variant="secondary" className="text-xs">Recebido</Badge>}
+                            </div>
+                            <h3 className="font-semibold text-foreground">{interaction.title}</h3>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right text-xs text-muted-foreground"><div className="flex items-center gap-1 justify-end"><Calendar className="w-3 h-3" />{format(new Date(interaction.created_at), "d MMM 'às' HH:mm", { locale: ptBR })}</div><div>{formatDistanceToNow(new Date(interaction.created_at), { locale: ptBR, addSuffix: true })}</div></div>
+                            <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={() => onSetEditingInteraction(interaction)}><Edit className="w-4 h-4 mr-2" />Editar</DropdownMenuItem><DropdownMenuItem onClick={() => onSetDeletingInteraction(interaction)} className="text-destructive"><Trash2 className="w-4 h-4 mr-2" />Excluir</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                          </div>
+                        </div>
+                        {interaction.content && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{interaction.content}</p>}
+                        {interaction.duration && <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3"><Clock className="w-3 h-3" />Duração: {Math.floor(interaction.duration / 60)} min</div>}
+                        {interaction.tags && interaction.tags.length > 0 && <div className="flex flex-wrap gap-1.5 mb-4">{interaction.tags.map(tag => <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>)}</div>}
+                        {contact && <div className="flex items-center gap-3 pt-3 border-t border-border"><OptimizedAvatar src={contact.avatar_url} alt={`${contact.first_name} ${contact.last_name}`} fallback={`${(contact.first_name || '?')[0]}${(contact.last_name || '?')[0]}`} size="sm" /><div><p className="text-sm font-medium text-foreground">{contact.first_name} {contact.last_name}</p><p className="text-xs text-muted-foreground">{contact.role_title}</p></div></div>}
+                      </CardContent></Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <PaginationBar
             page={safePage}
             perPage={adv.perPage}
