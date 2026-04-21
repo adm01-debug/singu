@@ -1,73 +1,108 @@
 
-# Plano: Busca avançada em /interacoes
+# Plano: Insights automáticos de sentimento e temas em /interacoes
 
 ## Objetivo
 
-Adicionar uma barra de busca avançada na aba "Lista" de `/interacoes` permitindo filtrar simultaneamente por pessoa, empresa, tipo de interação, período (date range) e palavra-chave no conteúdo/descrição.
+Adicionar uma 3ª aba **"Insights"** em `/interacoes` que agrega análise IA já existente das interações com transcrição/conteúdo, mostrando: distribuição de sentimento, principais temas/tópicos detectados, objeções recorrentes e exemplos clicáveis por categoria.
 
-## Reutilização
+## Reutilização (zero retrabalho)
 
-A aba "Timeline" já tem `TimelineFilterBar` (search nome, canais, datas). A aba "Lista" hoje tem filtros básicos. Vamos criar um filtro mais rico só para a Lista, sem mexer na Timeline.
+O projeto **já tem** toda a infra de análise:
+- Tabela `conversation_analyses` (sentiment_overall, sentiment_timeline, topics, objections, key_moments, coaching_score)
+- Edge function `conversation-analyzer` com Lovable AI (Gemini)
+- Hook `useConversationAnalyses({sentiment, minScore, days})` retorna lista filtrada
+- Pipeline automático dispara para interações >100 chars (memory `automated-analysis-pipeline`)
+- `interactions.sentiment` enum também disponível como fallback rápido
+
+A nova aba **agrega e visualiza** esses dados — não cria nova análise nem novo schema.
 
 ## Arquitetura
 
 ```text
-/interacoes?tab=lista
- ├─ AdvancedSearchBar (NOVO, sticky no topo)
- │   Linha 1: [busca palavra-chave full-text] [Filtros avançados ▼] [Limpar]
- │   Linha 2 (chips compactos sempre visíveis):
- │     Pessoa ▼  Empresa ▼  Tipo (multi) ▼  De 📅  Até 📅
- │   Resumo: "X interações · 3 filtros ativos"
- └─ Lista filtrada (existente)
+/interacoes?tab=insights
+ ├─ Filtro de período: 7d | 30d | 90d (default 30d)
+ │
+ ├─ Linha 1 — KPIs (4 cards compactos):
+ │   • Interações analisadas
+ │   • Sentimento dominante (pos/neu/neg %)
+ │   • Coaching score médio
+ │   • Objeções não tratadas
+ │
+ ├─ Linha 2 — 2 colunas:
+ │   ├─ Distribuição de Sentimento (donut + legenda %)
+ │   └─ Tendência de Sentimento (line chart por semana)
+ │
+ ├─ Linha 3 — Temas detectados:
+ │   • Lista ranqueada (top 10) com count + sparkline mini
+ │   • Click em tema → drawer lateral com 5 exemplos
+ │     (interação + trecho + sentimento + link p/ Ficha 360)
+ │
+ ├─ Linha 4 — Objeções mais frequentes:
+ │   • Cards com objeção + count + % handled vs unhandled
+ │   • Sugestão de resposta (campo já existente)
+ │
+ └─ Empty state IA-aware:
+     "Análises são geradas automaticamente para interações
+      com transcrição. Registre uma chamada/reunião com conteúdo
+      para começar." + botão "Registrar Interação"
 ```
 
 ## Implementação
 
-### 1. Hook `useInteractionsAdvancedFilter`
-`src/hooks/useInteractionsAdvancedFilter.ts`
-- Estado sincronizado com URL via `useSearchParams` (padrão do projeto):
-  - `q` (palavra-chave), `contact`, `company`, `canais` (CSV), `de`, `ate`
-- Retorna `{ filters, setFilter, clear, activeCount }`
-- `useDebounce` 300ms no `q` para evitar re-render por tecla
+### 1. Hook agregador `useInteractionsInsights`
+`src/hooks/useInteractionsInsights.ts`
+- Composição sobre `useConversationAnalyses({days})` (já existe)
+- Calcula via `useMemo` client-side:
+  - `sentimentDistribution` — count + % por positive/neutral/negative
+  - `sentimentTrend` — agrupado por semana ISO
+  - `topThemes` — flat dos `topics[]`, agrupa por `label`, conta `mentions`, retorna top 10 + exemplos (interaction_ids)
+  - `topObjections` — flat dos `objections[]`, agrupa por `objection_text` normalizado, % handled
+  - `kpis` — totalAnalyzed, dominantSentiment, avgCoachingScore, unhandledObjections
+- StaleTime 5min, sem `useEffect`
 
-### 2. Componente `AdvancedSearchBar`
-`src/components/interactions/AdvancedSearchBar.tsx` (≤200 linhas)
-- Input de busca com ícone `Search` e clear button
-- Popovers compactos para Pessoa e Empresa usando `SearchableSelect` (padrão do projeto, lookup remoto)
-- Chips multi-select de tipo (whatsapp, call, email, meeting, video_call, note) — mesmo padrão visual da `TimelineFilterBar`
-- Date pickers com shadcn Calendar (`pointer-events-auto`)
-- Badge "N filtros ativos" + botão "Limpar tudo"
+### 2. Componente principal `InsightsPanel`
+`src/components/interactions/insights/InsightsPanel.tsx` (≤200 linhas)
+- Header com select de período (`Tabs` 7d/30d/90d, persistência URL `?periodo=`)
+- 4 KPI cards (reutiliza padrão `StatCard` se existir, senão Card+Badge)
+- Grid 2 colunas com 2 charts
+- Lista de temas + lista de objeções
+- Skeleton loading + EmptyState
 
-### 3. Aplicação dos filtros
-- Localizar onde a Lista é renderizada em `Interacoes.tsx` (componente da aba "Lista")
-- Aplicar os filtros via `useMemo` sobre os dados já carregados (`useInteractionsRpc`):
-  - `q`: match em `assunto`, `resumo`, `descricao` (case/accent-insensitive via normalização NFD)
-  - `contact`: `contato_id === filter.contact`
-  - `company`: `empresa_id === filter.company`
-  - `canais`: `canais.includes(channel)` (vazio = todos)
-  - `de`/`ate`: `data_interacao` dentro do range (inclusivo)
-- `Array.isArray()` antes de iterar (padrão de resiliência)
+### 3. Subcomponentes (≤120 linhas cada)
+- `SentimentDistributionChart.tsx` — donut Recharts (cores `CHART_COLORS` de `nlpAnalyticsConstants`)
+- `SentimentTrendChart.tsx` — line chart por semana
+- `ThemesRanking.tsx` — lista ranqueada com badge count, click abre drawer
+- `ObjectionsRanking.tsx` — cards com handled/unhandled bar
+- `ThemeExamplesDrawer.tsx` — Sheet lateral com 5 exemplos clicáveis
 
-### 4. Estado vazio e contadores
-- Reutiliza `EmptyState` quando filtros não retornam resultados, com botão "Limpar filtros"
-- Mostra contador "X de Y interações"
+### 4. Integração em `Interacoes.tsx`
+- Adicionar 3ª `TabsTrigger value="insights"` ao lado de Lista/Timeline
+- Renderiza `<InsightsPanel />` lazy quando ativo
+- Persistência via `?tab=insights` (já existe padrão)
 
 ### 5. Padrões obrigatórios
 - PT-BR
+- `Array.isArray()` antes de iterar
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- Tokens semânticos (Nexus Blue), flat design
-- `React.memo` na barra
-- Persistência URL para deep-link e back/forward
+- Tokens semânticos (Nexus Blue, success/warning/destructive)
+- Flat design — sem sombras/gradientes
+- `React.memo` em charts e listas
+- Tratamento gracioso quando `conversation_analyses` vazio (empty state explicativo)
 
 ## Arquivos tocados
 
-**Novos (2):**
-- `src/hooks/useInteractionsAdvancedFilter.ts`
-- `src/components/interactions/AdvancedSearchBar.tsx`
+**Novos (7):**
+- `src/hooks/useInteractionsInsights.ts`
+- `src/components/interactions/insights/InsightsPanel.tsx`
+- `src/components/interactions/insights/SentimentDistributionChart.tsx`
+- `src/components/interactions/insights/SentimentTrendChart.tsx`
+- `src/components/interactions/insights/ThemesRanking.tsx`
+- `src/components/interactions/insights/ObjectionsRanking.tsx`
+- `src/components/interactions/insights/ThemeExamplesDrawer.tsx`
 
 **Editados (1):**
-- `src/pages/Interacoes.tsx` — integrar a barra na aba "Lista" e aplicar filtros sobre os dados
+- `src/pages/Interacoes.tsx` — adicionar 3ª aba "Insights"
 
 ## Critério de fechamento
 
-(a) Barra avançada visível e sticky na aba Lista, (b) 5 filtros funcionais (pessoa, empresa, tipo, período, palavra-chave), (c) estado persistido na URL, (d) contador de resultados + filtros ativos, (e) zero regressão na aba Timeline.
+(a) Aba `/interacoes?tab=insights` renderiza em <2s, (b) 4 KPIs + 2 charts + ranking de temas + ranking de objeções populados a partir de `conversation_analyses` reais, (c) drawer de exemplos por tema funcional com link p/ Ficha 360, (d) filtro de período 7/30/90d persistido na URL, (e) empty state explicativo quando não há análises, (f) zero regressão nas abas Lista e Timeline.
