@@ -157,6 +157,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         resultsCount={filteredAndSorted.length}
         totalCount={interactions.length}
         applyAll={applyAll}
+        channelCounts={channelCounts}
       />
 
       <ActiveFiltersBar
