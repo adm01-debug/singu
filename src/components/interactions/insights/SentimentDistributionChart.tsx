@@ -12,6 +12,7 @@ interface Slice {
 interface Props {
   data: Slice[];
   onSelectBucket?: (key: SentimentOverall) => void;
+  activeBucket?: SentimentOverall | null;
 }
 
 const COLORS: Record<string, string> = {
