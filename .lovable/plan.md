@@ -1,106 +1,85 @@
 
-# Plano: Ordenação da lista em /interacoes
+# Plano: Chips de filtros ativos e resumo na lista de /interacoes
 
 ## Objetivo
 
-Adicionar um seletor de ordenação na lista de `/interacoes` com 4 opções: **Mais recentes** (padrão), **Mais antigas**, **Melhor correspondência** (relevância da busca textual) e **Por pessoa/empresa** (alfabética). A ordenação persiste na URL e é compatível com todos os filtros avançados existentes.
+Exibir, **logo abaixo da barra de busca** em `/interacoes`, uma faixa com **chips clicáveis dos filtros ativos** (texto, pessoa, empresa, canais, datas) e um **resumo de resultados** (`N de M interações`). Cada chip pode ser removido com 1 clique, sem abrir a busca avançada.
 
 ## Reutilização
 
-- `useInteractionsAdvancedFilter` — adicionar campo `sort` ao state da URL (`?sort=`)
-- `useDebounce` (já em uso para `q`) para o termo de busca
-- Padrão visual `Select` (shadcn) já presente no projeto
+- `useInteractionsAdvancedFilter` — `filters`, `setFilter`, `clear`, `activeCount` já expostos
+- `Badge` (closeable + onClose) já existente em `src/components/ui/badge.tsx`
+- Labels de canal já mapeados em `CanaisQuickFilter`
+- Contagem `sortedForView.length` / `filteredAndSorted.length` já disponíveis em `InteracoesContent`
 
-Sem nova tabela, sem novo fetch, sem nova RPC.
+Sem novo hook, sem novo fetch.
 
 ## Arquitetura
 
 ```text
-AdvancedSearchBar
- ├─ Input + chips canal + filtros (existente)
- └─ [NOVO] SortSelect (Select shadcn) — ao lado de "Limpar tudo"
-       └─ valores: 'recent' | 'oldest' | 'relevance' | 'entity'
-
-useInteractionsAdvancedFilter
- ├─ filters.sort: SortKey ('recent' default)
- └─ setFilter('sort', value)
-
-Página /interacoes (consumidor)
- └─ useMemo aplicando sortInteractions(items, sort, q)
-       ├─ recent  → date desc
-       ├─ oldest  → date asc
-       ├─ relevance (só ativo se q != '') → score por ocorrências em title/content/tags + recência como tiebreaker
-       └─ entity  → contact_name || company_name (localeCompare pt-BR)
+InteracoesContent
+ ├─ AdvancedSearchBar (existente)
+ ├─ [NOVO] ActiveFiltersBar
+ │     ├─ Resumo: "Mostrando N de M" (+ "filtrado de T total" se houver filtros)
+ │     └─ Chips removíveis:
+ │         • Busca: "kickoff"  ✕   → setFilter('q', '')
+ │         • Pessoa: "<nome>"  ✕   → setFilter('contact', '')
+ │         • Empresa: "<nome>" ✕   → setFilter('company', '')
+ │         • Canal: WhatsApp   ✕   → remove do array canais
+ │         • De: 01/03/25      ✕   → setFilter('de', undefined)
+ │         • Até: 31/03/25     ✕   → setFilter('ate', undefined)
+ │         • [Limpar tudo] (só se 2+ filtros)
+ └─ Lista (existente)
 ```
+
+Quando `activeCount === 0`, mostra apenas o resumo simples ("M interações").
 
 ## Implementação
 
-### 1. `useInteractionsAdvancedFilter.ts`
+### 1. Novo `src/components/interactions/ActiveFiltersBar.tsx` (≤140 linhas)
 
-- Adicionar `sort: SortKey` ao tipo `AdvancedFilters` (default `'recent'`)
-- Incluir `'sort'` no array `KEYS`
-- `setFilter` aceita string; persiste/remove no URLSearchParams
-- `activeCount` **não conta** `sort` (ordenação não é filtro)
-
-### 2. Novo `src/lib/sortInteractions.ts` (≤120 linhas, função pura)
-
-```ts
-export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity';
-
-export function sortInteractions<T extends {
-  date?: string | Date | null;
-  title?: string | null;
-  content?: string | null;
-  tags?: string[] | null;
-  contact_name?: string | null;
-  company_name?: string | null;
-}>(items: T[], sort: SortKey, query?: string): T[]
-```
-
-- Defensivo com `Array.isArray` e fallback para campos nulos
-- `relevance`: contagem de ocorrências case-insensitive do termo em title (×3), tags (×2) e content (×1); empate desfaz pela data desc
-- Se `sort === 'relevance'` e `query` vazio, faz fallback para `'recent'`
-- `entity`: `contact_name ?? company_name ?? ''`, `localeCompare('pt-BR')`
-
-### 3. Novo componente `SortSelect.tsx` (≤60 linhas)
-
-`src/components/interactions/SortSelect.tsx`
-
-- Props: `value: SortKey`, `onChange`, `hasQuery: boolean`
-- `Select` shadcn, ícone `ArrowUpDown`, label oculto em mobile
-- Opção "Melhor correspondência" desabilitada quando `!hasQuery` (com `title` explicativo)
+- Props:
+  ```ts
+  {
+    filters: AdvancedFilters;
+    setFilter: <K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => void;
+    clear: () => void;
+    activeCount: number;
+    totalCount: number;     // total bruto carregado
+    visibleCount: number;   // após filtros e ordenação
+  }
+  ```
+- Mapa de labels canal idêntico ao `CanaisQuickFilter` (whatsapp/call/email/meeting/video_call/note)
+- Chips usam `Badge variant="secondary" closeable onClose={...}`, ícone à esquerda quando aplicável (Search, User, Building2, Calendar e ícone do canal)
+- Datas formatadas via `format(d, 'dd MMM yy', { locale: ptBR })`
+- Botão "Limpar tudo" (`Button variant="ghost" size="xs"`) aparece se `activeCount >= 2`
+- Resumo à esquerda em `text-xs text-muted-foreground`:
+  - Sem filtros: `"M interações"` (ou `"Nenhuma interação"`)
+  - Com filtros: `"Mostrando N de M"` quando N < M; `"M resultados"` quando N === M
 - `React.memo`
+- PT-BR, sem `any`, `Array.isArray()` defensivo em `canais`, tokens semânticos, flat
 
-### 4. Integração em `AdvancedSearchBar.tsx`
+### 2. Integração em `src/pages/interacoes/InteracoesContent.tsx`
 
-- Adicionar `<SortSelect value={filters.sort} onChange={(v) => setFilter('sort', v)} hasQuery={!!filters.q.trim()} />` antes do menu de presets
-- `InteracoesPresetsMenu`: incluir `sort` no payload salvo/aplicado (mantém compatibilidade — presets antigos sem `sort` preservam o atual)
+- Importar `ActiveFiltersBar`
+- Renderizar **logo após** `<AdvancedSearchBar />` e **antes** da lista
+- Passar `totalCount={interactions.length}` (lista bruta antes do filtro) e `visibleCount={sortedForView.length}`
 
-### 5. Aplicação na página consumidora
+### 3. Edge cases
 
-Localizar a página/componente que renderiza a lista (provavelmente `src/pages/Interacoes.tsx` ou `UnifiedTimelineView` no contexto avançado) e envolver os itens com `useMemo(() => sortInteractions(items, filters.sort, debouncedQ), [items, filters.sort, debouncedQ])`.
-
-### 6. Padrões obrigatórios
-
-- PT-BR
-- Sem `any`, sem `dangerouslySetInnerHTML`
-- `Array.isArray()` defensivo
-- Tokens semânticos, flat design
-- Persistência URL (`?sort=`)
-- Compatível com presets, filtros e canais
+- Datas inválidas tratadas pelo `format` apenas se `instanceof Date`
+- Chip de canal desconhecido mostra o próprio valor capitalizado
+- Quando `q` é só espaços, não cria chip
+- A11y: cada chip com `aria-label="Remover filtro <descrição>"` no botão de fechar (já provido por `Badge closeable`)
 
 ## Arquivos tocados
 
-**Novos (2):**
-- `src/lib/sortInteractions.ts`
-- `src/components/interactions/SortSelect.tsx`
+**Novos (1):**
+- `src/components/interactions/ActiveFiltersBar.tsx`
 
-**Editados (3):**
-- `src/hooks/useInteractionsAdvancedFilter.ts` — campo `sort` na URL
-- `src/components/interactions/AdvancedSearchBar.tsx` — incluir `SortSelect`
-- `src/pages/Interacoes.tsx` (ou consumidor da lista) — aplicar `sortInteractions` via `useMemo`
-- `src/components/interactions/InteracoesPresetsMenu.tsx` — incluir `sort` no payload de presets
+**Editados (1):**
+- `src/pages/interacoes/InteracoesContent.tsx` — montar o componente abaixo da busca
 
 ## Critério de fechamento
 
-(a) Seletor de ordenação visível na barra de busca de `/interacoes` com 4 opções, (b) "Mais recentes" como padrão, (c) "Melhor correspondência" desabilitada sem termo de busca, (d) ordenação aplicada na lista renderizada via função pura testável, (e) estado persiste em URL (`?sort=`) e em presets, (f) `activeCount` não conta `sort`, (g) zero novas queries de rede, (h) zero regressão em filtros, presets ou paginação.
+(a) Faixa visível em `/interacoes` abaixo da busca com resumo `N de M`, (b) cada filtro ativo (q, contact, company, cada canal, de, até) aparece como chip removível independente, (c) clique no "✕" do chip remove apenas aquele filtro e atualiza URL imediatamente, (d) botão "Limpar tudo" aparece com 2+ filtros, (e) sem filtros mostra apenas contagem total, (f) zero novas queries de rede, (g) zero regressão em ordenação, presets ou paginação.
