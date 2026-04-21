@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { MessageSquare, Phone, Mail, Calendar, FileText, X, Layers, RotateCcw } from 'lucide-react';
+import { memo, type KeyboardEvent } from 'react';
+import { MessageSquare, Phone, Mail, Calendar, FileText, X, Layers, RotateCcw, Check, Undo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,9 @@ interface Props {
   totalCount: number;
   channelCounts?: Record<string, number>;
   channelCountsReady?: boolean;
+  isDirty?: boolean;
+  onApply?: () => void;
+  onDiscard?: () => void;
 }
 
 export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
@@ -44,14 +47,28 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   totalCount,
   channelCounts,
   channelCountsReady = false,
+  isDirty = false,
+  onApply,
+  onDiscard,
 }: Props) {
   const toggleChannel = (value: string) => {
     if (channels.includes(value)) onChannelsChange(channels.filter((c) => c !== value));
     else onChannelsChange([...channels, value]);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onApply) return;
+    if (e.key === 'Enter' && isDirty) {
+      e.preventDefault();
+      onApply();
+    } else if (e.key === 'Escape' && isDirty && onDiscard) {
+      e.preventDefault();
+      onDiscard();
+    }
+  };
+
   return (
-    <div className="pt-1">
+    <div className="pt-1" onKeyDown={handleKeyDown} tabIndex={-1}>
       <div className="flex flex-wrap items-center gap-2">
         {/* Período */}
         <div className="inline-flex items-center rounded-md border border-border bg-card p-0.5">
@@ -151,6 +168,38 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
           >
             <X className="h-3 w-3" /> Limpar
           </Button>
+        )}
+
+        {isDirty && onApply && (
+          <div
+            className="ml-auto flex items-center gap-1.5"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="text-xs text-warning">Alterações não aplicadas</span>
+            {onDiscard && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDiscard}
+                className="h-6 px-2 text-xs gap-1"
+                aria-label="Descartar alterações"
+                title="Descartar (Esc)"
+              >
+                <Undo2 className="h-3 w-3" /> Descartar
+              </Button>
+            )}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onApply}
+              className="h-6 px-2.5 text-xs gap-1"
+              aria-label="Aplicar filtros"
+              title="Aplicar (Enter)"
+            >
+              <Check className="h-3 w-3" /> Aplicar
+            </Button>
+          </div>
         )}
       </div>
     </div>

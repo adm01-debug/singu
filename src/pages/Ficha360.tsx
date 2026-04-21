@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useFicha360 } from '@/hooks/useFicha360';
 import { useFicha360Filters } from '@/hooks/useFicha360Filters';
+import { useFicha360DraftFilters } from '@/hooks/useFicha360DraftFilters';
 import { useFicha360ChannelCounts } from '@/hooks/useFicha360ChannelCounts';
 import { PerfilComportamentalCard } from '@/components/ficha-360/PerfilComportamentalCard';
 import { TagsInteresseCard } from '@/components/ficha-360/TagsInteresseCard';
@@ -60,6 +61,14 @@ const Ficha360 = () => {
   const { id } = useParams<{ id: string }>();
   const { days, channels, setDays, setChannels, clear, activeCount } = useFicha360Filters();
   const {
+    draftDays,
+    draftChannels,
+    setDraftDays,
+    setDraftChannels,
+    isDirty: filtersDirty,
+    reset: resetDraft,
+  } = useFicha360DraftFilters(days, channels);
+  const {
     profile,
     intelligence,
     recentInteractions,
@@ -69,7 +78,16 @@ const Ficha360 = () => {
     isLoading,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
   const { counts: potentialChannelCounts, isFetched: channelCountsReady } =
-    useFicha360ChannelCounts(id, days);
+    useFicha360ChannelCounts(id, draftDays);
+
+  const applyDraftFilters = () => {
+    setDays(draftDays);
+    setChannels(draftChannels);
+  };
+  const clearDraftFilters = () => {
+    setDraftDays(90);
+    setDraftChannels([]);
+  };
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
@@ -290,16 +308,19 @@ const Ficha360 = () => {
                   headerExtra={
                     <>
                       <FiltrosInteracoesBar
-                        days={days}
-                        channels={channels}
-                        onDaysChange={setDays}
-                        onChannelsChange={setChannels}
-                        onClear={clear}
+                        days={draftDays}
+                        channels={draftChannels}
+                        onDaysChange={setDraftDays}
+                        onChannelsChange={setDraftChannels}
+                        onClear={clearDraftFilters}
                         activeCount={activeCount}
                         shownCount={recentInteractions.length}
                         totalCount={channelCounts.total}
                         channelCounts={potentialChannelCounts}
                         channelCountsReady={channelCountsReady}
+                        isDirty={filtersDirty}
+                        onApply={applyDraftFilters}
+                        onDiscard={resetDraft}
                       />
                       <FiltrosAtivosChips
                         days={days}
