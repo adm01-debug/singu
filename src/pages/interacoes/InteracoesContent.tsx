@@ -120,11 +120,16 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
 
       <Suspense fallback={<Card className="border-border/50"><CardContent className="p-4"><div className="h-48 animate-pulse bg-muted/30 rounded-lg" /></CardContent></Card>}><ActivityHeatmapChart /></Suspense>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar interações..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`pl-10 ${isSearching ? 'pr-10' : ''}`} />
-        {isSearching && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={clearSearch}><X className="h-4 w-4" /></Button>}
-      </div>
+      <AdvancedSearchBar
+        filters={adv}
+        setFilter={setFilter}
+        clear={clear}
+        activeCount={activeCount}
+        contacts={contactOptions}
+        companies={companyOptions}
+        resultsCount={filteredAndSorted.length}
+        totalCount={interactions.length}
+      />
 
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
 
@@ -167,8 +172,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
           </div>
           {hasMore && <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">Carregando mais interações...</div>}
           {filteredAndSorted.length === 0 && !loading && (
-            isSearching || Object.keys(activeFilters).length > 0
-              ? <SearchEmptyState searchTerm={searchTerm || 'filtros ativos'} onClearSearch={() => { clearSearch(); setActiveFilters({}); }} entityName="interações" />
+            activeCount > 0 || Object.keys(activeFilters).length > 0
+              ? <SearchEmptyState searchTerm={adv.q || 'filtros ativos'} onClearSearch={() => { clear(); setActiveFilters({}); }} entityName="interações" />
               : <EmptyState illustration="interactions" title="Documente suas conversas" description="Registre ligações, emails, reuniões e mensagens."
                   actions={[{ label: 'Registrar Interação', onClick: () => onSetIsFormOpen(true), icon: Plus }]}
                   tips={['Selecione o tipo correto para melhor categorização', 'Marque follow-ups para nunca perder um compromisso', 'Use tags para vincular a projetos']} />
