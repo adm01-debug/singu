@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 interface Props {
   data: ProntidaoTrendPoint[];
   currentScore: number;
+  simulated?: boolean;
 }
 
 const trendMeta = {
@@ -68,7 +69,7 @@ const TooltipContent = ({ active, payload }: { active?: boolean; payload?: Array
   );
 };
 
-export const ProntidaoTrendChart = memo(({ data, currentScore }: Props) => {
+export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Props) => {
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
   const { slope, direction, variation, peak } = useMemo(() => {
@@ -107,6 +108,11 @@ export const ProntidaoTrendChart = memo(({ data, currentScore }: Props) => {
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             Tendência do Score de Prontidão
+            {simulated && (
+              <Badge variant="outline" className="border-warning/40 bg-warning/10 text-warning text-[10px]">
+                Simulação
+              </Badge>
+            )}
           </CardTitle>
           <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
             <meta.Icon className="h-3 w-3" aria-hidden="true" />

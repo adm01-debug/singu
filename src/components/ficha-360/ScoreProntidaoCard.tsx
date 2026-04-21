@@ -12,6 +12,7 @@ import type { ProntidaoResult, ProntidaoLevel, ProntidaoStatus } from '@/lib/pro
 interface Props {
   data: ProntidaoResult;
   contactId?: string;
+  simulated?: boolean;
 }
 
 const levelClasses: Record<ProntidaoLevel, { badge: string; ring: string; text: string }> = {
@@ -61,7 +62,7 @@ const factorIcons = {
   channel: Radio,
 } as const;
 
-export const ScoreProntidaoCard = memo(({ data, contactId }: Props) => {
+export const ScoreProntidaoCard = memo(({ data, contactId, simulated }: Props) => {
   const cls = levelClasses[data.level];
   const [whyOpen, setWhyOpen] = useState(false);
   const factors: Array<{ key: keyof typeof factorIcons; factor: typeof data.breakdown.cadence }> = [
@@ -95,6 +96,11 @@ export const ScoreProntidaoCard = memo(({ data, contactId }: Props) => {
             <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               <Sparkles className="h-3.5 w-3.5" />
               Prontidão
+              {simulated && (
+                <Badge variant="outline" className="ml-1 border-warning/40 bg-warning/10 text-warning text-[9px] px-1.5 py-0">
+                  Simulação
+                </Badge>
+              )}
             </div>
             <ScoreRing score={data.score} level={data.level} />
             <Badge className={cn('text-xs font-medium border', cls.badge)}>
