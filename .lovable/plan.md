@@ -1,114 +1,125 @@
 
 
-# Plano: Botão flutuante "Voltar ao topo" otimizado para `/interacoes`
+# Plano: Persistir e restaurar a profundidade do infinite scroll
 
-## Contexto
+## Diagnóstico
 
-Já existe `ScrollToTopButton` global montado em `AppLayout` (desktop em `bottom-8 right-8`, mobile via container `md:hidden`). Ele aparece quando `window.scrollY > 400` e some quando overlays mobile abrem. Em `/interacoes` com infinite scroll, ele já funciona — mas há lacunas:
+Filtros e ordenação **já estão persistidos** em URL via `useInteractionsAdvancedFilter`:
+- `q`, `contact`, `company`, `canais`, `direcao`, `de`, `ate`, `sort`, `view`, `density`, `perPage`, `page` — todos viajam na URL via `setSearchParams(..., { replace: true })` e são restaurados no mount.
+- Hidratação cross-session já existe via `localStorage` para `density`, `view`, `sort` e `perPage` (URL ganha sobre cache).
 
-1. **Limiar de 400px é alto** para listas densas (modo compacto). Em compacto, o usuário precisa rolar muito antes de ver o botão.
-2. **Não comunica progresso da lista** (quantos itens já passou).
-3. **Animação de scroll-to-top usa `behavior: 'smooth'`** — em listas com 800+ itens revelados, fica lento; ideal cair para `'instant'` quando rolagem é muito longa.
-4. **Conflito potencial** com `QuickAddButton` no mesmo canto (já resolvido via `flex flex-col gap-3`, mas vale validar).
+**Lacuna real**: o `useInfiniteList` (usado em `UltimasInteracoesCard` da Ficha 360° e no `UnifiedTimelineView`) reseta `count` para `pageSize` em todo mount/troca de deps. Após F5 o usuário cai com apenas o primeiro lote, mesmo já tendo rolado várias páginas.
 
-Decisão: **não criar componente novo nem rota-específico**. Refinar o `ScrollToTopButton` existente com props opcionais e baseline melhorada — mudanças benéficas para todas as rotas, com ganho extra em `/interacoes`.
+Observação: na rota `/interacoes` modo lista, **não há infinite scroll** hoje — usa `PaginationBar` (`page` + `perPage`), e ambos já estão na URL. Se o usuário quer mudar isso para infinite scroll, é outra tarefa (não escopada aqui). O foco é **restaurar a profundidade onde infinite scroll já existe**.
 
 ## Decisão de escopo
 
-Refinar `ScrollToTopButton.tsx`:
+Adicionar persistência opcional (opt-in) à profundidade revelada pelo `useInfiniteList`, com chave de cache fornecida pelo consumidor. URL fica intocada (chave seria poluição: muda a cada scroll); cache em `sessionStorage` (escopo aba — recarregar restaura, fechar aba zera, evita "fantasma" entre abas/sessões diferentes).
 
-1. **Limiar configurável**: prop `threshold?: number` (default `400`). Continua 400 globalmente, sem regressão.
-2. **Limiar adaptativo automático**: quando o documento é muito alto (`document.documentElement.scrollHeight > 4000`), reduz limiar para `300`. Cobre listas longas sem precisar de prop.
-3. **Smart scroll behavior**: se `window.scrollY > 5000`, usa `behavior: 'instant'` (ou `'auto'` se reduced motion); senão `'smooth'`. Evita scroll de 8 segundos em listas enormes.
-4. **Tooltip contextual**: adiciona `title="Voltar ao topo"` no botão (já tem `aria-label`, mas tooltip nativo ajuda hover desktop).
-5. **Respeita `prefers-reduced-motion`**: força `behavior: 'auto'` se o sistema do usuário pedir.
-6. **Throttle do listener**: usa `requestAnimationFrame` para reduzir custos em scroll rápido (atual chama setState a cada evento `scroll`).
+Regras:
+- Prop nova `persistKey?: string` em `useInfiniteList`. Sem prop → comportamento atual (zero regressão).
+- Com `persistKey`, no mount lê `sessionStorage[persistKey]` e usa como `count` inicial (clamp em `[pageSize, items.length]`).
+- A cada mudança de `count`, grava em `sessionStorage` (debounced 200ms via `setTimeout` simples, sem nova dep).
+- Reset de deps (filtros mudam) **limpa** a chave também — evita restaurar profundidade de uma combinação de filtros antiga.
+- Try/catch em todo acesso a `sessionStorage`.
 
-Sem mudanças em `AppLayout`, `MobileBottomNav` ou em `/interacoes` — o botão segue global e a melhoria é transparente.
+Onde aplicar:
+- `UltimasInteracoesCard`: `persistKey={\`ficha-ultimas-${contactId}\`}`. Restaura profundidade ao reabrir a Ficha.
+- `UnifiedTimelineView`: `persistKey={\`timeline-${groupBy}\`}`. Restaura quantos grupos já foram expandidos por scroll.
+
+Não tocar em `/interacoes` (modo lista usa paginação clássica, não infinite scroll).
 
 ## Implementação
 
-### `src/components/navigation/ScrollToTopButton.tsx`
+### 1. `src/hooks/useInfiniteList.ts`
 
-- Adicionar prop opcional:
-  ```ts
-  interface ScrollToTopButtonProps {
-    className?: string;
-    threshold?: number; // default 400
-  }
-  ```
+Adicionar:
+```ts
+interface Options { persistKey?: string }
+export function useInfiniteList<T>(
+  items: T[], pageSize = 50, deps: ReadonlyArray<unknown> = [], options: Options = {}
+): UseInfiniteListResult<T> {
+  const { persistKey } = options;
+  const safeItems = Array.isArray(items) ? items : [];
 
-- Lógica de visibilidade adaptativa:
-  ```ts
-  const [visible, setVisible] = useState(false);
-  const rafRef = useRef<number | null>(null);
+  const initial = (() => {
+    if (!persistKey) return pageSize;
+    try {
+      const raw = sessionStorage.getItem(persistKey);
+      const n = parseInt(raw ?? '', 10);
+      if (Number.isFinite(n) && n >= pageSize) return n;
+    } catch { /* noop */ }
+    return pageSize;
+  })();
 
+  const [count, setCount] = useState(initial);
+
+  // Reset em mudança de deps + limpa cache (evita profundidade fantasma).
   useEffect(() => {
-    const compute = () => {
-      const docHeight = document.documentElement.scrollHeight;
-      const effective = docHeight > 4000 ? Math.min(threshold, 300) : threshold;
-      setVisible(window.scrollY > effective);
-      rafRef.current = null;
-    };
-    const onScroll = () => {
-      if (rafRef.current != null) return;
-      rafRef.current = requestAnimationFrame(compute);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    compute();
+    setCount(pageSize);
+    if (persistKey) { try { sessionStorage.removeItem(persistKey); } catch { /* noop */ } }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageSize, ...deps]);
+
+  // Persistência debounced.
+  const writeTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!persistKey) return;
+    if (writeTimerRef.current != null) window.clearTimeout(writeTimerRef.current);
+    writeTimerRef.current = window.setTimeout(() => {
+      try { sessionStorage.setItem(persistKey, String(count)); } catch { /* noop */ }
+    }, 200);
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (writeTimerRef.current != null) window.clearTimeout(writeTimerRef.current);
     };
-  }, [threshold]);
-  ```
+  }, [count, persistKey]);
+  // ... resto inalterado (loadMore, IntersectionObserver, slice).
+}
+```
 
-- Função `scrollToTop` smart:
-  ```ts
-  const scrollToTop = () => {
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tooFar = window.scrollY > 5000;
-    window.scrollTo({
-      top: 0,
-      behavior: reduceMotion || tooFar ? 'auto' : 'smooth',
-    });
-  };
-  ```
+Backward-compat total: assinatura aceita 4º parâmetro opcional; chamadas atuais `useInfiniteList(items, 15, [items])` seguem funcionando.
 
-- Adicionar `title="Voltar ao topo"` no `<Button>`. Manter `aria-label` existente.
+### 2. `src/components/ficha-360/UltimasInteracoesCard.tsx`
 
-- Manter listeners `mobile-overlay-open/close` e estilo atuais inalterados.
+```ts
+const { visible, hasMore, sentinelRef } = useInfiniteList(
+  items, 15, [items, contactId], { persistKey: contactId ? `ficha-ultimas-${contactId}` : undefined }
+);
+```
+
+### 3. `src/components/interactions/UnifiedTimelineView.tsx`
+
+Como o `UnifiedTimelineView` não usa `useInfiniteList` diretamente (renderiza todos os grupos via `.map`), **não há mudança aqui**. Documentado para evitar dúvida.
 
 ## Testes
 
-**Editar/criar** `src/components/navigation/__tests__/ScrollToTopButton.test.tsx`:
-1. Não visível com `scrollY=0` (default threshold 400).
-2. Visível ao ultrapassar `scrollY=400`.
-3. Threshold customizado (`threshold=200`) → visível com `scrollY=250`.
-4. Some quando evento `mobile-overlay-open` é disparado, mesmo com scroll alto.
-5. Click chama `window.scrollTo` com `top:0`.
-6. Em `prefers-reduced-motion: reduce`, usa `behavior: 'auto'`.
-7. Limiar adaptativo: documentElement.scrollHeight grande + threshold default → fica visível com `scrollY=350`.
-
-(Mock `window.scrollTo`, `window.matchMedia` e `Object.defineProperty(document.documentElement, 'scrollHeight', ...)`.)
+**Editar** `src/hooks/__tests__/useInfiniteList.test.ts` (criar se não existir):
+1. Sem `persistKey` → `sessionStorage` nunca é tocado; comportamento idêntico ao atual.
+2. Com `persistKey` e cache `'30'`, `pageSize=10`, `items.length=100` → `visible.length === 30` no mount.
+3. Cache inválido (`'foo'`) ou menor que `pageSize` → ignora, usa `pageSize`.
+4. Após `loadMore()`, `sessionStorage.setItem` é chamado com nova contagem (após o debounce de 200ms).
+5. Mudança em `deps` zera `count` para `pageSize` E remove a chave do `sessionStorage`.
+6. `sessionStorage` indisponível (mock que joga) não quebra o hook.
 
 ## Padrões obrigatórios
 
-- PT-BR no texto exposto (`title`/`aria-label`).
-- Backward-compat total: prop `threshold` opcional, comportamento default igual ao atual em todas as rotas.
-- Zero novas deps, ≤400 linhas (arquivo atual ~70 linhas).
-- A11y mantida: `aria-label`, foco visível do `Button` shadcn, `prefers-reduced-motion` honrado.
-- Sem mudança em `AppLayout`, `InteracoesContent`, `MobileBottomNav`.
+- PT-BR nos comentários e mensagens.
+- Backward-compat total: 4º parâmetro opcional, sem afetar chamadas existentes.
+- Zero novas deps.
+- ≤400 linhas por arquivo (`useInfiniteList` atual ~40 linhas, sobra muito).
+- `try/catch` em todo acesso a `sessionStorage` (SSR-safe / modo privado).
+- URL **não** muda — profundidade não polui histórico nem links compartilháveis.
 
 ## Arquivos tocados
 
-**Editado (1):**
-- `src/components/navigation/ScrollToTopButton.tsx` — prop `threshold`, limiar adaptativo, scroll smart, throttling com rAF, tooltip.
+**Editado (2):**
+- `src/hooks/useInfiniteList.ts` — nova opção `persistKey`, hidratação no mount, persistência debounced, limpeza no reset.
+- `src/components/ficha-360/UltimasInteracoesCard.tsx` — passa `persistKey` baseado em `contactId`.
 
-**Novo (1) — testes:**
-- `src/components/navigation/__tests__/ScrollToTopButton.test.tsx` — 7 casos cobrindo visibilidade, threshold, overlay, reduced motion, click.
+**Novo/editado (1) — testes:**
+- `src/hooks/__tests__/useInfiniteList.test.ts` — 6 casos cobrindo opt-in, hidratação, cache inválido, persistência, reset por deps e ambiente sem storage.
 
 ## Critério de fechamento
 
-(a) Em `/interacoes` com infinite scroll, o botão flutuante "Voltar ao topo" aparece após rolagem moderada e leva o usuário ao topo; (b) em listas muito longas (`scrollHeight > 4000`), aparece mais cedo (limiar 300px); (c) em rolagens muito altas (`scrollY > 5000`), o scroll é instantâneo para evitar espera; (d) respeita `prefers-reduced-motion`; (e) listener de scroll throttled via `requestAnimationFrame`; (f) outras rotas mantêm exatamente o comportamento atual; (g) tooltip "Voltar ao topo" no hover desktop; (h) testes cobrem visibilidade, threshold, overlay, reduced-motion e click; (i) PT-BR, flat, zero novas deps.
+(a) Filtros (`q`, `contact`, `company`, `canais`, `direcao`, `de`, `ate`) e ordenação (`sort`) continuam fixos na URL e restaurados no F5 — comportamento já existente, validado; (b) na Ficha 360°, ao recarregar a página, a lista de "Últimas Interações" reabre com a mesma quantidade de itens já revelados antes (até `items.length`); (c) trocar de contato ou aplicar novos filtros zera a profundidade e limpa o cache da chave; (d) `sessionStorage` indisponível não quebra o hook; (e) chamadas atuais sem `persistKey` mantêm comportamento idêntico; (f) URL fica limpa (sem param de profundidade); (g) testes cobrem todos os caminhos; (h) PT-BR, flat, zero novas deps, ≤400 linhas.
 
