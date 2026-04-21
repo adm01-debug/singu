@@ -427,4 +427,5 @@ export const shortcutCategoryLabels: Record<ShortcutCategory, string> = {
   ui: 'Interface',
   editing: 'Edição',
   search: 'Busca',
+  filters: 'Filtros de canal',
 };
