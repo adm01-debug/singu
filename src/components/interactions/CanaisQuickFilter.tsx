@@ -220,14 +220,15 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-sm"
+                  size="xs"
                   onClick={revert}
-                  aria-label="Reverter alterações pendentes"
+                  className="gap-1"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
+                  Reverter
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top">Reverter</TooltipContent>
+              <TooltipContent side="top">Descartar alterações pendentes</TooltipContent>
             </Tooltip>
           </div>
         )}
