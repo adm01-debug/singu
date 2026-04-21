@@ -28,6 +28,7 @@ import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScroll
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { useCompanies } from '@/hooks/useCompanies';
+import { countByChannel } from '@/lib/countByChannel';
 
 function normalize(s: string): string {
   return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
