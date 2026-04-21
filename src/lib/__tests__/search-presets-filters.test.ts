@@ -396,6 +396,7 @@ import {
   dedupeNameAgainst,
   PRESET_KIND,
   PRESET_VERSION,
+  type ExportablePreset,
 } from '../searchPresetTransport';
 
 describe('searchPresetTransport', () => {
