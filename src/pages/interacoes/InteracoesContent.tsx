@@ -253,6 +253,13 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         }}
       />
 
+      {adv.view === 'list' && (
+        <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+          <span className="hidden sm:inline">Densidade</span>
+          <DensityChips value={adv.density} onChange={(d) => setFilter('density', d)} />
+        </div>
+      )}
+
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
 
       {loading ? <InteractionsListSkeleton /> : (
