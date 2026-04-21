@@ -51,10 +51,42 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const { query: searchTerm, setQuery: setSearchTerm, results: fuzzyResults, isSearching, clearSearch } = useFuzzySearchLocal(interactions);
+
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount } = useInteractionsAdvancedFilter();
+  const { companies } = useCompanies();
+
+  const contactOptions = useMemo(
+    () => Array.from(contactMap.values()).map(c => ({ id: c.id, label: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Sem nome' })),
+    [contactMap]
+  );
+  const companyOptions = useMemo(
+    () => (Array.isArray(companies) ? companies : []).map(c => ({ id: c.id, label: c.name ?? 'Sem nome' })),
+    [companies]
+  );
+
+  // Apply advanced filters first (URL-driven)
+  const advancedFiltered = useMemo(() => {
+    if (!Array.isArray(interactions)) return [];
+    const q = debouncedQ ? normalize(debouncedQ) : '';
+    const deTs = adv.de ? new Date(adv.de).setHours(0, 0, 0, 0) : null;
+    const ateTs = adv.ate ? new Date(adv.ate).setHours(23, 59, 59, 999) : null;
+    return interactions.filter(i => {
+      if (adv.contact && i.contact_id !== adv.contact) return false;
+      if (adv.company && i.company_id !== adv.company) return false;
+      if (adv.canais.length > 0 && !adv.canais.includes(i.type)) return false;
+      const ts = new Date(i.created_at).getTime();
+      if (deTs !== null && ts < deTs) return false;
+      if (ateTs !== null && ts > ateTs) return false;
+      if (q) {
+        const hay = normalize(`${i.title ?? ''} ${i.content ?? ''} ${(i.tags ?? []).join(' ')}`);
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [interactions, adv, debouncedQ]);
 
   const filteredAndSorted = useMemo(() => {
-    let result = fuzzyResults.filter(interaction => {
+    const result = advancedFiltered.filter(interaction => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
         const val = interaction[key as keyof Interaction];
@@ -65,7 +97,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       return true;
     });
     return sortArray(result, sortBy as keyof Interaction, sortOrder, { dateFields: ['created_at', 'follow_up_date'], numericFields: ['duration', 'response_time'] });
-  }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
+  }, [advancedFiltered, activeFilters, sortBy, sortOrder]);
 
   const RENDER_BATCH = 40;
   const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
