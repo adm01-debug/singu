@@ -1,44 +1,49 @@
 
 
-# Plano: Validar ação "Limpar" dos filtros da Ficha 360
+# Plano: Botão "Zerar período" na barra de filtros da Ficha 360
 
-## Resultado da auditoria
+## Objetivo
 
-A ação **já está implementada e consistente** em `src/hooks/useFicha360Filters.ts` e devidamente plugada na UI. Nenhuma mudança de código necessária.
+Adicionar um botão na `FiltrosInteracoesBar` que volte o período ao padrão (90 dias) **sem tocar nos canais selecionados**, complementando os botões já existentes ("Todos os canais" e "Limpar").
 
-## Evidências
+## Mudanças
 
-**Hook `clear` (`useFicha360Filters.ts`, linhas 64-74):**
-```ts
-const clear = useCallback(() => {
-  setSearchParams((prev) => {
-    const sp = new URLSearchParams(prev);
-    sp.delete('periodo');
-    sp.delete('canais');
-    return sp;
-  }, { replace: true });
-}, [setSearchParams]);
+### 1. `src/components/ficha-360/FiltrosInteracoesBar.tsx`
+
+Adicionar novo botão entre o seletor de período e a seção de canais (ou logo após "Todos os canais"), visível apenas quando `days !== 90`:
+
+```tsx
+{days !== 90 && (
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() => onDaysChange(90)}
+    className="h-6 px-2 text-xs text-muted-foreground gap-1"
+    aria-label="Zerar período para 90 dias"
+    title="Voltar para o período padrão (90 dias)"
+  >
+    <RotateCcw className="h-3 w-3" /> Zerar período
+  </Button>
+)}
 ```
 
-- Remove `periodo` e `canais` da URL preservando outros query params.
-- Usa `replace: true` (não polui histórico).
-- Após o clear, os memos `days` e `channels` recalculam: `days` cai para `DEFAULT_DAYS = 90` (fallback quando `periodo` é inválido/ausente) e `channels` vira `[]` (fallback quando `canais` é null).
+- Importar `RotateCcw` de `lucide-react`.
+- Reutiliza o handler `onDaysChange` já presente nas props (não exige nova prop nem mudança de assinatura).
+- Como chama `onDaysChange(90)` via hook `setDays`, o `useFicha360Filters` remove `?periodo` da URL (já que `90` é o `DEFAULT_DAYS`) usando `replace: true` — comportamento já implementado.
+- Canais permanecem intactos (a chamada não toca em `setChannels`).
 
-**Plugado na UI:**
-- `FiltrosInteracoesBar.tsx` (linhas 117-125): botão "Limpar" exibido quando `activeCount > 0`, dispara `onClear` → `clear()`.
-- `FiltrosAtivosChips.tsx` (linhas 88-96): botão "Limpar tudo" exibido quando `activeChipCount >= 2`, dispara `onClearAll` → `clear()`.
-- `Ficha360.tsx` passa `clear` como prop `onClear` / `onClearAll` para ambos os componentes.
+### 2. Posicionamento visual
 
-**Comportamento end-to-end consistente:**
-1. URL volta a `/ficha-360/<contactId>` (sem `?periodo` nem `?canais`).
-2. Seletor de período destaca `90d` (default).
-3. Todos os badges de canal voltam a `outline`.
-4. Linha de chips ativos some (ou mostra apenas o contador).
-5. `useFicha360({ days: 90, channels: [], … })` refaz a query sem filtros.
+Colocar o botão "Zerar período" **imediatamente após o grupo de período** (antes dos badges de canais), para proximidade semântica. Os botões "Todos os canais" e "Limpar" continuam ao final.
 
-## Conclusão
+Ordem final da barra:
+1. Grupo de período (7d/30d/90d/1a)
+2. **[NOVO]** "Zerar período" (condicional: `days !== 90`)
+3. Badges de canais
+4. "Todos os canais" (condicional: há canais ativos)
+5. "Limpar" (condicional: `activeCount > 0`)
 
-A ação "Limpar" já remove `periodo` e `canais` da URL, restaura `days = 90` e `channels = []`, atualiza seletor + chips + lista de forma sincronizada e usa `replace: true`. Nenhuma alteração em código de produção é necessária — todos os critérios solicitados estão atendidos.
+## Critérios de aceite
 
-Se desejar reforço documental, posso adicionar uma seção "Comportamento esperado de Limpar" ao `docs/qa/ficha360-deep-link-filtros.md` consolidando os 5 pontos acima como referência única — mas o item já está coberto pelos cenários 3.5 e pelo checklist existentes.
+(a) Botão "Zerar período" aparece em `FiltrosInteracoesBar` somente quando `days !== 90`; (b) clicar dispara `onDaysChange(90)`, removendo `?periodo` da URL via `replace: true` (comportamento já no hook); (c) canais selecionados (`?canais=...`) permanecem inalterados após o clique; (d) ícone `RotateCcw` + label "Zerar período" em PT-BR; (e) `aria-label` e `title` descritivos; (f) estilo consistente com os demais botões ghost da barra (`h-6 px-2 text-xs text-muted-foreground gap-1`); (g) sem nova prop, sem mudança no hook, sem mudança em `Ficha360.tsx` ou `FiltrosAtivosChips.tsx`; (h) flat, sem emojis, arquivo permanece pequeno.
 
