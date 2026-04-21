@@ -1,5 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { suggestGenericPresetName } from '@/lib/suggestPresetName';
@@ -49,6 +59,7 @@ export function SearchPresetsMenu({
     setSortMode,
     savePreset,
     deletePreset,
+    updatePreset,
     toggleFavorite,
     markAsUsed,
   } = useSearchPresets(context);
@@ -56,8 +67,68 @@ export function SearchPresetsMenu({
   const [presetName, setPresetName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFilterUpdate, setPendingFilterUpdate] = useState<SearchPreset | null>(null);
+
+  useEffect(() => {
+    if (editingId) {
+      requestAnimationFrame(() => renameInputRef.current?.select());
+    }
+  }, [editingId]);
+
+  const activeFilterCount = Object.values(currentFilters).flat().length + (currentSearchTerm ? 1 : 0);
+
   const hasActiveFilters = Object.keys(currentFilters).some(k => currentFilters[k]?.length > 0)
     || currentSearchTerm;
+
+  const startRename = (preset: SearchPreset, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(preset.id);
+    setRenameValue(preset.name);
+  };
+
+  const cancelRename = () => {
+    setEditingId(null);
+    setRenameValue('');
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    const trimmed = renameValue.trim().slice(0, 60);
+    if (!trimmed) { cancelRename(); return; }
+    const current = presets.find(p => p.id === editingId);
+    if (!current) { cancelRename(); return; }
+    if (trimmed === current.name) { cancelRename(); return; }
+    const otherNames = presets.filter(p => p.id !== editingId).map(p => p.name);
+    const finalName = dedupeNameAgainst(otherNames, trimmed);
+    updatePreset(editingId, { name: finalName });
+    cancelRename();
+    toast.success('Preset renomeado');
+  };
+
+  const handleRenameKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+  };
+
+  const askUpdateFilters = (preset: SearchPreset, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPendingFilterUpdate(preset);
+  };
+
+  const confirmUpdateFilters = () => {
+    if (!pendingFilterUpdate) return;
+    updatePreset(pendingFilterUpdate.id, {
+      filters: currentFilters,
+      sortBy: currentSortBy,
+      sortOrder: currentSortOrder,
+      searchTerm: currentSearchTerm,
+    });
+    setPendingFilterUpdate(null);
+    toast.success('Filtros do preset atualizados');
+  };
 
   const handleStartNaming = () => {
     const suggested = suggestGenericPresetName(currentFilters, currentSearchTerm);
@@ -99,6 +170,7 @@ export function SearchPresetsMenu({
   };
 
   return (
+    <>
     <Popover>
       <PopoverTrigger asChild>
         <Button
@@ -151,7 +223,7 @@ export function SearchPresetsMenu({
                 <div
                   key={preset.id}
                   className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                  onClick={() => handleApply(preset)}
+                  onClick={() => { if (editingId !== preset.id) handleApply(preset); }}
                 >
                   <button
                     type="button"
@@ -172,25 +244,91 @@ export function SearchPresetsMenu({
                     />
                   </button>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {Object.values(preset.filters).flat().length} filtros
-                      {preset.searchTerm && ` · "${preset.searchTerm}"`}
-                      {usage >= 3 && ` · Usado ${usage}x`}
-                    </p>
+                    {editingId === preset.id ? (
+                      <Input
+                        ref={renameInputRef}
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={handleRenameKeydown}
+                        onBlur={commitRename}
+                        onClick={(e) => e.stopPropagation()}
+                        maxLength={60}
+                        className="h-7 text-xs"
+                        aria-label="Renomear preset"
+                      />
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {Object.values(preset.filters).flat().length} filtros
+                          {preset.searchTerm && ` · "${preset.searchTerm}"`}
+                          {usage >= 3 && ` · Usado ${usage}x`}
+                        </p>
+                      </>
+                    )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deletePreset(preset.id);
-                      toast('Preset removido');
-                    }}
-                  >
-                    <Trash2 className="w-3 h-3 text-muted-foreground" />
-                  </Button>
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                    {editingId === preset.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Confirmar"
+                          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); commitRename(); }}
+                        >
+                          <Check className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Cancelar"
+                          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cancelRename(); }}
+                        >
+                          <X className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Renomear"
+                          aria-label="Renomear preset"
+                          onClick={(e) => startRename(preset, e)}
+                        >
+                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                        {hasActiveFilters && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Atualizar com filtros atuais"
+                            aria-label="Atualizar filtros do preset"
+                            onClick={(e) => askUpdateFilters(preset, e)}
+                          >
+                            <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Remover"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletePreset(preset.id);
+                            toast('Preset removido');
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -251,5 +389,27 @@ export function SearchPresetsMenu({
         </div>
       </PopoverContent>
     </Popover>
+
+    <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Os filtros salvos serão substituídos pelos filtros ativos agora.
+            As estatísticas de uso e o favorito serão preservados.
+            {pendingFilterUpdate && (
+              <span className="mt-2 block text-foreground">
+                {activeFilterCount} filtro{activeFilterCount !== 1 ? 's' : ''} ativo{activeFilterCount !== 1 ? 's' : ''} será{activeFilterCount !== 1 ? 'ão' : ''} salvo{activeFilterCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
+              </span>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmUpdateFilters}>Atualizar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

@@ -8,6 +8,7 @@ export interface SearchPreset {
   sortOrder: 'asc' | 'desc';
   searchTerm?: string;
   createdAt: string;
+  updatedAt?: string;
   isFavorite?: boolean;
   usageCount?: number;
   lastUsedAt?: string;
@@ -112,8 +113,8 @@ export function useSearchPresets(context: string = 'contacts') {
     setPresets(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  const updatePreset = useCallback((id: string, updates: Partial<Omit<SearchPreset, 'id' | 'createdAt'>>) => {
-    setPresets(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  const updatePreset = useCallback((id: string, updates: Partial<Pick<SearchPreset, 'name' | 'filters' | 'sortBy' | 'sortOrder' | 'searchTerm'>>) => {
+    setPresets(prev => prev.map(p => p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p));
   }, []);
 
   const toggleFavorite = useCallback((id: string) => {

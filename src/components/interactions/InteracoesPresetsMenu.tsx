@@ -1,5 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -61,12 +71,23 @@ function parseDate(iso?: string): Date | undefined {
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   filters, setFilter, clear, activeCount,
 }: Props) {
-  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
+  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
+
+  useEffect(() => {
+    if (editingId) {
+      requestAnimationFrame(() => renameInputRef.current?.select());
+    }
+  }, [editingId]);
 
   const handleStartNaming = () => {
     const suggested = suggestInteracoesPresetName(filters);
@@ -188,6 +209,60 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     toast.success(`${items.length} busca${items.length > 1 ? 's' : ''} exportada${items.length > 1 ? 's' : ''}`);
   };
 
+  const startRename = (preset: typeof presets[number], e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(preset.id);
+    setRenameValue(preset.name);
+  };
+
+  const cancelRename = () => {
+    setEditingId(null);
+    setRenameValue('');
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    const trimmed = renameValue.trim().slice(0, 60);
+    if (!trimmed) { cancelRename(); return; }
+    const current = presets.find(p => p.id === editingId);
+    if (!current) { cancelRename(); return; }
+    if (trimmed === current.name) { cancelRename(); return; }
+    const otherNames = presets.filter(p => p.id !== editingId).map(p => p.name);
+    const finalName = dedupeNameAgainst(otherNames, trimmed);
+    updatePreset(editingId, { name: finalName });
+    cancelRename();
+    toast.success('Preset renomeado');
+  };
+
+  const handleRenameKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+  };
+
+  const askUpdateFilters = (preset: typeof presets[number], e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPendingFilterUpdate(preset);
+  };
+
+  const confirmUpdateFilters = () => {
+    if (!pendingFilterUpdate) return;
+    updatePreset(pendingFilterUpdate.id, {
+      filters: {
+        q: currentPayload.q ? [currentPayload.q] : [],
+        contact: currentPayload.contact ? [currentPayload.contact] : [],
+        company: currentPayload.company ? [currentPayload.company] : [],
+        canais: currentPayload.canais,
+        de: currentPayload.de ? [currentPayload.de] : [],
+        ate: currentPayload.ate ? [currentPayload.ate] : [],
+        sort: currentPayload.sort ? [currentPayload.sort] : [],
+      },
+      sortBy: '',
+      sortOrder: 'desc',
+    });
+    setPendingFilterUpdate(null);
+    toast.success('Filtros do preset atualizados');
+  };
+
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -243,7 +318,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <div
                     key={preset.id}
                     className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                    onClick={() => applyPreset(preset)}
+                    onClick={() => { if (editingId !== preset.id) applyPreset(preset); }}
                   >
                     <button
                       type="button"
@@ -264,44 +339,107 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                       />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {summarize(payload)}
-                        {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
-                      </p>
+                      {editingId === preset.id ? (
+                        <Input
+                          ref={renameInputRef}
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={handleRenameKeydown}
+                          onBlur={commitRename}
+                          onClick={(e) => e.stopPropagation()}
+                          maxLength={60}
+                          className="h-7 text-xs"
+                          aria-label="Renomear preset"
+                        />
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {summarize(payload)}
+                            {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
+                          </p>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Baixar JSON"
-                        onClick={(e) => { e.stopPropagation(); exportOne(preset); }}
-                      >
-                        <Download className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Copiar link"
-                        onClick={(e) => { e.stopPropagation(); copyLink(preset); }}
-                      >
-                        <Link2 className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Remover"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePreset(preset.id);
-                          toast('Busca removida');
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3 text-muted-foreground" />
-                      </Button>
+                      {editingId === preset.id ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Confirmar"
+                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); commitRename(); }}
+                          >
+                            <Check className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Cancelar"
+                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cancelRename(); }}
+                          >
+                            <X className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Renomear"
+                            aria-label="Renomear preset"
+                            onClick={(e) => startRename(preset, e)}
+                          >
+                            <Pencil className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          {activeCount > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              title="Atualizar com filtros atuais"
+                              aria-label="Atualizar filtros do preset"
+                              onClick={(e) => askUpdateFilters(preset, e)}
+                            >
+                              <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Baixar JSON"
+                            onClick={(e) => { e.stopPropagation(); exportOne(preset); }}
+                          >
+                            <Download className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Copiar link"
+                            onClick={(e) => { e.stopPropagation(); copyLink(preset); }}
+                          >
+                            <Link2 className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Remover"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deletePreset(preset.id);
+                              toast('Busca removida');
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
@@ -389,6 +527,27 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       </Popover>
 
       <ImportPresetsDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Os filtros salvos serão substituídos pelos filtros ativos agora.
+              As estatísticas de uso e o favorito serão preservados.
+              {pendingFilterUpdate && (
+                <span className="mt-2 block text-foreground">
+                  {activeCount} filtro{activeCount !== 1 ? 's' : ''} ativo{activeCount !== 1 ? 's' : ''} será{activeCount !== 1 ? 'ão' : ''} salvo{activeCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUpdateFilters}>Atualizar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 });
