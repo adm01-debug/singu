@@ -325,8 +325,7 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
               );
             })}
           </ul>
-          );
-        })()}
+        )}
       </CardContent>
     </Card>
   );
