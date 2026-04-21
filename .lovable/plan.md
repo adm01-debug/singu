@@ -1,44 +1,29 @@
 
 
-# Status: já implementado — proposta de polimento opcional
+# Plano: Card "Objeções em destaque" na aba Insights
 
 ## Diagnóstico
 
-Tudo que foi pedido na tarefa **já existe** no código atual:
+- `useInteractionsInsights` já agrega `objections: ObjectionAggregate[]` (objection, category, count, handled, unhandled, suggestedResponse) a partir de `conversation_analyses`.
+- Já existem 2 componentes prontos no projeto: `ObjectionsRanking` (lista completa simples) e `ObjectionsSpotlight` (top 3 com severidade alta/média/baixa, barra de taxa de tratamento, resposta sugerida) — exatamente o que o usuário pede.
+- Verificar se `ObjectionsSpotlight` já está renderizado no `InsightsPanel.tsx` da aba `/interacoes`. Se não, é só adicionar.
 
-| Requisito | Onde |
-|---|---|
-| Clique nos buckets (Positivo/Neutro/Negativo/Misto) | `SentimentDistributionChart.tsx` — clique em fatia do `Pie` E em item da legenda, com a11y completa |
-| Drawer de exemplos | `SentimentExamplesDrawer.tsx` (Sheet lateral) |
-| Até 20 conversas | `MAX_EXAMPLES = 20`, com rodapé "Mostrando 20 de N" |
-| Link para Ficha 360° | `<Link to={\`/contatos/${ex.contact_id}/ficha-360\`}>` |
-| Aba Insights de `/interacoes` | `InsightsPanel.tsx` linha 138-142 |
-| Buckets agregados | `useInteractionsInsights.sentimentBuckets` |
+## O que será construído
 
-Fluxo end-to-end validado: clique → `setSelectedBucket(key)` → drawer abre → fetch via `supabase.from("interactions").in("id", limitedIds)` ordenado por `created_at desc` → renderiza cards com badge, conteúdo truncado, data/tipo e CTA "Ficha 360".
+Garantir que o card **"Objeções em destaque"** apareça em destaque na aba Insights, usando o `ObjectionsSpotlight` já existente (top 3, severidade colorida, contagem, taxa de tratamento e barra), posicionado **acima** do `ObjectionsRanking` (lista completa) para dar destaque visual.
 
-## Decisão
+## Mudanças
 
-Como a feature já está entregue, **não há nada a implementar para cumprir o pedido**. Antes de gerar código redundante, abaixo listo melhorias opcionais que poderiam ser aplicadas se você quiser elevar a qualidade. **Nenhuma é necessária** para fechar o pedido — escolha quais (se alguma) quer que eu execute.
+### 1. `src/components/interactions/insights/InsightsPanel.tsx`
+- Importar `ObjectionsSpotlight` (se ainda não importado).
+- Renderizar dentro de uma `Card` própria com header **"Objeções em destaque"** + `CardDescription` curta ("Top 3 com maior risco de bloqueio"), passando `objections={objections}` (já disponível no painel via `useInteractionsInsights`).
+- Posicionar logo acima do card existente que contém o `ObjectionsRanking` (mantendo a lista completa abaixo, intacta).
+- Não renderizar a `Card` quando `objections.length === 0` (o componente já retorna `null` nesse caso, mas evitamos card vazio no layout).
 
-## Melhorias opcionais (escolher 0 a N)
+### 2. Sem alterações em hooks, tipos ou agregação
+- `ObjectionAggregate`, `useInteractionsInsights` e `ObjectionsSpotlight` já estão prontos. Zero código novo de lógica.
 
-1. **Migrar fetch para TanStack Query** — substituir o `useEffect` + `useState` no drawer por `useQuery(['sentiment-examples', bucket, limitedIds.join(',')], …)` com `staleTime: 5min`, conforme padrão do projeto (memória "TanStack Query Rules"). Reduz refetch ao reabrir o mesmo bucket no período da sessão.
+## Critérios de aceite
 
-2. **Realçar o bucket selecionado no chart** — ao abrir o drawer, aplicar `opacity` reduzida nas demais fatias e `stroke` no bucket ativo. Sinal visual de "estou vendo este recorte".
-
-3. **Botão "Ver no contexto" por exemplo** — adicionar segundo CTA ao lado de "Ficha 360" que navega para `/interacoes?id={ex.id}` (ou abre modal de detalhe se existir), facilitando voltar ao contexto da conversa, não só ao contato.
-
-4. **Skeleton do drawer alinhado ao layout do card** — substituir o `Loader2` central por 3 `<Skeleton>` no formato dos `<article>` reais (header + 3 linhas + footer). Reduz salto visual quando os dados chegam.
-
-5. **Ordenação selecionável** — toggle "Mais recentes / Mais negativas / Maior duração" no header do drawer (usa `sentiment` e `created_at` já trazidos no select).
-
-6. **Filtro por canal/tipo dentro do drawer** — chips no topo (`Email`, `WhatsApp`, `Call`…) que filtram client-side os 20 exemplos já carregados.
-
-## Recomendação
-
-Se quiser apenas **fechar o pedido**: nada a fazer, está pronto em produção.
-Se quiser **um polimento de alto valor / baixo risco**: combine **#1 (TanStack Query)** + **#4 (skeleton alinhado)**. As duas juntas mantêm o escopo enxuto, seguem padrões do projeto e melhoram percepção de performance sem mudar UX.
-
-Me diga quais melhorias aprovar (ex.: "faça 1 e 4", "faça todas", ou "nenhuma, está ok") e eu sigo.
+(a) Aba Insights de `/interacoes` exibe novo card **"Objeções em destaque"** acima da lista completa de objeções; (b) mostra até 3 objeções priorizadas por `unhandled*2 + count` (regra atual do `ObjectionsSpotlight`); (c) cada item tem ícone de severidade (Crítica/Atenção/Bem tratada), contagem de menções, "X/Y tratadas", taxa percentual e barra colorida; (d) quando há `unhandled > 0` e `suggestedResponse`, mostra bloco de "Resposta sugerida"; (e) quando todas tratadas, mostra confirmação positiva; (f) card oculto quando não há objeções no período (sem placeholder vazio); (g) PT-BR, flat, sem novas dependências, sem mudanças em arquivos fora de `InsightsPanel.tsx`; (h) lista completa (`ObjectionsRanking`) permanece disponível abaixo, sem regressão.
 
