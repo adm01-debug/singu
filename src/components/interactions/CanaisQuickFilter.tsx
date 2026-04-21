@@ -140,8 +140,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     toast.success('Filtros de canal aplicados');
   }, [pending, onChange]);
 
+  const [confirmRevertOpen, setConfirmRevertOpen] = useState(false);
+
   const revert = useCallback(() => {
     setPending(safe);
+    setConfirmRevertOpen(false);
+    toast.success('Alterações pendentes descartadas');
   }, [safe]);
 
   const handleToggleMode = useCallback(() => {
