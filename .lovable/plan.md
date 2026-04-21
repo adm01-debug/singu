@@ -1,32 +1,33 @@
 
 
-# Plano: Ordenar excertos por relevância
+# Plano: Volume semanal de interações no chart de sentimento
 
 ## Diagnóstico
 
-- Hoje `extractExcerpts` (em `src/lib/insights/extractExcerpts.ts`) intercala excertos em **round-robin por interação**, preservando a ordem original das fontes e a posição dentro de cada uma. O resultado: os 5 excertos exibidos no `ThemeExamplesDrawer` refletem distribuição entre conversas, não relevância.
-- Cada `RawHit` já tem `position` (offset no texto) e o regex já permite contar quantas keywords/matches existem no snippet.
-- Para "relevância" usaremos dois sinais simples e determinísticos:
-  1. **Densidade de matches** no próprio snippet (quantas ocorrências de keywords aparecem na janela exibida) — mais matches = mais relevante.
-  2. **Posição relativa** no texto (`position / textLength`) — empate desempata a favor de quem aparece mais cedo na conversa (sinal de tema central, não digressão final).
-- Preservar o cap por fonte (`maxPerSource`) para evitar que uma única conversa monopolize os 5 slots.
+- `SentimentTrendChart.tsx` já recebe `data` com `total` por semana (somatório de positive/neutral/negative/mixed) — usado hoje só no stat card "Conversas" e em `mixedStats`.
+- Não há indicação visual semana-a-semana de quanto volume sustenta cada ponto. Uma semana com 1 interação positiva e outra com 50 aparecem com peso visual idêntico.
+- Recharts suporta `ComposedChart` com eixo Y secundário — encaixa sem mudar shape de dados.
 
-## Mudanças
+## O que será construído
 
-### `src/lib/insights/extractExcerpts.ts`
+Adicionar **barras de volume total por semana** ao fundo do chart existente, em eixo Y secundário, mantendo as 4 linhas de sentimento em primeiro plano.
 
-1. **Calcular densidade por hit**: ao montar cada `RawHit`, contar matches do regex dentro do `snippet` final (re-executar o mesmo regex sobre o snippet com `lastIndex = 0`). Armazenar `density: number` e `relPosition: number` (= `matchStart / Math.max(textLength, 1)`) no hit.
-2. **Substituir o round-robin** por uma seleção em duas fases:
-   - **Fase A — coleta com cap por fonte**: manter agrupamento por source e o limite `maxPerSource` (já existente) para garantir diversidade.
-   - **Fase B — ordenação global por relevância**: achatar todos os hits coletados em uma lista única e ordenar por:
-     - `density` desc (primário),
-     - `relPosition` asc (secundário, mais cedo = melhor),
-     - ordem original da fonte como desempate final estável.
-   - Cortar em `totalCap`.
-3. **Manter a interface `Excerpt` inalterada** (não expor `density`/`relPosition`) — são apenas critérios internos de ordenação. Sem mudanças em hooks, tipos, no drawer ou em `pickTopPassages`.
-4. Sem novas dependências, sem `any`, arquivo permanece bem abaixo de 400 linhas.
+### Mudanças em `src/components/interactions/insights/SentimentTrendChart.tsx`
+
+1. Trocar `<LineChart>` por `<ComposedChart>` (mesma família Recharts, drop-in).
+2. Adicionar `<YAxis yAxisId="volume" orientation="right" />` com `tick` discreto em `text-muted-foreground`, domínio `[0, 'dataMax']`, ticks compactos.
+3. Manter o `<YAxis>` atual como `yAxisId="sentiment"` (default à esquerda, % positivo) e marcar todas as `<Line>` existentes com `yAxisId="sentiment"`.
+4. Inserir **antes das linhas** (para ficar no fundo):
+   ```tsx
+   <Bar yAxisId="volume" dataKey="total" name="Volume" 
+        fill="hsl(var(--muted-foreground))" fillOpacity={0.18}
+        radius={[2, 2, 0, 0]} barSize={18} />
+   ```
+5. Atualizar o tooltip custom para listar "Volume: N interações" no topo (antes das linhas de sentimento), usando o mesmo dataset já disponível no payload.
+6. Garantir que `ReferenceLine` de Melhor/Pior continue ancorado em `yAxisId="sentiment"`.
+7. Sem mudanças em hooks, agregação, tipos, stat cards (Melhor/Pior/Conversas/Mistos) ou outros componentes.
 
 ## Critérios de aceite
 
-(a) Os até 5 excertos exibidos no `ThemeExamplesDrawer` aparecem ordenados por relevância: mais matches de keywords no snippet primeiro, com posição mais cedo no texto desempatando; (b) cap `maxPerSource = 2` continua valendo, evitando que uma única interação ocupe todos os slots; (c) excertos sem matches ou com regex inválida continuam retornando `[]` (mesmo fallback atual aciona `pickTopPassages`); (d) nenhuma mudança em `pickTopPassages.ts`, `ThemeExamplesDrawer.tsx`, hooks, tipos públicos ou outros componentes; (e) sem novas dependências, sem `any`, sem `dangerouslySetInnerHTML`; (f) função permanece pura, determinística e estável (mesma entrada → mesma saída); (g) PT-BR, flat; (h) sem regressão em highlight de keywords, banner de fallback, seletor Curto/Médio/Longo, link Ficha 360 ou estados de loading/empty.
+(a) O chart de sentimento exibe barras cinza-translúcidas (opacidade ~18%) atrás das linhas, com altura proporcional ao total de interações da semana, em eixo Y secundário à direita; (b) as 4 linhas de sentimento continuam plotadas no eixo esquerdo (% positivo) com comportamento atual preservado, incluindo destaque da linha "Misto"; (c) tooltip lista "Volume: N interações" como primeira linha, seguido das linhas de sentimento existentes (omitindo as com `count === 0`); (d) `ReferenceLine` de Melhor/Pior continua funcionando no eixo de sentimento; (e) sem mudanças em `useInteractionsInsights.ts`, tipos públicos, stat cards do header ou outros componentes; (f) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (g) arquivo permanece ≤300 linhas; (h) sem regressão em layout responsivo, legenda, badge de direção ou seletor de período.
 
