@@ -26,19 +26,47 @@ export interface ExternalInteraction {
   empresa_cnpj: string | null;
 }
 
-export function useExternalInteractions(contactId: string | undefined, limit = 50) {
+interface Options {
+  days?: number;
+  channels?: string[];
+}
+
+export function useExternalInteractions(
+  contactId: string | undefined,
+  limit = 50,
+  options: Options = {},
+) {
+  const { days, channels } = options;
+  const normalizedChannels = Array.isArray(channels)
+    ? [...channels].map((c) => c.toLowerCase()).sort()
+    : [];
+
   return useQuery({
-    queryKey: ['external-interactions', contactId, limit],
+    queryKey: ['external-interactions', contactId, limit, days ?? null, normalizedChannels],
     queryFn: async () => {
       if (!contactId) return [];
+
+      const filters: Array<{ type: string; column: string; value: unknown }> = [
+        { type: 'eq', column: 'contact_id', value: contactId },
+      ];
+
+      if (typeof days === 'number' && days > 0) {
+        const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+        filters.push({ type: 'gte', column: 'data_interacao', value: since });
+      }
+
+      if (normalizedChannels.length > 0) {
+        filters.push({ type: 'in', column: 'channel', value: normalizedChannels });
+      }
+
       const { data, error } = await queryExternalData<ExternalInteraction>({
         table: 'vw_interaction_timeline',
-        filters: [{ type: 'eq', column: 'contact_id', value: contactId }],
+        filters,
         order: { column: 'data_interacao', ascending: false },
         range: { from: 0, to: limit - 1 },
       });
       if (error) throw error;
-      return data || [];
+      return Array.isArray(data) ? data : [];
     },
     enabled: !!contactId,
     staleTime: 5 * 60 * 1000,
