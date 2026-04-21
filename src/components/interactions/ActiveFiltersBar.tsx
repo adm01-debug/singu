@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
@@ -34,6 +34,13 @@ function fmtDate(d: Date): string {
   if (!(d instanceof Date) || isNaN(d.getTime())) return '';
   const yy = d.getFullYear().toString().slice(-2);
   return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${yy}`;
+}
+
+/** Sanitiza e capitaliza nomes de canal desconhecidos para exibição. */
+function prettifyChannel(raw: string): string {
+  const cleaned = (raw ?? '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (!cleaned) return 'Canal';
+  return cleaned.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
@@ -92,15 +99,17 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
       {canais.map((c) => {
         const meta = CHANNEL_META[c];
-        const Icon = meta?.Icon;
-        const label = meta?.label ?? c.charAt(0).toUpperCase() + c.slice(1);
+        const isKnown = !!meta;
+        const Icon = isKnown ? meta.Icon : Tag;
+        const label = isKnown ? meta.label : prettifyChannel(c);
         return (
           <Badge
             key={c}
             variant="secondary"
             closeable
             onClose={wrap(() => setFilter('canais', canais.filter((x) => x !== c)))}
-            icon={Icon ? <Icon className="w-3 h-3" /> : undefined}
+            icon={<Icon className="w-3 h-3" />}
+            title={isKnown ? undefined : `Canal desconhecido: ${c}`}
           >
             {label}
           </Badge>
