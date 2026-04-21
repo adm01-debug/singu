@@ -24,6 +24,18 @@ interface RawHit {
   text: string;
   matchTerm: string;
   position: number;
+  density: number;
+  relPosition: number;
+  sourceOrder: number;
+  hitOrder: number;
+}
+
+function countMatches(snippet: string, re: RegExp): number {
+  const norm = normalize(snippet);
+  re.lastIndex = 0;
+  let count = 0;
+  while (re.exec(norm) !== null) count++;
+  return count;
 }
 
 export function extractExcerpts(
