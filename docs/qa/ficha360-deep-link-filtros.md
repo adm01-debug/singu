@@ -101,6 +101,16 @@ Esperado:
 - Todos os badges de canal voltam para variant `outline`.
 - Linha de chips ativos desaparece (ou mostra apenas o contador, se houver interações).
 
+### 3.6 Comportamento esperado de "Limpar" / "Limpar tudo" (referência consolidada)
+
+Tanto o botão `Limpar` da `FiltrosInteracoesBar` (visível quando `activeCount > 0`) quanto o botão `Limpar tudo` dos `FiltrosAtivosChips` (visível quando há ≥ 2 chips ativos) disparam o mesmo handler `clear()` do hook `useFicha360Filters`. Comportamento garantido em ambos os casos:
+
+1. URL: remove apenas `periodo` e `canais`, preservando quaisquer outros query params eventualmente presentes.
+2. Histórico: usa `replace: true` — não empilha entrada nova no histórico do navegador.
+3. Período: `days` retorna a `90` (default) e o botão `90d` fica ativo no seletor.
+4. Canais: `channels` retorna a `[]`, todos os badges voltam para variant `outline` e o botão `Todos os canais` deixa de ser exibido.
+5. Chips + lista: a linha de chips ativos some (ou mantém apenas o contador `X de Y`), e a query `useFicha360` é refeita sem filtros, repopulando a lista com a janela padrão de 90 dias e todos os canais.
+
 ---
 
 ## 4. Casos de borda
