@@ -23,7 +23,8 @@ type ShortcutCategory =
   | 'actions' 
   | 'ui' 
   | 'editing' 
-  | 'search';
+  | 'search'
+  | 'filters';
 
 interface UseKeyboardShortcutsOptions {
   enabled?: boolean;
@@ -215,6 +216,15 @@ export function useKeyboardShortcutsEnhanced(options: UseKeyboardShortcutsOption
       category: 'editing',
       global: true
     },
+
+    // Channel filter shortcuts (handled inside CanaisQuickFilter — listed here for cheatsheet only)
+    { key: '1', alt: true, action: () => {}, description: 'Alternar canal WhatsApp', category: 'filters', global: true },
+    { key: '2', alt: true, action: () => {}, description: 'Alternar canal Ligação', category: 'filters', global: true },
+    { key: '3', alt: true, action: () => {}, description: 'Alternar canal Email', category: 'filters', global: true },
+    { key: '4', alt: true, action: () => {}, description: 'Alternar canal Reunião', category: 'filters', global: true },
+    { key: '5', alt: true, action: () => {}, description: 'Alternar canal Vídeo', category: 'filters', global: true },
+    { key: '6', alt: true, action: () => {}, description: 'Alternar canal Nota', category: 'filters', global: true },
+    { key: '0', alt: true, action: () => {}, description: 'Limpar canais', category: 'filters', global: true },
   ], [navigate]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -417,4 +427,5 @@ export const shortcutCategoryLabels: Record<ShortcutCategory, string> = {
   ui: 'Interface',
   editing: 'Edição',
   search: 'Busca',
+  filters: 'Filtros de canal',
 };

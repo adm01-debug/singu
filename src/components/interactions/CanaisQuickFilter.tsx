@@ -191,10 +191,50 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
 
+  // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa. Funciona com foco em inputs.
+  const [altPressed, setAltPressed] = useState(false);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key === '0') {
+        e.preventDefault();
+        const hasAny = mode === 'auto' ? safe.length > 0 : pending.length > 0;
+        if (!hasAny) return;
+        clearAll();
+        toast.message('Canais limpos', { duration: 1500 });
+        return;
+      }
+      const idx = parseInt(e.key, 10);
+      if (Number.isNaN(idx) || idx < 1 || idx > CHANNELS.length) return;
+      e.preventDefault();
+      const canal = CHANNELS[idx - 1];
+      const wasActive = (mode === 'manual' ? pending : safe).includes(canal.value);
+      toggleCanal(canal.value);
+      toast.message(`${canal.label} ${wasActive ? 'desativado' : 'ativado'}`, { duration: 1500 });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [mode, safe, pending, toggleCanal, clearAll]);
+
+  // Detecta Alt pressionado para mostrar badges Alt+N nos chips
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => { if (e.altKey) setAltPressed(true); };
+    const onUp = (e: KeyboardEvent) => { if (!e.altKey) setAltPressed(false); };
+    const onBlur = () => setAltPressed(false);
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, []);
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-wrap items-center gap-1">
-        {CHANNELS.map((opt) => {
+        {CHANNELS.map((opt, idx) => {
           const Icon = opt.icon;
           const inPending = pending.includes(opt.value);
           const inApplied = safe.includes(opt.value);
@@ -202,39 +242,49 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           const hasCounts = !!counts;
           const count = hasCounts ? (counts?.[opt.value] ?? 0) : undefined;
           const isEmpty = hasCounts && count === 0 && !inPending;
+          const shortcutLabel = `Alt+${idx + 1}`;
           const chip = (
-            <Badge
-              key={opt.value}
-              variant={inPending ? 'default' : 'outline'}
-              role="button"
-              aria-pressed={inPending}
-              title={opt.label}
-              onClick={() => toggleCanal(opt.value)}
-              className={cn(
-                'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
-                !inPending && 'hover:bg-muted',
-                isDifferent && 'border-dashed',
-                isEmpty && 'opacity-50',
-              )}
-            >
-              <Icon className="w-3 h-3" />
-              <span className="hidden sm:inline">{opt.label}</span>
-              {typeof count === 'number' && (
-                <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
-                  {count > 999 ? '999+' : count}
+            <div className="relative inline-flex">
+              <Badge
+                variant={inPending ? 'default' : 'outline'}
+                role="button"
+                aria-pressed={inPending}
+                aria-keyshortcuts={`Alt+${idx + 1}`}
+                title={opt.label}
+                onClick={() => toggleCanal(opt.value)}
+                className={cn(
+                  'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
+                  !inPending && 'hover:bg-muted',
+                  isDifferent && 'border-dashed',
+                  isEmpty && 'opacity-50',
+                )}
+              >
+                <Icon className="w-3 h-3" />
+                <span className="hidden sm:inline">{opt.label}</span>
+                {typeof count === 'number' && (
+                  <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
+                    {count > 999 ? '999+' : count}
+                  </span>
+                )}
+              </Badge>
+              {altPressed && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -bottom-1 -right-1 rounded border border-border bg-background px-1 text-[9px] font-mono leading-tight text-muted-foreground shadow-sm"
+                >
+                  {idx + 1}
                 </span>
               )}
-            </Badge>
+            </div>
           );
-          if (isEmpty) {
-            return (
-              <Tooltip key={opt.value}>
-                <TooltipTrigger asChild>{chip}</TooltipTrigger>
-                <TooltipContent side="top">Sem interações neste canal</TooltipContent>
-              </Tooltip>
-            );
-          }
-          return chip;
+          return (
+            <Tooltip key={opt.value}>
+              <TooltipTrigger asChild>{chip}</TooltipTrigger>
+              <TooltipContent side="top">
+                {isEmpty ? `Sem interações neste canal (${shortcutLabel})` : `${opt.label} (${shortcutLabel})`}
+              </TooltipContent>
+            </Tooltip>
+          );
         })}
 
         <Tooltip>
@@ -274,8 +324,8 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
             </TooltipTrigger>
             <TooltipContent side="top">
               {mode === 'auto'
-                ? 'Remove todos os canais selecionados (aplica imediatamente).'
-                : 'Desmarca todos os canais. Clique em Aplicar para confirmar.'}
+                ? 'Remove todos os canais selecionados (aplica imediatamente). (Alt+0)'
+                : 'Desmarca todos os canais. Clique em Aplicar para confirmar. (Alt+0)'}
             </TooltipContent>
           </Tooltip>
         )}

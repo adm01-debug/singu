@@ -6,6 +6,7 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     info: vi.fn(),
+    message: vi.fn(),
   },
 }));
 
@@ -149,5 +150,42 @@ describe('CanaisQuickFilter', () => {
     const onChange = vi.fn();
     render(<CanaisQuickFilter canais={[]} onChange={onChange} counts={{ email: 1500 }} />);
     expect(screen.getByText('999+')).toBeInTheDocument();
+  });
+
+  it('keyboard: Alt+1 toggles WhatsApp in auto mode', () => {
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    fireEvent.keyDown(window, { key: '1', altKey: true });
+    expect(onChange).toHaveBeenCalledWith(['whatsapp']);
+  });
+
+  it('keyboard: Alt+0 clears channels in auto mode', () => {
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+    fireEvent.keyDown(window, { key: '0', altKey: true });
+    expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('keyboard: Alt+N works even when focus is inside an input', () => {
+    const onChange = vi.fn();
+    render(
+      <div>
+        <input data-testid="search-input" />
+        <CanaisQuickFilter canais={[]} onChange={onChange} />
+      </div>
+    );
+    const input = screen.getByTestId('search-input') as HTMLInputElement;
+    input.focus();
+    fireEvent.keyDown(input, { key: '3', altKey: true, bubbles: true });
+    expect(onChange).toHaveBeenCalledWith(['email']);
+  });
+
+  it('keyboard: in manual mode, Alt+N updates pending without calling onChange', () => {
+    localStorage.setItem('channel-sync-mode', 'manual');
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    fireEvent.keyDown(window, { key: '1', altKey: true });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByText('Aplicar')).toBeInTheDocument();
   });
 });
