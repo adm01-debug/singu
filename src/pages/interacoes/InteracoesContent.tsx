@@ -21,6 +21,13 @@ import type { Interaction } from '@/hooks/useInteractions';
 import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
+import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
+import { useCompanies } from '@/hooks/useCompanies';
+
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 const ActivityHeatmapChart = lazy(() => import('@/components/interactions/ActivityHeatmapChart'));
 
