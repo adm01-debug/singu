@@ -16,6 +16,8 @@ import {
 import type { TooltipProps } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentTrendPoint, SentimentTrendSummary } from "@/hooks/useInteractionsInsights";
