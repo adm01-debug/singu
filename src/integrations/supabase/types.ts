@@ -6973,6 +6973,42 @@ export type Database = {
         }
         Relationships: []
       }
+      proximo_passo_feedback: {
+        Row: {
+          channel_used: string | null
+          contact_id: string
+          created_at: string
+          executed_at: string
+          id: string
+          notes: string | null
+          outcome: Database["public"]["Enums"]["passo_outcome"]
+          passo_id: string
+          user_id: string
+        }
+        Insert: {
+          channel_used?: string | null
+          contact_id: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          notes?: string | null
+          outcome: Database["public"]["Enums"]["passo_outcome"]
+          passo_id: string
+          user_id: string
+        }
+        Update: {
+          channel_used?: string | null
+          contact_id?: string
+          created_at?: string
+          executed_at?: string
+          id?: string
+          notes?: string | null
+          outcome?: Database["public"]["Enums"]["passo_outcome"]
+          passo_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       purchase_history: {
         Row: {
           amount: number | null
@@ -10388,6 +10424,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      passo_outcome:
+        | "respondeu_positivo"
+        | "respondeu_neutro"
+        | "nao_respondeu"
+        | "nao_atendeu"
+        | "pulou"
       validation_kind: "email" | "phone"
       validation_queue_status: "pending" | "processing" | "done" | "error"
     }
@@ -10518,6 +10560,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      passo_outcome: [
+        "respondeu_positivo",
+        "respondeu_neutro",
+        "nao_respondeu",
+        "nao_atendeu",
+        "pulou",
+      ],
       validation_kind: ["email", "phone"],
       validation_queue_status: ["pending", "processing", "done", "error"],
     },
