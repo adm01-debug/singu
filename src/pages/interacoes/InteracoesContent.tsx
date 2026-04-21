@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Phone, Mail, Users, Edit, Search, Calendar, MoreVertical,
@@ -24,9 +24,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
-import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
+import { PaginationBar } from '@/components/interactions/PaginationBar';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
-import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { useCompanies } from '@/hooks/useCompanies';
 import { countByChannel } from '@/lib/countByChannel';
 
@@ -57,7 +56,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll } = useInteractionsAdvancedFilter();
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange } = useInteractionsAdvancedFilter();
   const { companies } = useCompanies();
 
   const contactOptions = useMemo(
@@ -130,11 +129,39 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return sortInteractions(mapped, adv.sort, debouncedQ);
   }, [filteredAndSorted, contactMap, adv.sort, debouncedQ]);
 
-  const { visible: visibleInteractions, hasMore, sentinelRef } = useInfiniteList(
-    sortedForView,
-    50,
-    [adv.q, adv.contact, adv.company, adv.canais.join(','), adv.direcao, adv.de?.getTime(), adv.ate?.getTime(), adv.sort, activeFilters, sortBy, sortOrder]
+  // Paginação derivada (URL-driven). Defaults: page=1, perPage=25.
+  const total = sortedForView.length;
+  const totalPages = Math.max(1, Math.ceil(total / adv.perPage));
+  const safePage = Math.min(adv.page, totalPages);
+  const start = (safePage - 1) * adv.perPage;
+  const visibleInteractions = useMemo(
+    () => sortedForView.slice(start, start + adv.perPage),
+    [sortedForView, start, adv.perPage]
   );
+
+  // Clamp: se a URL pediu uma página além do total, corrige via replace.
+  useEffect(() => {
+    if (total > 0 && adv.page > totalPages) setFilter('page', totalPages);
+  }, [total, totalPages, adv.page, setFilter]);
+
+  // Scroll suave ao trocar de página (não no mount).
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [safePage]);
+
+  // Atalhos PageUp / PageDown (ignora se foco em input/textarea).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === 'PageDown' && safePage < totalPages) { e.preventDefault(); setFilter('page', safePage + 1); }
+      if (e.key === 'PageUp' && safePage > 1) { e.preventDefault(); setFilter('page', safePage - 1); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [safePage, totalPages, setFilter]);
 
   return (
     <div className="p-6 space-y-6">
@@ -157,6 +184,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         resultsCount={filteredAndSorted.length}
         totalCount={interactions.length}
         applyAll={applyAll}
+        applyDateRange={applyDateRange}
         channelCounts={channelCounts}
       />
 
@@ -210,11 +238,12 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
               })}
             </div>
           </div>
-          <InfiniteScrollSentinel
-            sentinelRef={sentinelRef}
-            hasMore={hasMore}
-            totalLoaded={visibleInteractions.length}
-            total={sortedForView.length}
+          <PaginationBar
+            page={safePage}
+            perPage={adv.perPage}
+            total={total}
+            onPageChange={(p) => setFilter('page', p)}
+            onPerPageChange={(pp) => setFilter('perPage', pp)}
           />
           {filteredAndSorted.length === 0 && !loading && (
             activeCount > 0 || Object.keys(activeFilters).length > 0
