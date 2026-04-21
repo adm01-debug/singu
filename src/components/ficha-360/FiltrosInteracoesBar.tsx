@@ -47,7 +47,7 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   };
 
   return (
-    <div className="space-y-2 pt-1">
+    <div className="pt-1">
       <div className="flex flex-wrap items-center gap-2">
         {/* Período */}
         <div className="inline-flex items-center rounded-md border border-border bg-card p-0.5">
@@ -121,11 +121,6 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
           </Button>
         )}
       </div>
-
-      <p className="text-xs text-muted-foreground">
-        Mostrando <span className="font-medium text-foreground">{shownCount}</span> de {totalCount}{' '}
-        interação{totalCount === 1 ? '' : 'ões'}
-      </p>
     </div>
   );
 });

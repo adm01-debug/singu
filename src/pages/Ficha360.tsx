@@ -19,6 +19,7 @@ import { FrequenciaContatoCard } from '@/components/ficha-360/FrequenciaContatoC
 import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesCard';
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
+import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
@@ -188,16 +189,27 @@ const Ficha360 = () => {
                   contactId={id}
                   filtersActive={activeCount > 0}
                   headerExtra={
-                    <FiltrosInteracoesBar
-                      days={days}
-                      channels={channels}
-                      onDaysChange={setDays}
-                      onChannelsChange={setChannels}
-                      onClear={clear}
-                      activeCount={activeCount}
-                      shownCount={recentInteractions.length}
-                      totalCount={channelCounts.total}
-                    />
+                    <>
+                      <FiltrosInteracoesBar
+                        days={days}
+                        channels={channels}
+                        onDaysChange={setDays}
+                        onChannelsChange={setChannels}
+                        onClear={clear}
+                        activeCount={activeCount}
+                        shownCount={recentInteractions.length}
+                        totalCount={channelCounts.total}
+                      />
+                      <FiltrosAtivosChips
+                        days={days}
+                        channels={channels}
+                        shownCount={recentInteractions.length}
+                        totalCount={channelCounts.total}
+                        onRemoveDays={() => setDays(90)}
+                        onRemoveChannel={(c) => setChannels(channels.filter((x) => x !== c))}
+                        onClearAll={clear}
+                      />
+                    </>
                   }
                 />
               </div>
