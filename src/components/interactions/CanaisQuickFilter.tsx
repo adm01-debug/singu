@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X, Eraser } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
