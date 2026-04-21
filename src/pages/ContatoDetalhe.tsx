@@ -4,7 +4,7 @@ import { DocumentsPanel } from '@/components/documents/DocumentsPanel';
 import { CSATPanel } from '@/components/csat/CSATPanel';
 import { VisitCheckinPanel } from '@/components/visits/VisitCheckinPanel';
 import { Link, useParams } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, Video } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Video, LayoutGrid } from 'lucide-react';
 import { DashboardErrorBoundary } from '@/components/dashboard/DashboardErrorBoundary';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { formatContactName, pluralize } from '@/lib/formatters';
@@ -138,6 +138,12 @@ const ContatoDetalhe = () => {
           title={formatContactName(contact.first_name, contact.last_name)}
           actions={
             <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm" className="gap-1.5">
+                <Link to={`/contatos/${contact.id}/ficha-360`}>
+                  <LayoutGrid className="h-4 w-4" />
+                  Ficha 360
+                </Link>
+              </Button>
               <AIEmailComposerTrigger variant="pill" prefilledContactId={contact.id} label="Email com IA" />
               <ValidateAllButton
                 contactId={contact.id}

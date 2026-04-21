@@ -21,13 +21,13 @@ export const TagsInteresseCard = memo(({ rapportIntel, rapportPoints }: Props) =
   const groups = useMemo<TagGroup[]>(() => {
     const safe = (arr: unknown): string[] =>
       Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string' && x.trim().length > 0) : [];
-    return [
-      { label: 'Hobbies', items: safe(rapportIntel?.hobbies), variant: 'default' },
-      { label: 'Interesses', items: safe(rapportIntel?.interests), variant: 'secondary' },
-      { label: 'Valores', items: safe(rapportIntel?.top_values), variant: 'outline' },
-      { label: 'Palavras frequentes', items: safe(rapportPoints?.frequent_words), variant: 'outline' },
-      { label: 'Interesses compartilhados', items: safe(rapportPoints?.shared_interests), variant: 'secondary' },
-    ].filter((g) => g.items.length > 0);
+    return ([
+      { label: 'Hobbies', items: safe(rapportIntel?.hobbies), variant: 'default' as const },
+      { label: 'Interesses', items: safe(rapportIntel?.interests), variant: 'secondary' as const },
+      { label: 'Valores', items: safe(rapportIntel?.top_values), variant: 'outline' as const },
+      { label: 'Palavras frequentes', items: safe(rapportPoints?.frequent_words), variant: 'outline' as const },
+      { label: 'Interesses compartilhados', items: safe(rapportPoints?.shared_interests), variant: 'secondary' as const },
+    ] satisfies TagGroup[]).filter((g) => g.items.length > 0);
   }, [rapportIntel, rapportPoints]);
 
   const isEmpty = groups.length === 0;
