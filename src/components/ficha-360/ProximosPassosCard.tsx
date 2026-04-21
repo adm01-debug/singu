@@ -30,6 +30,9 @@ import {
   type PassoOutcome,
 } from '@/hooks/useProximoPassoFeedback';
 import type { SentimentTone } from '@/lib/scriptGenerator';
+import { useProximosPassosFilters, type NbaPriority } from '@/hooks/useProximosPassosFilters';
+import { filterAndSortPassos } from '@/lib/filterProximosPassos';
+import { ProximosPassosFiltersBar } from './ProximosPassosFiltersBar';
 
 interface Props {
   contactId: string;
@@ -90,6 +93,25 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
   const { data: feedbacks = [] } = useProximoPassoFeedbacks(contactId);
+  const {
+    priorities,
+    channels,
+    sort,
+    setPriorities,
+    setChannels,
+    setSort,
+    clear: clearFilters,
+    activeCount,
+  } = useProximosPassosFilters();
+
+  const togglePriority = (p: NbaPriority) => {
+    if (priorities.includes(p)) setPriorities(priorities.filter((x) => x !== p));
+    else setPriorities([...priorities, p]);
+  };
+  const toggleChannel = (c: string) => {
+    if (channels.includes(c)) setChannels(channels.filter((x) => x !== c));
+    else setChannels([...channels, c]);
+  };
 
   // Limpa badges "criada" após 4s
   useEffect(() => {
@@ -112,18 +134,37 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
     });
   };
 
+  const visiblePassos = passos.filter((p) => !getRecentSkipUntil(feedbacks, p.id));
+  const displayPassos = filterAndSortPassos(visiblePassos, { priorities, channels, sort });
+
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ListChecks className="h-4 w-4 text-primary" />
-          Próximos Passos
-          {passos.length > 0 && (
-            <Badge variant="outline" className="text-xs font-normal">
-              {passos.length}
-            </Badge>
-          )}
-        </CardTitle>
+      <CardHeader className="space-y-2">
+        <div className="flex flex-row items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ListChecks className="h-4 w-4 text-primary" />
+            Próximos Passos
+            {passos.length > 0 && (
+              <Badge variant="outline" className="text-xs font-normal">
+                {passos.length}
+              </Badge>
+            )}
+          </CardTitle>
+        </div>
+        {visiblePassos.length >= 2 && (
+          <ProximosPassosFiltersBar
+            priorities={priorities}
+            channels={channels}
+            sort={sort}
+            shownCount={displayPassos.length}
+            totalCount={visiblePassos.length}
+            activeCount={activeCount}
+            onTogglePriority={togglePriority}
+            onToggleChannel={toggleChannel}
+            onChangeSort={setSort}
+            onClear={clearFilters}
+          />
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Bloco IA */}
