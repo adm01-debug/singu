@@ -105,6 +105,14 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
 }
 
 function SentimentTrendChartImpl({ data, summary }: Props) {
+  const mixedStats = useMemo(() => {
+    const safe = Array.isArray(data) ? data : [];
+    const totalMixed = safe.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
+    const totalAll = safe.reduce((acc, p) => acc + (p.total ?? 0), 0);
+    const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
+    return { totalMixed, pct };
+  }, [data]);
+
   if (!Array.isArray(data) || data.length < 2) {
     return (
       <p className="text-sm text-muted-foreground text-center py-12">
@@ -117,13 +125,6 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
   const deltaSign = summary && summary.deltaPct > 0 ? "+" : "";
   const showRefLines =
     summary?.bestWeek && summary?.worstWeek && summary.bestWeek.week !== summary.worstWeek.week;
-
-  const mixedStats = useMemo(() => {
-    const totalMixed = data.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
-    const totalAll = data.reduce((acc, p) => acc + (p.total ?? 0), 0);
-    const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
-    return { totalMixed, pct };
-  }, [data]);
 
   return (
     <div className="space-y-3">
