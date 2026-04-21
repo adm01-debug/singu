@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import {
   ListChecks,
   Sparkles,
@@ -10,6 +10,8 @@ import {
   Copy,
   Plus,
   Loader2,
+  Check,
+  ChevronDown,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,13 +19,15 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNextBestAction } from '@/hooks/useNextBestAction';
-import { useCreateTask } from '@/hooks/useTasks';
 import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/lib/proximosPassos';
+import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
+import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
 
 interface Props {
   contactId: string;
   contactName: string;
   passos: ProximoPasso[];
+  bestTime?: BestTimeHint | null;
 }
 
 const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
@@ -34,21 +38,18 @@ const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
   linkedin: Linkedin,
 };
 
-const priorityMeta: Record<ProximoPassoPriority, { label: string; className: string; taskPriority: 'high' | 'medium' | 'low' }> = {
+const priorityMeta: Record<ProximoPassoPriority, { label: string; className: string }> = {
   alta: {
     label: 'Alta',
     className: 'bg-destructive/10 text-destructive border-destructive/30',
-    taskPriority: 'high',
   },
   media: {
     label: 'Média',
     className: 'bg-warning/10 text-warning border-warning/30',
-    taskPriority: 'medium',
   },
   baixa: {
     label: 'Baixa',
     className: 'bg-muted text-muted-foreground border-border',
-    taskPriority: 'low',
   },
 };
 
@@ -59,10 +60,17 @@ const urgencyToClass = (u?: string) => {
   return 'bg-warning/10 text-warning border-warning/30';
 };
 
-function ProximosPassosCardComponent({ contactId, contactName, passos }: Props) {
+function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
-  const createTask = useCreateTask();
-  const [busyId, setBusyId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
+
+  // Limpa badges "criada" após 4s
+  useEffect(() => {
+    if (createdIds.size === 0) return;
+    const timer = setTimeout(() => setCreatedIds(new Set()), 4000);
+    return () => clearTimeout(timer);
+  }, [createdIds]);
 
   const handleCopy = async (text?: string) => {
     if (!text) return;
@@ -74,18 +82,13 @@ function ProximosPassosCardComponent({ contactId, contactName, passos }: Props) 
     }
   };
 
-  const handleCreateTask = (p: ProximoPasso) => {
-    setBusyId(p.id);
-    createTask.mutate(
-      {
-        title: p.title,
-        description: `${p.reason}\n\n${p.detail}`,
-        contact_id: contactId,
-        priority: priorityMeta[p.priority].taskPriority,
-        task_type: p.channel,
-      },
-      { onSettled: () => setBusyId(null) },
-    );
+  const handleCreated = (passoId: string) => {
+    setExpandedId(null);
+    setCreatedIds((prev) => {
+      const next = new Set(prev);
+      next.add(passoId);
+      return next;
+    });
   };
 
   return (
@@ -159,7 +162,8 @@ function ProximosPassosCardComponent({ contactId, contactName, passos }: Props) 
             {passos.map((p) => {
               const Icon = channelIcon[p.channel] ?? ListChecks;
               const pm = priorityMeta[p.priority];
-              const busy = busyId === p.id && createTask.isPending;
+              const isExpanded = expandedId === p.id;
+              const wasCreated = createdIds.has(p.id);
               return (
                 <li
                   key={p.id}
@@ -175,22 +179,28 @@ function ProximosPassosCardComponent({ contactId, contactName, passos }: Props) 
                         <Badge variant="outline" className={cn('text-[10px]', pm.className)}>
                           {pm.label}
                         </Badge>
+                        {wasCreated && (
+                          <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">
+                            <Check className="h-2.5 w-2.5 mr-0.5" />
+                            Tarefa criada
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground">{p.detail}</p>
                       <p className="text-xs text-muted-foreground/80 mt-1 italic">{p.reason}</p>
                       <div className="flex flex-wrap items-center gap-1.5 mt-2">
                         <Button
                           size="xs"
-                          variant="outline"
-                          onClick={() => handleCreateTask(p)}
-                          disabled={busy}
+                          variant={isExpanded ? 'default' : 'outline'}
+                          onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                          aria-expanded={isExpanded}
                         >
-                          {busy ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Plus className="h-3 w-3" />
-                          )}
+                          <Plus className="h-3 w-3" />
                           Criar tarefa
+                          <ChevronDown
+                            className={cn('h-3 w-3 transition-transform', isExpanded && 'rotate-180')}
+                            aria-hidden="true"
+                          />
                         </Button>
                         {p.scriptHint && (
                           <Button
@@ -203,6 +213,16 @@ function ProximosPassosCardComponent({ contactId, contactName, passos }: Props) 
                           </Button>
                         )}
                       </div>
+
+                      {isExpanded && (
+                        <ProximoPassoQuickForm
+                          passo={p}
+                          bestTime={bestTime}
+                          contactId={contactId}
+                          onCreated={() => handleCreated(p.id)}
+                          onCancel={() => setExpandedId(null)}
+                        />
+                      )}
                     </div>
                   </div>
                 </li>
