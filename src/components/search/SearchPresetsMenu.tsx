@@ -59,6 +59,7 @@ export function SearchPresetsMenu({
     setSortMode,
     savePreset,
     deletePreset,
+    updatePreset,
     toggleFavorite,
     markAsUsed,
   } = useSearchPresets(context);
@@ -66,8 +67,68 @@ export function SearchPresetsMenu({
   const [presetName, setPresetName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFilterUpdate, setPendingFilterUpdate] = useState<SearchPreset | null>(null);
+
+  useEffect(() => {
+    if (editingId) {
+      requestAnimationFrame(() => renameInputRef.current?.select());
+    }
+  }, [editingId]);
+
+  const activeFilterCount = Object.values(currentFilters).flat().length + (currentSearchTerm ? 1 : 0);
+
   const hasActiveFilters = Object.keys(currentFilters).some(k => currentFilters[k]?.length > 0)
     || currentSearchTerm;
+
+  const startRename = (preset: SearchPreset, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(preset.id);
+    setRenameValue(preset.name);
+  };
+
+  const cancelRename = () => {
+    setEditingId(null);
+    setRenameValue('');
+  };
+
+  const commitRename = () => {
+    if (!editingId) return;
+    const trimmed = renameValue.trim().slice(0, 60);
+    if (!trimmed) { cancelRename(); return; }
+    const current = presets.find(p => p.id === editingId);
+    if (!current) { cancelRename(); return; }
+    if (trimmed === current.name) { cancelRename(); return; }
+    const otherNames = presets.filter(p => p.id !== editingId).map(p => p.name);
+    const finalName = dedupeNameAgainst(otherNames, trimmed);
+    updatePreset(editingId, { name: finalName });
+    cancelRename();
+    toast.success('Preset renomeado');
+  };
+
+  const handleRenameKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelRename(); }
+  };
+
+  const askUpdateFilters = (preset: SearchPreset, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPendingFilterUpdate(preset);
+  };
+
+  const confirmUpdateFilters = () => {
+    if (!pendingFilterUpdate) return;
+    updatePreset(pendingFilterUpdate.id, {
+      filters: currentFilters,
+      sortBy: currentSortBy,
+      sortOrder: currentSortOrder,
+      searchTerm: currentSearchTerm,
+    });
+    setPendingFilterUpdate(null);
+    toast.success('Filtros do preset atualizados');
+  };
 
   const handleStartNaming = () => {
     const suggested = suggestGenericPresetName(currentFilters, currentSearchTerm);
