@@ -91,13 +91,48 @@ export function useInteractionsAdvancedFilter() {
 
   const debouncedQ = useDebounce(filters.q, 300);
 
+  // Aviso discreto sobre canais inválidos vindos da URL (uma vez por mount).
+  const warnedUrlRef = useRef(false);
+  useEffect(() => {
+    if (warnedUrlRef.current) return;
+    const raw = searchParams.get('canais');
+    if (!raw) return;
+    warnedUrlRef.current = true;
+    const rawList = raw.split(',').map((s) => s.trim()).filter(Boolean);
+    const valid = new Set(parseCanais(raw));
+    const ignored = Array.from(
+      new Set(rawList.filter((c) => !valid.has(c.toLowerCase())))
+    );
+    if (ignored.length > 0) {
+      toast.warning('Alguns canais foram ignorados', {
+        description: `Valores inválidos: ${ignored.join(', ')}`,
+        duration: 4000,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Hidratação one-shot do localStorage no mount: URL sempre ganha sobre cache.
   const hydratedRef = useRef(false);
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
     if (searchParams.get('canais')) return;
-    const cached = normalizeCanais(readAppliedCanais());
+    const cachedRaw = readAppliedCanais() ?? [];
+    const cached = normalizeCanais(cachedRaw);
+    const ignored = Array.isArray(cachedRaw)
+      ? Array.from(new Set(
+          cachedRaw
+            .filter((v): v is string => typeof v === 'string')
+            .filter((v) => !cached.includes(v.trim().toLowerCase()))
+        ))
+      : [];
+    if (ignored.length > 0) {
+      toast.warning('Alguns canais salvos foram ignorados', {
+        description: `Valores inválidos: ${ignored.join(', ')}`,
+        duration: 4000,
+      });
+    }
     if (cached.length > 0) {
       const next = new URLSearchParams(searchParams);
       next.set('canais', cached.join(','));
