@@ -75,8 +75,10 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
         <p className="text-[10px] text-muted-foreground mt-0.5">sem conversas</p>
       ) : (
         <>
+          <p className="text-[10px] font-medium text-foreground mt-1">
+            Volume: {total} {total === 1 ? "interação" : "interações"}
+          </p>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            {total} {total === 1 ? "conversa" : "conversas"} ·{" "}
             <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
           </p>
           <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
@@ -181,6 +183,12 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               stroke="hsl(var(--muted-foreground))"
               fontSize={11}
             />
+            <YAxis
+              yAxisId="volume"
+              orientation="right"
+              domain={[0, "dataMax"]}
+              hide
+            />
             <Tooltip
               content={<WeeklySentimentTooltip />}
               cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
@@ -192,7 +200,7 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
             {showRefLines && summary?.worstWeek && (
               <ReferenceLine yAxisId="count" x={summary.worstWeek.week} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
-            <Bar yAxisId="count" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" opacity={0.18} />
+            <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
             <Line yAxisId="count" type="monotone" dataKey="positive" name="Positivo" stroke={CHART_COLORS.positive} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
