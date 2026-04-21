@@ -1,7 +1,8 @@
-import { memo, useMemo } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { memo, useMemo, useState, useCallback } from "react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 
 interface Props {
