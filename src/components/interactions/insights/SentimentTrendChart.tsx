@@ -181,20 +181,15 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
         const EvIcon = DIRECTION_ICON[evolutionStats.direction];
         const evLabel = evolutionStats.direction === "up" ? "Subiu" : evolutionStats.direction === "down" ? "Desceu" : "Estável";
         const evSign = evolutionStats.deltaPp > 0 ? "+" : evolutionStats.deltaPp < 0 ? "−" : "";
-        const evAbs = Math.abs(evolutionStats.deltaPp);
         return (
           <div className={cn("flex items-center justify-between flex-wrap gap-2 rounded-md border px-3 py-2", DIRECTION_CLASS[evolutionStats.direction])}>
             <div className="flex items-center gap-2">
               <EvIcon className="h-4 w-4" />
               <span className="text-xs font-semibold">{evLabel}</span>
-              <span className="text-[11px] text-muted-foreground tabular-nums">
-                Atual: {evolutionStats.currentPct}% · Anterior: {evolutionStats.previousPct}%
-              </span>
+              <span className="text-[11px] text-muted-foreground tabular-nums">Atual: {evolutionStats.currentPct}% · Anterior: {evolutionStats.previousPct}%</span>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className={cn("gap-1 text-[10px] tabular-nums", DIRECTION_CLASS[evolutionStats.direction])}>
-                {evSign}{evAbs}pp
-              </Badge>
+              <Badge variant="outline" className={cn("gap-1 text-[10px] tabular-nums", DIRECTION_CLASS[evolutionStats.direction])}>{evSign}{Math.abs(evolutionStats.deltaPp)}pp</Badge>
               <span className="text-[10px] text-muted-foreground">vs. {evolutionStats.weeksCompared} semanas anteriores</span>
             </div>
           </div>
