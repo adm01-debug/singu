@@ -11,7 +11,7 @@ import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
 import { CanaisQuickFilter } from './CanaisQuickFilter';
 import { DirecaoQuickFilter } from './DirecaoQuickFilter';
-import { SortSelect } from './SortSelect';
+import { SortChips } from './SortChips';
 import { DateRangePopover } from './DateRangePopover';
 
 interface ContactOption { id: string; label: string }
@@ -102,7 +102,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
 
         <DateRangePopover de={filters.de} ate={filters.ate} applyDateRange={applyDateRange} />
 
-        <SortSelect
+        <SortChips
           value={filters.sort}
           onChange={(v) => setFilter('sort', v)}
           hasQuery={!!filters.q.trim()}

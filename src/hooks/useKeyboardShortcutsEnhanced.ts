@@ -24,7 +24,8 @@ type ShortcutCategory =
   | 'ui' 
   | 'editing' 
   | 'search'
-  | 'filters';
+  | 'filters'
+  | 'sorting';
 
 interface UseKeyboardShortcutsOptions {
   enabled?: boolean;
@@ -225,6 +226,12 @@ export function useKeyboardShortcutsEnhanced(options: UseKeyboardShortcutsOption
     { key: '5', alt: true, action: () => {}, description: 'Alternar canal Vídeo', category: 'filters', global: true },
     { key: '6', alt: true, action: () => {}, description: 'Alternar canal Nota', category: 'filters', global: true },
     { key: '0', alt: true, action: () => {}, description: 'Limpar canais', category: 'filters', global: true },
+
+    // Sort shortcuts (handled inside SortChips — listed here for cheatsheet only)
+    { key: 'r', alt: true, action: () => {}, description: 'Ordenar: Mais recentes', category: 'sorting', global: true },
+    { key: 'o', alt: true, action: () => {}, description: 'Ordenar: Mais antigas', category: 'sorting', global: true },
+    { key: 'm', alt: true, action: () => {}, description: 'Ordenar: Melhor correspondência', category: 'sorting', global: true },
+    { key: 'p', alt: true, action: () => {}, description: 'Ordenar: Por pessoa/empresa', category: 'sorting', global: true },
   ], [navigate]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
@@ -428,4 +435,5 @@ export const shortcutCategoryLabels: Record<ShortcutCategory, string> = {
   editing: 'Edição',
   search: 'Busca',
   filters: 'Filtros de canal',
+  sorting: 'Ordenação',
 };
