@@ -1,70 +1,55 @@
 
-# Plano: Tooltip rico no SentimentTrendChart
+# Plano: Persistência dos filtros da Ficha 360 já existe — adicionar UI consumidora
 
-## Objetivo
+## Status atual (verificado)
 
-Substituir o tooltip padrão do Recharts no `SentimentTrendChart` por um tooltip customizado que mostra, ao passar o mouse sobre uma semana, um resumo claro e organizado: total de conversas, contagem por sentimento (positivo, neutro, negativo, misto) com swatches coloridos e percentuais, e o `% positivo` da semana em destaque.
+O hook `useFicha360Filters` **já implementa toda a persistência na URL**:
+- `?periodo=7|30|90|365` (omite quando é `90`, o default)
+- `?canais=whatsapp,call,email,...` (CSV, omite quando vazio)
+- Leitura via `useSearchParams` + restauração automática na montagem
+- `setDays`, `setChannels`, `clear`, `activeCount` expostos
 
-## Status atual
+E o componente `FiltrosInteracoesBar` consome essas props corretamente.
 
-O `SentimentTrendChart` já recebe `data: SentimentTrendPoint[]` com todos os campos necessários (`positive`, `neutral`, `negative`, `mixed`, `total`, `positivePct`) e usa o `<Tooltip>` padrão do Recharts apenas com `labelFormatter`. O tooltip mostra as séries empilhadas em ordem de eixo, mistura escalas (count vs %) e não dá leitura imediata do contexto da semana.
+**Lacuna real:** preciso confirmar se o hook está realmente plugado na seção "Últimas Interações" da Ficha 360 (página de detalhe de Contato/Empresa). Se já estiver, a feature está pronta e basta validar; se não, falta apenas conectar o hook ao componente que renderiza essa seção.
+
+## Investigação necessária (antes de implementar)
+
+1. Localizar onde "Últimas Interações" da Ficha 360 é renderizada (provavelmente em `ContatoDetalhe.tsx` ou `EmpresaDetalhe.tsx`, ou um subcomponente tipo `UltimasInteracoesSection`).
+2. Verificar se ele já chama `useFicha360Filters()` e passa para `FiltrosInteracoesBar`.
+3. Caso use `useState` local em vez do hook, fazer o swap.
 
 ## Implementação
 
-### 1. Componente `WeeklySentimentTooltip` (inline no arquivo, ≤60 linhas)
+### Caso A — já está plugado (mais provável)
+Nenhuma mudança de código. Apenas validar:
+- Abrir `/contato/<id>?periodo=7&canais=whatsapp,email`
+- Confirmar que o seletor de 7d e os chips WhatsApp/Email aparecem ativos sem cliques
+- Trocar período/canais e ver a URL mudar com `replace: true` (sem poluir histórico)
 
-Tooltip custom recebe `active`, `payload`, `label` (props padrão do Recharts) e renderiza só quando `active && payload?.[0]?.payload`. Lê o `SentimentTrendPoint` direto de `payload[0].payload` (evita depender da ordem das séries).
+### Caso B — usa `useState` local
+- Substituir `useState` por `useFicha360Filters()`
+- Repassar `days`, `channels`, `setDays`, `setChannels`, `clear`, `activeCount` para `FiltrosInteracoesBar`
+- Aplicar a filtragem usando `days` e `channels` exatamente como hoje
+- Sem mudança de visual, sem nova query
 
-Layout (flat, tokens semânticos, sem shadow):
-
-```
-┌─────────────────────────────────────┐
-│ Semana de 14 abr                    │  ← header (text-xs font-semibold)
-│ 23 conversas · 65% positivo         │  ← subhead (text-[10px] muted)
-├─────────────────────────────────────┤
-│ ● Positivo            15  (65%)     │
-│ ● Neutro               5  (22%)     │
-│ ● Negativo             2   (9%)     │
-│ ● Misto                1   (4%)     │  ← oculta se 0
-└─────────────────────────────────────┘
-```
-
-- Cada linha: swatch 8px com `CHART_COLORS[key]`, label, contagem alinhada à direita, % entre parênteses
-- `% positivo` no header em cor `text-success` quando ≥60%, `text-destructive` quando ≤30%, `text-muted-foreground` no meio
-- Linhas com count `0` são omitidas para reduzir ruído
-- Container: `rounded-md border border-border bg-popover px-3 py-2 text-xs min-w-[200px]`
-
-### 2. Plug no `<Tooltip>`
-
-Substituir o `Tooltip` atual pelo custom:
-
-```tsx
-<Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-```
-
-Remove `contentStyle` e `labelFormatter` (agora dentro do componente custom).
-
-### 3. Edge cases
-
-- `total === 0`: mostra apenas header "Semana de DD mês · sem conversas"
-- `positivePct` ausente → fallback `Math.round((positive/total)*100)` defensivo
-- Payload vazio/inativo → retorna `null`
-- Type-safe: tipa props como `TooltipProps<number, string>` do `recharts`, sem `any`
-
-### 4. Padrões obrigatórios
-
+### Padrões obrigatórios
 - PT-BR
-- Sem `any`, sem `dangerouslySetInnerHTML`
-- Tokens semânticos (`success`, `destructive`, `muted-foreground`, `popover`, `border`)
-- Flat (sem shadow, sem gradient)
+- `useSearchParams` com `{ replace: true }` (já no hook)
+- Defaults omitidos da URL (período `90`, canais vazio)
 - Zero novas queries
-- Mantém `React.memo` no chart
+- Zero regressão em outras seções da Ficha 360
 
-## Arquivos tocados
+## Arquivos potencialmente tocados
 
-**Editado (1):**
-- `src/components/interactions/insights/SentimentTrendChart.tsx` — adiciona `WeeklySentimentTooltip` interno e pluga em `<Tooltip content={…}/>`
+**Editar (no máximo 1):**
+- O componente que hoje renderiza "Últimas Interações" da Ficha 360, caso ainda use estado local
+
+**Sem mudanças em:**
+- `useFicha360Filters.ts` (já completo)
+- `FiltrosInteracoesBar.tsx` (já completo)
+- Qualquer hook de fetch (a filtragem é client-side sobre o array já carregado)
 
 ## Critério de fechamento
 
-(a) Hover sobre qualquer semana mostra tooltip custom com header "Semana de DD mês · N conversas · X% positivo", (b) lista de sentimentos com swatch colorido, contagem e % de cada um, omitindo linhas com count 0, (c) % positivo do header colorido conforme faixa (verde ≥60, vermelho ≤30, neutro), (d) semana sem conversas mostra mensagem reduzida, (e) zero novas queries, (f) zero regressão em barras, linhas, ReferenceLines, header de evolução ou mini-stats.
+(a) Abrir um link com `?periodo=7&canais=whatsapp,email` na Ficha 360 restaura automaticamente o seletor de 7d e os chips WhatsApp/Email ativos, (b) trocar período ou canais atualiza a URL sem empilhar histórico (`replace: true`), (c) defaults (período 90d, canais vazio) ficam fora da URL para mantê-la limpa, (d) "Limpar" remove os params, (e) compartilhar o link reproduz exatamente o mesmo recorte para outro usuário, (f) zero novas queries de rede, (g) zero regressão em sentimento, KPIs, drawers ou outras abas.
