@@ -170,6 +170,7 @@ export function SearchPresetsMenu({
   };
 
   return (
+    <>
     <Popover>
       <PopoverTrigger asChild>
         <Button
