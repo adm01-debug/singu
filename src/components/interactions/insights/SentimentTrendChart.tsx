@@ -87,7 +87,23 @@ function pctClass(pct: number): string {
 
 interface TooltipExtra { positivePctMA?: number | null; annotations?: SentimentAnnotation[] }
 
+const SHOW_ALL_ROWS_KEY = "singu:sentiment-trend:tooltip-show-all-rows";
+
+function readShowAllRows(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(SHOW_ALL_ROWS_KEY) === "1";
+}
+
 function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string>) {
+  const [showAllRows, setShowAllRows] = useState<boolean>(() => readShowAllRows());
+
+  const toggleShowAll = (next: boolean) => {
+    setShowAllRows(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SHOW_ALL_ROWS_KEY, next ? "1" : "0");
+    }
+  };
+
   if (!active || !payload || payload.length === 0) return null;
   const point = payload[0]?.payload as (SentimentTrendPoint & TooltipExtra) | undefined;
   if (!point) return null;
@@ -100,9 +116,10 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
         ? Math.round((point.positive / total) * 100)
         : 0;
   const anns = point.annotations ?? [];
+  const visibleRows = showAllRows ? SENTIMENT_ROWS : SENTIMENT_ROWS.filter((r) => (point[r.key] ?? 0) > 0);
 
   return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[220px]">
+    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[240px] pointer-events-auto">
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Semana de {formatWeekRange(point.week)}</p>
       {total === 0 ? (
         <p className="text-[10px] text-muted-foreground mt-1">sem conversas</p>
@@ -119,33 +136,49 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               Tendência (MM3): <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
             </p>
           )}
-          <div className="mt-2 space-y-1.5 border-t border-border/60 pt-2">
-            {SENTIMENT_ROWS.map((row) => {
-              const count = point[row.key] ?? 0;
-              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-              const isZero = count === 0;
-              return (
-                <div key={row.key} className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
-                    <span className={cn("flex-1", isZero && "text-muted-foreground/60")}>{row.label}</span>
-                    <span className={cn("font-medium tabular-nums", isZero && "text-muted-foreground/50")}>
-                      {isZero ? "—" : count}
-                    </span>
-                    <span className={cn("tabular-nums w-10 text-right", isZero ? "text-muted-foreground/40" : "text-muted-foreground")}>
-                      ({pct}%)
-                    </span>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/60 pt-2">
+            <Label htmlFor="tooltip-show-all-rows" className="text-[10px] text-muted-foreground cursor-pointer">
+              Mostrar zerados
+            </Label>
+            <Switch
+              id="tooltip-show-all-rows"
+              checked={showAllRows}
+              onCheckedChange={toggleShowAll}
+              aria-label="Alternar exibição de sentimentos com contagem zero"
+              className="scale-75 origin-right"
+            />
+          </div>
+          <div className="mt-1.5 space-y-1.5">
+            {visibleRows.length === 0 ? (
+              <p className="text-[10px] text-muted-foreground italic">Nenhum sentimento registrado.</p>
+            ) : (
+              visibleRows.map((row) => {
+                const count = point[row.key] ?? 0;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                const isZero = count === 0;
+                return (
+                  <div key={row.key} className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
+                      <span className={cn("flex-1", isZero && "text-muted-foreground/60")}>{row.label}</span>
+                      <span className={cn("font-medium tabular-nums", isZero && "text-muted-foreground/50")}>
+                        {isZero ? "—" : count}
+                      </span>
+                      <span className={cn("tabular-nums w-10 text-right", isZero ? "text-muted-foreground/40" : "text-muted-foreground")}>
+                        ({pct}%)
+                      </span>
+                    </div>
+                    <div className="h-1 w-full rounded-full bg-muted overflow-hidden ml-4">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, backgroundColor: isZero ? "transparent" : row.color }}
+                        aria-hidden
+                      />
+                    </div>
                   </div>
-                  <div className="h-1 w-full rounded-full bg-muted overflow-hidden ml-4">
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{ width: `${pct}%`, backgroundColor: isZero ? "transparent" : row.color }}
-                      aria-hidden
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </>
       )}
