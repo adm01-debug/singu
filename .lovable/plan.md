@@ -1,49 +1,41 @@
 
-# Plano: Botão "Todos os canais" na FiltrosInteracoesBar
-
-## Objetivo
-
-Adicionar um atalho de um clique para voltar ao padrão da barra de filtros da Ficha 360 (todos os canais visíveis, ou seja, `channels = []`), distinto do "Limpar" atual que zera período E canais.
+# Plano: Paginação progressiva em "Últimas Interações" da Ficha 360
 
 ## Status atual
 
-`FiltrosInteracoesBar` já tem botão "Limpar" que chama `onClear` (zera período `90d` E canais). Não há ação rápida para zerar **só** os canais mantendo o período escolhido pelo usuário — caso comum: estou em 7d filtrando WhatsApp e quero voltar a ver todos os canais nos mesmos 7d.
+`UltimasInteracoesCard` (`src/components/ficha-360/UltimasInteracoesCard.tsx`) renderiza todo o array `interactions` recebido em uma única `<ul>`. Quando há dezenas/centenas de itens (ex.: 90d sem filtro de canal), o render inicial fica pesado e o scroll engasga. Já existe a infra `useInfiniteList` + `InfiniteScrollSentinel` usadas em outras listas — vamos reaproveitá-las aqui (zero query nova, pura virtualização progressiva client-side).
 
 ## Implementação
 
-### Arquivo: `src/components/ficha-360/FiltrosInteracoesBar.tsx`
+### Arquivo: `src/components/ficha-360/UltimasInteracoesCard.tsx`
 
-1. Logo após o grupo de chips de canais (antes do botão "Limpar"), adicionar um botão `ghost` size `sm` rotulado **"Todos os canais"** com ícone `Layers` (lucide), visível apenas quando `channels.length > 0`.
-2. Ao clicar: `onChannelsChange([])` — mantém o período atual, remove `?canais=` da URL (já tratado pelo hook).
-3. Acessibilidade: `aria-label="Mostrar todos os canais"`, `title` igual.
-4. Manter "Limpar" como está (zera tudo) — só aparece quando `activeCount > 0` (já é o caso).
-5. Quando ambos visíveis, ordem: chips → "Todos os canais" → "Limpar".
-
-### Detalhes visuais
-
-- Mesmo tamanho/peso do "Limpar" (`variant="ghost" size="sm" h-6 px-2 text-xs text-muted-foreground gap-1`)
-- Ícone `Layers` 3×3 à esquerda
-- Sem badge, sem cor de destaque (é uma ação secundária discreta)
+1. Importar `useInfiniteList` (`@/hooks/useInfiniteList`) e `InfiniteScrollSentinel` (`@/components/interactions/InfiniteScrollSentinel`).
+2. Calcular `const { visible, hasMore, sentinelRef } = useInfiniteList(items, 15, [items])` — página inicial de 15 itens, reseta quando o array muda (troca de filtros de período/canal).
+3. Renderizar `visible.map(...)` em vez de `items.map(...)`.
+4. Logo após `</ul>`, montar `<InfiniteScrollSentinel sentinelRef={sentinelRef} hasMore={hasMore} totalLoaded={visible.length} total={items.length} />` para auto-load via IntersectionObserver + skeletons + rodapé "Fim da lista".
+5. Manter o card sem scroll interno fixo (a lista cresce com o conteúdo). O `IntersectionObserver` do hook já dispara com `rootMargin: 400px`, então funciona dentro do scroll da página.
 
 ### Edge cases
 
-- `channels = []` → botão não renderiza (não há o que zerar)
-- Período custom + canais selecionados → ambos botões visíveis lado a lado, com semânticas distintas
-- Sem mudança no hook `useFicha360Filters` (já suporta `setChannels([])`)
+- `items.length === 0`: `InfiniteScrollSentinel` retorna `null` (já tratado), e o `InlineEmptyState` atual continua aparecendo.
+- Troca de filtros (período/canal) reseta a paginação para 15 — `deps: [items]` no hook cuida disso.
+- Lista com ≤15 itens: `hasMore = false`, sentinel vira rodapé "Fim da lista — N interações exibidas".
+- Sem mudança no link "Ver todas" (continua levando para `/interacoes?contact=...`).
 
 ### Padrões obrigatórios
 
 - PT-BR
 - Tokens semânticos
 - Flat (sem shadow)
-- Zero novas queries
-- Zero regressão na aba Insights, sentimento, KPIs ou drawers
+- Zero novas queries de rede (paginação é puramente client-side sobre o array já carregado)
+- `React.memo` do componente preservado
+- Zero regressão em outras seções da Ficha 360, sentimento, KPIs ou drawers
 
 ## Arquivo tocado
 
 **Editado (1):**
-- `src/components/ficha-360/FiltrosInteracoesBar.tsx` — adicionar botão "Todos os canais" entre chips e "Limpar"
+- `src/components/ficha-360/UltimasInteracoesCard.tsx` — plugar `useInfiniteList(15)` + `InfiniteScrollSentinel`
 
 ## Critério de fechamento
 
-(a) Quando há ≥1 canal selecionado, aparece botão "Todos os canais" com ícone Layers, (b) clicar restaura `channels = []` mantendo o período atual e remove `?canais=` da URL, (c) "Limpar" continua zerando período E canais, (d) sem canais selecionados o botão some, (e) zero novas queries, (f) zero regressão.
+(a) "Últimas Interações" passa a renderizar apenas 15 itens inicialmente, (b) ao rolar próximo do fim, mais 15 carregam automaticamente via IntersectionObserver, (c) skeletons aparecem durante o carregamento progressivo, (d) ao chegar ao fim, rodapé mostra "Fim da lista — N interações exibidas", (e) trocar período/canal reseta a paginação para 15, (f) zero novas queries de rede, (g) zero regressão visual ou funcional no card, no link "Ver todas" ou em outras seções da Ficha 360.
