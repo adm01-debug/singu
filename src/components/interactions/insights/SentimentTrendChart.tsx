@@ -35,9 +35,14 @@ function formatWeek(w: string): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
-function toIsoDate(w: string): string {
-  // Aceita 'YYYY-MM-DD' ou ISO completo
+function normalizeWeek(w: string): string {
+  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada
+  if (typeof w !== "string" || w.length === 0) return w;
   return w.length >= 10 ? w.slice(0, 10) : w;
+}
+
+function toIsoDate(w: string): string {
+  return normalizeWeek(w);
 }
 
 const DIRECTION_LABEL: Record<SentimentTrendSummary["direction"], string> = {
