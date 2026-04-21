@@ -260,6 +260,10 @@ export function useInteractionsAdvancedFilter() {
       const n = value as number;
       if ((VALID_PER_PAGE as readonly number[]).includes(n) && n !== DEFAULT_PER_PAGE) next.set('perPage', String(n));
       else next.delete('perPage');
+    } else if (key === 'sentimento') {
+      const s = value as SentimentoFilter | undefined;
+      if (s && (VALID_SENTIMENTOS as string[]).includes(s)) next.set('sentimento', s);
+      else next.delete('sentimento');
     } else {
       const v = (value as string) ?? '';
       if (v) next.set(key, v);
