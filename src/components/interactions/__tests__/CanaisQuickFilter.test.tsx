@@ -52,11 +52,51 @@ describe('CanaisQuickFilter', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('external prop change syncs pending state', () => {
+  it('manual mode: persists pending to localStorage', () => {
     localStorage.setItem('channel-sync-mode', 'manual');
     const onChange = vi.fn();
-    const { rerender } = render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
-    rerender(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    fireEvent.click(screen.getByTitle('Email'));
+    fireEvent.click(screen.getByTitle('WhatsApp'));
+    const stored = JSON.parse(localStorage.getItem('channel-pending-canais') || '[]');
+    expect(stored).toEqual(expect.arrayContaining(['email', 'whatsapp']));
+  });
+
+  it('manual mode: restores pending from localStorage on remount', () => {
+    localStorage.setItem('channel-sync-mode', 'manual');
+    localStorage.setItem('channel-pending-canais', JSON.stringify(['email', 'call']));
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    expect(screen.getByText('Aplicar')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Aplicar'));
+    expect(onChange).toHaveBeenCalledWith(['email', 'call']);
+  });
+
+  it('manual mode: clears persisted pending after apply (no divergence)', () => {
+    localStorage.setItem('channel-sync-mode', 'manual');
+    const onChange = vi.fn();
+    const { rerender } = render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    fireEvent.click(screen.getByTitle('Email'));
+    expect(localStorage.getItem('channel-pending-canais')).not.toBeNull();
+    fireEvent.click(screen.getByText('Aplicar'));
+    rerender(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+    expect(localStorage.getItem('channel-pending-canais')).toBeNull();
+  });
+
+  it('manual mode: ignores invalid persisted values', () => {
+    localStorage.setItem('channel-sync-mode', 'manual');
+    localStorage.setItem('channel-pending-canais', JSON.stringify(['email', 'invalid_channel', 'call']));
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    fireEvent.click(screen.getByText('Aplicar'));
+    expect(onChange).toHaveBeenCalledWith(['email', 'call']);
+  });
+
+  it('auto mode: does not restore pending from localStorage', () => {
+    localStorage.setItem('channel-sync-mode', 'auto');
+    localStorage.setItem('channel-pending-canais', JSON.stringify(['email']));
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
     expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
   });
 });
