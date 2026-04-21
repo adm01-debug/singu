@@ -324,8 +324,8 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
             </TooltipTrigger>
             <TooltipContent side="top">
               {mode === 'auto'
-                ? 'Remove todos os canais selecionados (aplica imediatamente).'
-                : 'Desmarca todos os canais. Clique em Aplicar para confirmar.'}
+                ? 'Remove todos os canais selecionados (aplica imediatamente). (Alt+0)'
+                : 'Desmarca todos os canais. Clique em Aplicar para confirmar. (Alt+0)'}
             </TooltipContent>
           </Tooltip>
         )}
