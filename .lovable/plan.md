@@ -1,91 +1,106 @@
 
-# Plano: Infinite scroll na aba Lista de /interacoes
+# Plano: Exemplos por categoria de sentimento na aba Insights de /interacoes
 
-## Objetivo
+## Status atual
 
-Substituir o carregamento único da lista em `/interacoes` por **infinite scroll** que respeita filtros avançados (q, contact, company, canais, de, ate) e ordenação atual (recent/oldest/relevance/entity), carregando lotes de 50 itens conforme o usuário rola.
+A aba **Insights** em `/interacoes` já está funcional e usa o pipeline de IA existente (`conversation_analyses`, gerado automaticamente para interações com transcrição ≥80 chars):
 
-## Decisão de arquitetura: client-side incremental
+- KPIs: conversas analisadas, sentimento dominante, coaching score, objeções não tratadas
+- Gráficos: distribuição de sentimento (pizza/bar) e tendência semanal
+- Ranking de **temas** com drawer de exemplos clicáveis por tema
+- Ranking de **objeções** recorrentes com handled/unhandled
 
-Os filtros (q, relevância textual) e a ordenação (relevance, entity) **dependem de campos calculados em memória** (`contact_name`, `company_name`, score por ocorrência). Refatorar para paginação server-side exigiria mudar RPC, índices e suporte a ordenação por nome de entidade — fora de escopo.
+**Lacuna real:** os 4 buckets de sentimento (Positivo / Neutro / Negativo / Misto) **não são clicáveis** — não há como abrir a lista de conversas que compõem aquele bucket. O drawer de exemplos só existe para temas.
 
-**Estratégia:** manter o fetch atual (já carrega lista completa via `useInteractions`/external view), aplicar filtros + ordenação como hoje, e **revelar progressivamente** os itens em fatias de 50 com `IntersectionObserver`. Isso resolve o problema real (DOM gigante travando scroll) sem refazer a camada de dados.
+Esta entrega fecha essa lacuna reaproveitando o padrão `ThemeExamplesDrawer`.
 
 ## Reutilização
 
-- `useLazySection` (IntersectionObserver com rootMargin) — copiamos o pattern para um hook genérico
-- `sortedForView` em `InteracoesContent` — array já filtrado e ordenado
-- `Skeleton` de `@/components/ui/skeleton` para sentinel de loading
+- `ThemeExamplesDrawer` — copiar estrutura para `SentimentExamplesDrawer`
+- `useInteractionsInsights` — já retorna `list` (todas as `ConversationAnalysis` do período) com `sentiment_overall` e `interaction_id`
+- `Sheet`, `Badge`, `Link` para `/contatos/:id/ficha-360` — já em uso
 
-Sem novo fetch, sem nova RPC, sem mudança em hooks de dados.
+Sem novo fetch agregado, sem novo hook de dados, sem nova RPC.
 
 ## Arquitetura
 
 ```text
-InteracoesContent
- ├─ AdvancedSearchBar (existente)
- ├─ ActiveFiltersBar (existente)
- ├─ [REFATORADO] Lista renderiza apenas sortedForView.slice(0, visibleCount)
- ├─ [NOVO] <InfiniteScrollSentinel onIntersect={loadMore} hasMore={...} />
- │     └─ usa IntersectionObserver com rootMargin "400px"
- └─ Reset visibleCount → PAGE_SIZE quando filtros/ordenação mudam
+InsightsPanel
+ ├─ KPIs (existente)
+ ├─ SentimentDistributionChart (existente)
+ │     └─ [NOVO] onSelect(bucket) → abre drawer
+ ├─ SentimentTrendChart (existente)
+ ├─ ThemesRanking + ThemeExamplesDrawer (existente)
+ ├─ ObjectionsRanking (existente)
+ └─ [NOVO] SentimentExamplesDrawer
+       ├─ recebe bucket selecionado + ids das análises desse bucket
+       └─ busca interactions(id, title, type, created_at, content, contact_id, sentiment)
+            limit 20, order by created_at desc
 ```
 
 ## Implementação
 
-### 1. Novo hook `src/hooks/useInfiniteList.ts` (≤60 linhas)
+### 1. `useInteractionsInsights.ts` — expor agrupamento por bucket
+
+Já existe `list: ConversationAnalysis[]`. Adicionar derivação memoizada:
 
 ```ts
-export function useInfiniteList<T>(items: T[], pageSize = 50, deps: unknown[] = [])
-  : { visible: T[]; hasMore: boolean; loadMore: () => void; sentinelRef: RefObject<HTMLDivElement> }
+sentimentBuckets: Record<SentimentOverall, string[]> // interaction_ids
 ```
 
-- `useState<number>(pageSize)` para contagem visível
-- `useEffect` reseta para `pageSize` quando `deps` mudam (filtros, sort, q)
-- `IntersectionObserver` no sentinel: ao intersectar, incrementa em `pageSize`
-- `hasMore = visibleCount < items.length`
-- Defensivo: `Array.isArray(items)` antes de fatiar
+Construído no mesmo `useMemo` que já calcula `sentimentDistribution`. Zero overhead.
 
-### 2. Novo `src/components/interactions/InfiniteScrollSentinel.tsx` (≤40 linhas)
+### 2. Novo `src/components/interactions/insights/SentimentExamplesDrawer.tsx` (≤120 linhas)
 
-- Props: `sentinelRef`, `hasMore`, `loading?`, `totalLoaded`, `total`
-- Quando `hasMore`: renderiza 3 `Skeleton` + texto "Carregando mais…"
-- Quando `!hasMore && total > 0`: texto discreto "Fim da lista — N interações exibidas"
-- `React.memo`
+Espelho de `ThemeExamplesDrawer`, com:
 
-### 3. Integração em `src/pages/interacoes/InteracoesContent.tsx`
+- Props: `bucket: SentimentOverall | null`, `interactionIds: string[]`, `onClose: () => void`
+- Título: "Conversas com sentimento {Positivo|Neutro|Negativo|Misto}" + `Badge` colorido pelo bucket
+- Subtítulo: `${interactionIds.length} conversas no período`
+- `useEffect` busca em `interactions` com `.in('id', interactionIds.slice(0, 20))` (limita payload)
+- Cards de exemplo idênticos ao Theme drawer: título, snippet, tipo + data, link "Ficha 360"
+- Loading com `Loader2` + cleanup `cancelled`
+- Vazio: "Nenhum exemplo disponível"
+- Sem `any`, defensivo com `Array.isArray`, PT-BR
 
-- Importar `useInfiniteList` e `InfiniteScrollSentinel`
-- Substituir uso direto de `sortedForView` na lista por `visible` retornado pelo hook
-- Passar deps: `[adv.q, adv.contact, adv.company, adv.canais.join(','), adv.de, adv.ate, adv.sort]`
-- Renderizar `<InfiniteScrollSentinel />` após o último item
-- Manter `ActiveFiltersBar` recebendo `visibleCount={visible.length}` para o resumo "Mostrando N de M" refletir o exibido
+### 3. `SentimentDistributionChart.tsx` — tornar buckets clicáveis
 
-### 4. Edge cases
+- Adicionar prop opcional `onSelectBucket?: (key: SentimentOverall) => void`
+- Aplicar `cursor-pointer` e handler de clique nas fatias/barras (Recharts `onClick` no `Cell`/`Bar`)
+- Tooltip já existente preservado
+- A11y: `role="button"` com `aria-label="Ver conversas com sentimento {label}"` ao redor de cada item legenda também (caso o gráfico tenha legenda lateral)
 
-- Lista <= 50 itens: sentinel mostra "Fim da lista" imediatamente, sem skeletons
-- Mudança de filtro com lista grande: reset para 50 (scroll-to-top do contêiner não é forçado — preserva contexto se for ajuste fino)
-- `IntersectionObserver` desconectado em cleanup
-- `rootMargin: '400px'` para pré-carregar antes de chegar ao final
+### 4. `InsightsPanel.tsx` — orquestrar drawer de sentimento
 
-### 5. Padrões obrigatórios
+- Novo state: `selectedBucket: SentimentOverall | null`
+- Passar `onSelectBucket={setSelectedBucket}` ao `SentimentDistributionChart`
+- Renderizar `<SentimentExamplesDrawer bucket={selectedBucket} interactionIds={sentimentBuckets[selectedBucket] ?? []} onClose={() => setSelectedBucket(null)} />` ao final, ao lado do `ThemeExamplesDrawer`
+
+### 5. Edge cases
+
+- Bucket sem conversas: drawer não abre (clique no-op se `count === 0`)
+- Mudança de período (`7d/30d/90d`): drawer fecha automaticamente via `useEffect` watch em `period`
+- Limite de 20 exemplos para evitar lista gigante; rodapé discreto "Mostrando 20 de N" quando aplicável
+
+### 6. Padrões obrigatórios
 
 - PT-BR
 - Sem `any`, sem `dangerouslySetInnerHTML`
 - `Array.isArray()` defensivo
-- Tokens semânticos, flat
-- Zero novas queries de rede
-- `React.memo` no sentinel
+- Tokens semânticos (cores de sentimento via `success`/`muted`/`destructive`/`warning`)
+- Zero novas queries de rede além da busca pontual ao abrir o drawer
+- `React.memo` no novo drawer
 
 ## Arquivos tocados
 
-**Novos (2):**
-- `src/hooks/useInfiniteList.ts`
-- `src/components/interactions/InfiniteScrollSentinel.tsx`
+**Novos (1):**
+- `src/components/interactions/insights/SentimentExamplesDrawer.tsx`
 
-**Editados (1):**
-- `src/pages/interacoes/InteracoesContent.tsx` — usar `visible` no map e montar sentinel
+**Editados (3):**
+- `src/hooks/useInteractionsInsights.ts` — adicionar `sentimentBuckets` ao retorno
+- `src/components/interactions/insights/SentimentDistributionChart.tsx` — clique por bucket
+- `src/components/interactions/insights/InsightsPanel.tsx` — montar drawer e estado
 
 ## Critério de fechamento
 
-(a) Lista de `/interacoes` (aba Lista) inicia com 50 itens, (b) ao rolar próximo do fim, mais 50 são revelados automaticamente, (c) qualquer mudança em filtros ou ordenação reseta para 50, (d) sentinel mostra skeleton enquanto há mais e texto "Fim da lista" quando esgotado, (e) `ActiveFiltersBar` resumo permanece coerente com o total filtrado, (f) zero novas queries de rede, (g) zero regressão em chips, presets, ordenação ou busca.
+(a) Buckets de sentimento na aba Insights ficam clicáveis (cursor + a11y), (b) clique abre Sheet com até 20 conversas daquele bucket no período, (c) cada exemplo mostra título, snippet, tipo, data, badge de sentimento e link para Ficha 360, (d) loading e empty states tratados, (e) bucket vazio não abre drawer, (f) trocar período (7/30/90) fecha o drawer, (g) zero novas queries agregadas (só fetch pontual ao abrir), (h) zero regressão em temas, objeções, KPIs ou tendência.
