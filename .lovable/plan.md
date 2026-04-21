@@ -1,124 +1,95 @@
 
 
-# Plano: Agendar reunião sem mudar de tela (criar evento + convite)
+# Plano: Filtros e ordenação em "Próximos Passos" da Ficha 360
 
 ## Contexto
 
-Hoje, no passo `agendar-reuniao` da Ficha 360, o usuário tem:
-- Botão "Criar tarefa" (cria task genérica)
-- Botão "Copiar script" (gera mensagem de convite)
-- Botão "Feito" (registra outcome)
-
-Falta o caminho direto: **criar a reunião como evento real** (na tabela `meetings` do banco externo, com data/hora/duração) e **gerar a mensagem de convite já com data confirmada**, copiável em um clique. Tudo inline, sem sair da Ficha 360.
+Hoje o `ProximosPassosCard` lista todos os passos sugeridos em ordem fixa (definida por `computeProximosPassos`). Quando há 5–7 sugestões com prioridades e canais variados, fica difícil focar no que importa agora (ex: "só alta prioridade" ou "só WhatsApp"). Vamos adicionar uma barra leve de filtros + ordenação inline no header do card, persistida na URL para sobreviver a refresh e ser compartilhável.
 
 ## Decisão de escopo
 
-- Aproveitar a tabela `meetings` já existente no banco externo (campos: `contact_id`, `company_id`, `title`, `scheduled_at`, `duration_minutes`, `meeting_url`, `notes`, `status`).
-- Persistência via `insertExternalData('meetings', ...)` (mesmo padrão dos outros hooks externos).
-- UI: substituir "Criar tarefa" **apenas no passo `agendar-reuniao`** por um formulário inline `Agendar reunião` mais rico (data, hora, duração, modalidade, link). Demais passos continuam com `ProximoPassoQuickForm`.
-- Geração da mensagem: reusar `scriptGenerator` mas com um **modo "convite confirmado"** que injeta a data/hora/duração no texto pronto para WhatsApp/E-mail.
+- **Filtros disponíveis**: prioridade (alta/média/baixa, multi-select) + canal (whatsapp/email/call/meeting/linkedin, multi-select).
+- **Ordenação**: 3 opções — `Sugerido` (default, mantém ordem do `computeProximosPassos`), `Prioridade` (alta→baixa) e `Canal` (alfabético, agrupando por canal).
+- **Persistência**: query params `?nbaPrio=alta,media&nbaCanal=whatsapp&nbaSort=prioridade` (prefixo `nba` para não colidir com filtros existentes da Ficha 360 como `?periodo=` e `?canais=`). Reusa `useSearchParams` (mesmo padrão de `useFicha360Filters`).
+- **UI compacta**: chips toggle no estilo `CanaisQuickFilter` para canal/prioridade + `Select` de ordenação no estilo `SortSelect`. Tudo flat, tokens semânticos, PT-BR.
+- **Contador inteligente**: `"3 de 7 sugestões"` no header quando há filtro ativo, com botão "Limpar" se ≥1 filtro estiver ligado.
+- **Empty state contextual**: se filtros zerarem a lista mas houver passos disponíveis, mostrar "Nenhuma sugestão com esses filtros" + botão "Limpar filtros". Sem filtros e lista vazia = empty state atual (intocado).
+- **Zero impacto em outros fluxos**: `ProximaAcaoCTA` (que pega o primeiro passo de prioridade alta) usa a lista **original** (não filtrada), pois é o "destaque do topo". Só a lista exibida abaixo é filtrada.
 
 ## Implementação
 
-### 1. Novo hook `src/hooks/useCreateMeeting.ts` (~70 linhas)
+### 1. Novo hook: `src/hooks/useProximosPassosFilters.ts` (~90 linhas)
 
 ```ts
-export interface CreateMeetingPayload {
-  contactId: string;
-  companyId?: string | null;
-  title: string;
-  scheduledAt: string;          // ISO
-  durationMinutes: number;      // 15/30/45/60/90
-  meetingType?: 'video' | 'presencial' | 'phone';
-  meetingUrl?: string | null;
-  notes?: string | null;
-}
+export type NbaPriority = 'alta' | 'media' | 'baixa';
+export type NbaSort = 'sugerido' | 'prioridade' | 'canal';
 
-export function useCreateMeeting()  // useMutation → insertExternalData('meetings', ...)
+export function useProximosPassosFilters() {
+  // lê/escreve em searchParams (nbaPrio, nbaCanal, nbaSort)
+  // retorna { priorities, channels, sort, setPriorities, setChannels, setSort, clear, activeCount }
+}
 ```
 
-- Invalida `['contact-meetings', contactId]` e `['company-meetings', companyId]` no sucesso.
-- Status default `scheduled`.
+- Padrão idêntico ao `useFicha360Filters` (URL como single source of truth, `replace: true`).
+- `sort = 'sugerido'` é default e não polui a URL.
 
-### 2. Novo helper em `src/lib/scriptGenerator.ts` (~50 linhas adicionais)
+### 2. Novo helper: `src/lib/filterProximosPassos.ts` (~40 linhas)
 
 ```ts
-export interface MeetingInviteContext {
-  firstName: string;
-  scheduledAt: Date;
-  durationMinutes: number;
-  modality: 'video' | 'presencial' | 'phone';
-  meetingUrl?: string | null;
-  sentiment?: SentimentTone;
-}
-
-export function generateMeetingInvite(ctx: MeetingInviteContext): {
-  whatsapp: string;
-  email: { subject: string; body: string };
-};
+export function filterAndSortPassos(
+  passos: ProximoPasso[],
+  opts: { priorities: NbaPriority[]; channels: string[]; sort: NbaSort }
+): ProximoPasso[]
 ```
 
-- Modulado por sentimento (mantém o tom já estabelecido: direto/cordial/empático).
-- Inclui data formatada PT-BR (ex: "quinta, 24/04 às 14:00") e duração ("30 min").
-- Se `modality === 'video'` e tem `meetingUrl`, adiciona linha "Link: {url}".
-- Se `modality === 'presencial'`, adiciona "Local: a confirmar".
+- Pure function, deterministic. Map `alta/media/baixa` → string match. Ordena por `PRIORITY_RANK` (alta=3, media=2, baixa=1) ou alfabeticamente por `channel`.
 
-### 3. Novo componente `src/components/ficha-360/AgendarReuniaoForm.tsx` (~220 linhas)
+### 3. Novo componente: `src/components/ficha-360/ProximosPassosFiltersBar.tsx` (~140 linhas)
 
-Form inline (substitui o `ProximoPassoQuickForm` quando `passo.id === 'agendar-reuniao'`):
-
-**Estado 1 — Formulário (aberto inicialmente):**
-- Grid 2 colunas:
-  - **Data** `<Input type="date">` — default: próximo dia útil
-  - **Hora** `<Input type="time" step="900">` — default: 10:00 (ou bestTime se válido)
-  - **Duração** `<Select>` — 15/30/45/60/90 min, default 30
-  - **Modalidade** `<Select>` — Vídeo / Presencial / Telefone, default Vídeo
-- Se Vídeo: `<Input>` opcional "Link da reunião (Meet/Zoom)" — placeholder "Cole após criar"
-- `<Textarea>` opcional "Notas internas" (max 200 chars)
-- Linha hint: "Reunião com {nome} em {data formatada PT-BR} • {duração}"
-- Rodapé: `Confirmar agendamento` (primary, com Loader2) + `Cancelar` (ghost)
-
-**Estado 2 — Pós-criação (após sucesso):**
-- Card discreto verde com `<Check />` "Reunião agendada para {data} às {hora}"
-- Tabs WhatsApp / E-mail com mensagem de convite **já preenchida com a data confirmada**
-- Botão `Copiar mensagem` (toast: "Convite copiado")
-- Botão `Concluído` que fecha o form
-- (Mensagem usa `generateMeetingInvite` com a data/hora salvas)
+- Linha 1 (chips compactos):
+  - **Prioridade**: 3 badges toggle (Alta/Média/Baixa) com cor semântica (destructive/default/secondary), no estilo `CanaisQuickFilter`.
+  - Separador vertical sutil.
+  - **Canal**: 5 badges toggle (WhatsApp/Email/Ligação/Reunião/LinkedIn) com ícones `lucide-react`.
+- Linha 2 (rodapé do filtro, condicional):
+  - Texto "{shown} de {total} sugestões" + botão "Limpar" (só se `activeCount ≥ 1`).
+  - À direita: `<Select>` de ordenação (Sugerido / Prioridade / Canal).
+- `React.memo`, PT-BR, tokens semânticos.
 
 ### 4. Refatorar `ProximosPassosCard.tsx`
 
-- Quando expandido E `p.id === 'agendar-reuniao'` → renderizar `<AgendarReuniaoForm passo={p} contactId={contactId} companyId={companyId} firstName={resolvedFirstName} sentiment={sentiment} bestTime={bestTime} onCreated={...} onCancel={...} />`.
-- Caso contrário → mantém `<ProximoPassoQuickForm>` atual.
-- Adicionar prop `companyId?: string` para repassar.
-- Após `onCreated`: badge "✓ Reunião agendada" por 4s (reusa `createdIds`).
+- Importar `useProximosPassosFilters`, `filterAndSortPassos`, `ProximosPassosFiltersBar`.
+- Manter `passos` original para `ProximaAcaoCTA` (já usa `passos[0]` no `Ficha360.tsx`, fora do card — sem mudança).
+- Calcular `displayPassos = filterAndSortPassos(passos, { priorities, channels, sort })`.
+- Renderizar `<ProximosPassosFiltersBar>` no header, abaixo do `CardTitle`, **só se `passos.length >= 2`** (não polui quando há 1 sugestão).
+- Iterar sobre `displayPassos` (não `passos`) na lista renderizada.
+- Empty state contextual: se `passos.length > 0 && displayPassos.length === 0` → mostrar mini-empty "Nenhuma sugestão com esses filtros" + botão "Limpar filtros".
+- Manter intactos: badges de outcome, `AgendarReuniaoForm`, `ProximoPassoQuickForm`, `CopyScriptMenu`, `PassoFeedbackMenu`, `createdIds`, etc.
 
-### 5. Integração em `src/pages/Ficha360.tsx`
+### 5. Sem mudanças em `Ficha360.tsx`
 
-- Passar `companyId={profile?.company_id ?? null}` ao `<ProximosPassosCard>`.
-- Sem novas queries.
+- `ProximaAcaoCTA` continua recebendo `passos` (lista bruta do `computeProximosPassos`) — o filtro é puramente visual no card abaixo.
 
 ## Padrões obrigatórios
 
 - PT-BR
 - Tokens semânticos (sem cores fixas)
 - Flat (sem shadow/gradient)
-- `React.memo` no form
-- Reuso de `insertExternalData` (mesmo padrão de `useContacts`)
-- Zero novas queries de rede em estado idle
-- Backward compat: outros passos não são afetados
+- `React.memo` no FiltersBar
+- URL como source of truth (mesmo padrão do `useFicha360Filters`)
+- Zero novas queries de rede
+- Backward compat: lista exibida idêntica quando nenhum filtro está ativo (sort=`sugerido` preserva ordem original)
 
 ## Arquivos tocados
 
-**Criados (2):**
-- `src/hooks/useCreateMeeting.ts`
-- `src/components/ficha-360/AgendarReuniaoForm.tsx`
+**Criados (3):**
+- `src/hooks/useProximosPassosFilters.ts`
+- `src/lib/filterProximosPassos.ts`
+- `src/components/ficha-360/ProximosPassosFiltersBar.tsx`
 
-**Editados (3):**
-- `src/lib/scriptGenerator.ts` — adicionar `generateMeetingInvite`
-- `src/components/ficha-360/ProximosPassosCard.tsx` — branching p/ `agendar-reuniao` + prop `companyId`
-- `src/pages/Ficha360.tsx` — passar `companyId`
+**Editados (1):**
+- `src/components/ficha-360/ProximosPassosCard.tsx` — barra de filtros + lista filtrada + empty state contextual
 
 ## Critério de fechamento
 
-(a) No passo `agendar-reuniao`, clicar "Agendar" expande form com data/hora/duração/modalidade pré-preenchidos, (b) confirmar cria registro em `meetings` (via `insertExternalData`) com `scheduled_at`, `duration_minutes`, `meeting_type`, `meeting_url`, `notes` e invalida cache `['contact-meetings']`, (c) após sucesso o form mostra abas WhatsApp/E-mail com mensagem de convite já contendo a data formatada PT-BR e duração, modulada por sentimento, (d) botão "Copiar mensagem" copia o texto pronto e dispara toast, (e) badge "✓ Reunião agendada" aparece no item por 4s, (f) zero regressão nos demais passos (`Criar tarefa`, `Copiar script`, `Feito`), no `ProximaAcaoCTA` ou no `useContactMeetings`, (g) PT-BR, tokens semânticos, flat.
+(a) Header do card mostra chips de prioridade (Alta/Média/Baixa) e canal (WhatsApp/Email/Ligação/Reunião/LinkedIn) clicáveis quando há ≥2 sugestões, (b) `Select` de ordenação com opções Sugerido/Prioridade/Canal, default Sugerido, (c) filtros e ordenação persistem em `?nbaPrio=…&nbaCanal=…&nbaSort=…` na URL e sobrevivem a refresh, (d) header mostra "{shown} de {total} sugestões" + botão "Limpar" quando há filtro ativo, (e) lista filtrada vazia exibe mini-empty contextual com CTA "Limpar filtros", (f) `ProximaAcaoCTA` não é afetado (continua usando a lista bruta), (g) zero regressão em `AgendarReuniaoForm`, `ProximoPassoQuickForm`, `CopyScriptMenu`, `PassoFeedbackMenu`, badges de outcome ou Modo de Testes, (h) PT-BR, tokens semânticos, flat.
 
