@@ -11,6 +11,7 @@ export interface ExportablePreset {
   filters: Record<string, string[]>;
   sortBy: string;
   sortOrder: 'asc' | 'desc';
+  isFavorite?: boolean;
 }
 
 export interface PresetBundle {
@@ -40,12 +41,14 @@ function sanitizePreset(raw: unknown): ExportablePreset | null {
   if (!isFiltersShape(r.filters)) return null;
   const sortBy = typeof r.sortBy === 'string' ? r.sortBy : '';
   const sortOrder = r.sortOrder === 'asc' || r.sortOrder === 'desc' ? r.sortOrder : 'desc';
-  return {
+  const out: ExportablePreset = {
     name: r.name.trim().slice(0, 80),
     filters: r.filters,
     sortBy,
     sortOrder,
   };
+  if (typeof r.isFavorite === 'boolean') out.isFavorite = r.isFavorite;
+  return out;
 }
 
 export function buildBundle(presets: ExportablePreset[]): PresetBundle {

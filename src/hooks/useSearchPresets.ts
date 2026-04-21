@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 
 export interface SearchPreset {
   id: string;
@@ -8,9 +8,45 @@ export interface SearchPreset {
   sortOrder: 'asc' | 'desc';
   searchTerm?: string;
   createdAt: string;
+  isFavorite?: boolean;
+  usageCount?: number;
+  lastUsedAt?: string;
 }
 
+export type PresetSortMode = 'favoritos' | 'mais-usados' | 'recentes' | 'alfabetica';
+
 const STORAGE_KEY = 'relateiq-search-presets';
+const SORT_KEY = 'relateiq-search-presets-sort';
+
+const VALID_SORT_MODES: PresetSortMode[] = ['favoritos', 'mais-usados', 'recentes', 'alfabetica'];
+
+function dateDesc(a?: string, b?: string): number {
+  const ta = a ? new Date(a).getTime() : 0;
+  const tb = b ? new Date(b).getTime() : 0;
+  return ta - tb;
+}
+
+export function comparePresets(a: SearchPreset, b: SearchPreset, mode: PresetSortMode): number {
+  // Favoritos sempre primeiro (em todos os modos)
+  const af = a.isFavorite ?? false;
+  const bf = b.isFavorite ?? false;
+  if (af !== bf) return af ? -1 : 1;
+
+  switch (mode) {
+    case 'mais-usados': {
+      const diff = (b.usageCount ?? 0) - (a.usageCount ?? 0);
+      if (diff !== 0) return diff;
+      return dateDesc(b.createdAt, a.createdAt);
+    }
+    case 'recentes':
+      return dateDesc(b.createdAt, a.createdAt);
+    case 'alfabetica':
+      return a.name.localeCompare(b.name, 'pt-BR');
+    case 'favoritos':
+    default:
+      return dateDesc(b.lastUsedAt ?? b.createdAt, a.lastUsedAt ?? a.createdAt);
+  }
+}
 
 /**
  * Hook for managing saved search filter presets
@@ -18,6 +54,8 @@ const STORAGE_KEY = 'relateiq-search-presets';
  */
 export function useSearchPresets(context: string = 'contacts') {
   const storageKey = `${STORAGE_KEY}-${context}`;
+  const sortStorageKey = `${SORT_KEY}-${context}`;
+
   const [presets, setPresets] = useState<SearchPreset[]>(() => {
     try {
       const stored = localStorage.getItem(storageKey);
@@ -27,7 +65,18 @@ export function useSearchPresets(context: string = 'contacts') {
     }
   });
 
-  // Persist to localStorage
+  const [sortMode, setSortModeState] = useState<PresetSortMode>(() => {
+    try {
+      const stored = localStorage.getItem(sortStorageKey);
+      return stored && (VALID_SORT_MODES as string[]).includes(stored)
+        ? (stored as PresetSortMode)
+        : 'favoritos';
+    } catch {
+      return 'favoritos';
+    }
+  });
+
+  // Persist presets
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(presets));
@@ -35,6 +84,19 @@ export function useSearchPresets(context: string = 'contacts') {
       // silently fail
     }
   }, [presets, storageKey]);
+
+  // Persist sort mode
+  useEffect(() => {
+    try {
+      localStorage.setItem(sortStorageKey, sortMode);
+    } catch {
+      // silently fail
+    }
+  }, [sortMode, sortStorageKey]);
+
+  const setSortMode = useCallback((mode: PresetSortMode) => {
+    setSortModeState(mode);
+  }, []);
 
   const savePreset = useCallback((preset: Omit<SearchPreset, 'id' | 'createdAt'>) => {
     const newPreset: SearchPreset = {
@@ -52,6 +114,24 @@ export function useSearchPresets(context: string = 'contacts') {
 
   const updatePreset = useCallback((id: string, updates: Partial<Omit<SearchPreset, 'id' | 'createdAt'>>) => {
     setPresets(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  }, []);
+
+  const toggleFavorite = useCallback((id: string) => {
+    setPresets(prev => prev.map(p =>
+      p.id === id ? { ...p, isFavorite: !(p.isFavorite ?? false) } : p
+    ));
+  }, []);
+
+  const markAsUsed = useCallback((id: string) => {
+    setPresets(prev => prev.map(p =>
+      p.id === id
+        ? {
+            ...p,
+            usageCount: (p.usageCount ?? 0) + 1,
+            lastUsedAt: new Date().toISOString(),
+          }
+        : p
+    ));
   }, []);
 
   /**
@@ -90,5 +170,21 @@ export function useSearchPresets(context: string = 'contacts') {
     return { added, skipped };
   }, []);
 
-  return { presets, savePreset, deletePreset, updatePreset, importPresets };
+  const sortedPresets = useMemo(
+    () => [...presets].sort((a, b) => comparePresets(a, b, sortMode)),
+    [presets, sortMode]
+  );
+
+  return {
+    presets,
+    sortedPresets,
+    sortMode,
+    setSortMode,
+    savePreset,
+    deletePreset,
+    updatePreset,
+    toggleFavorite,
+    markAsUsed,
+    importPresets,
+  };
 }
