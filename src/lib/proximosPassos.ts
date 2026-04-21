@@ -249,7 +249,22 @@ export function computeProximosPassos(input: ComputeProximosPassosInput): Proxim
     });
   }
 
-  return passos
+  // Aplica hints de feedback recente
+  const adjusted = passos.flatMap<ProximoPasso>((p) => {
+    const hint = hintsById.get(p.id);
+    if (!hint) return [p];
+    // Pulou nos últimos 7d → some
+    if (hint.lastOutcome === 'pulou' && hint.daysAgo < 7) return [];
+    // Respondeu positivo nos últimos 7d → some (já avançou)
+    if (hint.lastOutcome === 'respondeu_positivo' && hint.daysAgo < 7) return [];
+    // Não respondeu há <3d → rebaixa prioridade
+    if (hint.lastOutcome === 'nao_respondeu' && hint.daysAgo < 3) {
+      return [{ ...p, priority: PRIORITY_DOWN[p.priority] }];
+    }
+    return [p];
+  });
+
+  return adjusted
     .sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority])
     .slice(0, 5);
 }

@@ -107,6 +107,20 @@ const Ficha360 = () => {
     [recentInteractions, effectiveProfile, effectiveIntel, weights],
   );
 
+  const { data: passoFeedbacks = [] } = useProximoPassoFeedbacks(id);
+
+  const feedbackHints = useMemo(() => {
+    const seen = new Set<string>();
+    const hints: { passoId: string; lastOutcome: 'respondeu_positivo' | 'respondeu_neutro' | 'nao_respondeu' | 'nao_atendeu' | 'pulou'; daysAgo: number }[] = [];
+    for (const f of passoFeedbacks) {
+      if (seen.has(f.passo_id)) continue;
+      seen.add(f.passo_id);
+      const daysAgo = Math.max(0, Math.floor((Date.now() - new Date(f.executed_at).getTime()) / 86400000));
+      hints.push({ passoId: f.passo_id, lastOutcome: f.outcome, daysAgo });
+    }
+    return hints;
+  }, [passoFeedbacks]);
+
   const passos = useMemo(
     () =>
       computeProximosPassos({
@@ -117,8 +131,9 @@ const Ficha360 = () => {
         birthday: rapportIntel?.birthday ?? null,
         email:
           typeof effectiveIntel?.email === 'string' ? (effectiveIntel.email as string) : null,
+        feedbackHints,
       }),
-    [effectiveProfile, effectiveIntel, recentInteractions, prontidao, rapportIntel],
+    [effectiveProfile, effectiveIntel, recentInteractions, prontidao, rapportIntel, feedbackHints],
   );
 
   if (!id) {
