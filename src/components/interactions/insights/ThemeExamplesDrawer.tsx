@@ -144,6 +144,25 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const { data: topics } = useTopicsCatalog();
 
+  const [preset, setPreset] = useState<ExcerptWindowPreset>(() => {
+    if (typeof window === "undefined") return DEFAULT_EXCERPT_PRESET;
+    try {
+      const v = window.localStorage.getItem(EXCERPT_PRESET_STORAGE_KEY);
+      return isExcerptWindowPreset(v) ? v : DEFAULT_EXCERPT_PRESET;
+    } catch {
+      return DEFAULT_EXCERPT_PRESET;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+    } catch {
+      /* ignore quota / private mode errors */
+    }
+  }, [preset]);
+
   useEffect(() => {
     if (!theme || !theme.examples.length) {
       setInteractions([]);
@@ -184,8 +203,12 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       id: i.id,
       text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
     }));
-    return extractExcerpts(sources, keywords, { totalCap: 5, maxPerSource: 2, window: 140 });
-  }, [interactions, keywords]);
+    return extractExcerpts(sources, keywords, {
+      totalCap: 5,
+      maxPerSource: 2,
+      window: getExcerptWindow(preset),
+    });
+  }, [interactions, keywords, preset]);
 
   const fallbackPassages = useMemo(() => {
     if (excerpts.length > 0) return [];
@@ -194,8 +217,12 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       id: i.id,
       text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
     }));
-    return pickTopPassages(sources, { totalCap: 5, maxPerSource: 2, window: 220 });
-  }, [excerpts, interactions]);
+    return pickTopPassages(sources, {
+      totalCap: 5,
+      maxPerSource: 2,
+      window: getFallbackWindow(preset),
+    });
+  }, [excerpts, interactions, preset]);
 
   const isFallback = excerpts.length === 0 && fallbackPassages.length > 0;
   const displayItems = excerpts.length > 0 ? excerpts : fallbackPassages;
