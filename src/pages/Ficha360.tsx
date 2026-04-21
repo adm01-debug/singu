@@ -25,6 +25,7 @@ import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProximosPassos } from '@/lib/proximosPassos';
+import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useMemo } from 'react';
 
 const sentimentClass = (s?: string | null) => {
@@ -60,9 +61,10 @@ const Ficha360 = () => {
     isLoading,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
 
+  const weights = useProntidaoWeightsStore((s) => s.weights);
   const prontidao = useMemo(
-    () => computeProntidaoScore({ profile, intelligence }),
-    [profile, intelligence],
+    () => computeProntidaoScore({ profile, intelligence, weights }),
+    [profile, intelligence, weights],
   );
 
   const passos = useMemo(

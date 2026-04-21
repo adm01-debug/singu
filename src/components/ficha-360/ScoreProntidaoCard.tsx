@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { WhyScoreDrawer, type WhyScoreFactor } from '@/components/intelligence/WhyScoreDrawer';
+import { ProntidaoWeightsEditor } from '@/components/ficha-360/ProntidaoWeightsEditor';
 import type { ProntidaoResult, ProntidaoLevel, ProntidaoStatus } from '@/lib/prontidaoScore';
 
 interface Props {
@@ -103,6 +104,12 @@ export const ScoreProntidaoCard = memo(({ data, contactId }: Props) => {
 
           {/* Direita: breakdown + recomendação */}
           <div className="space-y-4 min-w-0">
+            <div className="flex items-center justify-between -mb-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Fatores
+              </span>
+              <ProntidaoWeightsEditor />
+            </div>
             <div className="space-y-2.5">
               {factors.map(({ key, factor }) => {
                 const Icon = factorIcons[key];
