@@ -168,6 +168,23 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     }
   }, [mode, toggle, pending, safe, onChange]);
 
+  const clearAll = useCallback(() => {
+    if (mode === 'auto') {
+      if (safe.length === 0) return;
+      onChange([]);
+      toast.success('Filtros de canal limpos');
+    } else {
+      if (pending.length === 0) return;
+      setPending([]);
+      toast.info('Canais desmarcados', {
+        description: 'Clique em "Aplicar" para confirmar.',
+        duration: 3000,
+      });
+    }
+  }, [mode, safe, pending, onChange, setPending]);
+
+  const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-wrap items-center gap-1">
