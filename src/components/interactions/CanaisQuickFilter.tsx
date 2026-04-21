@@ -199,7 +199,10 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           const inPending = pending.includes(opt.value);
           const inApplied = safe.includes(opt.value);
           const isDifferent = mode === 'manual' && inPending !== inApplied;
-          return (
+          const hasCounts = !!counts;
+          const count = hasCounts ? (counts?.[opt.value] ?? 0) : undefined;
+          const isEmpty = hasCounts && count === 0 && !inPending;
+          const chip = (
             <Badge
               key={opt.value}
               variant={inPending ? 'default' : 'outline'}
@@ -211,12 +214,27 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                 'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
                 !inPending && 'hover:bg-muted',
                 isDifferent && 'border-dashed',
+                isEmpty && 'opacity-50',
               )}
             >
               <Icon className="w-3 h-3" />
               <span className="hidden sm:inline">{opt.label}</span>
+              {typeof count === 'number' && (
+                <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
+                  {count > 999 ? '999+' : count}
+                </span>
+              )}
             </Badge>
           );
+          if (isEmpty) {
+            return (
+              <Tooltip key={opt.value}>
+                <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                <TooltipContent side="top">Sem interações neste canal</TooltipContent>
+              </Tooltip>
+            );
+          }
+          return chip;
         })}
 
         <Tooltip>
