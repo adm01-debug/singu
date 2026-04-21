@@ -1,83 +1,114 @@
 
 
-# Plano: Tornar o feedback de carregamento incremental mais visível na lista de interações
+# Plano: Botão flutuante "Voltar ao topo" otimizado para `/interacoes`
 
 ## Contexto
 
-Em `/interacoes`, no modo `view=list`, a renderização progressiva já existe via `useInfiniteList` (revela itens em lotes ao rolar) e o sentinela `InfiniteScrollSentinel` exibe 3 `<Skeleton>` linha + texto "Carregando mais interações…". Os mesmos pontos existem em outros consumidores como `UltimasInteracoesCard` (Ficha 360°).
+Já existe `ScrollToTopButton` global montado em `AppLayout` (desktop em `bottom-8 right-8`, mobile via container `md:hidden`). Ele aparece quando `window.scrollY > 400` e some quando overlays mobile abrem. Em `/interacoes` com infinite scroll, ele já funciona — mas há lacunas:
 
-Lacunas atuais:
-- O skeleton é genérico (3 retângulos `h-20`) e não respeita a **densidade compacta** introduzida agora — em `compact` ficam grandes demais e descolam visualmente do item real.
-- Não há **barra de progresso** indicando quantos itens já foram revelados vs total (ex.: "120 de 873"), só o texto final.
-- Não há indicador no **topo** quando o usuário está longe do sentinela; só percebe carregamento ao chegar perto do fim.
-- O texto "Carregando mais interações…" é discreto e não comunica progresso quantitativo.
+1. **Limiar de 400px é alto** para listas densas (modo compacto). Em compacto, o usuário precisa rolar muito antes de ver o botão.
+2. **Não comunica progresso da lista** (quantos itens já passou).
+3. **Animação de scroll-to-top usa `behavior: 'smooth'`** — em listas com 800+ itens revelados, fica lento; ideal cair para `'instant'` quando rolagem é muito longa.
+4. **Conflito potencial** com `QuickAddButton` no mesmo canto (já resolvido via `flex flex-col gap-3`, mas vale validar).
+
+Decisão: **não criar componente novo nem rota-específico**. Refinar o `ScrollToTopButton` existente com props opcionais e baseline melhorada — mudanças benéficas para todas as rotas, com ganho extra em `/interacoes`.
 
 ## Decisão de escopo
 
-Melhorar **apenas** o feedback do carregamento incremental, sem mudar a lógica de paginação/observer. Foco em 3 ajustes no `InfiniteScrollSentinel` + uma barrinha de progresso fina e opcional:
+Refinar `ScrollToTopButton.tsx`:
 
-1. **Skeletons cientes de densidade**: aceitar prop opcional `density?: 'comfortable' | 'compact'` (default `'comfortable'`). Em `compact`, usar `h-12` em vez de `h-20`, exibir 2 skeletons em vez de 3, e reduzir `space-y-3 py-4` → `space-y-2 py-2`.
+1. **Limiar configurável**: prop `threshold?: number` (default `400`). Continua 400 globalmente, sem regressão.
+2. **Limiar adaptativo automático**: quando o documento é muito alto (`document.documentElement.scrollHeight > 4000`), reduz limiar para `300`. Cobre listas longas sem precisar de prop.
+3. **Smart scroll behavior**: se `window.scrollY > 5000`, usa `behavior: 'instant'` (ou `'auto'` se reduced motion); senão `'smooth'`. Evita scroll de 8 segundos em listas enormes.
+4. **Tooltip contextual**: adiciona `title="Voltar ao topo"` no botão (já tem `aria-label`, mas tooltip nativo ajuda hover desktop).
+5. **Respeita `prefers-reduced-motion`**: força `behavior: 'auto'` se o sistema do usuário pedir.
+6. **Throttle do listener**: usa `requestAnimationFrame` para reduzir custos em scroll rápido (atual chama setState a cada evento `scroll`).
 
-2. **Barra de progresso linear fina** (`h-1`) acima dos skeletons quando `hasMore`, mostrando `totalLoaded / total` como largura percentual. Usa cor `bg-primary/70` sobre track `bg-muted`. Apenas visual (sem `<progress>` nativo para evitar estilos default), com `role="progressbar"`, `aria-valuemin=0`, `aria-valuemax={total}`, `aria-valuenow={totalLoaded}`, `aria-label="Carregando mais interações"`.
-
-3. **Contador inline** ao lado do texto: `"Carregando mais interações… (120 de 873)"` no estado `hasMore`. No estado final mantém o texto atual de "Fim da lista".
-
-4. **Indicador de status no topo da lista (opt-in)**: nova prop `showTopIndicator?: boolean` (default `false`). Quando `true` e `hasMore`, renderizar uma faixa fina sticky no topo do container do consumidor — mas como o sentinela hoje só vive no fim, **fica fora do escopo desta tarefa** para evitar mudança estrutural. Mantemos a melhoria só no sentinela inferior. (Documentado no plano para evitar dúvida; não será implementado agora.)
-
-5. **Acessibilidade**: manter `aria-live="polite"` e `aria-busy="true"` já existentes; adicionar `aria-label` no progressbar; texto continua em PT-BR.
-
-6. **Backward-compat**: `density` é opcional → consumidores que não passam (ex.: `UltimasInteracoesCard`) seguem com layout atual. Quem quiser densidade só passa a prop.
+Sem mudanças em `AppLayout`, `MobileBottomNav` ou em `/interacoes` — o botão segue global e a melhoria é transparente.
 
 ## Implementação
 
-### 1. `src/components/interactions/InfiniteScrollSentinel.tsx`
-- Adicionar props opcionais:
+### `src/components/navigation/ScrollToTopButton.tsx`
+
+- Adicionar prop opcional:
   ```ts
-  density?: 'comfortable' | 'compact';
+  interface ScrollToTopButtonProps {
+    className?: string;
+    threshold?: number; // default 400
+  }
   ```
-- Derivar `pct = total > 0 ? Math.min(100, Math.round((totalLoaded / total) * 100)) : 0`.
-- Render no estado `hasMore`:
-  - Container com `space-y-{2|3} py-{2|4}` conforme densidade.
-  - Barra `<div role="progressbar" …>` track `h-1 w-full rounded-full bg-muted overflow-hidden` + filho `bg-primary/70` com `style={{ width: \`${pct}%\` }}` e `transition-[width] duration-300`.
-  - 2 ou 3 `<Skeleton>` (`h-12` ou `h-20`) conforme densidade.
-  - Parágrafo: `Carregando mais interações… ({totalLoaded} de {total})`.
-- Estado final (sem `hasMore`): inalterado.
 
-### 2. `src/pages/interacoes/InteracoesContent.tsx`
-- No uso do `<InfiniteScrollSentinel>` (modo lista), passar `density={isCompact ? 'compact' : 'comfortable'}`.
+- Lógica de visibilidade adaptativa:
+  ```ts
+  const [visible, setVisible] = useState(false);
+  const rafRef = useRef<number | null>(null);
 
-### 3. `src/components/ficha-360/UltimasInteracoesCard.tsx`
-- Sem mudança obrigatória. Como o card é compacto por natureza, **passar `density="compact"`** opcionalmente para alinhar visualmente com os itens da lista de últimas interações. Sem efeito colateral em outras props.
+  useEffect(() => {
+    const compute = () => {
+      const docHeight = document.documentElement.scrollHeight;
+      const effective = docHeight > 4000 ? Math.min(threshold, 300) : threshold;
+      setVisible(window.scrollY > effective);
+      rafRef.current = null;
+    };
+    const onScroll = () => {
+      if (rafRef.current != null) return;
+      rafRef.current = requestAnimationFrame(compute);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    compute();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [threshold]);
+  ```
+
+- Função `scrollToTop` smart:
+  ```ts
+  const scrollToTop = () => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tooFar = window.scrollY > 5000;
+    window.scrollTo({
+      top: 0,
+      behavior: reduceMotion || tooFar ? 'auto' : 'smooth',
+    });
+  };
+  ```
+
+- Adicionar `title="Voltar ao topo"` no `<Button>`. Manter `aria-label` existente.
+
+- Manter listeners `mobile-overlay-open/close` e estilo atuais inalterados.
 
 ## Testes
 
-**Editar/criar** `src/components/interactions/__tests__/InfiniteScrollSentinel.test.tsx`:
-1. `total=0` → não renderiza nada (regressão do early return).
-2. `hasMore=true, totalLoaded=10, total=100` → exibe `progressbar` com `aria-valuenow=10`, `aria-valuemax=100`, largura `10%`, e texto contém "10 de 100".
-3. `hasMore=false, totalLoaded=50, total=50` → exibe "Fim da lista — 50 interações exibidas" (sem barra).
-4. `density="compact"` → renderiza exatamente 2 skeletons; default renderiza 3.
-5. `hasMore=true, total=0` é coberto pelo caso 1 (early return). 
-6. Acessibilidade: `aria-live="polite"`, `aria-busy="true"` e `role="progressbar"` presentes no estado de carregamento.
+**Editar/criar** `src/components/navigation/__tests__/ScrollToTopButton.test.tsx`:
+1. Não visível com `scrollY=0` (default threshold 400).
+2. Visível ao ultrapassar `scrollY=400`.
+3. Threshold customizado (`threshold=200`) → visível com `scrollY=250`.
+4. Some quando evento `mobile-overlay-open` é disparado, mesmo com scroll alto.
+5. Click chama `window.scrollTo` com `top:0`.
+6. Em `prefers-reduced-motion: reduce`, usa `behavior: 'auto'`.
+7. Limiar adaptativo: documentElement.scrollHeight grande + threshold default → fica visível com `scrollY=350`.
+
+(Mock `window.scrollTo`, `window.matchMedia` e `Object.defineProperty(document.documentElement, 'scrollHeight', ...)`.)
 
 ## Padrões obrigatórios
 
-- PT-BR, flat, zero novas deps.
-- Backward-compat total: `density` opcional, default mantém visual atual.
-- A11y: `role="progressbar"` + `aria-value*` + `aria-label`, `aria-live="polite"`, `aria-busy`.
-- Sem mudança em `useInfiniteList` ou no `IntersectionObserver`.
-- ≤400 linhas por arquivo (sentinel atual ~33 linhas; novo arquivo segue muito abaixo).
+- PT-BR no texto exposto (`title`/`aria-label`).
+- Backward-compat total: prop `threshold` opcional, comportamento default igual ao atual em todas as rotas.
+- Zero novas deps, ≤400 linhas (arquivo atual ~70 linhas).
+- A11y mantida: `aria-label`, foco visível do `Button` shadcn, `prefers-reduced-motion` honrado.
+- Sem mudança em `AppLayout`, `InteracoesContent`, `MobileBottomNav`.
 
 ## Arquivos tocados
 
-**Editado (3):**
-- `src/components/interactions/InfiniteScrollSentinel.tsx` — barra de progresso, contador, prop `density`.
-- `src/pages/interacoes/InteracoesContent.tsx` — passa `density` ao sentinela conforme `isCompact`.
-- `src/components/ficha-360/UltimasInteracoesCard.tsx` — passa `density="compact"` ao sentinela.
+**Editado (1):**
+- `src/components/navigation/ScrollToTopButton.tsx` — prop `threshold`, limiar adaptativo, scroll smart, throttling com rAF, tooltip.
 
 **Novo (1) — testes:**
-- `src/components/interactions/__tests__/InfiniteScrollSentinel.test.tsx` — 5 casos cobrindo barra, contador, densidade, estado final e a11y.
+- `src/components/navigation/__tests__/ScrollToTopButton.test.tsx` — 7 casos cobrindo visibilidade, threshold, overlay, reduced motion, click.
 
 ## Critério de fechamento
 
-(a) Durante o scroll incremental, aparece uma barra fina de progresso preenchendo conforme `totalLoaded/total`; (b) o texto inclui contador `"X de Y"`; (c) em densidade compacta, o skeleton encolhe (2 itens, `h-12`, padding reduzido); (d) `UltimasInteracoesCard` exibe versão compacta; (e) estado final ("Fim da lista") permanece igual; (f) `total=0` continua não renderizando nada; (g) atributos a11y (`role="progressbar"`, `aria-value*`, `aria-live`, `aria-busy`) presentes; (h) testes cobrem todos os caminhos; (i) PT-BR, flat, zero novas deps.
+(a) Em `/interacoes` com infinite scroll, o botão flutuante "Voltar ao topo" aparece após rolagem moderada e leva o usuário ao topo; (b) em listas muito longas (`scrollHeight > 4000`), aparece mais cedo (limiar 300px); (c) em rolagens muito altas (`scrollY > 5000`), o scroll é instantâneo para evitar espera; (d) respeita `prefers-reduced-motion`; (e) listener de scroll throttled via `requestAnimationFrame`; (f) outras rotas mantêm exatamente o comportamento atual; (g) tooltip "Voltar ao topo" no hover desktop; (h) testes cobrem visibilidade, threshold, overlay, reduced-motion e click; (i) PT-BR, flat, zero novas deps.
 
