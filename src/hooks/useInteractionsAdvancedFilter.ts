@@ -7,6 +7,7 @@ import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence'
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
+export type DensityMode = 'comfortable' | 'compact';
 
 export interface AdvancedFilters {
   q: string;
@@ -18,11 +19,17 @@ export interface AdvancedFilters {
   ate?: Date;
   sort: SortKey;
   view: ViewMode;
+  density: DensityMode;
   page: number;
   perPage: number;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'page', 'perPage'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage'] as const;
+
+const DENSITY_STORAGE_KEY = 'singu-interactions-density-v1';
+function parseDensity(v: string | null): DensityMode {
+  return v === 'compact' ? 'compact' : 'comfortable';
+}
 
 const VALID_CHANNELS = new Set(['whatsapp', 'call', 'email', 'meeting', 'video_call', 'note']);
 function parseCanais(v: string | null): string[] {
