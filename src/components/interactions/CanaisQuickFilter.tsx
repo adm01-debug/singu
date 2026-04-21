@@ -3,6 +3,16 @@ import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerCl
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useChannelSyncMode } from '@/hooks/useChannelSyncMode';
 import { toast } from 'sonner';
@@ -130,8 +140,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     toast.success('Filtros de canal aplicados');
   }, [pending, onChange]);
 
+  const [confirmRevertOpen, setConfirmRevertOpen] = useState(false);
+
   const revert = useCallback(() => {
     setPending(safe);
+    setConfirmRevertOpen(false);
+    toast.success('Alterações pendentes descartadas');
   }, [safe]);
 
   const handleToggleMode = useCallback(() => {
@@ -221,7 +235,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                   type="button"
                   variant="ghost"
                   size="xs"
-                  onClick={revert}
+                  onClick={() => setConfirmRevertOpen(true)}
                   className="gap-1"
                 >
                   <X className="w-3 h-3" />
@@ -232,6 +246,23 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
             </Tooltip>
           </div>
         )}
+
+        <AlertDialog open={confirmRevertOpen} onOpenChange={setConfirmRevertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Descartar alterações pendentes?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {diffCount > 0
+                  ? `Você tem ${diffCount} alteração${diffCount === 1 ? '' : 'ões'} de canal pendente${diffCount === 1 ? '' : 's'} que ainda não foram aplicadas. Esta ação restaura a seleção para os filtros aplicados atuais.`
+                  : 'Esta ação restaura a seleção para os filtros aplicados atuais.'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={revert}>Descartar</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </TooltipProvider>
   );
