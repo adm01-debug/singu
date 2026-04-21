@@ -2,11 +2,12 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Loader2, Quote } from "lucide-react";
+import { ExternalLink, Info, Loader2, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
 import { extractExcerpts, type Excerpt } from "@/lib/insights/extractExcerpts";
+import { pickTopPassages } from "@/lib/insights/pickTopPassages";
 import type { ThemeAggregate } from "@/hooks/useInteractionsInsights";
 
 interface Props {
@@ -177,13 +178,29 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     return extractExcerpts(sources, keywords, { totalCap: 5, maxPerSource: 2, window: 140 });
   }, [interactions, keywords]);
 
+  const fallbackPassages = useMemo(() => {
+    if (excerpts.length > 0) return [];
+    if (!Array.isArray(interactions) || interactions.length === 0) return [];
+    const sources = interactions.map((i) => ({
+      id: i.id,
+      text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
+    }));
+    return pickTopPassages(sources, { totalCap: 5, maxPerSource: 2, window: 220 });
+  }, [excerpts, interactions]);
+
+  const isFallback = excerpts.length === 0 && fallbackPassages.length > 0;
+  const displayItems = excerpts.length > 0 ? excerpts : fallbackPassages;
+
   const interactionMap = useMemo(() => {
     const m = new Map<string, InteractionRow>();
     for (const i of interactions) m.set(i.id, i);
     return m;
   }, [interactions]);
 
-  const sourcesCount = useMemo(() => new Set(excerpts.map((e) => e.interactionId)).size, [excerpts]);
+  const sourcesCount = useMemo(
+    () => new Set(displayItems.map((e) => e.interactionId)).size,
+    [displayItems],
+  );
 
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
@@ -209,25 +226,36 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
             </div>
           )}
 
-          {!loading && excerpts.length > 0 && (
+          {!loading && displayItems.length > 0 && (
             <>
-              <p className="text-xs text-muted-foreground">
-                {excerpts.length} excerto{excerpts.length === 1 ? "" : "s"} de {sourcesCount} conversa
-                {sourcesCount === 1 ? "" : "s"}
-              </p>
-              {excerpts.map((ex, i) => (
+              {isFallback && (
+                <div className="flex gap-2 items-start rounded-md bg-muted/40 border border-border/60 p-2">
+                  <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Sem menções diretas das keywords deste tema. Mostrando as {displayItems.length} passagens
+                    mais relevantes das conversas.
+                  </p>
+                </div>
+              )}
+              {!isFallback && (
+                <p className="text-xs text-muted-foreground">
+                  {displayItems.length} excerto{displayItems.length === 1 ? "" : "s"} de {sourcesCount} conversa
+                  {sourcesCount === 1 ? "" : "s"}
+                </p>
+              )}
+              {displayItems.map((ex, i) => (
                 <ExcerptItem
                   key={`${ex.interactionId}-${ex.position}-${i}`}
                   excerpt={ex}
                   interaction={interactionMap.get(ex.interactionId)}
-                  terms={keywords}
+                  terms={isFallback ? [] : keywords}
                   onClose={onClose}
                 />
               ))}
             </>
           )}
 
-          {!loading && excerpts.length === 0 && interactions.length > 0 && (
+          {!loading && displayItems.length === 0 && interactions.length > 0 && (
             <>
               <p className="text-xs text-muted-foreground italic">
                 Nenhuma menção literal encontrada nas transcrições. Mostrando interações relacionadas.
