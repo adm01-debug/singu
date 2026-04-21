@@ -28,6 +28,7 @@ import { SimulationModePanel } from '@/components/ficha-360/SimulationModePanel'
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProntidaoTrend } from '@/lib/prontidaoTrend';
 import { computeProximosPassos } from '@/lib/proximosPassos';
+import { useProximoPassoFeedbacks } from '@/hooks/useProximoPassoFeedback';
 import { applySimulation } from '@/lib/prontidaoSimulation';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useSimulationStore } from '@/stores/useSimulationStore';
