@@ -173,27 +173,48 @@ export function useInteractionsAdvancedFilter() {
     writeAppliedCanais(filters.canais);
   }, [filters.canais]);
 
-  // Hidratação one-shot da densidade no mount: URL ganha sobre cache.
-  const densityHydratedRef = useRef(false);
+  // Hidratação one-shot consolidada das preferências de visualização: URL ganha sobre cache.
+  const prefsHydratedRef = useRef(false);
   useEffect(() => {
-    if (densityHydratedRef.current) return;
-    densityHydratedRef.current = true;
-    if (searchParams.get('density')) return;
-    try {
-      const cached = localStorage.getItem(DENSITY_STORAGE_KEY);
-      if (cached === 'compact') {
-        const next = new URLSearchParams(searchParams);
-        next.set('density', 'compact');
-        setSearchParams(next, { replace: true });
+    if (prefsHydratedRef.current) return;
+    prefsHydratedRef.current = true;
+    const next = new URLSearchParams(searchParams);
+    let changed = false;
+
+    if (!searchParams.get('density')) {
+      const v = readLS(DENSITY_STORAGE_KEY);
+      if (v === 'compact') { next.set('density', 'compact'); changed = true; }
+    }
+    if (!searchParams.get('perPage')) {
+      const n = parseInt(readLS(PERPAGE_STORAGE_KEY) ?? '', 10);
+      if ((VALID_PER_PAGE as readonly number[]).includes(n) && n !== DEFAULT_PER_PAGE) {
+        next.set('perPage', String(n));
+        changed = true;
       }
-    } catch { /* noop */ }
+    }
+    if (!searchParams.get('view')) {
+      const v = readLS(VIEW_STORAGE_KEY);
+      if (v && (VALID_VIEWS as string[]).includes(v) && v !== 'list') {
+        next.set('view', v);
+        changed = true;
+      }
+    }
+    if (!searchParams.get('sort')) {
+      const v = readLS(SORT_STORAGE_KEY);
+      if (v && (VALID_SORTS as string[]).includes(v) && v !== 'recent') {
+        next.set('sort', v);
+        changed = true;
+      }
+    }
+    if (changed) setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persistência reativa: sincroniza densidade com localStorage.
-  useEffect(() => {
-    try { localStorage.setItem(DENSITY_STORAGE_KEY, filters.density); } catch { /* noop */ }
-  }, [filters.density]);
+  // Persistência reativa: espelha preferências de visualização no localStorage.
+  useEffect(() => { writeLS(DENSITY_STORAGE_KEY, filters.density); }, [filters.density]);
+  useEffect(() => { writeLS(PERPAGE_STORAGE_KEY, String(filters.perPage)); }, [filters.perPage]);
+  useEffect(() => { writeLS(VIEW_STORAGE_KEY, filters.view); }, [filters.view]);
+  useEffect(() => { writeLS(SORT_STORAGE_KEY, filters.sort); }, [filters.sort]);
 
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
