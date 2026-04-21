@@ -36,6 +36,13 @@ function fmtDate(d: Date): string {
   return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${yy}`;
 }
 
+/** Sanitiza e capitaliza nomes de canal desconhecidos para exibição. */
+function prettifyChannel(raw: string): string {
+  const cleaned = (raw ?? '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  if (!cleaned) return 'Canal';
+  return cleaned.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
   filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
 }: Props) {
