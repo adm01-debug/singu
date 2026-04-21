@@ -226,6 +226,31 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     return { currentPct, previousPct, deltaPp, direction, weeksCompared: prev.length };
   }, [sortedData]);
 
+  const confidenceInfo = useMemo(() => {
+    if (!evolutionStats || sortedData.length < 4) return null;
+    const pcts = sortedData.map((p) => {
+      const tot = p.total ?? 0;
+      if (tot <= 0) return null;
+      return typeof p.positivePct === "number" ? p.positivePct : Math.round(((p.positive ?? 0) / tot) * 100);
+    }).filter((v): v is number => v !== null);
+    if (pcts.length < 4) return null;
+    const mean = pcts.reduce((a, b) => a + b, 0) / pcts.length;
+    const variance = pcts.reduce((a, b) => a + (b - mean) ** 2, 0) / pcts.length;
+    const stdDev = Math.sqrt(variance);
+    const marginPp = stdDev / Math.sqrt(pcts.length);
+    const absDelta = Math.abs(evolutionStats.deltaPp);
+    const level: "high" | "medium" | "low" =
+      absDelta >= 2 * marginPp ? "high" : absDelta < marginPp ? "low" : "medium";
+    const marginStr = marginPp.toFixed(1);
+    const meta = {
+      high: { label: `Variação significativa (±${marginStr}pp de margem)`, icon: ShieldCheck, colorClass: "text-success" },
+      medium: { label: `Variação moderada (±${marginStr}pp de margem)`, icon: Shield, colorClass: "text-muted-foreground" },
+      low: { label: `Dentro do ruído típico (±${marginStr}pp de margem) — leitura pouco confiável`, icon: ShieldAlert, colorClass: "text-warning" },
+    } as const;
+    return { level, marginPp, stdDev, n: pcts.length, ...meta[level] };
+  }, [sortedData, evolutionStats]);
+
+
   if (sortedData.length < 2) {
     return (
       <p className="text-sm text-muted-foreground text-center py-12">
