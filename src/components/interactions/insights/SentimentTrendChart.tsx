@@ -122,6 +122,20 @@ interface EvolutionStats {
 }
 
 function SentimentTrendChartImpl({ data, summary }: Props) {
+  const [smoothEnabled, setSmoothEnabled] = useState(true);
+
+  const dataWithMA = useMemo(() => {
+    const safe = Array.isArray(data) ? data : [];
+    return safe.map((p, i) => {
+      const start = Math.max(0, i - 2);
+      const window = safe.slice(start, i + 1);
+      const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
+      const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
+      const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
+      return { ...p, positivePctMA };
+    });
+  }, [data]);
+
   const mixedStats = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
     const totalMixed = safe.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
