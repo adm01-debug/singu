@@ -1,8 +1,8 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
+import type { AdvancedFilters, SentimentoFilter } from '@/hooks/useInteractionsAdvancedFilter';
 
 const CHANNEL_META: Record<string, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
   whatsapp: { label: 'WhatsApp', Icon: MessageSquare },
@@ -11,6 +11,13 @@ const CHANNEL_META: Record<string, { label: string; Icon: React.ComponentType<{ 
   meeting: { label: 'Reunião', Icon: Users },
   video_call: { label: 'Vídeo', Icon: Video },
   note: { label: 'Nota', Icon: FileText },
+};
+
+const SENTIMENTO_META: Record<SentimentoFilter, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
+  positive: { label: 'Positivo', Icon: Smile },
+  neutral:  { label: 'Neutro',   Icon: Meh },
+  negative: { label: 'Negativo', Icon: Frown },
+  mixed:    { label: 'Misto',    Icon: Sparkles },
 };
 
 interface Props {
@@ -121,6 +128,21 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
           Período desde {fmtDate(filters.de)}
         </Badge>
       )}
+
+      {filters.sentimento && SENTIMENTO_META[filters.sentimento] && (() => {
+        const meta = SENTIMENTO_META[filters.sentimento];
+        const Icon = meta.Icon;
+        return (
+          <Badge
+            variant="secondary"
+            closeable
+            onClose={wrap(() => setFilter('sentimento', undefined))}
+            icon={<Icon className="w-3 h-3" />}
+          >
+            Sentimento {meta.label}
+          </Badge>
+        );
+      })()}
 
       {filters.ate instanceof Date && (
         <Badge variant="secondary" closeable onClose={wrap(() => setFilter('ate', undefined))} icon={<Calendar className="w-3 h-3" />}>

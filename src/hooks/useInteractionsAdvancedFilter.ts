@@ -8,6 +8,7 @@ import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence'
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
 export type DensityMode = 'comfortable' | 'compact';
+export type SentimentoFilter = 'positive' | 'neutral' | 'negative' | 'mixed';
 
 export interface AdvancedFilters {
   q: string;
@@ -22,9 +23,15 @@ export interface AdvancedFilters {
   density: DensityMode;
   page: number;
   perPage: number;
+  sentimento?: SentimentoFilter;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage', 'sentimento'] as const;
+
+const VALID_SENTIMENTOS: SentimentoFilter[] = ['positive', 'neutral', 'negative', 'mixed'];
+function parseSentimento(v: string | null): SentimentoFilter | undefined {
+  return (VALID_SENTIMENTOS as string[]).includes(v ?? '') ? (v as SentimentoFilter) : undefined;
+}
 
 const DENSITY_STORAGE_KEY = 'singu-interactions-density-v1';
 const PERPAGE_STORAGE_KEY = 'singu-interactions-perPage-v1';
@@ -114,6 +121,7 @@ export function useInteractionsAdvancedFilter() {
     density: parseDensity(searchParams.get('density')),
     page: parsePage(searchParams.get('page')),
     perPage: parsePerPage(searchParams.get('perPage')),
+    sentimento: parseSentimento(searchParams.get('sentimento')),
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
@@ -252,6 +260,10 @@ export function useInteractionsAdvancedFilter() {
       const n = value as number;
       if ((VALID_PER_PAGE as readonly number[]).includes(n) && n !== DEFAULT_PER_PAGE) next.set('perPage', String(n));
       else next.delete('perPage');
+    } else if (key === 'sentimento') {
+      const s = value as SentimentoFilter | undefined;
+      if (s && (VALID_SENTIMENTOS as string[]).includes(s)) next.set('sentimento', s);
+      else next.delete('sentimento');
     } else {
       const v = (value as string) ?? '';
       if (v) next.set(key, v);
@@ -287,6 +299,9 @@ export function useInteractionsAdvancedFilter() {
         && next.perPage !== DEFAULT_PER_PAGE) {
       sp.set('perPage', String(next.perPage));
     }
+    if (next.sentimento && (VALID_SENTIMENTOS as string[]).includes(next.sentimento)) {
+      sp.set('sentimento', next.sentimento);
+    }
     // page nunca é persistida via applyAll: qualquer mudança em filtros deve voltar pra página 1.
     setSearchParams(sp, { replace: true });
   }, [searchParams, setSearchParams]);
@@ -321,7 +336,8 @@ export function useInteractionsAdvancedFilter() {
     (filters.canais.length > 0 ? 1 : 0) +
     (filters.direcao !== 'all' ? 1 : 0) +
     (filters.de ? 1 : 0) +
-    (filters.ate ? 1 : 0);
+    (filters.ate ? 1 : 0) +
+    (filters.sentimento ? 1 : 0);
 
   return { filters, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange };
 }
