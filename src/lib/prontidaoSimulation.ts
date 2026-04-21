@@ -16,9 +16,6 @@ interface IntelligenceShape {
   best_time?: string | null;
 }
 
-type ProfileLike = ProfileShape & Record<string, unknown>;
-type IntelligenceLike = IntelligenceShape & Record<string, unknown>;
-
 export interface SimulationPreset {
   name: string;
   label: string;
@@ -103,18 +100,18 @@ export const SIMULATION_PRESETS: SimulationPreset[] = [
 
 const DAY_MS = 86_400_000;
 
-export interface SimulationResult {
-  profile: ProfileLike | null;
-  intelligence: IntelligenceLike | null;
+export interface SimulationResult<P, I> {
+  profile: (P & ProfileShape) | null;
+  intelligence: (I & IntelligenceShape) | null;
 }
 
-export function applySimulation(
-  profile: ProfileLike | null | undefined,
-  intelligence: IntelligenceLike | null | undefined,
+export function applySimulation<P extends ProfileShape, I extends IntelligenceShape>(
+  profile: P | null | undefined,
+  intelligence: I | null | undefined,
   overrides: SimulationOverrides,
-): SimulationResult {
-  const baseProfile: ProfileLike = profile ? { ...profile } : {};
-  const baseIntel: IntelligenceLike = intelligence ? { ...intelligence } : {};
+): SimulationResult<P, I> {
+  const baseProfile = (profile ? { ...profile } : {}) as P & ProfileShape;
+  const baseIntel = (intelligence ? { ...intelligence } : {}) as I & IntelligenceShape;
 
   if (overrides.cadence_days !== null) {
     baseProfile.cadence_days = overrides.cadence_days;
