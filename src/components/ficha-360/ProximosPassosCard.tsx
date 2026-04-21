@@ -69,10 +69,25 @@ const urgencyToClass = (u?: string) => {
   return 'bg-warning/10 text-warning border-warning/30';
 };
 
+const outcomeMeta: Record<PassoOutcome, { label: string; className: string }> = {
+  respondeu_positivo: { label: '✅ Respondeu', className: 'bg-success/10 text-success border-success/30' },
+  respondeu_neutro: { label: '💬 Neutro', className: 'bg-info/10 text-info border-info/30' },
+  nao_respondeu: { label: '🔇 Sem resposta', className: 'bg-warning/10 text-warning border-warning/30' },
+  nao_atendeu: { label: '📵 Sem atender', className: 'bg-warning/10 text-warning border-warning/30' },
+  pulou: { label: '⏭️ Pulado', className: 'bg-muted text-muted-foreground border-border' },
+};
+
+function relativeDays(daysAgo: number): string {
+  if (daysAgo <= 0) return 'hoje';
+  if (daysAgo === 1) return 'há 1d';
+  return `há ${daysAgo}d`;
+}
+
 function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
+  const { data: feedbacks = [] } = useProximoPassoFeedbacks(contactId);
 
   // Limpa badges "criada" após 4s
   useEffect(() => {
