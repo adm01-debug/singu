@@ -20,7 +20,9 @@ import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesC
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
+import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
+import { computeProximosPassos } from '@/lib/proximosPassos';
 import { useMemo } from 'react';
 
 const sentimentClass = (s?: string | null) => {
@@ -59,6 +61,19 @@ const Ficha360 = () => {
   const prontidao = useMemo(
     () => computeProntidaoScore({ profile, intelligence }),
     [profile, intelligence],
+  );
+
+  const passos = useMemo(
+    () =>
+      computeProximosPassos({
+        profile,
+        intelligence,
+        recentInteractions,
+        prontidao,
+        birthday: rapportIntel?.birthday ?? null,
+        email: rapportIntel?.email ?? profile?.email ?? null,
+      }),
+    [profile, intelligence, recentInteractions, prontidao, rapportIntel],
   );
 
   if (!id) {
@@ -167,6 +182,7 @@ const Ficha360 = () => {
               </div>
               <div className="space-y-4">
                 <FrequenciaContatoCard profile={profile} intelligence={intelligence} />
+                <ProximosPassosCard contactId={id} contactName={fullName} passos={passos} />
                 <UltimasInteracoesCard
                   interactions={recentInteractions}
                   contactId={id}
