@@ -11,6 +11,7 @@ import {
   Legend,
   ReferenceLine,
 } from "recharts";
+import type { TooltipProps } from "recharts";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
@@ -40,6 +41,68 @@ const DIRECTION_CLASS: Record<SentimentTrendSummary["direction"], string> = {
 };
 
 const DIRECTION_ICON = { up: TrendingUp, stable: Minus, down: TrendingDown } as const;
+
+const SENTIMENT_ROWS: Array<{ key: "positive" | "neutral" | "negative" | "mixed"; label: string; color: string }> = [
+  { key: "positive", label: "Positivo", color: CHART_COLORS.positive },
+  { key: "neutral", label: "Neutro", color: CHART_COLORS.neutral },
+  { key: "negative", label: "Negativo", color: CHART_COLORS.negative },
+  { key: "mixed", label: "Misto", color: CHART_COLORS.mixed },
+];
+
+function pctClass(pct: number): string {
+  if (pct >= 60) return "text-success";
+  if (pct <= 30) return "text-destructive";
+  return "text-muted-foreground";
+}
+
+function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload || payload.length === 0) return null;
+  const point = payload[0]?.payload as SentimentTrendPoint | undefined;
+  if (!point) return null;
+
+  const total = point.total ?? 0;
+  const positivePct =
+    typeof point.positivePct === "number"
+      ? point.positivePct
+      : total > 0
+        ? Math.round((point.positive / total) * 100)
+        : 0;
+
+  return (
+    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[200px]">
+      <p className="font-semibold">Semana de {formatWeek(point.week)}</p>
+      {total === 0 ? (
+        <p className="text-[10px] text-muted-foreground mt-0.5">sem conversas</p>
+      ) : (
+        <>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            {total} {total === 1 ? "conversa" : "conversas"} ·{" "}
+            <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
+          </p>
+          <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
+            {SENTIMENT_ROWS.map((row) => {
+              const count = point[row.key] ?? 0;
+              if (count === 0) return null;
+              const pct = Math.round((count / total) * 100);
+              return (
+                <div key={row.key} className="flex items-center gap-2">
+                  <span
+                    className="h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: row.color }}
+                    aria-hidden
+                  />
+                  <span className="flex-1">{row.label}</span>
+                  <span className="font-medium tabular-nums">{count}</span>
+                  <span className="text-muted-foreground tabular-nums w-10 text-right">({pct}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function SentimentTrendChartImpl({ data, summary }: Props) {
   if (!Array.isArray(data) || data.length < 2) {
@@ -105,13 +168,8 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               fontSize={11}
             />
             <Tooltip
-              contentStyle={{
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-              labelFormatter={(l) => `Semana de ${formatWeek(String(l))}`}
+              content={<WeeklySentimentTooltip />}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {showRefLines && summary?.bestWeek && (
