@@ -168,13 +168,8 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               fontSize={11}
             />
             <Tooltip
-              contentStyle={{
-                background: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 8,
-                fontSize: 12,
-              }}
-              labelFormatter={(l) => `Semana de ${formatWeek(String(l))}`}
+              content={<WeeklySentimentTooltip />}
+              cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {showRefLines && summary?.bestWeek && (
