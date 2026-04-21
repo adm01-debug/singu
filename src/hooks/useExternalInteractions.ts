@@ -63,7 +63,17 @@ export function useExternalInteractions(
         range: { from: 0, to: limit - 1 },
       });
       if (error) throw error;
-      return Array.isArray(data) ? data : [];
+      const list = Array.isArray(data) ? data : [];
+      if (typeof days === 'number' && days > 0) {
+        const sinceMs = Date.now() - days * 24 * 60 * 60 * 1000;
+        return list.filter((it) => {
+          const ref = it.data_interacao || it.created_at;
+          if (!ref) return false;
+          const t = new Date(ref).getTime();
+          return Number.isFinite(t) && t >= sinceMs;
+        });
+      }
+      return list;
     },
     enabled: !!contactId,
     staleTime: 5 * 60 * 1000,
