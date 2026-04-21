@@ -1,11 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useSearchPresets } from '@/hooks/useSearchPresets';
 import { toast } from 'sonner';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
+import { ImportPresetsDialog } from './ImportPresetsDialog';
+import {
+  buildBundle,
+  bundleToBase64Url,
+  downloadBundleAsFile,
+  type ExportablePreset,
+} from '@/lib/searchPresetTransport';
 
 interface Props {
   filters: AdvancedFilters;
@@ -49,6 +56,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const currentPayload: SerializedPayload = useMemo(() => ({
     q: filters.q,
@@ -63,7 +71,6 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const handleSave = () => {
     const trimmed = name.trim().slice(0, 60);
     if (!trimmed) return;
-    // Reusa estrutura do hook genérico: armazenamos payload em `filters` como Record<string,string[]>-like via cast
     savePreset({
       name: trimmed,
       filters: {
@@ -110,107 +117,195 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     toast.success('Busca aplicada');
   };
 
+  const exportOne = (preset: typeof presets[number]) => {
+    const item: ExportablePreset = {
+      name: preset.name,
+      filters: preset.filters,
+      sortBy: preset.sortBy,
+      sortOrder: preset.sortOrder,
+    };
+    downloadBundleAsFile(buildBundle([item]));
+    toast.success('JSON baixado');
+  };
+
+  const copyLink = async (preset: typeof presets[number]) => {
+    const item: ExportablePreset = {
+      name: preset.name,
+      filters: preset.filters,
+      sortBy: preset.sortBy,
+      sortOrder: preset.sortOrder,
+    };
+    const b64 = bundleToBase64Url(buildBundle([item]));
+    const url = `${window.location.origin}/interacoes?preset=${b64}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copiado');
+    } catch {
+      toast.error('Falha ao copiar link');
+    }
+  };
+
+  const exportAll = () => {
+    const items: ExportablePreset[] = presets.map(p => ({
+      name: p.name,
+      filters: p.filters,
+      sortBy: p.sortBy,
+      sortOrder: p.sortOrder,
+    }));
+    downloadBundleAsFile(buildBundle(items));
+    toast.success(`${items.length} busca${items.length > 1 ? 's' : ''} exportada${items.length > 1 ? 's' : ''}`);
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5" aria-label="Buscas salvas">
-          <Bookmark className="w-4 h-4" />
-          <span className="hidden sm:inline">Buscas</span>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5" aria-label="Buscas salvas">
+            <Bookmark className="w-4 h-4" />
+            <span className="hidden sm:inline">Buscas</span>
+            {presets.length > 0 && (
+              <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5">
+                {presets.length}
+              </span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-96 p-0" align="end">
+          <div className="p-3 border-b border-border">
+            <h4 className="font-medium text-sm text-foreground">Buscas salvas</h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Salve, exporte e compartilhe combinações de filtros
+            </p>
+          </div>
+
           {presets.length > 0 && (
-            <span className="text-xs bg-primary/10 text-primary rounded-full px-1.5">
-              {presets.length}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-3 border-b border-border">
-          <h4 className="font-medium text-sm text-foreground">Buscas salvas</h4>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Salve combinações de filtros para reutilizar depois
-          </p>
-        </div>
-
-        {presets.length > 0 && (
-          <div className="max-h-64 overflow-y-auto divide-y divide-border">
-            {presets.map(preset => {
-              const payload: SerializedPayload = {
-                q: preset.filters.q?.[0] ?? '',
-                contact: preset.filters.contact?.[0] ?? '',
-                company: preset.filters.company?.[0] ?? '',
-                canais: Array.isArray(preset.filters.canais) ? preset.filters.canais : [],
-                de: preset.filters.de?.[0],
-                ate: preset.filters.ate?.[0],
-              };
-              return (
-                <div
-                  key={preset.id}
-                  className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                  onClick={() => applyPreset(preset.filters)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{summarize(payload)}</p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deletePreset(preset.id);
-                      toast('Busca removida');
-                    }}
+            <div className="max-h-64 overflow-y-auto divide-y divide-border">
+              {presets.map(preset => {
+                const payload: SerializedPayload = {
+                  q: preset.filters.q?.[0] ?? '',
+                  contact: preset.filters.contact?.[0] ?? '',
+                  company: preset.filters.company?.[0] ?? '',
+                  canais: Array.isArray(preset.filters.canais) ? preset.filters.canais : [],
+                  de: preset.filters.de?.[0],
+                  ate: preset.filters.ate?.[0],
+                };
+                return (
+                  <div
+                    key={preset.id}
+                    className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
+                    onClick={() => applyPreset(preset.filters)}
                   >
-                    <Trash2 className="w-3 h-3 text-muted-foreground" />
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {presets.length === 0 && !isNaming && (
-          <div className="p-4 text-center text-muted-foreground">
-            <Bookmark className="w-6 h-6 mx-auto mb-1.5 opacity-40" />
-            <p className="text-xs">Nenhuma busca salva.</p>
-            <p className="text-xs mt-0.5">Aplique filtros e clique em "Salvar".</p>
-          </div>
-        )}
-
-        <div className="p-2.5 border-t border-border">
-          {isNaming ? (
-            <div className="flex gap-2">
-              <Input
-                autoFocus
-                placeholder="Nome da busca..."
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSave();
-                  if (e.key === 'Escape') { setIsNaming(false); setName(''); }
-                }}
-                maxLength={60}
-                className="h-8 text-sm"
-              />
-              <Button size="sm" className="h-8 px-2" onClick={handleSave} disabled={!name.trim()}>
-                <Check className="w-3.5 h-3.5" />
-              </Button>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{summarize(payload)}</p>
+                    </div>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="Baixar JSON"
+                        onClick={(e) => { e.stopPropagation(); exportOne(preset); }}
+                      >
+                        <Download className="w-3 h-3 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="Copiar link"
+                        onClick={(e) => { e.stopPropagation(); copyLink(preset); }}
+                      >
+                        <Link2 className="w-3 h-3 text-muted-foreground" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        title="Remover"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deletePreset(preset.id);
+                          toast('Busca removida');
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 text-xs"
-              onClick={() => setIsNaming(true)}
-              disabled={activeCount === 0 || presets.length >= 10}
-            >
-              <BookmarkPlus className="w-3.5 h-3.5" />
-              {presets.length >= 10 ? 'Limite de 10 buscas atingido' : 'Salvar busca atual'}
-            </Button>
           )}
-        </div>
-      </PopoverContent>
-    </Popover>
+
+          {presets.length === 0 && !isNaming && (
+            <div className="p-4 text-center text-muted-foreground">
+              <Bookmark className="w-6 h-6 mx-auto mb-1.5 opacity-40" />
+              <p className="text-xs">Nenhuma busca salva.</p>
+              <p className="text-xs mt-0.5">Aplique filtros e clique em "Salvar".</p>
+            </div>
+          )}
+
+          <div className="p-2.5 border-t border-border space-y-1.5">
+            {isNaming ? (
+              <div className="flex gap-2">
+                <Input
+                  autoFocus
+                  placeholder="Nome da busca..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSave();
+                    if (e.key === 'Escape') { setIsNaming(false); setName(''); }
+                  }}
+                  maxLength={60}
+                  className="h-8 text-sm"
+                />
+                <Button size="sm" className="h-8 px-2" onClick={handleSave} disabled={!name.trim()}>
+                  <Check className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start gap-2 text-xs"
+                onClick={() => setIsNaming(true)}
+                disabled={activeCount === 0 || presets.length >= 10}
+              >
+                <BookmarkPlus className="w-3.5 h-3.5" />
+                {presets.length >= 10 ? 'Limite de 10 buscas atingido' : 'Salvar busca atual'}
+              </Button>
+            )}
+
+            <div className="flex gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 justify-start gap-2 text-xs"
+                onClick={() => { setOpen(false); setImportOpen(true); }}
+              >
+                <Upload className="w-3.5 h-3.5" />
+                Importar buscas
+              </Button>
+              {presets.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 justify-start gap-2 text-xs"
+                  onClick={exportAll}
+                  title="Baixar todas como JSON"
+                >
+                  <FileJson className="w-3.5 h-3.5" />
+                  Exportar todas
+                </Button>
+              )}
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      <ImportPresetsDialog open={importOpen} onOpenChange={setImportOpen} />
+    </>
   );
 });
