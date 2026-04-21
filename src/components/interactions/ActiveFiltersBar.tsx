@@ -1,8 +1,8 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
+import type { AdvancedFilters, SentimentoFilter } from '@/hooks/useInteractionsAdvancedFilter';
 
 const CHANNEL_META: Record<string, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
   whatsapp: { label: 'WhatsApp', Icon: MessageSquare },
@@ -11,6 +11,13 @@ const CHANNEL_META: Record<string, { label: string; Icon: React.ComponentType<{ 
   meeting: { label: 'Reunião', Icon: Users },
   video_call: { label: 'Vídeo', Icon: Video },
   note: { label: 'Nota', Icon: FileText },
+};
+
+const SENTIMENTO_META: Record<SentimentoFilter, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
+  positive: { label: 'Positivo', Icon: Smile },
+  neutral:  { label: 'Neutro',   Icon: Meh },
+  negative: { label: 'Negativo', Icon: Frown },
+  mixed:    { label: 'Misto',    Icon: Sparkles },
 };
 
 interface Props {
