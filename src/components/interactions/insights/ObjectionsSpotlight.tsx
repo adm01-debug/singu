@@ -95,12 +95,19 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
             <Badge variant="outline" className="text-[10px] h-4 px-1.5">
               {o.category}
             </Badge>
-            <Badge
-              variant="outline"
-              className={cn("text-[10px] h-4 px-1.5", style.iconColor)}
-            >
-              {style.label}
-            </Badge>
+            {rate === 100 ? (
+              <Badge variant="success" className="text-[10px] h-4 px-1.5 gap-1">
+                <CheckCircle2 className="h-3 w-3" />
+                Bem tratada
+              </Badge>
+            ) : (
+              <Badge
+                variant="outline"
+                className={cn("text-[10px] h-4 px-1.5", style.iconColor)}
+              >
+                {style.label}
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -196,7 +203,12 @@ function ObjectionsSpotlightImpl({ objections }: Props) {
     if (!Array.isArray(objections) || objections.length === 0) return [];
     return [...objections]
       .map((o) => ({ o, score: o.unhandled * 2 + o.count }))
-      .sort((a, b) => b.score - a.score)
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.o.count - a.o.count ||
+          a.o.objection.localeCompare(b.o.objection, "pt-BR"),
+      )
       .slice(0, 3)
       .map((x) => x.o);
   }, [objections]);
