@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
+import { useInfiniteList } from '@/hooks/useInfiniteList';
+import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 
 interface Props {
@@ -48,6 +50,7 @@ function formatDate(iso?: string | null): string {
 
 export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive }: Props) => {
   const items = Array.isArray(interactions) ? interactions : [];
+  const { visible, hasMore, sentinelRef } = useInfiniteList(items, 15, [items]);
 
   return (
     <Card>
@@ -74,39 +77,47 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
             }
           />
         ) : (
-          <ul className="space-y-1">
-            {items.map((it) => {
-              const Icon = channelIcon(it.channel);
-              return (
-                <li key={it.id}>
-                  <Link
-                    to={`/interacoes?contact=${contactId}&open=${it.id}`}
-                    className="flex items-start gap-3 px-2 py-2 rounded-md hover:bg-muted/40 transition-colors"
-                  >
-                    <div className="mt-0.5 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                      <Icon className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate">
-                          {it.assunto || it.resumo?.slice(0, 60) || 'Interação'}
-                        </p>
-                        <span
-                          className={cn('h-1.5 w-1.5 rounded-full shrink-0', sentimentColor(it.status))}
-                          title={it.status ?? ''}
-                        />
+          <>
+            <ul className="space-y-1">
+              {visible.map((it) => {
+                const Icon = channelIcon(it.channel);
+                return (
+                  <li key={it.id}>
+                    <Link
+                      to={`/interacoes?contact=${contactId}&open=${it.id}`}
+                      className="flex items-start gap-3 px-2 py-2 rounded-md hover:bg-muted/40 transition-colors"
+                    >
+                      <div className="mt-0.5 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                        <Icon className="h-3.5 w-3.5 text-primary" />
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        <span className="capitalize">{it.channel ?? 'outro'}</span>
-                        {it.direction && <span>· {it.direction}</span>}
-                        <span>· {formatDate(it.data_interacao || it.created_at)}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium truncate">
+                            {it.assunto || it.resumo?.slice(0, 60) || 'Interação'}
+                          </p>
+                          <span
+                            className={cn('h-1.5 w-1.5 rounded-full shrink-0', sentimentColor(it.status))}
+                            title={it.status ?? ''}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span className="capitalize">{it.channel ?? 'outro'}</span>
+                          {it.direction && <span>· {it.direction}</span>}
+                          <span>· {formatDate(it.data_interacao || it.created_at)}</span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <InfiniteScrollSentinel
+              sentinelRef={sentinelRef}
+              hasMore={hasMore}
+              totalLoaded={visible.length}
+              total={items.length}
+            />
+          </>
         )}
       </CardContent>
     </Card>
