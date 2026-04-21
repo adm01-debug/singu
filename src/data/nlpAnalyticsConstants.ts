@@ -36,4 +36,5 @@ export const CHART_COLORS = {
   positive: 'hsl(142, 76%, 36%)',
   neutral: 'hsl(215, 16%, 47%)',
   negative: 'hsl(0, 84%, 60%)',
+  mixed: 'hsl(38, 92%, 50%)',
 } as const;
