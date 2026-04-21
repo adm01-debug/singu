@@ -7,7 +7,6 @@ import {
   Phone,
   Linkedin,
   Calendar,
-  Copy,
   Plus,
   Loader2,
   Check,
@@ -16,18 +15,21 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNextBestAction } from '@/hooks/useNextBestAction';
 import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/lib/proximosPassos';
 import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
 import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
+import { CopyScriptMenu } from './CopyScriptMenu';
+import type { SentimentTone } from '@/lib/scriptGenerator';
 
 interface Props {
   contactId: string;
   contactName: string;
   passos: ProximoPasso[];
   bestTime?: BestTimeHint | null;
+  firstName?: string;
+  sentiment?: SentimentTone;
 }
 
 const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
@@ -60,7 +62,7 @@ const urgencyToClass = (u?: string) => {
   return 'bg-warning/10 text-warning border-warning/30';
 };
 
-function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime }: Props) {
+function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
@@ -72,15 +74,10 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime 
     return () => clearTimeout(timer);
   }, [createdIds]);
 
-  const handleCopy = async (text?: string) => {
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Script copiado');
-    } catch {
-      toast.error('Não foi possível copiar');
-    }
-  };
+  const resolvedFirstName = (firstName || contactName.split(' ')[0] || 'contato').trim();
+  const bestTimeStr = bestTime?.hour_of_day != null
+    ? `${String(bestTime.hour_of_day).padStart(2, '0')}:00`
+    : null;
 
   const handleCreated = (passoId: string) => {
     setExpandedId(null);
@@ -202,16 +199,13 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime 
                             aria-hidden="true"
                           />
                         </Button>
-                        {p.scriptHint && (
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => handleCopy(p.scriptHint)}
-                          >
-                            <Copy className="h-3 w-3" />
-                            Copiar script
-                          </Button>
-                        )}
+                        <CopyScriptMenu
+                          passoId={p.id}
+                          firstName={resolvedFirstName}
+                          sentiment={sentiment ?? null}
+                          bestTime={bestTimeStr}
+                          fallbackScript={p.scriptHint}
+                        />
                       </div>
 
                       {isExpanded && (
