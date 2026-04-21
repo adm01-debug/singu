@@ -336,7 +336,8 @@ export function useInteractionsAdvancedFilter() {
     (filters.canais.length > 0 ? 1 : 0) +
     (filters.direcao !== 'all' ? 1 : 0) +
     (filters.de ? 1 : 0) +
-    (filters.ate ? 1 : 0);
+    (filters.ate ? 1 : 0) +
+    (filters.sentimento ? 1 : 0);
 
   return { filters, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange };
 }
