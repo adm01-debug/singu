@@ -222,7 +222,7 @@ export function SearchPresetsMenu({
                 <div
                   key={preset.id}
                   className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
-                  onClick={() => handleApply(preset)}
+                  onClick={() => { if (editingId !== preset.id) handleApply(preset); }}
                 >
                   <button
                     type="button"
@@ -243,25 +243,91 @@ export function SearchPresetsMenu({
                     />
                   </button>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {Object.values(preset.filters).flat().length} filtros
-                      {preset.searchTerm && ` · "${preset.searchTerm}"`}
-                      {usage >= 3 && ` · Usado ${usage}x`}
-                    </p>
+                    {editingId === preset.id ? (
+                      <Input
+                        ref={renameInputRef}
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={handleRenameKeydown}
+                        onBlur={commitRename}
+                        onClick={(e) => e.stopPropagation()}
+                        maxLength={60}
+                        className="h-7 text-xs"
+                        aria-label="Renomear preset"
+                      />
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {Object.values(preset.filters).flat().length} filtros
+                          {preset.searchTerm && ` · "${preset.searchTerm}"`}
+                          {usage >= 3 && ` · Usado ${usage}x`}
+                        </p>
+                      </>
+                    )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deletePreset(preset.id);
-                      toast('Preset removido');
-                    }}
-                  >
-                    <Trash2 className="w-3 h-3 text-muted-foreground" />
-                  </Button>
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
+                    {editingId === preset.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Confirmar"
+                          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); commitRename(); }}
+                        >
+                          <Check className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Cancelar"
+                          onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cancelRename(); }}
+                        >
+                          <X className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Renomear"
+                          aria-label="Renomear preset"
+                          onClick={(e) => startRename(preset, e)}
+                        >
+                          <Pencil className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                        {hasActiveFilters && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Atualizar com filtros atuais"
+                            aria-label="Atualizar filtros do preset"
+                            onClick={(e) => askUpdateFilters(preset, e)}
+                          >
+                            <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Remover"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deletePreset(preset.id);
+                            toast('Preset removido');
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 text-muted-foreground" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}
