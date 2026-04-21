@@ -98,7 +98,8 @@ export function useCreateQuickInteraction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (params: {
-      p_company_id: string;
+      p_company_id?: string;
+      p_contact_id?: string;
       p_tipo: string;
       p_resumo: string;
       p_followup_dias?: number;

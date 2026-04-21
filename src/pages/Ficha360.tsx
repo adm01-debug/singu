@@ -21,6 +21,7 @@ import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelac
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
+import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProximosPassos } from '@/lib/proximosPassos';
@@ -172,6 +173,9 @@ const Ficha360 = () => {
 
             {/* Score de Prontidão */}
             <ScoreProntidaoCard data={prontidao} contactId={id} />
+
+            {/* Próxima ação sugerida (IA + melhor horário + registrar interação) */}
+            {id && <ProximaAcaoCTA contactId={id} contactName={fullName} />}
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
