@@ -21,6 +21,13 @@ import type { Interaction } from '@/hooks/useInteractions';
 import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
+import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
+import { useCompanies } from '@/hooks/useCompanies';
+
+function normalize(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 const ActivityHeatmapChart = lazy(() => import('@/components/interactions/ActivityHeatmapChart'));
 
@@ -44,10 +51,42 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({});
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const { query: searchTerm, setQuery: setSearchTerm, results: fuzzyResults, isSearching, clearSearch } = useFuzzySearchLocal(interactions);
+
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount } = useInteractionsAdvancedFilter();
+  const { companies } = useCompanies();
+
+  const contactOptions = useMemo(
+    () => Array.from(contactMap.values()).map(c => ({ id: c.id, label: `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() || 'Sem nome' })),
+    [contactMap]
+  );
+  const companyOptions = useMemo(
+    () => (Array.isArray(companies) ? companies : []).map(c => ({ id: c.id, label: c.name ?? 'Sem nome' })),
+    [companies]
+  );
+
+  // Apply advanced filters first (URL-driven)
+  const advancedFiltered = useMemo(() => {
+    if (!Array.isArray(interactions)) return [];
+    const q = debouncedQ ? normalize(debouncedQ) : '';
+    const deTs = adv.de ? new Date(adv.de).setHours(0, 0, 0, 0) : null;
+    const ateTs = adv.ate ? new Date(adv.ate).setHours(23, 59, 59, 999) : null;
+    return interactions.filter(i => {
+      if (adv.contact && i.contact_id !== adv.contact) return false;
+      if (adv.company && i.company_id !== adv.company) return false;
+      if (adv.canais.length > 0 && !adv.canais.includes(i.type)) return false;
+      const ts = new Date(i.created_at).getTime();
+      if (deTs !== null && ts < deTs) return false;
+      if (ateTs !== null && ts > ateTs) return false;
+      if (q) {
+        const hay = normalize(`${i.title ?? ''} ${i.content ?? ''} ${(i.tags ?? []).join(' ')}`);
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [interactions, adv, debouncedQ]);
 
   const filteredAndSorted = useMemo(() => {
-    let result = fuzzyResults.filter(interaction => {
+    const result = advancedFiltered.filter(interaction => {
       for (const [key, values] of Object.entries(activeFilters)) {
         if (values.length === 0) continue;
         const val = interaction[key as keyof Interaction];
@@ -58,7 +97,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       return true;
     });
     return sortArray(result, sortBy as keyof Interaction, sortOrder, { dateFields: ['created_at', 'follow_up_date'], numericFields: ['duration', 'response_time'] });
-  }, [fuzzyResults, activeFilters, sortBy, sortOrder]);
+  }, [advancedFiltered, activeFilters, sortBy, sortOrder]);
 
   const RENDER_BATCH = 40;
   const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
@@ -81,11 +120,16 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
 
       <Suspense fallback={<Card className="border-border/50"><CardContent className="p-4"><div className="h-48 animate-pulse bg-muted/30 rounded-lg" /></CardContent></Card>}><ActivityHeatmapChart /></Suspense>
 
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input placeholder="Buscar interações..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`pl-10 ${isSearching ? 'pr-10' : ''}`} />
-        {isSearching && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={clearSearch}><X className="h-4 w-4" /></Button>}
-      </div>
+      <AdvancedSearchBar
+        filters={adv}
+        setFilter={setFilter}
+        clear={clear}
+        activeCount={activeCount}
+        contacts={contactOptions}
+        companies={companyOptions}
+        resultsCount={filteredAndSorted.length}
+        totalCount={interactions.length}
+      />
 
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
 
@@ -128,8 +172,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
           </div>
           {hasMore && <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">Carregando mais interações...</div>}
           {filteredAndSorted.length === 0 && !loading && (
-            isSearching || Object.keys(activeFilters).length > 0
-              ? <SearchEmptyState searchTerm={searchTerm || 'filtros ativos'} onClearSearch={() => { clearSearch(); setActiveFilters({}); }} entityName="interações" />
+            activeCount > 0 || Object.keys(activeFilters).length > 0
+              ? <SearchEmptyState searchTerm={adv.q || 'filtros ativos'} onClearSearch={() => { clear(); setActiveFilters({}); }} entityName="interações" />
               : <EmptyState illustration="interactions" title="Documente suas conversas" description="Registre ligações, emails, reuniões e mensagens."
                   actions={[{ label: 'Registrar Interação', onClick: () => onSetIsFormOpen(true), icon: Plus }]}
                   tips={['Selecione o tipo correto para melhor categorização', 'Marque follow-ups para nunca perder um compromisso', 'Use tags para vincular a projetos']} />
@@ -140,15 +184,3 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   );
 }
 
-// Inline simplified fuzzy search hook to avoid import issues
-function useFuzzySearchLocal(items: Interaction[]) {
-  const [query, setQuery] = useState('');
-  const isSearching = query.length > 0;
-  const results = useMemo(() => {
-    if (!query.trim()) return items;
-    const lower = query.toLowerCase();
-    return items.filter(i => i.title.toLowerCase().includes(lower) || i.content?.toLowerCase().includes(lower) || i.tags?.some(t => t.toLowerCase().includes(lower)));
-  }, [items, query]);
-  const clearSearch = () => setQuery('');
-  return { query, setQuery, results, isSearching, clearSearch };
-}
