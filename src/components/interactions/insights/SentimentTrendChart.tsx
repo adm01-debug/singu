@@ -11,22 +11,33 @@ import {
   CartesianGrid,
   Legend,
   ReferenceLine,
+  ReferenceDot,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Pin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentTrendPoint, SentimentTrendSummary } from "@/hooks/useInteractionsInsights";
+import { useSentimentAnnotations, type SentimentAnnotation } from "@/hooks/useSentimentAnnotations";
+import { ANNOTATION_CATEGORIES } from "./annotationCategories";
+import { AnnotationDialog } from "./AnnotationDialog";
+import { AnnotationList } from "./AnnotationList";
 import { cn } from "@/lib/utils";
 
 interface Props {
   data: SentimentTrendPoint[];
   summary?: SentimentTrendSummary;
+  contactId?: string;
 }
 
 function formatWeek(w: string): string {
   const d = new Date(w);
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+}
+
+function toIsoDate(w: string): string {
+  // Aceita 'YYYY-MM-DD' ou ISO completo
+  return w.length >= 10 ? w.slice(0, 10) : w;
 }
 
 const DIRECTION_LABEL: Record<SentimentTrendSummary["direction"], string> = {
@@ -56,9 +67,11 @@ function pctClass(pct: number): string {
   return "text-muted-foreground";
 }
 
+interface TooltipExtra { positivePctMA?: number | null; annotations?: SentimentAnnotation[] }
+
 function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload || payload.length === 0) return null;
-  const point = payload[0]?.payload as (SentimentTrendPoint & { positivePctMA?: number | null }) | undefined;
+  const point = payload[0]?.payload as (SentimentTrendPoint & TooltipExtra) | undefined;
   if (!point) return null;
 
   const total = point.total ?? 0;
@@ -68,6 +81,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
       : total > 0
         ? Math.round((point.positive / total) * 100)
         : 0;
+  const anns = point.annotations ?? [];
 
   return (
     <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[200px]">
@@ -94,11 +108,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               const pct = Math.round((count / total) * 100);
               return (
                 <div key={row.key} className="flex items-center gap-2">
-                  <span
-                    className="h-2 w-2 rounded-full shrink-0"
-                    style={{ backgroundColor: row.color }}
-                    aria-hidden
-                  />
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
                   <span className="flex-1">{row.label}</span>
                   <span className="font-medium tabular-nums">{count}</span>
                   <span className="text-muted-foreground tabular-nums w-10 text-right">({pct}%)</span>
@@ -107,6 +117,23 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
             })}
           </div>
         </>
+      )}
+      {anns.length > 0 && (
+        <div className="mt-2 border-t border-border/60 pt-2 space-y-0.5">
+          <p className="text-[10px] font-semibold text-muted-foreground">Anotações</p>
+          {anns.slice(0, 2).map((a) => {
+            const meta = ANNOTATION_CATEGORIES[a.category];
+            return (
+              <p key={a.id} className="text-[10px] flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: meta.color }} aria-hidden />
+                <span className="font-medium truncate">{a.title}</span>
+              </p>
+            );
+          })}
+          {anns.length > 2 && (
+            <p className="text-[10px] text-muted-foreground">+{anns.length - 2} mais</p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -121,8 +148,13 @@ interface EvolutionStats {
   weeksCompared: number;
 }
 
-function SentimentTrendChartImpl({ data, summary }: Props) {
+function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const [smoothEnabled, setSmoothEnabled] = useState(true);
+  const [annDialogOpen, setAnnDialogOpen] = useState(false);
+  const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
+
+  const annotationsApi = useSentimentAnnotations(contactId);
+  const annotationsByWeek = annotationsApi.byWeek;
 
   const dataWithMA = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
@@ -132,9 +164,23 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
       const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
       const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
       const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
-      return { ...p, positivePctMA };
+      const weekIso = toIsoDate(p.week);
+      const annotations = annotationsByWeek.get(weekIso) ?? [];
+      return { ...p, positivePctMA, annotations };
     });
-  }, [data]);
+  }, [data, annotationsByWeek]);
+
+  const weekOptions = useMemo(() => (Array.isArray(data) ? data.map((p) => toIsoDate(p.week)) : []), [data]);
+
+  const annotationDots = useMemo(() => {
+    return dataWithMA
+      .filter((p) => (p.annotations?.length ?? 0) > 0)
+      .map((p) => {
+        const first = p.annotations![0];
+        const meta = ANNOTATION_CATEGORIES[first.category];
+        return { week: p.week, color: meta.color, count: p.annotations!.length };
+      });
+  }, [dataWithMA]);
 
   const mixedStats = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
@@ -213,6 +259,17 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
             >
               Suavizar {smoothEnabled ? "✓" : ""}
             </Button>
+            {contactId && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={() => { setEditingAnn(null); setAnnDialogOpen(true); }}
+                title="Adicionar anotação"
+              >
+                <Pin className="h-3 w-3" /> Anotar
+              </Button>
+            )}
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
@@ -246,30 +303,10 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
           <ComposedChart data={dataWithMA} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="week" tickFormatter={formatWeek} stroke="hsl(var(--muted-foreground))" fontSize={11} />
-            <YAxis
-              yAxisId="count"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-              allowDecimals={false}
-            />
-            <YAxis
-              yAxisId="pct"
-              orientation="right"
-              domain={[0, 100]}
-              tickFormatter={(v) => `${v}%`}
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={11}
-            />
-            <YAxis
-              yAxisId="volume"
-              orientation="right"
-              domain={[0, "dataMax"]}
-              hide
-            />
-            <Tooltip
-              content={<WeeklySentimentTooltip />}
-              cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
-            />
+            <YAxis yAxisId="count" stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
+            <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke="hsl(var(--muted-foreground))" fontSize={11} />
+            <YAxis yAxisId="volume" orientation="right" domain={[0, "dataMax"]} hide />
+            <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {showRefLines && summary?.bestWeek && (
               <ReferenceLine yAxisId="count" x={summary.bestWeek.week} stroke="hsl(var(--success))" strokeDasharray="2 2" />
@@ -307,9 +344,36 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               strokeDasharray="4 4"
               dot={false}
             />
+            {annotationDots.map((d) => (
+              <ReferenceDot
+                key={d.week}
+                yAxisId="pct"
+                x={d.week}
+                y={100}
+                r={5}
+                fill={d.color}
+                stroke="hsl(var(--background))"
+                strokeWidth={1.5}
+                ifOverflow="visible"
+              />
+            ))}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
+
+      {contactId && (
+        <>
+          <AnnotationList api={annotationsApi} onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }} />
+          <AnnotationDialog
+            open={annDialogOpen}
+            onOpenChange={setAnnDialogOpen}
+            contactId={contactId}
+            weekOptions={weekOptions}
+            editing={editingAnn}
+            api={annotationsApi}
+          />
+        </>
+      )}
     </div>
   );
 }
