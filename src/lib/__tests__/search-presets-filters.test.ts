@@ -497,3 +497,84 @@ describe('searchPresetTransport', () => {
     });
   });
 });
+
+// ── Sort & favorites ──
+import { comparePresets, type SearchPreset as SP, type PresetSortMode } from '@/hooks/useSearchPresets';
+
+function makePreset(over: Partial<SP>): SP {
+  return {
+    id: over.id ?? Math.random().toString(36).slice(2),
+    name: over.name ?? 'p',
+    filters: over.filters ?? {},
+    sortBy: over.sortBy ?? '',
+    sortOrder: over.sortOrder ?? 'desc',
+    createdAt: over.createdAt ?? new Date().toISOString(),
+    isFavorite: over.isFavorite,
+    usageCount: over.usageCount,
+    lastUsedAt: over.lastUsedAt,
+  };
+}
+
+describe('comparePresets — favoritos & ordenação', () => {
+  it('favorito sempre vem antes de não-favorito', () => {
+    const fav = makePreset({ name: 'A', isFavorite: true });
+    const nf = makePreset({ name: 'B', isFavorite: false });
+    const modes: PresetSortMode[] = ['favoritos', 'mais-usados', 'recentes', 'alfabetica'];
+    for (const mode of modes) {
+      expect(comparePresets(fav, nf, mode)).toBeLessThan(0);
+      expect(comparePresets(nf, fav, mode)).toBeGreaterThan(0);
+    }
+  });
+
+  it('mais-usados ordena por usageCount desc', () => {
+    const a = makePreset({ name: 'A', usageCount: 2 });
+    const b = makePreset({ name: 'B', usageCount: 10 });
+    expect(comparePresets(a, b, 'mais-usados')).toBeGreaterThan(0);
+    expect(comparePresets(b, a, 'mais-usados')).toBeLessThan(0);
+  });
+
+  it('alfabetica respeita pt-BR (acentos)', () => {
+    const a = makePreset({ name: 'Ângelo' });
+    const b = makePreset({ name: 'Bruno' });
+    expect(comparePresets(a, b, 'alfabetica')).toBeLessThan(0);
+  });
+
+  it('recentes ordena por createdAt desc', () => {
+    const old = makePreset({ name: 'old', createdAt: '2024-01-01T00:00:00Z' });
+    const fresh = makePreset({ name: 'fresh', createdAt: '2025-01-01T00:00:00Z' });
+    expect(comparePresets(old, fresh, 'recentes')).toBeGreaterThan(0);
+  });
+
+  it('favoritos modo default usa lastUsedAt depois createdAt', () => {
+    const a = makePreset({ name: 'A', lastUsedAt: '2025-01-01T00:00:00Z', createdAt: '2024-01-01T00:00:00Z' });
+    const b = makePreset({ name: 'B', lastUsedAt: '2025-06-01T00:00:00Z', createdAt: '2024-01-01T00:00:00Z' });
+    expect(comparePresets(a, b, 'favoritos')).toBeGreaterThan(0);
+  });
+});
+
+describe('searchPresetTransport — isFavorite round-trip', () => {
+  it('preserva isFavorite no bundle exportado/importado', () => {
+    const fav: ExportablePreset = {
+      name: 'Favorita',
+      filters: { canais: ['email'] },
+      sortBy: '',
+      sortOrder: 'desc',
+      isFavorite: true,
+    };
+    const bundle = buildBundle([fav]);
+    const json = JSON.stringify(bundle);
+    const parsed = parseBundle(json);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.bundle.presets[0].isFavorite).toBe(true);
+    }
+  });
+
+  it('ignora isFavorite ausente (backward compat)', () => {
+    const bundle = { v: 1, kind: PRESET_KIND, presets: [{ name: 'X', filters: {}, sortBy: '', sortOrder: 'desc' }] };
+    const r = parseBundle(JSON.stringify(bundle));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.bundle.presets[0].isFavorite).toBeUndefined();
+  });
+});
+
