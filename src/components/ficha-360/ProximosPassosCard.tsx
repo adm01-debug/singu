@@ -20,6 +20,7 @@ import { useNextBestAction } from '@/hooks/useNextBestAction';
 import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/lib/proximosPassos';
 import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
 import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
+import { AgendarReuniaoForm } from './AgendarReuniaoForm';
 import { CopyScriptMenu } from './CopyScriptMenu';
 import { PassoFeedbackMenu } from './PassoFeedbackMenu';
 import {
@@ -37,6 +38,7 @@ interface Props {
   bestTime?: BestTimeHint | null;
   firstName?: string;
   sentiment?: SentimentTone;
+  companyId?: string | null;
 }
 
 const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
@@ -83,7 +85,7 @@ function relativeDays(daysAgo: number): string {
   return `há ${daysAgo}d`;
 }
 
-function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment }: Props) {
+function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment, companyId }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
@@ -207,7 +209,7 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                         {wasCreated && (
                           <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/30">
                             <Check className="h-2.5 w-2.5 mr-0.5" />
-                            Tarefa criada
+                            {p.id === 'agendar-reuniao' ? 'Reunião agendada' : 'Tarefa criada'}
                           </Badge>
                         )}
                         {last && (
@@ -225,8 +227,12 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                           onClick={() => setExpandedId(isExpanded ? null : p.id)}
                           aria-expanded={isExpanded}
                         >
-                          <Plus className="h-3 w-3" />
-                          Criar tarefa
+                          {p.id === 'agendar-reuniao' ? (
+                            <Calendar className="h-3 w-3" />
+                          ) : (
+                            <Plus className="h-3 w-3" />
+                          )}
+                          {p.id === 'agendar-reuniao' ? 'Agendar reunião' : 'Criar tarefa'}
                           <ChevronDown
                             className={cn('h-3 w-3 transition-transform', isExpanded && 'rotate-180')}
                             aria-hidden="true"
@@ -247,13 +253,26 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                       </div>
 
                       {isExpanded && (
-                        <ProximoPassoQuickForm
-                          passo={p}
-                          bestTime={bestTime}
-                          contactId={contactId}
-                          onCreated={() => handleCreated(p.id)}
-                          onCancel={() => setExpandedId(null)}
-                        />
+                        p.id === 'agendar-reuniao' ? (
+                          <AgendarReuniaoForm
+                            passo={p}
+                            contactId={contactId}
+                            companyId={companyId ?? null}
+                            firstName={resolvedFirstName}
+                            sentiment={sentiment}
+                            bestTime={bestTime}
+                            onCreated={() => handleCreated(p.id)}
+                            onCancel={() => setExpandedId(null)}
+                          />
+                        ) : (
+                          <ProximoPassoQuickForm
+                            passo={p}
+                            bestTime={bestTime}
+                            contactId={contactId}
+                            onCreated={() => handleCreated(p.id)}
+                            onCancel={() => setExpandedId(null)}
+                          />
+                        )
                       )}
                     </div>
                   </div>

@@ -260,6 +260,79 @@ function templatesFor(passoId: string, ctx: ScriptContext): Templates {
   }
 }
 
+// ============= Convite de reunião confirmada =============
+
+export interface MeetingInviteContext {
+  firstName: string;
+  scheduledAt: Date;
+  durationMinutes: number;
+  modality: 'video' | 'presencial' | 'phone';
+  meetingUrl?: string | null;
+  sentiment?: SentimentTone;
+}
+
+const DIAS_PT = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+
+function formatDatePtBr(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  return `${DIAS_PT[d.getDay()]}, ${dd}/${mm} às ${hh}:${mi}`;
+}
+
+function modalityLine(modality: 'video' | 'presencial' | 'phone', url?: string | null): string {
+  if (modality === 'video') return url ? `Link: ${url}` : 'Modalidade: vídeo (link em breve)';
+  if (modality === 'presencial') return 'Local: a confirmar';
+  return 'Modalidade: ligação telefônica';
+}
+
+export function generateMeetingInvite(ctx: MeetingInviteContext): {
+  whatsapp: string;
+  email: { subject: string; body: string };
+} {
+  const tone = toneFromSentiment(ctx.sentiment);
+  const name = nameOrDefault(ctx.firstName);
+  const when = formatDatePtBr(ctx.scheduledAt);
+  const duration = `${ctx.durationMinutes} min`;
+  const modLine = modalityLine(ctx.modality, ctx.meetingUrl);
+
+  const whatsapp =
+    tone === 'direto'
+      ? `${name}, confirmado nossa reunião ${when} (${duration}). ${modLine} 🤝 Qualquer ajuste, me avisa.`
+      : tone === 'empatico'
+        ? `Oi ${name}, agendei nossa conversa ${when} (${duration}). ${modLine} Se precisar reagendar, sem problema — é só me avisar. 🙏`
+        : `Oi ${name}! Reunião marcada ${when} (${duration}). ${modLine} Nos vemos lá! 🙂`;
+
+  const subject =
+    tone === 'direto'
+      ? `Confirmado: reunião ${when}`
+      : tone === 'empatico'
+        ? `${name}, reunião marcada — ${when}`
+        : `Reunião agendada — ${when}`;
+
+  const bodyOpening =
+    tone === 'direto'
+      ? `Olá ${name},\n\nConfirmando nossa reunião:`
+      : tone === 'empatico'
+        ? `Olá ${name},\n\nObrigado pela disponibilidade. Agendei nossa conversa:`
+        : `Olá ${name},\n\nSegue confirmação da nossa reunião:`;
+
+  const bodyClose =
+    tone === 'direto'
+      ? `Qualquer ajuste, me avise.\n\nAbraço`
+      : tone === 'empatico'
+        ? `Se precisar reagendar, fique à vontade — adapto à sua agenda.\n\nAbraço`
+        : `Fico à disposição para qualquer dúvida.\n\nAbraço`;
+
+  const body = `${bodyOpening}\n\n• Quando: ${when}\n• Duração: ${duration}\n• ${modLine}\n\n${bodyClose}`;
+
+  return {
+    whatsapp,
+    email: { subject, body },
+  };
+}
+
 export function generateScripts(ctx: ScriptContext): GeneratedScript[] {
   const tone = toneFromSentiment(ctx.sentiment);
   const t = templatesFor(ctx.passoId, ctx);
