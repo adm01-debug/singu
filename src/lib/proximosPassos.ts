@@ -39,6 +39,19 @@ interface InteractionLike {
   created_at?: string;
 }
 
+export type PassoFeedbackOutcomeHint =
+  | 'respondeu_positivo'
+  | 'respondeu_neutro'
+  | 'nao_respondeu'
+  | 'nao_atendeu'
+  | 'pulou';
+
+export interface FeedbackHint {
+  passoId: string;
+  lastOutcome: PassoFeedbackOutcomeHint;
+  daysAgo: number;
+}
+
 export interface ComputeProximosPassosInput {
   profile: ProfileLike | null | undefined;
   intelligence: IntelligenceLike | null | undefined;
@@ -46,9 +59,15 @@ export interface ComputeProximosPassosInput {
   prontidao: ProntidaoResult | null | undefined;
   birthday?: string | null;
   email?: string | null;
+  feedbackHints?: FeedbackHint[] | null;
 }
 
 const PRIORITY_RANK: Record<ProximoPassoPriority, number> = { alta: 0, media: 1, baixa: 2 };
+const PRIORITY_DOWN: Record<ProximoPassoPriority, ProximoPassoPriority> = {
+  alta: 'media',
+  media: 'baixa',
+  baixa: 'baixa',
+};
 
 function daysSince(iso?: string | null): number | null {
   if (!iso) return null;
@@ -97,7 +116,11 @@ function daysToBirthday(birthday?: string | null): number | null {
 }
 
 export function computeProximosPassos(input: ComputeProximosPassosInput): ProximoPasso[] {
-  const { profile, intelligence, recentInteractions, prontidao, birthday, email } = input;
+  const { profile, intelligence, recentInteractions, prontidao, birthday, email, feedbackHints } = input;
+  const hintsById = new Map<string, FeedbackHint>();
+  for (const h of feedbackHints ?? []) {
+    if (!hintsById.has(h.passoId)) hintsById.set(h.passoId, h);
+  }
   const interactions = Array.isArray(recentInteractions) ? recentInteractions : [];
   const passos: ProximoPasso[] = [];
 
@@ -226,7 +249,22 @@ export function computeProximosPassos(input: ComputeProximosPassosInput): Proxim
     });
   }
 
-  return passos
+  // Aplica hints de feedback recente
+  const adjusted = passos.flatMap<ProximoPasso>((p) => {
+    const hint = hintsById.get(p.id);
+    if (!hint) return [p];
+    // Pulou nos últimos 7d → some
+    if (hint.lastOutcome === 'pulou' && hint.daysAgo < 7) return [];
+    // Respondeu positivo nos últimos 7d → some (já avançou)
+    if (hint.lastOutcome === 'respondeu_positivo' && hint.daysAgo < 7) return [];
+    // Não respondeu há <3d → rebaixa prioridade
+    if (hint.lastOutcome === 'nao_respondeu' && hint.daysAgo < 3) {
+      return [{ ...p, priority: PRIORITY_DOWN[p.priority] }];
+    }
+    return [p];
+  });
+
+  return adjusted
     .sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority])
     .slice(0, 5);
 }

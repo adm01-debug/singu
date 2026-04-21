@@ -21,6 +21,13 @@ import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/
 import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
 import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
 import { CopyScriptMenu } from './CopyScriptMenu';
+import { PassoFeedbackMenu } from './PassoFeedbackMenu';
+import {
+  useProximoPassoFeedbacks,
+  getLastOutcome,
+  getRecentSkipUntil,
+  type PassoOutcome,
+} from '@/hooks/useProximoPassoFeedback';
 import type { SentimentTone } from '@/lib/scriptGenerator';
 
 interface Props {
@@ -62,10 +69,25 @@ const urgencyToClass = (u?: string) => {
   return 'bg-warning/10 text-warning border-warning/30';
 };
 
+const outcomeMeta: Record<PassoOutcome, { label: string; className: string }> = {
+  respondeu_positivo: { label: '✅ Respondeu', className: 'bg-success/10 text-success border-success/30' },
+  respondeu_neutro: { label: '💬 Neutro', className: 'bg-info/10 text-info border-info/30' },
+  nao_respondeu: { label: '🔇 Sem resposta', className: 'bg-warning/10 text-warning border-warning/30' },
+  nao_atendeu: { label: '📵 Sem atender', className: 'bg-warning/10 text-warning border-warning/30' },
+  pulou: { label: '⏭️ Pulado', className: 'bg-muted text-muted-foreground border-border' },
+};
+
+function relativeDays(daysAgo: number): string {
+  if (daysAgo <= 0) return 'hoje';
+  if (daysAgo === 1) return 'há 1d';
+  return `há ${daysAgo}d`;
+}
+
 function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
+  const { data: feedbacks = [] } = useProximoPassoFeedbacks(contactId);
 
   // Limpa badges "criada" após 4s
   useEffect(() => {
@@ -150,17 +172,23 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
         </div>
 
         {/* Lista local */}
-        {passos.length === 0 ? (
-          <div className="text-center py-6 text-sm text-muted-foreground">
-            Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
-          </div>
-        ) : (
+        {(() => {
+          const visiblePassos = passos.filter((p) => !getRecentSkipUntil(feedbacks, p.id));
+          if (visiblePassos.length === 0) {
+            return (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
+              </div>
+            );
+          }
+          return (
           <ul className="space-y-2">
-            {passos.map((p) => {
+            {visiblePassos.map((p) => {
               const Icon = channelIcon[p.channel] ?? ListChecks;
               const pm = priorityMeta[p.priority];
               const isExpanded = expandedId === p.id;
               const wasCreated = createdIds.has(p.id);
+              const last = getLastOutcome(feedbacks, p.id);
               return (
                 <li
                   key={p.id}
@@ -182,6 +210,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             Tarefa criada
                           </Badge>
                         )}
+                        {last && (
+                          <Badge variant="outline" className={cn('text-[10px]', outcomeMeta[last.outcome].className)}>
+                            {outcomeMeta[last.outcome].label} · {relativeDays(last.daysAgo)}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground">{p.detail}</p>
                       <p className="text-xs text-muted-foreground/80 mt-1 italic">{p.reason}</p>
@@ -199,6 +232,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             aria-hidden="true"
                           />
                         </Button>
+                        <PassoFeedbackMenu
+                          passoId={p.id}
+                          contactId={contactId}
+                          channelHint={p.channel}
+                        />
                         <CopyScriptMenu
                           passoId={p.id}
                           firstName={resolvedFirstName}
@@ -223,7 +261,8 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
               );
             })}
           </ul>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );
