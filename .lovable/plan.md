@@ -1,55 +1,82 @@
 
-# Plano: Fechar 10/10 SRE — Resolver bug B2 + executar próxima fronteira
+# Plano: Timeline cronológica unificada em /interacoes
 
-## Contexto
+## Objetivo
 
-Re-auditoria anterior: 12/15. Bug B2 (edge function `error-budget` retornando 404) ainda bloqueia o painel. Este plano fecha o bug e executa as 3 melhorias incrementais propostas, em sequência única.
+Adicionar uma nova aba "Timeline" em `/interacoes` que agrupa interações por **Empresa** ou **Pessoa**, exibindo mensagens, ligações, emails, reuniões e notas em ordem cronológica, com filtros por tipo e período.
 
-## Execução sequencial
+## Reutilização (não reinventar)
 
-### Etapa 1 — Corrigir B2: Re-deploy do `error-budget`
-- Re-deployar explicitamente a função `error-budget` (código já existe e está correto)
-- Validar com `curl_edge_functions` retornando 200
-- Verificar logs para confirmar execução limpa
+Já existem 3 componentes de timeline maduros no projeto:
+- `ContactTimelineWidget` (por contato, usa `useContactTimeline`)
+- `CompanyTimelineCard` (por empresa, recebe eventos via prop)
+- `ExternalInteractionsTimeline` (por contato, agrupado visualmente)
 
-### Etapa 2 — Melhoria #1: Gráfico histórico de uptime (sparkline 30d)
-- Estender edge function `error-budget` para retornar série temporal diária (`daily_uptime: [{date, uptime_pct}]`)
-- Adicionar componente `UptimeSparkline.tsx` usando Recharts (AreaChart, 30 pontos)
-- Integrar no `ErrorBudget.tsx` abaixo dos 4 stat cards, com linha de SLO 99.5% como referência
+A nova tela **agrega múltiplas entidades** numa única visão filtrada — não substitui os widgets existentes.
 
-### Etapa 3 — Melhoria #2: Retention policy automática (>60d)
-- Migration: criar função `cleanup_old_health_snapshots()` que deleta snapshots >60 dias
-- Cron job semanal `system-health-snapshots-cleanup` (domingo 03:00 UTC)
-- Adicionar índice em `system_health_snapshots(timestamp DESC)` para acelerar tanto agregação quanto cleanup
+## Arquitetura
 
-### Etapa 4 — Melhoria #3: Alerta proativo em 50% do budget
-- Estender `error-budget/index.ts` para inserir registro em `system_alerts` (tabela existente) quando `budget_consumed_pct` cruzar 50%, 75%, 100%
-- Lógica idempotente: só insere se ainda não houver alerta do mesmo nível nas últimas 24h
-- Severidade: 50% → warning, 75% → high, 100% → critical
-- Banner no topo do `ErrorBudget.tsx` listando alertas ativos da tabela
+```text
+/interacoes
+ ├─ Tab "Lista" (atual)
+ └─ Tab "Timeline" (NOVA)
+      ├─ Toggle: [Por Empresa] [Por Pessoa]
+      ├─ Filtros: tipo (chips multi-select) + período (date range)
+      ├─ Busca: nome de empresa/pessoa
+      └─ Lista de grupos colapsáveis:
+           └─ Cada grupo = entidade
+               └─ Eventos cronológicos (desc) com ícone, canal, resumo, data
+```
 
-### Etapa 5 — Documentação e memória
-- RUNBOOK: adicionar seção "Alertas automáticos de Error Budget" descrevendo os 3 thresholds
-- Atualizar `mem://features/error-budget-dashboard` com sparkline + retention + alertas
-- Bump RUNBOOK para v2.2.0 com entrada datada
+## Implementação
 
-### Etapa 6 — Auditoria final 10/10
-- Re-rodar os 15 testes da rodada anterior (esperado: 15/15 verde)
-- Adicionar 5 novos testes específicos das melhorias (sparkline renderiza, cleanup agendado, alertas inseridos)
-- Total: 20/20 = 10/10 confirmado
+### 1. Novo hook `useTimelineByEntity`
+Arquivo: `src/hooks/useTimelineByEntity.ts`
+- Recebe `{ groupBy: 'company' | 'contact', dateFrom, dateTo, channels[] }`
+- Chama RPC externa `get_interactions_timeline_grouped` via `callExternalRpc`
+- **Fallback**: se a RPC não existir, busca interações de `useInteractionsRpc` e agrupa client-side por `empresa_id` ou `contato_id`
+- Retorna `Array<{ entity_id, entity_name, entity_type, events: TimelineEvent[] }>`
+- StaleTime 5min, TanStack Query (sem useEffect)
+
+### 2. Novo componente `UnifiedTimelineView`
+Arquivo: `src/components/interactions/UnifiedTimelineView.tsx` (≤300 linhas)
+- Header com toggle Empresa/Pessoa (Tabs shadcn)
+- Barra de filtros sticky:
+  - Chips multi-select de canais (whatsapp, call, email, meeting, note) — reutiliza `channelIcons`/`channelColors` do `UnifiedCommunicationHistory`
+  - Date range picker (Popover + Calendar shadcn, `pointer-events-auto`)
+  - Input de busca por nome
+- Lista virtualizada com `Accordion` por entidade:
+  - Cabeçalho: avatar + nome + badge contagem + última atividade
+  - Conteúdo: timeline vertical com linha conectora (padrão visual de `ContactTimelineWidget`)
+- Empty state e Skeleton
+
+### 3. Subcomponentes
+- `TimelineGroupCard.tsx` — grupo de uma entidade (≤150 linhas)
+- `TimelineFilterBar.tsx` — barra de filtros isolada (≤120 linhas)
+
+### 4. Integração em `/interacoes`
+- Editar `src/pages/Interacoes.tsx`: envolver conteúdo atual em `<Tabs>` com 2 abas: "Lista" (atual) e "Timeline" (novo `UnifiedTimelineView`)
+- Persistir aba ativa em URL via `useSearchParams` (padrão do projeto)
+
+### 5. Resiliência e padrões obrigatórios
+- `Array.isArray()` antes de iterar
+- Tratamento gracioso de RPC failure (fallback client-side)
+- Memoização: `React.memo` no `TimelineGroupCard`
+- Tudo em PT-BR
+- Sem `any`, sem `dangerouslySetInnerHTML`
+- Cores via tokens semânticos (Nexus Blue), flat design sem sombras/gradientes
 
 ## Arquivos tocados
 
-**Editados:**
-- `supabase/functions/error-budget/index.ts` (série temporal + alertas)
-- `src/pages/admin/ErrorBudget.tsx` (sparkline + banner alertas)
-- `src/hooks/useErrorBudget.ts` (tipo expandido)
-- `docs/RUNBOOK.md` (v2.2.0 + seção alertas)
-
 **Novos:**
-- `src/components/admin/UptimeSparkline.tsx`
-- Migration: função cleanup + cron semanal + índice
+- `src/hooks/useTimelineByEntity.ts`
+- `src/components/interactions/UnifiedTimelineView.tsx`
+- `src/components/interactions/TimelineGroupCard.tsx`
+- `src/components/interactions/TimelineFilterBar.tsx`
+
+**Editados:**
+- `src/pages/Interacoes.tsx` (adicionar Tabs Lista/Timeline)
 
 ## Critério de fechamento
 
-(a) `curl /functions/v1/error-budget` retorna 200 com payload completo, (b) sparkline renderiza 30 pontos no painel, (c) cron de cleanup ativo, (d) alertas inseridos automaticamente nos 3 thresholds, (e) auditoria 20/20 confirmando 10/10 SRE.
+(a) Aba "Timeline" acessível em `/interacoes?tab=timeline`, (b) toggle Empresa/Pessoa funcional, (c) filtros por canal e data range aplicáveis, (d) agrupamento cronológico desc por entidade, (e) fallback client-side se RPC falhar, (f) zero regressão na aba Lista existente.
