@@ -171,7 +171,7 @@ const Ficha360 = () => {
             </Card>
 
             {/* Score de Prontidão */}
-            <ScoreProntidaoCard data={prontidao} />
+            <ScoreProntidaoCard data={prontidao} contactId={id} />
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
