@@ -61,6 +61,12 @@ function clearPending() {
 interface Props {
   canais: string[];
   onChange: (next: string[]) => void;
+  /**
+   * Mapa opcional `canal → quantidade` calculado no dataset filtrado pelos
+   * demais critérios (sem aplicar o próprio filtro de canal). Quando ausente,
+   * os chips renderizam só o ícone (comportamento legado).
+   */
+  counts?: Record<string, number>;
 }
 
 function arraysEqual(a: string[], b: string[]) {
@@ -70,7 +76,7 @@ function arraysEqual(a: string[], b: string[]) {
   return sa.every((v, i) => v === sb[i]);
 }
 
-export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange }: Props) {
+export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange, counts }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle } = useChannelSyncMode();
   const [pending, setPendingState] = useState<string[]>(() => {
@@ -193,7 +199,10 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           const inPending = pending.includes(opt.value);
           const inApplied = safe.includes(opt.value);
           const isDifferent = mode === 'manual' && inPending !== inApplied;
-          return (
+          const hasCounts = !!counts;
+          const count = hasCounts ? (counts?.[opt.value] ?? 0) : undefined;
+          const isEmpty = hasCounts && count === 0 && !inPending;
+          const chip = (
             <Badge
               key={opt.value}
               variant={inPending ? 'default' : 'outline'}
@@ -205,12 +214,27 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                 'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
                 !inPending && 'hover:bg-muted',
                 isDifferent && 'border-dashed',
+                isEmpty && 'opacity-50',
               )}
             >
               <Icon className="w-3 h-3" />
               <span className="hidden sm:inline">{opt.label}</span>
+              {typeof count === 'number' && (
+                <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
+                  {count > 999 ? '999+' : count}
+                </span>
+              )}
             </Badge>
           );
+          if (isEmpty) {
+            return (
+              <Tooltip key={opt.value}>
+                <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                <TooltipContent side="top">Sem interações neste canal</TooltipContent>
+              </Tooltip>
+            );
+          }
+          return chip;
         })}
 
         <Tooltip>
