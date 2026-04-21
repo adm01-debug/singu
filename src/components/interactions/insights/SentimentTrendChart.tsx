@@ -38,6 +38,16 @@ function formatWeek(w: string): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
+function formatWeekRange(weekStartIso: string): string {
+  const iso = normalizeWeek(weekStartIso);
+  const start = new Date(iso);
+  if (isNaN(start.getTime())) return formatWeek(weekStartIso);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
 function normalizeWeek(w: string): string {
   // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada
   if (typeof w !== "string" || w.length === 0) return w;
@@ -92,16 +102,16 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
   const anns = point.annotations ?? [];
 
   return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[200px]">
-      <p className="font-semibold">Semana de {formatWeek(point.week)}</p>
+    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[220px]">
+      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Semana de {formatWeekRange(point.week)}</p>
       {total === 0 ? (
-        <p className="text-[10px] text-muted-foreground mt-0.5">sem conversas</p>
+        <p className="text-[10px] text-muted-foreground mt-1">sem conversas</p>
       ) : (
         <>
-          <p className="text-[10px] font-medium text-foreground mt-1">
-            Volume: {total} {total === 1 ? "interação" : "interações"}
+          <p className="text-sm font-semibold text-foreground mt-0.5">
+            Total: {total} {total === 1 ? "conversa" : "conversas"}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[10px] text-muted-foreground mt-1">
             <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
           </p>
           {typeof point.positivePctMA === "number" && (
@@ -109,17 +119,30 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               Tendência (MM3): <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
             </p>
           )}
-          <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
+          <div className="mt-2 space-y-1.5 border-t border-border/60 pt-2">
             {SENTIMENT_ROWS.map((row) => {
               const count = point[row.key] ?? 0;
-              if (count === 0) return null;
-              const pct = Math.round((count / total) * 100);
+              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+              const isZero = count === 0;
               return (
-                <div key={row.key} className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
-                  <span className="flex-1">{row.label}</span>
-                  <span className="font-medium tabular-nums">{count}</span>
-                  <span className="text-muted-foreground tabular-nums w-10 text-right">({pct}%)</span>
+                <div key={row.key} className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
+                    <span className={cn("flex-1", isZero && "text-muted-foreground/60")}>{row.label}</span>
+                    <span className={cn("font-medium tabular-nums", isZero && "text-muted-foreground/50")}>
+                      {isZero ? "—" : count}
+                    </span>
+                    <span className={cn("tabular-nums w-10 text-right", isZero ? "text-muted-foreground/40" : "text-muted-foreground")}>
+                      ({pct}%)
+                    </span>
+                  </div>
+                  <div className="h-1 w-full rounded-full bg-muted overflow-hidden ml-4">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, backgroundColor: isZero ? "transparent" : row.color }}
+                      aria-hidden
+                    />
+                  </div>
                 </div>
               );
             })}
