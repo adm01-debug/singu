@@ -124,4 +124,30 @@ describe('CanaisQuickFilter', () => {
     render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
     expect(screen.queryByRole('button', { name: /Limpar seleção de canais/i })).not.toBeInTheDocument();
   });
+
+  it('counts: without counts prop, chips render only icon + label (no number)', () => {
+    const onChange = vi.fn();
+    const { container } = render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+    // Nenhum span com o estilo de contador deve existir
+    const counters = container.querySelectorAll('span.tabular-nums');
+    expect(counters.length).toBe(0);
+  });
+
+  it('counts: shows number next to chip and applies opacity-50 to zero-count chips', () => {
+    const onChange = vi.fn();
+    const { container } = render(
+      <CanaisQuickFilter canais={[]} onChange={onChange} counts={{ email: 12, whatsapp: 0 }} />
+    );
+    expect(screen.getByText('12')).toBeInTheDocument();
+    const whatsappChip = screen.getByTitle('WhatsApp');
+    expect(whatsappChip.className).toContain('opacity-50');
+    const emailChip = screen.getByTitle('Email');
+    expect(emailChip.className).not.toContain('opacity-50');
+  });
+
+  it('counts: caps display at 999+ for counts greater than 999', () => {
+    const onChange = vi.fn();
+    render(<CanaisQuickFilter canais={[]} onChange={onChange} counts={{ email: 1500 }} />);
+    expect(screen.getByText('999+')).toBeInTheDocument();
+  });
 });
