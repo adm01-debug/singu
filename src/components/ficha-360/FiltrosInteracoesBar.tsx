@@ -42,6 +42,8 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   activeCount,
   shownCount,
   totalCount,
+  channelCounts,
+  channelCountsReady = false,
 }: Props) {
   const toggleChannel = (value: string) => {
     if (channels.includes(value)) onChannelsChange(channels.filter((c) => c !== value));
