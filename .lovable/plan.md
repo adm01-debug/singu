@@ -1,58 +1,37 @@
 
 
-# Plano: Refinamento do tooltip do SentimentTrendChart
+# Plano: Cores semânticas no % Positivo do tooltip
 
 ## Diagnóstico
 
-O `WeeklySentimentTooltip` em `SentimentTrendChart.tsx` (linhas 80-148) **já implementa** a maior parte do pedido:
-- Total de conversas da semana ✓
-- % positivo da semana ✓
-- Contagens por sentimento (positivo/neutro/negativo/misto) ✓
-- MM3 e anotações como bônus ✓
-
-**Lacunas reais a corrigir:**
-1. Sentimentos com `count === 0` são ocultados (linha 115: `if (count === 0) return null;`) — então quando uma semana tem só Positivos, o usuário não vê "Negativo: 0" e fica em dúvida se o dado é zero ou ausente.
-2. O título usa o ISO bruto (`formatWeek` resulta em "15 de jan"), mas falta o **range da semana** (ex.: "15 – 21 jan") para reforçar que é agregação semanal.
-3. Falta uma linha de "destaque" no topo separando claramente **volume total** do detalhamento.
-4. Atualmente a ordem visual mistura percentuais quando todos os 4 sentimentos aparecem — mini barras horizontais ajudam a leitura.
+No `WeeklySentimentTooltip` em `src/components/interactions/insights/SentimentTrendChart.tsx`, o valor `% Positivo` da semana já é calculado e exibido, mas usa cor única (provavelmente `pctClass` derivado de outro contexto ou cor neutra). Falta um esquema **semântico em 3 faixas** para leitura instantânea da saúde da semana.
 
 ## O que será construído
 
 Toda a mudança em `src/components/interactions/insights/SentimentTrendChart.tsx`. Sem novos hooks/dependências.
 
-### 1. `WeeklySentimentTooltip` reformulado
+### 1. Helper local `pctPositiveClass(pct: number): string`
 
-**Header reforçado:**
-- Linha 1: `Semana de {dd mmm} – {dd mmm}` (calculado com `weekStart` + 6 dias).
-- Linha 2 (destaque): `Total: {N} conversas` em `text-sm font-semibold text-foreground`.
-- Quando `total === 0`: mostra apenas "sem conversas" (preserva).
+Função pura adicionada no topo do arquivo (junto a `formatWeekRange`):
+- `pct >= 60` → `"text-success"` (verde)
+- `pct <= 30` → `"text-destructive"` (vermelho)
+- caso contrário (31–59) → `"text-muted-foreground"` (cinza neutro)
 
-**Bloco de % positivo:**
-- `% Positivo: NN%` com cor semântica (`pctClass`).
-- MM3 abaixo, se disponível (preserva).
+Faixas inclusivas conforme pedido (≥60 e ≤30).
 
-**Detalhamento por sentimento (sempre 4 linhas):**
-- Renderiza **sempre** as 4 linhas (positivo/neutro/negativo/misto), inclusive zeros — `count === 0` mostra "—" em `text-muted-foreground/50`.
-- Adiciona mini-barra horizontal (largura proporcional ao % do total) abaixo do número, usando a cor do sentimento — feedback visual instantâneo da distribuição.
-- Mantém: bullet colorido + label + count tabular + percentual entre parênteses.
+### 2. Aplicação no tooltip
 
-**Anotações:**
-- Bloco preservado integralmente.
+Dentro do `WeeklySentimentTooltip`, substituir a classe atual do número `% Positivo` por `pctPositiveClass(positivePct)` combinada com `font-semibold tabular-nums` via `cn()`.
 
-### 2. Helper local `formatWeekRange(weekStartIso): string`
-
-- Recebe ISO `YYYY-MM-DD`, retorna `"15 – 21 jan"` (ou `"29 jan – 04 fev"` cruzando mês).
-- Usa `toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })`.
-- Função local (não exportada), 8-10 linhas.
+A linha MM3 (média móvel) **mantém** estilo `text-muted-foreground` atual — a cor semântica aplica-se apenas ao valor da semana corrente, para não competir visualmente.
 
 ### 3. Sem alterações em
 
-- Conexão do tooltip ao `<Tooltip content={<WeeklySentimentTooltip />}>` (já está correta na linha 413).
-- Todas as séries, eixos, legenda, switch de % positivo, MM3, anotações, evolução, confiança, mascaramento de IP.
-- Hooks de fetch, agregação, ordenação cronológica.
-- Estrutura de dados de `SentimentTrendPoint`.
+- Cálculo de `positivePct`, MM3, total, veredito (se já existir), linhas detalhadas, mini-barras, switch "Mostrar zerados", anotações, header com range.
+- Hooks de fetch, agregação, séries, eixos, legenda, switch de % positivo no chart, evolução, confiança, IP masking.
+- Cores das mini-barras de sentimento e do bullet do veredito.
 
 ## Critérios de aceite
 
-(a) Header do tooltip mostra **range da semana** (`"dd mmm – dd mmm"`) e **total destacado** em `text-sm font-semibold`; (b) bloco de % positivo permanece com cor semântica e MM3; (c) detalhamento renderiza **sempre as 4 linhas** (positivo/neutro/negativo/misto), com count 0 exibido como "—" em opacidade reduzida; (d) cada linha de sentimento ganha mini-barra horizontal proporcional ao % do total na cor do sentimento; (e) bloco de anotações preservado; (f) helper `formatWeekRange` adicionado localmente sem novas dependências; (g) sem mudanças em séries, eixos, switch, MM3, evolução, confiança, anotações, IP masking ou hooks; (h) sem `any`, sem `dangerouslySetInnerHTML`, PT-BR, flat; (i) arquivo permanece ≤500 linhas; (j) sem regressão em layout, responsividade ou demais funcionalidades.
+(a) Helper `pctPositiveClass(pct)` retorna `text-success` para `pct >= 60`, `text-destructive` para `pct <= 30`, `text-muted-foreground` no intervalo 31–59; (b) o número `% Positivo` no tooltip aplica essa classe via `cn()` mantendo `font-semibold tabular-nums`; (c) MM3 permanece em `text-muted-foreground`; (d) sem mudanças em cálculo de pct, MM3, veredito, linhas detalhadas, mini-barras, switch, anotações, header ou demais funcionalidades; (e) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (f) arquivo permanece ≤500 linhas.
 
