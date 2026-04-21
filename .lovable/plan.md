@@ -1,115 +1,105 @@
 
-# Plano: Formulário rápido por sugestão em "Próximos Passos" com data/hora e canal pré-preenchidos
+# Plano: Scripts multi-canal modulados por sentimento e horário
 
 ## Contexto
 
-Hoje, em `ProximosPassosCard`, cada sugestão tem um botão "Criar tarefa" que dispara `useCreateTask` com `title`, `description`, `priority` e `task_type`, **sem data/hora** — a tarefa nasce sem `due_date`. O canal já vem da regra (ex.: `whatsapp`, `meeting`), mas o usuário não consegue ajustar nada antes de salvar.
+Hoje cada `ProximoPasso` tem um único `scriptHint` (texto curto, sem variação por canal). O botão "Copiar script" copia esse texto único. Faltam:
+1. Variantes por **canal** (WhatsApp informal, E-mail formal com assunto, Roteiro de ligação com bullets).
+2. Modulação por **sentimento** do contato (positivo/neutro/negativo) — abertura, tom e CTA mudam.
+3. Uso do **melhor horário** (`bestTime`) como referência ("posso te ligar amanhã às 14h?").
+4. UI para escolher canal antes de copiar.
 
-Vamos transformar cada item em um **mini-formulário expansível** (Collapsible), pré-preenchido com canal recomendado, data sugerida (baseada em prioridade) e horário (vindo de `useBestContactTime`), permitindo ajuste rápido antes de criar.
+## Decisão de escopo
 
-## Decisões de pré-preenchimento
-
-### Canal
-- Usa `passo.channel` (já vem da regra: cadência, follow-up, aniversário, etc.).
-- Editável via `Select` com as 5 opções: WhatsApp, E-mail, Ligação, Reunião, LinkedIn.
-
-### Data sugerida (heurística determinística)
-- **`alta`** → hoje (se ainda dá tempo no dia, senão amanhã).
-- **`media`** → amanhã.
-- **`baixa`** → daqui a 3 dias.
-- Casos especiais por `passo.id`:
-  - `aniversario` → data exata do aniversário (extrai dias do detalhe; se "hoje", hoje).
-  - `agendar-reuniao` → próximo dia útil às 10h.
-  - `whatsapp-followup` → hoje no horário ótimo.
-
-### Horário sugerido
-- Se `useBestContactTime(contactId)` retorna `hour_of_day` válido → usa esse horário (ex.: 14:00).
-- Senão fallback por canal: `meeting` 10:00, `call` 14:00, `whatsapp/email/linkedin` 09:00.
-- Se `bestTime.day_of_week` bate com algum dia próximo dentro de 7 dias e a prioridade não é `alta`, ajusta a data para esse dia (otimiza recomendação).
-
-Lógica isolada em `src/lib/proximoPassoDefaults.ts` (função pura, testável).
+- **Geração 100% client-side determinística** (sem chamada de IA, instantâneo, zero custo). Já temos sentimento em `profile.sentiment` e `bestTime` em cache.
+- **3 canais fixos**: WhatsApp, E-mail, Ligação. LinkedIn/Reunião reaproveitam o template de e-mail.
+- **Reaproveita o estado de simulação**: se Modo de Testes estiver ativo, scripts usam o sentimento simulado (coerente com o resto da Ficha 360).
+- **Substitui** o `scriptHint` único por um menu/popover de 3 abas. Botão "Copiar" continua existindo, agora com escolha de canal.
 
 ## Implementação
 
-### 1. Novo helper: `src/lib/proximoPassoDefaults.ts` (~80 linhas)
+### 1. Novo helper: `src/lib/scriptGenerator.ts` (~180 linhas)
+
+Função pura:
 
 ```ts
-export interface BestTimeHint {
-  day_of_week?: number | null;
-  hour_of_day?: number | null;
+export type ScriptChannel = 'whatsapp' | 'email' | 'call';
+export type SentimentTone = 'positivo' | 'neutro' | 'negativo' | 'misto' | null;
+
+export interface ScriptContext {
+  passoId: string;          // 'reabrir-conversa' | 'agendar-reuniao' | etc
+  firstName: string;
+  sentiment: SentimentTone;
+  bestTime?: string | null; // ex: "manhã" ou "14:00"
+  daysSinceLast?: number | null;
+  cadenceDays?: number | null;
 }
 
-export interface PassoDefaults {
-  date: string;        // yyyy-MM-dd
-  time: string;        // HH:mm
-  channel: ProximoPassoChannel;
-  dueDateIso: string;  // ISO completo combinando date+time
+export interface GeneratedScript {
+  channel: ScriptChannel;
+  subject?: string;          // só para email
+  body: string;              // texto pronto p/ colar
+  toneLabel: string;         // ex: "Cordial", "Empático", "Direto"
 }
 
-export function computePassoDefaults(
-  passo: ProximoPasso,
-  bestTime: BestTimeHint | null | undefined,
-  now: Date = new Date(),
-): PassoDefaults
+export function generateScripts(ctx: ScriptContext): GeneratedScript[];
 ```
 
-- Retorna data/hora/canal coerentes com prioridade + bestTime + tipo de passo.
-- Combina date+time em ISO local (`new Date(yyyy, mm-1, dd, HH, MM).toISOString()`).
+**Lógica de modulação por sentimento:**
+- **Positivo**: tom direto, CTA forte ("vamos avançar").
+- **Neutro/sem dado**: cordial, com curiosidade ("como você está vendo isso?").
+- **Negativo/misto**: empático, sem pressão, abre espaço ("queria entender se algo mudou de prioridade").
 
-### 2. Novo subcomponente: `src/components/ficha-360/ProximoPassoQuickForm.tsx` (~180 linhas)
+**Lógica por canal:**
+- **WhatsApp**: 1–2 frases, emoji moderado, sem assunto, menciona horário se conveniente ("posso te ligar {bestTime}?").
+- **E-mail**: assunto + saudação + corpo de 3 parágrafos + assinatura placeholder. Inclui contexto (dias sem contato, cadência).
+- **Ligação**: roteiro em bullets ("Abertura: ...", "Pergunta-chave: ...", "Próximo passo: ..."), não é texto para enviar.
 
-Form inline (renderizado dentro de cada `<li>` quando expandido):
+**Variação por `passoId`** (templates específicos para cada um dos 7 passos do `proximosPassos.ts`: `reabrir-conversa`, `agendar-reuniao`, `whatsapp-followup`, `retomar-email`, `aniversario`, `pedir-feedback`, `checkin-leve`).
 
-- **Layout grid 2 cols** (responsivo: 1 col em mobile):
-  - **Data**: `<Input type="date">` (Shadcn input, min=hoje).
-  - **Hora**: `<Input type="time">` step=900 (15 min).
-  - **Canal**: `<Select>` com 5 opções + ícones, default = `passo.channel`.
-  - **Prioridade**: `<Select>` (Alta/Média/Baixa) default = `passo.priority`.
-- **Linha de hint** (text-xs muted): "Sugerido: {canal} em {data formatada} às {hora}{ • baseado no melhor horário do contato | quando aplicável}".
-- **Rodapé** com 2 botões:
-  - `Confirmar` (primary, com Loader2 quando pending) → chama `useCreateTask` com `due_date: dueDateIso`, `task_type: channel`, `priority`, `title`, `description`.
-  - `Cancelar` (ghost) → fecha o form.
-- Após sucesso: toast "Tarefa criada para {data} às {hora}", form fecha, item ganha badge "✓ Tarefa criada" por 4s (estado local).
+### 2. Novo componente: `src/components/ficha-360/CopyScriptMenu.tsx` (~120 linhas)
+
+Popover com 3 tabs (WhatsApp / E-mail / Ligação):
+- **Trigger**: Button "Copiar script" (mesmo visual atual) + chevron.
+- **Header da aba ativa**: badge com tom ("Empático" / "Direto" / "Cordial") + ícone do canal.
+- **E-mail**: mostra "Assunto:" em destaque + corpo num `<Textarea readOnly>` pequeno.
+- **WhatsApp/Ligação**: `<Textarea readOnly>` único.
+- **Rodapé**: 2 botões — `Copiar` (copia body, ou subject+body para email) e `Copiar só o assunto` (visível apenas no e-mail).
+- Toast: "Script de {canal} copiado".
 - `React.memo`, PT-BR, tokens semânticos, flat.
 
-### 3. Refatorar `src/components/ficha-360/ProximosPassosCard.tsx`
+### 3. Refatorar `ProximosPassosCard.tsx`
 
-- Adicionar prop `bestTime?: BestTimeHint` (vinda de `useBestContactTime` no `Ficha360`).
-- Estado `expandedId: string | null` (apenas um form aberto por vez).
-- Estado `createdIds: Set<string>` para badge "Tarefa criada".
-- Substituir o botão único `Criar tarefa` por:
-  - Botão `Criar tarefa` que **abre o form** (toggle do `expandedId`) com chevron.
-  - Quando expandido, renderiza `<ProximoPassoQuickForm passo={p} bestTime={bestTime} contactId={contactId} onCreated={() => { setExpandedId(null); setCreatedIds(prev => new Set(prev).add(p.id)); }} onCancel={() => setExpandedId(null)} />`.
-- Botão `Copiar script` permanece igual.
-- Remover o `handleCreateTask` antigo / `busyId` (movido para o form).
+- Receber `profile` e `bestTime` (já tem) para passar `sentiment` e `bestTime` ao menu.
+- Substituir o botão atual `Copiar script` por `<CopyScriptMenu passo={p} firstName={firstName} sentiment={sentiment} bestTime={bestTime?.hour_of_day ? formatHour(...) : intelligence.best_time} />`.
+- Manter `scriptHint` como **fallback** (compat retroativa) caso o gerador retorne array vazio para um id desconhecido.
+- Adicionar prop `firstName` e `sentiment` ao `Props`.
 
 ### 4. Integração: `src/pages/Ficha360.tsx`
 
-- Importar `useBestContactTime`.
-- `const { data: bestTime } = useBestContactTime(id);` (já é cacheado pelo `ProximaAcaoCTA`, então é a mesma queryKey — zero query nova).
-- Passar `bestTime` para `<ProximosPassosCard ... bestTime={bestTime} />`.
+- Passar `firstName={effectiveProfile?.first_name ?? fullName.split(' ')[0]}` e `sentiment={effectiveProfile?.sentiment as SentimentTone ?? null}` para `ProximosPassosCard` (usa `effectiveProfile` para respeitar simulação).
+- `bestTime` já é passado.
 
 ## Padrões obrigatórios
 
 - PT-BR
 - Tokens semânticos (sem cores fixas)
 - Flat (sem shadow/gradient)
-- `React.memo` no quick form
-- Zero novas queries de rede (`useBestContactTime` já é chamado pelo `ProximaAcaoCTA` na mesma página → cache hit)
-- Reaproveita `useCreateTask` existente
-- Formulário inline (Collapsible), não modal — fluxo "edit-in-place" sem perder contexto
-- Backward compat: `ProximosPassosCard` aceita `bestTime` como opcional
+- `React.memo` no menu
+- Zero novas queries de rede (geração local determinística)
+- Sem chamadas de IA — instantâneo
+- Backward compat: `scriptHint` permanece como fallback
 
 ## Arquivos tocados
 
 **Criados (2):**
-- `src/lib/proximoPassoDefaults.ts`
-- `src/components/ficha-360/ProximoPassoQuickForm.tsx`
+- `src/lib/scriptGenerator.ts`
+- `src/components/ficha-360/CopyScriptMenu.tsx`
 
 **Editados (2):**
-- `src/components/ficha-360/ProximosPassosCard.tsx` — abrir form inline + estado de expansão + badge "criada"
-- `src/pages/Ficha360.tsx` — passar `bestTime` ao card
+- `src/components/ficha-360/ProximosPassosCard.tsx` — substituir botão Copiar por menu, novas props
+- `src/pages/Ficha360.tsx` — passar `firstName` e `sentiment` (do `effectiveProfile`)
 
 ## Critério de fechamento
 
-(a) Cada item de "Próximos Passos" tem botão "Criar tarefa" que **expande inline** um form com 4 campos: data, hora, canal, prioridade — todos pré-preenchidos, (b) data padrão segue heurística por prioridade (alta=hoje, média=amanhã, baixa=+3d) com casos especiais (aniversário usa data exata, reunião próximo dia útil 10h), (c) hora padrão vem de `useBestContactTime` quando disponível, com fallback por canal, (d) canal padrão vem do `passo.channel` mas pode ser ajustado, (e) confirmar cria tarefa via `useCreateTask` com `due_date` ISO combinado + `task_type` + `priority`, (f) toast "Tarefa criada para {data} às {hora}", form fecha, item ganha badge "✓ Tarefa criada" por 4s, (g) cancelar fecha sem criar, (h) só um form aberto por vez (acordeon), (i) zero novas queries de rede, (j) zero regressão no botão "Copiar script", no `ProximaAcaoCTA` ou no fluxo de simulação.
+(a) Cada item de "Próximos Passos" tem botão "Copiar script" que abre popover com 3 abas (WhatsApp, E-mail, Ligação), (b) cada aba mostra texto pronto modulado por sentimento (positivo→direto, neutro→cordial, negativo→empático) e referenciando `bestTime` quando aplicável, (c) aba de E-mail tem campo separado de Assunto + corpo com 3 parágrafos e botão "Copiar só o assunto", (d) aba de Ligação mostra roteiro em bullets (Abertura/Pergunta-chave/Próximo passo), (e) botão `Copiar` copia o body (ou subject+body do e-mail) e dispara toast "Script de {canal} copiado", (f) Modo de Testes ativo afeta o sentimento usado nos scripts (coerência com simulação), (g) zero novas queries de rede e zero chamadas de IA, (h) zero regressão no formulário rápido de tarefa, no `ProximaAcaoCTA` ou no `NextBestActionCard` da `ContatoDetalhe`, (i) PT-BR, tokens semânticos, flat.
