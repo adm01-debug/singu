@@ -77,6 +77,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
         <CanaisQuickFilter
           canais={filters.canais}
           onChange={(next) => setFilter('canais', next)}
+          counts={channelCounts}
         />
 
         <DirecaoQuickFilter
