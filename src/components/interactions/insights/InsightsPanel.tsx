@@ -131,6 +131,11 @@ export function InsightsPanel() {
       )}
 
       <ThemeExamplesDrawer theme={selectedTheme} onClose={() => setSelectedTheme(null)} />
+      <SentimentExamplesDrawer
+        bucket={selectedBucket}
+        interactionIds={selectedBucket ? sentimentBuckets[selectedBucket] ?? [] : []}
+        onClose={() => setSelectedBucket(null)}
+      />
     </div>
   );
 }
