@@ -68,6 +68,8 @@ const Ficha360 = () => {
     channelCounts,
     isLoading,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
+  const { counts: potentialChannelCounts, isFetched: channelCountsReady } =
+    useFicha360ChannelCounts(id, days);
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
