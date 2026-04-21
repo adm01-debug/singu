@@ -1,43 +1,58 @@
 
 
-# Plano: Switch para alternar visibilidade da linha % positivo
+# Plano: Refinamento do tooltip do SentimentTrendChart
 
 ## Diagnóstico
 
-- O `SentimentTrendChart.tsx` exibe simultaneamente as barras de contagem (Positivo, Neutro, Negativo, Misto) e a linha de `% positivo` (com MA), o que pode poluir a leitura quando o foco é volume absoluto.
-- Falta um controle para isolar a leitura: ou o usuário foca em **distribuição de volume** (barras), ou em **tendência relativa** (linha %).
+O `WeeklySentimentTooltip` em `SentimentTrendChart.tsx` (linhas 80-148) **já implementa** a maior parte do pedido:
+- Total de conversas da semana ✓
+- % positivo da semana ✓
+- Contagens por sentimento (positivo/neutro/negativo/misto) ✓
+- MM3 e anotações como bônus ✓
+
+**Lacunas reais a corrigir:**
+1. Sentimentos com `count === 0` são ocultados (linha 115: `if (count === 0) return null;`) — então quando uma semana tem só Positivos, o usuário não vê "Negativo: 0" e fica em dúvida se o dado é zero ou ausente.
+2. O título usa o ISO bruto (`formatWeek` resulta em "15 de jan"), mas falta o **range da semana** (ex.: "15 – 21 jan") para reforçar que é agregação semanal.
+3. Falta uma linha de "destaque" no topo separando claramente **volume total** do detalhamento.
+4. Atualmente a ordem visual mistura percentuais quando todos os 4 sentimentos aparecem — mini barras horizontais ajudam a leitura.
 
 ## O que será construído
 
 Toda a mudança em `src/components/interactions/insights/SentimentTrendChart.tsx`. Sem novos hooks/dependências.
 
-### 1. Novo state local `showPositivePctLine`
+### 1. `WeeklySentimentTooltip` reformulado
 
-- `useState<boolean>(true)` — default mostra a linha (preserva comportamento atual).
-- Persistência em `localStorage` chave `singu:sentiment-trend:show-pct-line` (lazy init + setter sincronizado), padrão consistente com outras prefs do projeto.
+**Header reforçado:**
+- Linha 1: `Semana de {dd mmm} – {dd mmm}` (calculado com `weekStart` + 6 dias).
+- Linha 2 (destaque): `Total: {N} conversas` em `text-sm font-semibold text-foreground`.
+- Quando `total === 0`: mostra apenas "sem conversas" (preserva).
 
-### 2. Switch no header do card
+**Bloco de % positivo:**
+- `% Positivo: NN%` com cor semântica (`pctClass`).
+- MM3 abaixo, se disponível (preserva).
 
-Junto aos demais controles do header (seletor de período / direção):
-- `<Switch>` shadcn + `<Label>` "Linha % positivo" (text-xs, gap-2).
-- `aria-label="Alternar linha de % positivo"`.
-- Posicionado de forma compacta, sem quebrar layout responsivo (flex-wrap se necessário).
+**Detalhamento por sentimento (sempre 4 linhas):**
+- Renderiza **sempre** as 4 linhas (positivo/neutro/negativo/misto), inclusive zeros — `count === 0` mostra "—" em `text-muted-foreground/50`.
+- Adiciona mini-barra horizontal (largura proporcional ao % do total) abaixo do número, usando a cor do sentimento — feedback visual instantâneo da distribuição.
+- Mantém: bullet colorido + label + count tabular + percentual entre parênteses.
 
-### 3. Renderização condicional
+**Anotações:**
+- Bloco preservado integralmente.
 
-- Linha `<Line dataKey="positivePct" />` (e MA `positivePctMA` se existir como série separada) só renderiza quando `showPositivePctLine === true`.
-- Quando oculta:
-  - Eixo Y direito (% positivo) também é ocultado (`yAxisId="right"` removido condicionalmente) para o gráfico não ficar com escala vazia.
-  - `ReferenceLine` ligadas ao eixo direito (se houver, ex.: 50%) também ocultas.
-  - Tooltip continua mostrando contagens das barras (incluindo Misto) e omite a linha % naturalmente, pois a série não está renderizada.
-  - Legenda do Recharts atualiza automaticamente.
+### 2. Helper local `formatWeekRange(weekStartIso): string`
 
-### 4. Sem alterações em
+- Recebe ISO `YYYY-MM-DD`, retorna `"15 – 21 jan"` (ou `"29 jan – 04 fev"` cruzando mês).
+- Usa `toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })`.
+- Função local (não exportada), 8-10 linhas.
 
-- Hooks de fetch/agregação (`useInteractionsInsights`), MA, `sortedData`, `evolutionStats`, `confidenceInfo`, anotações, stat cards, badge de direção, seletor de período, mascaramento de IP, ordenação cronológica.
-- Barras de contagem (Positivo/Neutro/Negativo/Misto) permanecem sempre visíveis — o switch afeta exclusivamente a linha % e o eixo direito.
+### 3. Sem alterações em
+
+- Conexão do tooltip ao `<Tooltip content={<WeeklySentimentTooltip />}>` (já está correta na linha 413).
+- Todas as séries, eixos, legenda, switch de % positivo, MM3, anotações, evolução, confiança, mascaramento de IP.
+- Hooks de fetch, agregação, ordenação cronológica.
+- Estrutura de dados de `SentimentTrendPoint`.
 
 ## Critérios de aceite
 
-(a) Novo state `showPositivePctLine` com default `true` e persistência em `localStorage` (`singu:sentiment-trend:show-pct-line`); (b) `<Switch>` + `<Label>` "Linha % positivo" no header do card, com `aria-label` e layout responsivo (flex-wrap); (c) quando `false`, a linha de `% positivo` e sua MA são removidas do `<ComposedChart>`, junto com o eixo Y direito e quaisquer `ReferenceLine` desse eixo; (d) barras de contagem (incluindo Misto) e tooltip permanecem 100% funcionais em ambos os estados; (e) sem mudanças em hooks de fetch, agregação, MA, anotações, stat cards, evolução, confiança ou demais funcionalidades; (f) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (g) arquivo permanece ≤350 linhas; (h) sem regressão em layout responsivo, legenda, badge de direção ou seletor de período.
+(a) Header do tooltip mostra **range da semana** (`"dd mmm – dd mmm"`) e **total destacado** em `text-sm font-semibold`; (b) bloco de % positivo permanece com cor semântica e MM3; (c) detalhamento renderiza **sempre as 4 linhas** (positivo/neutro/negativo/misto), com count 0 exibido como "—" em opacidade reduzida; (d) cada linha de sentimento ganha mini-barra horizontal proporcional ao % do total na cor do sentimento; (e) bloco de anotações preservado; (f) helper `formatWeekRange` adicionado localmente sem novas dependências; (g) sem mudanças em séries, eixos, switch, MM3, evolução, confiança, anotações, IP masking ou hooks; (h) sem `any`, sem `dangerouslySetInnerHTML`, PT-BR, flat; (i) arquivo permanece ≤500 linhas; (j) sem regressão em layout, responsividade ou demais funcionalidades.
 
