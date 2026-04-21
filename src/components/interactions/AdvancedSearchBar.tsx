@@ -180,25 +180,3 @@ function EntityPicker({ icon: Icon, placeholder, options, selected, onSelect }: 
     </Popover>
   );
 }
-
-function DatePopover({ label, value, onChange }: { label: string; value?: Date; onChange: (d?: Date) => void }) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className={cn('justify-start gap-2', !value && 'text-muted-foreground')}>
-          <CalendarIcon className="w-4 h-4" />
-          {value ? format(value, "dd MMM yy", { locale: ptBR }) : label}
-          {value && (
-            <X
-              className="w-3.5 h-3.5 ml-1 opacity-60 hover:opacity-100"
-              onClick={(e) => { e.stopPropagation(); onChange(undefined); }}
-            />
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar mode="single" selected={value} onSelect={onChange} initialFocus className={cn('p-3 pointer-events-auto')} />
-      </PopoverContent>
-    </Popover>
-  );
-}
