@@ -68,7 +68,7 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   };
 
   return (
-    <div className="pt-1">
+    <div className="pt-1" onKeyDown={handleKeyDown} tabIndex={-1}>
       <div className="flex flex-wrap items-center gap-2">
         {/* Período */}
         <div className="inline-flex items-center rounded-md border border-border bg-card p-0.5">
