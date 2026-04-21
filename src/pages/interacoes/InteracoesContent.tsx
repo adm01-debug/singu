@@ -25,6 +25,7 @@ import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
 import { PaginationBar } from '@/components/interactions/PaginationBar';
+import { DensityChips } from '@/components/interactions/DensityChips';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
 import { countByChannel } from '@/lib/countByChannel';
