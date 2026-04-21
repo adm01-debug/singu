@@ -7,7 +7,6 @@ import {
   Phone,
   Linkedin,
   Calendar,
-  Copy,
   Plus,
   Loader2,
   Check,
@@ -16,18 +15,21 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useNextBestAction } from '@/hooks/useNextBestAction';
 import type { ProximoPasso, ProximoPassoChannel, ProximoPassoPriority } from '@/lib/proximosPassos';
 import type { BestTimeHint } from '@/lib/proximoPassoDefaults';
 import { ProximoPassoQuickForm } from './ProximoPassoQuickForm';
+import { CopyScriptMenu } from './CopyScriptMenu';
+import type { SentimentTone } from '@/lib/scriptGenerator';
 
 interface Props {
   contactId: string;
   contactName: string;
   passos: ProximoPasso[];
   bestTime?: BestTimeHint | null;
+  firstName?: string;
+  sentiment?: SentimentTone;
 }
 
 const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
