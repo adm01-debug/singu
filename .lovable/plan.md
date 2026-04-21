@@ -1,33 +1,39 @@
 
 
-# Plano: Volume semanal de interações no chart de sentimento
+# Plano: Resumo de evolução de % positivo no topo do chart
 
 ## Diagnóstico
 
-- `SentimentTrendChart.tsx` já recebe `data` com `total` por semana (somatório de positive/neutral/negative/mixed) — usado hoje só no stat card "Conversas" e em `mixedStats`.
-- Não há indicação visual semana-a-semana de quanto volume sustenta cada ponto. Uma semana com 1 interação positiva e outra com 50 aparecem com peso visual idêntico.
-- Recharts suporta `ComposedChart` com eixo Y secundário — encaixa sem mudar shape de dados.
+- O `SentimentTrendChart.tsx` já mostra um badge "Melhorando/Estável/Piorando" com `summary.deltaPct`, mas esse delta vem do hook (`useInteractionsInsights`) e representa a variação **dentro** da janela atual (ex.: primeira vs. última semana), não uma comparação com o **período anterior** equivalente.
+- Os dados disponíveis localmente em `data: SentimentTrendPoint[]` permitem calcular essa comparação sem mexer no hook: dividir as semanas em duas metades (mais antiga = "período anterior", mais recente = "período atual") e comparar o `% positivo` médio ponderado pelo volume (`positive / total`).
+- Sinal será determinístico, derivado puramente de `data` (sem novas dependências, sem mudanças em hooks).
 
 ## O que será construído
 
-Adicionar **barras de volume total por semana** ao fundo do chart existente, em eixo Y secundário, mantendo as 4 linhas de sentimento em primeiro plano.
+Adicionar uma faixa de **resumo de evolução** acima do chart, com:
+
+- Ícone de direção (↑ subiu / − estável / ↓ desceu) baseado no delta vs. período anterior.
+- "% positivo atual" e "% positivo anterior" lado a lado.
+- Delta em `pp` (pontos percentuais) com cor semântica (success/muted/destructive).
+- Texto curto de contexto: "vs. {N} semanas anteriores".
 
 ### Mudanças em `src/components/interactions/insights/SentimentTrendChart.tsx`
 
-1. Trocar `<LineChart>` por `<ComposedChart>` (mesma família Recharts, drop-in).
-2. Adicionar `<YAxis yAxisId="volume" orientation="right" />` com `tick` discreto em `text-muted-foreground`, domínio `[0, 'dataMax']`, ticks compactos.
-3. Manter o `<YAxis>` atual como `yAxisId="sentiment"` (default à esquerda, % positivo) e marcar todas as `<Line>` existentes com `yAxisId="sentiment"`.
-4. Inserir **antes das linhas** (para ficar no fundo):
-   ```tsx
-   <Bar yAxisId="volume" dataKey="total" name="Volume" 
-        fill="hsl(var(--muted-foreground))" fillOpacity={0.18}
-        radius={[2, 2, 0, 0]} barSize={18} />
-   ```
-5. Atualizar o tooltip custom para listar "Volume: N interações" no topo (antes das linhas de sentimento), usando o mesmo dataset já disponível no payload.
-6. Garantir que `ReferenceLine` de Melhor/Pior continue ancorado em `yAxisId="sentiment"`.
-7. Sem mudanças em hooks, agregação, tipos, stat cards (Melhor/Pior/Conversas/Mistos) ou outros componentes.
+1. Novo `useMemo` `evolutionStats` que:
+   - Divide `data` em duas metades por índice (`Math.floor(data.length / 2)`).
+   - Calcula `% positivo` ponderado de cada metade: `sum(positive) / sum(total)` × 100.
+   - Retorna `{ currentPct, previousPct, deltaPp, direction, weeksCompared }`.
+   - Threshold de "estável": `|deltaPp| < 3` → `stable`; `> 0` → `up`; `< 0` → `down`.
+   - Quando `data.length < 4` ou alguma metade tem `total = 0`, retorna `null` (oculta a faixa).
+2. Nova faixa renderizada **acima** do bloco `summary` existente (ou no lugar dele se `summary` ausente), em uma `div` flat com:
+   - Ícone (TrendingUp/Minus/TrendingDown) + label ("Subiu" / "Estável" / "Desceu") em cor semântica.
+   - Bloco "Atual: X% · Anterior: Y%" em texto pequeno tabular-nums.
+   - Badge `+Zpp` / `−Zpp` / `0pp` à direita, mesmo padrão de cores do badge atual.
+   - Subtexto cinza: "vs. {weeksCompared} semanas anteriores".
+3. Manter o badge atual de tendência interna (já existente) — são dois sinais complementares: o badge é "trend dentro da janela", a nova faixa é "atual vs. anterior".
+4. Sem mudanças em `useInteractionsInsights.ts`, tipos públicos, hooks, ou outros componentes.
 
 ## Critérios de aceite
 
-(a) O chart de sentimento exibe barras cinza-translúcidas (opacidade ~18%) atrás das linhas, com altura proporcional ao total de interações da semana, em eixo Y secundário à direita; (b) as 4 linhas de sentimento continuam plotadas no eixo esquerdo (% positivo) com comportamento atual preservado, incluindo destaque da linha "Misto"; (c) tooltip lista "Volume: N interações" como primeira linha, seguido das linhas de sentimento existentes (omitindo as com `count === 0`); (d) `ReferenceLine` de Melhor/Pior continua funcionando no eixo de sentimento; (e) sem mudanças em `useInteractionsInsights.ts`, tipos públicos, stat cards do header ou outros componentes; (f) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (g) arquivo permanece ≤300 linhas; (h) sem regressão em layout responsivo, legenda, badge de direção ou seletor de período.
+(a) Acima do chart aparece uma faixa de resumo com ícone direcional, % positivo atual, % positivo anterior, delta em `pp` e legenda "vs. N semanas anteriores"; (b) cores seguem padrão semântico (success/muted/destructive) consistente com o resto do chart; (c) faixa só renderiza quando há ≥ 4 semanas e ambas as metades têm volume > 0 (caso contrário fica oculta sem quebrar layout); (d) cálculo é ponderado por volume (não média simples de %), refletindo realidade quando semanas têm volumes muito distintos; (e) badge "Melhorando/Estável/Piorando" existente é preservado; (f) sem mudanças em hooks, agregação, tipos públicos, stat cards (Melhor/Pior/Conversas/Mistos), tooltip ou outros componentes; (g) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (h) arquivo permanece ≤300 linhas; (i) sem regressão em layout responsivo, legenda, eixos, ReferenceLines ou barras de volume.
 
