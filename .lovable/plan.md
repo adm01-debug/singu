@@ -1,71 +1,81 @@
 
-# Plano: CTA "Próxima ação sugerida" na Ficha 360
+# Plano: Pesos personalizáveis do Score de Prontidão com recálculo ao vivo
 
 ## Contexto
 
-Já existe `NextBestActionCard` (usado em `ContatoDetalhe`) que consome a edge function `next-best-action` e gera ação acionável com canal, urgência, script, resultado esperado e botão "Criar tarefa". Também existe `useBestContactTime(contactId)` que retorna `day_of_week` + `hour_of_day` + `success_rate` + `suggested_channel`.
+`computeProntidaoScore` usa pesos hardcoded por fator (cadência 30, recência 30, sentimento 25, canal 15). É pura e recalcula sempre que entradas mudam. Falta: (a) parametrizar os pesos, (b) UI para o usuário ajustar e (c) persistência por usuário com recálculo instantâneo na Ficha 360.
 
-A Ficha 360 (`src/pages/Ficha360.tsx`) hoje mostra `ScoreProntidaoCard` com `recommendation` + `nextActionHint` em texto, mas **não tem CTA acionável** — falta o componente unificado que combine: ação IA + melhor horário + botão para registrar a interação direto no CRM.
+## Decisão de armazenamento
+
+Usar **Zustand com persist em localStorage** (padrão já usado em `useUIStore`). Justificativa: zero rede, recálculo síncrono ao vivo, preferência puramente visual/de leitura sem precisar sincronizar entre dispositivos. Coerente com a memória de "client-side fast feedback" e mantém as 4 regras de "zero novas queries".
 
 ## Implementação
 
-### 1. Novo componente: `src/components/ficha-360/ProximaAcaoCTA.tsx` (~180 linhas)
+### 1. `src/lib/prontidaoScore.ts` — parametrizar pesos
 
-Card destacado (variant `outlined`, header com ícone `Sparkles`) que combina três fontes:
+- Exportar `DEFAULT_PRONTIDAO_WEIGHTS = { cadence: 30, recency: 30, sentiment: 25, channel: 15 }` e tipo `ProntidaoWeights`.
+- Adicionar parâmetro opcional `weights?: ProntidaoWeights` em `ComputeInput` (default = DEFAULT).
+- Substituir os literais 30/30/25/15 dentro de `scoreCadence/Recency/Sentiment/Channel` por valores recebidos via parâmetro (passar `weights[key]` ao construir cada `ProntidaoFactor`).
+- Em `computeProntidaoScore`, usar `weights` recebido (com fallback ao DEFAULT) ao montar o breakdown e o cálculo ponderado.
+- Sanitizar: se soma = 0, cair no DEFAULT (proteção).
 
-**Props:**
+### 2. Novo store: `src/stores/useProntidaoWeightsStore.ts` (~40 linhas)
+
 ```ts
-{ contactId: string; contactName: string }
+interface State {
+  weights: ProntidaoWeights;
+  setWeight: (key: keyof ProntidaoWeights, value: number) => void;
+  reset: () => void;
+}
 ```
+- `create<State>()(persist(..., { name: 'singu-prontidao-weights' }))`.
+- `setWeight` clampa 0–100.
+- `reset` volta ao DEFAULT.
 
-**Composição interna:**
-- `useNextBestAction(contactId)` — ação IA (canal, urgência, script, expected_outcome)
-- `useBestContactTime(contactId)` — melhor horário sugerido
-- `useCreateQuickInteraction()` — registrar interação no CRM
+### 3. Novo componente: `src/components/ficha-360/ProntidaoWeightsEditor.tsx` (~140 linhas)
 
-**Estados de UI:**
+- `Popover` (gatilho: ícone `Sliders` ghost-button discreto no canto superior direito do `ScoreProntidaoCard`, ao lado do badge de nível).
+- Conteúdo do popover (~320px):
+  - Título: "Personalizar pesos do score"
+  - Subtítulo: "Ajuste a importância de cada fator. As mudanças aplicam ao vivo."
+  - 4 linhas com `Slider` (0–60, step 5) + label PT-BR + valor numérico:
+    - Cadência · Recência · Sentimento · Canal preferido
+  - Indicador da soma total: `"Total: {soma}%"` em badge (não precisa somar 100 — a função já normaliza por totalWeight).
+  - Botões rodapé: `Restaurar padrão` (ghost) + `Fechar` (default).
+- `React.memo`, tokens semânticos, flat.
 
-a) **Empty state** (sem `nextAction`): bloco com `Sparkles` + título "Próxima ação sugerida" + texto "Gere uma sugestão de IA combinando canal ideal e melhor horário" + `LoadingButton` "Gerar sugestão" (variant gradient).
+### 4. `src/components/ficha-360/ScoreProntidaoCard.tsx` — integrar editor
 
-b) **Loaded state**:
-- Header: badges de urgência (`high|medium|low` → destructive/default/secondary) + canal (ícone + label PT-BR via `channelMeta` reutilizado de `NextBestActionCard`).
-- **Linha de ação principal** (texto destacado `text-base font-semibold`): `nextAction.action`.
-- **Justificativa** (`text-sm text-muted-foreground`): `nextAction.reason`.
-- **Bloco "Melhor horário"** (quando `bestTime` disponível, em `bg-muted/40 rounded-md p-3` com ícone `Clock`):
-  - Texto: `"Melhor horário: {dayLabel} às {hour}h"` (mapear `day_of_week` 0-6 → `['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']`)
-  - Subtexto: `"Taxa de resposta histórica: {success_rate}%"` quando disponível
-  - Se `suggested_channel` ≠ `nextAction.channel`, exibir aviso sutil: "Canal sugerido pelo histórico: {x}"
-- **Script collapsible** (reutilizar padrão de `NextBestActionCard`): toggle "Ver script sugerido" com botão "Copiar script".
-- **Resultado esperado** (rodapé compacto, border-top): `nextAction.expected_outcome`.
-- **Footer com 3 botões**:
-  - `Regenerar` (ghost, ícone `RefreshCw`) → `generate()`
-  - `Criar tarefa` (outline, ícone `CheckCircle2`) → `createTask` (igual ao card existente)
-  - **`Registrar interação`** (default, ícone `Zap`) → abre painel inline com `Input` (resumo pré-preenchido com `nextAction.action`) + `Select` de tipo (default = `nextAction.channel` mapeado: email/whatsapp/call/meeting/note) → ao confirmar chama `createInteraction.mutateAsync({ p_contact_id, p_tipo, p_resumo })` e mostra toast "Interação registrada!". Após sucesso, opcionalmente disparar `generate()` para refrescar a próxima ação com base no novo histórico.
+- Adicionar gatilho `<ProntidaoWeightsEditor />` no header da coluna direita (acima dos sliders dos fatores), discreto.
+- Sem outras mudanças visuais.
 
-**Padrões:**
+### 5. `src/pages/Ficha360.tsx` — usar pesos do store
+
+- `const weights = useProntidaoWeightsStore(s => s.weights);`
+- `useMemo(() => computeProntidaoScore({ profile, intelligence, weights }), [profile, intelligence, weights]);`
+- Mudança no slider → store atualiza → `useMemo` recalcula → ring + breakdown + recomendação se atualizam ao vivo.
+
+## Padrões obrigatórios
+
 - PT-BR
-- Tokens semânticos
-- Flat (sem shadow/gradient pesado, exceto botão "Gerar sugestão" que pode usar `gradient`)
-- `React.memo`
-- Reaproveitar `channelMeta`/`urgencyMeta` (extrair para `src/lib/interactionChannels.ts` se for limpar duplicação, ou duplicar localmente para manter componentes desacoplados — preferência: duplicar pequeno objeto local)
-- Zero novas queries de rede além das já existentes (`useNextBestAction`, `useBestContactTime`)
-
-### 2. Integração: `src/pages/Ficha360.tsx`
-
-Localizar onde `ScoreProntidaoCard` é montado (linha ~174) e inserir `<ProximaAcaoCTA contactId={id} contactName={contact?.name ?? 'contato'} />` **logo abaixo**, na mesma coluna do score. Manter hierarquia visual: Score → Próxima Ação → demais cards.
-
-### 3. Verificar reuso de `useCreateQuickInteraction`
-
-A RPC `create_quick_interaction` aceita `p_contact_id` (já confirmado em `QuickActionsWidget` que passa `p_company_id`). Validar a assinatura no hook — se não aceitar `p_contact_id`, usar a mutation equivalente já existente para contatos (provavelmente mesma RPC com parâmetro alternativo). Se necessário, fallback para `useCreateInteraction` direto na tabela.
+- Tokens semânticos (sem cores fixas)
+- Flat (sem shadow/gradient)
+- `React.memo` no editor
+- Zero novas queries de rede (puramente local)
+- Persistência em localStorage (`singu-prontidao-weights`)
+- Backward compat: `computeProntidaoScore` sem `weights` continua funcionando idêntico
 
 ## Arquivos tocados
 
-**Criado (1):**
-- `src/components/ficha-360/ProximaAcaoCTA.tsx`
+**Criados (2):**
+- `src/stores/useProntidaoWeightsStore.ts`
+- `src/components/ficha-360/ProntidaoWeightsEditor.tsx`
 
-**Editado (1):**
-- `src/pages/Ficha360.tsx` — montar `ProximaAcaoCTA` abaixo de `ScoreProntidaoCard`
+**Editados (3):**
+- `src/lib/prontidaoScore.ts` — parametrizar pesos com fallback DEFAULT
+- `src/components/ficha-360/ScoreProntidaoCard.tsx` — montar gatilho do editor
+- `src/pages/Ficha360.tsx` — ler pesos do store e passar para `computeProntidaoScore`
 
 ## Critério de fechamento
 
-(a) Novo card "Próxima ação sugerida" aparece na Ficha 360 logo abaixo do Score de Prontidão, (b) empty state com botão "Gerar sugestão" gera ação via IA em <8s, (c) card carregado mostra ação principal + justificativa + badges de urgência/canal + bloco "Melhor horário: {dia} às {hora}h" quando disponível, (d) script colapsável com botão copiar, (e) 3 botões no rodapé: Regenerar, Criar tarefa, Registrar interação, (f) clicar "Registrar interação" abre painel inline com resumo pré-preenchido + tipo derivado do canal e ao confirmar grava no CRM com toast de sucesso, (g) divergência entre canal IA e canal sugerido pelo histórico aparece como aviso sutil, (h) PT-BR, tokens semânticos, flat, sem novas queries além das existentes, (i) zero regressão no `NextBestActionCard` da `ContatoDetalhe` ou no `ScoreProntidaoCard`.
+(a) Ícone `Sliders` aparece no `ScoreProntidaoCard` e abre popover com 4 sliders rotulados em PT-BR, (b) mover qualquer slider atualiza ring/breakdown/recomendação na hora sem recarregar dados, (c) "Restaurar padrão" volta a 30/30/25/15, (d) preferência persiste em localStorage e sobrevive a refresh, (e) `WhyScoreDrawer` e o `ProximaAcaoCTA` continuam funcionando com os novos pesos refletidos no breakdown, (f) `computeProntidaoScore` chamado sem `weights` mantém comportamento original (zero regressão), (g) zero novas queries de rede, (h) PT-BR, tokens semânticos, flat.
