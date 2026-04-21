@@ -1,68 +1,106 @@
 
-# Plano: Filtros rápidos de canal na busca de /interacoes
+# Plano: Ordenação da lista em /interacoes
 
 ## Objetivo
 
-Expor **chips de canal** (WhatsApp, Ligação, Email, Reunião, Nota) **diretamente na barra de busca** de `/interacoes`, antes do popover de filtros avançados, permitindo alternar canais com 1 clique sem abrir nenhum diálogo.
+Adicionar um seletor de ordenação na lista de `/interacoes` com 4 opções: **Mais recentes** (padrão), **Mais antigas**, **Melhor correspondência** (relevância da busca textual) e **Por pessoa/empresa** (alfabética). A ordenação persiste na URL e é compatível com todos os filtros avançados existentes.
 
 ## Reutilização
 
-- `useInteractionsAdvancedFilter → filters.canais` + `setFilter('canais', ...)` — estado já persiste na URL (`?canais=`)
-- Padrão visual de chips de canal idêntico ao `FiltrosInteracoesBar.tsx` da Ficha 360 (`Badge` toggle + ícone + label) — copiamos o pattern, sem dependência cruzada
-- Ícones `MessageSquare/Phone/Mail/Calendar/FileText` do `lucide-react`
+- `useInteractionsAdvancedFilter` — adicionar campo `sort` ao state da URL (`?sort=`)
+- `useDebounce` (já em uso para `q`) para o termo de busca
+- Padrão visual `Select` (shadcn) já presente no projeto
 
-Sem nova tabela, sem novo fetch, sem novo hook.
+Sem nova tabela, sem novo fetch, sem nova RPC.
 
 ## Arquitetura
 
 ```text
-AdvancedSearchBar (header sticky de /interacoes)
- ├─ Input de texto (existente)
- ├─ [NOVO] CanaisQuickFilter — 5 chips toggle inline
- │     └─ usa filters.canais + setFilter('canais', next[])
- ├─ Botão "Filtros avançados" (popover existente — pessoa, empresa, datas)
- ├─ InteracoesPresetsMenu (existente)
- └─ Botão "Limpar tudo" (existente)
+AdvancedSearchBar
+ ├─ Input + chips canal + filtros (existente)
+ └─ [NOVO] SortSelect (Select shadcn) — ao lado de "Limpar tudo"
+       └─ valores: 'recent' | 'oldest' | 'relevance' | 'entity'
+
+useInteractionsAdvancedFilter
+ ├─ filters.sort: SortKey ('recent' default)
+ └─ setFilter('sort', value)
+
+Página /interacoes (consumidor)
+ └─ useMemo aplicando sortInteractions(items, sort, q)
+       ├─ recent  → date desc
+       ├─ oldest  → date asc
+       ├─ relevance (só ativo se q != '') → score por ocorrências em title/content/tags + recência como tiebreaker
+       └─ entity  → contact_name || company_name (localeCompare pt-BR)
 ```
 
 ## Implementação
 
-### 1. Novo componente `CanaisQuickFilter.tsx` (≤90 linhas)
+### 1. `useInteractionsAdvancedFilter.ts`
 
-`src/components/interactions/CanaisQuickFilter.tsx`
+- Adicionar `sort: SortKey` ao tipo `AdvancedFilters` (default `'recent'`)
+- Incluir `'sort'` no array `KEYS`
+- `setFilter` aceita string; persiste/remove no URLSearchParams
+- `activeCount` **não conta** `sort` (ordenação não é filtro)
 
-- Props: `canais: string[]`, `onChange: (next: string[]) => void`
-- 5 chips fixos: `whatsapp`, `call`, `email`, `meeting`, `note` com ícone + label PT-BR
-- Toggle: clique adiciona/remove do array; mantém ordem original
-- Visual flat: `Badge variant="default"` quando ativo, `outline` quando inativo
-- `aria-pressed`, `role="button"`, `title` com label completo
-- Label oculto em mobile (`hidden sm:inline`), apenas ícone visível
+### 2. Novo `src/lib/sortInteractions.ts` (≤120 linhas, função pura)
+
+```ts
+export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity';
+
+export function sortInteractions<T extends {
+  date?: string | Date | null;
+  title?: string | null;
+  content?: string | null;
+  tags?: string[] | null;
+  contact_name?: string | null;
+  company_name?: string | null;
+}>(items: T[], sort: SortKey, query?: string): T[]
+```
+
+- Defensivo com `Array.isArray` e fallback para campos nulos
+- `relevance`: contagem de ocorrências case-insensitive do termo em title (×3), tags (×2) e content (×1); empate desfaz pela data desc
+- Se `sort === 'relevance'` e `query` vazio, faz fallback para `'recent'`
+- `entity`: `contact_name ?? company_name ?? ''`, `localeCompare('pt-BR')`
+
+### 3. Novo componente `SortSelect.tsx` (≤60 linhas)
+
+`src/components/interactions/SortSelect.tsx`
+
+- Props: `value: SortKey`, `onChange`, `hasQuery: boolean`
+- `Select` shadcn, ícone `ArrowUpDown`, label oculto em mobile
+- Opção "Melhor correspondência" desabilitada quando `!hasQuery` (com `title` explicativo)
 - `React.memo`
 
-### 2. Integração em `AdvancedSearchBar.tsx`
+### 4. Integração em `AdvancedSearchBar.tsx`
 
-- Importar `CanaisQuickFilter`
-- Renderizar **logo após** o input de busca e **antes** do botão "Filtros avançados", na mesma linha (flex-wrap)
-- Passar `filters.canais` e `(next) => setFilter('canais', next)`
-- Garantir que o popover de filtros avançados **deixe de exibir** o controle de canais (evita duplicação) — manter pessoa/empresa/datas no popover
+- Adicionar `<SortSelect value={filters.sort} onChange={(v) => setFilter('sort', v)} hasQuery={!!filters.q.trim()} />` antes do menu de presets
+- `InteracoesPresetsMenu`: incluir `sort` no payload salvo/aplicado (mantém compatibilidade — presets antigos sem `sort` preservam o atual)
 
-### 3. Padrões obrigatórios
+### 5. Aplicação na página consumidora
+
+Localizar a página/componente que renderiza a lista (provavelmente `src/pages/Interacoes.tsx` ou `UnifiedTimelineView` no contexto avançado) e envolver os itens com `useMemo(() => sortInteractions(items, filters.sort, debouncedQ), [items, filters.sort, debouncedQ])`.
+
+### 6. Padrões obrigatórios
 
 - PT-BR
-- `Array.isArray(canais)` defensivo
 - Sem `any`, sem `dangerouslySetInnerHTML`
+- `Array.isArray()` defensivo
 - Tokens semânticos, flat design
-- Mantém persistência em URL (já implementada via `setFilter`)
-- `activeCount` continua refletindo canais selecionados (já calcula `filters.canais.length > 0 ? 1 : 0`)
+- Persistência URL (`?sort=`)
+- Compatível com presets, filtros e canais
 
 ## Arquivos tocados
 
-**Novos (1):**
-- `src/components/interactions/CanaisQuickFilter.tsx`
+**Novos (2):**
+- `src/lib/sortInteractions.ts`
+- `src/components/interactions/SortSelect.tsx`
 
-**Editados (1):**
-- `src/components/interactions/AdvancedSearchBar.tsx` — inserir chips e remover seção de canais do popover
+**Editados (3):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — campo `sort` na URL
+- `src/components/interactions/AdvancedSearchBar.tsx` — incluir `SortSelect`
+- `src/pages/Interacoes.tsx` (ou consumidor da lista) — aplicar `sortInteractions` via `useMemo`
+- `src/components/interactions/InteracoesPresetsMenu.tsx` — incluir `sort` no payload de presets
 
 ## Critério de fechamento
 
-(a) 5 chips de canal visíveis inline na barra de busca de `/interacoes`, (b) clique alterna canal e atualiza URL (`?canais=`) instantaneamente, (c) seção de canais removida do popover de filtros avançados (sem duplicação), (d) labels ocultos em mobile (apenas ícones), (e) zero novas queries de rede, (f) zero regressão em presets, busca textual ou outros filtros.
+(a) Seletor de ordenação visível na barra de busca de `/interacoes` com 4 opções, (b) "Mais recentes" como padrão, (c) "Melhor correspondência" desabilitada sem termo de busca, (d) ordenação aplicada na lista renderizada via função pura testável, (e) estado persiste em URL (`?sort=`) e em presets, (f) `activeCount` não conta `sort`, (g) zero novas queries de rede, (h) zero regressão em filtros, presets ou paginação.
