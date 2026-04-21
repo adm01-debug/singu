@@ -1,100 +1,78 @@
 
 
-# Plano: Preservar foco no campo de busca ao remover chips em `/interacoes`
+# Plano: Render resiliente de chips de canal desconhecido
 
 ## Contexto
 
-Hoje, ao clicar no `X` de um chip no `ActiveFiltersBar` (Busca, Pessoa, Empresa, Canais, Período), o filtro é removido via `setFilter`, que atualiza a URL e re-renderiza a lista. O **foco vai para o `<body>`** (ou some), porque o próprio botão `X` desaparece quando o chip é desmontado.
+Em `ActiveFiltersBar`, hoje canais que não estão em `CHANNEL_META` (whatsapp, call, email, meeting, video_call, note) já têm fallback para label capitalizado:
+```ts
+const label = meta?.label ?? c.charAt(0).toUpperCase() + c.slice(1);
+```
+Mas há lacunas:
+- Sem ícone, o chip fica desalinhado com os demais.
+- Strings sujas (`" WHATSAPP "`, `"unknown_channel"`) renderizam feias.
+- Strings vazias ou apenas-espaço viram chip fantasma sem label.
+- Remoção usa `canais.filter((x) => x !== c)` — funciona, mas se vier valor duplicado/diferindo só por case na URL, a normalização atual no parser já filtra. O risco real é o chip render de algo que o `CanaisQuickFilter` nem reconhece.
 
-Consequências:
-- Usuário que estava digitando perde o cursor.
-- Em listas longas, o navegador pode rolar para o topo.
-- Quebra fluxo de "digitar → remover chip → continuar digitando".
+O `channelPersistence` e o parser de URL **já fazem whitelist + lowercase + dedup** (vide `lib/channelPersistence.ts` com `VALID`). Então em condições normais valores desconhecidos não chegam. Mas se um link antigo, externo ou manualmente editado trouxer canal fora da whitelist, o chip precisa renderizar de forma digna **e remover sem deixar lixo na URL**.
 
 ## Decisão de escopo
 
-Após remover qualquer chip do `ActiveFiltersBar`, **devolver o foco ao input de busca** (`<input>` da `SearchBar` em `/interacoes`) preservando:
-- Posição de scroll da página (sem `scrollIntoView` agressivo).
-- Conteúdo digitado no input (não mexer no `value`).
-- Posição do cursor: cursor vai para o **final do texto** (comportamento padrão esperado).
+Melhorar APENAS o render do chip de canal desconhecido em `ActiveFiltersBar.tsx`:
 
-Aplica-se a **todos os chips** do `ActiveFiltersBar` (Busca, Direção, Pessoa, Empresa, cada Canal, Período desde, Período até) e ao botão **"Limpar tudo"**. Não se aplica ao botão "Limpar período" (já existente) — também recebe o mesmo tratamento por consistência.
-
-## Estratégia técnica
-
-1. Expor um **ref do input de busca** no `InteracoesContent` (ou no componente que renderiza a `SearchBar`).
-2. Passar uma callback `onAfterRemove?: () => void` para o `ActiveFiltersBar`.
-3. Cada handler de chip (`onClose` das badges + `onClick` do "Limpar tudo" e "Limpar período") chama `setFilter(...)` e em seguida invoca `onAfterRemove?.()`.
-4. `onAfterRemove` no parent faz:
-   ```ts
-   requestAnimationFrame(() => {
-     const el = searchInputRef.current;
-     if (!el) return;
-     const len = el.value.length;
-     el.focus({ preventScroll: true });
-     try { el.setSelectionRange(len, len); } catch { /* noop */ }
-   });
-   ```
-   - `preventScroll: true` evita rolagem para o input.
-   - `requestAnimationFrame` garante que o foco aconteça **após** o re-render disparado por `setFilter`.
-   - `setSelectionRange(len, len)` posiciona cursor ao final.
+1. **Sanitização do label**: `trim()`, colapsar whitespace interno, substituir `_`/`-` por espaço, capitalizar cada palavra. Ex.: `"unknown_channel"` → `"Unknown Channel"`, `"  WHATSAPP  "` → `"Whatsapp"`.
+2. **Fallback de label vazio**: se após sanitização sobrar string vazia, usar `"Canal"`.
+3. **Ícone fallback**: usar ícone genérico `Tag` (lucide) quando o canal não estiver em `CHANNEL_META`, garantindo alinhamento visual idêntico aos chips conhecidos.
+4. **Tooltip com valor bruto**: adicionar `title={c}` no chip desconhecido para o usuário entender de onde veio.
+5. **Remoção segura**: manter `canais.filter((x) => x !== c)`. Adicional: se após filtrar a lista ficar vazia, passar `[]` (já é o comportamento — o hook normaliza para remover o param da URL). Sem mudança de lógica, só garantir via teste.
+6. **Key estável**: chave do `.map()` continua sendo `c` (string única após dedup pelo parser). Caso entre dois desconhecidos com mesma string sanitizada mas `c` diferente, a key bruta evita colisão.
 
 ## Implementação
 
-### 1. `src/components/interactions/ActiveFiltersBar.tsx`
-- Adicionar prop `onAfterRemove?: () => void`.
-- Criar helper interno `wrap(fn)` que executa `fn()` e depois chama `onAfterRemove?.()`.
-- Aplicar `wrap()` em todos os `onClose` e nos `onClick` de "Limpar período" e "Limpar tudo".
-- Sem mudanças de UI, sem novas deps.
+### `src/components/interactions/ActiveFiltersBar.tsx`
 
-### 2. `src/pages/interacoes/InteracoesContent.tsx` (ou container que renderiza `SearchBar` + `ActiveFiltersBar`)
-- Localizar onde a `SearchBar`/input de busca é renderizado e expor um `ref` (`useRef<HTMLInputElement | null>(null)`).
-- Se a `SearchBar` é um componente próprio, garantir que aceita `inputRef` via prop e o repasse ao `<input>`. Se ainda não aceitar, adicionar essa prop opcional.
-- Definir `handleAfterRemove`:
+- Importar `Tag` de `lucide-react`.
+- Adicionar helper local puro:
   ```ts
-  const handleAfterRemove = useCallback(() => {
-    requestAnimationFrame(() => {
-      const el = searchInputRef.current;
-      if (!el) return;
-      const len = el.value?.length ?? 0;
-      el.focus({ preventScroll: true });
-      try { el.setSelectionRange(len, len); } catch { /* noop */ }
-    });
-  }, []);
+  function prettifyChannel(raw: string): string {
+    const cleaned = raw.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!cleaned) return 'Canal';
+    return cleaned.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
   ```
-- Passar `onAfterRemove={handleAfterRemove}` ao `<ActiveFiltersBar />`.
+- No `.map()` dos canais, quando `meta` for `undefined`:
+  - `label = prettifyChannel(c)`
+  - `Icon = Tag`
+  - Adicionar `title={\`Canal desconhecido: ${c}\`}` no `<Badge>` (via prop HTML).
 
-### 3. `src/components/interactions/SearchBar.tsx` (se aplicável)
-- Adicionar prop opcional `inputRef?: React.Ref<HTMLInputElement>` e encaminhar ao `<input>` (via `ref` direto ou `useImperativeHandle` se necessário). Compatível com uso atual (prop opcional).
+Mantém PT-BR, flat, zero novas deps, backward-compat. Sem mudança de API do componente.
 
 ## Testes
 
 **Editar/criar** `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx`:
-1. Ao clicar no `X` de um chip, `onAfterRemove` é chamado **uma vez** após o respectivo `setFilter`.
-2. Clicar em "Limpar tudo" chama `onAfterRemove`.
-3. Clicar em "Limpar período" chama `onAfterRemove`.
-4. Sem prop `onAfterRemove`: nenhum erro é lançado (graceful no-op).
-
-**Não testar** o `focus` real em jsdom (instável). Cobrimos a invocação da callback; o efeito do `focus({preventScroll})` é trivial.
+1. Render com canal `"unknown_channel"` mostra chip com label `"Unknown Channel"`.
+2. Render com canal `"  WHATSAPP_BIZ  "` mostra `"Whatsapp Biz"` (sanitizado).
+3. Render com canal `""` (string vazia) mostra label fallback `"Canal"` sem quebrar.
+4. Click no `X` de canal desconhecido chama `setFilter('canais', [...sem aquele])` corretamente.
+5. Quando o canal desconhecido é o único, click no `X` chama `setFilter('canais', [])`.
+6. Canal conhecido (`whatsapp`) continua usando `MessageSquare` e label `"WhatsApp"` (regressão).
 
 ## Padrões obrigatórios
 
-- PT-BR, flat, zero novas deps.
-- Backward-compat: `onAfterRemove` e `inputRef` são opcionais.
-- A11y: `preventScroll: true` evita reposicionamento; cursor ao final é o comportamento padrão esperado para inputs de texto.
-- ≤400 linhas por arquivo.
+- PT-BR, flat, sem novas deps (Tag já está em `lucide-react`).
+- Backward-compat total: nenhuma mudança de prop ou comportamento dos canais conhecidos.
+- A11y: `title` no chip ajuda usuário a inspecionar valor bruto sem poluir UI.
+- ≤400 linhas no arquivo.
 
 ## Arquivos tocados
 
-**Editados (2–3):**
-- `src/components/interactions/ActiveFiltersBar.tsx` — nova prop `onAfterRemove`, wrap em todos os handlers de remoção.
-- `src/pages/interacoes/InteracoesContent.tsx` — `searchInputRef`, `handleAfterRemove`, passa para `ActiveFiltersBar` e `SearchBar`.
-- `src/components/interactions/SearchBar.tsx` — adicionar `inputRef` opcional (somente se ainda não aceitar).
+**Editado (1):**
+- `src/components/interactions/ActiveFiltersBar.tsx` — helper `prettifyChannel`, ícone `Tag` fallback, `title` informativo.
 
 **Editado (1) — testes:**
-- `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx` — 4 casos cobrindo invocação de `onAfterRemove`.
+- `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx` — 6 casos cobrindo sanitização, fallback vazio, remoção e regressão.
 
 ## Critério de fechamento
 
-(a) Remover qualquer chip do `ActiveFiltersBar` (Busca, Direção, Pessoa, Empresa, Canais, Período desde, Período até) devolve foco ao input de busca; (b) "Limpar tudo" e "Limpar período" também devolvem foco; (c) `focus({ preventScroll: true })` evita rolagem da página; (d) cursor posicionado ao final do texto digitado; (e) sem `onAfterRemove`, comportamento atual preservado (no-op); (f) testes cobrem a invocação da callback em todos os caminhos; (g) PT-BR, flat, zero novas deps.
+(a) Canal fora da whitelist renderiza com label capitalizado e sanitizado (`unknown_channel` → `Unknown Channel`); (b) string vazia/whitespace renderiza `"Canal"` sem chip fantasma; (c) ícone `Tag` mantém alinhamento visual com chips conhecidos; (d) `title` no chip mostra o valor bruto para diagnóstico; (e) clicar no `X` remove o canal específico via `setFilter('canais', filtered)` sem quebrar a URL — quando vira lista vazia, o param é removido pelo hook; (f) canais conhecidos não mudam de aparência ou comportamento; (g) testes cobrem sanitização, fallback, remoção isolada e remoção do último item; (h) PT-BR, flat, zero novas deps.
 
