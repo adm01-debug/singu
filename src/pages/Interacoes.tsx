@@ -17,6 +17,10 @@ import { useNLPAutoAnalysis } from '@/hooks/useNLPAutoAnalysis';
 import { useActivityLogger } from '@/hooks/useActivityLogger';
 import type { FilterConfig, SortOption } from '@/components/filters/AdvancedFilters';
 import { InteracoesContent } from './interacoes/InteracoesContent';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UnifiedTimelineView } from '@/components/interactions/UnifiedTimelineView';
+import { useSearchParams } from 'react-router-dom';
+import { List, Activity } from 'lucide-react';
 
 const filterConfigs: FilterConfig[] = [
   { key: 'type', label: 'Tipo', multiple: true, options: [{ value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare }, { value: 'call', label: 'Ligação', icon: Phone }, { value: 'email', label: 'Email', icon: Mail }, { value: 'meeting', label: 'Reunião', icon: Users }, { value: 'video_call', label: 'Videochamada', icon: Video }, { value: 'note', label: 'Nota', icon: FileText }] },
@@ -75,12 +79,31 @@ const Interacoes = () => {
 
   const handleDelete = async () => { if (!deletingInteraction) return; await deleteInteraction(deletingInteraction.id); setDeletingInteraction(null); };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'timeline' ? 'timeline' : 'lista';
+  const handleTabChange = (val: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (val === 'timeline') next.set('tab', 'timeline'); else next.delete('tab');
+    setSearchParams(next, { replace: true });
+  };
+
   return (
     <AppLayout>
       <SEOHead title="Interações" description="Histórico completo de comunicações e engajamentos" />
       <Header title="Interações" subtitle={`${interactions.length} interações`} hideBack showAddButton addButtonLabel="Nova Interação" onAddClick={() => setIsFormOpen(true)} />
 
-      <InteracoesContent interactions={interactions} loading={loading} contactMap={contactMap} stats={stats} onSetIsFormOpen={setIsFormOpen} onSetEditingInteraction={setEditingInteraction} onSetDeletingInteraction={setDeletingInteraction} filterConfigs={filterConfigs} sortOptions={sortOptions} />
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="px-6 pt-4">
+        <TabsList>
+          <TabsTrigger value="lista" className="gap-2"><List className="w-4 h-4" />Lista</TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-2"><Activity className="w-4 h-4" />Timeline</TabsTrigger>
+        </TabsList>
+        <TabsContent value="lista" className="mt-0">
+          <InteracoesContent interactions={interactions} loading={loading} contactMap={contactMap} stats={stats} onSetIsFormOpen={setIsFormOpen} onSetEditingInteraction={setEditingInteraction} onSetDeletingInteraction={setDeletingInteraction} filterConfigs={filterConfigs} sortOptions={sortOptions} />
+        </TabsContent>
+        <TabsContent value="timeline" className="mt-0 p-6">
+          <UnifiedTimelineView />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm contacts={contacts} onSubmit={handleCreate} onCancel={() => setIsFormOpen(false)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
       <Dialog open={!!editingInteraction} onOpenChange={(open) => !open && setEditingInteraction(null)}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><InteractionForm interaction={editingInteraction} contacts={contacts} onSubmit={handleUpdate} onCancel={() => setEditingInteraction(null)} isSubmitting={isSubmitting} /></DialogContent></Dialog>
