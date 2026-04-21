@@ -120,7 +120,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
         ? Math.round((point.positive / total) * 100)
         : 0;
   const anns = point.annotations ?? [];
-  const visibleRows = showAllRows ? SENTIMENT_ROWS : SENTIMENT_ROWS.filter((r) => (point[r.key] ?? 0) > 0);
+  
 
   const visibleKeys = showAllRows
     ? SENTIMENT_ORDER
