@@ -199,16 +199,13 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             aria-hidden="true"
                           />
                         </Button>
-                        {p.scriptHint && (
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => handleCopy(p.scriptHint)}
-                          >
-                            <Copy className="h-3 w-3" />
-                            Copiar script
-                          </Button>
-                        )}
+                        <CopyScriptMenu
+                          passoId={p.id}
+                          firstName={resolvedFirstName}
+                          sentiment={sentiment ?? null}
+                          bestTime={bestTimeStr}
+                          fallbackScript={p.scriptHint}
+                        />
                       </div>
 
                       {isExpanded && (
