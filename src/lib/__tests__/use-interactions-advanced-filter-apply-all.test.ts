@@ -102,4 +102,42 @@ describe('useInteractionsAdvancedFilter.applyAll', () => {
     expect(result.current.filters.view).toBe('list');
     expect(result.current.filters.q).toBe('x');
   });
+
+  it('setFilter("canais", []) remove o param canais da URL', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes?canais=email,call'),
+    });
+    expect(result.current.filters.canais).toEqual(['email', 'call']);
+    act(() => {
+      result.current.setFilter('canais', []);
+    });
+    expect(result.current.filters.canais).toEqual([]);
+  });
+
+  it('setFilter("canais", [...]) normaliza dedup + lowercase', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes'),
+    });
+    act(() => {
+      result.current.setFilter('canais', ['email', 'EMAIL', 'whatsapp']);
+    });
+    expect(result.current.filters.canais).toEqual(['email', 'whatsapp']);
+  });
+
+  it('parseCanais aplica whitelist (filtra valores inválidos)', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes?canais=email,garbage,call'),
+    });
+    expect(result.current.filters.canais).toEqual(['email', 'call']);
+  });
+
+  it('applyAll com canais inválidos filtra via whitelist', () => {
+    const { result } = renderHook(() => useInteractionsAdvancedFilter(), {
+      wrapper: wrapperFor('/interacoes'),
+    });
+    act(() => {
+      result.current.applyAll({ canais: ['email', 'foo', 'WHATSAPP'] });
+    });
+    expect(result.current.filters.canais).toEqual(['email', 'whatsapp']);
+  });
 });
