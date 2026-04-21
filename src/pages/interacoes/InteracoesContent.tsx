@@ -23,6 +23,7 @@ import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
+import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
 
@@ -143,6 +144,17 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         companies={companyOptions}
         resultsCount={filteredAndSorted.length}
         totalCount={interactions.length}
+      />
+
+      <ActiveFiltersBar
+        filters={adv}
+        setFilter={setFilter}
+        clear={clear}
+        activeCount={activeCount}
+        totalCount={interactions.length}
+        visibleCount={sortedForView.length}
+        contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
+        companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
       />
 
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
