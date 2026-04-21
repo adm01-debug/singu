@@ -16,6 +16,8 @@ import {
 import type { TooltipProps } from "recharts";
 import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentTrendPoint, SentimentTrendSummary } from "@/hooks/useInteractionsInsights";
@@ -154,10 +156,23 @@ interface EvolutionStats {
   weeksCompared: number;
 }
 
+const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
+
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const [smoothEnabled, setSmoothEnabled] = useState(true);
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
+  const [showPositivePctLine, setShowPositivePctLine] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const v = window.localStorage.getItem(SHOW_PCT_LINE_KEY);
+    return v === null ? true : v === "1";
+  });
+  const togglePctLine = (next: boolean) => {
+    setShowPositivePctLine(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SHOW_PCT_LINE_KEY, next ? "1" : "0");
+    }
+  };
 
   const annotationsApi = useSentimentAnnotations(contactId);
   const annotationsByWeek = annotationsApi.byWeek;
@@ -348,6 +363,17 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 <Pin className="h-3 w-3" /> Anotar
               </Button>
             )}
+            <div className="flex items-center gap-2 pl-1">
+              <Switch
+                id="toggle-pct-line"
+                checked={showPositivePctLine}
+                onCheckedChange={togglePctLine}
+                aria-label="Alternar linha de % positivo"
+              />
+              <Label htmlFor="toggle-pct-line" className="text-xs cursor-pointer">
+                Linha % positivo
+              </Label>
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
@@ -382,7 +408,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="week" tickFormatter={formatWeek} stroke="hsl(var(--muted-foreground))" fontSize={11} />
             <YAxis yAxisId="count" stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
-            <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke="hsl(var(--muted-foreground))" fontSize={11} />
+            <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke="hsl(var(--muted-foreground))" fontSize={11} hide={!showPositivePctLine} />
             <YAxis yAxisId="volume" orientation="right" domain={[0, "dataMax"]} hide />
             <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -393,7 +419,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               <ReferenceLine yAxisId="count" x={normalizeWeek(summary.worstWeek.week)} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
-            {smoothEnabled && (
+            {smoothEnabled && showPositivePctLine && (
               <Line
                 yAxisId="pct"
                 type="monotone"
@@ -412,16 +438,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="mixed" name="Misto" stroke={CHART_COLORS.mixed} strokeWidth={2} dot={false} />
-            <Line
-              yAxisId="pct"
-              type="monotone"
-              dataKey="positivePct"
-              name="% Positivo"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
-              strokeDasharray="4 4"
-              dot={false}
-            />
+            {showPositivePctLine && (
+              <Line
+                yAxisId="pct"
+                type="monotone"
+                dataKey="positivePct"
+                name="% Positivo"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+              />
+            )}
             {annotationDots.map((d) => (
               <ReferenceDot
                 key={d.week}
