@@ -1,9 +1,10 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
+import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
 
 interface Props {
   objections: ObjectionAggregate[];
@@ -57,6 +58,9 @@ interface ObjectionCardProps {
 const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
+  const hasExamples = examplesCount > 0;
 
   const severity = getSeverity(o);
   const style = SEVERITY_STYLES[severity];
@@ -128,9 +132,21 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
       </div>
 
       {o.unhandled === 0 ? (
-        <div className="flex items-center gap-1.5 text-[11px] text-success bg-success/8 rounded px-2 py-1.5">
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-          <span>Esta objeção está sendo bem tratada</span>
+        <div className="flex items-center justify-between gap-2 text-[11px] text-success bg-success/8 rounded px-2 py-1.5">
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+            Esta objeção está sendo bem tratada
+          </span>
+          {hasExamples && (
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="inline-flex items-center gap-1 font-medium text-success hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm shrink-0"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ver conversas ({examplesCount})
+            </button>
+          )}
         </div>
       ) : suggested ? (
         <div className="flex items-start gap-1.5 text-[11px] bg-warning/8 border border-warning/20 rounded px-2 py-1.5">
@@ -146,7 +162,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
             >
               {suggested}
             </p>
-            <div className="flex items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
               {showToggle && (
                 <button
                   type="button"
@@ -186,14 +202,41 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
                   </>
                 )}
               </button>
+              {hasExamples && (
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Ver conversas ({examplesCount})
+                </button>
+              )}
             </div>
           </div>
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground italic px-2">
-          Sem resposta sugerida disponível ainda.
-        </p>
+        <div className="flex items-center justify-between gap-2 px-2">
+          <p className="text-[11px] text-muted-foreground italic">
+            Sem resposta sugerida disponível ainda.
+          </p>
+          {hasExamples && (
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm shrink-0"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Ver conversas ({examplesCount})
+            </button>
+          )}
+        </div>
       )}
+
+      <ObjectionExamplesDrawer
+        objection={drawerOpen ? o : null}
+        onClose={() => setDrawerOpen(false)}
+      />
     </div>
   );
 });
