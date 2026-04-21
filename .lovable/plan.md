@@ -1,73 +1,71 @@
 
-# Plano: Filtro "Direção" (Recebido / Enviado) na página de Interações
+# Plano: CTA "Próxima ação sugerida" na Ficha 360
 
-## Contexto e decisão
+## Contexto
 
-A página `/interacoes` já tem um filtro `canais` que cobre exatamente "tipo de interação" — WhatsApp, Ligação, Email, Reunião, Vídeo, Nota, Social. Adicionar um segundo filtro de "tipo" seria redundante. O eixo que ainda não existe e agrega valor real é **direção da interação** (quem iniciou): hoje só aparece como badge "Recebido" no card, sem possibilidade de filtrar.
+Já existe `NextBestActionCard` (usado em `ContatoDetalhe`) que consome a edge function `next-best-action` e gera ação acionável com canal, urgência, script, resultado esperado e botão "Criar tarefa". Também existe `useBestContactTime(contactId)` que retorna `day_of_week` + `hour_of_day` + `success_rate` + `suggested_channel`.
 
-A `Interaction` tem o campo `initiated_by` com valores `'us' | 'them'`. Vamos transformar isso em um filtro de primeira classe.
+A Ficha 360 (`src/pages/Ficha360.tsx`) hoje mostra `ScoreProntidaoCard` com `recommendation` + `nextActionHint` em texto, mas **não tem CTA acionável** — falta o componente unificado que combine: ação IA + melhor horário + botão para registrar a interação direto no CRM.
 
 ## Implementação
 
-### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
+### 1. Novo componente: `src/components/ficha-360/ProximaAcaoCTA.tsx` (~180 linhas)
 
-- Adicionar `direcao: 'all' | 'inbound' | 'outbound'` ao tipo `AdvancedFilters` (default `'all'`).
-- Ler/escrever `?direcao=inbound|outbound` na URL (omitir quando `'all'`, igual aos outros defaults).
-- Incluir `'direcao'` em `KEYS` (limpar) e contar em `activeCount` quando ≠ `'all'`.
+Card destacado (variant `outlined`, header com ícone `Sparkles`) que combina três fontes:
 
-### 2. `src/pages/interacoes/InteracoesContent.tsx`
+**Props:**
+```ts
+{ contactId: string; contactName: string }
+```
 
-- No `advancedFiltered`, adicionar regra:
-  ```ts
-  if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
-  if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
-  ```
-- Incluir `adv.direcao` nas deps de `useInfiniteList` para resetar paginação ao trocar.
+**Composição interna:**
+- `useNextBestAction(contactId)` — ação IA (canal, urgência, script, expected_outcome)
+- `useBestContactTime(contactId)` — melhor horário sugerido
+- `useCreateQuickInteraction()` — registrar interação no CRM
 
-### 3. Novo componente: `src/components/interactions/DirecaoQuickFilter.tsx` (~50 linhas)
+**Estados de UI:**
 
-- Toggle com 3 opções: **Todas** · **Recebidas** (ícone `ArrowDownLeft`) · **Enviadas** (ícone `ArrowUpRight`).
-- Padrão visual idêntico ao seletor de período da Ficha 360 (`inline-flex` com `border` e `bg-card`, botões `h-8` ativos com `bg-primary text-primary-foreground`).
-- Props: `{ value: 'all' | 'inbound' | 'outbound'; onChange: (v) => void }`.
-- `React.memo`, PT-BR, tokens semânticos.
+a) **Empty state** (sem `nextAction`): bloco com `Sparkles` + título "Próxima ação sugerida" + texto "Gere uma sugestão de IA combinando canal ideal e melhor horário" + `LoadingButton` "Gerar sugestão" (variant gradient).
 
-### 4. `src/components/interactions/AdvancedSearchBar.tsx`
+b) **Loaded state**:
+- Header: badges de urgência (`high|medium|low` → destructive/default/secondary) + canal (ícone + label PT-BR via `channelMeta` reutilizado de `NextBestActionCard`).
+- **Linha de ação principal** (texto destacado `text-base font-semibold`): `nextAction.action`.
+- **Justificativa** (`text-sm text-muted-foreground`): `nextAction.reason`.
+- **Bloco "Melhor horário"** (quando `bestTime` disponível, em `bg-muted/40 rounded-md p-3` com ícone `Clock`):
+  - Texto: `"Melhor horário: {dayLabel} às {hour}h"` (mapear `day_of_week` 0-6 → `['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']`)
+  - Subtexto: `"Taxa de resposta histórica: {success_rate}%"` quando disponível
+  - Se `suggested_channel` ≠ `nextAction.channel`, exibir aviso sutil: "Canal sugerido pelo histórico: {x}"
+- **Script collapsible** (reutilizar padrão de `NextBestActionCard`): toggle "Ver script sugerido" com botão "Copiar script".
+- **Resultado esperado** (rodapé compacto, border-top): `nextAction.expected_outcome`.
+- **Footer com 3 botões**:
+  - `Regenerar` (ghost, ícone `RefreshCw`) → `generate()`
+  - `Criar tarefa` (outline, ícone `CheckCircle2`) → `createTask` (igual ao card existente)
+  - **`Registrar interação`** (default, ícone `Zap`) → abre painel inline com `Input` (resumo pré-preenchido com `nextAction.action`) + `Select` de tipo (default = `nextAction.channel` mapeado: email/whatsapp/call/meeting/note) → ao confirmar chama `createInteraction.mutateAsync({ p_contact_id, p_tipo, p_resumo })` e mostra toast "Interação registrada!". Após sucesso, opcionalmente disparar `generate()` para refrescar a próxima ação com base no novo histórico.
 
-- Importar e montar `<DirecaoQuickFilter value={filters.direcao} onChange={(v) => setFilter('direcao', v)} />` logo após `<CanaisQuickFilter />` (linha 62-65), mantendo a ordem visual lógica: busca → canais → direção → pessoa → empresa → datas.
-
-### 5. `src/components/interactions/ActiveFiltersBar.tsx`
-
-- Quando `filters.direcao !== 'all'`, renderizar um `Badge variant="secondary" closeable` com:
-  - Ícone `ArrowDownLeft` (inbound) ou `ArrowUpRight` (outbound)
-  - Label "Recebidas" ou "Enviadas"
-  - `onClose={() => setFilter('direcao', 'all')}`
-- Posicionar logo após o chip de busca, antes dos chips de canais.
-
-### 6. (Opcional) `src/components/interactions/InteracoesPresetsMenu.tsx`
-
-Sem mudanças obrigatórias — presets existentes continuam válidos. Usuário pode salvar novos presets já incluindo direção naturalmente, pois o preset persiste a URL inteira.
-
-## Padrões obrigatórios
-
+**Padrões:**
 - PT-BR
-- Tokens semânticos (sem cores fixas)
-- Flat (sem shadow)
-- `React.memo` no novo componente
-- Zero novas queries de rede (filtro é puramente client-side sobre o array já carregado)
-- Persistência na URL coerente com os outros filtros (`?direcao=inbound`, omitido quando `all`)
-- Zero regressão em paginação progressiva, presets, sort, ActiveFiltersBar ou outras páginas
+- Tokens semânticos
+- Flat (sem shadow/gradient pesado, exceto botão "Gerar sugestão" que pode usar `gradient`)
+- `React.memo`
+- Reaproveitar `channelMeta`/`urgencyMeta` (extrair para `src/lib/interactionChannels.ts` se for limpar duplicação, ou duplicar localmente para manter componentes desacoplados — preferência: duplicar pequeno objeto local)
+- Zero novas queries de rede além das já existentes (`useNextBestAction`, `useBestContactTime`)
+
+### 2. Integração: `src/pages/Ficha360.tsx`
+
+Localizar onde `ScoreProntidaoCard` é montado (linha ~174) e inserir `<ProximaAcaoCTA contactId={id} contactName={contact?.name ?? 'contato'} />` **logo abaixo**, na mesma coluna do score. Manter hierarquia visual: Score → Próxima Ação → demais cards.
+
+### 3. Verificar reuso de `useCreateQuickInteraction`
+
+A RPC `create_quick_interaction` aceita `p_contact_id` (já confirmado em `QuickActionsWidget` que passa `p_company_id`). Validar a assinatura no hook — se não aceitar `p_contact_id`, usar a mutation equivalente já existente para contatos (provavelmente mesma RPC com parâmetro alternativo). Se necessário, fallback para `useCreateInteraction` direto na tabela.
 
 ## Arquivos tocados
 
 **Criado (1):**
-- `src/components/interactions/DirecaoQuickFilter.tsx`
+- `src/components/ficha-360/ProximaAcaoCTA.tsx`
 
-**Editados (4):**
-- `src/hooks/useInteractionsAdvancedFilter.ts` — campo `direcao`, parsing/escrita URL, activeCount, KEYS
-- `src/pages/interacoes/InteracoesContent.tsx` — filtro em `advancedFiltered` + dep de `useInfiniteList`
-- `src/components/interactions/AdvancedSearchBar.tsx` — montar toggle ao lado de `CanaisQuickFilter`
-- `src/components/interactions/ActiveFiltersBar.tsx` — chip removível para `direcao`
+**Editado (1):**
+- `src/pages/Ficha360.tsx` — montar `ProximaAcaoCTA` abaixo de `ScoreProntidaoCard`
 
 ## Critério de fechamento
 
-(a) Novo toggle "Todas / Recebidas / Enviadas" aparece na barra de busca avançada, (b) selecionar uma opção filtra a lista pelo `initiated_by` correspondente e atualiza a URL com `?direcao=inbound|outbound`, (c) "Todas" remove o param, (d) chip removível aparece em `ActiveFiltersBar` com ícone direcional e label PT-BR, (e) "Limpar tudo" zera direção junto com os demais, (f) `activeCount` reflete o filtro de direção, (g) paginação progressiva reseta ao trocar a direção, (h) recarregar com URL pré-preenchida restaura o estado, (i) zero novas queries de rede, (j) zero regressão em presets, sort, canais, ActiveFiltersBar ou outras páginas.
+(a) Novo card "Próxima ação sugerida" aparece na Ficha 360 logo abaixo do Score de Prontidão, (b) empty state com botão "Gerar sugestão" gera ação via IA em <8s, (c) card carregado mostra ação principal + justificativa + badges de urgência/canal + bloco "Melhor horário: {dia} às {hora}h" quando disponível, (d) script colapsável com botão copiar, (e) 3 botões no rodapé: Regenerar, Criar tarefa, Registrar interação, (f) clicar "Registrar interação" abre painel inline com resumo pré-preenchido + tipo derivado do canal e ao confirmar grava no CRM com toast de sucesso, (g) divergência entre canal IA e canal sugerido pelo histórico aparece como aviso sutil, (h) PT-BR, tokens semânticos, flat, sem novas queries além das existentes, (i) zero regressão no `NextBestActionCard` da `ContatoDetalhe` ou no `ScoreProntidaoCard`.
