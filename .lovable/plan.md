@@ -1,93 +1,120 @@
 
 
-# Plano: Atalhos de teclado para alternar chips de canal
+# Plano: Persistir chips de canal ativos no localStorage
 
 ## Contexto
 
-O usuário quer alternar canais (WhatsApp, Ligação, Email, Reunião, Vídeo, Nota) sem sair do campo de busca. `Ctrl+K` já está reservado globalmente para abrir o GlobalSearch (`useGlobalSearch.ts`), então **não posso reusar essa combinação**. Vou propor um esquema próximo, descobrível e que funciona inclusive com o foco dentro de inputs.
+Hoje os canais ativos vivem só na URL (`?canais=whatsapp,email`). Se o usuário sair de `/interacoes` e voltar pela sidebar (sem a URL), perde a seleção. Já existe persistência de **pending** (modo manual) no localStorage via `channel-pending-canais`, mas **não** dos canais aplicados. Vou adicionar uma camada de cache leve que restaura a última seleção quando a URL chega vazia.
 
 ## Decisão de escopo
 
-- Atalhos: **`Alt+1`…`Alt+6`** alternam o chip correspondente (1=WhatsApp, 2=Ligação, 3=Email, 4=Reunião, 5=Vídeo, 6=Nota). **`Alt+0`** limpa todos os canais.
-- Funciona **mesmo com foco em `<input>`/`<textarea>`** (diferente do `useScopedShortcut` atual, que ignora inputs). Isso é o ponto-chave do pedido: alternar sem tirar o foco da busca.
-- `Alt` foi escolhido porque:
-  - Não conflita com `Ctrl+K` (GlobalSearch), `Ctrl+B` (sidebar), `?` (cheatsheet), `j/k/Enter/x` (list nav).
-  - Em inputs, `Alt+número` não produz caracteres em layouts pt-BR/EN comuns (vs. `Shift+número` que digita `!@#$%¨&`).
-- Comportamento por modo:
-  - **Auto**: alterna direto via `onChange`.
-  - **Manual**: alterna `pending` (igual ao clique no chip), respeitando o contrato de "Aplicar".
-- Tooltip de cada chip ganha sufixo `(Alt+N)`. Cheatsheet (`?`) lista os 7 atalhos novos sob a categoria "Filtros de canal".
-- Toast leve (`toast.message`) ao alternar via teclado, com nome do canal e estado novo (ex.: "WhatsApp ativado"), `duration: 1500`. Evita confusão de "apertei algo e não sei o que aconteceu".
-- Badge visual `Alt+N` aparece no canto inferior do chip apenas quando o usuário pressiona `Alt` (escuta `keydown`/`keyup` em `Alt`), pra não poluir o layout normal.
+- Nova chave: `channel-applied-canais` (separada de `channel-pending-canais` pra não confundir os contratos).
+- **Escrita**: toda vez que `filters.canais` muda em `useInteractionsAdvancedFilter`, persiste no localStorage. Array vazio → remove a chave (não polui storage).
+- **Leitura/restauração**: no mount do hook, se a URL **não tem** `?canais=` E o localStorage tem valor válido, hidrata a URL via `setSearchParams` com `replace: true`. Não sobrescreve nunca uma URL que já tem `canais=` (URL ganha sempre).
+- Validação: só aceita valores que pertencem ao set conhecido de canais (`whatsapp|call|email|meeting|video_call|note`). Lixo é descartado.
+- TTL opcional: 30 dias. Após isso, descarta. Evita "fantasma" de seleção antiga.
+- **Opt-out**: respeita `?canais=` vazio explícito? Não — URL sem o param = "não especificado", então hidrata. Se o usuário quiser "limpar de verdade", o "Limpar canais" já chama `onChange([])` que apaga a chave.
+- Não toca em URL params além de `canais`. Sem efeito em outros filtros.
+- Backward compat: se a chave não existe ou está corrompida, comporta como hoje.
 
 ## Implementação
 
-### 1. `src/components/interactions/CanaisQuickFilter.tsx`
+### 1. Novo helper: `src/lib/channelPersistence.ts`
 
-- Adicionar `useEffect` que registra listener global `keydown`:
+```ts
+const KEY = 'channel-applied-canais';
+const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const VALID = new Set(['whatsapp','call','email','meeting','video_call','note']);
+
+interface Stored { canais: string[]; ts: number; }
+
+export function readAppliedCanais(): string[] | null {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Stored;
+    if (!parsed || !Array.isArray(parsed.canais) || typeof parsed.ts !== 'number') return null;
+    if (Date.now() - parsed.ts > TTL_MS) { localStorage.removeItem(KEY); return null; }
+    const filtered = parsed.canais.filter(v => typeof v === 'string' && VALID.has(v));
+    return filtered.length > 0 ? filtered : null;
+  } catch { return null; }
+}
+
+export function writeAppliedCanais(canais: string[]) {
+  try {
+    if (!Array.isArray(canais) || canais.length === 0) {
+      localStorage.removeItem(KEY);
+      return;
+    }
+    const filtered = canais.filter(v => VALID.has(v));
+    if (filtered.length === 0) { localStorage.removeItem(KEY); return; }
+    localStorage.setItem(KEY, JSON.stringify({ canais: filtered, ts: Date.now() }));
+  } catch { /* noop */ }
+}
+
+export function clearAppliedCanais() {
+  try { localStorage.removeItem(KEY); } catch { /* noop */ }
+}
+```
+
+### 2. `src/hooks/useInteractionsAdvancedFilter.ts`
+
+- Importar helper.
+- Adicionar `useEffect` no mount que faz **hidratação one-shot**:
+  ```ts
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (searchParams.get('canais')) return; // URL ganha
+    const cached = readAppliedCanais();
+    if (cached && cached.length > 0) {
+      const next = new URLSearchParams(searchParams);
+      next.set('canais', cached.join(','));
+      setSearchParams(next, { replace: true });
+    }
+  }, []); // mount-only
+  ```
+- Adicionar `useEffect` que persiste sempre que `filters.canais` muda:
   ```ts
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      if (e.key === '0') { e.preventDefault(); clearAll(); return; }
-      const idx = parseInt(e.key, 10);
-      if (Number.isNaN(idx) || idx < 1 || idx > CANAL_CONFIG.length) return;
-      e.preventDefault();
-      const canal = CANAL_CONFIG[idx - 1];
-      toggle(canal.id);
-      const isActive = (mode === 'auto' ? safe : pending).includes(canal.id);
-      // estado pós-toggle é o oposto
-      toast.message(`${canal.label} ${!isActive ? 'ativado' : 'desativado'}`, { duration: 1500 });
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [mode, safe, pending, toggle, clearAll]);
+    writeAppliedCanais(filters.canais);
+  }, [filters.canais]);
   ```
-- Adicionar `useState<boolean>` `altPressed`, escutando `Alt` keydown/keyup/blur, para mostrar badge `Alt+N` sobreposto ao chip.
-- Atualizar tooltip de cada chip: `${label} (Alt+${index + 1})`.
-- Atualizar tooltip do botão "Limpar canais": adicionar `(Alt+0)`.
 
-### 2. `src/components/keyboard/KeyboardShortcutsCheatsheet.tsx` (ou registry equivalente)
+### 3. Testes
 
-Localizar onde os atalhos são listados (provavelmente `useKeyboardShortcutsEnhanced.ts`) e adicionar categoria **"Filtros de canal"** com:
-- `Alt+1` → WhatsApp
-- `Alt+2` → Ligação
-- `Alt+3` → Email
-- `Alt+4` → Reunião
-- `Alt+5` → Vídeo
-- `Alt+6` → Nota
-- `Alt+0` → Limpar canais
+**Novo arquivo**: `src/lib/__tests__/channelPersistence.test.ts`
+1. `writeAppliedCanais([])` remove a chave.
+2. `writeAppliedCanais(['email','whatsapp'])` salva valores válidos com timestamp.
+3. `readAppliedCanais` filtra valores inválidos (`['email','garbage']` → `['email']`).
+4. `readAppliedCanais` retorna null e limpa após TTL expirado (mock `Date.now`).
+5. `readAppliedCanais` retorna null se chave não existe / JSON corrompido.
 
-Se o registry está em `keyboardShortcutRegistry.ts`, registrar via `registerShortcut` no mount do `CanaisQuickFilter` (com cleanup) — assim a cheatsheet pega automaticamente.
-
-### 3. Testes: `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`
-
-3 testes novos:
-1. **Alt+1 alterna WhatsApp em modo auto**: dispatch `keydown` com `altKey: true, key: '1'` → `onChange` chamado com `['whatsapp']`.
-2. **Alt+0 limpa canais**: com `canais=['email']`, `Alt+0` chama `onChange([])`.
-3. **Funciona com foco em input**: renderiza um `<input>` ao lado, foca nele, dispara `Alt+3` → `onChange` chamado com `['email']` (confirma que não é bloqueado por foco em input).
-4. **Modo manual: Alt+N só altera pending**: `Alt+1` em modo manual → `onChange` NÃO é chamado, mas chip WhatsApp aparece selecionado.
-
-### 4. (Opcional) Documentação rápida no header da `AdvancedSearchBar`
-
-Hint discreto: já existe `KeyboardListHint`/`KeyboardHint` no design system. Não vou inflar a UI — a descoberta fica via tooltip dos chips + cheatsheet `?`.
+**Editar**: `src/hooks/__tests__/useInteractionsAdvancedFilter.test.ts` (criar se não existir)
+1. Hidrata da localStorage quando URL não tem `canais=`.
+2. NÃO hidrata quando URL já tem `canais=`.
+3. Persiste no localStorage quando `setFilter('canais', […])` é chamado.
+4. Limpa localStorage quando `setFilter('canais', [])` é chamado.
 
 ## Padrões obrigatórios
 
 - PT-BR, tokens semânticos, flat, zero novas deps.
-- Não conflita com atalhos globais existentes (`Ctrl+K`, `Ctrl+B`, `?`, `j/k/Enter/x`).
-- Funciona com foco em inputs (requisito explícito).
-- Cleanup correto do listener no unmount.
-- Backward compat total: nada quebra se ninguém pressionar `Alt`.
+- TTL evita estado "fossilizado" indefinidamente.
+- URL sempre ganha sobre cache (zero surpresa em deep links).
+- Backward compat: ausência da chave = comportamento atual.
 
 ## Arquivos tocados
 
-**Editados (2-3):**
-- `src/components/interactions/CanaisQuickFilter.tsx` — listener global, badge `Alt+N`, tooltips atualizadas.
-- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — 4 testes novos.
-- (Se aplicável) `src/hooks/useKeyboardShortcutsEnhanced.ts` ou registry — registrar atalhos para aparecerem na cheatsheet `?`.
+**Criados (2):**
+- `src/lib/channelPersistence.ts`
+- `src/lib/__tests__/channelPersistence.test.ts`
+
+**Editados (1-2):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — hidratação no mount + persistência reativa.
+- `src/hooks/__tests__/useInteractionsAdvancedFilter.test.ts` (criar/editar).
 
 ## Critério de fechamento
 
-(a) `Alt+1`…`Alt+6` alternam os chips correspondentes mesmo com foco em input; (b) `Alt+0` limpa canais; (c) toast curto confirma a ação; (d) badges `Alt+N` aparecem nos chips ao segurar `Alt`; (e) tooltips dos chips listam o atalho; (f) cheatsheet `?` lista os 7 atalhos sob "Filtros de canal"; (g) modos auto e manual respeitam seus contratos; (h) sem conflito com `Ctrl+K`/`Ctrl+B`/`?`; (i) testes cobrem auto, limpar, foco em input e modo manual; (j) PT-BR, flat, tokens semânticos, zero novas deps.
+(a) Voltar em `/interacoes` sem URL params restaura a última seleção de canais; (b) URL com `?canais=` ganha sempre, mesmo com cache divergente; (c) "Limpar canais" remove a chave do localStorage; (d) TTL de 30 dias descarta cache antigo; (e) valores inválidos no cache são filtrados; (f) zero impacto em outros filtros (busca, datas, contato, empresa, direção, sort); (g) testes cobrem hidratação, persistência, TTL, validação e prioridade de URL; (h) PT-BR, flat, zero novas deps.
 
