@@ -92,6 +92,7 @@ export function useInteractionsAdvancedFilter() {
     ate: parseDate(searchParams.get('ate')),
     sort: parseSort(searchParams.get('sort')),
     view: parseView(searchParams.get('view')),
+    density: parseDensity(searchParams.get('density')),
     page: parsePage(searchParams.get('page')),
     perPage: parsePerPage(searchParams.get('perPage')),
   }), [searchParams]);
