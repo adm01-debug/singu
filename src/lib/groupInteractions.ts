@@ -21,6 +21,8 @@ export interface LocalTimelineEvent {
   title: string;
   content: string | null;
   created_at: string;
+  sentiment: string | null;
+  follow_up_required: boolean | null;
 }
 
 export interface LocalTimelineGroup {
@@ -96,6 +98,8 @@ export function groupInteractions(
       title: item.title ?? '',
       content: item.content,
       created_at: item.created_at,
+      sentiment: null,
+      follow_up_required: null,
     });
 
     const ts = new Date(item.created_at).getTime();
