@@ -31,8 +31,12 @@ export function InsightsPanel() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, isLoading } = useInteractionsInsights(period);
+  const { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState<SentimentOverall | null>(null);
+
+  // Fechar drawer ao trocar período
+  useEffect(() => { setSelectedBucket(null); setSelectedTheme(null); }, [period]);
 
   const isEmpty = !isLoading && kpis.totalAnalyzed === 0;
 
