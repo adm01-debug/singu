@@ -2,27 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  Search, X, Calendar as CalendarIcon, User, Building2,
-  MessageSquare, Phone, Mail, Users, Video, FileText, Check,
+  Search, X, Calendar as CalendarIcon, User, Building2, Check,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
-
-const CHANNELS = [
-  { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-  { value: 'call', label: 'Ligação', icon: Phone },
-  { value: 'email', label: 'Email', icon: Mail },
-  { value: 'meeting', label: 'Reunião', icon: Users },
-  { value: 'video_call', label: 'Vídeo', icon: Video },
-  { value: 'note', label: 'Nota', icon: FileText },
-] as const;
+import { CanaisQuickFilter } from './CanaisQuickFilter';
 
 interface ContactOption { id: string; label: string }
 interface CompanyOption { id: string; label: string }
