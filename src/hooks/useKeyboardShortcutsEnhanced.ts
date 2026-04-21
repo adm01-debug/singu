@@ -23,7 +23,8 @@ type ShortcutCategory =
   | 'actions' 
   | 'ui' 
   | 'editing' 
-  | 'search';
+  | 'search'
+  | 'filters';
 
 interface UseKeyboardShortcutsOptions {
   enabled?: boolean;
