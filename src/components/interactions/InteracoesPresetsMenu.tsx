@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star } from 'lucide-react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,8 +18,10 @@ import {
   buildBundle,
   bundleToBase64Url,
   downloadBundleAsFile,
+  dedupeNameAgainst,
   type ExportablePreset,
 } from '@/lib/searchPresetTransport';
+import { suggestInteracoesPresetName } from '@/lib/suggestPresetName';
 
 interface Props {
   filters: AdvancedFilters;
@@ -64,6 +66,27 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleStartNaming = () => {
+    const suggested = suggestInteracoesPresetName(filters);
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
+    setName(finalName);
+    setIsNaming(true);
+  };
+
+  const handleRegenerateSuggestion = () => {
+    const suggested = suggestInteracoesPresetName(filters);
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
+    setName(finalName);
+    requestAnimationFrame(() => inputRef.current?.select());
+  };
+
+  useEffect(() => {
+    if (isNaming) {
+      requestAnimationFrame(() => inputRef.current?.select());
+    }
+  }, [isNaming]);
 
   const currentPayload: SerializedPayload = useMemo(() => ({
     q: filters.q,
@@ -298,6 +321,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
             {isNaming ? (
               <div className="flex gap-2">
                 <Input
+                  ref={inputRef}
                   autoFocus
                   placeholder="Nome da busca..."
                   value={name}
@@ -309,6 +333,17 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   maxLength={60}
                   className="h-8 text-sm"
                 />
+                {!name.trim() && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-2"
+                    onClick={handleRegenerateSuggestion}
+                    title="Sugerir nome com base nos filtros"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </Button>
+                )}
                 <Button size="sm" className="h-8 px-2" onClick={handleSave} disabled={!name.trim()}>
                   <Check className="w-3.5 h-3.5" />
                 </Button>
@@ -318,7 +353,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-xs"
-                onClick={() => setIsNaming(true)}
+                onClick={handleStartNaming}
                 disabled={activeCount === 0 || presets.length >= 10}
               >
                 <BookmarkPlus className="w-3.5 h-3.5" />
