@@ -33,19 +33,60 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-const MarkExcerpt = memo(function MarkExcerpt({ text, term }: { text: string; term: string }) {
-  if (!term) return <>{text}</>;
-  const re = new RegExp(`(${escapeRegex(term)})`, "gi");
-  const parts = text.split(re);
+function normalizeText(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+interface Segment {
+  text: string;
+  isMatch: boolean;
+}
+
+const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; terms: string[] }) {
+  const segments = useMemo<Segment[]>(() => {
+    if (!text) return [];
+    const cleaned = Array.from(
+      new Map(
+        terms
+          .map((t) => (typeof t === "string" ? t.trim() : ""))
+          .filter((t) => t.length >= 2)
+          .map((t) => [normalizeText(t), t] as const),
+      ).values(),
+    ).sort((a, b) => b.length - a.length);
+
+    if (cleaned.length === 0) return [{ text, isMatch: false }];
+
+    const escaped = cleaned.map((t) => escapeRegex(normalizeText(t)));
+    const re = new RegExp(
+      `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`,
+      "giu",
+    );
+    const norm = normalizeText(text);
+    const out: Segment[] = [];
+    let cursor = 0;
+    let m: RegExpExecArray | null;
+    re.lastIndex = 0;
+    while ((m = re.exec(norm)) !== null) {
+      const start = m.index + (m[0].length - m[1].length);
+      const end = start + m[1].length;
+      if (start > cursor) out.push({ text: text.slice(cursor, start), isMatch: false });
+      out.push({ text: text.slice(start, end), isMatch: true });
+      cursor = end;
+    }
+    if (cursor < text.length) out.push({ text: text.slice(cursor), isMatch: false });
+    return out;
+  }, [text, terms]);
+
+  if (segments.length === 0) return <>{text}</>;
   return (
     <>
-      {parts.map((p, i) =>
-        i % 2 === 1 ? (
+      {segments.map((seg, i) =>
+        seg.isMatch ? (
           <mark key={i} className="bg-warning/30 text-foreground rounded px-0.5">
-            {p}
+            {seg.text}
           </mark>
         ) : (
-          <span key={i}>{p}</span>
+          <span key={i}>{seg.text}</span>
         ),
       )}
     </>
@@ -55,10 +96,12 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, term }: { text: string; te
 const ExcerptItem = memo(function ExcerptItem({
   excerpt,
   interaction,
+  terms,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
+  terms: string[];
   onClose: () => void;
 }) {
   return (
@@ -66,7 +109,7 @@ const ExcerptItem = memo(function ExcerptItem({
       <div className="flex gap-2">
         <Quote className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />
         <p className="text-sm text-foreground leading-relaxed">
-          <MarkExcerpt text={excerpt.text} term={excerpt.matchTerm} />
+          <MarkExcerpt text={excerpt.text} terms={terms} />
         </p>
       </div>
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
@@ -177,6 +220,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   key={`${ex.interactionId}-${ex.position}-${i}`}
                   excerpt={ex}
                   interaction={interactionMap.get(ex.interactionId)}
+                  terms={keywords}
                   onClose={onClose}
                 />
               ))}
