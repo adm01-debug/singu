@@ -27,6 +27,25 @@ export interface AdvancedFilters {
 const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'density', 'page', 'perPage'] as const;
 
 const DENSITY_STORAGE_KEY = 'singu-interactions-density-v1';
+const PERPAGE_STORAGE_KEY = 'singu-interactions-perPage-v1';
+const VIEW_STORAGE_KEY = 'singu-interactions-view-v1';
+const SORT_STORAGE_KEY = 'singu-interactions-sort-v1';
+
+function readLS(key: string): string | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function writeLS(key: string, value: string): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.setItem(key, value);
+  } catch { /* noop */ }
+}
+
 function parseDensity(v: string | null): DensityMode {
   return v === 'compact' ? 'compact' : 'comfortable';
 }
