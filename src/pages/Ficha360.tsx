@@ -308,16 +308,19 @@ const Ficha360 = () => {
                   headerExtra={
                     <>
                       <FiltrosInteracoesBar
-                        days={days}
-                        channels={channels}
-                        onDaysChange={setDays}
-                        onChannelsChange={setChannels}
-                        onClear={clear}
+                        days={draftDays}
+                        channels={draftChannels}
+                        onDaysChange={setDraftDays}
+                        onChannelsChange={setDraftChannels}
+                        onClear={clearDraftFilters}
                         activeCount={activeCount}
                         shownCount={recentInteractions.length}
                         totalCount={channelCounts.total}
                         channelCounts={potentialChannelCounts}
                         channelCountsReady={channelCountsReady}
+                        isDirty={filtersDirty}
+                        onApply={applyDraftFilters}
+                        onDiscard={resetDraft}
                       />
                       <FiltrosAtivosChips
                         days={days}
