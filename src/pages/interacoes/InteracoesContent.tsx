@@ -69,8 +69,9 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     [companies]
   );
 
-  // Apply advanced filters first (URL-driven)
-  const advancedFiltered = useMemo(() => {
+  // Aplica todos os filtros avançados EXCETO o de canais — usado para os
+  // contadores por canal nos chips (ignora o próprio filtro pra mostrar potencial).
+  const advancedFilteredWithoutCanais = useMemo(() => {
     if (!Array.isArray(interactions)) return [];
     const q = debouncedQ ? normalize(debouncedQ) : '';
     const deTs = adv.de ? new Date(adv.de).setHours(0, 0, 0, 0) : null;
@@ -78,7 +79,6 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return interactions.filter(i => {
       if (adv.contact && i.contact_id !== adv.contact) return false;
       if (adv.company && i.company_id !== adv.company) return false;
-      if (adv.canais.length > 0 && !adv.canais.includes(i.type)) return false;
       if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
       if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
       const ts = new Date(i.created_at).getTime();
@@ -90,7 +90,18 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       }
       return true;
     });
-  }, [interactions, adv, debouncedQ]);
+  }, [interactions, adv.contact, adv.company, adv.direcao, adv.de, adv.ate, debouncedQ]);
+
+  const channelCounts = useMemo(
+    () => countByChannel(advancedFilteredWithoutCanais.map(i => ({ type: i.type }))),
+    [advancedFilteredWithoutCanais]
+  );
+
+  // Apply advanced filters (URL-driven) — agora derivado, aplicando só o filtro de canais.
+  const advancedFiltered = useMemo(() => {
+    if (adv.canais.length === 0) return advancedFilteredWithoutCanais;
+    return advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
+  }, [advancedFilteredWithoutCanais, adv.canais]);
 
   const filteredAndSorted = useMemo(() => {
     const result = advancedFiltered.filter(interaction => {
