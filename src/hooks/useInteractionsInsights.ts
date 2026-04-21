@@ -206,7 +206,7 @@ export function useInteractionsInsights(period: Period = "30d") {
       unhandledObjections: unhandled,
     };
 
-    return { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
+    return { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
   }, [query.data]);
 
   return { ...insights, isLoading: query.isLoading, isError: query.isError };
