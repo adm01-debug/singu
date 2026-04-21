@@ -23,7 +23,9 @@ import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
+import { ProntidaoTrendChart } from '@/components/ficha-360/ProntidaoTrendChart';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
+import { computeProntidaoTrend } from '@/lib/prontidaoTrend';
 import { computeProximosPassos } from '@/lib/proximosPassos';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useMemo } from 'react';
@@ -65,6 +67,18 @@ const Ficha360 = () => {
   const prontidao = useMemo(
     () => computeProntidaoScore({ profile, intelligence, weights }),
     [profile, intelligence, weights],
+  );
+
+  const trend = useMemo(
+    () =>
+      computeProntidaoTrend({
+        interactions: recentInteractions,
+        profile,
+        intelligence,
+        weights,
+        weeks: 8,
+      }),
+    [recentInteractions, profile, intelligence, weights],
   );
 
   const passos = useMemo(
@@ -178,6 +192,9 @@ const Ficha360 = () => {
 
             {/* Próxima ação sugerida (IA + melhor horário + registrar interação) */}
             {id && <ProximaAcaoCTA contactId={id} contactName={fullName} />}
+
+            {/* Tendência semanal do Score de Prontidão */}
+            <ProntidaoTrendChart data={trend} currentScore={prontidao.score} />
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
