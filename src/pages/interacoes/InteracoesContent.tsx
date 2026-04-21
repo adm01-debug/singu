@@ -23,6 +23,7 @@ import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
+import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
 
