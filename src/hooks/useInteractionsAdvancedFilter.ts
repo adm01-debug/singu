@@ -60,6 +60,8 @@ export function useInteractionsAdvancedFilter() {
     de: parseDate(searchParams.get('de')),
     ate: parseDate(searchParams.get('ate')),
     sort: parseSort(searchParams.get('sort')),
+    page: parsePage(searchParams.get('page')),
+    perPage: parsePerPage(searchParams.get('perPage')),
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
