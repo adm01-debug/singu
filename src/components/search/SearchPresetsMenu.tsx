@@ -389,5 +389,27 @@ export function SearchPresetsMenu({
         </div>
       </PopoverContent>
     </Popover>
+
+    <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Os filtros salvos serão substituídos pelos filtros ativos agora.
+            As estatísticas de uso e o favorito serão preservados.
+            {pendingFilterUpdate && (
+              <span className="mt-2 block text-foreground">
+                {activeFilterCount} filtro{activeFilterCount !== 1 ? 's' : ''} ativo{activeFilterCount !== 1 ? 's' : ''} será{activeFilterCount !== 1 ? 'ão' : ''} salvo{activeFilterCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
+              </span>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmUpdateFilters}>Atualizar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
