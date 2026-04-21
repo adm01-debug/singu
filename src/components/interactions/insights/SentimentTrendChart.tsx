@@ -438,16 +438,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="mixed" name="Misto" stroke={CHART_COLORS.mixed} strokeWidth={2} dot={false} />
-            <Line
-              yAxisId="pct"
-              type="monotone"
-              dataKey="positivePct"
-              name="% Positivo"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
-              strokeDasharray="4 4"
-              dot={false}
-            />
+            {showPositivePctLine && (
+              <Line
+                yAxisId="pct"
+                type="monotone"
+                dataKey="positivePct"
+                name="% Positivo"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+              />
+            )}
             {annotationDots.map((d) => (
               <ReferenceDot
                 key={d.week}
