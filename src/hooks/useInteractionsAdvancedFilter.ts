@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
