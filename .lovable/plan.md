@@ -1,120 +1,154 @@
 
 
-# Plano: Favoritos e ordenação de presets salvos em /interacoes
+# Plano: Sugestão automática de nome ao salvar preset de busca
 
 ## Contexto
 
-O `InteracoesPresetsMenu` lista presets na ordem de criação (mais novo primeiro). Conforme o usuário acumula 5–10 presets, fica trabalhoso achar os mais usados. Vamos adicionar **favoritar** (estrela toggle) e **ordenação** (Favoritos primeiro / Mais usados / Mais recentes / Alfabética), com persistência em `localStorage` e contagem automática de uso.
+Hoje em `InteracoesPresetsMenu`, ao clicar em "Salvar busca atual", o `Input` de nome abre vazio e o usuário precisa inventar um nome do zero. Vamos pré-preencher esse `Input` com um nome inteligente derivado dos filtros ativos (ex.: `"Acme · WhatsApp · últimos 30d"`), que o usuário pode aceitar com Enter ou editar livremente.
 
 ## Decisão de escopo
 
-- **Favorito** = flag booleana opcional `isFavorite?: boolean` no `SearchPreset`. Toggle via ícone `<Star>` por linha. Favoritos sempre vão para o topo (qualquer que seja a ordenação secundária).
-- **Contagem de uso** = novo campo `usageCount?: number` + `lastUsedAt?: string`, incrementados quando o usuário aplica o preset (clicando na linha). Padrão idêntico ao `useSavedFilters` que já tem `usageCount`.
-- **Ordenação** = `<Select>` compacto no header do popover com 4 opções:
-  - `Favoritos` (default — favoritos no topo, depois `lastUsedAt` desc, fallback `createdAt` desc)
-  - `Mais usados` (`usageCount` desc, fallback `createdAt` desc)
-  - `Mais recentes` (`createdAt` desc — comportamento atual)
-  - `Alfabética` (A→Z por `name`)
-- **Persistência da ordenação** = `localStorage` chave `relateiq-search-presets-sort-{context}` (não polui URL).
-- **Backward compat**: presets antigos sem `isFavorite`/`usageCount`/`lastUsedAt` continuam funcionando (tratados como `false` / `0` / `createdAt`).
-- **Genérico**: a mudança fica no hook `useSearchPresets` (afeta também o `SearchPresetsMenu` de Contatos/Empresas), mas a UI de favoritar e o seletor de ordenação são adicionados aos **dois menus** (`InteracoesPresetsMenu` e `SearchPresetsMenu`) na mesma entrega — escopo coerente.
-- **Export/import já existente**: `searchPresetTransport` passa a incluir `isFavorite` no bundle exportável (campo opcional, ignorado por bundles antigos).
+- **Geração 100% client-side**, pura, sem rede e sem IA — só formatação dos filtros já presentes em `AdvancedFilters`.
+- **Aplicar nos dois menus de presets**: `InteracoesPresetsMenu` (filtros de interações) e `SearchPresetsMenu` (Contatos/Empresas, filtros genéricos `Record<string, string[]>`).
+- **Helpers separados** por contexto pra manter os formatos naturais de cada domínio.
+- **Comportamento do input**:
+  - Ao abrir o modo "salvar" (`setIsNaming(true)`), pré-preencher com a sugestão.
+  - Texto fica selecionado (`autoFocus` + `select()`) pra usuário sobrescrever digitando ou aceitar com Enter.
+  - Se nenhum filtro ativo, fallback `"Busca <data atual>"` (ex.: `"Busca 21/04"`).
+  - Dedup de nome: se já existir preset com nome igual, sufixo `(2)`, `(3)` etc. (reusa a lógica `dedupeNameAgainst` já existente em `searchPresetTransport`).
+- **Truncamento**: máx. 60 caracteres no nome sugerido pra caber no `Input` sem ficar feio.
+- **Botão pequeno "↻ Sugerir"** ao lado do `Input` (ícone `Sparkles`) que regenera a sugestão se o usuário limpou tudo e quer voltar (opcional, only-if-empty).
 
 ## Implementação
 
-### 1. Estender `useSearchPresets` (`src/hooks/useSearchPresets.ts`)
+### 1. Novo helper `src/lib/suggestPresetName.ts` (~120 linhas)
 
 ```ts
-export interface SearchPreset {
-  id: string;
-  name: string;
-  filters: Record<string, string[]>;
-  sortBy: string;
-  sortOrder: 'asc' | 'desc';
-  searchTerm?: string;
-  createdAt: string;
-  isFavorite?: boolean;       // novo
-  usageCount?: number;        // novo
-  lastUsedAt?: string;        // novo
+import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
+
+const CHANNEL_LABELS: Record<string, string> = {
+  whatsapp: 'WhatsApp', email: 'Email', call: 'Ligação',
+  meeting: 'Reunião', linkedin: 'LinkedIn', sms: 'SMS',
+};
+
+const SORT_LABELS: Record<string, string> = {
+  oldest: 'mais antigos', relevance: 'relevância', entity: 'por entidade',
+};
+
+const DIRECAO_LABELS = { inbound: 'recebidas', outbound: 'enviadas' };
+
+/**
+ * Gera um nome de preset com base nos filtros de Interações.
+ * Ex.: "Acme · WhatsApp · últimos 30d"
+ */
+export function suggestInteracoesPresetName(f: AdvancedFilters): string {
+  const parts: string[] = [];
+
+  // 1. Termo de busca (q) tem prioridade — usuário lembra disso
+  if (f.q?.trim()) parts.push(`"${f.q.trim().slice(0, 24)}"`);
+
+  // 2. Empresa, depois contato
+  if (f.company?.trim()) parts.push(f.company.trim().slice(0, 24));
+  else if (f.contact?.trim()) parts.push(f.contact.trim().slice(0, 24));
+
+  // 3. Canais (até 2; se >2 mostra "3 canais")
+  if (Array.isArray(f.canais) && f.canais.length > 0) {
+    if (f.canais.length === 1) parts.push(CHANNEL_LABELS[f.canais[0]] ?? f.canais[0]);
+    else if (f.canais.length === 2) parts.push(f.canais.map(c => CHANNEL_LABELS[c] ?? c).join('+'));
+    else parts.push(`${f.canais.length} canais`);
+  }
+
+  // 4. Direção (só se não-default)
+  if (f.direcao && f.direcao !== 'all') parts.push(DIRECAO_LABELS[f.direcao]);
+
+  // 5. Intervalo de datas — formatos curtos
+  const range = formatDateRange(f.de, f.ate);
+  if (range) parts.push(range);
+
+  // 6. Sort, só se não-default
+  if (f.sort && f.sort !== 'recent' && SORT_LABELS[f.sort]) parts.push(SORT_LABELS[f.sort]);
+
+  if (parts.length === 0) return `Busca ${formatToday()}`;
+  return parts.join(' · ').slice(0, 60);
 }
 
-export type PresetSortMode = 'favoritos' | 'mais-usados' | 'recentes' | 'alfabetica';
-```
-
-Novos métodos:
-- `toggleFavorite(id: string): void` — flip `isFavorite`.
-- `markAsUsed(id: string): void` — `usageCount = (usageCount ?? 0) + 1`, `lastUsedAt = now`.
-- `sortMode: PresetSortMode` + `setSortMode(mode)` — persistido em `localStorage` chave `${storageKey}-sort`.
-- `sortedPresets: SearchPreset[]` — derivado via `useMemo` aplicando a ordenação ativa, com favoritos sempre no topo (exceto modo `alfabetica`, onde favoritos vão no topo do bloco A→Z; e `recentes`, idem).
-
-Lógica de ordenação:
-```ts
-function comparePresets(a, b, mode) {
-  // Favoritos sempre primeiro (em todos os modos exceto alfabetica pura)
-  if ((a.isFavorite ?? false) !== (b.isFavorite ?? false)) {
-    return a.isFavorite ? -1 : 1;
+/**
+ * Versão genérica para SearchPresetsMenu (Contatos/Empresas).
+ * Usa as chaves dos filtros como dicas.
+ */
+export function suggestGenericPresetName(
+  filters: Record<string, string[]>,
+  searchTerm?: string,
+): string {
+  const parts: string[] = [];
+  if (searchTerm?.trim()) parts.push(`"${searchTerm.trim().slice(0, 24)}"`);
+  for (const [key, values] of Object.entries(filters)) {
+    if (!values?.length) continue;
+    if (values.length === 1) parts.push(values[0].slice(0, 20));
+    else parts.push(`${values.length} ${key}`);
   }
-  switch (mode) {
-    case 'mais-usados': return (b.usageCount ?? 0) - (a.usageCount ?? 0) || dateDesc(b.createdAt, a.createdAt);
-    case 'recentes':    return dateDesc(b.createdAt, a.createdAt);
-    case 'alfabetica':  return a.name.localeCompare(b.name, 'pt-BR');
-    case 'favoritos':
-    default:            return dateDesc(b.lastUsedAt ?? b.createdAt, a.lastUsedAt ?? a.createdAt);
-  }
+  if (parts.length === 0) return `Busca ${formatToday()}`;
+  return parts.join(' · ').slice(0, 60);
 }
+
+// Helpers internos: formatDateRange (últimos Nd, mês passado, "01-15/jan", etc.) + formatToday
 ```
 
-Atualizar `importPresets` para preservar `isFavorite` se vier do bundle.
+`formatDateRange` cobre casos comuns: `de=hoje-7d` → `"últimos 7d"`, `de=hoje-30d` → `"últimos 30d"`, mês inteiro → `"abril/25"`, intervalo arbitrário → `"01/04 → 15/04"`.
 
-### 2. Atualizar `searchPresetTransport.ts`
+### 2. Helper de dedup centralizado
 
-- Adicionar `isFavorite?: boolean` ao `ExportablePreset`.
-- `parseBundle` aceita o campo opcional (ignora se ausente).
-- Round-trip mantém favorito.
-- Atualizar testes para cobrir `isFavorite` no round-trip.
+Reusar `dedupeNameAgainst` que já existe em `src/lib/searchPresetTransport.ts` (não precisa criar novo).
 
 ### 3. Refatorar `InteracoesPresetsMenu.tsx`
 
-- **Header do popover** (acima da lista): `<Select>` compacto de ordenação (h-7) com as 4 opções, label "Ordenar:".
-- **Por linha**:
-  - Adicionar `<Star>` à esquerda do nome do preset (sempre visível): cheia (`fill-primary text-primary`) se `isFavorite`, vazia caso contrário. Click `stopPropagation` → `toggleFavorite(preset.id)` + toast "Favorito atualizado".
-  - Click na linha (já existe) chama `onApplyPreset` — adicionar chamada a `markAsUsed(preset.id)` antes/depois.
-  - Mostrar pequeno indicador "Usado Nx" abaixo do nome se `usageCount >= 3` (ajuda discoverability).
-- Iterar sobre `sortedPresets` (não `presets`).
+- Importar `suggestInteracoesPresetName` e `dedupeNameAgainst`.
+- Quando o usuário clica em "Salvar busca atual" (entra em modo `isNaming`):
+  ```ts
+  const handleStartNaming = () => {
+    const suggested = suggestInteracoesPresetName(filters);
+    const finalName = dedupeNameAgainst(presets.map(p => p.name), suggested);
+    setPresetName(finalName);
+    setIsNaming(true);
+  };
+  ```
+- No `Input`, adicionar `ref` e `useEffect` que chama `inputRef.current?.select()` quando `isNaming` vira true (texto pré-selecionado pra sobrescrever).
+- Adicionar botão `<Sparkles />` ao lado do `Input` (só visível se `presetName` estiver vazio) que regenera a sugestão.
 
-### 4. Refatorar `SearchPresetsMenu.tsx` (Contatos/Empresas)
+### 4. Refatorar `SearchPresetsMenu.tsx`
 
-Mesma adição: `<Star>` por linha + `<Select>` de ordenação + `markAsUsed` no apply. Mantém comportamento, props inalteradas.
+- Mesma lógica usando `suggestGenericPresetName(currentFilters, currentSearchTerm)`.
+- Mesma seleção automática do texto.
 
-### 5. Testes leves
+### 5. Testes em `src/lib/__tests__/suggest-preset-name.test.ts` (novo, ~80 linhas)
 
-Em `src/lib/__tests__/search-presets-filters.test.ts` (ou novo arquivo `__tests__/use-search-presets-sort.test.ts`):
-- `comparePresets` em modo `favoritos`: favorito vem antes de não-favorito.
-- `comparePresets` em modo `mais-usados`: ordenação por usageCount desc.
-- `comparePresets` em modo `alfabetica`: respeita `pt-BR` (acentos).
-- `markAsUsed` incrementa contador e seta `lastUsedAt`.
-- Round-trip de bundle preserva `isFavorite`.
+- `suggestInteracoesPresetName` com filtros vazios → `"Busca DD/MM"`.
+- Com `company="Acme"` + `canais=["whatsapp"]` → `"Acme · WhatsApp"`.
+- Com `de`/`ate` igual a últimos 7/30/90 dias → `"últimos Nd"`.
+- Com `q="proposta"` + `company="Acme"` → `'"proposta" · Acme'`.
+- Com 3+ canais → `"3 canais"`.
+- Truncamento em 60 chars.
+- `suggestGenericPresetName` com `{cargo: ["CEO", "CTO"]}` → `"2 cargo"`.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos (`fill-primary`, `text-primary`, `text-muted-foreground`)
-- Flat (sem shadow/gradient)
-- Backward compat: presets antigos sem os novos campos funcionam normalmente
-- `React.memo` mantido onde já existe
-- Zero novas dependências
-- Zero novas queries de rede
+- Pure functions, sem side effects
+- Tokens semânticos, flat
+- Zero novas deps, zero novas queries de rede
+- Backward compat: se usuário apagar a sugestão, comportamento antigo (campo vazio) preservado
 
 ## Arquivos tocados
 
-**Editados (5):**
-- `src/hooks/useSearchPresets.ts` — campos `isFavorite/usageCount/lastUsedAt`, `toggleFavorite`, `markAsUsed`, `sortMode`, `sortedPresets`
-- `src/lib/searchPresetTransport.ts` — `isFavorite` no `ExportablePreset`
-- `src/components/interactions/InteracoesPresetsMenu.tsx` — estrela por linha + select de ordenação + `markAsUsed`
-- `src/components/search/SearchPresetsMenu.tsx` — mesma adição (Contatos/Empresas)
-- `src/lib/__tests__/search-presets-filters.test.ts` — testes de ordenação + favorito + round-trip com `isFavorite`
+**Criados (2):**
+- `src/lib/suggestPresetName.ts`
+- `src/lib/__tests__/suggest-preset-name.test.ts`
+
+**Editados (2):**
+- `src/components/interactions/InteracoesPresetsMenu.tsx`
+- `src/components/search/SearchPresetsMenu.tsx`
 
 ## Critério de fechamento
 
-(a) Cada preset tem ícone estrela clicável que persiste em `localStorage`; (b) header do popover tem `<Select>` com Favoritos/Mais usados/Mais recentes/Alfabética, default Favoritos; (c) clicar em preset incrementa `usageCount` e atualiza `lastUsedAt`; (d) favoritos sempre aparecem no topo (exceto se o usuário escolher modo puramente alfabético sem favoritos marcados); (e) ordenação selecionada persiste entre sessões; (f) bundles exportados/importados preservam `isFavorite`; (g) zero regressão em salvar/aplicar/remover/importar/exportar; (h) PT-BR, tokens semânticos, flat, sem novas deps.
+(a) Ao clicar em "Salvar busca atual" em `/interacoes`, o `Input` aparece pré-preenchido com nome derivado dos filtros (ex.: `"Acme · WhatsApp · últimos 30d"`); (b) texto vem pré-selecionado pra usuário sobrescrever só digitando; (c) se já houver preset com mesmo nome, sufixo `(2)`, `(3)`; (d) sem filtros ativos, sugere `"Busca DD/MM"`; (e) mesmo comportamento aplicado ao `SearchPresetsMenu` de Contatos/Empresas; (f) Enter salva direto sem precisar editar; (g) zero regressão em export/import, favoritos, ordenação, dedup, save/apply/delete; (h) PT-BR, tokens semânticos, flat, sem novas deps.
 
