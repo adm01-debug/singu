@@ -1,67 +1,82 @@
 
 
-# Plano: Botão "Limpar canais" no `CanaisQuickFilter`
+# Plano: Contadores por canal nos chips do `CanaisQuickFilter`
 
 ## Contexto
 
-Hoje, para zerar só os canais sem mexer em busca/contato/empresa/datas/direção/sort, o usuário precisa desclicar chip por chip (ou usar o "Limpar tudo" da `ActiveFiltersBar`, que apaga todo o resto). Falta um atalho local: **resetar apenas a dimensão "canais"**, preservando todos os outros filtros.
+Hoje os chips em `CanaisQuickFilter` (WhatsApp, Ligação, Email, Reunião, Vídeo, Nota) mostram só o ícone. O usuário quer ver, ao lado de cada ícone, **quantas interações** existem para aquele canal no dataset atual de `/interacoes`, sem precisar abrir a busca avançada.
 
 ## Decisão de escopo
 
-- Botão **"Limpar canais"** dentro do `CanaisQuickFilter`, ao lado do toggle de modo (Zap/MousePointerClick).
-- Aparece **somente quando há canais selecionados** (`pending.length > 0` no modo manual, ou `safe.length > 0` no modo auto). Caso contrário fica oculto pra não poluir.
-- Comportamento por modo:
-  - **Auto**: chama `onChange([])` direto. Toast "Filtros de canal limpos".
-  - **Manual**: zera só `pending` (`setPending([])`), **não** chama `onChange`. O usuário precisa clicar em "Aplicar" pra efetivar — mantém o contrato do modo manual. Se já houver canais aplicados, o botão "Aplicar (+N)" passa a refletir a diferença normalmente.
-- Visual: `Button variant="ghost" size="xs"` com ícone `Eraser` (já em lucide-react) + texto "Limpar canais". Tooltip explica o comportamento por modo.
-- A11y: `aria-label="Limpar seleção de canais"`.
-- Não toca em nada externo (busca, datas, contato, empresa, direção, sort, presets) — `setFilter('canais', [])` afeta só essa chave do `useInteractionsAdvancedFilter`.
+- Contagem é calculada a partir do **dataset já carregado** na página `/interacoes` (mesma fonte que alimenta a tabela), respeitando os filtros não-canal já aplicados (busca, contato, empresa, datas, direção). Ou seja: se o usuário tem `direcao=inbound` ativo, os contadores refletem só as inbound — assim o número bate com o que ele veria ao clicar no chip.
+- Os contadores **ignoram o próprio filtro de canal**, para que o usuário veja o "potencial" de cada canal antes de selecionar (caso contrário, todos os outros mostrariam 0 quando um chip está ativo).
+- Renderização: `WhatsApp 12` ao lado do ícone, em fonte tabular pequena (`text-[10px] tabular-nums`). Quando contagem = 0, o chip fica com opacidade reduzida (`opacity-50`) e tooltip "Sem interações neste canal" — mas continua clicável (caso o dataset mude).
+- Quando contagem > 999, exibe `999+`.
+- Loading state: enquanto o dataset carrega, mostra `·` no lugar do número (sem skeleton pesado).
 
 ## Implementação
 
-### `src/components/interactions/CanaisQuickFilter.tsx`
+### 1. Novo helper: `src/lib/countByChannel.ts`
 
-1. Importar `Eraser` de `lucide-react` (junto com os outros ícones já importados na linha 2).
-2. Adicionar callback:
-   ```ts
-   const clearAll = useCallback(() => {
-     if (mode === 'auto') {
-       if (safe.length === 0) return;
-       onChange([]);
-       toast.success('Filtros de canal limpos');
-     } else {
-       if (pending.length === 0) return;
-       setPending([]);
-       toast.info('Canais desmarcados', {
-         description: 'Clique em "Aplicar" para confirmar.',
-         duration: 3000,
-       });
-     }
-   }, [mode, safe, pending, onChange, setPending]);
-   ```
-3. Renderizar o botão entre o toggle de modo (linhas 199-217) e o bloco `dirty` (linha 219), condicionado a `(mode === 'auto' ? safe.length > 0 : pending.length > 0)`. Envolver em `Tooltip` com texto explicativo por modo.
+```ts
+export function countByChannel(
+  items: Array<{ channel?: string | null; tipo?: string | null }>,
+  excludeCanaisFilter: string[] = [], // não usado aqui, mas documenta o contrato
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  if (!Array.isArray(items)) return counts;
+  for (const it of items) {
+    const c = (it.channel ?? it.tipo ?? '').toLowerCase();
+    if (!c) continue;
+    counts[c] = (counts[c] ?? 0) + 1;
+  }
+  return counts;
+}
+```
 
-### `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`
+### 2. `CanaisQuickFilter.tsx`
 
-Adicionar 3 testes:
-1. **Auto**: com `canais=['email','whatsapp']`, clicar em "Limpar canais" chama `onChange([])`.
-2. **Manual**: com pending `['email']`, clicar em "Limpar canais" NÃO chama `onChange`; chips ficam desmarcados; botão "Aplicar" continua visível pra confirmar.
-3. **Visibilidade**: sem canais selecionados, o botão "Limpar canais" não aparece.
+- Nova prop opcional: `counts?: Record<string, number>` (default `{}`).
+- Renderiza ao lado do ícone, dentro do botão do chip:
+  ```tsx
+  {typeof counts[id] === 'number' && (
+    <span className="ml-1 text-[10px] tabular-nums opacity-70">
+      {counts[id] > 999 ? '999+' : counts[id]}
+    </span>
+  )}
+  ```
+- Se `counts[id] === 0`, adiciona `opacity-50` ao botão e tooltip "Sem interações neste canal".
+- Backward compat: sem a prop, comporta-se como hoje.
+
+### 3. Página `/interacoes` (`src/pages/Interacoes.tsx` ou equivalente)
+
+- Onde já existe o dataset filtrado (sem o filtro de canal aplicado), calcular `useMemo(() => countByChannel(datasetSemCanal), [datasetSemCanal])` e passar para `<CanaisQuickFilter counts={...} />`.
+- Se hoje só existe o dataset **com** filtro de canal aplicado, criar uma derivação extra: aplicar todos os filtros **exceto** `canais` antes de contar. Isso é barato (filter sobre array já em memória).
+
+### 4. Testes: `CanaisQuickFilter.test.tsx`
+
+3 testes novos:
+1. Sem `counts`, chips renderizam só ícone (comportamento atual preservado).
+2. Com `counts={ email: 12, whatsapp: 0 }`, chip Email mostra "12" e WhatsApp tem `opacity-50`.
+3. Contagem > 999 renderiza "999+".
 
 ## Padrões obrigatórios
 
-- PT-BR, tokens semânticos, flat (sem sombras/gradientes).
-- Zero novas deps.
-- Backward compat: nenhum efeito quando não há canais selecionados.
-- Mantém o contrato de cada modo (auto = imediato; manual = exige Aplicar).
+- PT-BR, tokens semânticos, flat, sem novas deps.
+- Sem nova query: reusa o dataset que já está em memória.
+- Backward compat: prop opcional.
 
 ## Arquivos tocados
 
-**Editados (2):**
-- `src/components/interactions/CanaisQuickFilter.tsx` — botão "Limpar canais" + handler.
+**Criados (1):**
+- `src/lib/countByChannel.ts`
+
+**Editados (3):**
+- `src/components/interactions/CanaisQuickFilter.tsx` — prop `counts` + render de número.
+- `src/pages/Interacoes.tsx` (ou arquivo equivalente que renderiza a `AdvancedSearchBar`) — calcular contagens e passar via prop.
 - `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — 3 testes novos.
 
 ## Critério de fechamento
 
-(a) Botão "Limpar canais" visível ao lado do toggle de modo somente quando há canais selecionados; (b) modo auto: clique chama `onChange([])` e mostra toast; (c) modo manual: clique zera só `pending` sem chamar `onChange`, exigindo "Aplicar" depois; (d) nenhum outro filtro (busca, datas, contato, empresa, direção, sort) é afetado; (e) testes cobrem ambos modos + visibilidade condicional; (f) PT-BR, tokens semânticos, flat, zero novas deps.
+(a) Cada chip mostra o número de interações daquele canal no dataset filtrado (ignorando o próprio filtro de canal); (b) chips com 0 ficam com opacidade reduzida e tooltip explicativo; (c) >999 vira "999+"; (d) sem novas queries — tudo derivado em memória; (e) backward compat preservado quando `counts` não é passado; (f) testes cobrem render com/sem counts e edge cases; (g) PT-BR, flat, tokens semânticos, zero novas deps.
 
