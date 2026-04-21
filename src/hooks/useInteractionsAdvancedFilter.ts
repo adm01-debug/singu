@@ -5,6 +5,7 @@ import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
+export type ViewMode = 'list' | 'by-contact' | 'by-company';
 
 export interface AdvancedFilters {
   q: string;
@@ -15,11 +16,17 @@ export interface AdvancedFilters {
   de?: Date;
   ate?: Date;
   sort: SortKey;
+  view: ViewMode;
   page: number;
   perPage: number;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'page', 'perPage'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'page', 'perPage'] as const;
+
+const VALID_VIEWS: ViewMode[] = ['list', 'by-contact', 'by-company'];
+function parseView(v: string | null): ViewMode {
+  return (VALID_VIEWS as string[]).includes(v ?? '') ? (v as ViewMode) : 'list';
+}
 
 const VALID_DIRECAO: DirecaoFilter[] = ['all', 'inbound', 'outbound'];
 function parseDirecao(v: string | null): DirecaoFilter {
