@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
@@ -54,6 +54,18 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
       {qTrim && (
         <Badge variant="secondary" closeable onClose={() => setFilter('q', '')} icon={<Search className="w-3 h-3" />}>
           Busca: {qTrim}
+        </Badge>
+      )}
+
+      {filters.direcao === 'inbound' && (
+        <Badge variant="secondary" closeable onClose={() => setFilter('direcao', 'all')} icon={<ArrowDownLeft className="w-3 h-3" />}>
+          Recebidas
+        </Badge>
+      )}
+
+      {filters.direcao === 'outbound' && (
+        <Badge variant="secondary" closeable onClose={() => setFilter('direcao', 'all')} icon={<ArrowUpRight className="w-3 h-3" />}>
+          Enviadas
         </Badge>
       )}
 
