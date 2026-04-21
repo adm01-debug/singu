@@ -67,4 +67,24 @@ describe('SortChips', () => {
     fireEvent.click(screen.getByLabelText('Mais recentes'));
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it('mostra ícone info no chip de relevância quando hasQuery=true', () => {
+    render(<SortChips value="recent" onChange={() => {}} hasQuery={true} />);
+    const icon = screen.getByTestId('relevance-info-icon');
+    expect(icon).toBeInTheDocument();
+    const button = screen.getByLabelText('Melhor correspondência');
+    expect(button).toContainElement(icon);
+  });
+
+  it('não mostra ícone info quando hasQuery=false', () => {
+    render(<SortChips value="recent" onChange={() => {}} hasQuery={false} />);
+    expect(screen.queryByTestId('relevance-info-icon')).not.toBeInTheDocument();
+  });
+
+  it('click no chip de relevância continua funcionando com ícone info presente', () => {
+    const onChange = vi.fn();
+    render(<SortChips value="recent" onChange={onChange} hasQuery={true} />);
+    fireEvent.click(screen.getByLabelText('Melhor correspondência'));
+    expect(onChange).toHaveBeenCalledWith('relevance');
+  });
 });
