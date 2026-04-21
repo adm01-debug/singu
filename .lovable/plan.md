@@ -1,78 +1,102 @@
 
 
-# Plano: Render resiliente de chips de canal desconhecido
+# Plano: Seletor de densidade (Compacta/Confortável) na lista de interações
 
 ## Contexto
 
-Em `ActiveFiltersBar`, hoje canais que não estão em `CHANNEL_META` (whatsapp, call, email, meeting, video_call, note) já têm fallback para label capitalizado:
-```ts
-const label = meta?.label ?? c.charAt(0).toUpperCase() + c.slice(1);
-```
-Mas há lacunas:
-- Sem ícone, o chip fica desalinhado com os demais.
-- Strings sujas (`" WHATSAPP "`, `"unknown_channel"`) renderizam feias.
-- Strings vazias ou apenas-espaço viram chip fantasma sem label.
-- Remoção usa `canais.filter((x) => x !== c)` — funciona, mas se vier valor duplicado/diferindo só por case na URL, a normalização atual no parser já filtra. O risco real é o chip render de algo que o `CanaisQuickFilter` nem reconhece.
-
-O `channelPersistence` e o parser de URL **já fazem whitelist + lowercase + dedup** (vide `lib/channelPersistence.ts` com `VALID`). Então em condições normais valores desconhecidos não chegam. Mas se um link antigo, externo ou manualmente editado trouxer canal fora da whitelist, o chip precisa renderizar de forma digna **e remover sem deixar lixo na URL**.
+Em `/interacoes`, a lista (modo `view=list`) renderiza cada interação em um `Card` com `CardContent p-4`, marcador grande de 40px, badges, conteúdo, tags e bloco de contato com avatar e borda divisória. Para usuários com volume alto, esse layout fica verboso. Já existe densidade global (`useGlobalDensity`) e densidade do Intelligence Hub (`useIntelDensity`), mas a lista de interações não responde a nenhuma delas — o ajuste precisa ser local, persistido por usuário e refletido na URL como os demais controles do módulo (padrão URL-driven já estabelecido em `useInteractionsAdvancedFilter`).
 
 ## Decisão de escopo
 
-Melhorar APENAS o render do chip de canal desconhecido em `ActiveFiltersBar.tsx`:
+Adicionar um **toggle local** "Compacta / Confortável" para a lista de interações, com:
 
-1. **Sanitização do label**: `trim()`, colapsar whitespace interno, substituir `_`/`-` por espaço, capitalizar cada palavra. Ex.: `"unknown_channel"` → `"Unknown Channel"`, `"  WHATSAPP  "` → `"Whatsapp"`.
-2. **Fallback de label vazio**: se após sanitização sobrar string vazia, usar `"Canal"`.
-3. **Ícone fallback**: usar ícone genérico `Tag` (lucide) quando o canal não estiver em `CHANNEL_META`, garantindo alinhamento visual idêntico aos chips conhecidos.
-4. **Tooltip com valor bruto**: adicionar `title={c}` no chip desconhecido para o usuário entender de onde veio.
-5. **Remoção segura**: manter `canais.filter((x) => x !== c)`. Adicional: se após filtrar a lista ficar vazia, passar `[]` (já é o comportamento — o hook normaliza para remover o param da URL). Sem mudança de lógica, só garantir via teste.
-6. **Key estável**: chave do `.map()` continua sendo `c` (string única após dedup pelo parser). Caso entre dois desconhecidos com mesma string sanitizada mas `c` diferente, a key bruta evita colisão.
+1. Persistência via **URL** (`?density=compact|comfortable`) seguindo o padrão dos outros filtros do módulo. Default `comfortable` (não escreve na URL).
+2. Visível **apenas no modo `view=list`** (modos agrupados `by-contact`/`by-company` usam `TimelineGroupCard` e ficam fora deste escopo).
+3. Ajustes visuais aplicados ao item da lista quando `density=compact`:
+   - Card padding `p-4` → `p-2.5`.
+   - Marcador 40px → 28px, ícone 16px → 12px, posição `left-2 top-4` → `left-3 top-3`, linha vertical `left-[27px]` → `left-[19px]`.
+   - Padding-left do item `pl-16` → `pl-12`.
+   - Espaçamento entre itens `space-y-4` → `space-y-2`.
+   - Conteúdo: `mb-3/mb-4/mb-3` → `mb-1.5`, `line-clamp-2` → `line-clamp-1`.
+   - Bloco do contato: oculta avatar (mantém apenas nome em texto pequeno inline com `pt-2 border-t`), some o cargo.
+   - Tags: limita a 3 visíveis + "+N".
+   - Badge de tipo: oculta (ícone do marcador já comunica); mantém Sentiment, Follow-up, Recebido.
+   - Data: mantém apenas a linha relativa ("há 2h"); oculta data absoluta.
+   - Animação: reduz delay `Math.min(index*0.03, 0.3)` → `Math.min(index*0.015, 0.15)` para aliviar percepção em listas densas.
+
+Confortável = layout atual, sem mudanças.
 
 ## Implementação
 
-### `src/components/interactions/ActiveFiltersBar.tsx`
+### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
+- Adicionar tipo `DensityMode = 'comfortable' | 'compact'`.
+- Estender `AdvancedFilters` com `density: DensityMode`.
+- Adicionar `'density'` em `KEYS`.
+- `parseDensity(v)` retorna `'compact'` se `v === 'compact'`, senão `'comfortable'`.
+- Em `setFilter`: caso `'density'`, escreve `compact` ou remove o param.
+- Em `applyAll`: persistir `density` se `=== 'compact'`.
+- **Não conta** em `activeCount` (é preferência de visualização, não filtro de dados — mesmo padrão de `view`, `sort`, `page`, `perPage`).
 
-- Importar `Tag` de `lucide-react`.
-- Adicionar helper local puro:
-  ```ts
-  function prettifyChannel(raw: string): string {
-    const cleaned = raw.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-    if (!cleaned) return 'Canal';
-    return cleaned.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  }
-  ```
-- No `.map()` dos canais, quando `meta` for `undefined`:
-  - `label = prettifyChannel(c)`
-  - `Icon = Tag`
-  - Adicionar `title={\`Canal desconhecido: ${c}\`}` no `<Badge>` (via prop HTML).
+### 2. `src/components/interactions/DensityChips.tsx` (novo, pequeno)
+- Componente análogo ao `ViewModeChips`: dois botões com ícones `Rows3` (confortável) e `Rows2` (compacta), `aria-pressed`, tooltip PT-BR, `role="group" aria-label="Densidade da lista"`.
+- Props: `value: DensityMode`, `onChange: (d: DensityMode) => void`.
+- ≤80 linhas, flat, zero novas deps (lucide já tem ícones).
 
-Mantém PT-BR, flat, zero novas deps, backward-compat. Sem mudança de API do componente.
+### 3. `src/pages/interacoes/InteracoesContent.tsx`
+- Renderizar `<DensityChips>` ao lado direito do `ActiveFiltersBar` ou junto ao `PaginationBar` superior, **só quando `adv.view === 'list'`**. Posição escolhida: numa nova linha discreta abaixo do `ActiveFiltersBar`, alinhada à direita, com `text-xs text-muted-foreground` e gap consistente.
+- Derivar `isCompact = adv.density === 'compact'`.
+- Aplicar classes condicionais nas linhas existentes (sem extrair componente novo, mantendo o arquivo ≤400 linhas):
+  - `space-y-4` ↔ `space-y-2`
+  - `left-[27px]` ↔ `left-[19px]`
+  - `pl-16` ↔ `pl-12`
+  - Marcador, padding do `CardContent`, badge de tipo, avatar do contato, tags+N, etc.
+- Animação: `delay = Math.min(index * (isCompact ? 0.015 : 0.03), isCompact ? 0.15 : 0.3)`.
+
+### 4. Persistência cross-session
+- A URL já garante shareability. Para que o usuário não perca a preferência ao voltar sem URL, adicionar uma persistência leve em `localStorage` chave `singu-interactions-density-v1`:
+  - Hidratação one-shot no mount do hook (mesmo padrão usado para `canais`): se URL não tem `density` e localStorage tem `compact`, faz `setSearchParams({ density: 'compact' }, { replace: true })`.
+  - `useEffect` reativo grava `filters.density` no localStorage.
 
 ## Testes
 
-**Editar/criar** `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx`:
-1. Render com canal `"unknown_channel"` mostra chip com label `"Unknown Channel"`.
-2. Render com canal `"  WHATSAPP_BIZ  "` mostra `"Whatsapp Biz"` (sanitizado).
-3. Render com canal `""` (string vazia) mostra label fallback `"Canal"` sem quebrar.
-4. Click no `X` de canal desconhecido chama `setFilter('canais', [...sem aquele])` corretamente.
-5. Quando o canal desconhecido é o único, click no `X` chama `setFilter('canais', [])`.
-6. Canal conhecido (`whatsapp`) continua usando `MessageSquare` e label `"WhatsApp"` (regressão).
+**Editar/criar** `src/components/interactions/__tests__/DensityChips.test.tsx`:
+1. Renderiza dois botões com `aria-pressed` correto conforme `value`.
+2. Click no botão inativo dispara `onChange` com o valor oposto.
+3. Click no botão já ativo NÃO dispara `onChange` (consistente com `ViewModeChips`).
+
+**Editar/criar** `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` (mínimo):
+1. Default: sem `?density`, `filters.density === 'comfortable'`.
+2. `?density=compact` → `filters.density === 'compact'`.
+3. `?density=foo` → fallback `'comfortable'`.
+4. `setFilter('density', 'compact')` adiciona `density=compact` na URL.
+5. `setFilter('density', 'comfortable')` remove o param da URL.
+6. Mudar `density` reseta `page` para 1 (já garantido por `if (key !== 'page') next.delete('page')`).
 
 ## Padrões obrigatórios
 
-- PT-BR, flat, sem novas deps (Tag já está em `lucide-react`).
-- Backward-compat total: nenhuma mudança de prop ou comportamento dos canais conhecidos.
-- A11y: `title` no chip ajuda usuário a inspecionar valor bruto sem poluir UI.
-- ≤400 linhas no arquivo.
+- PT-BR, flat, zero novas deps.
+- Backward-compat total: URL sem `density` segue funcionando como hoje (confortável).
+- Acessibilidade: `aria-pressed`, `aria-label`, foco visível (herda do `Button` shadcn).
+- Não conta em `activeCount` (preferência, não filtro de dados).
+- ≤400 linhas por arquivo (`InteracoesContent.tsx` está em ~321; cabem os ajustes condicionais; se passar de 400, extrai o item da timeline para `InteractionListItem.tsx`).
 
 ## Arquivos tocados
 
-**Editado (1):**
-- `src/components/interactions/ActiveFiltersBar.tsx` — helper `prettifyChannel`, ícone `Tag` fallback, `title` informativo.
+**Novos (1):**
+- `src/components/interactions/DensityChips.tsx` — toggle compacta/confortável (PT-BR, lucide).
 
-**Editado (1) — testes:**
-- `src/components/interactions/__tests__/ActiveFiltersBar.test.tsx` — 6 casos cobrindo sanitização, fallback vazio, remoção e regressão.
+**Editados (2):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — adicionar `density` URL-driven + hidratação localStorage + persistência reativa.
+- `src/pages/interacoes/InteracoesContent.tsx` — renderizar `<DensityChips>` apenas em `view=list`, aplicar classes condicionais nos itens da timeline.
+
+**Possível extração (se passar de 400 linhas):**
+- `src/components/interactions/InteractionListItem.tsx` — recebe `interaction`, `contact`, `isCompact`, `onEdit`, `onDelete`. Mantém o JSX hoje inline.
+
+**Testes (2):**
+- `src/components/interactions/__tests__/DensityChips.test.tsx` — 3 casos.
+- `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` — 5–6 casos.
 
 ## Critério de fechamento
 
-(a) Canal fora da whitelist renderiza com label capitalizado e sanitizado (`unknown_channel` → `Unknown Channel`); (b) string vazia/whitespace renderiza `"Canal"` sem chip fantasma; (c) ícone `Tag` mantém alinhamento visual com chips conhecidos; (d) `title` no chip mostra o valor bruto para diagnóstico; (e) clicar no `X` remove o canal específico via `setFilter('canais', filtered)` sem quebrar a URL — quando vira lista vazia, o param é removido pelo hook; (f) canais conhecidos não mudam de aparência ou comportamento; (g) testes cobrem sanitização, fallback, remoção isolada e remoção do último item; (h) PT-BR, flat, zero novas deps.
+(a) Toggle "Compacta/Confortável" aparece em `/interacoes` apenas no modo `view=list`; (b) clicar alterna densidade, persistindo em URL (`?density=compact`) e em localStorage; (c) modo compacto reduz padding, marcador, espaçamento, oculta avatar/badge/data absoluta e limita tags a 3+N; (d) modo confortável preserva o layout atual (regressão zero); (e) preferência sobrevive a refresh sem URL via hidratação localStorage; (f) trocar densidade não conta em `activeCount` e não afeta `clear()` de filtros (apenas `clear` zera tudo, conforme padrão); (g) testes cobrem hook e componente; (h) PT-BR, flat, zero novas deps, ≤400 linhas por arquivo.
 
