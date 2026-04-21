@@ -1,12 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
-  Search, X, Calendar as CalendarIcon, User, Building2, Check,
+  Search, X, User, Building2, Check,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
@@ -15,6 +12,7 @@ import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
 import { CanaisQuickFilter } from './CanaisQuickFilter';
 import { DirecaoQuickFilter } from './DirecaoQuickFilter';
 import { SortSelect } from './SortSelect';
+import { DateRangePopover } from './DateRangePopover';
 
 interface ContactOption { id: string; label: string }
 interface CompanyOption { id: string; label: string }
@@ -29,11 +27,12 @@ interface Props {
   resultsCount: number;
   totalCount: number;
   applyAll?: (next: Partial<AdvancedFilters>) => void;
+  applyDateRange: (de?: Date, ate?: Date) => boolean;
   channelCounts?: Record<string, number>;
 }
 
 export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
-  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll, channelCounts,
+  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll, applyDateRange, channelCounts,
 }: Props) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,8 +100,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           onSelect={(id) => setFilter('company', id)}
         />
 
-        <DatePopover label="De" value={filters.de} onChange={(d) => setFilter('de', d)} />
-        <DatePopover label="Até" value={filters.ate} onChange={(d) => setFilter('ate', d)} />
+        <DateRangePopover de={filters.de} ate={filters.ate} applyDateRange={applyDateRange} />
 
         <SortSelect
           value={filters.sort}
