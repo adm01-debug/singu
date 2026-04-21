@@ -5,6 +5,7 @@ import { useIncomingWebhookLogs } from '@/hooks/useIncomingWebhooks';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { WebhookReplayButton } from './WebhookReplayButton';
+import { IPDisplay } from '@/components/security/IPDisplay';
 
 interface Props {
   open: boolean;
@@ -37,7 +38,7 @@ export function IncomingWebhookLogsDialog({ open, onOpenChange, webhookId, webho
                       {l.status} · HTTP {l.http_status ?? '—'}
                     </Badge>
                     {l.latency_ms != null && <span className="text-muted-foreground">{l.latency_ms}ms</span>}
-                    <span className="text-muted-foreground">{l.source_ip}</span>
+                    <IPDisplay ip={l.source_ip} className="text-muted-foreground" />
                   </div>
                   <span className="text-muted-foreground">
                     {formatDistanceToNow(new Date(l.created_at), { locale: ptBR, addSuffix: true })}

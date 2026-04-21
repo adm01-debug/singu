@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Globe, Plus, Trash2, MapPin } from 'lucide-react';
 import { useAllowedIPs } from '@/hooks/useAllowedIPs';
 import { useIPValidation } from '@/hooks/useIPValidation';
+import { IPDisplay } from '@/components/security/IPDisplay';
 
 export function IPRestrictionManager() {
   const { ips, isLoading, addIP, removeIP, toggleIP } = useAllowedIPs();
@@ -36,7 +37,7 @@ export function IPRestrictionManager() {
         {ipInfo && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 rounded bg-muted/40">
             <MapPin className="h-3.5 w-3.5" />
-            Seu IP atual: <Badge variant="outline" className="font-mono text-[10px]">{ipInfo.ip}</Badge>
+            Seu IP atual: <Badge variant="outline" className="font-mono text-[10px]"><IPDisplay ip={ipInfo.ip} /></Badge>
           </div>
         )}
         <div className="flex gap-2">
@@ -55,7 +56,7 @@ export function IPRestrictionManager() {
                 <div className="flex items-center gap-3">
                   <Switch checked={ip.is_active} onCheckedChange={active => toggleIP({ id: ip.id, active })} />
                   <div>
-                    <p className="text-sm font-mono">{ip.ip_address}</p>
+                    <IPDisplay ip={ip.ip_address} className="text-sm font-mono" />
                     {ip.label && <p className="text-[10px] text-muted-foreground">{ip.label}</p>}
                   </div>
                 </div>

@@ -8,8 +8,12 @@ import { GeoBlockingManager } from '@/components/security/GeoBlockingManager';
 import { SecuritySettings } from '@/components/security/SecuritySettings';
 import { PushNotificationSettings } from '@/components/security/PushNotificationSettings';
 import { Shield, Key, Globe, Settings } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { useIPMaskingPreference } from '@/hooks/useIPMaskingPreference';
 
 export default function Security() {
+  const { masked, setMasked } = useIPMaskingPreference();
   return (
     <>
       <Helmet>
@@ -17,9 +21,15 @@ export default function Security() {
         <meta name="description" content="Gerencie configurações de segurança da sua conta" />
       </Helmet>
       <div className="container mx-auto p-4 md:p-6 max-w-4xl space-y-4">
-        <header>
-          <h1 className="text-2xl font-bold tracking-tight">Segurança</h1>
-          <p className="text-sm text-muted-foreground">Proteja sua conta com múltiplas camadas de segurança</p>
+        <header className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Segurança</h1>
+            <p className="text-sm text-muted-foreground">Proteja sua conta com múltiplas camadas de segurança</p>
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Switch id="mask-ips" checked={masked} onCheckedChange={setMasked} />
+            <Label htmlFor="mask-ips" className="text-xs text-muted-foreground cursor-pointer">Mascarar IPs</Label>
+          </div>
         </header>
 
         <SecurityDashboard />
