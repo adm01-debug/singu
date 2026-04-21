@@ -1,81 +1,83 @@
 
-# Plano: Pesos personalizáveis do Score de Prontidão com recálculo ao vivo
+# Plano: Gráfico de tendência do Score de Prontidão (semanal) na Ficha 360
 
 ## Contexto
 
-`computeProntidaoScore` usa pesos hardcoded por fator (cadência 30, recência 30, sentimento 25, canal 15). É pura e recalcula sempre que entradas mudam. Falta: (a) parametrizar os pesos, (b) UI para o usuário ajustar e (c) persistência por usuário com recálculo instantâneo na Ficha 360.
+A Ficha 360 já mostra o Score de Prontidão **atual** (0–100) calculado em tempo real por `computeProntidaoScore` a partir de `profile + intelligence` (cadência, recência, sentimento, canal). Falta visualizar a **evolução temporal** para entender se a preparação está melhorando, estável ou piorando.
 
-## Decisão de armazenamento
+Existem duas fontes possíveis de série temporal:
+1. **`score_history` (tabela)** — já consumida por `useScoreHistory(contactId)` no `ScoreHistoryChart`. Armazena apenas o lead score genérico, não o Score de Prontidão (que é derivado, não persistido).
+2. **`useExternalInteractions` agregado por semana** — proxy realista: como o Prontidão é dominado por cadência + recência + sentimento, podemos reconstruir a curva semanal recalculando o score retroativamente em cada semana usando as interações que existiam até aquela semana.
 
-Usar **Zustand com persist em localStorage** (padrão já usado em `useUIStore`). Justificativa: zero rede, recálculo síncrono ao vivo, preferência puramente visual/de leitura sem precisar sincronizar entre dispositivos. Coerente com a memória de "client-side fast feedback" e mantém as 4 regras de "zero novas queries".
+**Decisão**: opção 2 — reconstrução client-side a partir de interações já carregadas em `useFicha360`, **zero novas queries de rede**. Coerente com a memória "client-side fast feedback" e mantém o padrão da feature de pesos personalizáveis (mesma lógica recalcula ao vivo quando o usuário muda pesos).
 
 ## Implementação
 
-### 1. `src/lib/prontidaoScore.ts` — parametrizar pesos
+### 1. Novo helper: `src/lib/prontidaoTrend.ts` (~110 linhas)
 
-- Exportar `DEFAULT_PRONTIDAO_WEIGHTS = { cadence: 30, recency: 30, sentiment: 25, channel: 15 }` e tipo `ProntidaoWeights`.
-- Adicionar parâmetro opcional `weights?: ProntidaoWeights` em `ComputeInput` (default = DEFAULT).
-- Substituir os literais 30/30/25/15 dentro de `scoreCadence/Recency/Sentiment/Channel` por valores recebidos via parâmetro (passar `weights[key]` ao construir cada `ProntidaoFactor`).
-- Em `computeProntidaoScore`, usar `weights` recebido (com fallback ao DEFAULT) ao montar o breakdown e o cálculo ponderado.
-- Sanitizar: se soma = 0, cair no DEFAULT (proteção).
-
-### 2. Novo store: `src/stores/useProntidaoWeightsStore.ts` (~40 linhas)
+Função pura que reconstrói a série semanal:
 
 ```ts
-interface State {
-  weights: ProntidaoWeights;
-  setWeight: (key: keyof ProntidaoWeights, value: number) => void;
-  reset: () => void;
+export interface ProntidaoTrendPoint {
+  weekStart: string;     // ISO yyyy-MM-dd (segunda-feira)
+  weekLabel: string;     // "12/05" formato dd/MM
+  score: number;         // 0-100
+  level: ProntidaoLevel; // frio|morno|quente|pronto
+  interactionCount: number;
 }
+
+export function computeProntidaoTrend(args: {
+  interactions: ExternalInteraction[];
+  profile: ProfileLike | null;
+  intelligence: IntelligenceLike | null;
+  weights?: ProntidaoWeights;
+  weeks?: number; // default 8
+}): ProntidaoTrendPoint[]
 ```
-- `create<State>()(persist(..., { name: 'singu-prontidao-weights' }))`.
-- `setWeight` clampa 0–100.
-- `reset` volta ao DEFAULT.
 
-### 3. Novo componente: `src/components/ficha-360/ProntidaoWeightsEditor.tsx` (~140 linhas)
+Lógica:
+- Gera N janelas semanais retroativas (default 8) terminando hoje.
+- Para cada semana W: monta um `profile` sintético com `last_contact_at` = última interação ≤ fim de W, `sentiment` = sentimento mais recente até W, mantém `cadence_days` e `intelligence` originais (best_channel/best_time são estáveis).
+- Chama `computeProntidaoScore` reaproveitando os mesmos pesos.
+- Retorna pontos ordenados cronologicamente. Semanas sem nenhuma interação prévia → `score: null` filtrado fora ou marcado como "sem dados".
 
-- `Popover` (gatilho: ícone `Sliders` ghost-button discreto no canto superior direito do `ScoreProntidaoCard`, ao lado do badge de nível).
-- Conteúdo do popover (~320px):
-  - Título: "Personalizar pesos do score"
-  - Subtítulo: "Ajuste a importância de cada fator. As mudanças aplicam ao vivo."
-  - 4 linhas com `Slider` (0–60, step 5) + label PT-BR + valor numérico:
-    - Cadência · Recência · Sentimento · Canal preferido
-  - Indicador da soma total: `"Total: {soma}%"` em badge (não precisa somar 100 — a função já normaliza por totalWeight).
-  - Botões rodapé: `Restaurar padrão` (ghost) + `Fechar` (default).
-- `React.memo`, tokens semânticos, flat.
+### 2. Novo componente: `src/components/ficha-360/ProntidaoTrendChart.tsx` (~150 linhas)
 
-### 4. `src/components/ficha-360/ScoreProntidaoCard.tsx` — integrar editor
+Card flat com:
+- **Header**: ícone `TrendingUp` + título "Tendência do Score de Prontidão" + badge de tendência (calculada por slope linear simples nos últimos 4 pontos: ↑ Melhorando / → Estável / ↓ Piorando) com cor semântica.
+- **Stat row** (3 mini-stats): Score atual, Variação 4 semanas (`+X pts` / `-X pts`), Pico do período.
+- **Gráfico**: `Recharts AreaChart` com `weekLabel` no X, score 0–100 no Y. Gradiente sutil sob a área, linha primary, dots pequenos, tooltip PT-BR mostrando "Semana de DD/MM • Score: X • Nível: {label} • {N} interações".
+- **Linhas de referência horizontais** nos thresholds 40 (morno) e 70 (quente) com `strokeDasharray` discreto.
+- **Empty state** quando `< 2` pontos com dados: mensagem "Histórico insuficiente. Registre mais interações para ver a evolução."
+- **Acessibilidade**: envolto em `AccessibleChart` com tabela sr-only (semana → score).
+- `React.memo`, tokens semânticos, flat (sem shadow).
 
-- Adicionar gatilho `<ProntidaoWeightsEditor />` no header da coluna direita (acima dos sliders dos fatores), discreto.
-- Sem outras mudanças visuais.
+### 3. Integração: `src/pages/Ficha360.tsx`
 
-### 5. `src/pages/Ficha360.tsx` — usar pesos do store
-
-- `const weights = useProntidaoWeightsStore(s => s.weights);`
-- `useMemo(() => computeProntidaoScore({ profile, intelligence, weights }), [profile, intelligence, weights]);`
-- Mudança no slider → store atualiza → `useMemo` recalcula → ring + breakdown + recomendação se atualizam ao vivo.
+- Importar `useProntidaoWeightsStore`, `computeProntidaoTrend`, `ProntidaoTrendChart`.
+- `const trend = useMemo(() => computeProntidaoTrend({ interactions: recentInteractions, profile, intelligence, weights, weeks: 8 }), [recentInteractions, profile, intelligence, weights])`.
+- Montar `<ProntidaoTrendChart data={trend} currentScore={prontidao.score} />` **logo abaixo** do `ProximaAcaoCTA` (ou na coluna direita do cabeçalho, dependendo do layout — colocar abaixo do CTA mantém leitura natural: Score → Por que → Próxima ação → Tendência).
+- Garantir que `interactionsLimit` em `useFicha360` cubra ao menos 8 semanas de histórico (atual = 50, suficiente).
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos (sem cores fixas)
-- Flat (sem shadow/gradient)
-- `React.memo` no editor
-- Zero novas queries de rede (puramente local)
-- Persistência em localStorage (`singu-prontidao-weights`)
-- Backward compat: `computeProntidaoScore` sem `weights` continua funcionando idêntico
+- Tokens semânticos (sem cores fixas; usar `hsl(var(--primary|success|warning|destructive|muted-foreground))`)
+- Flat (sem shadow, gradiente sutil só no `<defs>` da área do gráfico)
+- `React.memo` no chart
+- Zero novas queries de rede (reaproveita `useFicha360.recentInteractions`)
+- Reaproveita `computeProntidaoScore` + `ProntidaoWeights` do store → respeita pesos personalizados
+- `AccessibleChart` para WCAG 2.1 §1.1.1
 
 ## Arquivos tocados
 
 **Criados (2):**
-- `src/stores/useProntidaoWeightsStore.ts`
-- `src/components/ficha-360/ProntidaoWeightsEditor.tsx`
+- `src/lib/prontidaoTrend.ts`
+- `src/components/ficha-360/ProntidaoTrendChart.tsx`
 
-**Editados (3):**
-- `src/lib/prontidaoScore.ts` — parametrizar pesos com fallback DEFAULT
-- `src/components/ficha-360/ScoreProntidaoCard.tsx` — montar gatilho do editor
-- `src/pages/Ficha360.tsx` — ler pesos do store e passar para `computeProntidaoScore`
+**Editado (1):**
+- `src/pages/Ficha360.tsx` — calcular trend e montar chart abaixo do `ProximaAcaoCTA`
 
 ## Critério de fechamento
 
-(a) Ícone `Sliders` aparece no `ScoreProntidaoCard` e abre popover com 4 sliders rotulados em PT-BR, (b) mover qualquer slider atualiza ring/breakdown/recomendação na hora sem recarregar dados, (c) "Restaurar padrão" volta a 30/30/25/15, (d) preferência persiste em localStorage e sobrevive a refresh, (e) `WhyScoreDrawer` e o `ProximaAcaoCTA` continuam funcionando com os novos pesos refletidos no breakdown, (f) `computeProntidaoScore` chamado sem `weights` mantém comportamento original (zero regressão), (g) zero novas queries de rede, (h) PT-BR, tokens semânticos, flat.
+(a) Novo card "Tendência do Score de Prontidão" aparece na Ficha 360 abaixo do CTA Próxima Ação, (b) gráfico de área com 8 semanas, eixo X com labels dd/MM e Y de 0 a 100, (c) badge de tendência (↑ Melhorando / → Estável / ↓ Piorando) calculada por slope dos últimos 4 pontos, (d) tooltip PT-BR mostrando semana, score, nível e contagem de interações, (e) linhas de referência nos thresholds 40 e 70, (f) mudar pesos no `ProntidaoWeightsEditor` recalcula a curva inteira ao vivo, (g) empty state quando histórico < 2 pontos, (h) tabela sr-only via `AccessibleChart`, (i) zero novas queries de rede, (j) zero regressão no `ScoreProntidaoCard`, `ProximaAcaoCTA` ou no `ScoreHistoryChart` existente.
