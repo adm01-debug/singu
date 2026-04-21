@@ -1,5 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
