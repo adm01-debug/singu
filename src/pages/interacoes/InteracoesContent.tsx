@@ -184,6 +184,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         resultsCount={filteredAndSorted.length}
         totalCount={interactions.length}
         applyAll={applyAll}
+        applyDateRange={applyDateRange}
         channelCounts={channelCounts}
       />
 
@@ -237,11 +238,12 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
               })}
             </div>
           </div>
-          <InfiniteScrollSentinel
-            sentinelRef={sentinelRef}
-            hasMore={hasMore}
-            totalLoaded={visibleInteractions.length}
-            total={sortedForView.length}
+          <PaginationBar
+            page={safePage}
+            perPage={adv.perPage}
+            total={total}
+            onPageChange={(p) => setFilter('page', p)}
+            onPerPageChange={(pp) => setFilter('perPage', pp)}
           />
           {filteredAndSorted.length === 0 && !loading && (
             activeCount > 0 || Object.keys(activeFilters).length > 0
