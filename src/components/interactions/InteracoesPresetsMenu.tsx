@@ -339,44 +339,107 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                       />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {summarize(payload)}
-                        {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
-                      </p>
+                      {editingId === preset.id ? (
+                        <Input
+                          ref={renameInputRef}
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={handleRenameKeydown}
+                          onBlur={commitRename}
+                          onClick={(e) => e.stopPropagation()}
+                          maxLength={60}
+                          className="h-7 text-xs"
+                          aria-label="Renomear preset"
+                        />
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {summarize(payload)}
+                            {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
+                          </p>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Baixar JSON"
-                        onClick={(e) => { e.stopPropagation(); exportOne(preset); }}
-                      >
-                        <Download className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Copiar link"
-                        onClick={(e) => { e.stopPropagation(); copyLink(preset); }}
-                      >
-                        <Link2 className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        title="Remover"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePreset(preset.id);
-                          toast('Busca removida');
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3 text-muted-foreground" />
-                      </Button>
+                      {editingId === preset.id ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Confirmar"
+                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); commitRename(); }}
+                          >
+                            <Check className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Cancelar"
+                            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); cancelRename(); }}
+                          >
+                            <X className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Renomear"
+                            aria-label="Renomear preset"
+                            onClick={(e) => startRename(preset, e)}
+                          >
+                            <Pencil className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          {activeCount > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              title="Atualizar com filtros atuais"
+                              aria-label="Atualizar filtros do preset"
+                              onClick={(e) => askUpdateFilters(preset, e)}
+                            >
+                              <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Baixar JSON"
+                            onClick={(e) => { e.stopPropagation(); exportOne(preset); }}
+                          >
+                            <Download className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Copiar link"
+                            onClick={(e) => { e.stopPropagation(); copyLink(preset); }}
+                          >
+                            <Link2 className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Remover"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deletePreset(preset.id);
+                              toast('Busca removida');
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3 text-muted-foreground" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
