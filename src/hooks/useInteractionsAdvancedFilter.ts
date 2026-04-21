@@ -23,6 +23,22 @@ export interface AdvancedFilters {
 
 const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'page', 'perPage'] as const;
 
+const VALID_CHANNELS = new Set(['whatsapp', 'call', 'email', 'meeting', 'video_call', 'note']);
+function parseCanais(v: string | null): string[] {
+  if (!v) return [];
+  const raw = v.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const dedup = Array.from(new Set(raw));
+  return dedup.filter((c) => VALID_CHANNELS.has(c));
+}
+function normalizeCanais(arr: unknown): string[] {
+  if (!Array.isArray(arr)) return [];
+  const lowered = arr
+    .filter((v): v is string => typeof v === 'string')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return Array.from(new Set(lowered)).filter((c) => VALID_CHANNELS.has(c));
+}
+
 const VALID_VIEWS: ViewMode[] = ['list', 'by-contact', 'by-company'];
 function parseView(v: string | null): ViewMode {
   return (VALID_VIEWS as string[]).includes(v ?? '') ? (v as ViewMode) : 'list';
@@ -62,7 +78,7 @@ export function useInteractionsAdvancedFilter() {
     q: searchParams.get('q') ?? '',
     contact: searchParams.get('contact') ?? '',
     company: searchParams.get('company') ?? '',
-    canais: (searchParams.get('canais') ?? '').split(',').filter(Boolean),
+    canais: parseCanais(searchParams.get('canais')),
     direcao: parseDirecao(searchParams.get('direcao')),
     de: parseDate(searchParams.get('de')),
     ate: parseDate(searchParams.get('ate')),
@@ -80,8 +96,8 @@ export function useInteractionsAdvancedFilter() {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
     if (searchParams.get('canais')) return;
-    const cached = readAppliedCanais();
-    if (cached && cached.length > 0) {
+    const cached = normalizeCanais(readAppliedCanais());
+    if (cached.length > 0) {
       const next = new URLSearchParams(searchParams);
       next.set('canais', cached.join(','));
       setSearchParams(next, { replace: true });
@@ -99,8 +115,8 @@ export function useInteractionsAdvancedFilter() {
     // Reset automático de page sempre que QUALQUER outro filtro mudar.
     if (key !== 'page') next.delete('page');
     if (key === 'canais') {
-      const arr = value as string[];
-      if (Array.isArray(arr) && arr.length > 0) next.set('canais', arr.join(','));
+      const arr = normalizeCanais(value);
+      if (arr.length > 0) next.set('canais', arr.join(','));
       else next.delete('canais');
     } else if (key === 'de' || key === 'ate') {
       const d = value as Date | undefined;
@@ -146,7 +162,10 @@ export function useInteractionsAdvancedFilter() {
     if (next.q) sp.set('q', next.q);
     if (next.contact) sp.set('contact', next.contact);
     if (next.company) sp.set('company', next.company);
-    if (Array.isArray(next.canais) && next.canais.length > 0) sp.set('canais', next.canais.join(','));
+    if (next.canais !== undefined) {
+      const arr = normalizeCanais(next.canais);
+      if (arr.length > 0) sp.set('canais', arr.join(','));
+    }
     if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
     if (next.de instanceof Date && !isNaN(next.de.getTime())) sp.set('de', next.de.toISOString().slice(0, 10));
     if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
