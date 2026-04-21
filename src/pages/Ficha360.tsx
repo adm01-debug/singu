@@ -298,6 +298,8 @@ const Ficha360 = () => {
                         activeCount={activeCount}
                         shownCount={recentInteractions.length}
                         totalCount={channelCounts.total}
+                        channelCounts={potentialChannelCounts}
+                        channelCountsReady={channelCountsReady}
                       />
                       <FiltrosAtivosChips
                         days={days}
