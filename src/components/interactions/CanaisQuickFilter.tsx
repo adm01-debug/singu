@@ -233,6 +233,29 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           </TooltipContent>
         </Tooltip>
 
+        {showClear && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={clearAll}
+                aria-label="Limpar seleção de canais"
+                className="gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Eraser className="w-3 h-3" />
+                Limpar canais
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {mode === 'auto'
+                ? 'Remove todos os canais selecionados (aplica imediatamente).'
+                : 'Desmarca todos os canais. Clique em Aplicar para confirmar.'}
+            </TooltipContent>
+          </Tooltip>
+        )}
+
         {dirty && (
           <div className="flex items-center gap-1 ml-1" aria-live="polite">
             <Button
