@@ -62,7 +62,7 @@ const urgencyToClass = (u?: string) => {
   return 'bg-warning/10 text-warning border-warning/30';
 };
 
-function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime }: Props) {
+function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
@@ -74,15 +74,10 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime 
     return () => clearTimeout(timer);
   }, [createdIds]);
 
-  const handleCopy = async (text?: string) => {
-    if (!text) return;
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Script copiado');
-    } catch {
-      toast.error('Não foi possível copiar');
-    }
-  };
+  const resolvedFirstName = (firstName || contactName.split(' ')[0] || 'contato').trim();
+  const bestTimeStr = bestTime?.hour_of_day != null
+    ? `${String(bestTime.hour_of_day).padStart(2, '0')}:00`
+    : null;
 
   const handleCreated = (passoId: string) => {
     setExpandedId(null);
