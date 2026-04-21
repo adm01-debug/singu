@@ -10,10 +10,17 @@ import { useRapportPoints } from './useRapportPoints';
  * Compõe múltiplas queries (TanStack Query) em uma única view consolidada,
  * sem useEffect e com fallback gracioso por bloco.
  */
-export function useFicha360(contactId: string | undefined) {
+export interface UseFicha360Options {
+  days?: number;
+  channels?: string[];
+  interactionsLimit?: number;
+}
+
+export function useFicha360(contactId: string | undefined, options: UseFicha360Options = {}) {
+  const { days, channels, interactionsLimit = 50 } = options;
   const view360 = useContactView360(contactId);
   const intelligence = useContactIntelligence(contactId ?? '', !!contactId);
-  const interactions = useExternalInteractions(contactId, 10);
+  const interactions = useExternalInteractions(contactId, interactionsLimit, { days, channels });
   const rapportIntel = useRapportIntel(contactId);
   const rapportPoints = useRapportPoints(contactId);
 
