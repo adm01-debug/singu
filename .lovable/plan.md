@@ -1,39 +1,36 @@
 
 
-# Plano: Resumo de evolução de % positivo no topo do chart
+# Plano: Média móvel na tendência de sentimento
 
 ## Diagnóstico
 
-- O `SentimentTrendChart.tsx` já mostra um badge "Melhorando/Estável/Piorando" com `summary.deltaPct`, mas esse delta vem do hook (`useInteractionsInsights`) e representa a variação **dentro** da janela atual (ex.: primeira vs. última semana), não uma comparação com o **período anterior** equivalente.
-- Os dados disponíveis localmente em `data: SentimentTrendPoint[]` permitem calcular essa comparação sem mexer no hook: dividir as semanas em duas metades (mais antiga = "período anterior", mais recente = "período atual") e comparar o `% positivo` médio ponderado pelo volume (`positive / total`).
-- Sinal será determinístico, derivado puramente de `data` (sem novas dependências, sem mudanças em hooks).
+- O `SentimentTrendChart.tsx` plota 4 séries semanais (`% positivo`, `% neutro`, `% negativo`, `% misto`) diretamente dos pontos brutos vindos de `data: SentimentTrendPoint[]`. Semanas com pouco volume causam picos visuais que dificultam ler o rumo geral.
+- Já temos `evolutionStats` (atual vs. anterior) e o badge de tendência da janela, mas falta uma camada visual contínua que suavize a curva semana-a-semana.
+- Os dados necessários (`positive`, `neutral`, `negative`, `mixed`, `total` por semana) já estão disponíveis localmente — não precisa tocar no hook.
 
 ## O que será construído
 
-Adicionar uma faixa de **resumo de evolução** acima do chart, com:
-
-- Ícone de direção (↑ subiu / − estável / ↓ desceu) baseado no delta vs. período anterior.
-- "% positivo atual" e "% positivo anterior" lado a lado.
-- Delta em `pp` (pontos percentuais) com cor semântica (success/muted/destructive).
-- Texto curto de contexto: "vs. {N} semanas anteriores".
+Sobrepor uma **linha de média móvel ponderada por volume** sobre a série de `% positivo` (a principal), com janela configurável (padrão 3 semanas), para evidenciar o rumo sem competir visualmente com as 4 séries existentes.
 
 ### Mudanças em `src/components/interactions/insights/SentimentTrendChart.tsx`
 
-1. Novo `useMemo` `evolutionStats` que:
-   - Divide `data` em duas metades por índice (`Math.floor(data.length / 2)`).
-   - Calcula `% positivo` ponderado de cada metade: `sum(positive) / sum(total)` × 100.
-   - Retorna `{ currentPct, previousPct, deltaPp, direction, weeksCompared }`.
-   - Threshold de "estável": `|deltaPp| < 3` → `stable`; `> 0` → `up`; `< 0` → `down`.
-   - Quando `data.length < 4` ou alguma metade tem `total = 0`, retorna `null` (oculta a faixa).
-2. Nova faixa renderizada **acima** do bloco `summary` existente (ou no lugar dele se `summary` ausente), em uma `div` flat com:
-   - Ícone (TrendingUp/Minus/TrendingDown) + label ("Subiu" / "Estável" / "Desceu") em cor semântica.
-   - Bloco "Atual: X% · Anterior: Y%" em texto pequeno tabular-nums.
-   - Badge `+Zpp` / `−Zpp` / `0pp` à direita, mesmo padrão de cores do badge atual.
-   - Subtexto cinza: "vs. {weeksCompared} semanas anteriores".
-3. Manter o badge atual de tendência interna (já existente) — são dois sinais complementares: o badge é "trend dentro da janela", a nova faixa é "atual vs. anterior".
-4. Sem mudanças em `useInteractionsInsights.ts`, tipos públicos, hooks, ou outros componentes.
+1. Novo `useMemo` `dataWithMA` que enriquece cada ponto com `positivePctMA`:
+   - Janela centrada/trailing de 3 semanas (semana atual + 2 anteriores).
+   - Cálculo **ponderado por volume**: `sum(positive[i-2..i]) / sum(total[i-2..i]) × 100`.
+   - Quando o ponto está nas 2 primeiras semanas, usa janela menor (sem `null`s no meio).
+   - Se `total` somado da janela = 0, retorna `null` (Recharts ignora).
+2. Nova `<Line>` adicionada **antes** das linhas existentes (para ficar atrás visualmente):
+   ```tsx
+   <Line yAxisId="sentiment" type="monotone" dataKey="positivePctMA"
+         name="Tendência (MM3)" stroke="hsl(var(--success))"
+         strokeWidth={3} strokeOpacity={0.45} strokeDasharray="0"
+         dot={false} activeDot={false} isAnimationActive={false} />
+   ```
+3. Toggle simples no header do chart (próximo ao seletor de período): botão `Suavizar` (ghost size sm) com estado local `useState<boolean>(true)`. Quando off, a `<Line>` da MA não renderiza.
+4. Tooltip atualizado para incluir, quando MA estiver ativa e o valor existir, uma linha extra: `Tendência (MM3): X%` logo abaixo do `% positivo` bruto, em cinza médio para indicar que é derivado.
+5. Sem mudanças em `useInteractionsInsights.ts`, tipos públicos (`SentimentTrendPoint` ganha campo opcional só localmente via tipo derivado interno), stat cards, eixos, ReferenceLines, barras de volume ou faixa de evolução.
 
 ## Critérios de aceite
 
-(a) Acima do chart aparece uma faixa de resumo com ícone direcional, % positivo atual, % positivo anterior, delta em `pp` e legenda "vs. N semanas anteriores"; (b) cores seguem padrão semântico (success/muted/destructive) consistente com o resto do chart; (c) faixa só renderiza quando há ≥ 4 semanas e ambas as metades têm volume > 0 (caso contrário fica oculta sem quebrar layout); (d) cálculo é ponderado por volume (não média simples de %), refletindo realidade quando semanas têm volumes muito distintos; (e) badge "Melhorando/Estável/Piorando" existente é preservado; (f) sem mudanças em hooks, agregação, tipos públicos, stat cards (Melhor/Pior/Conversas/Mistos), tooltip ou outros componentes; (g) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (h) arquivo permanece ≤300 linhas; (i) sem regressão em layout responsivo, legenda, eixos, ReferenceLines ou barras de volume.
+(a) Sobre o chart aparece uma linha verde translúcida (opacidade ~45%, stroke 3px) representando a média móvel ponderada de 3 semanas do `% positivo`; (b) toggle `Suavizar` no header liga/desliga a linha sem afetar as demais séries (padrão: ligado); (c) tooltip mostra `Tendência (MM3): X%` apenas quando ativa e quando há volume na janela; (d) cálculo é ponderado por volume (não média simples), para que semanas de baixo volume não distorçam; (e) primeiros 1-2 pontos usam janela parcial (sem buracos); (f) sem mudanças em hooks, agregação externa, tipos públicos, stat cards, faixa de evolução, badge de direção, eixos ou barras de volume; (g) sem novas dependências, PT-BR, flat, sem `any`, sem `dangerouslySetInnerHTML`; (h) arquivo permanece ≤300 linhas; (i) sem regressão em layout responsivo, legenda, ReferenceLines de Melhor/Pior ou seletor de período.
 
