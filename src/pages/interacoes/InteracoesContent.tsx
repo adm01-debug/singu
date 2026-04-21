@@ -100,10 +100,30 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     [advancedFilteredWithoutCanais]
   );
 
-  // Apply advanced filters (URL-driven) — agora derivado, aplicando só o filtro de canais.
+  // Apply advanced filters (URL-driven) — agora derivado, aplicando o filtro de canais e sentimento.
   const advancedFiltered = useMemo(() => {
-    if (adv.canais.length === 0) return advancedFilteredWithoutCanais;
-    return advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
+    let result = adv.canais.length === 0
+      ? advancedFilteredWithoutCanais
+      : advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
+    if (adv.sentimento) {
+      result = result.filter(i => i.sentiment === adv.sentimento);
+    }
+    return result;
+  }, [advancedFilteredWithoutCanais, adv.canais, adv.sentimento]);
+
+  // Contagem por bucket de sentimento (ignora o próprio filtro de sentimento).
+  const sentimentCounts = useMemo(() => {
+    const base = adv.canais.length === 0
+      ? advancedFilteredWithoutCanais
+      : advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
+    const acc: Record<'positive' | 'neutral' | 'negative' | 'mixed', number> = {
+      positive: 0, neutral: 0, negative: 0, mixed: 0,
+    };
+    for (const i of base) {
+      const s = i.sentiment as keyof typeof acc | null | undefined;
+      if (s && s in acc) acc[s] += 1;
+    }
+    return acc;
   }, [advancedFilteredWithoutCanais, adv.canais]);
 
   const filteredAndSorted = useMemo(() => {
