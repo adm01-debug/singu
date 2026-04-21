@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import {
   ComposedChart,
   Bar,
@@ -105,6 +105,14 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
 }
 
 function SentimentTrendChartImpl({ data, summary }: Props) {
+  const mixedStats = useMemo(() => {
+    const safe = Array.isArray(data) ? data : [];
+    const totalMixed = safe.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
+    const totalAll = safe.reduce((acc, p) => acc + (p.total ?? 0), 0);
+    const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
+    return { totalMixed, pct };
+  }, [data]);
+
   if (!Array.isArray(data) || data.length < 2) {
     return (
       <p className="text-sm text-muted-foreground text-center py-12">
@@ -127,7 +135,7 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
             {DIRECTION_LABEL[summary.direction]} {deltaSign}
             {summary.deltaPct}pp
           </Badge>
-          <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] flex-1 max-w-md">
+          <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-success">
                 {summary.bestWeek ? `${formatWeek(summary.bestWeek.week)} · ${summary.bestWeek.positivePct}%` : "—"}
@@ -143,6 +151,12 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-foreground">{summary.totalInteractions}</p>
               <p className="text-muted-foreground">Conversas</p>
+            </div>
+            <div className="rounded border border-border/60 p-1">
+              <p className="font-semibold text-warning tabular-nums">
+                {mixedStats.totalMixed} <span className="text-muted-foreground font-normal">· {mixedStats.pct}%</span>
+              </p>
+              <p className="text-muted-foreground">Mistos</p>
             </div>
           </div>
         </div>
