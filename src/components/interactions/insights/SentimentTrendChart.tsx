@@ -58,7 +58,7 @@ function pctClass(pct: number): string {
 
 function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload || payload.length === 0) return null;
-  const point = payload[0]?.payload as SentimentTrendPoint | undefined;
+  const point = payload[0]?.payload as (SentimentTrendPoint & { positivePctMA?: number | null }) | undefined;
   if (!point) return null;
 
   const total = point.total ?? 0;
