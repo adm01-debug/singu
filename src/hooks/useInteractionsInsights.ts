@@ -56,12 +56,16 @@ export function useInteractionsInsights(period: Period = "30d") {
 
     // Sentiment distribution
     const sentCounts: Record<string, number> = { positive: 0, neutral: 0, negative: 0, mixed: 0 };
+    const sentBuckets: Record<SentimentOverall, string[]> = { positive: [], neutral: [], negative: [], mixed: [] };
     let scoreSum = 0;
     let scoreCount = 0;
     let unhandled = 0;
 
     for (const a of list) {
-      if (a.sentiment_overall) sentCounts[a.sentiment_overall] = (sentCounts[a.sentiment_overall] ?? 0) + 1;
+      if (a.sentiment_overall) {
+        sentCounts[a.sentiment_overall] = (sentCounts[a.sentiment_overall] ?? 0) + 1;
+        if (a.interaction_id) sentBuckets[a.sentiment_overall].push(a.interaction_id);
+      }
       if (typeof a.coaching_score === "number") {
         scoreSum += a.coaching_score;
         scoreCount++;
@@ -148,7 +152,7 @@ export function useInteractionsInsights(period: Period = "30d") {
       unhandledObjections: unhandled,
     };
 
-    return { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, list };
+    return { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
   }, [query.data]);
 
   return { ...insights, isLoading: query.isLoading, isError: query.isError };

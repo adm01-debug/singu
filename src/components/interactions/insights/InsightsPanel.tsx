@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
 import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hooks/useInteractionsInsights";
+import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
 import { ThemesRanking } from "./ThemesRanking";
 import { ObjectionsRanking } from "./ObjectionsRanking";
 import { ThemeExamplesDrawer } from "./ThemeExamplesDrawer";
+import { SentimentExamplesDrawer } from "./SentimentExamplesDrawer";
 
 const PERIOD_LABEL: Record<string, string> = { positive: "Positivo", neutral: "Neutro", negative: "Negativo", mixed: "Misto" };
 
@@ -29,8 +31,12 @@ export function InsightsPanel() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, isLoading } = useInteractionsInsights(period);
+  const { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
+  const [selectedBucket, setSelectedBucket] = useState<SentimentOverall | null>(null);
+
+  // Fechar drawer ao trocar período
+  useEffect(() => { setSelectedBucket(null); setSelectedTheme(null); }, [period]);
 
   const isEmpty = !isLoading && kpis.totalAnalyzed === 0;
 
@@ -94,7 +100,7 @@ export function InsightsPanel() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Distribuição de sentimento</CardTitle></CardHeader>
-              <CardContent><SentimentDistributionChart data={sentimentDistribution} /></CardContent>
+              <CardContent><SentimentDistributionChart data={sentimentDistribution} onSelectBucket={setSelectedBucket} /></CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Tendência semanal</CardTitle></CardHeader>
@@ -125,6 +131,11 @@ export function InsightsPanel() {
       )}
 
       <ThemeExamplesDrawer theme={selectedTheme} onClose={() => setSelectedTheme(null)} />
+      <SentimentExamplesDrawer
+        bucket={selectedBucket}
+        interactionIds={selectedBucket ? sentimentBuckets[selectedBucket] ?? [] : []}
+        onClose={() => setSelectedBucket(null)}
+      />
     </div>
   );
 }
