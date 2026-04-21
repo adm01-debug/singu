@@ -210,6 +210,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             Tarefa criada
                           </Badge>
                         )}
+                        {last && (
+                          <Badge variant="outline" className={cn('text-[10px]', outcomeMeta[last.outcome].className)}>
+                            {outcomeMeta[last.outcome].label} · {relativeDays(last.daysAgo)}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground">{p.detail}</p>
                       <p className="text-xs text-muted-foreground/80 mt-1 italic">{p.reason}</p>
@@ -227,6 +232,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             aria-hidden="true"
                           />
                         </Button>
+                        <PassoFeedbackMenu
+                          passoId={p.id}
+                          contactId={contactId}
+                          channelHint={p.channel}
+                        />
                         <CopyScriptMenu
                           passoId={p.id}
                           firstName={resolvedFirstName}
@@ -251,7 +261,8 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
               );
             })}
           </ul>
-        )}
+          );
+        })()}
       </CardContent>
     </Card>
   );
