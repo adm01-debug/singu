@@ -215,18 +215,22 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
         </div>
 
         {/* Lista local */}
-        {(() => {
-          const visiblePassos = passos.filter((p) => !getRecentSkipUntil(feedbacks, p.id));
-          if (visiblePassos.length === 0) {
-            return (
-              <div className="text-center py-6 text-sm text-muted-foreground">
-                Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
-              </div>
-            );
-          }
-          return (
+        {visiblePassos.length === 0 ? (
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
+          </div>
+        ) : displayPassos.length === 0 ? (
+          <div className="rounded-md border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+            Nenhuma sugestão com esses filtros.
+            <div className="mt-2">
+              <Button variant="outline" size="xs" onClick={clearFilters}>
+                <X className="h-3 w-3" /> Limpar filtros
+              </Button>
+            </div>
+          </div>
+        ) : (
           <ul className="space-y-2">
-            {visiblePassos.map((p) => {
+            {displayPassos.map((p) => {
               const Icon = channelIcon[p.channel] ?? ListChecks;
               const pm = priorityMeta[p.priority];
               const isExpanded = expandedId === p.id;
