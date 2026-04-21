@@ -96,8 +96,8 @@ export function useInteractionsAdvancedFilter() {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
     if (searchParams.get('canais')) return;
-    const cached = readAppliedCanais();
-    if (cached && cached.length > 0) {
+    const cached = normalizeCanais(readAppliedCanais());
+    if (cached.length > 0) {
       const next = new URLSearchParams(searchParams);
       next.set('canais', cached.join(','));
       setSearchParams(next, { replace: true });
