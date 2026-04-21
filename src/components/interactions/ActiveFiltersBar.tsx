@@ -1,7 +1,5 @@
 import React from 'react';
 import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
@@ -26,12 +24,15 @@ interface Props {
   companyLabel?: string | null;
 }
 
+function pad2(n: number): string {
+  return n.toString().padStart(2, '0');
+}
+
+/** Formato numérico padrão PT-BR: dd/mm/aa */
 function fmtDate(d: Date): string {
-  try {
-    return format(d, "dd MMM yy", { locale: ptBR });
-  } catch {
-    return '';
-  }
+  if (!(d instanceof Date) || isNaN(d.getTime())) return '';
+  const yy = d.getFullYear().toString().slice(-2);
+  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${yy}`;
 }
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
@@ -53,7 +54,7 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
       {qTrim && (
         <Badge variant="secondary" closeable onClose={() => setFilter('q', '')} icon={<Search className="w-3 h-3" />}>
-          Busca: {qTrim}
+          Busca “{qTrim}”
         </Badge>
       )}
 
@@ -71,13 +72,13 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
       {filters.contact && (
         <Badge variant="secondary" closeable onClose={() => setFilter('contact', '')} icon={<User className="w-3 h-3" />}>
-          Pessoa: {contactLabel || filters.contact.slice(0, 8)}
+          Pessoa {contactLabel || filters.contact.slice(0, 8)}
         </Badge>
       )}
 
       {filters.company && (
         <Badge variant="secondary" closeable onClose={() => setFilter('company', '')} icon={<Building2 className="w-3 h-3" />}>
-          Empresa: {companyLabel || filters.company.slice(0, 8)}
+          Empresa {companyLabel || filters.company.slice(0, 8)}
         </Badge>
       )}
 
@@ -100,13 +101,13 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
       {filters.de instanceof Date && (
         <Badge variant="secondary" closeable onClose={() => setFilter('de', undefined)} icon={<Calendar className="w-3 h-3" />}>
-          De: {fmtDate(filters.de)}
+          Período desde {fmtDate(filters.de)}
         </Badge>
       )}
 
       {filters.ate instanceof Date && (
         <Badge variant="secondary" closeable onClose={() => setFilter('ate', undefined)} icon={<Calendar className="w-3 h-3" />}>
-          Até: {fmtDate(filters.ate)}
+          Período até {fmtDate(filters.ate)}
         </Badge>
       )}
 
