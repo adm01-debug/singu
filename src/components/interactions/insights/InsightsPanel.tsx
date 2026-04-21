@@ -11,6 +11,7 @@ import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
 import { ThemesRanking } from "./ThemesRanking";
 import { ObjectionsRanking } from "./ObjectionsRanking";
+import { ObjectionsSpotlight } from "./ObjectionsSpotlight";
 import { ThemeExamplesDrawer } from "./ThemeExamplesDrawer";
 import { SentimentExamplesDrawer } from "./SentimentExamplesDrawer";
 
@@ -118,14 +119,17 @@ export function InsightsPanel() {
                 <ThemesRanking themes={topThemes} onSelect={setSelectedTheme} />
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ObjectionsRanking objections={topObjections} />
-              </CardContent>
-            </Card>
+            <div className="space-y-3">
+              <ObjectionsSpotlight objections={topObjections} />
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ObjectionsRanking objections={topObjections} />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </>
       )}
