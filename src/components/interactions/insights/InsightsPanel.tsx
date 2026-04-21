@@ -120,7 +120,17 @@ export function InsightsPanel() {
               </CardContent>
             </Card>
             <div className="space-y-3">
-              <ObjectionsSpotlight objections={topObjections} />
+              {topObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
+                    <CardDescription className="text-xs">Top 3 com maior risco de bloqueio</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsSpotlight objections={topObjections} />
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
