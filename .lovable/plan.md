@@ -1,121 +1,70 @@
 
-# Plano: Enriquecer a Tendência Semanal de Sentimento
+# Plano: Tooltip rico no SentimentTrendChart
+
+## Objetivo
+
+Substituir o tooltip padrão do Recharts no `SentimentTrendChart` por um tooltip customizado que mostra, ao passar o mouse sobre uma semana, um resumo claro e organizado: total de conversas, contagem por sentimento (positivo, neutro, negativo, misto) com swatches coloridos e percentuais, e o `% positivo` da semana em destaque.
 
 ## Status atual
 
-A aba Insights de `/interacoes` **já possui** um `SentimentTrendChart` semanal funcional, plugado em `useInteractionsInsights.sentimentTrend` (agrupamento por semana ISO) e respondendo ao switcher 7d/30d/90d. Renderiza 3 linhas (Positivo / Neutro / Negativo) sobre o período.
-
-**Lacunas reais:**
-1. A linha de **Misto** existe nos dados mas não é plotada
-2. Não há **resumo de evolução** (delta vs período anterior, melhor/pior semana)
-3. Não há **linha de tendência** (média móvel ou %positivo agregado) para leitura rápida do rumo
-4. Sem indicação visual de **volume** semanal (uma semana com 2 conversas pesa igual a uma com 50)
-5. Eixo Y mostra contagem absoluta — dificulta comparar semanas com volumes muito diferentes
-
-Esta entrega transforma o chart em um verdadeiro "rastreador de evolução" sem novas queries.
-
-## Reutilização
-
-- `useInteractionsInsights` → `sentimentTrend` (já existe, já pondera por semana ISO)
-- `SentimentTrendChart` (refatorar in-place, sem novo componente)
-- `CHART_COLORS` em `nlpAnalyticsConstants` (já tem positive/neutral/negative — adicionar `mixed`)
-- `Recharts` (LineChart, ComposedChart, Bar, ReferenceLine) — já no bundle
-- Padrão de `Badge` + `TrendingUp/Down/Minus` do `SentimentTrendChart` de `contact-detail` (referência visual)
-
-Sem novo hook, sem nova RPC, sem nova edge function, sem novo fetch.
-
-## Arquitetura
-
-```text
-InsightsPanel
- └─ Card "Tendência semanal" (existente)
-     └─ SentimentTrendChart (refatorado)
-         ├─ Header inline: badge de evolução (% positivo: ↑ X / → / ↓ X vs metade anterior)
-         ├─ Mini-stats: melhor semana | pior semana | total no período
-         └─ ComposedChart (h-64)
-             ├─ Bar (volume total por semana, eixo Y direito, opacity 30%)
-             ├─ Line Positivo / Neutro / Negativo / Misto (eixo Y esquerdo, count)
-             ├─ Line "% Positivo" tracejada (eixo Y direito secundário, 0-100)
-             └─ ReferenceLine no índice da melhor semana (verde) e pior semana (vermelha)
-```
+O `SentimentTrendChart` já recebe `data: SentimentTrendPoint[]` com todos os campos necessários (`positive`, `neutral`, `negative`, `mixed`, `total`, `positivePct`) e usa o `<Tooltip>` padrão do Recharts apenas com `labelFormatter`. O tooltip mostra as séries empilhadas em ordem de eixo, mistura escalas (count vs %) e não dá leitura imediata do contexto da semana.
 
 ## Implementação
 
-### 1. `useInteractionsInsights.ts` — enriquecer cada ponto e expor sumário
+### 1. Componente `WeeklySentimentTooltip` (inline no arquivo, ≤60 linhas)
 
-Atualmente `sentimentTrend: { week, positive, neutral, negative, mixed, total }[]`.
+Tooltip custom recebe `active`, `payload`, `label` (props padrão do Recharts) e renderiza só quando `active && payload?.[0]?.payload`. Lê o `SentimentTrendPoint` direto de `payload[0].payload` (evita depender da ordem das séries).
 
-Adicionar derivações no mesmo `useMemo`:
+Layout (flat, tokens semânticos, sem shadow):
 
-```ts
-// Por ponto: % positivo (positive / total * 100), arredondado
-sentimentTrend: Array<{
-  week: string;
-  positive: number; neutral: number; negative: number; mixed: number;
-  total: number;
-  positivePct: number; // novo
-}>
-
-// Resumo agregado do período
-sentimentTrendSummary: {
-  bestWeek: { week: string; positivePct: number } | null;
-  worstWeek: { week: string; positivePct: number } | null;
-  deltaPct: number;          // %positivo da 2ª metade − 1ª metade
-  direction: "up" | "stable" | "down"; // limiares ±5pp
-  totalInteractions: number;
-}
+```
+┌─────────────────────────────────────┐
+│ Semana de 14 abr                    │  ← header (text-xs font-semibold)
+│ 23 conversas · 65% positivo         │  ← subhead (text-[10px] muted)
+├─────────────────────────────────────┤
+│ ● Positivo            15  (65%)     │
+│ ● Neutro               5  (22%)     │
+│ ● Negativo             2   (9%)     │
+│ ● Misto                1   (4%)     │  ← oculta se 0
+└─────────────────────────────────────┘
 ```
 
-Cálculos puros, O(n), zero overhead. Quando `sentimentTrend.length < 2`, summary retorna `direction: "stable"` e weeks `null`.
+- Cada linha: swatch 8px com `CHART_COLORS[key]`, label, contagem alinhada à direita, % entre parênteses
+- `% positivo` no header em cor `text-success` quando ≥60%, `text-destructive` quando ≤30%, `text-muted-foreground` no meio
+- Linhas com count `0` são omitidas para reduzir ruído
+- Container: `rounded-md border border-border bg-popover px-3 py-2 text-xs min-w-[200px]`
 
-### 2. `SentimentTrendChart.tsx` — refatorar (≤140 linhas)
+### 2. Plug no `<Tooltip>`
 
-- Trocar `LineChart` por `ComposedChart`
-- Adicionar `<Bar dataKey="total" yAxisId="vol" fill="hsl(var(--muted))" opacity={0.25} />`
-- Manter as 3 linhas existentes + adicionar `<Line dataKey="mixed" stroke="hsl(var(--warning))" />`
-- Adicionar `<Line dataKey="positivePct" yAxisId="pct" strokeDasharray="4 4" stroke="hsl(var(--primary))" />` para leitura de tendência
-- Dois `<YAxis>`: esquerdo `id="count"` (decimais não), direito `id="pct"` domain `[0, 100]` formato `%`
-- `ReferenceLine` vertical em `bestWeek` (success) e `worstWeek` (destructive) quando ambos diferentes
-- Header acima do chart: `Badge` com ícone `TrendingUp/Minus/TrendingDown` + texto "Melhorando +Xpp / Estável / Piorando −Xpp" colorido por `direction`
-- Mini-stats (3 cards inline `text-xs`): "Melhor: dd/mm — X%" · "Pior: dd/mm — X%" · "Total: N conversas"
-- Fallback: se `< 2` semanas, mostra mensagem "Dados insuficientes para tendência"
-- `React.memo` mantido
+Substituir o `Tooltip` atual pelo custom:
 
-### 3. `nlpAnalyticsConstants.ts` — adicionar cor para `mixed`
-
-```ts
-CHART_COLORS = { positive, neutral, negative, mixed: 'hsl(38, 92%, 50%)' }
+```tsx
+<Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
 ```
 
-### 4. `InsightsPanel.tsx` — passar summary
+Remove `contentStyle` e `labelFormatter` (agora dentro do componente custom).
 
-- Desestruturar `sentimentTrendSummary` do hook
-- Passar como prop ao `SentimentTrendChart`
+### 3. Edge cases
 
-### 5. Edge cases
+- `total === 0`: mostra apenas header "Semana de DD mês · sem conversas"
+- `positivePct` ausente → fallback `Math.round((positive/total)*100)` defensivo
+- Payload vazio/inativo → retorna `null`
+- Type-safe: tipa props como `TooltipProps<number, string>` do `recharts`, sem `any`
 
-- 0 ou 1 semana: chart oculto, exibe "Dados insuficientes para tendência"
-- 2 semanas: badge mostra delta, sem ReferenceLine de melhor/pior se idênticas
-- Total = 0 numa semana: `positivePct = 0`, sem divisão por zero
-- Cores semânticas: `success`/`warning`/`destructive`/`muted-foreground` via tokens HSL
-
-### 6. Padrões obrigatórios
+### 4. Padrões obrigatórios
 
 - PT-BR
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- `Array.isArray` defensivo
-- Tokens semânticos
-- Flat (sem shadow)
+- Tokens semânticos (`success`, `destructive`, `muted-foreground`, `popover`, `border`)
+- Flat (sem shadow, sem gradient)
 - Zero novas queries
+- Mantém `React.memo` no chart
 
 ## Arquivos tocados
 
-**Editados (3):**
-- `src/hooks/useInteractionsInsights.ts` — `positivePct` por ponto + `sentimentTrendSummary`
-- `src/components/interactions/insights/SentimentTrendChart.tsx` — ComposedChart + barras de volume + linha %positivo + ReferenceLines + header com delta
-- `src/components/interactions/insights/InsightsPanel.tsx` — passar `summary` ao chart
-- `src/data/nlpAnalyticsConstants.ts` — cor para `mixed`
+**Editado (1):**
+- `src/components/interactions/insights/SentimentTrendChart.tsx` — adiciona `WeeklySentimentTooltip` interno e pluga em `<Tooltip content={…}/>`
 
 ## Critério de fechamento
 
-(a) Chart de tendência mostra 4 linhas (positivo, neutro, negativo, misto) + barras de volume semanal ao fundo + linha tracejada `% positivo` no eixo direito, (b) header do card exibe badge "Melhorando/Estável/Piorando ±Xpp" comparando 2ª metade vs 1ª metade do período, (c) mini-stats abaixo mostram melhor semana, pior semana e total de conversas, (d) ReferenceLines verticais marcam visualmente best/worst week, (e) fallback "Dados insuficientes" quando <2 semanas, (f) zero novas queries de rede, (g) zero regressão em distribuição, temas, objeções, KPIs ou drawers.
+(a) Hover sobre qualquer semana mostra tooltip custom com header "Semana de DD mês · N conversas · X% positivo", (b) lista de sentimentos com swatch colorido, contagem e % de cada um, omitindo linhas com count 0, (c) % positivo do header colorido conforme faixa (verde ≥60, vermelho ≤30, neutro), (d) semana sem conversas mostra mensagem reduzida, (e) zero novas queries, (f) zero regressão em barras, linhas, ReferenceLines, header de evolução ou mini-stats.
