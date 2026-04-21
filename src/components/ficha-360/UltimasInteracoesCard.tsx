@@ -10,6 +10,8 @@ import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 interface Props {
   interactions: ExternalInteraction[];
   contactId: string;
+  headerExtra?: React.ReactNode;
+  filtersActive?: boolean;
 }
 
 const channelIcon = (channel: string | null) => {
@@ -44,25 +46,32 @@ function formatDate(iso?: string | null): string {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-export const UltimasInteracoesCard = memo(({ interactions, contactId }: Props) => {
+export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive }: Props) => {
   const items = Array.isArray(interactions) ? interactions : [];
 
   return (
     <Card>
-      <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base">Últimas Interações</CardTitle>
-        <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
-          <Link to={`/interacoes?contact=${contactId}`}>
-            Ver todas <ArrowRight className="h-3 w-3 ml-1" />
-          </Link>
-        </Button>
+      <CardHeader className="pb-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base">Últimas Interações</CardTitle>
+          <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Link to={`/interacoes?contact=${contactId}`}>
+              Ver todas <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
+          </Button>
+        </div>
+        {headerExtra}
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
           <InlineEmptyState
             icon={MessageSquare}
-            title="Sem interações recentes"
-            description="As últimas conversas, ligações e e-mails aparecerão aqui."
+            title={filtersActive ? 'Nenhuma interação nos filtros' : 'Sem interações recentes'}
+            description={
+              filtersActive
+                ? 'Ajuste o período ou os canais selecionados acima.'
+                : 'As últimas conversas, ligações e e-mails aparecerão aqui.'
+            }
           />
         ) : (
           <ul className="space-y-1">

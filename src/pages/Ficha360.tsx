@@ -10,12 +10,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useFicha360 } from '@/hooks/useFicha360';
+import { useFicha360Filters } from '@/hooks/useFicha360Filters';
 import { PerfilComportamentalCard } from '@/components/ficha-360/PerfilComportamentalCard';
 import { TagsInteresseCard } from '@/components/ficha-360/TagsInteresseCard';
 import { DadosPessoaisCard } from '@/components/ficha-360/DadosPessoaisCard';
 import { FrequenciaContatoCard } from '@/components/ficha-360/FrequenciaContatoCard';
 import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesCard';
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
+import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
@@ -39,6 +41,7 @@ const Ficha360Skeleton = () => (
 
 const Ficha360 = () => {
   const { id } = useParams<{ id: string }>();
+  const { days, channels, setDays, setChannels, clear, activeCount } = useFicha360Filters();
   const {
     profile,
     intelligence,
@@ -47,7 +50,7 @@ const Ficha360 = () => {
     rapportPoints,
     channelCounts,
     isLoading,
-  } = useFicha360(id);
+  } = useFicha360(id, { days, channels, interactionsLimit: 50 });
 
   if (!id) {
     return (
@@ -151,7 +154,23 @@ const Ficha360 = () => {
               </div>
               <div className="space-y-4">
                 <FrequenciaContatoCard profile={profile} intelligence={intelligence} />
-                <UltimasInteracoesCard interactions={recentInteractions} contactId={id} />
+                <UltimasInteracoesCard
+                  interactions={recentInteractions}
+                  contactId={id}
+                  filtersActive={activeCount > 0}
+                  headerExtra={
+                    <FiltrosInteracoesBar
+                      days={days}
+                      channels={channels}
+                      onDaysChange={setDays}
+                      onChannelsChange={setChannels}
+                      onClear={clear}
+                      activeCount={activeCount}
+                      shownCount={recentInteractions.length}
+                      totalCount={channelCounts.total}
+                    />
+                  }
+                />
               </div>
             </div>
 
