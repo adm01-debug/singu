@@ -29,10 +29,11 @@ interface Props {
   resultsCount: number;
   totalCount: number;
   applyAll?: (next: Partial<AdvancedFilters>) => void;
+  channelCounts?: Record<string, number>;
 }
 
 export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
-  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll,
+  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll, channelCounts,
 }: Props) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
