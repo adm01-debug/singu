@@ -16,6 +16,38 @@ const CHANNELS = [
   { value: 'note', label: 'Nota', icon: FileText },
 ] as const;
 
+const PENDING_KEY = 'channel-pending-canais';
+const VALID_VALUES = new Set(CHANNELS.map((c) => c.value));
+
+function readPending(): string[] | null {
+  try {
+    const raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const filtered = parsed.filter((v): v is string => typeof v === 'string' && VALID_VALUES.has(v as typeof CHANNELS[number]['value']));
+    return filtered;
+  } catch {
+    return null;
+  }
+}
+
+function writePending(next: string[]) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(next));
+  } catch {
+    /* noop */
+  }
+}
+
+function clearPending() {
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* noop */
+  }
+}
+
 interface Props {
   canais: string[];
   onChange: (next: string[]) => void;
@@ -31,12 +63,47 @@ function arraysEqual(a: string[], b: string[]) {
 export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle } = useChannelSyncMode();
-  const [pending, setPending] = useState<string[]>(safe);
+  const [pending, setPendingState] = useState<string[]>(() => {
+    // Restaura pending salvo apenas se modo for manual e diferir do aplicado
+    try {
+      const savedMode = localStorage.getItem('channel-sync-mode');
+      if (savedMode === 'manual') {
+        const saved = readPending();
+        if (saved) return saved;
+      }
+    } catch { /* noop */ }
+    return Array.isArray(canais) ? canais : [];
+  });
+
+  const setPending = useCallback((next: string[] | ((prev: string[]) => string[])) => {
+    setPendingState((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next;
+      return value;
+    });
+  }, []);
 
   // Sincroniza pending com prop quando ela muda externamente (preset, clear, etc.)
+  // Só sobrescreve se NÃO houver pending persistido divergente no modo manual.
   useEffect(() => {
-    setPending(safe);
-  }, [safe]);
+    setPendingState((prev) => {
+      // Se prev já é igual a safe, nada a fazer
+      if (arraysEqual(prev, safe)) return prev;
+      // No modo manual, mantém o pending divergente (não sobrescreve seleções do usuário)
+      if (mode === 'manual' && !arraysEqual(prev, safe)) {
+        return prev;
+      }
+      return safe;
+    });
+  }, [safe, mode]);
+
+  // Persiste pending no localStorage quando estiver no modo manual e houver divergência
+  useEffect(() => {
+    if (mode === 'manual' && !arraysEqual(pending, safe)) {
+      writePending(pending);
+    } else {
+      clearPending();
+    }
+  }, [pending, safe, mode]);
 
   const dirty = mode === 'manual' && !arraysEqual(pending, safe);
   const diffCount = useMemo(() => {
