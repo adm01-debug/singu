@@ -6,11 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
 import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hooks/useInteractionsInsights";
+import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
 import { ThemesRanking } from "./ThemesRanking";
 import { ObjectionsRanking } from "./ObjectionsRanking";
 import { ThemeExamplesDrawer } from "./ThemeExamplesDrawer";
+import { SentimentExamplesDrawer } from "./SentimentExamplesDrawer";
 
 const PERIOD_LABEL: Record<string, string> = { positive: "Positivo", neutral: "Neutro", negative: "Negativo", mixed: "Misto" };
 
