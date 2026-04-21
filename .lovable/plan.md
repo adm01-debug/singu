@@ -1,82 +1,107 @@
 
-# Plano: Filtros no topo da Ficha 360
+# Plano: Score de Prontidão na Ficha 360
 
 ## Objetivo
 
-Adicionar uma barra de filtros compacta no topo da seção "Últimas Interações" da Ficha 360, permitindo escolher **período** (7/30/90/365 dias) e **canais** (WhatsApp, Email, Ligação, Reunião, Nota) antes de renderizar a lista. Os filtros persistem na URL para deep-link.
+Calcular um **Score de Prontidão (0–100)** para o contato — indicando o quão "pronto" ele está para uma próxima abordagem comercial agora — e exibir um card dedicado no topo da Ficha 360 com a nota, badge de nível, breakdown dos 4 fatores e uma recomendação textual gerada localmente.
 
-## Reutilização
+## Reutilização (zero novo fetch)
 
-- `useExternalInteractions(contactId, limit)` já existe — vamos estender para aceitar `{ days, channels }` e filtrar no `select` ou client-side.
-- `useFicha360` já agrega tudo — apenas passa as opções de filtro adiante.
-- Padrão visual idêntico ao `TimelineFilterBar` (chips de canal, badge ativo) para consistência.
-- Persistência via `useSearchParams` (padrão do projeto, memory `persistencia-de-estado-na-url`).
+Todos os sinais já estão disponíveis na Ficha 360 atual:
+
+| Fator | Peso | Fonte (já carregada) |
+|---|---|---|
+| **Cadência** (em dia vs atrasado) | 30% | `profile.cadence_days` + `profile.last_contact_at` (`useContactView360`) |
+| **Recência** (última interação) | 30% | `profile.last_contact_at` |
+| **Sentimento** | 25% | `profile.sentiment` + `intelligence.sentiment` fallback |
+| **Melhor canal definido** | 15% | `intelligence.best_channel` + `intelligence.best_time` |
+
+Sem novas queries, sem nova edge function, sem novo schema. Cálculo 100% client-side via `useMemo`.
 
 ## Arquitetura
 
 ```text
 Ficha 360
- └─ Card "Últimas Interações"
-     ├─ Header: título + botão "Ver todas"
-     ├─ FiltrosInteracoesBar (NOVO, compacto inline)
-     │    [7d|30d|90d|365d]   [WA] [☎] [✉] [📅] [📝]   "X de Y"
-     └─ Lista (já existe — recebe items já filtrados)
+ └─ Topo (após header)
+     └─ ScoreProntidaoCard  (NOVO, full width)
+         ├─ Score circular grande (0-100) + nível (Frio/Morno/Quente/Pronto)
+         ├─ Breakdown horizontal: 4 mini-barras (Cadência/Recência/Sentimento/Canal)
+         └─ Recomendação textual contextual + CTA "Próxima ação sugerida"
 ```
 
 ## Implementação
 
-### 1. Estender `useExternalInteractions`
-- Adicionar parâmetros opcionais `{ days?: number, channels?: string[] }`.
-- Aplicar `data_interacao >= now - days` e `channel in channels` na query (ou client-side se vier de RPC).
-- Ajustar `queryKey` para invalidação correta por filtro.
+### 1. Lib de cálculo `src/lib/prontidaoScore.ts` (≤180 linhas)
 
-### 2. Estender `useFicha360`
-- Aceitar `options?: { days?: number; channels?: string[] }`.
-- Passar para `useExternalInteractions`.
-- `channelCounts` continua refletindo o conjunto carregado.
+Função pura `computeProntidaoScore({ profile, intelligence })`:
 
-### 3. Novo componente `FiltrosInteracoesBar`
-`src/components/ficha-360/FiltrosInteracoesBar.tsx` (≤120 linhas)
-- Tabs/segmented control para período (7/30/90/365 dias, default 90).
-- Chips multi-select para canais (WhatsApp, Call, Email, Meeting, Note) — visual igual `TimelineFilterBar`.
-- Contador "X de Y interações" + botão "Limpar" quando há filtros ativos.
-- `React.memo`.
+```ts
+interface ProntidaoBreakdown {
+  cadence: { score: number; weight: 30; label: string; status: 'good'|'warn'|'bad'|'unknown' }
+  recency: { score: number; weight: 30; label: string; status: ... }
+  sentiment: { score: number; weight: 25; label: string; status: ... }
+  channel: { score: number; weight: 15; label: string; status: ... }
+}
 
-### 4. Hook `useFicha360Filters`
-`src/hooks/useFicha360Filters.ts` (≤80 linhas)
-- Sincroniza `?periodo=` e `?canais=` (CSV) na URL via `useSearchParams`.
-- Retorna `{ days, channels, setDays, setChannels, clear, activeCount }`.
-- Defaults: `days=90`, `channels=[]` (todos).
+interface ProntidaoResult {
+  score: number              // 0-100 ponderado
+  level: 'frio'|'morno'|'quente'|'pronto'
+  breakdown: ProntidaoBreakdown
+  recommendation: string     // texto PT-BR contextual
+  nextActionHint: string     // ex: "Ligar pela manhã via WhatsApp"
+}
+```
 
-### 5. Integração em `Ficha360.tsx`
-- Instanciar `useFicha360Filters()`.
-- Passar `{ days, channels }` para `useFicha360`.
-- Renderizar `<FiltrosInteracoesBar />` dentro do header de `UltimasInteracoesCard` (via prop) ou logo acima do card.
+**Regras de cálculo (cada fator 0–100):**
 
-### 6. Ajuste em `UltimasInteracoesCard`
-- Aceitar prop opcional `headerExtra?: ReactNode` para renderizar a barra de filtros logo abaixo do título sem quebrar o layout.
-- Mostrar empty state específico quando filtros zeram resultados ("Nenhuma interação no período/canais selecionados").
+- **Cadência**: razão `lastDays / cadence_days`
+  - ≤1.0 → 100 · ≤1.5 → 60 · ≤2.0 → 30 · >2.0 → 10 · sem dado → 50
+- **Recência**: dias desde última interação
+  - ≤3d → 100 · ≤7d → 80 · ≤14d → 60 · ≤30d → 40 · ≤60d → 20 · >60d → 5
+- **Sentimento**: positive→100 · neutral→60 · mixed→50 · negative→20 · null→50
+- **Canal**: ambos (best_channel + best_time)→100 · só um→60 · nenhum→30
 
-## Padrões obrigatórios
-- PT-BR
-- `Array.isArray()` antes de iterar
+**Nível:** `≥75 pronto` · `≥55 quente` · `≥35 morno` · `<35 frio`
+
+**Recomendação:** template PT-BR baseado no fator mais fraco e no melhor canal. Ex.:
+- *"Atrasado em 12 dias na cadência. Reabra a conversa com WhatsApp pela manhã, recapitulando o último ponto."*
+- *"Contato quente — sentimento positivo recente. Avance para próxima etapa: agende reunião."*
+
+### 2. Componente `ScoreProntidaoCard.tsx` (≤180 linhas)
+
+`src/components/ficha-360/ScoreProntidaoCard.tsx`
+
+- **Layout grid:** Esquerda (1/3) score circular + badge de nível · Direita (2/3) breakdown + recomendação
+- **Score circular:** SVG simples (não nova lib) com cor semântica por nível (success/warning/destructive)
+- **Breakdown:** 4 linhas com `Progress`, ícone (Calendar/Clock/Smile/Radio), label e valor
+- **Recomendação:** card interno com ícone Lightbulb + texto + botão "Sugerir próxima ação" (reutiliza dialog/edge function `suggest-next-action` que já existe — opcional, sem bloqueio)
+- `React.memo`, tokens semânticos, flat design, PT-BR
+
+### 3. Integração em `Ficha360.tsx`
+
+- Importar `computeProntidaoScore` e `ScoreProntidaoCard`
+- Calcular via `useMemo(() => computeProntidaoScore({ profile, intelligence }), [profile, intelligence])`
+- Renderizar `<ScoreProntidaoCard data={prontidao} />` logo após o header da página, antes do grid de cards existentes
+- Skeleton enquanto `isLoading`
+
+### 4. Padrões obrigatórios
+
+- PT-BR em todo texto/recomendação
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- Tokens semânticos, flat design
-- Persistência URL para deep-link
-- Sem `useEffect` para fetch (composição TanStack Query)
+- `Array.isArray()` defensivo
+- Tokens semânticos (Nexus Blue + success/warning/destructive)
+- Flat design, sem sombras/gradientes
+- Função pura testável (sem side effects)
 
 ## Arquivos tocados
 
 **Novos (2):**
-- `src/components/ficha-360/FiltrosInteracoesBar.tsx`
-- `src/hooks/useFicha360Filters.ts`
+- `src/lib/prontidaoScore.ts` — função pura de cálculo
+- `src/components/ficha-360/ScoreProntidaoCard.tsx` — card visual
 
-**Editados (4):**
-- `src/hooks/useExternalInteractions.ts` — aceitar `{days, channels}`
-- `src/hooks/useFicha360.ts` — propagar opções
-- `src/pages/Ficha360.tsx` — instanciar filtros e passar adiante
-- `src/components/ficha-360/UltimasInteracoesCard.tsx` — slot para filtros + empty state filtrado
+**Editados (1):**
+- `src/pages/Ficha360.tsx` — incluir card no topo
 
 ## Critério de fechamento
 
-(a) Barra de filtros visível no topo da seção "Últimas Interações", (b) seleção de período (7/30/90/365d) e canais (multi) funcional, (c) lista re-renderiza com itens filtrados, (d) estado persistido na URL (`?periodo=&canais=`), (e) empty state contextual quando filtros zeram resultados, (f) zero regressão nos demais cards da Ficha 360.
+(a) Card de Prontidão visível no topo da Ficha 360, (b) score 0–100 calculado a partir dos 4 fatores ponderados, (c) badge de nível (Frio/Morno/Quente/Pronto) com cor semântica, (d) breakdown dos 4 fatores com barras, (e) recomendação textual em PT-BR contextual ao fator mais fraco, (f) zero novas queries de rede, (g) zero regressão nos demais cards.
