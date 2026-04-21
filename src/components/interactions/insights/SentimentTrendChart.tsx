@@ -35,9 +35,14 @@ function formatWeek(w: string): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
-function toIsoDate(w: string): string {
-  // Aceita 'YYYY-MM-DD' ou ISO completo
+function normalizeWeek(w: string): string {
+  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada
+  if (typeof w !== "string" || w.length === 0) return w;
   return w.length >= 10 ? w.slice(0, 10) : w;
+}
+
+function toIsoDate(w: string): string {
+  return normalizeWeek(w);
 }
 
 const DIRECTION_LABEL: Record<SentimentTrendSummary["direction"], string> = {
@@ -156,21 +161,35 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const annotationsApi = useSentimentAnnotations(contactId);
   const annotationsByWeek = annotationsApi.byWeek;
 
-  const dataWithMA = useMemo(() => {
+  const sortedData = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
-    return safe.map((p, i) => {
+    const normalized = safe.map((p) => ({ ...p, week: normalizeWeek(p.week) }));
+    // Dedup defensivo por semana (mantém primeira ocorrência)
+    const seen = new Set<string>();
+    const unique: SentimentTrendPoint[] = [];
+    for (const p of normalized) {
+      if (seen.has(p.week)) continue;
+      seen.add(p.week);
+      unique.push(p);
+    }
+    // Ordena cronologicamente por timestamp real (não lexicográfico)
+    unique.sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime());
+    return unique;
+  }, [data]);
+
+  const dataWithMA = useMemo(() => {
+    return sortedData.map((p, i) => {
       const start = Math.max(0, i - 2);
-      const window = safe.slice(start, i + 1);
+      const window = sortedData.slice(start, i + 1);
       const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
       const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
       const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
-      const weekIso = toIsoDate(p.week);
-      const annotations = annotationsByWeek.get(weekIso) ?? [];
+      const annotations = annotationsByWeek.get(p.week) ?? [];
       return { ...p, positivePctMA, annotations };
     });
-  }, [data, annotationsByWeek]);
+  }, [sortedData, annotationsByWeek]);
 
-  const weekOptions = useMemo(() => (Array.isArray(data) ? data.map((p) => toIsoDate(p.week)) : []), [data]);
+  const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
   const annotationDots = useMemo(() => {
     return dataWithMA
@@ -183,19 +202,17 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [dataWithMA]);
 
   const mixedStats = useMemo(() => {
-    const safe = Array.isArray(data) ? data : [];
-    const totalMixed = safe.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
-    const totalAll = safe.reduce((acc, p) => acc + (p.total ?? 0), 0);
+    const totalMixed = sortedData.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
+    const totalAll = sortedData.reduce((acc, p) => acc + (p.total ?? 0), 0);
     const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
     return { totalMixed, pct };
-  }, [data]);
+  }, [sortedData]);
 
   const evolutionStats = useMemo<EvolutionStats | null>(() => {
-    const safe = Array.isArray(data) ? data : [];
-    if (safe.length < 4) return null;
-    const mid = Math.floor(safe.length / 2);
-    const prev = safe.slice(0, mid);
-    const curr = safe.slice(mid);
+    if (sortedData.length < 4) return null;
+    const mid = Math.floor(sortedData.length / 2);
+    const prev = sortedData.slice(0, mid);
+    const curr = sortedData.slice(mid);
     const sumPos = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.positive ?? 0), 0);
     const sumTot = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.total ?? 0), 0);
     const prevTot = sumTot(prev);
@@ -206,9 +223,9 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     const deltaPp = currentPct - previousPct;
     const direction: EvolutionDirection = Math.abs(deltaPp) < 3 ? "stable" : deltaPp > 0 ? "up" : "down";
     return { currentPct, previousPct, deltaPp, direction, weeksCompared: prev.length };
-  }, [data]);
+  }, [sortedData]);
 
-  if (!Array.isArray(data) || data.length < 2) {
+  if (sortedData.length < 2) {
     return (
       <p className="text-sm text-muted-foreground text-center py-12">
         Dados insuficientes para tendência (mín. 2 semanas).
@@ -309,10 +326,10 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {showRefLines && summary?.bestWeek && (
-              <ReferenceLine yAxisId="count" x={summary.bestWeek.week} stroke="hsl(var(--success))" strokeDasharray="2 2" />
+              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.bestWeek.week)} stroke="hsl(var(--success))" strokeDasharray="2 2" />
             )}
             {showRefLines && summary?.worstWeek && (
-              <ReferenceLine yAxisId="count" x={summary.worstWeek.week} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
+              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.worstWeek.week)} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
             {smoothEnabled && (
