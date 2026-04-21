@@ -363,6 +363,17 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 <Pin className="h-3 w-3" /> Anotar
               </Button>
             )}
+            <div className="flex items-center gap-2 pl-1">
+              <Switch
+                id="toggle-pct-line"
+                checked={showPositivePctLine}
+                onCheckedChange={togglePctLine}
+                aria-label="Alternar linha de % positivo"
+              />
+              <Label htmlFor="toggle-pct-line" className="text-xs cursor-pointer">
+                Linha % positivo
+              </Label>
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
