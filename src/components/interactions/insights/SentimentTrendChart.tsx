@@ -283,6 +283,21 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               <ReferenceLine yAxisId="count" x={summary.worstWeek.week} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
+            {smoothEnabled && (
+              <Line
+                yAxisId="pct"
+                type="monotone"
+                dataKey="positivePctMA"
+                name="Tendência (MM3)"
+                stroke="hsl(var(--success))"
+                strokeWidth={3}
+                strokeOpacity={0.45}
+                dot={false}
+                activeDot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
             <Line yAxisId="count" type="monotone" dataKey="positive" name="Positivo" stroke={CHART_COLORS.positive} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
