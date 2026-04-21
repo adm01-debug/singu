@@ -1,41 +1,74 @@
 
-# Plano: Paginação progressiva em "Últimas Interações" da Ficha 360
+# Plano: Chips de filtros ativos + contador no topo de "Últimas Interações"
+
+## Objetivo
+
+Exibir, acima da lista de "Últimas Interações" da Ficha 360, uma barra de chips removíveis representando cada filtro ativo (período ≠ 90d e cada canal selecionado), com um contador no formato **"12 de 48"** mostrando quantas interações estão visíveis vs. total.
 
 ## Status atual
 
-`UltimasInteracoesCard` (`src/components/ficha-360/UltimasInteracoesCard.tsx`) renderiza todo o array `interactions` recebido em uma única `<ul>`. Quando há dezenas/centenas de itens (ex.: 90d sem filtro de canal), o render inicial fica pesado e o scroll engasga. Já existe a infra `useInfiniteList` + `InfiniteScrollSentinel` usadas em outras listas — vamos reaproveitá-las aqui (zero query nova, pura virtualização progressiva client-side).
+- `FiltrosInteracoesBar` (já existente) tem chips clicáveis para selecionar canais e botões de período, mas chips ativos ficam misturados com inativos — não há linha resumo com "X de Y" + remoção individual destacada acima da lista.
+- Já existe rodapé `"Mostrando X de Y interação(ões)"`, mas embaixo da barra de filtros, não como header da lista.
+- `useFicha360Filters` já expõe `days`, `channels`, `setDays`, `setChannels`, `clear`, `activeCount` e default (`days = 90`, `channels = []`).
 
 ## Implementação
 
-### Arquivo: `src/components/ficha-360/UltimasInteracoesCard.tsx`
+### 1. Novo componente: `src/components/ficha-360/FiltrosAtivosChips.tsx` (~80 linhas)
 
-1. Importar `useInfiniteList` (`@/hooks/useInfiniteList`) e `InfiniteScrollSentinel` (`@/components/interactions/InfiniteScrollSentinel`).
-2. Calcular `const { visible, hasMore, sentinelRef } = useInfiniteList(items, 15, [items])` — página inicial de 15 itens, reseta quando o array muda (troca de filtros de período/canal).
-3. Renderizar `visible.map(...)` em vez de `items.map(...)`.
-4. Logo após `</ul>`, montar `<InfiniteScrollSentinel sentinelRef={sentinelRef} hasMore={hasMore} totalLoaded={visible.length} total={items.length} />` para auto-load via IntersectionObserver + skeletons + rodapé "Fim da lista".
-5. Manter o card sem scroll interno fixo (a lista cresce com o conteúdo). O `IntersectionObserver` do hook já dispara com `rootMargin: 400px`, então funciona dentro do scroll da página.
+Componente memoizado que recebe:
+```ts
+{
+  days: Ficha360Period;
+  channels: string[];
+  shownCount: number;
+  totalCount: number;
+  onRemoveDays: () => void;       // reseta para 90 (default)
+  onRemoveChannel: (c: string) => void;
+  onClearAll: () => void;
+}
+```
 
-### Edge cases
+Renderiza:
+- **Contador à esquerda**: `<span>` com `"<strong>{shown}</strong> de {total}"` em `text-xs text-muted-foreground` (oculto se `total === 0`).
+- **Chip de período** (apenas quando `days !== 90`): `Badge variant="secondary" closeable` com ícone `Calendar`, label `"Período: 7d|30d|1a"`, `onClose={onRemoveDays}`.
+- **Chips de canal** (um por canal em `channels`): `Badge variant="secondary" closeable` com ícone do canal (mesmo mapa de `FiltrosInteracoesBar`: WhatsApp/Phone/Mail/Calendar/FileText) e label PT-BR.
+- **Botão "Limpar tudo"** (`Button variant="ghost" size="xs"`, `ml-auto`) só quando há ≥2 chips ativos.
+- Não renderiza nada quando não há filtros ativos E `total === 0`.
+- Quando há contador mas sem filtros ativos, renderiza apenas o contador (linha discreta).
 
-- `items.length === 0`: `InfiniteScrollSentinel` retorna `null` (já tratado), e o `InlineEmptyState` atual continua aparecendo.
-- Troca de filtros (período/canal) reseta a paginação para 15 — `deps: [items]` no hook cuida disso.
-- Lista com ≤15 itens: `hasMore = false`, sentinel vira rodapé "Fim da lista — N interações exibidas".
-- Sem mudança no link "Ver todas" (continua levando para `/interacoes?contact=...`).
+### 2. Plugar no consumidor
 
-### Padrões obrigatórios
+Localizar onde `FiltrosInteracoesBar` é usado dentro da seção "Últimas Interações" da Ficha 360 (provavelmente em `src/pages/Ficha360.tsx` ou um wrapper tipo `UltimasInteracoesSection.tsx`). Inserir `<FiltrosAtivosChips ... />` **logo acima** do `<UltimasInteracoesCard />` (e abaixo do `FiltrosInteracoesBar`), passando:
+- `days`, `channels` direto do `useFicha360Filters()`
+- `shownCount` = comprimento da lista já filtrada client-side (a mesma usada para alimentar o card)
+- `totalCount` = comprimento da lista pré-filtro client-side (antes de aplicar `channels`/`days`); se a query já vem filtrada por `days/channels`, usar o `recentInteractions.length` como `total` e `shownCount` igual — nesse caso o contador vira "N de N" e ainda é útil como resumo.
+- `onRemoveDays = () => setDays(90)`
+- `onRemoveChannel = (c) => setChannels(channels.filter(x => x !== c))`
+- `onClearAll = clear`
+
+### 3. Pequeno ajuste em `FiltrosInteracoesBar`
+
+Remover a linha rodapé `"Mostrando X de Y..."` (deduplicada agora pelo header de chips) — ou manter e apenas ocultar via prop `hideSummary`. Preferência: remover, já que o novo header cumpre o papel com mais clareza.
+
+### 4. Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos
+- Tokens semânticos (sem cores fixas)
 - Flat (sem shadow)
-- Zero novas queries de rede (paginação é puramente client-side sobre o array já carregado)
-- `React.memo` do componente preservado
-- Zero regressão em outras seções da Ficha 360, sentimento, KPIs ou drawers
+- `React.memo` no novo componente
+- Reaproveitar `Badge closeable` (já existe em `src/components/ui/badge.tsx`)
+- Zero novas queries
+- Zero regressão em sentimento, KPIs, drawers, paginação progressiva ou outras abas
 
-## Arquivo tocado
+## Arquivos tocados
 
-**Editado (1):**
-- `src/components/ficha-360/UltimasInteracoesCard.tsx` — plugar `useInfiniteList(15)` + `InfiniteScrollSentinel`
+**Criado (1):**
+- `src/components/ficha-360/FiltrosAtivosChips.tsx`
+
+**Editados (2):**
+- `src/pages/Ficha360.tsx` (ou wrapper equivalente da seção) — montar `FiltrosAtivosChips` acima do card
+- `src/components/ficha-360/FiltrosInteracoesBar.tsx` — remover (ou condicionar) o rodapé "Mostrando X de Y" para evitar duplicação
 
 ## Critério de fechamento
 
-(a) "Últimas Interações" passa a renderizar apenas 15 itens inicialmente, (b) ao rolar próximo do fim, mais 15 carregam automaticamente via IntersectionObserver, (c) skeletons aparecem durante o carregamento progressivo, (d) ao chegar ao fim, rodapé mostra "Fim da lista — N interações exibidas", (e) trocar período/canal reseta a paginação para 15, (f) zero novas queries de rede, (g) zero regressão visual ou funcional no card, no link "Ver todas" ou em outras seções da Ficha 360.
+(a) Acima da lista aparece header com contador `"X de Y interações"`, (b) cada filtro ativo (período ≠ 90d, cada canal) vira um chip com ícone + label removível via "×", (c) remover um chip atualiza URL e lista sem recarregar dados, (d) "Limpar tudo" aparece quando há ≥2 chips, (e) sem filtros ativos só o contador aparece (ou nada se total = 0), (f) zero duplicação com o rodapé antigo da `FiltrosInteracoesBar`, (g) zero novas queries, (h) zero regressão em paginação, sentimento, KPIs ou drawers.
