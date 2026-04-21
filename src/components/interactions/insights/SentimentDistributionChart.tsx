@@ -47,7 +47,7 @@ function SentimentDistributionChartImpl({ data, onSelectBucket }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="h-56">
+      <div className="h-56 sentiment-pie-focus">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -60,9 +60,24 @@ function SentimentDistributionChartImpl({ data, onSelectBucket }: Props) {
               onClick={(e: { key?: string } | undefined) => e?.key && handleSelect(e.key)}
               className={onSelectBucket ? "cursor-pointer" : undefined}
             >
-              {filtered.map((d) => (
-                <Cell key={d.key} fill={COLORS[d.key] ?? "hsl(var(--muted))"} />
-              ))}
+              {filtered.map((d) => {
+                const clickable = !!onSelectBucket && d.count > 0;
+                return (
+                  <Cell
+                    key={d.key}
+                    fill={COLORS[d.key] ?? "hsl(var(--muted))"}
+                    tabIndex={clickable ? 0 : -1}
+                    role={clickable ? "button" : undefined}
+                    aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}` : undefined}
+                    onKeyDown={clickable ? (e: React.KeyboardEvent<SVGPathElement>) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSelect(d.key);
+                      }
+                    } : undefined}
+                  />
+                );
+              })}
             </Pie>
             <Tooltip
               contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
