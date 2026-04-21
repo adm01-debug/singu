@@ -82,6 +82,11 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
           <p className="text-[10px] text-muted-foreground mt-0.5">
             <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
           </p>
+          {typeof point.positivePctMA === "number" && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Tendência (MM3): <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
+            </p>
+          )}
           <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
             {SENTIMENT_ROWS.map((row) => {
               const count = point[row.key] ?? 0;
