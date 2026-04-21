@@ -326,10 +326,10 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {showRefLines && summary?.bestWeek && (
-              <ReferenceLine yAxisId="count" x={summary.bestWeek.week} stroke="hsl(var(--success))" strokeDasharray="2 2" />
+              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.bestWeek.week)} stroke="hsl(var(--success))" strokeDasharray="2 2" />
             )}
             {showRefLines && summary?.worstWeek && (
-              <ReferenceLine yAxisId="count" x={summary.worstWeek.week} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
+              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.worstWeek.week)} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
             {smoothEnabled && (
