@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
+import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
 
 const CHANNELS = [
   { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
@@ -90,6 +91,13 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
 
         <DatePopover label="De" value={filters.de} onChange={(d) => setFilter('de', d)} />
         <DatePopover label="Até" value={filters.ate} onChange={(d) => setFilter('ate', d)} />
+
+        <InteracoesPresetsMenu
+          filters={filters}
+          setFilter={setFilter}
+          clear={clear}
+          activeCount={activeCount}
+        />
 
         {activeCount > 0 && (
           <Button variant="ghost" size="sm" onClick={clear} className="gap-1 text-muted-foreground">
