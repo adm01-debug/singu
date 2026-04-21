@@ -52,14 +52,18 @@ export function extractExcerpts(
 
   const half = Math.max(40, Math.floor(opts.window / 2));
   const hitsBySource = new Map<string, RawHit[]>();
+  const densityRe = new RegExp(`(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`, "giu");
 
-  for (const src of sources) {
+  for (let sIdx = 0; sIdx < sources.length; sIdx++) {
+    const src = sources[sIdx];
     if (!src?.id || typeof src.text !== "string" || src.text.length === 0) continue;
     const original = src.text;
     const norm = normalize(original);
+    const textLen = Math.max(original.length, 1);
     re.lastIndex = 0;
     const sourceHits: RawHit[] = [];
     let m: RegExpExecArray | null;
+    let hIdx = 0;
     while ((m = re.exec(norm)) !== null) {
       const matchStart = m.index + (m[0].length - m[1].length);
       const matchEnd = matchStart + m[1].length;
@@ -73,31 +77,29 @@ export function extractExcerpts(
         text: snippet,
         matchTerm: original.slice(matchStart, matchEnd),
         position: matchStart,
+        density: countMatches(snippet, densityRe),
+        relPosition: matchStart / textLen,
+        sourceOrder: sIdx,
+        hitOrder: hIdx++,
       });
       if (sourceHits.length >= opts.maxPerSource) break;
     }
     if (sourceHits.length > 0) hitsBySource.set(src.id, sourceHits);
   }
 
-  const result: Excerpt[] = [];
-  const sourceOrder = sources.map((s) => s.id).filter((id) => hitsBySource.has(id));
-  const cursors = new Map<string, number>();
-  for (const id of sourceOrder) cursors.set(id, 0);
+  const all: RawHit[] = [];
+  for (const list of hitsBySource.values()) all.push(...list);
+  all.sort((a, b) => {
+    if (b.density !== a.density) return b.density - a.density;
+    if (a.relPosition !== b.relPosition) return a.relPosition - b.relPosition;
+    if (a.sourceOrder !== b.sourceOrder) return a.sourceOrder - b.sourceOrder;
+    return a.hitOrder - b.hitOrder;
+  });
 
-  while (result.length < opts.totalCap) {
-    let added = false;
-    for (const id of sourceOrder) {
-      if (result.length >= opts.totalCap) break;
-      const list = hitsBySource.get(id)!;
-      const idx = cursors.get(id)!;
-      if (idx < list.length) {
-        result.push(list[idx]);
-        cursors.set(id, idx + 1);
-        added = true;
-      }
-    }
-    if (!added) break;
-  }
-
-  return result;
+  return all.slice(0, opts.totalCap).map((h) => ({
+    interactionId: h.interactionId,
+    text: h.text,
+    matchTerm: h.matchTerm,
+    position: h.position,
+  }));
 }
