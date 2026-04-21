@@ -1,9 +1,10 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
+import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
 
 interface Props {
   objections: ObjectionAggregate[];
@@ -57,6 +58,9 @@ interface ObjectionCardProps {
 const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
+  const hasExamples = examplesCount > 0;
 
   const severity = getSeverity(o);
   const style = SEVERITY_STYLES[severity];
