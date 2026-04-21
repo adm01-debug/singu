@@ -1,7 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SortKey } from '@/lib/sortInteractions';
+import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 
@@ -49,6 +50,26 @@ export function useInteractionsAdvancedFilter() {
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
+
+  // Hidratação one-shot do localStorage no mount: URL sempre ganha sobre cache.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    if (searchParams.get('canais')) return;
+    const cached = readAppliedCanais();
+    if (cached && cached.length > 0) {
+      const next = new URLSearchParams(searchParams);
+      next.set('canais', cached.join(','));
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persistência reativa: sincroniza canais aplicados com localStorage.
+  useEffect(() => {
+    writeAppliedCanais(filters.canais);
+  }, [filters.canais]);
 
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
