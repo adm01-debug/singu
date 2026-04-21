@@ -41,13 +41,15 @@ describe('CanaisQuickFilter', () => {
     expect(onChange).toHaveBeenCalledWith(['email', 'whatsapp']);
   });
 
-  it('manual mode: Revert restores pending to applied value', () => {
+  it('manual mode: Revert opens confirmation and restores pending to applied value when confirmed', () => {
     localStorage.setItem('channel-sync-mode', 'manual');
     const onChange = vi.fn();
     render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
     fireEvent.click(screen.getByTitle('WhatsApp'));
     expect(screen.getByText('Aplicar')).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('Reverter alterações pendentes'));
+    fireEvent.click(screen.getByRole('button', { name: /Reverter/i }));
+    // Confirma no dialog
+    fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
     expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
     expect(onChange).not.toHaveBeenCalled();
   });
