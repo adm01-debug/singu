@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, startTransition, lazy, Suspense } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Phone, Mail, Users, Edit, Search, Calendar, MoreVertical,
@@ -24,7 +24,9 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
+import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
+import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { useCompanies } from '@/hooks/useCompanies';
 
 function normalize(s: string): string {
@@ -101,13 +103,6 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return sortArray(result, sortBy as keyof Interaction, sortOrder, { dateFields: ['created_at', 'follow_up_date'], numericFields: ['duration', 'response_time'] });
   }, [advancedFiltered, activeFilters, sortBy, sortOrder]);
 
-  const RENDER_BATCH = 40;
-  const [visibleCount, setVisibleCount] = useState(RENDER_BATCH);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setVisibleCount(RENDER_BATCH); }, [activeFilters, sortBy, sortOrder]);
-  useEffect(() => { const el = sentinelRef.current; if (!el) return; const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) startTransition(() => setVisibleCount(prev => prev + RENDER_BATCH)); }, { rootMargin: '400px' }); obs.observe(el); return () => obs.disconnect(); }, [filteredAndSorted.length]);
-
   const sortedForView = useMemo(() => {
     const mapped = filteredAndSorted.map(i => {
       const c = contactMap.get(i.contact_id);
@@ -121,8 +116,11 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return sortInteractions(mapped, adv.sort, debouncedQ);
   }, [filteredAndSorted, contactMap, adv.sort, debouncedQ]);
 
-  const visibleInteractions = useMemo(() => sortedForView.slice(0, visibleCount), [sortedForView, visibleCount]);
-  const hasMore = visibleCount < sortedForView.length;
+  const { visible: visibleInteractions, hasMore, sentinelRef } = useInfiniteList(
+    sortedForView,
+    50,
+    [adv.q, adv.contact, adv.company, adv.canais.join(','), adv.de?.getTime(), adv.ate?.getTime(), adv.sort, activeFilters, sortBy, sortOrder]
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -152,7 +150,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         clear={clear}
         activeCount={activeCount}
         totalCount={interactions.length}
-        visibleCount={sortedForView.length}
+        visibleCount={visibleInteractions.length}
         contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
         companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
       />
@@ -196,7 +194,12 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
               })}
             </div>
           </div>
-          {hasMore && <div ref={sentinelRef} className="flex items-center justify-center py-6 text-sm text-muted-foreground">Carregando mais interações...</div>}
+          <InfiniteScrollSentinel
+            sentinelRef={sentinelRef}
+            hasMore={hasMore}
+            totalLoaded={visibleInteractions.length}
+            total={sortedForView.length}
+          />
           {filteredAndSorted.length === 0 && !loading && (
             activeCount > 0 || Object.keys(activeFilters).length > 0
               ? <SearchEmptyState searchTerm={adv.q || 'filtros ativos'} onClearSearch={() => { clear(); setActiveFilters({}); }} entityName="interações" />
