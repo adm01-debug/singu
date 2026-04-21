@@ -36,6 +36,7 @@ export function useInteractionsAdvancedFilter() {
     canais: (searchParams.get('canais') ?? '').split(',').filter(Boolean),
     de: parseDate(searchParams.get('de')),
     ate: parseDate(searchParams.get('ate')),
+    sort: parseSort(searchParams.get('sort')),
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
@@ -50,6 +51,10 @@ export function useInteractionsAdvancedFilter() {
       const d = value as Date | undefined;
       if (d) next.set(key, d.toISOString().slice(0, 10));
       else next.delete(key);
+    } else if (key === 'sort') {
+      const s = (value as SortKey) ?? 'recent';
+      if (s && s !== 'recent') next.set('sort', s);
+      else next.delete('sort');
     } else {
       const v = (value as string) ?? '';
       if (v) next.set(key, v);
