@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { MessageSquare, Phone, Mail, Calendar, FileText, X, Layers } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Calendar, FileText, X, Layers, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -71,6 +71,19 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
             );
           })}
         </div>
+
+        {days !== 90 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDaysChange(90)}
+            className="h-6 px-2 text-xs text-muted-foreground gap-1"
+            aria-label="Zerar período para 90 dias"
+            title="Voltar para o período padrão (90 dias)"
+          >
+            <RotateCcw className="h-3 w-3" /> Zerar período
+          </Button>
+        )}
 
         {/* Canais */}
         <div className="flex flex-wrap items-center gap-1">
