@@ -1,114 +1,73 @@
 
-# Plano: Tela "Ficha 360" da Pessoa
+# Plano: Busca avançada em /interacoes
 
 ## Objetivo
 
-Criar uma rota dedicada `/contatos/:id/ficha-360` que consolida em **uma única tela vertical scrollável** todos os sinais de uma pessoa: perfil, tags de interesse, frequência de contato, últimas interações e links para conversas relacionadas.
+Adicionar uma barra de busca avançada na aba "Lista" de `/interacoes` permitindo filtrar simultaneamente por pessoa, empresa, tipo de interação, período (date range) e palavra-chave no conteúdo/descrição.
 
-## Reutilização (não reinventar)
+## Reutilização
 
-O projeto já tem uma página rica `ContatoDetalhe.tsx` com abas. A Ficha 360 **NÃO substitui** isso — é uma visão **compacta, executiva, single-scroll**, ideal para preparação rápida antes de uma ligação/reunião. Reutiliza hooks e componentes maduros:
+A aba "Timeline" já tem `TimelineFilterBar` (search nome, canais, datas). A aba "Lista" hoje tem filtros básicos. Vamos criar um filtro mais rico só para a Lista, sem mexer na Timeline.
 
-- `useContactView360` — visão consolidada (score, stage, sentiment, cadência, last/next contact)
-- `useContactIntelligence` — churn risk, melhor canal, NPS
-- `useExternalInteractions` — últimas interações com canal/direção/resumo
-- `useRapportPoints` + `useRapportIntel` — interesses, hobbies, valores
-- `useBestContactTime` — heatmap de melhor horário
-- `getContactBehavior` — DISC/VAK/metaprogramas
-
-## Arquitetura da tela
+## Arquitetura
 
 ```text
-/contatos/:id/ficha-360
- ├─ Header sticky: avatar grande + nome + cargo/empresa + 3 KPI chips
- │   (Score, Stage, Sentiment) + botões: Ver Detalhe Completo, Voltar
- │
- ├─ Grid 2 colunas (desktop) / 1 coluna (mobile):
- │
- │   COLUNA ESQUERDA (perfil):
- │   ├─ Card "Perfil Comportamental"
- │   │   DISC primário/secundário + EQ level + confiança
- │   ├─ Card "Tags de Interesse"
- │   │   Chips: hobbies + interesses + valores + frequent_words
- │   │   (de useRapportIntel + useRapportPoints)
- │   └─ Card "Dados Pessoais Relevantes"
- │       Aniversário, família, anchors positivos
- │
- │   COLUNA DIREITA (atividade):
- │   ├─ Card "Frequência de Contato"
- │   │   - Cadência configurada (X dias)
- │   │   - Último contato (há Y dias) — semáforo verde/amarelo/vermelho
- │   │   - Próximo contato sugerido
- │   │   - Total de interações + média/mês
- │   │   - Mini-stat: melhor canal + melhor horário
- │   └─ Card "Últimas 10 Interações"
- │       Lista compacta com ícone canal + assunto + data + sentiment dot
- │       Cada item clicável → /interacoes?contact=<id>&open=<interactionId>
- │
- └─ Card "Conversas Relacionadas" (full-width)
-     Grid de chips/links rápidos:
-     - "Ver todas as conversas" → /interacoes?contact=<id>
-     - "WhatsApp" → /interacoes?contact=<id>&canal=whatsapp
-     - "Emails" → /interacoes?contact=<id>&canal=email
-     - "Ligações" → /interacoes?contact=<id>&canal=call
-     - "Reuniões" → /interacoes?contact=<id>&canal=meeting
-     - "Timeline cronológica" → /interacoes?tab=timeline
-     Contador ao lado de cada chip
+/interacoes?tab=lista
+ ├─ AdvancedSearchBar (NOVO, sticky no topo)
+ │   Linha 1: [busca palavra-chave full-text] [Filtros avançados ▼] [Limpar]
+ │   Linha 2 (chips compactos sempre visíveis):
+ │     Pessoa ▼  Empresa ▼  Tipo (multi) ▼  De 📅  Até 📅
+ │   Resumo: "X interações · 3 filtros ativos"
+ └─ Lista filtrada (existente)
 ```
 
 ## Implementação
 
-### 1. Novo hook agregador `useFicha360`
-Arquivo: `src/hooks/useFicha360.ts`
-- Combina internamente: `useContactView360` + `useContactIntelligence` + `useExternalInteractions(limit=10)` + `useRapportIntel` + `useRapportPoints`
-- Retorna `{ profile, intelligence, recentInteractions, rapportIntel, rapportPoints, channelCounts, isLoading }`
-- Calcula client-side `channelCounts` agrupando `recentInteractions` por canal
-- Sem `useEffect` — composição de TanStack Queries
+### 1. Hook `useInteractionsAdvancedFilter`
+`src/hooks/useInteractionsAdvancedFilter.ts`
+- Estado sincronizado com URL via `useSearchParams` (padrão do projeto):
+  - `q` (palavra-chave), `contact`, `company`, `canais` (CSV), `de`, `ate`
+- Retorna `{ filters, setFilter, clear, activeCount }`
+- `useDebounce` 300ms no `q` para evitar re-render por tecla
 
-### 2. Página `Ficha360.tsx`
-Arquivo: `src/pages/Ficha360.tsx` (≤300 linhas)
-- Layout via `AppLayout`, `SEOHead`, `Header` com botão voltar
-- Header sticky com avatar + KPIs (score, stage, sentiment)
-- Grid responsivo `lg:grid-cols-2`
-- Skeleton loading granular por card
-- Tratamento de erro com `EmptyState`
+### 2. Componente `AdvancedSearchBar`
+`src/components/interactions/AdvancedSearchBar.tsx` (≤200 linhas)
+- Input de busca com ícone `Search` e clear button
+- Popovers compactos para Pessoa e Empresa usando `SearchableSelect` (padrão do projeto, lookup remoto)
+- Chips multi-select de tipo (whatsapp, call, email, meeting, video_call, note) — mesmo padrão visual da `TimelineFilterBar`
+- Date pickers com shadcn Calendar (`pointer-events-auto`)
+- Badge "N filtros ativos" + botão "Limpar tudo"
 
-### 3. Subcomponentes (≤150 linhas cada)
-- `src/components/ficha-360/PerfilComportamentalCard.tsx`
-- `src/components/ficha-360/TagsInteresseCard.tsx` — chips agrupados por origem (hobbies/valores/palavras frequentes)
-- `src/components/ficha-360/FrequenciaContatoCard.tsx` — semáforo de saúde + KPIs
-- `src/components/ficha-360/UltimasInteracoesCard.tsx` — lista compacta clicável
-- `src/components/ficha-360/ConversasRelacionadasCard.tsx` — chips de navegação contextual
+### 3. Aplicação dos filtros
+- Localizar onde a Lista é renderizada em `Interacoes.tsx` (componente da aba "Lista")
+- Aplicar os filtros via `useMemo` sobre os dados já carregados (`useInteractionsRpc`):
+  - `q`: match em `assunto`, `resumo`, `descricao` (case/accent-insensitive via normalização NFD)
+  - `contact`: `contato_id === filter.contact`
+  - `company`: `empresa_id === filter.company`
+  - `canais`: `canais.includes(channel)` (vazio = todos)
+  - `de`/`ate`: `data_interacao` dentro do range (inclusivo)
+- `Array.isArray()` antes de iterar (padrão de resiliência)
 
-### 4. Rota e navegação
-- Adicionar rota `/contatos/:id/ficha-360` em `AppRoutes.tsx` com lazy load
-- Adicionar botão "Ficha 360" no header de `ContatoDetalhe.tsx` para acesso rápido
-- Adicionar item no menu de ações da `ContactCard` (lista de contatos)
+### 4. Estado vazio e contadores
+- Reutiliza `EmptyState` quando filtros não retornam resultados, com botão "Limpar filtros"
+- Mostra contador "X de Y interações"
 
 ### 5. Padrões obrigatórios
-- PT-BR em todos os textos
-- `Array.isArray()` antes de iterar
+- PT-BR
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- Cores via tokens semânticos (Nexus Blue, success/warning/destructive)
-- Flat design — sem sombras/gradientes
-- Memoização: `React.memo` nos 5 cards
-- Mobile-first: stack em 1 coluna <lg
+- Tokens semânticos (Nexus Blue), flat design
+- `React.memo` na barra
+- Persistência URL para deep-link e back/forward
 
 ## Arquivos tocados
 
-**Novos (7):**
-- `src/hooks/useFicha360.ts`
-- `src/pages/Ficha360.tsx`
-- `src/components/ficha-360/PerfilComportamentalCard.tsx`
-- `src/components/ficha-360/TagsInteresseCard.tsx`
-- `src/components/ficha-360/FrequenciaContatoCard.tsx`
-- `src/components/ficha-360/UltimasInteracoesCard.tsx`
-- `src/components/ficha-360/ConversasRelacionadasCard.tsx`
+**Novos (2):**
+- `src/hooks/useInteractionsAdvancedFilter.ts`
+- `src/components/interactions/AdvancedSearchBar.tsx`
 
-**Editados (2):**
-- `src/AppRoutes.tsx` (nova rota lazy)
-- `src/pages/ContatoDetalhe.tsx` (botão "Ficha 360" no header)
+**Editados (1):**
+- `src/pages/Interacoes.tsx` — integrar a barra na aba "Lista" e aplicar filtros sobre os dados
 
 ## Critério de fechamento
 
-(a) Rota `/contatos/:id/ficha-360` acessível e renderizando em <2s, (b) 5 cards populados com dados reais (com fallback gracioso por card), (c) chips de "Conversas Relacionadas" navegam para `/interacoes` com filtros corretos pré-aplicados, (d) últimas interações clicáveis abrem o item na lista, (e) responsivo mobile (1 coluna) e desktop (2 colunas), (f) zero regressão em `ContatoDetalhe.tsx`.
+(a) Barra avançada visível e sticky na aba Lista, (b) 5 filtros funcionais (pessoa, empresa, tipo, período, palavra-chave), (c) estado persistido na URL, (d) contador de resultados + filtros ativos, (e) zero regressão na aba Timeline.
