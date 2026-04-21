@@ -37,10 +37,17 @@ function fmtDate(d: Date): string {
 }
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
-  filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel,
+  filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
 }: Props) {
   const canais = Array.isArray(filters.canais) ? filters.canais : [];
   const qTrim = (filters.q ?? '').trim();
+
+  // Executa a ação de remoção e, em seguida, devolve o foco ao input de busca
+  // sem reposicionar a página (preventScroll) e mantendo o cursor ao final.
+  const wrap = React.useCallback((fn: () => void) => () => {
+    fn();
+    onAfterRemove?.();
+  }, [onAfterRemove]);
 
   const summary = (() => {
     if (totalCount === 0) return 'Nenhuma interação';
