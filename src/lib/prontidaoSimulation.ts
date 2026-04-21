@@ -4,19 +4,17 @@
  */
 import type { SimulationOverrides } from '@/stores/useSimulationStore';
 
-interface ProfileLike {
+type ProfileLike = {
   cadence_days?: number | null;
   last_contact_at?: string | null;
   sentiment?: string | null;
-  [key: string]: unknown;
-}
+} & Record<string, unknown>;
 
-interface IntelligenceLike {
+type IntelligenceLike = {
   sentiment?: string | null;
   best_channel?: string | null;
   best_time?: string | null;
-  [key: string]: unknown;
-}
+} & Record<string, unknown>;
 
 export interface SimulationPreset {
   name: string;
