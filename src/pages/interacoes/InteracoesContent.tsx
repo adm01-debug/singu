@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Phone, Mail, Users, Edit, Search, Calendar, MoreVertical,
@@ -24,9 +24,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
-import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
+import { PaginationBar } from '@/components/interactions/PaginationBar';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
-import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { useCompanies } from '@/hooks/useCompanies';
 import { countByChannel } from '@/lib/countByChannel';
 
