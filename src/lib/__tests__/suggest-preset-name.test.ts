@@ -19,6 +19,7 @@ function baseFilters(over: Partial<AdvancedFilters> = {}): AdvancedFilters {
     de: undefined,
     ate: undefined,
     sort: 'recent',
+    view: 'list',
     page: 1,
     perPage: 25,
     ...over,

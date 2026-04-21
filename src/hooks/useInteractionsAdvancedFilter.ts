@@ -5,6 +5,7 @@ import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
+export type ViewMode = 'list' | 'by-contact' | 'by-company';
 
 export interface AdvancedFilters {
   q: string;
@@ -15,11 +16,17 @@ export interface AdvancedFilters {
   de?: Date;
   ate?: Date;
   sort: SortKey;
+  view: ViewMode;
   page: number;
   perPage: number;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'page', 'perPage'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'page', 'perPage'] as const;
+
+const VALID_VIEWS: ViewMode[] = ['list', 'by-contact', 'by-company'];
+function parseView(v: string | null): ViewMode {
+  return (VALID_VIEWS as string[]).includes(v ?? '') ? (v as ViewMode) : 'list';
+}
 
 const VALID_DIRECAO: DirecaoFilter[] = ['all', 'inbound', 'outbound'];
 function parseDirecao(v: string | null): DirecaoFilter {
@@ -60,6 +67,7 @@ export function useInteractionsAdvancedFilter() {
     de: parseDate(searchParams.get('de')),
     ate: parseDate(searchParams.get('ate')),
     sort: parseSort(searchParams.get('sort')),
+    view: parseView(searchParams.get('view')),
     page: parsePage(searchParams.get('page')),
     perPage: parsePerPage(searchParams.get('perPage')),
   }), [searchParams]);
@@ -102,6 +110,10 @@ export function useInteractionsAdvancedFilter() {
       const s = (value as SortKey) ?? 'recent';
       if (s && s !== 'recent') next.set('sort', s);
       else next.delete('sort');
+    } else if (key === 'view') {
+      const v = (value as ViewMode) ?? 'list';
+      if (v && v !== 'list') next.set('view', v);
+      else next.delete('view');
     } else if (key === 'direcao') {
       const d = (value as DirecaoFilter) ?? 'all';
       if (d && d !== 'all') next.set('direcao', d);
@@ -139,6 +151,7 @@ export function useInteractionsAdvancedFilter() {
     if (next.de instanceof Date && !isNaN(next.de.getTime())) sp.set('de', next.de.toISOString().slice(0, 10));
     if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
     if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
+    if (next.view && next.view !== 'list') sp.set('view', next.view);
     if (typeof next.perPage === 'number'
         && (VALID_PER_PAGE as readonly number[]).includes(next.perPage)
         && next.perPage !== DEFAULT_PER_PAGE) {

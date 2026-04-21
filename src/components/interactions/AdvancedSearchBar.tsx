@@ -13,6 +13,7 @@ import { CanaisQuickFilter } from './CanaisQuickFilter';
 import { DirecaoQuickFilter } from './DirecaoQuickFilter';
 import { SortChips } from './SortChips';
 import { DateRangePopover } from './DateRangePopover';
+import { ViewModeChips } from './ViewModeChips';
 
 interface ContactOption { id: string; label: string }
 interface CompanyOption { id: string; label: string }
@@ -106,6 +107,11 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           value={filters.sort}
           onChange={(v) => setFilter('sort', v)}
           hasQuery={!!filters.q.trim()}
+        />
+
+        <ViewModeChips
+          value={filters.view}
+          onChange={(v) => setFilter('view', v)}
         />
 
         <InteracoesPresetsMenu
