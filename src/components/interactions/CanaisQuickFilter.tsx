@@ -61,6 +61,12 @@ function clearPending() {
 interface Props {
   canais: string[];
   onChange: (next: string[]) => void;
+  /**
+   * Mapa opcional `canal → quantidade` calculado no dataset filtrado pelos
+   * demais critérios (sem aplicar o próprio filtro de canal). Quando ausente,
+   * os chips renderizam só o ícone (comportamento legado).
+   */
+  counts?: Record<string, number>;
 }
 
 function arraysEqual(a: string[], b: string[]) {
