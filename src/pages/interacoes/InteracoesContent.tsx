@@ -56,7 +56,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { filters: adv, debouncedQ, setFilter, clear, activeCount } = useInteractionsAdvancedFilter();
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll } = useInteractionsAdvancedFilter();
   const { companies } = useCompanies();
 
   const contactOptions = useMemo(
@@ -144,6 +144,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         companies={companyOptions}
         resultsCount={filteredAndSorted.length}
         totalCount={interactions.length}
+        applyAll={applyAll}
       />
 
       <ActiveFiltersBar

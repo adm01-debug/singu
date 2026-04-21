@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -28,11 +28,23 @@ interface Props {
   companies: CompanyOption[];
   resultsCount: number;
   totalCount: number;
+  applyAll?: (next: Partial<AdvancedFilters>) => void;
 }
 
 export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
-  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount,
+  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll,
 }: Props) {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = () => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    };
+    window.addEventListener('focus-interactions-search', handler);
+    return () => window.removeEventListener('focus-interactions-search', handler);
+  }, []);
+
   const selectedContact = useMemo(
     () => contacts.find(c => c.id === filters.contact),
     [contacts, filters.contact]
@@ -48,6 +60,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
         <div className="relative flex-1 min-w-[260px] max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             placeholder="Buscar palavra-chave em título, conteúdo ou tags..."
             value={filters.q}
             onChange={(e) => setFilter('q', e.target.value)}
@@ -100,6 +113,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           setFilter={setFilter}
           clear={clear}
           activeCount={activeCount}
+          onApplyAll={applyAll}
         />
 
         {activeCount > 0 && (
