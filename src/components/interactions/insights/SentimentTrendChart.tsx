@@ -156,10 +156,23 @@ interface EvolutionStats {
   weeksCompared: number;
 }
 
+const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
+
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const [smoothEnabled, setSmoothEnabled] = useState(true);
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
+  const [showPositivePctLine, setShowPositivePctLine] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const v = window.localStorage.getItem(SHOW_PCT_LINE_KEY);
+    return v === null ? true : v === "1";
+  });
+  const togglePctLine = (next: boolean) => {
+    setShowPositivePctLine(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SHOW_PCT_LINE_KEY, next ? "1" : "0");
+    }
+  };
 
   const annotationsApi = useSentimentAnnotations(contactId);
   const annotationsByWeek = annotationsApi.byWeek;
