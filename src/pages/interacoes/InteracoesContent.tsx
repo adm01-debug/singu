@@ -243,6 +243,13 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         visibleCount={visibleEventsCount}
         contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
         companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
+        onAfterRemove={() => {
+          // Devolve o foco ao input de busca após o re-render disparado pelo setFilter,
+          // sem reposicionar a página e mantendo o cursor ao final do texto.
+          requestAnimationFrame(() => {
+            window.dispatchEvent(new Event('focus-interactions-search-caret-end'));
+          });
+        }}
       />
 
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />

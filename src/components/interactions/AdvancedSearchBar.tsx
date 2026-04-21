@@ -42,8 +42,19 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
       searchInputRef.current?.focus();
       searchInputRef.current?.select();
     };
+    const caretEndHandler = () => {
+      const el = searchInputRef.current;
+      if (!el) return;
+      const len = el.value?.length ?? 0;
+      el.focus({ preventScroll: true });
+      try { el.setSelectionRange(len, len); } catch { /* noop */ }
+    };
     window.addEventListener('focus-interactions-search', handler);
-    return () => window.removeEventListener('focus-interactions-search', handler);
+    window.addEventListener('focus-interactions-search-caret-end', caretEndHandler);
+    return () => {
+      window.removeEventListener('focus-interactions-search', handler);
+      window.removeEventListener('focus-interactions-search-caret-end', caretEndHandler);
+    };
   }, []);
 
   const selectedContact = useMemo(

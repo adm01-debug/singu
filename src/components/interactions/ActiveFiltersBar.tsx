@@ -22,6 +22,7 @@ interface Props {
   visibleCount: number;
   contactLabel?: string | null;
   companyLabel?: string | null;
+  onAfterRemove?: () => void;
 }
 
 function pad2(n: number): string {
@@ -36,10 +37,17 @@ function fmtDate(d: Date): string {
 }
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
-  filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel,
+  filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
 }: Props) {
   const canais = Array.isArray(filters.canais) ? filters.canais : [];
   const qTrim = (filters.q ?? '').trim();
+
+  // Executa a ação de remoção e, em seguida, devolve o foco ao input de busca
+  // sem reposicionar a página (preventScroll) e mantendo o cursor ao final.
+  const wrap = React.useCallback((fn: () => void) => () => {
+    fn();
+    onAfterRemove?.();
+  }, [onAfterRemove]);
 
   const summary = (() => {
     if (totalCount === 0) return 'Nenhuma interação';
@@ -53,31 +61,31 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
       <span className="text-xs text-muted-foreground mr-1">{summary}</span>
 
       {qTrim && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('q', '')} icon={<Search className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('q', ''))} icon={<Search className="w-3 h-3" />}>
           Busca “{qTrim}”
         </Badge>
       )}
 
       {filters.direcao === 'inbound' && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('direcao', 'all')} icon={<ArrowDownLeft className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('direcao', 'all'))} icon={<ArrowDownLeft className="w-3 h-3" />}>
           Recebidas
         </Badge>
       )}
 
       {filters.direcao === 'outbound' && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('direcao', 'all')} icon={<ArrowUpRight className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('direcao', 'all'))} icon={<ArrowUpRight className="w-3 h-3" />}>
           Enviadas
         </Badge>
       )}
 
       {filters.contact && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('contact', '')} icon={<User className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('contact', ''))} icon={<User className="w-3 h-3" />}>
           Pessoa {contactLabel || filters.contact.slice(0, 8)}
         </Badge>
       )}
 
       {filters.company && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('company', '')} icon={<Building2 className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('company', ''))} icon={<Building2 className="w-3 h-3" />}>
           Empresa {companyLabel || filters.company.slice(0, 8)}
         </Badge>
       )}
@@ -91,7 +99,7 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
             key={c}
             variant="secondary"
             closeable
-            onClose={() => setFilter('canais', canais.filter((x) => x !== c))}
+            onClose={wrap(() => setFilter('canais', canais.filter((x) => x !== c)))}
             icon={Icon ? <Icon className="w-3 h-3" /> : undefined}
           >
             {label}
@@ -100,19 +108,19 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
       })}
 
       {filters.de instanceof Date && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('de', undefined)} icon={<Calendar className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('de', undefined))} icon={<Calendar className="w-3 h-3" />}>
           Período desde {fmtDate(filters.de)}
         </Badge>
       )}
 
       {filters.ate instanceof Date && (
-        <Badge variant="secondary" closeable onClose={() => setFilter('ate', undefined)} icon={<Calendar className="w-3 h-3" />}>
+        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('ate', undefined))} icon={<Calendar className="w-3 h-3" />}>
           Período até {fmtDate(filters.ate)}
         </Badge>
       )}
 
       {activeCount >= 2 && (
-        <Button variant="ghost" size="xs" onClick={clear} className="ml-auto">
+        <Button variant="ghost" size="xs" onClick={wrap(clear)} className="ml-auto">
           Limpar tudo
         </Button>
       )}
