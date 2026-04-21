@@ -8,6 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
 import { extractExcerpts, type Excerpt } from "@/lib/insights/extractExcerpts";
 import { pickTopPassages } from "@/lib/insights/pickTopPassages";
+import {
+  DEFAULT_EXCERPT_PRESET,
+  EXCERPT_PRESET_STORAGE_KEY,
+  getExcerptWindow,
+  getFallbackWindow,
+  isExcerptWindowPreset,
+  type ExcerptWindowPreset,
+} from "@/lib/insights/excerptWindow";
+import { cn } from "@/lib/utils";
 import type { ThemeAggregate } from "@/hooks/useInteractionsInsights";
 
 interface Props {
@@ -135,6 +144,25 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const { data: topics } = useTopicsCatalog();
 
+  const [preset, setPreset] = useState<ExcerptWindowPreset>(() => {
+    if (typeof window === "undefined") return DEFAULT_EXCERPT_PRESET;
+    try {
+      const v = window.localStorage.getItem(EXCERPT_PRESET_STORAGE_KEY);
+      return isExcerptWindowPreset(v) ? v : DEFAULT_EXCERPT_PRESET;
+    } catch {
+      return DEFAULT_EXCERPT_PRESET;
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+    } catch {
+      /* ignore quota / private mode errors */
+    }
+  }, [preset]);
+
   useEffect(() => {
     if (!theme || !theme.examples.length) {
       setInteractions([]);
@@ -175,8 +203,12 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       id: i.id,
       text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
     }));
-    return extractExcerpts(sources, keywords, { totalCap: 5, maxPerSource: 2, window: 140 });
-  }, [interactions, keywords]);
+    return extractExcerpts(sources, keywords, {
+      totalCap: 5,
+      maxPerSource: 2,
+      window: getExcerptWindow(preset),
+    });
+  }, [interactions, keywords, preset]);
 
   const fallbackPassages = useMemo(() => {
     if (excerpts.length > 0) return [];
@@ -185,8 +217,12 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       id: i.id,
       text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
     }));
-    return pickTopPassages(sources, { totalCap: 5, maxPerSource: 2, window: 220 });
-  }, [excerpts, interactions]);
+    return pickTopPassages(sources, {
+      totalCap: 5,
+      maxPerSource: 2,
+      window: getFallbackWindow(preset),
+    });
+  }, [excerpts, interactions, preset]);
 
   const isFallback = excerpts.length === 0 && fallbackPassages.length > 0;
   const displayItems = excerpts.length > 0 ? excerpts : fallbackPassages;
@@ -217,6 +253,30 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
           <SheetDescription>
             {theme ? `${theme.mentions} menções em ${theme.count} conversas` : ""}
           </SheetDescription>
+          <div
+            className="flex items-center gap-1.5 pt-1"
+            role="group"
+            aria-label="Tamanho do trecho exibido"
+            title="Tamanho do trecho exibido"
+          >
+            <span className="text-[10px] text-muted-foreground mr-1">Trecho:</span>
+            {(["short", "medium", "long"] as const).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setPreset(p)}
+                aria-pressed={preset === p}
+                className={cn(
+                  "h-6 px-2 rounded text-[11px] font-medium border transition-colors",
+                  preset === p
+                    ? "bg-primary/10 border-primary/40 text-foreground"
+                    : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
+                )}
+              >
+                {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
+              </button>
+            ))}
+          </div>
         </SheetHeader>
 
         <div className="mt-6 space-y-3">
