@@ -7966,6 +7966,50 @@ export type Database = {
         }
         Relationships: []
       }
+      sentiment_annotations: {
+        Row: {
+          category: string
+          contact_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          title: string
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          category: string
+          contact_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          category?: string
+          contact_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sentiment_annotations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sequence_enrollments: {
         Row: {
           completed_at: string | null
