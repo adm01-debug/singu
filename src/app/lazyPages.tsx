@@ -10,6 +10,7 @@ export const Empresas = lazy(() => import("@/pages/Empresas"));
 export const EmpresaDetalhe = lazy(() => import("@/pages/EmpresaDetalhe"));
 export const Contatos = lazy(() => import("@/pages/Contatos"));
 export const ContatoDetalhe = lazy(() => import("@/pages/ContatoDetalhe"));
+export const Ficha360 = lazy(() => import("@/pages/Ficha360"));
 export const Interacoes = lazy(() => import("@/pages/Interacoes"));
 export const PipelinePage = lazy(() => import("@/pages/Pipeline"));
 export const Insights = lazy(() => import("@/pages/Insights"));
