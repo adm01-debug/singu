@@ -106,6 +106,15 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
   );
 }
 
+type EvolutionDirection = "up" | "stable" | "down";
+interface EvolutionStats {
+  currentPct: number;
+  previousPct: number;
+  deltaPp: number;
+  direction: EvolutionDirection;
+  weeksCompared: number;
+}
+
 function SentimentTrendChartImpl({ data, summary }: Props) {
   const mixedStats = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
@@ -113,6 +122,24 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
     const totalAll = safe.reduce((acc, p) => acc + (p.total ?? 0), 0);
     const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
     return { totalMixed, pct };
+  }, [data]);
+
+  const evolutionStats = useMemo<EvolutionStats | null>(() => {
+    const safe = Array.isArray(data) ? data : [];
+    if (safe.length < 4) return null;
+    const mid = Math.floor(safe.length / 2);
+    const prev = safe.slice(0, mid);
+    const curr = safe.slice(mid);
+    const sumPos = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.positive ?? 0), 0);
+    const sumTot = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.total ?? 0), 0);
+    const prevTot = sumTot(prev);
+    const currTot = sumTot(curr);
+    if (prevTot === 0 || currTot === 0) return null;
+    const previousPct = Math.round((sumPos(prev) / prevTot) * 100);
+    const currentPct = Math.round((sumPos(curr) / currTot) * 100);
+    const deltaPp = currentPct - previousPct;
+    const direction: EvolutionDirection = Math.abs(deltaPp) < 3 ? "stable" : deltaPp > 0 ? "up" : "down";
+    return { currentPct, previousPct, deltaPp, direction, weeksCompared: prev.length };
   }, [data]);
 
   if (!Array.isArray(data) || data.length < 2) {
@@ -130,6 +157,29 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
 
   return (
     <div className="space-y-3">
+      {evolutionStats && (() => {
+        const EvIcon = DIRECTION_ICON[evolutionStats.direction];
+        const evLabel = evolutionStats.direction === "up" ? "Subiu" : evolutionStats.direction === "down" ? "Desceu" : "Estável";
+        const evSign = evolutionStats.deltaPp > 0 ? "+" : evolutionStats.deltaPp < 0 ? "−" : "";
+        const evAbs = Math.abs(evolutionStats.deltaPp);
+        return (
+          <div className={cn("flex items-center justify-between flex-wrap gap-2 rounded-md border px-3 py-2", DIRECTION_CLASS[evolutionStats.direction])}>
+            <div className="flex items-center gap-2">
+              <EvIcon className="h-4 w-4" />
+              <span className="text-xs font-semibold">{evLabel}</span>
+              <span className="text-[11px] text-muted-foreground tabular-nums">
+                Atual: {evolutionStats.currentPct}% · Anterior: {evolutionStats.previousPct}%
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={cn("gap-1 text-[10px] tabular-nums", DIRECTION_CLASS[evolutionStats.direction])}>
+                {evSign}{evAbs}pp
+              </Badge>
+              <span className="text-[10px] text-muted-foreground">vs. {evolutionStats.weeksCompared} semanas anteriores</span>
+            </div>
+          </div>
+        );
+      })()}
       {summary && (
         <div className="flex items-center justify-between flex-wrap gap-2">
           <Badge variant="outline" className={cn("gap-1 text-[10px]", DIRECTION_CLASS[summary.direction])}>
