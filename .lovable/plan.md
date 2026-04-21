@@ -1,59 +1,101 @@
 
 
-# Plano: Explicação da pontuação de "Melhor correspondência"
+# Plano: Sincronização correta dos chips de canal com a URL em `/interacoes`
 
 ## Contexto
 
-O chip `Melhor correspondência` em `SortChips` já tem tooltip simples (`"Melhor correspondência · Alt+M"` quando habilitado, `"Disponível ao buscar por palavra-chave"` quando não). O usuário quer uma **explicação curta da fórmula de relevância** próxima ao chip — como o score é calculado a partir do termo buscado (título×3, tags×2, conteúdo×1, conforme `relevanceScore` em `src/lib/sortInteractions.ts` e `src/lib/groupInteractions.ts`).
+Os chips de canal são renderizados em dois lugares:
+- **`CanaisQuickFilter`** (na barra de busca avançada): chips para ativar/desativar canais.
+- **`ActiveFiltersBar`** (abaixo da barra): badges fechaveis representando o estado ativo, incluindo os canais selecionados.
+
+A fonte da verdade é `filters.canais` (vindo de `useInteractionsAdvancedFilter`, parseado da URL `?canais=email,call`). Há também um `channelPersistence` em `localStorage` que pode reaplicar canais ao recarregar/limpar.
+
+Suspeitas de inconsistência a investigar e corrigir:
+1. **Remover um chip pelo X em `ActiveFiltersBar`** chama `setFilter('canais', canais.filter(...))`. Quando a lista resultante fica vazia, precisa virar `[]` na URL (parâmetro removido), não permanecer com valor antigo.
+2. **`CanaisQuickFilter`** pode estar lendo de `localStorage` (via `channelPersistence`) e não da URL como fonte primária — gerando "chip ativo visualmente" enquanto a URL não reflete.
+3. **Persistência em `localStorage`** pode reaplicar canais após o usuário remover um chip, criando regressão imediata.
+4. **Normalização**: chips devem comparar canais sempre em **lowercase**, sem duplicatas, com whitelist (`whatsapp|call|email|meeting|video_call|note`).
 
 ## Decisão de escopo
 
-- Adicionar um **ícone "info"** (`Info` do lucide) discreto **dentro** do chip "Melhor correspondência", à direita do label, visível apenas quando o chip está **habilitado** (há query). Mantém o chip clicável normalmente; o ícone tem seu próprio tooltip mais detalhado.
-- O ícone NÃO é um botão separado (evita conflito de eventos com o chip): é um `<span>` decorativo com `aria-hidden`, e a explicação fica num `<Tooltip>` independente que envolve só o ícone, com `delayDuration` curto.
-- **Conteúdo da tooltip** (PT-BR, 2 linhas): 
-  > "Pontuação por ocorrências do termo: título conta 3×, tags 2×, conteúdo 1×. Empate desempata pela mais recente."
-- Quando o chip está **desabilitado** (sem query), o ícone NÃO aparece — a tooltip do chip já explica "Disponível ao buscar por palavra-chave".
-- Em mobile (`<sm`, label oculto), o ícone também aparece à direita do ícone principal (`Sparkles`) para não esconder a explicação.
-- Acessibilidade: o `<button>` do chip mantém `aria-label="Melhor correspondência"`; o ícone info ganha `aria-hidden="true"` e a explicação fica acessível via tooltip (que já usa `role=tooltip` do Radix). Não duplica conteúdo no leitor de tela.
+- **Fonte única da verdade**: a URL (`filters.canais`). `CanaisQuickFilter` recebe `value` e `onChange` via props e NÃO lê `localStorage` internamente.
+- **`channelPersistence`** continua existindo, mas só é consultado **uma vez na primeira montagem** quando a URL não tem `?canais=`. Após qualquer interação do usuário (toggle/close), passa a refletir exatamente a URL. Remoção total (`canais=[]`) **limpa** o `localStorage` (já é o comportamento de `writeAppliedCanais([])`).
+- **`ActiveFiltersBar`**: ao clicar no X de um chip de canal, chamar `setFilter('canais', next)` onde `next = canais.filter(c => c !== removed)`. Se `next.length === 0`, o setter já remove o param da URL (graças à serialização condicional em `useInteractionsAdvancedFilter`). Verificar e garantir que esse caminho esteja correto.
+- **`CanaisQuickFilter`**: derivar `activeSet = new Set(filters.canais)` a cada render. Toggle calcula `next` e chama o callback. Remover qualquer leitura/escrita direta de `localStorage` dentro do componente — fica responsabilidade da página (`InteracoesContent.tsx`) ou do hook.
+- **Sincronização do `localStorage`** com a URL: criar um `useEffect` no `InteracoesContent` (ou no próprio hook) que, sempre que `filters.canais` mudar por ação do usuário, chame `writeAppliedCanais(filters.canais)`. Quando a URL é limpa via "Limpar tudo" do `ActiveFiltersBar`, isso já zera o `localStorage`.
+- **Normalização**: ao parsear `?canais=`, manter o filtro de whitelist e dedup (`Array.from(new Set(...))`). Confirmar que `parseCanais` em `useInteractionsAdvancedFilter` faz isso; se não, ajustar.
+- **Comparação case-insensitive**: garantir que toggle e close comparem com `toLowerCase()` antes de inserir/remover.
 
 ## Implementação
 
-### Único arquivo: `src/components/interactions/SortChips.tsx`
+### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
 
-1. Importar `Info` de `lucide-react`.
-2. Dentro do `.map(...)`, quando `key === 'relevance' && !disabled`, renderizar um `<Tooltip>` extra envolvendo um `<span><Info /></span>` posicionado dentro do `<button>`, **depois** do label.
-3. Estilo do ícone: `w-3 h-3 text-muted-foreground/70 ml-0.5` (discreto, semântico, flat).
-4. Para evitar que o clique no ícone propague para o chip e o ative duas vezes, usar `onClick={(e) => e.stopPropagation()}` no `<span>` (clique no ícone não desativa o ordenação — só abre o tooltip no hover/focus, padrão Radix).
-5. Tooltip side="bottom" com texto:  
-   `Pontuação por ocorrências do termo: título conta 3×, tags 2×, conteúdo 1×. Empate desempata pela mais recente.`
-6. Garantir que o badge `Alt+M` (que aparece com `altDown`) continue posicionado corretamente — o ícone info fica antes do badge sobreposto, sem interferência.
+- Revisar `parseCanais`: aplicar whitelist (`VALID_CHANNELS`), dedup, lowercase.
+- Garantir que `setFilter('canais', [])` remova o param da URL (serialização condicional `if (Array.isArray(v) && v.length > 0)`).
+- Confirmar que `applyAll` segue mesma regra.
 
-### Sem mudanças em:
-- `sortInteractions.ts` / `groupInteractions.ts` — fórmula já implementada e correta.
-- `useKeyboardShortcutsEnhanced.ts` — atalho não muda.
-- Outros consumidores de `SortChips`.
+### 2. `src/components/interactions/CanaisQuickFilter.tsx`
 
-## Testes
+- Remover qualquer leitura de `localStorage` (se existir).
+- Props: `value: string[]`, `onChange: (next: string[]) => void`.
+- Toggle:
+  ```ts
+  const toggle = (c: string) => {
+    const lower = c.toLowerCase();
+    const set = new Set(value.map(v => v.toLowerCase()));
+    if (set.has(lower)) set.delete(lower);
+    else set.add(lower);
+    onChange(Array.from(set));
+  };
+  ```
+- Visual ativo: `value.includes(c.toLowerCase())`.
 
-Editar `src/components/interactions/__tests__/SortChips.test.tsx`:
+### 3. `src/components/interactions/ActiveFiltersBar.tsx`
 
-1. **Quando `hasQuery=true`**: existe um elemento com `data-testid="relevance-info-icon"` (ou usar `getByLabelText` numa abordagem mais semântica via `role="img"` no span — vou usar `data-testid` por simplicidade) **dentro** do botão "Melhor correspondência".
-2. **Quando `hasQuery=false`**: o ícone info NÃO aparece (chip desabilitado).
-3. Click no chip "Melhor correspondência" continua chamando `onChange('relevance')` mesmo com o ícone info presente (não quebra o handler).
+- Já chama `setFilter('canais', canais.filter(x => x !== c))`. Validar que `c` está em lowercase no momento da remoção (vem do array já normalizado pelo parser, então deve estar OK — apenas adicionar comentário inline).
+- Sem mudança funcional aqui se o parser já normaliza; só garantia.
+
+### 4. `src/pages/interacoes/InteracoesContent.tsx`
+
+- Encontrar onde `CanaisQuickFilter` é renderizado e passar `value={filters.canais}` e `onChange={(next) => setFilter('canais', next)}`.
+- Adicionar `useEffect` que sincroniza `filters.canais` → `writeAppliedCanais(filters.canais)`. Ao montar com URL vazia, ler `readAppliedCanais()` uma única vez (guardado em `useRef` para evitar loops) e aplicar via `setFilter('canais', stored)` se não for nulo.
+
+### 5. Testes
+
+**Editar** `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` (ou criar novo teste focado):
+1. `setFilter('canais', [])` remove o param `canais` da URL.
+2. `setFilter('canais', ['email','EMAIL','whatsapp'])` é normalizado para `['email','whatsapp']` (dedup + lowercase).
+3. URL `?canais=email,garbage,call` produz `['email','call']` (whitelist filtra inválidos).
+4. Remover último canal via `ActiveFiltersBar` (simulando `setFilter('canais', [])`) limpa a URL.
+
+**Criar** `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`:
+1. Renderiza chip ativo quando `value` contém o canal.
+2. Click em chip ativo chama `onChange` sem aquele canal.
+3. Click em chip inativo chama `onChange` com aquele canal adicionado.
+4. Não lê `localStorage` (mock e verificar que não foi chamado).
+
+**Editar** `src/lib/__tests__/channelPersistence.test.ts`: garantir que cobertura atual continua válida (não muda comportamento do helper, só seu uso).
 
 ## Padrões obrigatórios
 
-- PT-BR, tokens semânticos HSL (`text-muted-foreground`), flat (sem shadows), zero novas deps (`Info` já existe em `lucide-react`).
-- Backward compat: nenhuma prop nova; comportamento atual preservado quando `hasQuery=false`.
-- A11y: ícone `aria-hidden`, tooltip Radix com `role=tooltip`, sem botão aninhado dentro de botão.
+- PT-BR, tokens semânticos HSL, flat (sem shadows/gradients), zero novas deps.
+- Backward compat: URL `?canais=email,call` continua funcionando idêntica.
+- Fonte única da verdade: URL. `localStorage` é cache opcional de "última seleção", não fonte.
+- A11y: chips mantêm `aria-pressed` e labels existentes.
 
 ## Arquivos tocados
 
-**Editados (2):**
-- `src/components/interactions/SortChips.tsx` — adiciona ícone Info + tooltip com fórmula no chip "Melhor correspondência" quando habilitado.
-- `src/components/interactions/__tests__/SortChips.test.tsx` — 3 novos testes cobrindo presença/ausência do ícone e integridade do click.
+**Editados (4):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — confirmar/ajustar normalização e serialização condicional de `canais`.
+- `src/components/interactions/CanaisQuickFilter.tsx` — remover leitura de `localStorage`, toggle baseado em props.
+- `src/components/interactions/ActiveFiltersBar.tsx` — comentário/ajuste pontual se necessário (sem mudança funcional esperada).
+- `src/pages/interacoes/InteracoesContent.tsx` — wiring `value`/`onChange`, sincronização one-shot com `localStorage` via `useEffect`+`useRef`.
+
+**Editados/criados (2 testes):**
+- `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` — 4 novos casos de normalização e remoção.
+- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` — novo, cobre toggle e ausência de acesso a `localStorage`.
 
 ## Critério de fechamento
 
-(a) O chip "Melhor correspondência" mostra um ícone info discreto à direita do label quando habilitado (com query); (b) hover/foco no ícone abre tooltip com a fórmula `título×3, tags×2, conteúdo×1` em PT-BR; (c) sem query, o ícone não aparece e o chip continua desabilitado com a tooltip atual; (d) clicar no chip ativa a ordenação normalmente, ícone não bloqueia; (e) atalho `Alt+M` e badge sobreposto continuam funcionando; (f) testes cobrem render condicional do ícone e integridade do click; (g) PT-BR, flat, zero novas deps.
+(a) Chips de canal em `/interacoes` refletem exatamente o que está em `?canais=`; (b) clicar X em um chip de canal no `ActiveFiltersBar` remove esse canal e, se for o último, remove o param da URL inteiro; (c) `CanaisQuickFilter` não lê `localStorage` — usa `value` via props; (d) `localStorage` é atualizado **depois** de cada mudança e só consultado uma vez na montagem inicial quando a URL está vazia; (e) parser normaliza canais com whitelist + lowercase + dedup; (f) testes cobrem normalização, remoção, toggle e ausência de leitura indevida de `localStorage`; (g) PT-BR, flat, zero novas deps.
 
