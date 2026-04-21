@@ -527,6 +527,27 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       </Popover>
 
       <ImportPresetsDialog open={importOpen} onOpenChange={setImportOpen} />
+
+      <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Os filtros salvos serão substituídos pelos filtros ativos agora.
+              As estatísticas de uso e o favorito serão preservados.
+              {pendingFilterUpdate && (
+                <span className="mt-2 block text-foreground">
+                  {activeCount} filtro{activeCount !== 1 ? 's' : ''} ativo{activeCount !== 1 ? 's' : ''} será{activeCount !== 1 ? 'ão' : ''} salvo{activeCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUpdateFilters}>Atualizar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 });
