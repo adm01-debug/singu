@@ -77,7 +77,7 @@ function SentimentDistributionChartImpl({ data, onSelectBucket }: Props) {
           return (
             <li
               key={d.key}
-              className={`flex items-center gap-2 rounded px-1 py-0.5 ${clickable ? "cursor-pointer hover:bg-muted/60 transition-colors" : ""}`}
+              className={`flex items-center gap-2 rounded px-1 py-0.5 ${clickable ? "cursor-pointer hover:bg-muted/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""}`}
               onClick={clickable ? () => handleSelect(d.key) : undefined}
               onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
               role={clickable ? "button" : undefined}
