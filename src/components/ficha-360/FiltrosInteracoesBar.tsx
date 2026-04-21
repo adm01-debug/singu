@@ -29,6 +29,8 @@ interface Props {
   activeCount: number;
   shownCount: number;
   totalCount: number;
+  channelCounts?: Record<string, number>;
+  channelCountsReady?: boolean;
 }
 
 export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
