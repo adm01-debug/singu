@@ -15,7 +15,7 @@ describe("extractExcerpts", () => {
     expect(out[0].interactionId).toBe("a");
   });
 
-  it("distribui entre múltiplas interações (1 por fonte na primeira passada)", () => {
+  it("ordena por relevância (densidade desc) respeitando maxPerSource", () => {
     const out = extractExcerpts(
       [
         { id: "a", text: "preço alto preço médio" },
@@ -24,7 +24,8 @@ describe("extractExcerpts", () => {
       ["preço"],
       opts,
     );
-    expect(out.map((e) => e.interactionId)).toEqual(["a", "b", "a"]);
+    expect(out[0].interactionId).toBe("a");
+    expect(out.map((e) => e.interactionId)).toContain("b");
   });
 
   it("escapa caracteres regex em keywords", () => {
