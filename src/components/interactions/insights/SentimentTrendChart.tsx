@@ -1,4 +1,5 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   ComposedChart,
   Bar,
@@ -57,7 +58,7 @@ function pctClass(pct: number): string {
 
 function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload || payload.length === 0) return null;
-  const point = payload[0]?.payload as SentimentTrendPoint | undefined;
+  const point = payload[0]?.payload as (SentimentTrendPoint & { positivePctMA?: number | null }) | undefined;
   if (!point) return null;
 
   const total = point.total ?? 0;
@@ -81,6 +82,11 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
           <p className="text-[10px] text-muted-foreground mt-0.5">
             <span className={cn("font-medium", pctClass(positivePct))}>{positivePct}% positivo</span>
           </p>
+          {typeof point.positivePctMA === "number" && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Tendência (MM3): <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
+            </p>
+          )}
           <div className="mt-2 space-y-1 border-t border-border/60 pt-2">
             {SENTIMENT_ROWS.map((row) => {
               const count = point[row.key] ?? 0;
@@ -116,6 +122,20 @@ interface EvolutionStats {
 }
 
 function SentimentTrendChartImpl({ data, summary }: Props) {
+  const [smoothEnabled, setSmoothEnabled] = useState(true);
+
+  const dataWithMA = useMemo(() => {
+    const safe = Array.isArray(data) ? data : [];
+    return safe.map((p, i) => {
+      const start = Math.max(0, i - 2);
+      const window = safe.slice(start, i + 1);
+      const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
+      const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
+      const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
+      return { ...p, positivePctMA };
+    });
+  }, [data]);
+
   const mixedStats = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
     const totalMixed = safe.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
@@ -161,20 +181,15 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
         const EvIcon = DIRECTION_ICON[evolutionStats.direction];
         const evLabel = evolutionStats.direction === "up" ? "Subiu" : evolutionStats.direction === "down" ? "Desceu" : "Estável";
         const evSign = evolutionStats.deltaPp > 0 ? "+" : evolutionStats.deltaPp < 0 ? "−" : "";
-        const evAbs = Math.abs(evolutionStats.deltaPp);
         return (
           <div className={cn("flex items-center justify-between flex-wrap gap-2 rounded-md border px-3 py-2", DIRECTION_CLASS[evolutionStats.direction])}>
             <div className="flex items-center gap-2">
               <EvIcon className="h-4 w-4" />
               <span className="text-xs font-semibold">{evLabel}</span>
-              <span className="text-[11px] text-muted-foreground tabular-nums">
-                Atual: {evolutionStats.currentPct}% · Anterior: {evolutionStats.previousPct}%
-              </span>
+              <span className="text-[11px] text-muted-foreground tabular-nums">Atual: {evolutionStats.currentPct}% · Anterior: {evolutionStats.previousPct}%</span>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className={cn("gap-1 text-[10px] tabular-nums", DIRECTION_CLASS[evolutionStats.direction])}>
-                {evSign}{evAbs}pp
-              </Badge>
+              <Badge variant="outline" className={cn("gap-1 text-[10px] tabular-nums", DIRECTION_CLASS[evolutionStats.direction])}>{evSign}{Math.abs(evolutionStats.deltaPp)}pp</Badge>
               <span className="text-[10px] text-muted-foreground">vs. {evolutionStats.weeksCompared} semanas anteriores</span>
             </div>
           </div>
@@ -182,11 +197,23 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
       })()}
       {summary && (
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <Badge variant="outline" className={cn("gap-1 text-[10px]", DIRECTION_CLASS[summary.direction])}>
-            <Icon className="h-3 w-3" />
-            {DIRECTION_LABEL[summary.direction]} {deltaSign}
-            {summary.deltaPct}pp
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className={cn("gap-1 text-[10px]", DIRECTION_CLASS[summary.direction])}>
+              <Icon className="h-3 w-3" />
+              {DIRECTION_LABEL[summary.direction]} {deltaSign}
+              {summary.deltaPct}pp
+            </Badge>
+            <Button
+              type="button"
+              variant={smoothEnabled ? "secondary" : "ghost"}
+              size="xs"
+              onClick={() => setSmoothEnabled((v) => !v)}
+              aria-pressed={smoothEnabled}
+              title="Suavizar com média móvel de 3 semanas"
+            >
+              Suavizar {smoothEnabled ? "✓" : ""}
+            </Button>
+          </div>
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-success">
@@ -216,7 +243,7 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
 
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+          <ComposedChart data={dataWithMA} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis dataKey="week" tickFormatter={formatWeek} stroke="hsl(var(--muted-foreground))" fontSize={11} />
             <YAxis
@@ -251,6 +278,21 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
               <ReferenceLine yAxisId="count" x={summary.worstWeek.week} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
+            {smoothEnabled && (
+              <Line
+                yAxisId="pct"
+                type="monotone"
+                dataKey="positivePctMA"
+                name="Tendência (MM3)"
+                stroke="hsl(var(--success))"
+                strokeWidth={3}
+                strokeOpacity={0.45}
+                dot={false}
+                activeDot={false}
+                isAnimationActive={false}
+                connectNulls
+              />
+            )}
             <Line yAxisId="count" type="monotone" dataKey="positive" name="Positivo" stroke={CHART_COLORS.positive} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
