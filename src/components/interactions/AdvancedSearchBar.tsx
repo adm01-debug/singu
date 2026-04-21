@@ -2,27 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  Search, X, Calendar as CalendarIcon, User, Building2,
-  MessageSquare, Phone, Mail, Users, Video, FileText, Check,
+  Search, X, Calendar as CalendarIcon, User, Building2, Check,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { InteracoesPresetsMenu } from './InteracoesPresetsMenu';
-
-const CHANNELS = [
-  { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-  { value: 'call', label: 'Ligação', icon: Phone },
-  { value: 'email', label: 'Email', icon: Mail },
-  { value: 'meeting', label: 'Reunião', icon: Users },
-  { value: 'video_call', label: 'Vídeo', icon: Video },
-  { value: 'note', label: 'Nota', icon: FileText },
-] as const;
+import { CanaisQuickFilter } from './CanaisQuickFilter';
 
 interface ContactOption { id: string; label: string }
 interface CompanyOption { id: string; label: string }
@@ -41,11 +31,6 @@ interface Props {
 export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
   filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount,
 }: Props) {
-  const toggleCanal = (v: string) => {
-    const arr = Array.isArray(filters.canais) ? filters.canais : [];
-    setFilter('canais', arr.includes(v) ? arr.filter(c => c !== v) : [...arr, v]);
-  };
-
   const selectedContact = useMemo(
     () => contacts.find(c => c.id === filters.contact),
     [contacts, filters.contact]
@@ -72,6 +57,11 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
             </Button>
           )}
         </div>
+
+        <CanaisQuickFilter
+          canais={filters.canais}
+          onChange={(next) => setFilter('canais', next)}
+        />
 
         <EntityPicker
           icon={User}
@@ -107,22 +97,6 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
       </div>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        {CHANNELS.map(opt => {
-          const Icon = opt.icon;
-          const active = filters.canais.includes(opt.value);
-          return (
-            <Badge
-              key={opt.value}
-              variant={active ? 'default' : 'outline'}
-              className={cn('cursor-pointer gap-1.5 px-2.5 py-1 transition-colors', !active && 'hover:bg-muted')}
-              onClick={() => toggleCanal(opt.value)}
-            >
-              <Icon className="w-3 h-3" />
-              {opt.label}
-            </Badge>
-          );
-        })}
-
         <div className="ml-auto text-xs text-muted-foreground">
           <span className="font-medium text-foreground">{resultsCount}</span> de {totalCount} interações
           {activeCount > 0 && <> · <span className="text-primary">{activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}</span></>}
