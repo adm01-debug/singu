@@ -1,34 +1,41 @@
 
 
-# Plano: Highlight de todas as keywords do tema em cada excerto
+# Plano: Janela de contexto configurável para excertos
 
 ## Diagnóstico
 
-- `ThemeExamplesDrawer` já usa `<MarkExcerpt>` para destacar **apenas** `excerpt.matchTerm` (o termo específico que disparou aquele excerto), via `<mark>` + split em React (já sem `dangerouslySetInnerHTML`, case-insensitive via flag `gi`).
-- Quando um excerto contém múltiplas keywords do tema (ex.: "preço" e "valor" na mesma frase), só uma fica marcada.
+- Hoje o tamanho da janela de contexto dos excertos está hard-coded em `ThemeExamplesDrawer.tsx`:
+  - `extractExcerpts(..., { totalCap: 5, maxPerSource: 2, window: 140 })`
+  - `pickTopPassages(..., { totalCap: 5, maxPerSource: 2, window: 220 })`
+- Não há forma de o usuário ajustar a janela sem editar código.
+- `extractExcerpts` e `pickTopPassages` já recebem `window` como parâmetro — basta expor controle no drawer.
 
 ## O que será construído
 
-Estender `MarkExcerpt` para aceitar a lista completa de `keywords` do tema e marcar **todas** as ocorrências, mantendo:
-- case-insensitive + acento-insensitive (consistente com `extractExcerpts`),
-- sem `dangerouslySetInnerHTML` (split + nodes React),
-- sem novas dependências, sem mudanças em `extractExcerpts.ts`, hooks ou tipos.
+1. Centralizar os presets de janela em uma constante editável.
+2. Adicionar um controle compacto no header do `ThemeExamplesDrawer` para alternar entre **Curto / Médio / Longo**, persistindo a escolha em `localStorage` para permanecer entre sessões.
 
 ## Mudanças
 
-### `src/components/interactions/insights/ThemeExamplesDrawer.tsx`
+### 1. Novo arquivo: `src/lib/insights/excerptWindow.ts`
+- Exportar:
+  - `EXCERPT_WINDOW_PRESETS = { short: 80, medium: 140, long: 240 } as const`
+  - `FALLBACK_WINDOW_RATIO = 1.6` (passagens de fallback usam janela ~60% maior, mantendo a proporção atual 220/140)
+  - Tipo `ExcerptWindowPreset = "short" | "medium" | "long"`
+  - Helpers `getExcerptWindow(preset)` e `getFallbackWindow(preset)` (retorna `Math.round(EXCERPT_WINDOW_PRESETS[preset] * FALLBACK_WINDOW_RATIO)`)
+  - `DEFAULT_EXCERPT_PRESET: ExcerptWindowPreset = "medium"`
+  - `EXCERPT_PRESET_STORAGE_KEY = "insights:excerpt-window"`
 
-1. **Substituir `MarkExcerpt`** por uma versão que recebe `terms: string[]`:
-   - Filtrar terms vazios/curtos (≥2 chars), deduplicar (case-insensitive) e ordenar por tamanho desc (evita match parcial quando uma keyword é prefixo de outra).
-   - Construir um único regex `new RegExp("(" + escaped.join("|") + ")", "giu")` com bordas de palavra Unicode `(?:^|[^\\p{L}\\p{N}])` + lookahead `(?=$|[^\\p{L}\\p{N}])` (espelho do padrão usado em `extractExcerpts`) para não marcar substrings dentro de palavras.
-   - Para suportar acento-insensitive sem alterar o texto exibido: normalizar uma cópia do `text` (NFD + remover diacríticos) só para localizar as posições via `regex.exec`, e usar os índices para fatiar o texto **original** em segmentos `{ text, isMatch }`. Isso preserva visualmente acentos e maiúsculas.
-   - Renderizar `<mark className="bg-warning/30 text-foreground rounded px-0.5">` para segmentos `isMatch`, `<span>` para os demais. Manter `key` estável por índice.
-
-2. **Atualizar uso em `ExcerptItem`**: passar `terms={keywords}` (já calculado no `useMemo` do componente pai) em vez de `term={excerpt.matchTerm}`. Propagar `keywords` via prop até `ExcerptItem` (props: adicionar `keywords: string[]`) ou via contexto local — preferir prop simples.
-
-3. **Manter fallback**: se `terms.length === 0`, retorna o texto puro.
+### 2. `src/components/interactions/insights/ThemeExamplesDrawer.tsx`
+- Estado local `preset` lido/escrito em `localStorage` via pequeno helper inline (sem novo hook).
+- Substituir `window: 140` por `window: getExcerptWindow(preset)` no `extractExcerpts`.
+- Substituir `window: 220` por `window: getFallbackWindow(preset)` no `pickTopPassages`.
+- Adicionar no header do `SheetContent`, abaixo do título, um pequeno grupo de 3 botões `ToggleGroup` (já disponível em `@/components/ui/toggle-group`) com labels **Curto · Médio · Longo** e tooltip "Tamanho do trecho exibido".
+- Re-renderiza excertos automaticamente quando `preset` muda (já está nos `useMemo` deps).
+- Sem mudanças em hooks de dados, tipos ou outros componentes.
+- Arquivo permanece ≤300 linhas.
 
 ## Critérios de aceite
 
-(a) Cada excerto no `ThemeExamplesDrawer` destaca **todas** as ocorrências de **todas** as keywords do tema (não só `matchTerm`); (b) destaque é case-insensitive e acento-insensitive (ex.: "preço" e "PRECO" ambos marcam); (c) marcações respeitam bordas de palavra (não destacam substrings dentro de palavras maiores); (d) texto original (acentos/caixa) é preservado visualmente; (e) sem uso de `dangerouslySetInnerHTML`; (f) sem novas dependências; (g) sem mudanças em `extractExcerpts.ts`, hooks, tipos ou outros componentes; (h) arquivo permanece ≤300 linhas; (i) sem `any`; (j) sem regressão no resto do drawer (header, lista de interações, link Ficha 360, estados de loading/empty).
+(a) Constante `EXCERPT_WINDOW_PRESETS` em `src/lib/insights/excerptWindow.ts` define os 3 tamanhos de janela em um único lugar editável; (b) o drawer de exemplos do tema mostra um seletor compacto Curto/Médio/Longo no header; (c) trocar a opção atualiza imediatamente os excertos exibidos (matches e fallback) com a nova janela; (d) escolha persiste em `localStorage` e é restaurada ao reabrir o drawer; (e) padrão inicial = "Médio" (140 chars), preservando comportamento atual; (f) janela do fallback escala proporcionalmente (≈ × 1.6) mantendo a relação atual 140/220; (g) sem novas dependências, PT-BR, flat; (h) sem `any`, sem `dangerouslySetInnerHTML`; (i) `ThemeExamplesDrawer.tsx` permanece ≤300 linhas e novo arquivo ≤50 linhas; (j) sem regressão em highlight de keywords, banner de fallback, link Ficha 360, ordenação ou estados de loading/empty.
 
