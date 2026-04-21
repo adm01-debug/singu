@@ -23,6 +23,22 @@ export interface AdvancedFilters {
 
 const KEYS = ['q', 'contact', 'company', 'canais', 'direcao', 'de', 'ate', 'sort', 'view', 'page', 'perPage'] as const;
 
+const VALID_CHANNELS = new Set(['whatsapp', 'call', 'email', 'meeting', 'video_call', 'note']);
+function parseCanais(v: string | null): string[] {
+  if (!v) return [];
+  const raw = v.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const dedup = Array.from(new Set(raw));
+  return dedup.filter((c) => VALID_CHANNELS.has(c));
+}
+function normalizeCanais(arr: unknown): string[] {
+  if (!Array.isArray(arr)) return [];
+  const lowered = arr
+    .filter((v): v is string => typeof v === 'string')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return Array.from(new Set(lowered)).filter((c) => VALID_CHANNELS.has(c));
+}
+
 const VALID_VIEWS: ViewMode[] = ['list', 'by-contact', 'by-company'];
 function parseView(v: string | null): ViewMode {
   return (VALID_VIEWS as string[]).includes(v ?? '') ? (v as ViewMode) : 'list';
