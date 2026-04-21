@@ -82,6 +82,20 @@ export function useInteractionsAdvancedFilter() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const applyAll = useCallback((next: Partial<AdvancedFilters>) => {
+    const sp = new URLSearchParams(searchParams);
+    KEYS.forEach(k => sp.delete(k));
+    if (next.q) sp.set('q', next.q);
+    if (next.contact) sp.set('contact', next.contact);
+    if (next.company) sp.set('company', next.company);
+    if (Array.isArray(next.canais) && next.canais.length > 0) sp.set('canais', next.canais.join(','));
+    if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
+    if (next.de instanceof Date && !isNaN(next.de.getTime())) sp.set('de', next.de.toISOString().slice(0, 10));
+    if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
+    if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
+    setSearchParams(sp, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const activeCount =
     (filters.q ? 1 : 0) +
     (filters.contact ? 1 : 0) +
@@ -91,5 +105,5 @@ export function useInteractionsAdvancedFilter() {
     (filters.de ? 1 : 0) +
     (filters.ate ? 1 : 0);
 
-  return { filters, debouncedQ, setFilter, clear, activeCount };
+  return { filters, debouncedQ, setFilter, clear, activeCount, applyAll };
 }
