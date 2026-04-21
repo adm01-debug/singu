@@ -203,7 +203,12 @@ function ObjectionsSpotlightImpl({ objections }: Props) {
     if (!Array.isArray(objections) || objections.length === 0) return [];
     return [...objections]
       .map((o) => ({ o, score: o.unhandled * 2 + o.count }))
-      .sort((a, b) => b.score - a.score)
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.o.count - a.o.count ||
+          a.o.objection.localeCompare(b.o.objection, "pt-BR"),
+      )
       .slice(0, 3)
       .map((x) => x.o);
   }, [objections]);
