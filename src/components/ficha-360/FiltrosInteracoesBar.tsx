@@ -169,6 +169,38 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
             <X className="h-3 w-3" /> Limpar
           </Button>
         )}
+
+        {isDirty && onApply && (
+          <div
+            className="ml-auto flex items-center gap-1.5"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="text-xs text-warning">Alterações não aplicadas</span>
+            {onDiscard && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onDiscard}
+                className="h-6 px-2 text-xs gap-1"
+                aria-label="Descartar alterações"
+                title="Descartar (Esc)"
+              >
+                <Undo2 className="h-3 w-3" /> Descartar
+              </Button>
+            )}
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onApply}
+              className="h-6 px-2.5 text-xs gap-1"
+              aria-label="Aplicar filtros"
+              title="Aplicar (Enter)"
+            >
+              <Check className="h-3 w-3" /> Aplicar
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
