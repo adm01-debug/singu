@@ -1,102 +1,121 @@
 
 
-# Plano: Seletor de densidade (Compacta/Confortável) na lista de interações
+# Plano: Persistir preferências de visualização (densidade, lote, modo, ordenação) entre sessões
 
 ## Contexto
 
-Em `/interacoes`, a lista (modo `view=list`) renderiza cada interação em um `Card` com `CardContent p-4`, marcador grande de 40px, badges, conteúdo, tags e bloco de contato com avatar e borda divisória. Para usuários com volume alto, esse layout fica verboso. Já existe densidade global (`useGlobalDensity`) e densidade do Intelligence Hub (`useIntelDensity`), mas a lista de interações não responde a nenhuma delas — o ajuste precisa ser local, persistido por usuário e refletido na URL como os demais controles do módulo (padrão URL-driven já estabelecido em `useInteractionsAdvancedFilter`).
+Em `useInteractionsAdvancedFilter`:
+- `density` já tem hidratação one-shot do `localStorage` no mount + persistência reativa.
+- `perPage`, `view` e `sort` são lidos/escritos só na URL. Sem `?perPage=`, `?view=`, `?sort=` na URL, o usuário sempre volta aos defaults (`25`, `list`, `recent`), mesmo que tenha escolhido outro valor antes.
+
+O usuário quer manter densidade **e tamanho do lote** (e por consistência também `view` e `sort`) ao voltar à página `/interacoes`.
 
 ## Decisão de escopo
 
-Adicionar um **toggle local** "Compacta / Confortável" para a lista de interações, com:
+Adicionar persistência local **somente para preferências de visualização** (não para filtros de dados como busca, contato, empresa, canais, direção, datas — esses ficam URL-only para evitar confundir o usuário com filtros "fantasma").
 
-1. Persistência via **URL** (`?density=compact|comfortable`) seguindo o padrão dos outros filtros do módulo. Default `comfortable` (não escreve na URL).
-2. Visível **apenas no modo `view=list`** (modos agrupados `by-contact`/`by-company` usam `TimelineGroupCard` e ficam fora deste escopo).
-3. Ajustes visuais aplicados ao item da lista quando `density=compact`:
-   - Card padding `p-4` → `p-2.5`.
-   - Marcador 40px → 28px, ícone 16px → 12px, posição `left-2 top-4` → `left-3 top-3`, linha vertical `left-[27px]` → `left-[19px]`.
-   - Padding-left do item `pl-16` → `pl-12`.
-   - Espaçamento entre itens `space-y-4` → `space-y-2`.
-   - Conteúdo: `mb-3/mb-4/mb-3` → `mb-1.5`, `line-clamp-2` → `line-clamp-1`.
-   - Bloco do contato: oculta avatar (mantém apenas nome em texto pequeno inline com `pt-2 border-t`), some o cargo.
-   - Tags: limita a 3 visíveis + "+N".
-   - Badge de tipo: oculta (ícone do marcador já comunica); mantém Sentiment, Follow-up, Recebido.
-   - Data: mantém apenas a linha relativa ("há 2h"); oculta data absoluta.
-   - Animação: reduz delay `Math.min(index*0.03, 0.3)` → `Math.min(index*0.015, 0.15)` para aliviar percepção em listas densas.
+Preferências persistidas em `localStorage`:
+- `perPage` (chave `singu-interactions-perPage-v1`) — valores válidos: 10/25/50/100; default 25.
+- `view` (chave `singu-interactions-view-v1`) — `list | by-contact | by-company`; default `list`.
+- `sort` (chave `singu-interactions-sort-v1`) — `recent | oldest | relevance | entity`; default `recent`.
 
-Confortável = layout atual, sem mudanças.
+Regras (mesmo padrão já aplicado para `density`):
+- **URL ganha sobre cache**: se o usuário chega via link com `?perPage=50`, isso prevalece e atualiza o cache.
+- **Hidratação one-shot no mount**: se o param **não está** na URL e o cache tem valor diferente do default, faz `setSearchParams(..., { replace: true })` adicionando o param.
+- **Persistência reativa**: qualquer mudança em `filters.perPage|view|sort` grava no `localStorage`.
+- **Não conta em `activeCount`** (já não conta hoje).
+- **`clear()` mantém preferências**: zera filtros de dados, mas não toca em densidade/lote/modo/sort (comportamento já existente — `clear` apaga via `KEYS.forEach delete`, e os useEffects de hidratação só rodam no mount, então após `clear` os params somem da URL mas o cache continua. No próximo mount, voltam. Isso é o desejado).
 
 ## Implementação
 
-### 1. `src/hooks/useInteractionsAdvancedFilter.ts`
-- Adicionar tipo `DensityMode = 'comfortable' | 'compact'`.
-- Estender `AdvancedFilters` com `density: DensityMode`.
-- Adicionar `'density'` em `KEYS`.
-- `parseDensity(v)` retorna `'compact'` se `v === 'compact'`, senão `'comfortable'`.
-- Em `setFilter`: caso `'density'`, escreve `compact` ou remove o param.
-- Em `applyAll`: persistir `density` se `=== 'compact'`.
-- **Não conta** em `activeCount` (é preferência de visualização, não filtro de dados — mesmo padrão de `view`, `sort`, `page`, `perPage`).
+### `src/hooks/useInteractionsAdvancedFilter.ts`
 
-### 2. `src/components/interactions/DensityChips.tsx` (novo, pequeno)
-- Componente análogo ao `ViewModeChips`: dois botões com ícones `Rows3` (confortável) e `Rows2` (compacta), `aria-pressed`, tooltip PT-BR, `role="group" aria-label="Densidade da lista"`.
-- Props: `value: DensityMode`, `onChange: (d: DensityMode) => void`.
-- ≤80 linhas, flat, zero novas deps (lucide já tem ícones).
+1. Adicionar três constantes de chave + parsers de cache:
+   ```ts
+   const PERPAGE_STORAGE_KEY = 'singu-interactions-perPage-v1';
+   const VIEW_STORAGE_KEY    = 'singu-interactions-view-v1';
+   const SORT_STORAGE_KEY    = 'singu-interactions-sort-v1';
+   ```
 
-### 3. `src/pages/interacoes/InteracoesContent.tsx`
-- Renderizar `<DensityChips>` ao lado direito do `ActiveFiltersBar` ou junto ao `PaginationBar` superior, **só quando `adv.view === 'list'`**. Posição escolhida: numa nova linha discreta abaixo do `ActiveFiltersBar`, alinhada à direita, com `text-xs text-muted-foreground` e gap consistente.
-- Derivar `isCompact = adv.density === 'compact'`.
-- Aplicar classes condicionais nas linhas existentes (sem extrair componente novo, mantendo o arquivo ≤400 linhas):
-  - `space-y-4` ↔ `space-y-2`
-  - `left-[27px]` ↔ `left-[19px]`
-  - `pl-16` ↔ `pl-12`
-  - Marcador, padding do `CardContent`, badge de tipo, avatar do contato, tags+N, etc.
-- Animação: `delay = Math.min(index * (isCompact ? 0.015 : 0.03), isCompact ? 0.15 : 0.3)`.
+2. Refatorar a hidratação para **um único `useEffect` one-shot** que processa todas as preferências em uma única atualização da URL (evita 4 `setSearchParams` consecutivos):
+   ```ts
+   const prefsHydratedRef = useRef(false);
+   useEffect(() => {
+     if (prefsHydratedRef.current) return;
+     prefsHydratedRef.current = true;
+     const next = new URLSearchParams(searchParams);
+     let changed = false;
 
-### 4. Persistência cross-session
-- A URL já garante shareability. Para que o usuário não perca a preferência ao voltar sem URL, adicionar uma persistência leve em `localStorage` chave `singu-interactions-density-v1`:
-  - Hidratação one-shot no mount do hook (mesmo padrão usado para `canais`): se URL não tem `density` e localStorage tem `compact`, faz `setSearchParams({ density: 'compact' }, { replace: true })`.
-  - `useEffect` reativo grava `filters.density` no localStorage.
+     if (!searchParams.get('density')) {
+       const v = readLS(DENSITY_STORAGE_KEY);
+       if (v === 'compact') { next.set('density', 'compact'); changed = true; }
+     }
+     if (!searchParams.get('perPage')) {
+       const n = parseInt(readLS(PERPAGE_STORAGE_KEY) ?? '', 10);
+       if ((VALID_PER_PAGE as readonly number[]).includes(n) && n !== DEFAULT_PER_PAGE) {
+         next.set('perPage', String(n)); changed = true;
+       }
+     }
+     if (!searchParams.get('view')) {
+       const v = readLS(VIEW_STORAGE_KEY);
+       if (v && (VALID_VIEWS as string[]).includes(v) && v !== 'list') {
+         next.set('view', v); changed = true;
+       }
+     }
+     if (!searchParams.get('sort')) {
+       const v = readLS(SORT_STORAGE_KEY);
+       if (v && (VALID_SORTS as string[]).includes(v) && v !== 'recent') {
+         next.set('sort', v); changed = true;
+       }
+     }
+     if (changed) setSearchParams(next, { replace: true });
+   }, []);
+   ```
+   Remove o `useEffect` de hidratação isolada de `density` (consolidado neste).
+
+3. Persistência reativa (substitui o effect específico de density):
+   ```ts
+   useEffect(() => { writeLS(DENSITY_STORAGE_KEY, filters.density); }, [filters.density]);
+   useEffect(() => { writeLS(PERPAGE_STORAGE_KEY, String(filters.perPage)); }, [filters.perPage]);
+   useEffect(() => { writeLS(VIEW_STORAGE_KEY, filters.view); }, [filters.view]);
+   useEffect(() => { writeLS(SORT_STORAGE_KEY, filters.sort); }, [filters.sort]);
+   ```
+   Helpers internos `readLS(k)`/`writeLS(k,v)` com try/catch para ambientes sem localStorage.
+
+4. `clear()`, `applyAll()`, `setFilter()`: **sem mudanças**. As preferências continuam viajando pela URL como hoje; o localStorage é só um espelho para hidratação cross-session.
 
 ## Testes
 
-**Editar/criar** `src/components/interactions/__tests__/DensityChips.test.tsx`:
-1. Renderiza dois botões com `aria-pressed` correto conforme `value`.
-2. Click no botão inativo dispara `onChange` com o valor oposto.
-3. Click no botão já ativo NÃO dispara `onChange` (consistente com `ViewModeChips`).
+**Editar** `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` — renomear para `useInteractionsAdvancedFilter.preferences.test.ts` (ou adicionar bloco). Casos novos:
 
-**Editar/criar** `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` (mínimo):
-1. Default: sem `?density`, `filters.density === 'comfortable'`.
-2. `?density=compact` → `filters.density === 'compact'`.
-3. `?density=foo` → fallback `'comfortable'`.
-4. `setFilter('density', 'compact')` adiciona `density=compact` na URL.
-5. `setFilter('density', 'comfortable')` remove o param da URL.
-6. Mudar `density` reseta `page` para 1 (já garantido por `if (key !== 'page') next.delete('page')`).
+1. Sem `?perPage` e cache `'50'` → após mount, URL passa a `?perPage=50` e `filters.perPage === 50`.
+2. Com `?perPage=10` e cache `'50'` → URL ganha; `filters.perPage === 10`; cache reescrito para `'10'` pelo effect reativo.
+3. Sem `?view` e cache `'by-contact'` → hidrata para `view=by-contact`.
+4. Sem `?sort` e cache `'oldest'` → hidrata para `sort=oldest`.
+5. `setFilter('perPage', 50)` grava `'50'` no `localStorage`.
+6. `setFilter('view', 'by-company')` grava `'by-company'`.
+7. `setFilter('sort', 'relevance')` grava `'relevance'`.
+8. Cache inválido (`'foo'`/`'999'`) → ignorado, mantém defaults sem erro.
+9. Defaults explícitos (`perPage=25`, `view=list`, `sort=recent`) **não** adicionam param à URL na hidratação (continuam "limpos").
+10. Regressão: density continua hidratando como antes.
 
 ## Padrões obrigatórios
 
 - PT-BR, flat, zero novas deps.
-- Backward-compat total: URL sem `density` segue funcionando como hoje (confortável).
-- Acessibilidade: `aria-pressed`, `aria-label`, foco visível (herda do `Button` shadcn).
-- Não conta em `activeCount` (preferência, não filtro de dados).
-- ≤400 linhas por arquivo (`InteracoesContent.tsx` está em ~321; cabem os ajustes condicionais; se passar de 400, extrai o item da timeline para `InteractionListItem.tsx`).
+- Backward-compat total: API pública do hook intacta (`filters`, `setFilter`, `clear`, `applyAll`, `applyDateRange`, `activeCount`, `debouncedQ`).
+- ≤400 linhas no arquivo (atual ~287, sobra folga).
+- `try/catch` em todo acesso a `localStorage` (SSR-safe / modo privado).
+- Hidratação consolidada em **um único `setSearchParams`** para evitar re-renders desnecessários.
 
 ## Arquivos tocados
 
-**Novos (1):**
-- `src/components/interactions/DensityChips.tsx` — toggle compacta/confortável (PT-BR, lucide).
+**Editado (1):**
+- `src/hooks/useInteractionsAdvancedFilter.ts` — novas chaves, hidratação consolidada, 4 effects de persistência reativa.
 
-**Editados (2):**
-- `src/hooks/useInteractionsAdvancedFilter.ts` — adicionar `density` URL-driven + hidratação localStorage + persistência reativa.
-- `src/pages/interacoes/InteracoesContent.tsx` — renderizar `<DensityChips>` apenas em `view=list`, aplicar classes condicionais nos itens da timeline.
-
-**Possível extração (se passar de 400 linhas):**
-- `src/components/interactions/InteractionListItem.tsx` — recebe `interaction`, `contact`, `isCompact`, `onEdit`, `onDelete`. Mantém o JSX hoje inline.
-
-**Testes (2):**
-- `src/components/interactions/__tests__/DensityChips.test.tsx` — 3 casos.
-- `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` — 5–6 casos.
+**Editado (1) — testes:**
+- `src/hooks/__tests__/useInteractionsAdvancedFilter.density.test.ts` (renomear ou estender) — 7+ casos novos cobrindo `perPage`, `view`, `sort` + regressão de `density`.
 
 ## Critério de fechamento
 
-(a) Toggle "Compacta/Confortável" aparece em `/interacoes` apenas no modo `view=list`; (b) clicar alterna densidade, persistindo em URL (`?density=compact`) e em localStorage; (c) modo compacto reduz padding, marcador, espaçamento, oculta avatar/badge/data absoluta e limita tags a 3+N; (d) modo confortável preserva o layout atual (regressão zero); (e) preferência sobrevive a refresh sem URL via hidratação localStorage; (f) trocar densidade não conta em `activeCount` e não afeta `clear()` de filtros (apenas `clear` zera tudo, conforme padrão); (g) testes cobrem hook e componente; (h) PT-BR, flat, zero novas deps, ≤400 linhas por arquivo.
+(a) Ao voltar a `/interacoes` sem query params, densidade/lote/modo/sort são restaurados da última escolha do usuário; (b) link compartilhado com params na URL prevalece e atualiza o cache; (c) defaults (`25`, `list`, `recent`, `comfortable`) não poluem a URL nem o cache; (d) `clear()` apaga filtros de dados mas as preferências de visualização voltam no próximo mount via cache; (e) `localStorage` indisponível não quebra o hook; (f) hidratação faz no máximo um `setSearchParams` por mount; (g) testes cobrem todos os caminhos; (h) PT-BR, flat, ≤400 linhas, zero novas deps.
 
