@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
+import type { SortKey } from '@/lib/sortInteractions';
 
 export interface AdvancedFilters {
   q: string;
@@ -9,9 +10,15 @@ export interface AdvancedFilters {
   canais: string[];
   de?: Date;
   ate?: Date;
+  sort: SortKey;
 }
 
-const KEYS = ['q', 'contact', 'company', 'canais', 'de', 'ate'] as const;
+const KEYS = ['q', 'contact', 'company', 'canais', 'de', 'ate', 'sort'] as const;
+
+const VALID_SORTS: SortKey[] = ['recent', 'oldest', 'relevance', 'entity'];
+function parseSort(v: string | null): SortKey {
+  return (VALID_SORTS as string[]).includes(v ?? '') ? (v as SortKey) : 'recent';
+}
 
 function parseDate(v: string | null): Date | undefined {
   if (!v) return undefined;
@@ -29,6 +36,7 @@ export function useInteractionsAdvancedFilter() {
     canais: (searchParams.get('canais') ?? '').split(',').filter(Boolean),
     de: parseDate(searchParams.get('de')),
     ate: parseDate(searchParams.get('ate')),
+    sort: parseSort(searchParams.get('sort')),
   }), [searchParams]);
 
   const debouncedQ = useDebounce(filters.q, 300);
@@ -43,6 +51,10 @@ export function useInteractionsAdvancedFilter() {
       const d = value as Date | undefined;
       if (d) next.set(key, d.toISOString().slice(0, 10));
       else next.delete(key);
+    } else if (key === 'sort') {
+      const s = (value as SortKey) ?? 'recent';
+      if (s && s !== 'recent') next.set('sort', s);
+      else next.delete('sort');
     } else {
       const v = (value as string) ?? '';
       if (v) next.set(key, v);

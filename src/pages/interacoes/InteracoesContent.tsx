@@ -17,6 +17,7 @@ import { AdvancedFilters, type FilterConfig, type SortOption } from '@/component
 import { MorphingNumber } from '@/components/micro-interactions/MorphingNumber';
 import { SmartBreadcrumbs } from '@/components/navigation/SmartBreadcrumbs';
 import { sortArray } from '@/lib/sorting-utils';
+import { sortInteractions } from '@/lib/sortInteractions';
 import type { Interaction } from '@/hooks/useInteractions';
 import type { SentimentType } from '@/types';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -106,8 +107,21 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   useEffect(() => { setVisibleCount(RENDER_BATCH); }, [activeFilters, sortBy, sortOrder]);
   useEffect(() => { const el = sentinelRef.current; if (!el) return; const obs = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) startTransition(() => setVisibleCount(prev => prev + RENDER_BATCH)); }, { rootMargin: '400px' }); obs.observe(el); return () => obs.disconnect(); }, [filteredAndSorted.length]);
 
-  const visibleInteractions = useMemo(() => filteredAndSorted.slice(0, visibleCount), [filteredAndSorted, visibleCount]);
-  const hasMore = visibleCount < filteredAndSorted.length;
+  const sortedForView = useMemo(() => {
+    const mapped = filteredAndSorted.map(i => {
+      const c = contactMap.get(i.contact_id);
+      return {
+        ...i,
+        date: i.created_at,
+        contact_name: c ? `${c.first_name ?? ''} ${c.last_name ?? ''}`.trim() : null,
+        company_name: null as string | null,
+      };
+    });
+    return sortInteractions(mapped, adv.sort, debouncedQ);
+  }, [filteredAndSorted, contactMap, adv.sort, debouncedQ]);
+
+  const visibleInteractions = useMemo(() => sortedForView.slice(0, visibleCount), [sortedForView, visibleCount]);
+  const hasMore = visibleCount < sortedForView.length;
 
   return (
     <div className="p-6 space-y-6">

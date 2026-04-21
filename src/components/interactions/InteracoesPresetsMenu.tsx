@@ -21,6 +21,7 @@ interface SerializedPayload {
   canais: string[];
   de?: string;
   ate?: string;
+  sort?: string;
 }
 
 function summarize(p: SerializedPayload): string {
@@ -56,6 +57,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     canais: Array.isArray(filters.canais) ? filters.canais : [],
     de: filters.de?.toISOString(),
     ate: filters.ate?.toISOString(),
+    sort: filters.sort,
   }), [filters]);
 
   const handleSave = () => {
@@ -71,6 +73,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
         canais: currentPayload.canais,
         de: currentPayload.de ? [currentPayload.de] : [],
         ate: currentPayload.ate ? [currentPayload.ate] : [],
+        sort: currentPayload.sort ? [currentPayload.sort] : [],
       },
       sortBy: '',
       sortOrder: 'desc',
@@ -89,6 +92,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       canais: Array.isArray(presetFilters.canais) ? presetFilters.canais : [],
       de: presetFilters.de?.[0],
       ate: presetFilters.ate?.[0],
+      sort: presetFilters.sort?.[0],
     };
     setFilter('q', payload.q);
     setFilter('contact', payload.contact);
@@ -96,6 +100,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     setFilter('canais', payload.canais);
     setFilter('de', parseDate(payload.de));
     setFilter('ate', parseDate(payload.ate));
+    const validSorts = ['recent', 'oldest', 'relevance', 'entity'] as const;
+    type SortVal = typeof validSorts[number];
+    const nextSort: SortVal = (validSorts as readonly string[]).includes(payload.sort ?? '')
+      ? (payload.sort as SortVal)
+      : 'recent';
+    setFilter('sort', nextSort);
     setOpen(false);
     toast.success('Busca aplicada');
   };
