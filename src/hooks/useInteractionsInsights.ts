@@ -29,6 +29,24 @@ export interface InsightsKpis {
   unhandledObjections: number;
 }
 
+export interface SentimentTrendPoint {
+  week: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+  mixed: number;
+  total: number;
+  positivePct: number;
+}
+
+export interface SentimentTrendSummary {
+  bestWeek: { week: string; positivePct: number } | null;
+  worstWeek: { week: string; positivePct: number } | null;
+  deltaPct: number;
+  direction: "up" | "stable" | "down";
+  totalInteractions: number;
+}
+
 const periodToDays: Record<Period, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
 function startOfWeekIso(d: Date): string {
@@ -100,7 +118,43 @@ export function useInteractionsInsights(period: Period = "30d") {
       cur.total += 1;
       trendMap.set(week, cur);
     }
-    const sentimentTrend = Array.from(trendMap.values()).sort((a, b) => a.week.localeCompare(b.week));
+    const sentimentTrend: SentimentTrendPoint[] = Array.from(trendMap.values())
+      .sort((a, b) => a.week.localeCompare(b.week))
+      .map((p) => ({
+        ...p,
+        positivePct: p.total > 0 ? Math.round((p.positive / p.total) * 100) : 0,
+      }));
+
+    // Trend summary: best/worst week + delta entre 2ª e 1ª metade
+    let sentimentTrendSummary: SentimentTrendSummary = {
+      bestWeek: null,
+      worstWeek: null,
+      deltaPct: 0,
+      direction: "stable",
+      totalInteractions: sentimentTrend.reduce((acc, p) => acc + p.total, 0),
+    };
+    if (sentimentTrend.length >= 2) {
+      let best = sentimentTrend[0];
+      let worst = sentimentTrend[0];
+      for (const p of sentimentTrend) {
+        if (p.positivePct > best.positivePct) best = p;
+        if (p.positivePct < worst.positivePct) worst = p;
+      }
+      const mid = Math.floor(sentimentTrend.length / 2);
+      const firstHalf = sentimentTrend.slice(0, mid);
+      const secondHalf = sentimentTrend.slice(mid);
+      const avg = (arr: SentimentTrendPoint[]) =>
+        arr.length ? arr.reduce((a, p) => a + p.positivePct, 0) / arr.length : 0;
+      const delta = Math.round(avg(secondHalf) - avg(firstHalf));
+      const direction: "up" | "stable" | "down" = delta >= 5 ? "up" : delta <= -5 ? "down" : "stable";
+      sentimentTrendSummary = {
+        bestWeek: { week: best.week, positivePct: best.positivePct },
+        worstWeek: { week: worst.week, positivePct: worst.positivePct },
+        deltaPct: delta,
+        direction,
+        totalInteractions: sentimentTrendSummary.totalInteractions,
+      };
+    }
 
     // Themes
     const themeMap = new Map<string, ThemeAggregate>();
@@ -152,7 +206,7 @@ export function useInteractionsInsights(period: Period = "30d") {
       unhandledObjections: unhandled,
     };
 
-    return { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
+    return { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
   }, [query.data]);
 
   return { ...insights, isLoading: query.isLoading, isError: query.isError };

@@ -32,7 +32,7 @@ export function InsightsPanel() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const { kpis, sentimentDistribution, sentimentTrend, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
+  const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
   const [selectedBucket, setSelectedBucket] = useState<SentimentOverall | null>(null);
 
@@ -105,7 +105,7 @@ export function InsightsPanel() {
             </Card>
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Tendência semanal</CardTitle></CardHeader>
-              <CardContent><SentimentTrendChart data={sentimentTrend} /></CardContent>
+              <CardContent><SentimentTrendChart data={sentimentTrend} summary={sentimentTrendSummary} /></CardContent>
             </Card>
           </div>
 
