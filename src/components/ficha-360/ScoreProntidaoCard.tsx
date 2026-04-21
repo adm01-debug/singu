@@ -1,13 +1,16 @@
-import { memo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Calendar, Clock, Smile, Radio, Lightbulb, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { WhyScoreDrawer, type WhyScoreFactor } from '@/components/intelligence/WhyScoreDrawer';
 import type { ProntidaoResult, ProntidaoLevel, ProntidaoStatus } from '@/lib/prontidaoScore';
 
 interface Props {
   data: ProntidaoResult;
+  contactId?: string;
 }
 
 const levelClasses: Record<ProntidaoLevel, { badge: string; ring: string; text: string }> = {
@@ -57,14 +60,30 @@ const factorIcons = {
   channel: Radio,
 } as const;
 
-export const ScoreProntidaoCard = memo(({ data }: Props) => {
+export const ScoreProntidaoCard = memo(({ data, contactId }: Props) => {
   const cls = levelClasses[data.level];
+  const [whyOpen, setWhyOpen] = useState(false);
   const factors: Array<{ key: keyof typeof factorIcons; factor: typeof data.breakdown.cadence }> = [
     { key: 'cadence', factor: data.breakdown.cadence },
     { key: 'recency', factor: data.breakdown.recency },
     { key: 'sentiment', factor: data.breakdown.sentiment },
     { key: 'channel', factor: data.breakdown.channel },
   ];
+
+  const whyFactors = useMemo<WhyScoreFactor[]>(
+    () =>
+      factors.map(({ key, factor }) => ({
+        key,
+        label: factor.label,
+        score: factor.score,
+        weight: factor.weight / 100,
+        detail: factor.detail,
+      })),
+    [data],
+  );
+
+  const band: 'low' | 'mid' | 'high' =
+    data.level === 'pronto' || data.level === 'quente' ? 'high' : data.level === 'morno' ? 'mid' : 'low';
 
   return (
     <Card>
@@ -126,9 +145,32 @@ export const ScoreProntidaoCard = memo(({ data }: Props) => {
                 </div>
               </div>
             </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="w-full h-8 text-xs gap-1.5"
+              onClick={() => setWhyOpen(true)}
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Por que esse score?
+            </Button>
           </div>
         </div>
       </CardContent>
+
+      <WhyScoreDrawer
+        open={whyOpen}
+        onOpenChange={setWhyOpen}
+        scoreKey={`prontidao:contact:${contactId ?? 'anon'}`}
+        title="Por que esse score?"
+        subtitle={`${data.score}/100 — ${data.levelLabel}`}
+        score={data.score}
+        factors={whyFactors}
+        recommendations={[data.recommendation, `Próxima ação: ${data.nextActionHint}`]}
+        band={band}
+      />
     </Card>
   );
 });
