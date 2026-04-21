@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Star } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { suggestGenericPresetName } from '@/lib/suggestPresetName';
+import { dedupeNameAgainst } from '@/lib/searchPresetTransport';
 import {
   Popover,
   PopoverContent,
@@ -52,9 +54,30 @@ export function SearchPresetsMenu({
   } = useSearchPresets(context);
   const [isNaming, setIsNaming] = useState(false);
   const [presetName, setPresetName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const hasActiveFilters = Object.keys(currentFilters).some(k => currentFilters[k]?.length > 0)
     || currentSearchTerm;
+
+  const handleStartNaming = () => {
+    const suggested = suggestGenericPresetName(currentFilters, currentSearchTerm);
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
+    setPresetName(finalName);
+    setIsNaming(true);
+  };
+
+  const handleRegenerateSuggestion = () => {
+    const suggested = suggestGenericPresetName(currentFilters, currentSearchTerm);
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
+    setPresetName(finalName);
+    requestAnimationFrame(() => inputRef.current?.select());
+  };
+
+  useEffect(() => {
+    if (isNaming) {
+      requestAnimationFrame(() => inputRef.current?.select());
+    }
+  }, [isNaming]);
 
   const handleSave = () => {
     if (!presetName.trim()) return;
@@ -186,13 +209,29 @@ export function SearchPresetsMenu({
           {isNaming ? (
             <div className="flex gap-2">
               <Input
+                ref={inputRef}
                 autoFocus
                 placeholder="Nome do preset..."
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSave();
+                  if (e.key === 'Escape') { setIsNaming(false); setPresetName(''); }
+                }}
+                maxLength={60}
                 className="h-8 text-sm"
               />
+              {!presetName.trim() && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-2"
+                  onClick={handleRegenerateSuggestion}
+                  title="Sugerir nome com base nos filtros"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                </Button>
+              )}
               <Button size="sm" className="h-8 px-2" onClick={handleSave} disabled={!presetName.trim()}>
                 <Check className="w-3.5 h-3.5" />
               </Button>
@@ -202,7 +241,7 @@ export function SearchPresetsMenu({
               variant="ghost"
               size="sm"
               className="w-full justify-start gap-2 text-xs"
-              onClick={() => setIsNaming(true)}
+              onClick={handleStartNaming}
               disabled={!hasActiveFilters}
             >
               <BookmarkPlus className="w-3.5 h-3.5" />
