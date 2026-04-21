@@ -154,6 +154,28 @@ export function useInteractionsAdvancedFilter() {
     writeAppliedCanais(filters.canais);
   }, [filters.canais]);
 
+  // Hidratação one-shot da densidade no mount: URL ganha sobre cache.
+  const densityHydratedRef = useRef(false);
+  useEffect(() => {
+    if (densityHydratedRef.current) return;
+    densityHydratedRef.current = true;
+    if (searchParams.get('density')) return;
+    try {
+      const cached = localStorage.getItem(DENSITY_STORAGE_KEY);
+      if (cached === 'compact') {
+        const next = new URLSearchParams(searchParams);
+        next.set('density', 'compact');
+        setSearchParams(next, { replace: true });
+      }
+    } catch { /* noop */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persistência reativa: sincroniza densidade com localStorage.
+  useEffect(() => {
+    try { localStorage.setItem(DENSITY_STORAGE_KEY, filters.density); } catch { /* noop */ }
+  }, [filters.density]);
+
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
     // Reset automático de page sempre que QUALQUER outro filtro mudar.
@@ -174,6 +196,10 @@ export function useInteractionsAdvancedFilter() {
       const v = (value as ViewMode) ?? 'list';
       if (v && v !== 'list') next.set('view', v);
       else next.delete('view');
+    } else if (key === 'density') {
+      const d = (value as DensityMode) ?? 'comfortable';
+      if (d === 'compact') next.set('density', 'compact');
+      else next.delete('density');
     } else if (key === 'direcao') {
       const d = (value as DirecaoFilter) ?? 'all';
       if (d && d !== 'all') next.set('direcao', d);
@@ -215,6 +241,7 @@ export function useInteractionsAdvancedFilter() {
     if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
     if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
     if (next.view && next.view !== 'list') sp.set('view', next.view);
+    if (next.density === 'compact') sp.set('density', 'compact');
     if (typeof next.perPage === 'number'
         && (VALID_PER_PAGE as readonly number[]).includes(next.perPage)
         && next.perPage !== DEFAULT_PER_PAGE) {
