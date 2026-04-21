@@ -1,115 +1,100 @@
 
 
-# Plano: Aplicar preset sem recarregar e manter foco na busca
+# Plano: Sincronização automática dos chips de canal com a busca
 
 ## Contexto
 
-Hoje em `InteracoesPresetsMenu`, ao clicar em um preset, `applyPreset` chama `onApplyPreset(payload)` que escreve nos `searchParams` via `setFilter`. Isso já é client-side (React Router não recarrega a página), mas:
+Hoje em `/interacoes`, na `AdvancedSearchBar`, o componente `CanaisQuickFilter` provavelmente já aplica mudanças de canal imediatamente ao clicar (via `setFilter('canais', next)`), o que dispara refetch e re-render da tabela a cada chip. O usuário quer:
 
-1. Não há garantia explícita de que **todos** os campos do `AdvancedFilters` são resetados antes de aplicar (ex.: se o preset não tem `canais`, o filtro de canais antigo permanece — comportamento "merge" em vez de "replace").
-2. Após aplicar, o **popover fecha** mas o foco vai para o trigger do popover (botão "Buscas"), não para o `Input` de busca da `TimelineFilterBar`. O usuário precisa clicar no campo de busca para continuar digitando.
-3. Não há feedback visual claro de que a tabela atualizou (a query refetch é silenciosa).
+1. **Modo "Auto-aplicar"** (default ON): chips sincronizam imediatamente com a busca/tabela ao clicar (comportamento atual, com confirmação visual).
+2. **Modo "Manual"** (opt-in): chips apenas marcam a seleção localmente; só aplica quando clica num botão "Aplicar" — útil pra escolher 3-4 canais sem ficar refazendo a query a cada clique.
+3. **Botão "Aplicar"** aparece apenas no modo manual e quando há diferença entre seleção local e filtros aplicados (badge com contador da diferença).
 
-Vamos resolver os três pontos sem recarregar a página.
+Preferência do projeto (memória `mem://~user`): execução autônoma, uma única melhoria por vez, sem perguntas. Vou implementar com default = auto-aplicar (zero regressão pra quem já usa hoje), e um toggle discreto pra mudar pro modo manual com persistência em localStorage.
 
 ## Decisão de escopo
 
-- **Replace total dos filtros**: ao aplicar um preset, primeiro limpa todos os campos do `AdvancedFilters` e depois aplica os valores do preset. Garante que filtros antigos não "vazem".
-- **Foco automático na busca**: após aplicar, dispara um evento (`focus-interactions-search`) que a `TimelineFilterBar` escuta para chamar `inputRef.current?.focus()` + `select()`. Mecanismo desacoplado (CustomEvent no `window`), sem prop drilling.
-- **Feedback sutil**: toast já existe ("Preset aplicado" — ou adicionar se não houver). A tabela já refetch automaticamente via TanStack Query quando os `searchParams` mudam (o hook `useInteractionsAdvancedFilter` retorna `filters` derivado do URL, e a query usa `filters` como key). Não precisa de mudança aqui.
-- **Sem recarregar**: `setSearchParams(..., { replace: true })` já é usado — confirmar que continua. Nenhum `window.location` ou `navigate({ replace: true })` em todo o fluxo.
+- **Hook novo**: `useChannelSyncMode` (`src/hooks/useChannelSyncMode.ts`) — persiste `'auto' | 'manual'` em `localStorage` (`channel-sync-mode`), default `'auto'`.
+- **`CanaisQuickFilter`**: adicionar estado interno `pendingCanais` (sync com prop quando modo é `auto`); no modo `manual`, clicks só atualizam `pendingCanais` sem chamar `onChange`. Mostra:
+  - Pequeno toggle (ícone `<Zap>` ativo / `<MousePointerClick>` manual) ao lado dos chips, com `<Tooltip>` explicando o modo.
+  - Botão `Aplicar` aparece só no modo `manual` E quando `pendingCanais !== currentCanais`. Mostra contagem de diferença (ex.: `+2`).
+  - Botão `Reverter` (ícone X) ao lado, pra descartar pendentes.
+- **Visual**: chips selecionados-mas-não-aplicados ganham estilo `outline` com borda tracejada (`border-dashed`); chips aplicados mantêm `default`. Diferenciação clara sem cor extra.
+- **Sem mudanças em**: `setFilter`, `applyAll`, `useInteractionsAdvancedFilter`, `AdvancedSearchBar` (a não ser passar a prop nova se necessário — provavelmente não, fica self-contained no `CanaisQuickFilter`).
+- **A11y**: toggle com `aria-label`, botão Aplicar com `aria-live="polite"` no badge de contagem.
+- **Backward compat**: default `'auto'` = comportamento idêntico ao atual.
 
 ## Implementação
 
-### 1. `useInteractionsAdvancedFilter.ts` — novo método `applyAll`
-
-Adicionar método que substitui **todos** os filtros de uma vez (replace, não merge), em uma única chamada `setSearchParams` (uma navegação só):
+### 1. `src/hooks/useChannelSyncMode.ts` (novo, ~25 linhas)
 
 ```ts
-const applyAll = useCallback((next: Partial<AdvancedFilters>) => {
-  const sp = new URLSearchParams(searchParams);
-  // Limpar todas as chaves conhecidas
-  KEYS.forEach(k => sp.delete(k));
-  // Aplicar valores do preset
-  if (next.q) sp.set('q', next.q);
-  if (next.contact) sp.set('contact', next.contact);
-  if (next.company) sp.set('company', next.company);
-  if (next.canais?.length) sp.set('canais', next.canais.join(','));
-  if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
-  if (next.de) sp.set('de', next.de.toISOString().slice(0, 10));
-  if (next.ate) sp.set('ate', next.ate.toISOString().slice(0, 10));
-  if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
-  setSearchParams(sp, { replace: true });
-}, [searchParams, setSearchParams]);
+type ChannelSyncMode = 'auto' | 'manual';
+const KEY = 'channel-sync-mode';
+
+export function useChannelSyncMode() {
+  const [mode, setModeState] = useState<ChannelSyncMode>(() => {
+    try { return (localStorage.getItem(KEY) as ChannelSyncMode) || 'auto'; }
+    catch { return 'auto'; }
+  });
+  const setMode = useCallback((next: ChannelSyncMode) => {
+    setModeState(next);
+    try { localStorage.setItem(KEY, next); } catch {}
+  }, []);
+  const toggle = useCallback(() => setMode(mode === 'auto' ? 'manual' : 'auto'), [mode, setMode]);
+  return { mode, setMode, toggle };
+}
 ```
 
-Retornar no objeto do hook (`{ filters, debouncedQ, setFilter, clear, activeCount, applyAll }`).
+### 2. `src/components/interactions/CanaisQuickFilter.tsx` (refactor)
 
-### 2. `InteracoesPresetsMenu.tsx` — usar `applyAll` + emitir evento de foco
+Ler arquivo atual primeiro. Adicionar:
+- `useChannelSyncMode()` interno.
+- Estado `pendingCanais` derivado: no modo `auto` espelha `canais` direto; no modo `manual` mantém estado local até `apply()`.
+- `useEffect` sincroniza `pendingCanais` com `canais` quando muda externamente (preset aplicado, clear, etc.).
+- `toggleCanal(value)`:
+  - Modo `auto`: chama `onChange(next)` direto (comportamento atual).
+  - Modo `manual`: atualiza `pendingCanais`, não chama `onChange`.
+- `apply()`: `onChange(pendingCanais)`.
+- `revert()`: `setPendingCanais(canais)`.
+- Render dos chips usa `pendingCanais` pra estado visual; chips com diferença em relação a `canais` ganham `border-dashed`.
+- UI extra: toggle modo (botão ghost com ícone) + botão Aplicar/Reverter quando aplicável.
 
-- Substituir as múltiplas chamadas `onApplyPreset(payload)` (que faz N `setFilter`) por uma única chamada `onApplyAll(adapted)` onde `adapted` é o `Partial<AdvancedFilters>` reconstruído do `preset.filters`.
-- Renomear/adicionar prop `onApplyAll: (next: Partial<AdvancedFilters>) => void` (manter `onApplyPreset` como fallback se houver outros consumidores; se for único, refatorar limpo).
-- Após aplicar:
-  ```ts
-  setOpen(false);  // fecha popover
-  markAsUsed(preset.id);
-  toast.success('Preset aplicado');
-  // Foco no campo de busca após o popover fechar
-  requestAnimationFrame(() => {
-    window.dispatchEvent(new CustomEvent('focus-interactions-search'));
-  });
-  ```
+### 3. Testes em `src/hooks/__tests__/useChannelSyncMode.test.ts` (novo, ~30 linhas)
 
-### 3. `TimelineFilterBar.tsx` — escutar evento e focar `Input`
+- Default é `'auto'` quando `localStorage` vazio.
+- `setMode('manual')` persiste.
+- `toggle()` alterna `auto` ↔ `manual`.
+- Hot reload (renderHook novo) lê do `localStorage`.
 
-- Adicionar `useRef<HTMLInputElement>` no `Input` de busca.
-- `useEffect` registra listener:
-  ```ts
-  useEffect(() => {
-    const handler = () => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    };
-    window.addEventListener('focus-interactions-search', handler);
-    return () => window.removeEventListener('focus-interactions-search', handler);
-  }, []);
-  ```
-- `<Input ref={inputRef} ... />`.
+### 4. Testes em `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx` (novo, ~60 linhas)
 
-### 4. `Interacoes.tsx` (página) — passar `applyAll` para o menu
-
-- Pegar `applyAll` do hook `useInteractionsAdvancedFilter`.
-- Passar para `<InteracoesPresetsMenu onApplyAll={applyAll} />`.
-
-### 5. Testes em `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` (novo, ~50 linhas)
-
-- `applyAll({ company: 'Acme' })` quando havia `canais=['email']` antes → `canais` removido, `company` setado.
-- `applyAll({})` → todos os filtros conhecidos removidos da URL.
-- `applyAll({ direcao: 'all' })` → `direcao` removido (default).
-- `applyAll({ sort: 'recent' })` → `sort` removido (default).
-- Múltiplas chamadas não acumulam estado antigo.
+- Modo `auto`: clicar em chip chama `onChange` imediatamente.
+- Modo `manual`: clicar em chip NÃO chama `onChange`; aparece botão Aplicar; clicar em Aplicar chama `onChange` com `pendingCanais`.
+- Modo `manual`: Reverter restaura `pendingCanais` ao valor da prop.
+- Toggle de modo persiste e troca comportamento.
+- Mudança externa de `canais` (ex.: clear) sincroniza `pendingCanais`.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- `setSearchParams(..., { replace: true })` — sem reload
-- CustomEvent desacoplado (sem prop drilling de ref)
-- Backward compat: `onApplyPreset` antigo continua funcionando se outros consumidores usarem
-- Tokens semânticos, flat
-- Zero novas deps, zero novas queries de rede
+- Tokens semânticos (`border-dashed`, `text-muted-foreground`, etc.), flat
+- `localStorage` com try/catch (defensivo, sem deps)
+- Backward compat total: default `'auto'` mantém UX atual
+- Zero novas deps, zero queries de rede
+- Memo onde fizer sentido
 
 ## Arquivos tocados
 
-**Editados (4):**
-- `src/hooks/useInteractionsAdvancedFilter.ts` — novo método `applyAll`
-- `src/components/interactions/InteracoesPresetsMenu.tsx` — usa `applyAll`, emite evento de foco, fecha popover
-- `src/components/interactions/TimelineFilterBar.tsx` — `ref` no input + listener do evento
-- `src/pages/Interacoes.tsx` (ou onde renderiza o menu) — passa `applyAll` ao menu
+**Criados (3):**
+- `src/hooks/useChannelSyncMode.ts`
+- `src/hooks/__tests__/useChannelSyncMode.test.ts`
+- `src/components/interactions/__tests__/CanaisQuickFilter.test.tsx`
 
-**Criado (1):**
-- `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts`
+**Editados (1):**
+- `src/components/interactions/CanaisQuickFilter.tsx` — adiciona modo + botão Aplicar/Reverter + estado pendente
 
 ## Critério de fechamento
 
-(a) Clicar em um preset substitui completamente os filtros ativos (não faz merge); (b) URL muda via `setSearchParams({ replace: true })` sem recarregar a página; (c) tabela de interações refetch automaticamente via TanStack Query quando os filtros derivados mudam; (d) popover fecha e foco vai automaticamente para o `Input` de busca da `TimelineFilterBar`, com texto selecionado pronto pra digitar; (e) toast "Preset aplicado" em PT-BR; (f) `markAsUsed` continua sendo chamado; (g) zero regressão em salvar/excluir/renomear/atualizar/favoritar/exportar/importar/sugerir nome/ordenação; (h) tokens semânticos, flat, sem novas deps.
+(a) `CanaisQuickFilter` tem toggle visível (ícone) que alterna auto/manual; (b) modo `auto` mantém comportamento atual (chip click = filtro aplicado imediatamente); (c) modo `manual` deixa chips em estado "pendente" (visual `border-dashed`) e mostra botão "Aplicar (+N)" + "Reverter"; (d) clicar em Aplicar chama `onChange(pending)` e sincroniza visual; (e) modo persiste em `localStorage` entre sessões; (f) presets/clear externos sincronizam `pendingCanais` automaticamente; (g) testes cobrem ambos modos + persistência; (h) PT-BR, tokens semânticos, flat, sem novas deps, zero regressão em apply preset / sort / outras quick filters.
 
