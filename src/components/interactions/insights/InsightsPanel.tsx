@@ -105,7 +105,7 @@ export function InsightsPanel() {
             </Card>
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Tendência semanal</CardTitle></CardHeader>
-              <CardContent><SentimentTrendChart data={sentimentTrend} /></CardContent>
+              <CardContent><SentimentTrendChart data={sentimentTrend} summary={sentimentTrendSummary} /></CardContent>
             </Card>
           </div>
 
