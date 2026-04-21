@@ -46,9 +46,11 @@ export function useExternalInteractions(
     queryFn: async () => {
       if (!contactId) return [];
 
-      const filters: Array<{ type: string; column: string; value: unknown }> = [
-        { type: 'eq', column: 'contact_id', value: contactId },
-      ];
+      const filters: Array<{
+        type: 'eq' | 'ilike' | 'in' | 'neq' | 'is';
+        column: string;
+        value: unknown;
+      }> = [{ type: 'eq', column: 'contact_id', value: contactId }];
 
       if (typeof days === 'number' && days > 0) {
         const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
