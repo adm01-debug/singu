@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
+import { useInfiniteList } from '@/hooks/useInfiniteList';
+import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 
 interface Props {
