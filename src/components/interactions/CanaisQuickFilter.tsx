@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X, Eraser } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -168,6 +168,23 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     }
   }, [mode, toggle, pending, safe, onChange]);
 
+  const clearAll = useCallback(() => {
+    if (mode === 'auto') {
+      if (safe.length === 0) return;
+      onChange([]);
+      toast.success('Filtros de canal limpos');
+    } else {
+      if (pending.length === 0) return;
+      setPending([]);
+      toast.info('Canais desmarcados', {
+        description: 'Clique em "Aplicar" para confirmar.',
+        duration: 3000,
+      });
+    }
+  }, [mode, safe, pending, onChange, setPending]);
+
+  const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-wrap items-center gap-1">
@@ -215,6 +232,29 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               : 'Modo manual: clique em Aplicar para atualizar. Clique para voltar ao automático.'}
           </TooltipContent>
         </Tooltip>
+
+        {showClear && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                onClick={clearAll}
+                aria-label="Limpar seleção de canais"
+                className="gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Eraser className="w-3 h-3" />
+                Limpar canais
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {mode === 'auto'
+                ? 'Remove todos os canais selecionados (aplica imediatamente).'
+                : 'Desmarca todos os canais. Clique em Aplicar para confirmar.'}
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {dirty && (
           <div className="flex items-center gap-1 ml-1" aria-live="polite">
