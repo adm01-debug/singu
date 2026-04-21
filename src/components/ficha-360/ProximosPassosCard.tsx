@@ -172,17 +172,23 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
         </div>
 
         {/* Lista local */}
-        {passos.length === 0 ? (
-          <div className="text-center py-6 text-sm text-muted-foreground">
-            Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
-          </div>
-        ) : (
+        {(() => {
+          const visiblePassos = passos.filter((p) => !getRecentSkipUntil(feedbacks, p.id));
+          if (visiblePassos.length === 0) {
+            return (
+              <div className="text-center py-6 text-sm text-muted-foreground">
+                Sem ações sugeridas no momento. Registre uma interação para gerar novas recomendações.
+              </div>
+            );
+          }
+          return (
           <ul className="space-y-2">
-            {passos.map((p) => {
+            {visiblePassos.map((p) => {
               const Icon = channelIcon[p.channel] ?? ListChecks;
               const pm = priorityMeta[p.priority];
               const isExpanded = expandedId === p.id;
               const wasCreated = createdIds.has(p.id);
+              const last = getLastOutcome(feedbacks, p.id);
               return (
                 <li
                   key={p.id}
