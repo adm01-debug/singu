@@ -8,6 +8,7 @@ export interface SearchPreset {
   sortOrder: 'asc' | 'desc';
   searchTerm?: string;
   createdAt: string;
+  updatedAt?: string;
   isFavorite?: boolean;
   usageCount?: number;
   lastUsedAt?: string;
