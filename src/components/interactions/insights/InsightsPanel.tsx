@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -120,7 +120,17 @@ export function InsightsPanel() {
               </CardContent>
             </Card>
             <div className="space-y-3">
-              <ObjectionsSpotlight objections={topObjections} />
+              {topObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
+                    <CardDescription className="text-xs">Top 3 com maior risco de bloqueio</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsSpotlight objections={topObjections} />
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
