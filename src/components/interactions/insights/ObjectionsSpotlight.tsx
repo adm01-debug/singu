@@ -1,7 +1,8 @@
-import { memo, useMemo } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { memo, useMemo, useState, useCallback } from "react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 
 interface Props {
@@ -49,6 +50,147 @@ function getSeverity(o: ObjectionAggregate): Severity {
   return "low";
 }
 
+interface ObjectionCardProps {
+  o: ObjectionAggregate;
+}
+
+const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const severity = getSeverity(o);
+  const style = SEVERITY_STYLES[severity];
+  const rate = o.count ? Math.round((o.handled / o.count) * 100) : 0;
+  const Icon = style.Icon;
+
+  const suggested = o.suggestedResponse ?? "";
+  const isLong = suggested.length > 160 || suggested.includes("\n");
+  const showToggle = isLong;
+  const panelId = `objection-suggested-${o.objection.replace(/\s+/g, "-").slice(0, 40)}`;
+
+  const handleCopy = useCallback(async () => {
+    if (!suggested) return;
+    try {
+      await navigator.clipboard.writeText(suggested);
+      setCopied(true);
+      toast.success("Resposta copiada");
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  }, [suggested]);
+
+  return (
+    <div className={cn("rounded-md border p-3 space-y-2.5", style.border)}>
+      <div className="flex items-start gap-2">
+        <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", style.iconColor)} />
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-sm font-medium text-foreground line-clamp-2"
+            title={o.objection}
+          >
+            {o.objection}
+          </p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+              {o.category}
+            </Badge>
+            <Badge
+              variant="outline"
+              className={cn("text-[10px] h-4 px-1.5", style.iconColor)}
+            >
+              {style.label}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
+          <span>
+            {o.count}× mencionada · {o.handled}/{o.count} tratadas
+          </span>
+          <span className="font-medium">{rate}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className={cn("h-full transition-all", style.bar)}
+            style={{ width: `${rate}%` }}
+          />
+        </div>
+      </div>
+
+      {o.unhandled === 0 ? (
+        <div className="flex items-center gap-1.5 text-[11px] text-success bg-success/8 rounded px-2 py-1.5">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          <span>Esta objeção está sendo bem tratada</span>
+        </div>
+      ) : suggested ? (
+        <div className="flex items-start gap-1.5 text-[11px] bg-warning/8 border border-warning/20 rounded px-2 py-1.5">
+          <Lightbulb className="h-3.5 w-3.5 shrink-0 text-warning mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-foreground mb-0.5">Resposta sugerida</p>
+            <p
+              id={panelId}
+              className={cn(
+                "text-muted-foreground whitespace-pre-wrap transition-all",
+                !expanded && showToggle && "line-clamp-3",
+              )}
+            >
+              {suggested}
+            </p>
+            <div className="flex items-center gap-3 mt-1.5">
+              {showToggle && (
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  aria-controls={panelId}
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                >
+                  {expanded ? (
+                    <>
+                      <ChevronUp className="h-3 w-3" />
+                      Recolher
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-3 w-3" />
+                      Ver resposta completa
+                    </>
+                  )}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCopy}
+                aria-label="Copiar resposta sugerida"
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3 w-3 text-success" />
+                    Copiado
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3" />
+                    Copiar resposta
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-[11px] text-muted-foreground italic px-2">
+          Sem resposta sugerida disponível ainda.
+        </p>
+      )}
+    </div>
+  );
+});
+
 function ObjectionsSpotlightImpl({ objections }: Props) {
   const top = useMemo(() => {
     if (!Array.isArray(objections) || objections.length === 0) return [];
@@ -70,78 +212,9 @@ function ObjectionsSpotlightImpl({ objections }: Props) {
       </div>
 
       <div className="grid grid-cols-1 gap-2">
-        {top.map((o) => {
-          const severity = getSeverity(o);
-          const style = SEVERITY_STYLES[severity];
-          const rate = o.count ? Math.round((o.handled / o.count) * 100) : 0;
-          const Icon = style.Icon;
-
-          return (
-            <div
-              key={o.objection}
-              className={cn("rounded-md border p-3 space-y-2.5", style.border)}
-            >
-              <div className="flex items-start gap-2">
-                <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", style.iconColor)} />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-sm font-medium text-foreground line-clamp-2"
-                    title={o.objection}
-                  >
-                    {o.objection}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <Badge variant="outline" className="text-[10px] h-4 px-1.5">
-                      {o.category}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-[10px] h-4 px-1.5", style.iconColor)}
-                    >
-                      {style.label}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
-                  <span>
-                    {o.count}× mencionada · {o.handled}/{o.count} tratadas
-                  </span>
-                  <span className="font-medium">{rate}%</span>
-                </div>
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className={cn("h-full transition-all", style.bar)}
-                    style={{ width: `${rate}%` }}
-                  />
-                </div>
-              </div>
-
-              {o.unhandled === 0 ? (
-                <div className="flex items-center gap-1.5 text-[11px] text-success bg-success/8 rounded px-2 py-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Esta objeção está sendo bem tratada</span>
-                </div>
-              ) : o.suggestedResponse ? (
-                <div className="flex items-start gap-1.5 text-[11px] bg-warning/8 border border-warning/20 rounded px-2 py-1.5">
-                  <Lightbulb className="h-3.5 w-3.5 shrink-0 text-warning mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground mb-0.5">Resposta sugerida</p>
-                    <p className="text-muted-foreground line-clamp-3 whitespace-pre-wrap">
-                      {o.suggestedResponse}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[11px] text-muted-foreground italic px-2">
-                  Sem resposta sugerida disponível ainda.
-                </p>
-              )}
-            </div>
-          );
-        })}
+        {top.map((o) => (
+          <ObjectionCard key={o.objection} o={o} />
+        ))}
       </div>
     </div>
   );
