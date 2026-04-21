@@ -191,6 +191,46 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
 
+  // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa. Funciona com foco em inputs.
+  const [altPressed, setAltPressed] = useState(false);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key === '0') {
+        e.preventDefault();
+        const hasAny = mode === 'auto' ? safe.length > 0 : pending.length > 0;
+        if (!hasAny) return;
+        clearAll();
+        toast.message('Canais limpos', { duration: 1500 });
+        return;
+      }
+      const idx = parseInt(e.key, 10);
+      if (Number.isNaN(idx) || idx < 1 || idx > CHANNELS.length) return;
+      e.preventDefault();
+      const canal = CHANNELS[idx - 1];
+      const wasActive = (mode === 'manual' ? pending : safe).includes(canal.value);
+      toggleCanal(canal.value);
+      toast.message(`${canal.label} ${wasActive ? 'desativado' : 'ativado'}`, { duration: 1500 });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [mode, safe, pending, toggleCanal, clearAll]);
+
+  // Detecta Alt pressionado para mostrar badges Alt+N nos chips
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => { if (e.altKey) setAltPressed(true); };
+    const onUp = (e: KeyboardEvent) => { if (!e.altKey) setAltPressed(false); };
+    const onBlur = () => setAltPressed(false);
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onDown);
+      window.removeEventListener('keyup', onUp);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, []);
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex flex-wrap items-center gap-1">
