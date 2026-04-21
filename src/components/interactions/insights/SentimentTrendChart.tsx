@@ -72,12 +72,16 @@ const DIRECTION_CLASS: Record<SentimentTrendSummary["direction"], string> = {
 
 const DIRECTION_ICON = { up: TrendingUp, stable: Minus, down: TrendingDown } as const;
 
-const SENTIMENT_ROWS: Array<{ key: "positive" | "neutral" | "negative" | "mixed"; label: string; color: string }> = [
-  { key: "positive", label: "Positivo", color: CHART_COLORS.positive },
-  { key: "neutral", label: "Neutro", color: CHART_COLORS.neutral },
-  { key: "negative", label: "Negativo", color: CHART_COLORS.negative },
-  { key: "mixed", label: "Misto", color: CHART_COLORS.mixed },
-];
+type SentimentKey = "positive" | "neutral" | "negative" | "mixed";
+
+const SENTIMENT_TOKENS: Record<SentimentKey, { label: string; swatch: string; text: string; bar: string }> = {
+  positive: { label: "Positivo", swatch: "bg-success", text: "text-success", bar: "bg-success/70" },
+  neutral: { label: "Neutro", swatch: "bg-muted-foreground", text: "text-muted-foreground", bar: "bg-muted-foreground/70" },
+  negative: { label: "Negativo", swatch: "bg-destructive", text: "text-destructive", bar: "bg-destructive/70" },
+  mixed: { label: "Misto", swatch: "bg-warning", text: "text-warning", bar: "bg-warning/70" },
+};
+
+const SENTIMENT_ORDER: SentimentKey[] = ["positive", "neutral", "negative", "mixed"];
 
 function pctClass(pct: number): string {
   if (pct >= 60) return "text-success";
@@ -116,82 +120,94 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
         ? Math.round((point.positive / total) * 100)
         : 0;
   const anns = point.annotations ?? [];
-  const visibleRows = showAllRows ? SENTIMENT_ROWS : SENTIMENT_ROWS.filter((r) => (point[r.key] ?? 0) > 0);
+  
+
+  const visibleKeys = showAllRows
+    ? SENTIMENT_ORDER
+    : SENTIMENT_ORDER.filter((k) => (point[k] ?? 0) > 0);
 
   return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground min-w-[240px] pointer-events-auto">
-      <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Semana de {formatWeekRange(point.week)}</p>
-      {total === 0 ? (
-        <p className="text-[10px] text-muted-foreground mt-1">sem conversas</p>
-      ) : (
+    <div className="rounded-md border border-border bg-popover text-popover-foreground shadow-sm p-3 min-w-[220px] max-w-[280px] pointer-events-auto space-y-2">
+      <div className="space-y-0.5">
+        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          Semana de {formatWeekRange(point.week)}
+        </p>
+        {total === 0 ? (
+          <p className="text-xs text-muted-foreground">sem conversas</p>
+        ) : (
+          <p className="text-xs font-medium text-foreground">
+            Total: <span className="tabular-nums">{total}</span> {total === 1 ? "conversa" : "conversas"}
+          </p>
+        )}
+      </div>
+
+      {total > 0 && (
         <>
-          <p className="text-sm font-semibold text-foreground mt-0.5">
-            Total: {total} {total === 1 ? "conversa" : "conversas"}
-          </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <div className="text-xs border-t border-border/60 pt-2">
             <span className={cn("font-semibold tabular-nums", pctClass(positivePct))}>{positivePct}%</span>
-            <span className="ml-1">positivo</span>
-          </p>
-          {typeof point.positivePctMA === "number" && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              Tendência (MM3): <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
-            </p>
-          )}
-          <div className="mt-2 flex items-center justify-between gap-2 border-t border-border/60 pt-2">
-            <Label htmlFor="tooltip-show-all-rows" className="text-[10px] text-muted-foreground cursor-pointer">
-              Mostrar zerados
-            </Label>
-            <Switch
-              id="tooltip-show-all-rows"
-              checked={showAllRows}
-              onCheckedChange={toggleShowAll}
-              aria-label="Alternar exibição de sentimentos com contagem zero"
-              className="scale-75 origin-right"
-            />
+            <span className="ml-1 text-muted-foreground">positivo</span>
+            {typeof point.positivePctMA === "number" && (
+              <span className="ml-2 text-muted-foreground">
+                · MM3: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
+              </span>
+            )}
           </div>
-          <div className="mt-1.5 space-y-1.5">
-            {visibleRows.length === 0 ? (
+
+          <div className="border-t border-border/60 pt-2 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="tooltip-show-all-rows" className="text-[10px] text-muted-foreground cursor-pointer">
+                Mostrar zerados
+              </Label>
+              <Switch
+                id="tooltip-show-all-rows"
+                checked={showAllRows}
+                onCheckedChange={toggleShowAll}
+                aria-label="Alternar exibição de sentimentos com contagem zero"
+                className="scale-75 origin-right"
+              />
+            </div>
+            {visibleKeys.length === 0 ? (
               <p className="text-[10px] text-muted-foreground italic">Nenhum sentimento registrado.</p>
             ) : (
-              visibleRows.map((row) => {
-                const count = point[row.key] ?? 0;
-                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
-                const isZero = count === 0;
-                return (
-                  <div key={row.key} className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: row.color }} aria-hidden />
-                      <span className={cn("flex-1", isZero && "text-muted-foreground/60")}>{row.label}</span>
-                      <span className={cn("font-medium tabular-nums", isZero && "text-muted-foreground/50")}>
-                        {isZero ? "—" : count}
-                      </span>
-                      <span className={cn("tabular-nums w-10 text-right", isZero ? "text-muted-foreground/40" : "text-muted-foreground")}>
-                        ({pct}%)
-                      </span>
-                    </div>
-                    <div className="h-1 w-full rounded-full bg-muted overflow-hidden ml-4">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${pct}%`, backgroundColor: isZero ? "transparent" : row.color }}
-                        aria-hidden
-                      />
-                    </div>
-                  </div>
-                );
-              })
+              <ul className="space-y-1">
+                {visibleKeys.map((k) => {
+                  const tokens = SENTIMENT_TOKENS[k];
+                  const count = point[k] ?? 0;
+                  const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+                  const isZero = count === 0;
+                  return (
+                    <li key={k} className={cn("space-y-0.5", isZero && "opacity-50")}>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className={cn("h-2 w-2 rounded-sm shrink-0", tokens.swatch)} aria-hidden />
+                        <span className="flex-1 truncate text-foreground">{tokens.label}</span>
+                        <span className="tabular-nums font-medium text-foreground min-w-[1.5rem] text-right">{count}</span>
+                        <span className="tabular-nums text-muted-foreground text-[10px] min-w-[2.5rem] text-right">{pct}%</span>
+                      </div>
+                      <div className="h-0.5 w-full rounded-full bg-muted/60 overflow-hidden ml-4">
+                        <div
+                          className={cn("h-full rounded-full transition-all", tokens.bar)}
+                          style={{ width: `${pct}%` }}
+                          aria-hidden
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </>
       )}
+
       {anns.length > 0 && (
-        <div className="mt-2 border-t border-border/60 pt-2 space-y-0.5">
+        <div className="border-t border-border/60 pt-2 space-y-0.5">
           <p className="text-[10px] font-semibold text-muted-foreground">Anotações</p>
           {anns.slice(0, 2).map((a) => {
             const meta = ANNOTATION_CATEGORIES[a.category];
             return (
               <p key={a.id} className="text-[10px] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: meta.color }} aria-hidden />
-                <span className="font-medium truncate">{a.title}</span>
+                <span className="h-2 w-2 rounded-sm shrink-0" style={{ backgroundColor: meta.color }} aria-hidden />
+                <span className="font-medium truncate text-foreground">{a.title}</span>
               </p>
             );
           })}
