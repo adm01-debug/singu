@@ -423,7 +423,7 @@ describe('searchPresetTransport', () => {
     it('rejects invalid JSON', () => {
       const r = parseBundle('not json');
       expect(r.ok).toBe(false);
-      if (!r.ok) expect(r.reason).toContain('JSON');
+      if (r.ok === false) expect(r.reason).toContain('JSON');
     });
 
     it('rejects wrong version', () => {
