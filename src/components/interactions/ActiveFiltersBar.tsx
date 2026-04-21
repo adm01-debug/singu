@@ -99,15 +99,17 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
       {canais.map((c) => {
         const meta = CHANNEL_META[c];
-        const Icon = meta?.Icon;
-        const label = meta?.label ?? c.charAt(0).toUpperCase() + c.slice(1);
+        const isKnown = !!meta;
+        const Icon = isKnown ? meta.Icon : Tag;
+        const label = isKnown ? meta.label : prettifyChannel(c);
         return (
           <Badge
             key={c}
             variant="secondary"
             closeable
             onClose={wrap(() => setFilter('canais', canais.filter((x) => x !== c)))}
-            icon={Icon ? <Icon className="w-3 h-3" /> : undefined}
+            icon={<Icon className="w-3 h-3" />}
+            title={isKnown ? undefined : `Canal desconhecido: ${c}`}
           >
             {label}
           </Badge>
