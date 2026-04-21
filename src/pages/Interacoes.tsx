@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { MessageSquare, Phone, Mail, Users, Video, FileText, AlertCircle, Plus } from 'lucide-react';
@@ -20,7 +20,10 @@ import { InteracoesContent } from './interacoes/InteracoesContent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UnifiedTimelineView } from '@/components/interactions/UnifiedTimelineView';
 import { useSearchParams } from 'react-router-dom';
-import { List, Activity } from 'lucide-react';
+import { List, Activity, Sparkles } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const InsightsPanel = lazy(() => import('@/components/interactions/insights/InsightsPanel').then(m => ({ default: m.InsightsPanel })));
 
 const filterConfigs: FilterConfig[] = [
   { key: 'type', label: 'Tipo', multiple: true, options: [{ value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare }, { value: 'call', label: 'Ligação', icon: Phone }, { value: 'email', label: 'Email', icon: Mail }, { value: 'meeting', label: 'Reunião', icon: Users }, { value: 'video_call', label: 'Videochamada', icon: Video }, { value: 'note', label: 'Nota', icon: FileText }] },
@@ -80,10 +83,11 @@ const Interacoes = () => {
   const handleDelete = async () => { if (!deletingInteraction) return; await deleteInteraction(deletingInteraction.id); setDeletingInteraction(null); };
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') === 'timeline' ? 'timeline' : 'lista';
+  const tabParam = searchParams.get('tab');
+  const activeTab = tabParam === 'timeline' || tabParam === 'insights' ? tabParam : 'lista';
   const handleTabChange = (val: string) => {
     const next = new URLSearchParams(searchParams);
-    if (val === 'timeline') next.set('tab', 'timeline'); else next.delete('tab');
+    if (val === 'lista') next.delete('tab'); else next.set('tab', val);
     setSearchParams(next, { replace: true });
   };
 
@@ -96,12 +100,18 @@ const Interacoes = () => {
         <TabsList>
           <TabsTrigger value="lista" className="gap-2"><List className="w-4 h-4" />Lista</TabsTrigger>
           <TabsTrigger value="timeline" className="gap-2"><Activity className="w-4 h-4" />Timeline</TabsTrigger>
+          <TabsTrigger value="insights" className="gap-2"><Sparkles className="w-4 h-4" />Insights</TabsTrigger>
         </TabsList>
         <TabsContent value="lista" className="mt-0">
           <InteracoesContent interactions={interactions} loading={loading} contactMap={contactMap} stats={stats} onSetIsFormOpen={setIsFormOpen} onSetEditingInteraction={setEditingInteraction} onSetDeletingInteraction={setDeletingInteraction} filterConfigs={filterConfigs} sortOptions={sortOptions} />
         </TabsContent>
         <TabsContent value="timeline" className="mt-0 p-6">
           <UnifiedTimelineView />
+        </TabsContent>
+        <TabsContent value="insights" className="mt-0 p-6">
+          <Suspense fallback={<div className="space-y-3"><Skeleton className="h-10 w-64" /><Skeleton className="h-24" /><Skeleton className="h-56" /></div>}>
+            <InsightsPanel />
+          </Suspense>
         </TabsContent>
       </Tabs>
 
