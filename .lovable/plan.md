@@ -1,109 +1,115 @@
 
 
-# Plano: Renomear preset e editar filtros salvos in-place
+# Plano: Aplicar preset sem recarregar e manter foco na busca
 
 ## Contexto
 
-Hoje, no `InteracoesPresetsMenu` (e `SearchPresetsMenu`), o usuário só pode **aplicar** ou **excluir** um preset. Para mudar o nome ou ajustar um filtro (ex.: trocar canal de WhatsApp para Email, ou mudar a data), precisa excluir e criar do zero — perdendo `usageCount`, `lastUsedAt`, `isFavorite` e `createdAt`.
+Hoje em `InteracoesPresetsMenu`, ao clicar em um preset, `applyPreset` chama `onApplyPreset(payload)` que escreve nos `searchParams` via `setFilter`. Isso já é client-side (React Router não recarrega a página), mas:
 
-Vamos adicionar:
-1. **Renomear** in-place (ícone lápis por linha → input editável)
-2. **Atualizar filtros** do preset com os filtros atualmente ativos na tela ("Atualizar com filtros atuais")
+1. Não há garantia explícita de que **todos** os campos do `AdvancedFilters` são resetados antes de aplicar (ex.: se o preset não tem `canais`, o filtro de canais antigo permanece — comportamento "merge" em vez de "replace").
+2. Após aplicar, o **popover fecha** mas o foco vai para o trigger do popover (botão "Buscas"), não para o `Input` de busca da `TimelineFilterBar`. O usuário precisa clicar no campo de busca para continuar digitando.
+3. Não há feedback visual claro de que a tabela atualizou (a query refetch é silenciosa).
 
-Tudo preserva `id`, `createdAt`, `usageCount`, `lastUsedAt`, `isFavorite`.
+Vamos resolver os três pontos sem recarregar a página.
 
 ## Decisão de escopo
 
-- **Renomear**: ícone `<Pencil>` por linha (ao lado de `<Star>`/`<Trash>`). Click → linha vira input editável (mesmo padrão do "Salvar busca atual"). Enter salva, Esc cancela. Dedup: se nome novo já existir em outro preset, sufixo `(2)`. Reusa `dedupeNameAgainst`.
-- **Atualizar filtros (Interações)**: ícone `<RefreshCw>` por linha — só visível se `activeCount > 0` (há filtros ativos na tela). Click → confirma com `<AlertDialog>` mostrando preview do que vai mudar (antes/depois resumido) → substitui `filters` do preset pelos filtros atuais. Toast "Preset atualizado".
-- **Atualizar filtros (Contatos/Empresas)**: mesmo padrão, reusa `currentFilters` + `currentSearchTerm`.
-- **Hook**: `useSearchPresets` já tem `updatePreset(id, updates)` — só precisa expor para a UI usar com `{ name }` ou `{ filters, sortBy, sortOrder }`.
-- **Sem novo dialog separado**: edição de nome é inline; atualização de filtros é só `<AlertDialog>` de confirmação (consistente com o resto do menu).
-- **A11y**: ícones com `title` e `aria-label`; input com `autoFocus` + `select()`.
-- **Backward compat**: presets antigos mantêm todos os campos; só `filters/name/sortBy/sortOrder/updatedAt(opcional)` mudam.
+- **Replace total dos filtros**: ao aplicar um preset, primeiro limpa todos os campos do `AdvancedFilters` e depois aplica os valores do preset. Garante que filtros antigos não "vazem".
+- **Foco automático na busca**: após aplicar, dispara um evento (`focus-interactions-search`) que a `TimelineFilterBar` escuta para chamar `inputRef.current?.focus()` + `select()`. Mecanismo desacoplado (CustomEvent no `window`), sem prop drilling.
+- **Feedback sutil**: toast já existe ("Preset aplicado" — ou adicionar se não houver). A tabela já refetch automaticamente via TanStack Query quando os `searchParams` mudam (o hook `useInteractionsAdvancedFilter` retorna `filters` derivado do URL, e a query usa `filters` como key). Não precisa de mudança aqui.
+- **Sem recarregar**: `setSearchParams(..., { replace: true })` já é usado — confirmar que continua. Nenhum `window.location` ou `navigate({ replace: true })` em todo o fluxo.
 
 ## Implementação
 
-### 1. `useSearchPresets.ts` (mínimo)
+### 1. `useInteractionsAdvancedFilter.ts` — novo método `applyAll`
 
-`updatePreset` já existe. Garantir que aceita `Partial<Pick<SearchPreset, 'name' | 'filters' | 'sortBy' | 'sortOrder'>>` sem mexer em `usageCount/lastUsedAt/isFavorite/createdAt`. Adicionar campo opcional `updatedAt?: string` no tipo + setar no `updatePreset` para auditoria leve. Sem mudança de API pública.
+Adicionar método que substitui **todos** os filtros de uma vez (replace, não merge), em uma única chamada `setSearchParams` (uma navegação só):
 
-### 2. `InteracoesPresetsMenu.tsx`
-
-Por linha de preset, adicionar entre `<Star>` e `<Trash2>`:
-
-```tsx
-{editingId === preset.id ? (
-  <Input
-    ref={renameInputRef}
-    value={renameValue}
-    onChange={(e) => setRenameValue(e.target.value)}
-    onKeyDown={handleRenameKeydown}
-    onBlur={cancelRename}
-    maxLength={60}
-    className="h-7 text-xs"
-  />
-) : (
-  <span onClick={apply}>{preset.name}</span>
-)}
-
-{/* Ações hover */}
-<Button title="Renomear" onClick={(e) => startRename(preset, e)}>
-  <Pencil className="w-3 h-3" />
-</Button>
-
-{activeCount > 0 && (
-  <Button title="Atualizar com filtros atuais" onClick={(e) => askUpdateFilters(preset, e)}>
-    <RefreshCw className="w-3 h-3" />
-  </Button>
-)}
+```ts
+const applyAll = useCallback((next: Partial<AdvancedFilters>) => {
+  const sp = new URLSearchParams(searchParams);
+  // Limpar todas as chaves conhecidas
+  KEYS.forEach(k => sp.delete(k));
+  // Aplicar valores do preset
+  if (next.q) sp.set('q', next.q);
+  if (next.contact) sp.set('contact', next.contact);
+  if (next.company) sp.set('company', next.company);
+  if (next.canais?.length) sp.set('canais', next.canais.join(','));
+  if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
+  if (next.de) sp.set('de', next.de.toISOString().slice(0, 10));
+  if (next.ate) sp.set('ate', next.ate.toISOString().slice(0, 10));
+  if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
+  setSearchParams(sp, { replace: true });
+}, [searchParams, setSearchParams]);
 ```
 
-Estados novos:
-- `editingId: string | null`
-- `renameValue: string`
-- `renameInputRef`
-- `pendingFilterUpdate: SearchPreset | null` (para o `AlertDialog`)
+Retornar no objeto do hook (`{ filters, debouncedQ, setFilter, clear, activeCount, applyAll }`).
 
-Handlers:
-- `startRename(p, e)` → `e.stopPropagation()`, `setEditingId(p.id)`, `setRenameValue(p.name)`, foca + seleciona via `useEffect`
-- `commitRename()` → valida não-vazio; se nome igual ao atual, só sai; senão dedup contra `presets.filter(x => x.id !== editingId).map(x => x.name)` → `updatePreset(id, { name: final })` → toast "Preset renomeado"
-- `cancelRename()` → `setEditingId(null)`
-- `askUpdateFilters(p, e)` → `setPendingFilterUpdate(p)`
-- `confirmUpdateFilters()` → constrói `filters` a partir do `AdvancedFilters` atual (mesmo shape usado em `handleSave`) → `updatePreset(p.id, { filters: nextFilters, sortBy: f.sort, sortOrder: 'desc' })` → toast "Filtros do preset atualizados"
+### 2. `InteracoesPresetsMenu.tsx` — usar `applyAll` + emitir evento de foco
 
-`<AlertDialog>` com título "Atualizar filtros deste preset?", descrição "Os filtros salvos serão substituídos pelos filtros ativos agora. As estatísticas de uso e o favorito serão preservados." + preview compacto: `{contagem} filtros ativos serão salvos em "{preset.name}"`.
+- Substituir as múltiplas chamadas `onApplyPreset(payload)` (que faz N `setFilter`) por uma única chamada `onApplyAll(adapted)` onde `adapted` é o `Partial<AdvancedFilters>` reconstruído do `preset.filters`.
+- Renomear/adicionar prop `onApplyAll: (next: Partial<AdvancedFilters>) => void` (manter `onApplyPreset` como fallback se houver outros consumidores; se for único, refatorar limpo).
+- Após aplicar:
+  ```ts
+  setOpen(false);  // fecha popover
+  markAsUsed(preset.id);
+  toast.success('Preset aplicado');
+  // Foco no campo de busca após o popover fechar
+  requestAnimationFrame(() => {
+    window.dispatchEvent(new CustomEvent('focus-interactions-search'));
+  });
+  ```
 
-### 3. `SearchPresetsMenu.tsx`
+### 3. `TimelineFilterBar.tsx` — escutar evento e focar `Input`
 
-Mesma estrutura, adaptada para `currentFilters` + `currentSearchTerm`:
-- `<Pencil>` para renomear (mesma lógica)
-- `<RefreshCw>` só se `hasActiveFilters` → confirm → `updatePreset(p.id, { filters: currentFilters, searchTerm: currentSearchTerm, sortBy, sortOrder })`
+- Adicionar `useRef<HTMLInputElement>` no `Input` de busca.
+- `useEffect` registra listener:
+  ```ts
+  useEffect(() => {
+    const handler = () => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    window.addEventListener('focus-interactions-search', handler);
+    return () => window.removeEventListener('focus-interactions-search', handler);
+  }, []);
+  ```
+- `<Input ref={inputRef} ... />`.
 
-### 4. Testes em `src/lib/__tests__/use-search-presets-update.test.ts` (novo, ~60 linhas)
+### 4. `Interacoes.tsx` (página) — passar `applyAll` para o menu
 
-- `updatePreset` com `{ name }` preserva `id`, `createdAt`, `usageCount`, `lastUsedAt`, `isFavorite`
-- `updatePreset` com `{ filters }` preserva mesma coisa
-- Múltiplos updates não duplicam preset nem mexem em outros presets
-- Dedup de nome ao renomear: `dedupeNameAgainst(['A', 'B'], 'A')` → `'A (2)'` (reusa helper já testado)
+- Pegar `applyAll` do hook `useInteractionsAdvancedFilter`.
+- Passar para `<InteracoesPresetsMenu onApplyAll={applyAll} />`.
+
+### 5. Testes em `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts` (novo, ~50 linhas)
+
+- `applyAll({ company: 'Acme' })` quando havia `canais=['email']` antes → `canais` removido, `company` setado.
+- `applyAll({})` → todos os filtros conhecidos removidos da URL.
+- `applyAll({ direcao: 'all' })` → `direcao` removido (default).
+- `applyAll({ sort: 'recent' })` → `sort` removido (default).
+- Múltiplas chamadas não acumulam estado antigo.
 
 ## Padrões obrigatórios
 
 - PT-BR
-- Tokens semânticos, flat (sem shadow/gradient)
-- Reusa `dedupeNameAgainst` (já existe)
+- `setSearchParams(..., { replace: true })` — sem reload
+- CustomEvent desacoplado (sem prop drilling de ref)
+- Backward compat: `onApplyPreset` antigo continua funcionando se outros consumidores usarem
+- Tokens semânticos, flat
 - Zero novas deps, zero novas queries de rede
-- Backward compat total
 
 ## Arquivos tocados
 
 **Editados (4):**
-- `src/hooks/useSearchPresets.ts` — campo opcional `updatedAt` + setar no `updatePreset`
-- `src/components/interactions/InteracoesPresetsMenu.tsx` — renomear inline + atualizar filtros + AlertDialog
-- `src/components/search/SearchPresetsMenu.tsx` — mesma adição genérica
-- `src/lib/__tests__/use-search-presets-update.test.ts` (novo) — testes de preservação
+- `src/hooks/useInteractionsAdvancedFilter.ts` — novo método `applyAll`
+- `src/components/interactions/InteracoesPresetsMenu.tsx` — usa `applyAll`, emite evento de foco, fecha popover
+- `src/components/interactions/TimelineFilterBar.tsx` — `ref` no input + listener do evento
+- `src/pages/Interacoes.tsx` (ou onde renderiza o menu) — passa `applyAll` ao menu
+
+**Criado (1):**
+- `src/lib/__tests__/use-interactions-advanced-filter-apply-all.test.ts`
 
 ## Critério de fechamento
 
-(a) Cada preset tem ícone "Renomear" (lápis) que vira input inline com Enter/Esc/blur; (b) renomear faz dedup automático contra outros presets; (c) cada preset com filtros ativos na tela mostra ícone "Atualizar com filtros atuais" (refresh) que pede confirmação via AlertDialog; (d) confirmar substitui `filters/sortBy/sortOrder` mas preserva `id/createdAt/usageCount/lastUsedAt/isFavorite`; (e) toasts em PT-BR; (f) zero regressão em salvar/aplicar/excluir/favoritar/exportar/importar/sugestão de nome/ordenação; (g) mesma UX em `SearchPresetsMenu` (Contatos/Empresas); (h) tokens semânticos, flat, sem novas deps.
+(a) Clicar em um preset substitui completamente os filtros ativos (não faz merge); (b) URL muda via `setSearchParams({ replace: true })` sem recarregar a página; (c) tabela de interações refetch automaticamente via TanStack Query quando os filtros derivados mudam; (d) popover fecha e foco vai automaticamente para o `Input` de busca da `TimelineFilterBar`, com texto selecionado pronto pra digitar; (e) toast "Preset aplicado" em PT-BR; (f) `markAsUsed` continua sendo chamado; (g) zero regressão em salvar/excluir/renomear/atualizar/favoritar/exportar/importar/sugerir nome/ordenação; (h) tokens semânticos, flat, sem novas deps.
 
