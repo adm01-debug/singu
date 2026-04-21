@@ -29,6 +29,8 @@ interface Props {
   activeCount: number;
   shownCount: number;
   totalCount: number;
+  channelCounts?: Record<string, number>;
+  channelCountsReady?: boolean;
 }
 
 export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
@@ -40,6 +42,8 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
   activeCount,
   shownCount,
   totalCount,
+  channelCounts,
+  channelCountsReady = false,
 }: Props) {
   const toggleChannel = (value: string) => {
     if (channels.includes(value)) onChannelsChange(channels.filter((c) => c !== value));
@@ -90,6 +94,10 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
           {CHANNEL_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             const active = channels.includes(opt.value);
+            const count = channelCounts?.[opt.value];
+            const hasCount = channelCountsReady && typeof count === 'number';
+            const isEmpty = hasCount && count === 0 && !active;
+            const display = hasCount ? (count > 200 ? '200+' : String(count)) : null;
             return (
               <Badge
                 key={opt.value}
@@ -97,14 +105,25 @@ export const FiltrosInteracoesBar = memo(function FiltrosInteracoesBar({
                 className={cn(
                   'cursor-pointer gap-1 px-2 py-0.5 text-xs transition-colors',
                   !active && 'hover:bg-muted',
+                  isEmpty && 'opacity-50',
                 )}
                 onClick={() => toggleChannel(opt.value)}
                 role="button"
                 aria-pressed={active}
-                title={opt.label}
+                title={isEmpty ? `${opt.label} — sem interações no período` : opt.label}
               >
                 <Icon className="h-3 w-3" />
                 <span className="hidden sm:inline">{opt.label}</span>
+                {display !== null && (
+                  <span
+                    className={cn(
+                      'ml-0.5 tabular-nums text-[10px] transition-opacity',
+                      active ? 'opacity-90' : 'text-muted-foreground',
+                    )}
+                  >
+                    {display}
+                  </span>
+                )}
               </Badge>
             );
           })}

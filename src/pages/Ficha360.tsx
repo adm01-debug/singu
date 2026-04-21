@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useFicha360 } from '@/hooks/useFicha360';
 import { useFicha360Filters } from '@/hooks/useFicha360Filters';
+import { useFicha360ChannelCounts } from '@/hooks/useFicha360ChannelCounts';
 import { PerfilComportamentalCard } from '@/components/ficha-360/PerfilComportamentalCard';
 import { TagsInteresseCard } from '@/components/ficha-360/TagsInteresseCard';
 import { HistoricoTagsCard } from '@/components/ficha-360/HistoricoTagsCard';
@@ -67,6 +68,8 @@ const Ficha360 = () => {
     channelCounts,
     isLoading,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
+  const { counts: potentialChannelCounts, isFetched: channelCountsReady } =
+    useFicha360ChannelCounts(id, days);
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
@@ -295,6 +298,8 @@ const Ficha360 = () => {
                         activeCount={activeCount}
                         shownCount={recentInteractions.length}
                         totalCount={channelCounts.total}
+                        channelCounts={potentialChannelCounts}
+                        channelCountsReady={channelCountsReady}
                       />
                       <FiltrosAtivosChips
                         days={days}
