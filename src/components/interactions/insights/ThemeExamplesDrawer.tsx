@@ -8,6 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
 import { extractExcerpts, type Excerpt } from "@/lib/insights/extractExcerpts";
 import { pickTopPassages } from "@/lib/insights/pickTopPassages";
+import {
+  DEFAULT_EXCERPT_PRESET,
+  EXCERPT_PRESET_STORAGE_KEY,
+  getExcerptWindow,
+  getFallbackWindow,
+  isExcerptWindowPreset,
+  type ExcerptWindowPreset,
+} from "@/lib/insights/excerptWindow";
+import { cn } from "@/lib/utils";
 import type { ThemeAggregate } from "@/hooks/useInteractionsInsights";
 
 interface Props {
