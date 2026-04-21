@@ -71,12 +71,23 @@ function parseDate(iso?: string): Date | undefined {
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   filters, setFilter, clear, activeCount,
 }: Props) {
-  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
+  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
+
+  useEffect(() => {
+    if (editingId) {
+      requestAnimationFrame(() => renameInputRef.current?.select());
+    }
+  }, [editingId]);
 
   const handleStartNaming = () => {
     const suggested = suggestInteracoesPresetName(filters);
