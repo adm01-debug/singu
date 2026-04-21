@@ -1,108 +1,82 @@
 
-# Plano: Insights automáticos de sentimento e temas em /interacoes
+# Plano: Filtros no topo da Ficha 360
 
 ## Objetivo
 
-Adicionar uma 3ª aba **"Insights"** em `/interacoes` que agrega análise IA já existente das interações com transcrição/conteúdo, mostrando: distribuição de sentimento, principais temas/tópicos detectados, objeções recorrentes e exemplos clicáveis por categoria.
+Adicionar uma barra de filtros compacta no topo da seção "Últimas Interações" da Ficha 360, permitindo escolher **período** (7/30/90/365 dias) e **canais** (WhatsApp, Email, Ligação, Reunião, Nota) antes de renderizar a lista. Os filtros persistem na URL para deep-link.
 
-## Reutilização (zero retrabalho)
+## Reutilização
 
-O projeto **já tem** toda a infra de análise:
-- Tabela `conversation_analyses` (sentiment_overall, sentiment_timeline, topics, objections, key_moments, coaching_score)
-- Edge function `conversation-analyzer` com Lovable AI (Gemini)
-- Hook `useConversationAnalyses({sentiment, minScore, days})` retorna lista filtrada
-- Pipeline automático dispara para interações >100 chars (memory `automated-analysis-pipeline`)
-- `interactions.sentiment` enum também disponível como fallback rápido
-
-A nova aba **agrega e visualiza** esses dados — não cria nova análise nem novo schema.
+- `useExternalInteractions(contactId, limit)` já existe — vamos estender para aceitar `{ days, channels }` e filtrar no `select` ou client-side.
+- `useFicha360` já agrega tudo — apenas passa as opções de filtro adiante.
+- Padrão visual idêntico ao `TimelineFilterBar` (chips de canal, badge ativo) para consistência.
+- Persistência via `useSearchParams` (padrão do projeto, memory `persistencia-de-estado-na-url`).
 
 ## Arquitetura
 
 ```text
-/interacoes?tab=insights
- ├─ Filtro de período: 7d | 30d | 90d (default 30d)
- │
- ├─ Linha 1 — KPIs (4 cards compactos):
- │   • Interações analisadas
- │   • Sentimento dominante (pos/neu/neg %)
- │   • Coaching score médio
- │   • Objeções não tratadas
- │
- ├─ Linha 2 — 2 colunas:
- │   ├─ Distribuição de Sentimento (donut + legenda %)
- │   └─ Tendência de Sentimento (line chart por semana)
- │
- ├─ Linha 3 — Temas detectados:
- │   • Lista ranqueada (top 10) com count + sparkline mini
- │   • Click em tema → drawer lateral com 5 exemplos
- │     (interação + trecho + sentimento + link p/ Ficha 360)
- │
- ├─ Linha 4 — Objeções mais frequentes:
- │   • Cards com objeção + count + % handled vs unhandled
- │   • Sugestão de resposta (campo já existente)
- │
- └─ Empty state IA-aware:
-     "Análises são geradas automaticamente para interações
-      com transcrição. Registre uma chamada/reunião com conteúdo
-      para começar." + botão "Registrar Interação"
+Ficha 360
+ └─ Card "Últimas Interações"
+     ├─ Header: título + botão "Ver todas"
+     ├─ FiltrosInteracoesBar (NOVO, compacto inline)
+     │    [7d|30d|90d|365d]   [WA] [☎] [✉] [📅] [📝]   "X de Y"
+     └─ Lista (já existe — recebe items já filtrados)
 ```
 
 ## Implementação
 
-### 1. Hook agregador `useInteractionsInsights`
-`src/hooks/useInteractionsInsights.ts`
-- Composição sobre `useConversationAnalyses({days})` (já existe)
-- Calcula via `useMemo` client-side:
-  - `sentimentDistribution` — count + % por positive/neutral/negative
-  - `sentimentTrend` — agrupado por semana ISO
-  - `topThemes` — flat dos `topics[]`, agrupa por `label`, conta `mentions`, retorna top 10 + exemplos (interaction_ids)
-  - `topObjections` — flat dos `objections[]`, agrupa por `objection_text` normalizado, % handled
-  - `kpis` — totalAnalyzed, dominantSentiment, avgCoachingScore, unhandledObjections
-- StaleTime 5min, sem `useEffect`
+### 1. Estender `useExternalInteractions`
+- Adicionar parâmetros opcionais `{ days?: number, channels?: string[] }`.
+- Aplicar `data_interacao >= now - days` e `channel in channels` na query (ou client-side se vier de RPC).
+- Ajustar `queryKey` para invalidação correta por filtro.
 
-### 2. Componente principal `InsightsPanel`
-`src/components/interactions/insights/InsightsPanel.tsx` (≤200 linhas)
-- Header com select de período (`Tabs` 7d/30d/90d, persistência URL `?periodo=`)
-- 4 KPI cards (reutiliza padrão `StatCard` se existir, senão Card+Badge)
-- Grid 2 colunas com 2 charts
-- Lista de temas + lista de objeções
-- Skeleton loading + EmptyState
+### 2. Estender `useFicha360`
+- Aceitar `options?: { days?: number; channels?: string[] }`.
+- Passar para `useExternalInteractions`.
+- `channelCounts` continua refletindo o conjunto carregado.
 
-### 3. Subcomponentes (≤120 linhas cada)
-- `SentimentDistributionChart.tsx` — donut Recharts (cores `CHART_COLORS` de `nlpAnalyticsConstants`)
-- `SentimentTrendChart.tsx` — line chart por semana
-- `ThemesRanking.tsx` — lista ranqueada com badge count, click abre drawer
-- `ObjectionsRanking.tsx` — cards com handled/unhandled bar
-- `ThemeExamplesDrawer.tsx` — Sheet lateral com 5 exemplos clicáveis
+### 3. Novo componente `FiltrosInteracoesBar`
+`src/components/ficha-360/FiltrosInteracoesBar.tsx` (≤120 linhas)
+- Tabs/segmented control para período (7/30/90/365 dias, default 90).
+- Chips multi-select para canais (WhatsApp, Call, Email, Meeting, Note) — visual igual `TimelineFilterBar`.
+- Contador "X de Y interações" + botão "Limpar" quando há filtros ativos.
+- `React.memo`.
 
-### 4. Integração em `Interacoes.tsx`
-- Adicionar 3ª `TabsTrigger value="insights"` ao lado de Lista/Timeline
-- Renderiza `<InsightsPanel />` lazy quando ativo
-- Persistência via `?tab=insights` (já existe padrão)
+### 4. Hook `useFicha360Filters`
+`src/hooks/useFicha360Filters.ts` (≤80 linhas)
+- Sincroniza `?periodo=` e `?canais=` (CSV) na URL via `useSearchParams`.
+- Retorna `{ days, channels, setDays, setChannels, clear, activeCount }`.
+- Defaults: `days=90`, `channels=[]` (todos).
 
-### 5. Padrões obrigatórios
+### 5. Integração em `Ficha360.tsx`
+- Instanciar `useFicha360Filters()`.
+- Passar `{ days, channels }` para `useFicha360`.
+- Renderizar `<FiltrosInteracoesBar />` dentro do header de `UltimasInteracoesCard` (via prop) ou logo acima do card.
+
+### 6. Ajuste em `UltimasInteracoesCard`
+- Aceitar prop opcional `headerExtra?: ReactNode` para renderizar a barra de filtros logo abaixo do título sem quebrar o layout.
+- Mostrar empty state específico quando filtros zeram resultados ("Nenhuma interação no período/canais selecionados").
+
+## Padrões obrigatórios
 - PT-BR
 - `Array.isArray()` antes de iterar
 - Sem `any`, sem `dangerouslySetInnerHTML`
-- Tokens semânticos (Nexus Blue, success/warning/destructive)
-- Flat design — sem sombras/gradientes
-- `React.memo` em charts e listas
-- Tratamento gracioso quando `conversation_analyses` vazio (empty state explicativo)
+- Tokens semânticos, flat design
+- Persistência URL para deep-link
+- Sem `useEffect` para fetch (composição TanStack Query)
 
 ## Arquivos tocados
 
-**Novos (7):**
-- `src/hooks/useInteractionsInsights.ts`
-- `src/components/interactions/insights/InsightsPanel.tsx`
-- `src/components/interactions/insights/SentimentDistributionChart.tsx`
-- `src/components/interactions/insights/SentimentTrendChart.tsx`
-- `src/components/interactions/insights/ThemesRanking.tsx`
-- `src/components/interactions/insights/ObjectionsRanking.tsx`
-- `src/components/interactions/insights/ThemeExamplesDrawer.tsx`
+**Novos (2):**
+- `src/components/ficha-360/FiltrosInteracoesBar.tsx`
+- `src/hooks/useFicha360Filters.ts`
 
-**Editados (1):**
-- `src/pages/Interacoes.tsx` — adicionar 3ª aba "Insights"
+**Editados (4):**
+- `src/hooks/useExternalInteractions.ts` — aceitar `{days, channels}`
+- `src/hooks/useFicha360.ts` — propagar opções
+- `src/pages/Ficha360.tsx` — instanciar filtros e passar adiante
+- `src/components/ficha-360/UltimasInteracoesCard.tsx` — slot para filtros + empty state filtrado
 
 ## Critério de fechamento
 
-(a) Aba `/interacoes?tab=insights` renderiza em <2s, (b) 4 KPIs + 2 charts + ranking de temas + ranking de objeções populados a partir de `conversation_analyses` reais, (c) drawer de exemplos por tema funcional com link p/ Ficha 360, (d) filtro de período 7/30/90d persistido na URL, (e) empty state explicativo quando não há análises, (f) zero regressão nas abas Lista e Timeline.
+(a) Barra de filtros visível no topo da seção "Últimas Interações", (b) seleção de período (7/30/90/365d) e canais (multi) funcional, (c) lista re-renderiza com itens filtrados, (d) estado persistido na URL (`?periodo=&canais=`), (e) empty state contextual quando filtros zeram resultados, (f) zero regressão nos demais cards da Ficha 360.
