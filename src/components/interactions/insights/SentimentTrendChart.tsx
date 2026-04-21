@@ -106,6 +106,15 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
   );
 }
 
+type EvolutionDirection = "up" | "stable" | "down";
+interface EvolutionStats {
+  currentPct: number;
+  previousPct: number;
+  deltaPp: number;
+  direction: EvolutionDirection;
+  weeksCompared: number;
+}
+
 function SentimentTrendChartImpl({ data, summary }: Props) {
   const mixedStats = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
@@ -113,6 +122,24 @@ function SentimentTrendChartImpl({ data, summary }: Props) {
     const totalAll = safe.reduce((acc, p) => acc + (p.total ?? 0), 0);
     const pct = totalAll > 0 ? Math.round((totalMixed / totalAll) * 100) : 0;
     return { totalMixed, pct };
+  }, [data]);
+
+  const evolutionStats = useMemo<EvolutionStats | null>(() => {
+    const safe = Array.isArray(data) ? data : [];
+    if (safe.length < 4) return null;
+    const mid = Math.floor(safe.length / 2);
+    const prev = safe.slice(0, mid);
+    const curr = safe.slice(mid);
+    const sumPos = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.positive ?? 0), 0);
+    const sumTot = (arr: SentimentTrendPoint[]) => arr.reduce((a, p) => a + (p.total ?? 0), 0);
+    const prevTot = sumTot(prev);
+    const currTot = sumTot(curr);
+    if (prevTot === 0 || currTot === 0) return null;
+    const previousPct = Math.round((sumPos(prev) / prevTot) * 100);
+    const currentPct = Math.round((sumPos(curr) / currTot) * 100);
+    const deltaPp = currentPct - previousPct;
+    const direction: EvolutionDirection = Math.abs(deltaPp) < 3 ? "stable" : deltaPp > 0 ? "up" : "down";
+    return { currentPct, previousPct, deltaPp, direction, weeksCompared: prev.length };
   }, [data]);
 
   if (!Array.isArray(data) || data.length < 2) {
