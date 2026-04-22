@@ -249,6 +249,8 @@ const Ficha360 = () => {
       setSort('relevante');
       toast.info('Ordenação: mais relevante', { duration: 1500 });
     },
+    onAbrirResumoIA: () => setResumoIAOpen(true),
+    filteredCount: filteredInteractions.length,
   });
 
   // Toast informativo quando a página abre com filtros vindos da URL.
