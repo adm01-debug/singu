@@ -184,6 +184,16 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return m;
   }, [companies]);
 
+  // Map id -> Interaction usado pelos handlers de Editar/Excluir do modo agrupado
+  // (TimelineGroupCard só carrega o id do evento — aqui resolvemos para o objeto completo).
+  const interactionById = useMemo(() => {
+    const m = new Map<string, Interaction>();
+    if (Array.isArray(interactions)) {
+      for (const i of interactions) m.set(i.id, i);
+    }
+    return m;
+  }, [interactions]);
+
   // Mapa contato->company_id pra inferir empresa quando interaction.company_id estiver vazio.
   const contactToCompany = useMemo(() => {
     const m = new Map<string, string | null>();
