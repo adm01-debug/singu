@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense, startTransition } from 'react';
 import { motion } from 'framer-motion';
 import {
   MessageSquare, Phone, Mail, Users, Edit, Search, Calendar, MoreVertical,
@@ -27,6 +27,7 @@ import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
 import { SavedViewsMenu } from '@/components/interactions/SavedViewsMenu';
 import { ChannelShortcutsHelpOverlay } from '@/components/interactions/ChannelShortcutsHelpOverlay';
 import { PaginationBar } from '@/components/interactions/PaginationBar';
+import { useNextPagePrefetch } from '@/hooks/useNextPagePrefetch';
 import { DensityChips } from '@/components/interactions/DensityChips';
 import { SentimentQuickFilter } from '@/components/interactions/SentimentQuickFilter';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
@@ -239,6 +240,15 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     [isGrouped, visibleGroups, visibleInteractions],
   );
 
+  // Pré-aquece o slice da próxima página em idle time + sob demanda no hover/focus.
+  const nextDataset: readonly unknown[] = isGrouped ? groups : sortedForView;
+  const { warmNext } = useNextPagePrefetch<unknown>({
+    items: nextDataset,
+    page: safePage,
+    perPage: adv.perPage,
+    totalPages,
+  });
+
   // Clamp: se a URL pediu uma página além do total, corrige via replace.
   useEffect(() => {
     if (total > 0 && adv.page > totalPages) setFilter('page', totalPages);
@@ -416,8 +426,9 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
             page={safePage}
             perPage={adv.perPage}
             total={total}
-            onPageChange={(p) => setFilter('page', p)}
+            onPageChange={(p) => startTransition(() => setFilter('page', p))}
             onPerPageChange={(pp) => setFilter('perPage', pp)}
+            onPrefetchNext={warmNext}
           />
           {filteredAndSorted.length === 0 && !loading && (
             activeCount > 0 || Object.keys(activeFilters).length > 0
