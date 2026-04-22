@@ -60,10 +60,7 @@ export function useFicha360PreferencesSync(opts: {
   hydrate: (prefs: Ficha360Preferences) => void;
   hasUrlOverride: boolean;
 }) {
-  const { current, hydrate, hydrateRefHasRun, hasUrlOverride } = {
-    ...opts,
-    hydrateRefHasRun: false,
-  };
+  const { current, hydrate, hasUrlOverride } = opts;
   const qc = useQueryClient();
   const hydratedRef = useRef(false);
   const lastSavedRef = useRef<Ficha360Preferences | null>(null);
@@ -94,7 +91,7 @@ export function useFicha360PreferencesSync(opts: {
       const { error } = await supabase
         .from('user_ui_preferences')
         .upsert(
-          { user_id: userId, scope: SCOPE, preferences: prefs as unknown as Record<string, unknown> },
+          [{ user_id: userId, scope: SCOPE, preferences: prefs as unknown as Record<string, unknown> }],
           { onConflict: 'user_id,scope' },
         );
       if (error) throw error;
