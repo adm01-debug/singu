@@ -158,7 +158,7 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
                 <Button
                   key={p.name}
                   type="button"
-                  variant={presetName === p.name ? 'default' : 'outline'}
+                  variant={presetName === p.name && !presetId ? 'default' : 'outline'}
                   size="xs"
                   onClick={() => applyPreset(p.name, p.overrides)}
                   title={p.description}
@@ -167,6 +167,135 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
                 </Button>
               ))}
             </div>
+          </div>
+
+          {/* Meus presets */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                Meus presets
+              </div>
+              <div className="flex items-center gap-1.5">
+                {activeCustom && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="gap-1"
+                    onClick={handleUpdateActive}
+                    title={`Atualizar "${activeCustom.name}" com os valores atuais`}
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Atualizar
+                  </Button>
+                )}
+                <Popover open={saveOpen} onOpenChange={setSaveOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      className="gap-1"
+                      onClick={openSaveAsNew}
+                      disabled={!canSave}
+                      title={
+                        canSave
+                          ? 'Salvar configuração atual como preset'
+                          : 'Ajuste algum override antes de salvar'
+                      }
+                    >
+                      <Save className="h-3 w-3" />
+                      Salvar como…
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-72 p-3 space-y-2">
+                    <Label htmlFor="preset-name" className="text-xs">
+                      Nome do preset
+                    </Label>
+                    <Input
+                      id="preset-name"
+                      autoFocus
+                      value={draftName}
+                      onChange={(e) => setDraftName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSaveNew();
+                        }
+                      }}
+                      placeholder="Ex.: Cliente em retomada"
+                      maxLength={48}
+                      className="h-8 text-sm"
+                    />
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setSaveOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="xs"
+                        className="gap-1"
+                        onClick={handleSaveNew}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Salvar
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            {customPresets.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">
+                Nenhum preset salvo ainda. Ajuste os controles e clique em "Salvar como…" para
+                criar o seu.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {customPresets.map((p) => {
+                  const active = presetId === p.id;
+                  return (
+                    <div
+                      key={p.id}
+                      className={cn(
+                        'inline-flex items-center rounded-md border text-xs h-7 overflow-hidden transition-colors',
+                        active
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background hover:bg-muted',
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => applyCustomPreset(p.id, p.name, p.overrides)}
+                        className="px-2 h-full flex items-center max-w-[180px] truncate"
+                        title={`Aplicar preset "${p.name}"`}
+                      >
+                        {p.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustom(p.id, p.name)}
+                        className={cn(
+                          'h-full px-1.5 border-l flex items-center transition-colors',
+                          active
+                            ? 'border-primary-foreground/30 hover:bg-primary-foreground/10'
+                            : 'border-border hover:bg-destructive/10 hover:text-destructive',
+                        )}
+                        title={`Remover preset "${p.name}"`}
+                        aria-label={`Remover preset ${p.name}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Controles */}
