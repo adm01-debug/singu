@@ -85,6 +85,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
+  const [recentlyAppliedId, setRecentlyAppliedId] = useState<string | null>(null);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
@@ -229,8 +230,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
     markAsUsed(preset.id);
     setActivePresetId(preset.id);
+    setRecentlyAppliedId(preset.id);
+    window.setTimeout(() => {
+      setRecentlyAppliedId((cur) => (cur === preset.id ? null : cur));
+    }, 1500);
     setOpen(false);
-    toast.success('Preset aplicado');
+    toast.success('Filtros atualizados', { description: `Preset "${preset.name}" aplicado` });
     requestAnimationFrame(() => {
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
@@ -438,7 +443,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                 return (
                   <div
                     key={preset.id}
-                    className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
+                    className={[
+                      'flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group relative transition-colors',
+                      activePresetId === preset.id ? 'bg-primary/5 border-l-2 border-primary' : '',
+                      recentlyAppliedId === preset.id ? 'animate-preset-flash' : '',
+                    ].filter(Boolean).join(' ')}
+                    aria-current={activePresetId === preset.id ? 'true' : undefined}
                     onClick={() => { if (editingId !== preset.id) applyPreset(preset); }}
                   >
                     <button
@@ -474,7 +484,14 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                         />
                       ) : (
                         <>
-                          <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate flex items-center gap-1.5">
+                            <span className="truncate">{preset.name}</span>
+                            {activePresetId === preset.id && (
+                              <span className="shrink-0 text-[10px] uppercase tracking-wide font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                Ativo
+                              </span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {summarize(payload)}
                             {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
