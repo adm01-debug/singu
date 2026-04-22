@@ -404,6 +404,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   return (
     <TooltipProvider delayDuration={200}>
+     <div className="flex flex-col gap-0">
       <div className="flex flex-wrap items-center gap-1">
         {CHANNELS.map((opt, idx) => {
           const Icon = opt.icon;
