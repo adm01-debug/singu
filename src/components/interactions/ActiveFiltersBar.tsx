@@ -30,6 +30,17 @@ interface Props {
   contactLabel?: string | null;
   companyLabel?: string | null;
   onAfterRemove?: () => void;
+  /**
+   * Modo agrupado ativo (por pessoa/empresa). Quando true, o resumo mostra
+   * a contagem de grupos visíveis junto do total de interações exibidas.
+   * No modo lista o comportamento permanece inalterado.
+   */
+  groupedMode?: boolean;
+  /** Total de grupos visíveis na página atual (apenas no modo agrupado). */
+  groupCount?: number;
+  /** Rótulo da entidade agrupadora ('pessoa' | 'empresa'). Default: 'grupo'. */
+  groupLabelSingular?: string;
+  groupLabelPlural?: string;
 }
 
 function pad2(n: number): string {
@@ -52,6 +63,7 @@ function prettifyChannel(raw: string): string {
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
   filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
+  groupedMode = false, groupCount = 0, groupLabelSingular = 'grupo', groupLabelPlural = 'grupos',
 }: Props) {
   const canais = Array.isArray(filters.canais) ? filters.canais : [];
   const qTrim = (filters.q ?? '').trim();
@@ -65,6 +77,15 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
 
   const summary = (() => {
     if (totalCount === 0) return 'Nenhuma interação';
+    if (groupedMode) {
+      const gLabel = groupCount === 1 ? groupLabelSingular : groupLabelPlural;
+      const iLabel = visibleCount === 1 ? 'interação' : 'interações';
+      if (groupCount === 0) return `Nenhum ${groupLabelSingular} no escopo atual`;
+      if (activeCount === 0 && visibleCount === totalCount) {
+        return `${groupCount} ${gLabel} · ${visibleCount} ${iLabel}`;
+      }
+      return `${groupCount} ${gLabel} · ${visibleCount} de ${totalCount} ${iLabel}`;
+    }
     if (activeCount === 0) return `${totalCount} interações`;
     if (visibleCount === totalCount) return `${totalCount} resultados`;
     return `Mostrando ${visibleCount} de ${totalCount}`;

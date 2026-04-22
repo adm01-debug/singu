@@ -399,6 +399,10 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         visibleCount={visibleEventsCount}
         contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
         companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
+        groupedMode={isGrouped}
+        groupCount={visibleGroups.length}
+        groupLabelSingular={adv.view === 'by-contact' ? 'pessoa' : 'empresa'}
+        groupLabelPlural={adv.view === 'by-contact' ? 'pessoas' : 'empresas'}
         onAfterRemove={() => {
           // Devolve o foco ao input de busca após o re-render disparado pelo setFilter,
           // sem reposicionar a página e mantendo o cursor ao final do texto.
