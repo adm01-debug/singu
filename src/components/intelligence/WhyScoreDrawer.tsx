@@ -130,9 +130,20 @@ export function WhyScoreDrawer({
     return sorted.map((f, i) => {
       const contribution = f.weight * f.score;
       const contributionPct = totalContribution > 0 ? (contribution / totalContribution) * 100 : 0;
-      return { ...f, contribution, contributionPct, rank: i + 1 };
+      const effectiveDirection: WhyScoreDirection = f.direction ?? inferDirection(f.score);
+      return { ...f, contribution, contributionPct, rank: i + 1, effectiveDirection };
     });
   }, [factors]);
+
+  const directionCounts = useMemo(() => {
+    return rankedFactors.reduce(
+      (acc, f) => {
+        acc[f.effectiveDirection] += 1;
+        return acc;
+      },
+      { positive: 0, negative: 0, neutral: 0 } as Record<WhyScoreDirection, number>,
+    );
+  }, [rankedFactors]);
 
   const submitFeedback = (value: 'up' | 'down') => {
     setFeedback(value);
