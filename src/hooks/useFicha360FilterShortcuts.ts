@@ -20,6 +20,8 @@ interface Options {
   onClearSearch: () => void;
   onRemoveChannel: (channel: string) => void;
   onCopyLink?: () => void;
+  onQuickSaveFavorito?: () => void;
+  onAbrirFavoritos?: () => void;
   enabled: boolean;
 }
 
@@ -39,6 +41,8 @@ export function useFicha360FilterShortcuts({
   onClearSearch,
   onRemoveChannel,
   onCopyLink,
+  onQuickSaveFavorito,
+  onAbrirFavoritos,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
@@ -47,10 +51,34 @@ export function useFicha360FilterShortcuts({
     stateRef.current = { days, channels, q, hasPeriodChip, enabled };
   }, [days, channels, q, hasPeriodChip, enabled]);
 
-  const handlersRef = useRef({ onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink });
+  const handlersRef = useRef({
+    onClearAll,
+    onClearPeriod,
+    onClearSearch,
+    onRemoveChannel,
+    onCopyLink,
+    onQuickSaveFavorito,
+    onAbrirFavoritos,
+  });
   useEffect(() => {
-    handlersRef.current = { onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink };
-  }, [onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink]);
+    handlersRef.current = {
+      onClearAll,
+      onClearPeriod,
+      onClearSearch,
+      onRemoveChannel,
+      onCopyLink,
+      onQuickSaveFavorito,
+      onAbrirFavoritos,
+    };
+  }, [
+    onClearAll,
+    onClearPeriod,
+    onClearSearch,
+    onRemoveChannel,
+    onCopyLink,
+    onQuickSaveFavorito,
+    onAbrirFavoritos,
+  ]);
 
   useScopedShortcut({
     scope: 'ficha360-filtros',
@@ -104,6 +132,30 @@ export function useFicha360FilterShortcuts({
       const hasAny = s.hasPeriodChip || s.channels.length > 0 || s.q.trim().length > 0;
       if (!hasAny) return;
       handlersRef.current.onCopyLink?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 's',
+    shift: true,
+    description: 'Salvar filtros atuais como favorito (auto-nome)',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onQuickSaveFavorito?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'f',
+    shift: true,
+    description: 'Abrir menu de filtros favoritos',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onAbrirFavoritos?.();
     },
   });
 

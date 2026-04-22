@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Star, Trash2, Check, Plus, Link2 } from 'lucide-react';
+import { Star, Trash2, Check, Plus, Link2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ interface Props {
   days: number;
   channels: string[];
   onApply: (days: number, channels: string[]) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -57,10 +59,17 @@ export const FavoritosFiltrosMenu = memo(function FavoritosFiltrosMenu({
   days,
   channels,
   onApply,
+  open: controlledOpen,
+  onOpenChange,
 }: Props) {
-  const { favorites, save, remove, findMatch, canSaveMore, maxFavorites } =
+  const { favorites, save, quickSave, remove, findMatch, canSaveMore, maxFavorites } =
     useFicha360FilterFavorites();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   const [savingMode, setSavingMode] = useState(false);
   const [draftName, setDraftName] = useState('');
 
@@ -124,10 +133,20 @@ export const FavoritosFiltrosMenu = memo(function FavoritosFiltrosMenu({
           variant={activeMatch ? 'default' : 'outline'}
           size="sm"
           className="h-8 gap-1.5 text-xs"
-          aria-label="Filtros favoritos"
-          title={activeMatch ? `Favorito ativo: ${activeMatch.name}` : 'Filtros favoritos'}
+          aria-pressed={!!activeMatch}
+          aria-label={
+            activeMatch
+              ? `Filtros favoritos — vendo: ${activeMatch.name}`
+              : 'Filtros favoritos'
+          }
+          title={activeMatch ? `Vendo: ${activeMatch.name}` : 'Filtros favoritos'}
         >
-          <Star className={cn('h-3.5 w-3.5', activeMatch && 'fill-current')} />
+          <Star
+            className={cn(
+              'h-3.5 w-3.5',
+              activeMatch && 'fill-primary text-primary',
+            )}
+          />
           <span className="hidden sm:inline">
             {activeMatch ? activeMatch.name : 'Favoritos'}
           </span>
@@ -217,27 +236,60 @@ export const FavoritosFiltrosMenu = memo(function FavoritosFiltrosMenu({
 
         <DropdownMenuSeparator />
 
-        <div className="px-2 py-2">
+        <div className="px-2 py-2 space-y-1">
           {!savingMode ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start h-8 text-xs gap-1.5"
-              onClick={startSaving}
-              disabled={cannotSave}
-              title={
-                isDefault
-                  ? 'Os filtros atuais são o padrão — ajuste para salvar'
-                  : duplicateExists
-                  ? `Já existe um favorito idêntico: ${activeMatch?.name}`
-                  : !canSaveMore
-                  ? `Limite de ${maxFavorites} favoritos atingido`
-                  : 'Salvar combinação atual'
-              }
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Salvar atual como favorito
-            </Button>
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-8 text-xs gap-1.5"
+                onClick={() => {
+                  const result = quickSave(days, channels);
+                  if (!result) {
+                    toast.error(
+                      !canSaveMore
+                        ? `Limite de ${maxFavorites} favoritos atingido.`
+                        : 'Não foi possível salvar este favorito.',
+                    );
+                    return;
+                  }
+                  toast.success(`Favorito "${result.name}" salvo.`);
+                }}
+                disabled={cannotSave}
+                aria-label="Salvar filtros atuais como favorito sem nomear"
+                title={
+                  isDefault
+                    ? 'Os filtros atuais são o padrão — ajuste para salvar'
+                    : duplicateExists
+                    ? `Já salvo como: ${activeMatch?.name}`
+                    : !canSaveMore
+                    ? `Limite de ${maxFavorites} favoritos atingido`
+                    : 'Salvar com nome auto-gerado (Shift + S)'
+                }
+              >
+                <Save className="h-3.5 w-3.5" />
+                Salvar agora
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-8 text-xs gap-1.5"
+                onClick={startSaving}
+                disabled={cannotSave}
+                title={
+                  isDefault
+                    ? 'Os filtros atuais são o padrão — ajuste para salvar'
+                    : duplicateExists
+                    ? `Já existe um favorito idêntico: ${activeMatch?.name}`
+                    : !canSaveMore
+                    ? `Limite de ${maxFavorites} favoritos atingido`
+                    : 'Salvar combinação atual com nome personalizado'
+                }
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Salvar com nome…
+              </Button>
+            </>
           ) : (
             <div className="space-y-2">
               <div className="text-[11px] text-muted-foreground">
