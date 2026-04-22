@@ -116,7 +116,7 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   const pendingOption = pendingOutcome ? OPTIONS.find((o) => o.value === pendingOutcome) : null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button size="xs" variant="outline">
           <Check className="h-3 w-3" />
