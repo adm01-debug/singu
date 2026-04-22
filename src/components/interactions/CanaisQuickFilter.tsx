@@ -146,8 +146,6 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     });
   }, [safe, mode, setMode]);
 
-  // Mantido para compat com clearAll abaixo (legacy ref)
-  const _legacyPrevSafeLen = prevSafeLenRef.current;
 
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
