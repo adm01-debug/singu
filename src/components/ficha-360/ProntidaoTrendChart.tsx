@@ -3,13 +3,25 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Target, RotateCcw } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Target,
+  RotateCcw,
+  Phone,
+  MessageCircle,
+  Mail,
+  Users,
+  Sparkles,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +46,14 @@ import {
   useProntidaoTargetStore,
   PRONTIDAO_TARGET_DEFAULT,
 } from '@/stores/useProntidaoTargetStore';
+
+import {
+  computeTrendMilestones,
+  groupMilestonesByWeek,
+  type MilestoneKind,
+  type TrendMilestone,
+} from '@/lib/prontidaoTrendMilestones';
+import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 import { cn } from '@/lib/utils';
 
 export type TrendWeeks = 4 | 8 | 12 | 24;
@@ -51,7 +71,17 @@ interface Props {
   simulated?: boolean;
   weeks?: TrendWeeks;
   onWeeksChange?: (w: TrendWeeks) => void;
+  /** Lista de interações usada para detectar marcos importantes por semana. */
+  interactions?: ExternalInteraction[];
 }
+
+const MILESTONE_META: Record<MilestoneKind, { Icon: typeof Phone; cssVar: string; legend: string }> = {
+  'first-call': { Icon: Phone, cssVar: '--primary', legend: 'Primeira ligação' },
+  'first-whatsapp': { Icon: MessageCircle, cssVar: '--success', legend: 'Primeira conversa WhatsApp' },
+  'first-email': { Icon: Mail, cssVar: '--accent-foreground', legend: 'Primeiro e-mail' },
+  'first-meeting': { Icon: Users, cssVar: '--warning', legend: 'Primeira reunião' },
+  peak: { Icon: Sparkles, cssVar: '--destructive', legend: 'Pico de atividade' },
+};
 
 const trendMeta = {
   up: {
@@ -71,7 +101,7 @@ const trendMeta = {
   },
 } as const;
 
-const makeTooltipContent = (target: number) => {
+const makeTooltipContent = (target: number, milestonesByWeek: Map<string, TrendMilestone[]>) => {
   const Comp = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
     if (!active || !payload?.length) return null;
     const p = payload[0].payload;
@@ -84,6 +114,7 @@ const makeTooltipContent = (target: number) => {
       );
     }
     const diff = target > 0 ? p.score - target : null;
+    const weekMilestones = milestonesByWeek.get(p.weekStart) ?? [];
     return (
       <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
         <div className="font-medium">Semana de {p.weekLabel}</div>
@@ -105,18 +136,44 @@ const makeTooltipContent = (target: number) => {
         <div className="text-muted-foreground">
           {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
         </div>
+        {weekMilestones.length > 0 && (
+          <div className="pt-1 mt-1 border-t border-border space-y-0.5">
+            {weekMilestones.map((m, i) => {
+              const M = MILESTONE_META[m.kind];
+              return (
+                <div key={`${m.kind}-${i}`} className="flex items-center gap-1.5">
+                  <M.Icon
+                    className="h-3 w-3"
+                    style={{ color: `hsl(var(${M.cssVar}))` }}
+                    aria-hidden="true"
+                  />
+                  <span>{m.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
   return Comp;
 };
 
-export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
+export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange, interactions }: Props) => {
   const target = useProntidaoTargetStore((s) => s.target);
   const setTarget = useProntidaoTargetStore((s) => s.setTarget);
   const resetTarget = useProntidaoTargetStore((s) => s.reset);
   const [draftTarget, setDraftTarget] = useState<number>(target);
-  const TooltipContent = useMemo(() => makeTooltipContent(target), [target]);
+
+  const milestones = useMemo(
+    () => computeTrendMilestones(interactions ?? [], data),
+    [interactions, data],
+  );
+  const milestonesByWeek = useMemo(() => groupMilestonesByWeek(milestones), [milestones]);
+  const TooltipContent = useMemo(
+    () => makeTooltipContent(target, milestonesByWeek),
+    [target, milestonesByWeek],
+  );
 
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
@@ -388,10 +445,51 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                   activeDot={{ r: 5, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
                   isAnimationActive={false}
                 />
+                {Array.from(milestonesByWeek.entries()).flatMap(([weekStart, list]) => {
+                  const point = data.find((p) => p.weekStart === weekStart);
+                  if (!point) return [];
+                  return list.map((m, idx) => {
+                    const yPos = Math.min(100, point.score + 8 + idx * 7);
+                    const color = `hsl(var(${MILESTONE_META[m.kind].cssVar}))`;
+                    return (
+                      <ReferenceDot
+                        key={`${weekStart}-${m.kind}-${idx}`}
+                        x={point.weekLabel}
+                        y={yPos}
+                        r={4}
+                        fill={color}
+                        stroke="hsl(var(--background))"
+                        strokeWidth={1.5}
+                        ifOverflow="extendDomain"
+                        isFront
+                      />
+                    );
+                  });
+                })}
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </AccessibleChart>
+
+        {milestones.length > 0 && (
+          <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-[11px] text-muted-foreground">
+            <span className="font-medium text-foreground">Marcos:</span>
+            {Array.from(new Set(milestones.map((m) => m.kind))).map((kind) => {
+              const M = MILESTONE_META[kind];
+              return (
+                <span key={kind} className="inline-flex items-center gap-1">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: `hsl(var(${M.cssVar}))` }}
+                    aria-hidden="true"
+                  />
+                  <M.Icon className="h-3 w-3" aria-hidden="true" />
+                  {M.legend}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         <p className="text-[11px] text-muted-foreground">
           Linhas tracejadas marcam os limiares Morno (40) e Quente (70)

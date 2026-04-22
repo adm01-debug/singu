@@ -483,6 +483,7 @@ const Ficha360 = () => {
               simulated={simEnabled}
               weeks={trendWeeks}
               onWeeksChange={setTrendWeeks}
+              interactions={recentInteractions}
             />
 
             {/* Grid 2 colunas */}
