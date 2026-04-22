@@ -49,8 +49,11 @@ async function openPopoverAndClickLimpar() {
   // Abre o popover clicando no trigger ("Período" ou rótulo da data).
   const trigger = screen.getByRole('button', { name: /período|a partir de|até/i });
   await act(async () => { fireEvent.click(trigger); });
-  // Clica no botão "Limpar período" dentro do popover.
-  const limpar = await screen.findByRole('button', { name: /limpar período/i });
+  // O X inline (svg) e o botão "Limpar período" do popover compartilham o
+  // mesmo aria-label. Filtramos pelo button cujo texto começa com "Limpar".
+  const buttons = await screen.findAllByRole('button', { name: /limpar período/i });
+  const limpar = buttons.find(b => /^limpar período$/i.test((b.textContent || '').trim()));
+  if (!limpar) throw new Error('Botão "Limpar período" não encontrado dentro do popover');
   await act(async () => { fireEvent.click(limpar); });
 }
 
