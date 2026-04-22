@@ -136,6 +136,37 @@ export function useSearchPresets(context: string = 'contacts') {
   }, []);
 
   /**
+   * Duplica um preset existente, mantendo usageCount, lastUsedAt e isFavorite.
+   * Gera novo id/createdAt e dedup de nome com sufixo "(cópia)" / "(cópia N)".
+   * Respeita limite de 10. Retorna o preset criado ou null se limite atingido.
+   */
+  const duplicatePreset = useCallback((id: string): SearchPreset | null => {
+    let created: SearchPreset | null = null;
+    setPresets(prev => {
+      if (prev.length >= 10) return prev;
+      const original = prev.find(p => p.id === id);
+      if (!original) return prev;
+      const existingNames = new Set(prev.map(p => p.name));
+      const baseName = `${original.name} (cópia)`;
+      let finalName = baseName;
+      if (existingNames.has(finalName)) {
+        let i = 2;
+        while (existingNames.has(`${original.name} (cópia ${i})`)) i++;
+        finalName = `${original.name} (cópia ${i})`;
+      }
+      created = {
+        ...original,
+        id: crypto.randomUUID(),
+        name: finalName,
+        createdAt: new Date().toISOString(),
+        updatedAt: undefined,
+      };
+      return [created, ...prev].slice(0, 10);
+    });
+    return created;
+  }, []);
+
+  /**
    * Importa presets em lote. Respeita limite de 10 e faz dedup de nomes.
    * Retorna contagem de adicionados e ignorados (por limite).
    */
