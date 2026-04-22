@@ -24,7 +24,9 @@ import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelac
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
+import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
+import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
