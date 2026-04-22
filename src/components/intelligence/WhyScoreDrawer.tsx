@@ -191,8 +191,8 @@ export function WhyScoreDrawer({
                       <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[240px] text-xs">
-                    Ordenados pela contribuição real (peso × score). O fator no topo é o que mais influenciou o resultado.
+                  <TooltipContent side="top" className="max-w-[260px] text-xs">
+                    Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -202,9 +202,33 @@ export function WhyScoreDrawer({
                 Sem fatores detalhados disponíveis para esse score.
               </p>
             )}
+            {rankedFactors.length > 0 && (directionCounts.positive + directionCounts.negative + directionCounts.neutral) > 0 && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground" aria-label="Resumo de direção dos fatores">
+                {directionCounts.positive > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    {directionCounts.positive} favorecendo
+                  </span>
+                )}
+                {directionCounts.negative > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3 text-red-600 dark:text-red-400" aria-hidden="true" />
+                    {directionCounts.negative} prejudicando
+                  </span>
+                )}
+                {directionCounts.neutral > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <Minus className="h-3 w-3" aria-hidden="true" />
+                    {directionCounts.neutral} neutro
+                  </span>
+                )}
+              </div>
+            )}
             {rankedFactors.map((f) => {
               const contribInt = Math.round(f.contribution);
               const contribPctInt = Math.round(f.contributionPct);
+              const dirMeta = DIRECTION_META[f.effectiveDirection];
+              const DirIcon = dirMeta.icon;
               const rankBadge =
                 f.rank === 1 ? (
                   <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
@@ -215,13 +239,27 @@ export function WhyScoreDrawer({
                     #{f.rank}
                   </Badge>
                 ) : null;
+              const contribLabel =
+                f.effectiveDirection === 'positive'
+                  ? 'Está ajudando'
+                  : f.effectiveDirection === 'negative'
+                    ? 'Está prejudicando'
+                    : 'Contribuição';
 
               return (
                 <div key={f.key} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs gap-2">
-                    <span className="font-medium flex items-center gap-1.5 min-w-0">
+                    <span className="font-medium flex items-center gap-1.5 min-w-0 flex-wrap">
                       <span className="truncate">{f.label}</span>
                       {rankBadge}
+                      <Badge
+                        variant="outline"
+                        className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1 font-normal', dirMeta.badgeClass)}
+                        aria-label={`Este fator ${dirMeta.verb.toLowerCase()} o score`}
+                      >
+                        <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                        {dirMeta.label}
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground shrink-0">
                       {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
@@ -240,7 +278,7 @@ export function WhyScoreDrawer({
                     aria-label={`Contribuição relativa: ${contribPctInt}% do score total`}
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    Contribuição: <span className="font-medium text-foreground/80">{contribInt} pts</span> ({contribPctInt}% do total)
+                    {contribLabel}: <span className="font-medium text-foreground/80">{contribInt} pts</span> ({contribPctInt}% do total)
                   </p>
                   {f.detail && <p className="text-[11px] text-muted-foreground">{f.detail}</p>}
                 </div>
