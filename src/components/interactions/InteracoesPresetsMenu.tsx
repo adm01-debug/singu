@@ -792,6 +792,27 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!pendingProtectedAction} onOpenChange={(o) => !o && setPendingProtectedAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              Preset protegido
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>"{pendingProtectedAction?.preset.name}"</strong> está protegido contra modificações acidentais.
+              {pendingProtectedAction?.kind === 'rename'
+                ? ' Tem certeza que deseja renomeá-lo?'
+                : ' Tem certeza que deseja atualizar seus filtros?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={proceedProtectedAction}>Continuar mesmo assim</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 });
