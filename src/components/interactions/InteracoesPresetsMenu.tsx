@@ -541,6 +541,26 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6"
+                            title={preset.isProtected ? 'Desproteger preset' : 'Proteger preset'}
+                            aria-label={preset.isProtected ? 'Desproteger preset' : 'Proteger preset'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleProtected(preset.id);
+                              toast(preset.isProtected ? 'Preset desprotegido' : 'Preset protegido', {
+                                description: preset.isProtected
+                                  ? 'Renomear e atualizar filtros voltam ao normal.'
+                                  : 'Renomear e atualizar filtros agora exigem confirmação.',
+                              });
+                            }}
+                          >
+                            {preset.isProtected
+                              ? <Unlock className="w-3 h-3 text-muted-foreground" />
+                              : <Lock className="w-3 h-3 text-muted-foreground" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
                             title="Renomear"
                             aria-label="Renomear preset"
                             onClick={(e) => startRename(preset, e)}
