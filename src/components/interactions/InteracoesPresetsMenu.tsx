@@ -89,6 +89,9 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   // Modo de pré-visualização: clique no item abre painel diff em vez de aplicar.
   const [previewMode, setPreviewMode] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // Navegação por teclado: índice do preset focado na lista (-1 = nenhum).
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
