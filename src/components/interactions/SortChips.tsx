@@ -83,16 +83,14 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
         role="group"
         aria-label="Ordenar lista"
       >
-        {SORT_CONFIG.map(({ key, label, icon: Icon, shortcut, requiresQuery, requiresChannelCounts }) => {
+        {SORT_CONFIG.map(({ key, label, description, icon: Icon, shortcut, requiresQuery, requiresChannelCounts }) => {
           const active = effective === key;
           const disabled =
             (!!requiresQuery && !hasQuery) ||
             (!!requiresChannelCounts && !hasChannelCounts);
-          const tooltip = disabled
-            ? requiresQuery
-              ? 'Disponível ao buscar por palavra-chave'
-              : 'Disponível quando houver interações nos canais do escopo atual'
-            : `${label} · Alt+${shortcut}`;
+          const disabledReason = requiresQuery
+            ? 'Desabilitado: digite um termo na busca para ranquear por relevância.'
+            : 'Desabilitado: nenhum canal com interações no escopo atual.';
 
           return (
             <Tooltip key={key}>
