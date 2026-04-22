@@ -101,6 +101,31 @@ const BAND_META: Record<'low' | 'mid' | 'high', { label: string; cls: string; in
   high: { label: 'Alto', cls: 'text-success', indicator: 'bg-success' },
 };
 
+/** Banda por fator (0-100), alinhada com inferDirection: <35 baixa, 35-65 média, >65 alta. */
+type FactorBand = 'low' | 'mid' | 'high';
+function getFactorBand(score: number): FactorBand {
+  if (score >= 65) return 'high';
+  if (score <= 35) return 'low';
+  return 'mid';
+}
+const FACTOR_BAND_META: Record<FactorBand, { label: string; range: string; badgeClass: string }> = {
+  low: {
+    label: 'baixa',
+    range: 'até 35',
+    badgeClass: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
+  mid: {
+    label: 'média',
+    range: 'entre 35 e 65',
+    badgeClass: 'bg-warning/10 text-warning border-warning/30',
+  },
+  high: {
+    label: 'alta',
+    range: 'acima de 65',
+    badgeClass: 'bg-success/10 text-success border-success/30',
+  },
+};
+
 /**
  * Drawer universal "Por que esse score?". Mostra fatores ponderados,
  * recomendações e captura feedback do usuário (👍/👎) em localStorage
