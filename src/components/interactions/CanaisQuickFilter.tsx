@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useChannelSyncMode } from '@/hooks/useChannelSyncMode';
+import { useChannelHistory } from '@/hooks/useChannelHistory';
+import { RecentChannelCombos } from '@/components/interactions/RecentChannelCombos';
 import { toast } from 'sonner';
 
 const CHANNELS = [
