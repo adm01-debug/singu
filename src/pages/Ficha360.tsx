@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useFicha360 } from '@/hooks/useFicha360';
 import { useFicha360Filters } from '@/hooks/useFicha360Filters';
 import { useFicha360DraftFilters } from '@/hooks/useFicha360DraftFilters';
+import { useFicha360FilterShortcuts } from '@/hooks/useFicha360FilterShortcuts';
 import { useFicha360ChannelCounts } from '@/hooks/useFicha360ChannelCounts';
 import { PerfilComportamentalCard } from '@/components/ficha-360/PerfilComportamentalCard';
 import { TagsInteresseCard } from '@/components/ficha-360/TagsInteresseCard';
