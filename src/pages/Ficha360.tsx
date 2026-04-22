@@ -35,7 +35,10 @@ import { applySimulation } from '@/lib/prontidaoSimulation';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 import { useBestContactTime } from '@/hooks/useBestContactTime';
-import { useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
+import { Input } from '@/components/ui/input';
+import { Search, X as XIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
@@ -59,7 +62,7 @@ const Ficha360Skeleton = () => (
 
 const Ficha360 = () => {
   const { id } = useParams<{ id: string }>();
-  const { days, channels, setDays, setChannels, clear, activeCount } = useFicha360Filters();
+  const { days, channels, q, setDays, setChannels, setQ, clear, activeCount } = useFicha360Filters();
   const {
     draftDays,
     draftChannels,
@@ -89,6 +92,30 @@ const Ficha360 = () => {
     setDraftDays(90);
     setDraftChannels([]);
   };
+
+  // Busca textual local — input controlado, sincroniza com URL via debounce 200ms.
+  const [searchInput, setSearchInput] = useState(q);
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
+  const debouncedSearch = useDebounce(searchInput, 200);
+  useEffect(() => {
+    if (debouncedSearch.trim() !== q) setQ(debouncedSearch);
+  }, [debouncedSearch, q, setQ]);
+
+  const filteredInteractions = useMemo(() => {
+    const term = q.trim();
+    if (!term) return recentInteractions;
+    const norm = (s: string) =>
+      s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const needle = norm(term);
+    return recentInteractions.filter((it) => {
+      const haystack = norm(
+        [it.assunto ?? '', it.resumo ?? '', it.channel ?? '', it.direction ?? ''].join(' '),
+      );
+      return haystack.includes(needle);
+    });
+  }, [recentInteractions, q]);
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
@@ -303,14 +330,36 @@ const Ficha360 = () => {
                   companyId={profile?.company_id ?? null}
                 />
                 <UltimasInteracoesCard
-                  interactions={recentInteractions}
+                  interactions={filteredInteractions}
                   contactId={id}
                   filtersActive={activeCount > 0}
                   isLoading={interactionsFetching}
                   days={days}
                   channels={channels}
+                  q={q}
                   headerExtra={
                     <>
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          type="search"
+                          value={searchInput}
+                          onChange={(e) => setSearchInput(e.target.value)}
+                          placeholder="Buscar por assunto, resumo, canal…"
+                          className="h-8 pl-8 pr-8 text-sm max-w-xs"
+                          aria-label="Buscar interações"
+                        />
+                        {searchInput && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchInput('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            aria-label="Limpar busca"
+                          >
+                            <XIcon className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                       <FiltrosInteracoesBar
                         days={draftDays}
                         channels={draftChannels}
@@ -318,7 +367,7 @@ const Ficha360 = () => {
                         onChannelsChange={setDraftChannels}
                         onClear={clearDraftFilters}
                         activeCount={activeCount}
-                        shownCount={recentInteractions.length}
+                        shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
                         channelCounts={potentialChannelCounts}
                         channelCountsReady={channelCountsReady}
@@ -329,11 +378,20 @@ const Ficha360 = () => {
                       <FiltrosAtivosChips
                         days={days}
                         channels={channels}
-                        shownCount={recentInteractions.length}
+                        shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
+                        searchTerm={q}
+                        searchMatchCount={filteredInteractions.length}
                         onRemoveDays={() => setDays(90)}
                         onRemoveChannel={(c) => setChannels(channels.filter((x) => x !== c))}
-                        onClearAll={clear}
+                        onRemoveSearch={() => {
+                          setSearchInput('');
+                          setQ('');
+                        }}
+                        onClearAll={() => {
+                          setSearchInput('');
+                          clear();
+                        }}
                       />
                     </>
                   }

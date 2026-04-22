@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Calendar, MessageSquare, Phone, Mail, FileText, X } from 'lucide-react';
+import { Calendar, MessageSquare, Phone, Mail, FileText, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
@@ -24,8 +24,11 @@ interface Props {
   channels: string[];
   shownCount: number;
   totalCount: number;
+  searchTerm?: string;
+  searchMatchCount?: number;
   onRemoveDays: () => void;
   onRemoveChannel: (c: string) => void;
+  onRemoveSearch?: () => void;
   onClearAll: () => void;
 }
 
@@ -34,13 +37,19 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
   channels,
   shownCount,
   totalCount,
+  searchTerm,
+  searchMatchCount,
   onRemoveDays,
   onRemoveChannel,
+  onRemoveSearch,
   onClearAll,
 }: Props) {
   const hasPeriodChip = days !== 90;
   const safeChannels = Array.isArray(channels) ? channels : [];
-  const activeChipCount = (hasPeriodChip ? 1 : 0) + safeChannels.length;
+  const trimmedSearch = (searchTerm ?? '').trim();
+  const hasSearchChip = trimmedSearch.length > 0;
+  const activeChipCount =
+    (hasPeriodChip ? 1 : 0) + safeChannels.length + (hasSearchChip ? 1 : 0);
 
   if (totalCount === 0 && activeChipCount === 0) return null;
 
@@ -81,6 +90,21 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
           </Badge>
         );
       })}
+
+      {hasSearchChip && onRemoveSearch && (
+        <Badge
+          variant="secondary"
+          closeable
+          onClose={onRemoveSearch}
+          icon={<Search className="h-3 w-3" />}
+          className="text-xs"
+        >
+          Busca: “{trimmedSearch}”
+          {typeof searchMatchCount === 'number' && (
+            <span className="ml-1 tabular-nums opacity-80">· {searchMatchCount}</span>
+          )}
+        </Badge>
+      )}
 
       {activeChipCount >= 2 && (
         <Button

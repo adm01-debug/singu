@@ -8,7 +8,7 @@ export type Ficha360Period = (typeof VALID_PERIODS)[number];
 
 /**
  * Sincroniza filtros da seção "Últimas Interações" da Ficha 360 com a URL.
- * Query params: ?periodo=<days>&canais=<csv>
+ * Query params: ?periodo=<days>&canais=<csv>&q=<termo>
  */
 export function useFicha360Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +28,8 @@ export function useFicha360Filters() {
       .map((c) => c.trim().toLowerCase())
       .filter(Boolean);
   }, [searchParams]);
+
+  const q: string = useMemo(() => searchParams.get('q')?.trim() ?? '', [searchParams]);
 
   const setDays = useCallback(
     (next: Ficha360Period) => {
@@ -59,19 +61,37 @@ export function useFicha360Filters() {
     [setSearchParams],
   );
 
+  const setQ = useCallback(
+    (next: string) => {
+      setSearchParams(
+        (prev) => {
+          const sp = new URLSearchParams(prev);
+          const trimmed = (next ?? '').trim();
+          if (!trimmed) sp.delete('q');
+          else sp.set('q', trimmed);
+          return sp;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const clear = useCallback(() => {
     setSearchParams(
       (prev) => {
         const sp = new URLSearchParams(prev);
         sp.delete('periodo');
         sp.delete('canais');
+        sp.delete('q');
         return sp;
       },
       { replace: true },
     );
   }, [setSearchParams]);
 
-  const activeCount = (days !== DEFAULT_DAYS ? 1 : 0) + (channels.length > 0 ? 1 : 0);
+  const activeCount =
+    (days !== DEFAULT_DAYS ? 1 : 0) + (channels.length > 0 ? 1 : 0) + (q ? 1 : 0);
 
-  return { days, channels, setDays, setChannels, clear, activeCount, periods: VALID_PERIODS };
+  return { days, channels, q, setDays, setChannels, setQ, clear, activeCount, periods: VALID_PERIODS };
 }
