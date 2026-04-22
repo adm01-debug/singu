@@ -216,6 +216,22 @@ export function useFicha360FilterShortcuts({
     },
   });
 
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'i',
+    alt: true,
+    description: 'Abrir resumo IA das interações filtradas',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      if (s.filteredCount === 0) {
+        toast.info('Sem interações filtradas para resumir', { duration: 1800 });
+        return;
+      }
+      handlersRef.current.onAbrirResumoIA?.();
+    },
+  });
+
   // Shift+1..5 → remove o N-ésimo chip de canal visível.
   for (let i = 1; i <= 5; i++) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
