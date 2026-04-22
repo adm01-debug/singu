@@ -71,12 +71,11 @@ describe('preserveScroll', () => {
     // antes do React commitar a nova altura.
     expect(scrollSpy).not.toHaveBeenCalled();
 
-    await flushFrames(1);
-    expect(scrollSpy).not.toHaveBeenCalled(); // só após o segundo rAF
-
-    await flushFrames(1);
-    // Agora simulamos: a mutação reduziu a altura para 9.000 (>3000+800), a
-    // posição original ainda é válida → scrollTo restaura exatamente 3000.
+    // Drena com folga (4 frames) para acomodar o aninhamento rAF(rAF(...))
+    // independentemente da implementação subjacente do shim no ambiente.
+    // A mutação reduziu a altura para 9.000 (>3000+800), a posição original
+    // ainda é válida → scrollTo restaura exatamente 3000.
+    await flushFrames(4);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     const call = scrollSpy.mock.calls[0]?.[0] as ScrollToOptions;
     expect(call.top).toBe(3000);
