@@ -4,7 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDown, Minus, MessageSquare, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
