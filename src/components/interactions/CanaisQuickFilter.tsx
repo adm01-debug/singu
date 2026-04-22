@@ -185,10 +185,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [pending, onChange]);
 
   const [confirmRevertOpen, setConfirmRevertOpen] = useState(false);
+  // Sinaliza visualmente (pulso verde) que pendências foram desfeitas após Reverter.
+  const [justReverted, setJustReverted] = useState(false);
 
   const revert = useCallback(() => {
     setPending(safe);
     setConfirmRevertOpen(false);
+    setJustReverted(true);
+    window.setTimeout(() => setJustReverted(false), 1400);
     toast.success('Alterações pendentes descartadas');
   }, [safe]);
 
