@@ -581,5 +581,46 @@ export function useInteractionsAdvancedFilter() {
     (filters.ate ? 1 : 0) +
     (filters.sentimento ? 1 : 0);
 
-  return { filters, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange };
+  /**
+   * Restaura SOMENTE preferências de visualização (density, perPage, view, sort)
+   * para os defaults, em UMA única atualização da URL — sem tocar em filtros de
+   * dados (q, contact, company, canais, direcao, de, ate, sentimento) nem em
+   * `page`. Também limpa as chaves correspondentes do localStorage para que o
+   * estado padrão sobreviva a um reload e à hidratação local.
+   *
+   * Retorna `true` se algo mudou; `false` quando já estava tudo no padrão
+   * (no-op silencioso para o caller exibir feedback adequado).
+   */
+  const resetViewPreferences = useCallback((): boolean => {
+    const sp = new URLSearchParams(searchParams);
+    const before = sp.toString();
+    sp.delete('density');
+    sp.delete('perPage');
+    sp.delete('view');
+    sp.delete('sort');
+    sp.delete('page');
+    const changed = sp.toString() !== before;
+    setSearchParams(sp, { replace: true });
+    [DENSITY_STORAGE_KEY, PERPAGE_STORAGE_KEY, VIEW_STORAGE_KEY, SORT_STORAGE_KEY].forEach(removeLS);
+    return changed;
+  }, [searchParams, setSearchParams]);
+
+  const isViewPrefsAtDefault =
+    filters.density === 'comfortable' &&
+    filters.perPage === DEFAULT_PER_PAGE &&
+    filters.view === 'list' &&
+    filters.sort === 'recent';
+
+  return {
+    filters,
+    debouncedQ,
+    setFilter,
+    clear,
+    activeCount,
+    applyAll,
+    applyDateRange,
+    clearDateRange,
+    resetViewPreferences,
+    isViewPrefsAtDefault,
+  };
 }

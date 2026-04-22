@@ -68,7 +68,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange } = useInteractionsAdvancedFilter();
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange, resetViewPreferences, isViewPrefsAtDefault } = useInteractionsAdvancedFilter();
   const { companies } = useCompanies();
 
   const contactOptions = useMemo(
@@ -461,12 +461,36 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         }}
       />
 
-      {adv.view === 'list' && (
-        <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-          <span className="hidden sm:inline">Densidade</span>
-          <DensityChips value={adv.density} onChange={(d) => setFilter('density', d)} />
-        </div>
-      )}
+      <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+        {adv.view === 'list' && (
+          <>
+            <span className="hidden sm:inline">Densidade</span>
+            <DensityChips value={adv.density} onChange={(d) => setFilter('density', d)} />
+          </>
+        )}
+        <Button
+          variant="ghost"
+          size="xs"
+          type="button"
+          disabled={isViewPrefsAtDefault}
+          onClick={() => {
+            const changed = resetViewPreferences();
+            if (changed) {
+              toast.success('Preferências de visualização restauradas', {
+                description: 'Densidade, lote, modo e ordenação voltaram ao padrão.',
+              });
+            } else {
+              toast.info('Já está no padrão.');
+            }
+          }}
+          aria-label="Restaurar preferências de visualização para o padrão"
+          title="Restaurar densidade, lote, modo e ordenação para o padrão (filtros preservados)"
+          className="h-7 gap-1.5"
+        >
+          <X className="h-3.5 w-3.5" aria-hidden />
+          <span className="hidden sm:inline">Restaurar visualização</span>
+        </Button>
+      </div>
 
       <SentimentQuickFilter
         value={adv.sentimento}
