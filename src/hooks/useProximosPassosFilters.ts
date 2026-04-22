@@ -2,10 +2,10 @@ import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export type NbaPriority = 'alta' | 'media' | 'baixa';
-export type NbaSort = 'sugerido' | 'prioridade' | 'canal';
+export type NbaSort = 'sugerido' | 'recomendacao' | 'prioridade' | 'canal';
 
 const VALID_PRIORITIES: readonly NbaPriority[] = ['alta', 'media', 'baixa'];
-const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'prioridade', 'canal'];
+const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'recomendacao', 'prioridade', 'canal'];
 const DEFAULT_SORT: NbaSort = 'sugerido';
 
 /**
