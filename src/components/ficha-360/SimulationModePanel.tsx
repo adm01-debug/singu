@@ -2,8 +2,8 @@
  * Painel "Modo de testes" da Ficha 360 — sandbox para simular cenários
  * (sentimento, cadência, recência, canal) e validar regras do score.
  */
-import { memo } from 'react';
-import { FlaskConical, RotateCcw } from 'lucide-react';
+import { memo, useState } from 'react';
+import { FlaskConical, RotateCcw, Save, Plus, X, Pencil } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -19,12 +19,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   useSimulationStore,
   type SimulationSentiment,
 } from '@/stores/useSimulationStore';
-import { SIMULATION_PRESETS } from '@/lib/prontidaoSimulation';
+import { useCustomSimulationPresetsStore } from '@/stores/useCustomSimulationPresetsStore';
+import { SIMULATION_PRESETS, hasActiveOverrides } from '@/lib/prontidaoSimulation';
 
 interface Props {
   realScore: number;
@@ -43,10 +50,60 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
   const enabled = useSimulationStore((s) => s.enabled);
   const overrides = useSimulationStore((s) => s.overrides);
   const presetName = useSimulationStore((s) => s.presetName);
+  const presetId = useSimulationStore((s) => s.presetId);
   const setEnabled = useSimulationStore((s) => s.setEnabled);
   const setOverride = useSimulationStore((s) => s.setOverride);
   const applyPreset = useSimulationStore((s) => s.applyPreset);
+  const applyCustomPreset = useSimulationStore((s) => s.applyCustomPreset);
   const reset = useSimulationStore((s) => s.reset);
+
+  const customPresets = useCustomSimulationPresetsStore((s) => s.presets);
+  const savePreset = useCustomSimulationPresetsStore((s) => s.save);
+  const updatePreset = useCustomSimulationPresetsStore((s) => s.update);
+  const removePreset = useCustomSimulationPresetsStore((s) => s.remove);
+
+  const activeCustom = presetId ? customPresets.find((p) => p.id === presetId) : null;
+  const canSave = enabled && hasActiveOverrides(overrides);
+
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [draftName, setDraftName] = useState('');
+
+  const openSaveAsNew = () => {
+    setDraftName('');
+    setSaveOpen(true);
+  };
+
+  const handleSaveNew = () => {
+    const name = draftName.trim();
+    if (!name) {
+      toast.error('Dê um nome ao preset.');
+      return;
+    }
+    if (customPresets.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+      toast.error('Já existe um preset com esse nome.');
+      return;
+    }
+    const id = savePreset(name, overrides);
+    applyCustomPreset(id, name, overrides);
+    setSaveOpen(false);
+    toast.success(`Preset "${name}" salvo.`);
+  };
+
+  const handleUpdateActive = () => {
+    if (!activeCustom) return;
+    updatePreset(activeCustom.id, { overrides });
+    applyCustomPreset(activeCustom.id, activeCustom.name, overrides);
+    toast.success(`Preset "${activeCustom.name}" atualizado.`);
+  };
+
+  const handleRemoveCustom = (id: string, name: string) => {
+    removePreset(id);
+    if (presetId === id) {
+      // o preset ativo foi removido — mantém overrides mas limpa marcação
+      useSimulationStore.setState({ presetId: null, presetName: null });
+    }
+    toast.success(`Preset "${name}" removido.`);
+  };
 
   const delta = simulatedScore - realScore;
 
@@ -101,7 +158,7 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
                 <Button
                   key={p.name}
                   type="button"
-                  variant={presetName === p.name ? 'default' : 'outline'}
+                  variant={presetName === p.name && !presetId ? 'default' : 'outline'}
                   size="xs"
                   onClick={() => applyPreset(p.name, p.overrides)}
                   title={p.description}
@@ -110,6 +167,135 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
                 </Button>
               ))}
             </div>
+          </div>
+
+          {/* Meus presets */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                Meus presets
+              </div>
+              <div className="flex items-center gap-1.5">
+                {activeCustom && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="xs"
+                    className="gap-1"
+                    onClick={handleUpdateActive}
+                    title={`Atualizar "${activeCustom.name}" com os valores atuais`}
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Atualizar
+                  </Button>
+                )}
+                <Popover open={saveOpen} onOpenChange={setSaveOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      className="gap-1"
+                      onClick={openSaveAsNew}
+                      disabled={!canSave}
+                      title={
+                        canSave
+                          ? 'Salvar configuração atual como preset'
+                          : 'Ajuste algum override antes de salvar'
+                      }
+                    >
+                      <Save className="h-3 w-3" />
+                      Salvar como…
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-72 p-3 space-y-2">
+                    <Label htmlFor="preset-name" className="text-xs">
+                      Nome do preset
+                    </Label>
+                    <Input
+                      id="preset-name"
+                      autoFocus
+                      value={draftName}
+                      onChange={(e) => setDraftName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSaveNew();
+                        }
+                      }}
+                      placeholder="Ex.: Cliente em retomada"
+                      maxLength={48}
+                      className="h-8 text-sm"
+                    />
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => setSaveOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        size="xs"
+                        className="gap-1"
+                        onClick={handleSaveNew}
+                      >
+                        <Plus className="h-3 w-3" />
+                        Salvar
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            {customPresets.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">
+                Nenhum preset salvo ainda. Ajuste os controles e clique em "Salvar como…" para
+                criar o seu.
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {customPresets.map((p) => {
+                  const active = presetId === p.id;
+                  return (
+                    <div
+                      key={p.id}
+                      className={cn(
+                        'inline-flex items-center rounded-md border text-xs h-7 overflow-hidden transition-colors',
+                        active
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-background hover:bg-muted',
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => applyCustomPreset(p.id, p.name, p.overrides)}
+                        className="px-2 h-full flex items-center max-w-[180px] truncate"
+                        title={`Aplicar preset "${p.name}"`}
+                      >
+                        {p.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustom(p.id, p.name)}
+                        className={cn(
+                          'h-full px-1.5 border-l flex items-center transition-colors',
+                          active
+                            ? 'border-primary-foreground/30 hover:bg-primary-foreground/10'
+                            : 'border-border hover:bg-destructive/10 hover:text-destructive',
+                        )}
+                        title={`Remover preset "${p.name}"`}
+                        aria-label={`Remover preset ${p.name}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Controles */}
@@ -249,10 +435,12 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
               {delta > 0 ? '+' : ''}
               {delta} pts
             </Badge>
-            {presetName && (
+            {(presetName || activeCustom) && (
               <Badge variant="outline" className="text-[10px] border-warning/40 bg-warning/10 text-warning">
                 Preset:{' '}
-                {SIMULATION_PRESETS.find((p) => p.name === presetName)?.label ?? presetName}
+                {activeCustom
+                  ? activeCustom.name
+                  : SIMULATION_PRESETS.find((p) => p.name === presetName)?.label ?? presetName}
               </Badge>
             )}
           </div>
