@@ -459,7 +459,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                     size="xs"
                     onClick={apply}
                     disabled={!dirty}
-                    aria-keyshortcuts="Alt+Enter"
+                    aria-keyshortcuts="Control+Enter Meta+Enter Alt+Enter"
                     aria-disabled={!dirty}
                     className="gap-1"
                   >
@@ -471,7 +471,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               </TooltipTrigger>
               <TooltipContent side="top">
                 {dirty
-                  ? 'Aplicar canais pendentes (Alt+Enter)'
+                  ? 'Aplicar canais pendentes (Ctrl/⌘+Enter ou Alt+Enter)'
                   : 'Nenhuma mudança pendente para aplicar'}
               </TooltipContent>
             </Tooltip>
