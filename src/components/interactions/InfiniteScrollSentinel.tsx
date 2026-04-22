@@ -3,23 +3,31 @@ import { ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useListDensity } from '@/contexts/DensityContext';
 
 interface Props {
   sentinelRef: RefObject<HTMLDivElement>;
   hasMore: boolean;
   totalLoaded: number;
   total: number;
+  /**
+   * Override explícito. Quando omitido, herda do `DensityProvider` ou do
+   * localStorage (`singu-table-density`) via `useListDensity`.
+   */
   density?: 'comfortable' | 'compact';
   onLoadMore?: () => void;
 }
 
 export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel({
-  sentinelRef, hasMore, totalLoaded, total, density = 'comfortable', onLoadMore,
+  sentinelRef, hasMore, totalLoaded, total, density, onLoadMore,
 }: Props) {
+  const ambient = useListDensity();
+  const effectiveDensity = density ?? ambient;
+
   if (total === 0) return null;
 
   if (hasMore) {
-    const isCompact = density === 'compact';
+    const isCompact = effectiveDensity === 'compact';
     const pct = total > 0 ? Math.min(100, Math.round((totalLoaded / total) * 100)) : 0;
     const skeletonCount = isCompact ? 2 : 3;
 

@@ -40,14 +40,15 @@ describe('InfiniteScrollSentinel', () => {
     const { container, rerender } = render(
       <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore total={100} totalLoaded={10} />
     );
-    // 3 skeletons + 1 progress fill div = 4 .rounded-* — contar pelos skeletons via className h-20
+    // comfortable: 3 skeletons grandes (.h-20)
     expect(container.querySelectorAll('.h-20').length).toBe(3);
 
     rerender(
       <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore total={100} totalLoaded={10} density="compact" />
     );
-    expect(container.querySelectorAll('.h-12').length).toBe(2);
+    // compact: nenhum .h-20; 2 CompactItemSkeleton, cada um com 1 avatar .h-7.w-7
     expect(container.querySelectorAll('.h-20').length).toBe(0);
+    expect(container.querySelectorAll('.h-7.w-7').length).toBe(2);
   });
 
   it('aplica atributos de acessibilidade no estado de carregamento', () => {
