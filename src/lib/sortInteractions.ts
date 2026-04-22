@@ -1,4 +1,4 @@
-export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity';
+export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity' | 'channel';
 
 interface SortableItem {
   date?: string | Date | null;
@@ -14,6 +14,8 @@ interface SortableItem {
   resumo?: string | null;
   channel?: string | null;
   direction?: string | null;
+  // Tipo de canal local (usado para ordenação por canal/contagem)
+  type?: string | null;
 }
 
 function getTime(item: SortableItem): number {
