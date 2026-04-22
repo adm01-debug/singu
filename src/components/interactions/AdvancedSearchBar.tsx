@@ -132,7 +132,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => applyDateRange(undefined, undefined)}
+                onClick={() => (clearDateRange ? clearDateRange() : applyDateRange(undefined, undefined))}
                 className="h-9 px-2 text-muted-foreground hover:text-destructive"
                 aria-label="Limpar filtros de data"
               >
