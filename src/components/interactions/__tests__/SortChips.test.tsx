@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { SortChips } from '../SortChips';
+import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 
 vi.mock('sonner', () => ({
-  toast: { message: vi.fn() },
+  toast: { message: vi.fn(), warning: vi.fn(), info: vi.fn() },
 }));
 
 describe('SortChips', () => {
