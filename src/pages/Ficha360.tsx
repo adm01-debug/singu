@@ -183,6 +183,7 @@ const Ficha360 = () => {
 
   // Controle do menu de favoritos (atalho Shift+F abre o popover).
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
+  const [resumoIAOpen, setResumoIAOpen] = useState(false);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
 
