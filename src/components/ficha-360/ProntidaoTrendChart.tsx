@@ -471,6 +471,26 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
           </div>
         </AccessibleChart>
 
+        {milestones.length > 0 && (
+          <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-[11px] text-muted-foreground">
+            <span className="font-medium text-foreground">Marcos:</span>
+            {Array.from(new Set(milestones.map((m) => m.kind))).map((kind) => {
+              const M = MILESTONE_META[kind];
+              return (
+                <span key={kind} className="inline-flex items-center gap-1">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: `hsl(var(${M.cssVar}))` }}
+                    aria-hidden="true"
+                  />
+                  <M.Icon className="h-3 w-3" aria-hidden="true" />
+                  {M.legend}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
         <p className="text-[11px] text-muted-foreground">
           Linhas tracejadas marcam os limiares Morno (40) e Quente (70)
           {targetActive && <> · linha cheia em {target} é sua meta</>}. Tendência calculada pelos
