@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AdvancedFilters, SentimentoFilter } from '@/hooks/useInteractionsAdvancedFilter';
@@ -107,9 +108,44 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
   const overflowCount = channelLabels.length - inlineLabels.length;
   const fullChannelsTitle = channelLabels.join(', ');
 
+  // Indica se o resumo está em modo "Mostrando N de M" — ou seja, há filtros
+  // ativos e o conjunto visível é menor que o total. Só nesse caso o tooltip
+  // do microdetalhe (contagem por filtro) faz sentido para o usuário.
+  const isFilteredSummary = activeCount > 0 && visibleCount !== totalCount && totalCount > 0;
+
   return (
     <div className="flex flex-wrap items-center gap-2 px-1">
-      <span className="text-xs text-muted-foreground mr-1">{summary}</span>
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mr-1">
+        <span>{summary}</span>
+        {isFilteredSummary && (
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-full text-muted-foreground/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 transition-colors"
+                  aria-label="Sobre a contagem dos filtros"
+                >
+                  <Info className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="start" className="max-w-[280px] text-xs leading-relaxed">
+                <p className="font-medium mb-1">Como ler a contagem</p>
+                <p className="text-muted-foreground">
+                  <span className="text-foreground">Mostrando {visibleCount} de {totalCount}</span> reflete o resultado de
+                  todos os filtros combinados.
+                </p>
+                <p className="text-muted-foreground mt-1.5">
+                  Já o número ao lado de cada filtro (ex.: canais, ordenação) é o
+                  <span className="text-foreground"> microdetalhe</span>: indica
+                  quantos resultados existiriam <span className="text-foreground">se apenas aquele filtro estivesse ativo</span>,
+                  ignorando os demais.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </span>
 
       {canais.length > 0 && (
         <span
