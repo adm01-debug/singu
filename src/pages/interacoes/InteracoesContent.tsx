@@ -252,7 +252,50 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     totalPages,
   });
 
-  // Clamp: se a URL pediu uma página além do total, corrige via replace.
+  // Atalhos: Shift+1/2/3/4 alternam perPage entre 10/25/50/100 (Shift evita colisão
+  // com atalhos de canal por dígito e ignora automaticamente foco em inputs).
+  useScopedShortcut({
+    scope: 'interacoes',
+    keys: '1',
+    shift: true,
+    description: 'Mostrar 10 por página',
+    handler: () => {
+      setFilter('perPage', VALID_PER_PAGE[0]);
+      toast.success(`Exibindo ${VALID_PER_PAGE[0]} por página`);
+    },
+  });
+  useScopedShortcut({
+    scope: 'interacoes',
+    keys: '2',
+    shift: true,
+    description: 'Mostrar 25 por página',
+    handler: () => {
+      setFilter('perPage', VALID_PER_PAGE[1]);
+      toast.success(`Exibindo ${VALID_PER_PAGE[1]} por página`);
+    },
+  });
+  useScopedShortcut({
+    scope: 'interacoes',
+    keys: '3',
+    shift: true,
+    description: 'Mostrar 50 por página',
+    handler: () => {
+      setFilter('perPage', VALID_PER_PAGE[2]);
+      toast.success(`Exibindo ${VALID_PER_PAGE[2]} por página`);
+    },
+  });
+  useScopedShortcut({
+    scope: 'interacoes',
+    keys: '4',
+    shift: true,
+    description: 'Mostrar 100 por página',
+    handler: () => {
+      setFilter('perPage', VALID_PER_PAGE[3]);
+      toast.success(`Exibindo ${VALID_PER_PAGE[3]} por página`);
+    },
+  });
+
+
   useEffect(() => {
     if (total > 0 && adv.page > totalPages) setFilter('page', totalPages);
   }, [total, totalPages, adv.page, setFilter]);
