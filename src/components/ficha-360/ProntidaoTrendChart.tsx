@@ -171,7 +171,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
               </Badge>
             )}
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {weeks !== undefined && onWeeksChange && (
               <Select
                 value={String(weeks)}
@@ -192,6 +192,66 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                 </SelectContent>
               </Select>
             )}
+            <Popover onOpenChange={(open) => open && setDraftTarget(target)}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1"
+                  aria-label="Configurar meta do score"
+                >
+                  <Target className="h-3 w-3" aria-hidden="true" />
+                  Meta {targetActive ? target : 'off'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 space-y-3">
+                <div className="space-y-1">
+                  <Label htmlFor="prontidao-target-input" className="text-xs">
+                    Meta semanal (linha-alvo)
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    O score de cada semana é comparado a esse valor. Use 0 para desativar.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="prontidao-target-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={draftTarget}
+                    onChange={(e) => setDraftTarget(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                    className="h-8 w-20 text-sm tabular-nums"
+                  />
+                  <span className="text-xs text-muted-foreground">/ 100</span>
+                </div>
+                <Slider
+                  value={[draftTarget]}
+                  min={0}
+                  max={100}
+                  step={5}
+                  onValueChange={(v) => setDraftTarget(v[0] ?? 0)}
+                  aria-label="Meta do score de prontidão"
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={() => {
+                      resetTarget();
+                      setDraftTarget(PRONTIDAO_TARGET_DEFAULT);
+                    }}
+                  >
+                    <RotateCcw className="h-3 w-3" aria-hidden="true" />
+                    Padrão ({PRONTIDAO_TARGET_DEFAULT})
+                  </Button>
+                  <Button size="sm" className="h-7 px-3 text-xs" onClick={() => setTarget(draftTarget)}>
+                    Salvar
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
               <meta.Icon className="h-3 w-3" aria-hidden="true" />
               {meta.label}
