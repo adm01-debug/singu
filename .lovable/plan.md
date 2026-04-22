@@ -1,76 +1,57 @@
 
 
-# Plano: Seção em Configurações para ajustar pesos padrão do Score de Prontidão com escopo (global vs. somente esta tela)
+# Plano: Aviso de pesos baixos/soma zero + explicação da normalização
 
 ## Estado atual
 
-`useProntidaoWeightsStore` (Zustand + persist em `localStorage` chave `singu-prontidao-weights`) guarda os 4 pesos (`cadence`, `recency`, `sentiment`, `channel`) que alimentam o Score de Prontidão. O editor inline `ProntidaoWeightsEditor` (Popover com sliders) já existe e altera esses pesos ao vivo — porém é **único e global**: qualquer ajuste vale para todas as fichas, e não há um lugar em "Configurações" para definir um padrão e nem distinção entre "padrão global" e "override desta tela".
+Sliders aceitam 0–60 por fator. Não há feedback quando o usuário zera todos ou deixa a soma muito baixa. O cálculo já normaliza internamente (divide cada peso pela soma), mas isso é invisível ao usuário. Quando soma = 0, a divisão é indefinida e o score perde significado.
 
-Não existe hoje conceito de **escopo** (global vs. local-da-tela) nem página de configuração dedicada.
+Hoje só existe um `Badge "Total: X%"` neutro nos dois pontos de edição (`ProntidaoWeightsEditor` no popover e `ProntidaoDefaultsSection` em Configurações).
 
 ## Objetivo
 
-1. Criar uma seção "Score de Prontidão" em **Configurações** onde o usuário ajusta os **pesos padrão globais** (aplicados a todas as fichas por padrão).
-2. Manter o editor inline na ficha (`ProntidaoWeightsEditor`) com um **toggle de escopo**: "Aplicar a todas as fichas" (atualiza o padrão global) vs. "Apenas nesta tela" (cria override só para o contato atual da sessão).
-3. Override "apenas nesta tela" expira ao trocar de contato/recarregar — é intencional e leve (sessão de análise pontual). Padrão global persiste.
+Mostrar um `Alert` contextual em ambos os editores quando:
+- **Soma = 0**: estado crítico — score fica indefinido, sistema cai em fallback (pesos de fábrica). Tom de aviso (variant `destructive`).
+- **Soma muito baixa (1–30)**: estado de atenção — pesos serão normalizados (ex.: 5/10/10/5 vira 16,7%/33,3%/33,3%/16,7%), mas a granularidade fica grosseira. Tom informativo.
+- **Soma "saudável" (>30)**: nenhuma mensagem; só um micro-hint permanente de uma linha explicando "Os pesos são normalizados automaticamente — o que importa é a proporção entre eles, não a soma chegar a 100%."
 
 ## Mudanças
 
-### 1. Refatorar `useProntidaoWeightsStore`
+### 1. Helper puro `evaluateWeightsHealth` (novo)
 
-Arquivo: `src/stores/useProntidaoWeightsStore.ts` (continua <80 linhas).
+`src/lib/prontidaoWeightsHealth.ts` (~40 linhas).
 
-Novo shape:
 ```ts
-interface State {
-  defaultWeights: ProntidaoWeights;            // padrão global (persistido em localStorage)
-  sessionOverride: { contactId: string; weights: ProntidaoWeights } | null; // não persistido
-  setDefaultWeight: (key, value) => void;
-  setSessionOverrideWeight: (contactId, key, value) => void;
-  clearSessionOverride: () => void;
-  resetDefaults: () => void;
+export type WeightsHealth = 'zero' | 'low' | 'ok';
+export interface WeightsHealthInfo {
+  status: WeightsHealth;
+  total: number;
+  normalized: Record<keyof ProntidaoWeights, number>; // percentuais 0-100, somam 100 (ou 0 se zero)
 }
+export function evaluateWeightsHealth(weights: ProntidaoWeights): WeightsHealthInfo;
 ```
 
-`persist` middleware com `partialize` para gravar **apenas** `defaultWeights` (mesma chave `singu-prontidao-weights` — migração transparente: se ler shape antigo `{ weights }`, mover para `defaultWeights`).
+Regras: `total === 0 → 'zero'`; `total < 30 → 'low'`; senão `'ok'`. Normalizados = `(w/total)*100` arredondado a 1 casa, ou todos 0 se total = 0.
 
-Novo seletor exportado: `useEffectiveProntidaoWeights(contactId?: string): ProntidaoWeights` — retorna `sessionOverride.weights` se `sessionOverride.contactId === contactId`, senão `defaultWeights`. Consumidores do score (cards/widgets que hoje leem `weights`) passam a usar este seletor com o `contactId` da ficha em foco.
+### 2. `ProntidaoWeightsEditor.tsx`
 
-### 2. Atualizar consumidores existentes
+- Importar `Alert`, `AlertDescription`, `AlertTriangle`/`Info` (lucide), `evaluateWeightsHealth`.
+- Calcular `health = evaluateWeightsHealth(displayedWeights)`.
+- Acima do bloco de sliders, renderizar:
+  - Se `status === 'zero'`: `Alert variant="destructive"` (mas usando tokens semânticos via classe `border-destructive/50 text-destructive`) — "Soma dos pesos é zero. Sem proporção definida, o score volta ao padrão de fábrica. Aumente pelo menos um fator."
+  - Se `status === 'low'`: `Alert` informativo — "Pesos muito baixos (soma {total}%). O sistema vai normalizar automaticamente, mas a precisão fica reduzida. Considere aumentar a proporção entre os fatores."
+  - Sempre (independente do status): linha discreta abaixo do `Badge "Total"` — "O que importa é a **proporção** entre os fatores, não a soma. Os pesos são normalizados automaticamente." com `Info` icon `h-3 w-3`.
+- Quando `status === 'ok'` e o usuário passa o cursor sobre o badge "Total", tooltip mostra a tabela de percentuais normalizados (cada fator com seu % final). Implementação leve: envolver o `Badge` num `Tooltip` que lista `Cadência: {n.cadence}% • Recência: {n.recency}% • ...` a partir de `health.normalized`.
 
-- Trocar `useProntidaoWeightsStore(s => s.weights)` por `useEffectiveProntidaoWeights(contactId)` em todos os locais (provavelmente `lib/prontidaoScore.ts` callers, ScoreProntidaoCard, etc. — confirmar via search).
-- Onde o `contactId` não estiver disponível (raríssimo para esse score), usar `defaultWeights`.
+### 3. `ProntidaoDefaultsSection.tsx`
 
-### 3. Atualizar `ProntidaoWeightsEditor`
+Mesma lógica de Alert + hint permanente, posicionados acima do bloco de sliders e abaixo do `Badge "Total"` respectivamente. Reusa o mesmo helper.
 
-Arquivo: `src/components/ficha-360/ProntidaoWeightsEditor.tsx` (~+40 linhas, segue <180).
+### 4. Garantia de cálculo seguro (defesa em profundidade)
 
-- Receber prop `contactId: string`.
-- Adicionar `RadioGroup` (ou `Tabs` compactas) no topo do popover: 
-  - **"Aplicar a todas as fichas"** (default — escreve em `defaultWeights`)
-  - **"Apenas nesta tela"** (escreve em `sessionOverride` para o `contactId`)
-- Sliders mudam o alvo conforme o escopo selecionado. Estado inicial do escopo: "Apenas nesta tela" se já houver `sessionOverride` para esse contato, senão "Aplicar a todas as fichas".
-- Botão "Restaurar padrão" passa a ter dois comportamentos contextuais: no escopo global → `resetDefaults()`; no escopo local → `clearSessionOverride()`.
-- Badge "Total" e dica "essas mudanças aplicam ao vivo" mantidos. Nova legenda discreta abaixo do radio explicando: "O padrão vale para todas as fichas. O override desta tela é temporário e termina ao trocar de contato."
-
-### 4. Nova página/seção de Configurações
-
-Identificar onde fica "Configurações" (provável `src/pages/Configuracoes.tsx` ou similar — pesquisar). Adicionar uma nova seção/aba **"Score de Prontidão"** com:
-
-- Título + descrição curta.
-- Mesmos 4 sliders (`Cadência`, `Recência`, `Sentimento`, `Canal`) operando direto sobre `defaultWeights` via `setDefaultWeight`.
-- Badge total + botão "Restaurar padrões".
-- Texto explicativo: "Estes pesos definem o cálculo do Score de Prontidão para todas as fichas. Você pode sobrescrever pontualmente em uma ficha específica usando o ícone de ajuste no card de score."
-
-Componente novo `src/components/settings/ProntidaoDefaultsSection.tsx` (~120 linhas) reutilizando `Slider`, `Badge`, `Button` (sem duplicar lógica do popover — apenas escreve em `defaultWeights`).
-
-Se não houver página "Configurações" preexistente apropriada, criar `src/pages/Configuracoes.tsx` minimalista com essa seção e adicionar rota `/configuracoes` + entrada na sidebar (seção "Sistema") — confirmar via exploração antes de assumir.
-
-### 5. Sem mudanças em `lib/prontidaoScore.ts`
-
-Continua puro. Apenas seus callers mudam para passar os pesos efetivos.
+Verificar rapidamente em `src/lib/prontidaoScore.ts` se já há proteção para `total === 0`. Se não houver, adicionar guarda: quando soma = 0, usar `DEFAULT_PRONTIDAO_WEIGHTS` como fallback no cálculo (alinhado com o que o Alert promete ao usuário). Sem mudar a assinatura da função.
 
 ## Critérios de aceite
 
-(a) `useProntidaoWeightsStore` separa `defaultWeights` (persistidos) de `sessionOverride` (efêmero, por contactId), com migração transparente da chave antiga; (b) novo seletor `useEffectiveProntidaoWeights(contactId)` retorna o override se aplicável, senão o padrão; (c) `ProntidaoWeightsEditor` no popover da ficha ganha radio "Aplicar a todas as fichas" / "Apenas nesta tela", com estado inicial inteligente e botão de reset contextual; (d) Configurações ganha seção "Score de Prontidão" que edita o padrão global, com descrição clara do escopo; (e) trocar de contato limpa o escopo "apenas nesta tela" daquele contato anterior (não vaza override entre fichas); (f) cards/widgets que mostram o score consomem o seletor efetivo e refletem mudanças ao vivo nos dois escopos; (g) sem nova dependência, sem `any`, PT-BR; (h) cada arquivo permanece <200 linhas; nenhum tem regressão visual além das adições previstas; (i) acessibilidade: radio de escopo com `aria-label` e legenda associada; sliders mantêm `aria-label` por fator.
+(a) Editor inline e seção de Configurações mostram `Alert` destructive quando soma = 0 e `Alert` informativo quando 1 ≤ soma ≤ 30; (b) ambos os locais mostram hint permanente (1 linha) explicando que os pesos são normalizados automaticamente e a proporção é o que conta; (c) tooltip no badge "Total" mostra os percentuais normalizados por fator; (d) helper `evaluateWeightsHealth` é puro, testável, sem dependências, <50 linhas; (e) `prontidaoScore.ts` tem fallback seguro para soma = 0 (usa pesos de fábrica), alinhado com a mensagem do Alert; (f) sem nova dependência, sem `any`, PT-BR, cores via tokens semânticos; (g) cada arquivo permanece <200 linhas; (h) a11y: Alerts com `role="status"` (não `alert`), tooltip com conteúdo acessível.
 
