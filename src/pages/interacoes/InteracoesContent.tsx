@@ -102,16 +102,13 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     [advancedFilteredWithoutCanais]
   );
 
-  // Apply advanced filters (URL-driven) — agora derivado, aplicando o filtro de canais e sentimento.
+  // Apply advanced filters (URL-driven) — agora derivado, aplicando o filtro de canais
+  // sobre o dataset que já inclui sentimento e demais critérios não-canal.
   const advancedFiltered = useMemo(() => {
-    let result = adv.canais.length === 0
+    return adv.canais.length === 0
       ? advancedFilteredWithoutCanais
       : advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
-    if (adv.sentimento) {
-      result = result.filter(i => i.sentiment === adv.sentimento);
-    }
-    return result;
-  }, [advancedFilteredWithoutCanais, adv.canais, adv.sentimento]);
+  }, [advancedFilteredWithoutCanais, adv.canais]);
 
   // Contagem por bucket de sentimento (ignora o próprio filtro de sentimento).
   const sentimentCounts = useMemo(() => {
