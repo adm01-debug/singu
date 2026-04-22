@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X, Eraser } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Users, Video, FileText, Zap, MousePointerClick, Check, X, Eraser, AlertCircle, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -122,14 +122,17 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [pending, safe, mode]);
 
   const dirty = mode === 'manual' && !arraysEqual(pending, safe);
-  const diffCount = useMemo(() => {
+  const diffDetail = useMemo(() => {
     const setA = new Set(safe);
     const setB = new Set(pending);
-    let n = 0;
-    setB.forEach((v) => { if (!setA.has(v)) n++; });
-    setA.forEach((v) => { if (!setB.has(v)) n++; });
-    return n;
+    const labelOf = (v: string) => CHANNELS.find((c) => c.value === v)?.label ?? v;
+    const added: string[] = [];
+    const removed: string[] = [];
+    setB.forEach((v) => { if (!setA.has(v)) added.push(labelOf(v)); });
+    setA.forEach((v) => { if (!setB.has(v)) removed.push(labelOf(v)); });
+    return { added, removed, count: added.length + removed.length };
   }, [safe, pending]);
+  const diffCount = diffDetail.count;
 
   const toggleCanal = useCallback((value: string) => {
     const base = mode === 'manual' ? pending : safe;
@@ -332,6 +335,45 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
         {dirty && (
           <div className="flex items-center gap-1 ml-1" aria-live="polite">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="gap-1 px-2 py-1 text-xs border-warning/50 bg-warning/10 text-warning cursor-help"
+                  aria-label={`${diffCount} divergência${diffCount === 1 ? '' : 's'} entre seleção pendente e filtros aplicados`}
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span className="font-semibold">{diffCount}</span>
+                  <span className="hidden sm:inline">pendente{diffCount === 1 ? '' : 's'}</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="space-y-2 text-xs">
+                  <p className="font-medium">
+                    Sua seleção difere dos filtros aplicados em {diffCount} canal{diffCount === 1 ? '' : 'is'}.
+                  </p>
+                  {diffDetail.added.length > 0 && (
+                    <div>
+                      <p className="flex items-center gap-1 font-medium text-success">
+                        <Plus className="w-3 h-3" /> Será adicionado:
+                      </p>
+                      <p className="ml-4">{diffDetail.added.join(', ')}</p>
+                    </div>
+                  )}
+                  {diffDetail.removed.length > 0 && (
+                    <div>
+                      <p className="flex items-center gap-1 font-medium text-destructive">
+                        <Minus className="w-3 h-3" /> Será removido:
+                      </p>
+                      <p className="ml-4">{diffDetail.removed.join(', ')}</p>
+                    </div>
+                  )}
+                  <p className="pt-1 text-muted-foreground border-t border-border">
+                    Clique em <strong>Aplicar</strong> para confirmar ou em <strong>Reverter</strong> para descartar.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
             <Button
               type="button"
               variant="default"
