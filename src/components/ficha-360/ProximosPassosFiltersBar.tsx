@@ -7,6 +7,12 @@ import {
   Linkedin,
   ArrowUpDown,
   X,
+  CheckCircle2,
+  MessageSquare,
+  PhoneOff,
+  CalendarCheck,
+  Hourglass,
+  VolumeX,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { NbaPriority, NbaSort } from '@/hooks/useProximosPassosFilters';
+import type { NbaPriority, NbaSort, NbaStatus } from '@/hooks/useProximosPassosFilters';
 
 const PRIORITIES: { value: NbaPriority; label: string; activeClass: string }[] = [
   { value: 'alta', label: 'Alta', activeClass: 'bg-destructive/10 text-destructive border-destructive/40' },
