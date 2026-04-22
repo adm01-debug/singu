@@ -333,16 +333,66 @@ export function generateMeetingInvite(ctx: MeetingInviteContext): {
   };
 }
 
+/**
+ * Constrói um assunto de e-mail contextual e personalizado por passo + sentimento.
+ * Garante que todo script de e-mail tenha um subject preenchido, mesmo para passoIds desconhecidos.
+ */
+export function buildEmailSubject(passoId: string, firstName: string, sentiment: SentimentTone): string {
+  const name = nameOrDefault(firstName);
+  const tone = toneFromSentiment(sentiment);
+
+  const catalog: Record<string, { direto: string; cordial: string; empatico: string }> = {
+    'whatsapp-followup': {
+      direto: `Retomando minha última mensagem`,
+      cordial: `Retomando nossa conversa, ${name}`,
+      empatico: `${name}, sem pressa — só confirmando`,
+    },
+    'ligacao-checkin': {
+      direto: `Retomando nossa conversa, ${name}`,
+      cordial: `Podemos retomar, ${name}?`,
+      empatico: `${name}, tudo bem por aí?`,
+    },
+    'email-nutricao': {
+      direto: `${name}, conteúdo que pode te interessar`,
+      cordial: `${name}, separei algo que pode te ajudar`,
+      empatico: `${name}, sem compromisso — uma leitura para você`,
+    },
+    'agendar-reuniao': {
+      direto: `Proposta de horário para conversarmos`,
+      cordial: `Podemos marcar 30 minutos, ${name}?`,
+      empatico: `${name}, se fizer sentido — uma conversa rápida`,
+    },
+    'aniversario': {
+      direto: `Parabéns, ${name}! 🎉`,
+      cordial: `Feliz aniversário, ${name}! 🎂`,
+      empatico: `${name}, um ano leve para você`,
+    },
+    'reativacao': {
+      direto: `Faz tempo, ${name} — vamos retomar?`,
+      cordial: `Faz tempo, ${name} — tudo bem?`,
+      empatico: `${name}, sem pressa — só um oi`,
+    },
+  };
+
+  const entry = catalog[passoId];
+  if (entry) return entry[tone];
+  return `Olá, ${name}`;
+}
+
 export function generateScripts(ctx: ScriptContext): GeneratedScript[] {
   const tone = toneFromSentiment(ctx.sentiment);
   const t = templatesFor(ctx.passoId, ctx);
   const label = toneLabel(tone);
 
+  // Garante subject sempre preenchido (template > catálogo de fallback > genérico)
+  const emailSubject =
+    t.email.subject[tone] || buildEmailSubject(ctx.passoId, ctx.firstName, ctx.sentiment);
+
   return [
     { channel: 'whatsapp', body: t.whatsapp[tone], toneLabel: label },
     {
       channel: 'email',
-      subject: t.email.subject[tone],
+      subject: emailSubject,
       body: t.email.body[tone],
       toneLabel: label,
     },

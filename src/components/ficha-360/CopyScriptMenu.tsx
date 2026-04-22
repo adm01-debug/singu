@@ -67,7 +67,7 @@ function CopyScriptMenuComponent({
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`Script de ${label} copiado`);
+      toast.success(label);
     } catch {
       toast.error('Não foi possível copiar');
     }
@@ -121,17 +121,32 @@ function CopyScriptMenuComponent({
                   <>
                     {c === 'email' && s.subject && (
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-muted-foreground">Assunto</label>
+                        <div className="flex items-center justify-between">
+                          <label className="text-[11px] font-medium text-muted-foreground">Assunto</label>
+                          <span className="text-[10px] text-muted-foreground">{s.subject.length} caracteres</span>
+                        </div>
                         <div className="rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs font-medium">
                           {s.subject}
                         </div>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => copy(s.subject!, 'Assunto copiado')}
+                        >
+                          <Copy className="h-3 w-3" />
+                          Copiar só o assunto
+                        </Button>
                       </div>
                     )}
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-muted-foreground">
-                        {c === 'call' ? 'Roteiro' : c === 'email' ? 'Corpo do e-mail' : 'Mensagem'}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-medium text-muted-foreground">
+                          {c === 'call' ? 'Roteiro' : c === 'email' ? 'Corpo do e-mail' : 'Mensagem'}
+                        </label>
+                        <span className="text-[10px] text-muted-foreground">{s.body.length} caracteres</span>
+                      </div>
                       <Textarea
                         readOnly
                         value={s.body}
@@ -140,26 +155,15 @@ function CopyScriptMenuComponent({
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 pt-1">
-                      {c === 'email' && s.subject ? (
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => copy(s.subject!, 'assunto')}
-                        >
-                          Copiar só o assunto
-                        </Button>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">
-                          {s.body.length} caracteres
-                        </span>
-                      )}
+                    <div className="flex items-center justify-end gap-2 pt-1">
                       <Button
                         size="xs"
                         onClick={() =>
                           copy(
                             c === 'email' && s.subject ? `Assunto: ${s.subject}\n\n${s.body}` : s.body,
-                            channelMeta[c].label,
+                            c === 'email' && s.subject
+                              ? 'E-mail copiado (assunto + corpo)'
+                              : `Script de ${channelMeta[c].label} copiado`,
                           )
                         }
                       >
