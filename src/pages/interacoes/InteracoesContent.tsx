@@ -176,8 +176,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         company_name: inferredCompanyId ? (companyMap.get(inferredCompanyId) ?? null) : null,
       };
     });
-    return sortInteractions(mapped, adv.sort, debouncedQ);
-  }, [filteredAndSorted, contactMap, companyMap, contactToCompany, adv.sort, debouncedQ]);
+    return sortInteractions(mapped, adv.sort, debouncedQ, channelCounts);
+  }, [filteredAndSorted, contactMap, companyMap, contactToCompany, adv.sort, debouncedQ, channelCounts]);
 
   // Modo agrupado (URL-driven). Quando ativo, paginação opera em grupos.
   const isGrouped = adv.view !== 'list';

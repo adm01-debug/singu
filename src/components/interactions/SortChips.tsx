@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Info, Sparkles, Users } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowDown, ArrowUp, Hash, Info, Sparkles, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -9,6 +9,12 @@ interface Props {
   value: SortKey;
   onChange: (value: SortKey) => void;
   hasQuery: boolean;
+  /**
+   * Contagens por canal já calculadas no escopo atual (mesmos números dos
+   * chips de canal). Quando ausente ou vazio, a opção "Por canal" fica
+   * desabilitada porque não há referência para ordenar.
+   */
+  channelCounts?: Record<string, number>;
 }
 
 interface SortConfigItem {
@@ -17,6 +23,7 @@ interface SortConfigItem {
   icon: React.ComponentType<{ className?: string }>;
   shortcut: string;
   requiresQuery?: boolean;
+  requiresChannelCounts?: boolean;
 }
 
 const SORT_CONFIG: SortConfigItem[] = [
@@ -24,10 +31,19 @@ const SORT_CONFIG: SortConfigItem[] = [
   { key: 'oldest', label: 'Mais antigas', icon: ArrowUp, shortcut: 'O' },
   { key: 'relevance', label: 'Melhor correspondência', icon: Sparkles, shortcut: 'M', requiresQuery: true },
   { key: 'entity', label: 'Por pessoa/empresa', icon: Users, shortcut: 'P' },
+  { key: 'channel', label: 'Por canal', icon: Hash, shortcut: 'C', requiresChannelCounts: true },
 ];
 
-export const SortChips = React.memo(function SortChips({ value, onChange, hasQuery }: Props) {
-  const effective: SortKey = value === 'relevance' && !hasQuery ? 'recent' : value;
+export const SortChips = React.memo(function SortChips({ value, onChange, hasQuery, channelCounts }: Props) {
+  const hasChannelCounts = useMemo(
+    () => !!channelCounts && Object.values(channelCounts).some((n) => n > 0),
+    [channelCounts],
+  );
+  const effective: SortKey = useMemo(() => {
+    if (value === 'relevance' && !hasQuery) return 'recent';
+    if (value === 'channel' && !hasChannelCounts) return 'recent';
+    return value;
+  }, [value, hasQuery, hasChannelCounts]);
   const [altDown, setAltDown] = useState(false);
 
   useEffect(() => {
@@ -38,6 +54,7 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
       const item = SORT_CONFIG.find(i => i.shortcut.toLowerCase() === k);
       if (!item) return;
       if (item.requiresQuery && !hasQuery) return;
+      if (item.requiresChannelCounts && !hasChannelCounts) return;
       e.preventDefault();
       if (effective !== item.key) {
         onChange(item.key);
@@ -56,7 +73,7 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', onBlur);
     };
-  }, [effective, hasQuery, onChange]);
+  }, [effective, hasQuery, hasChannelCounts, onChange]);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -65,11 +82,15 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
         role="group"
         aria-label="Ordenar lista"
       >
-        {SORT_CONFIG.map(({ key, label, icon: Icon, shortcut, requiresQuery }) => {
+        {SORT_CONFIG.map(({ key, label, icon: Icon, shortcut, requiresQuery, requiresChannelCounts }) => {
           const active = effective === key;
-          const disabled = !!requiresQuery && !hasQuery;
+          const disabled =
+            (!!requiresQuery && !hasQuery) ||
+            (!!requiresChannelCounts && !hasChannelCounts);
           const tooltip = disabled
-            ? 'Disponível ao buscar por palavra-chave'
+            ? requiresQuery
+              ? 'Disponível ao buscar por palavra-chave'
+              : 'Disponível quando houver interações nos canais do escopo atual'
             : `${label} · Alt+${shortcut}`;
 
           return (

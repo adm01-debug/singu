@@ -96,7 +96,7 @@ function parseDirecao(v: string | null): DirecaoFilter {
   return (VALID_DIRECAO as string[]).includes(v ?? '') ? (v as DirecaoFilter) : 'all';
 }
 
-const VALID_SORTS: SortKey[] = ['recent', 'oldest', 'relevance', 'entity'];
+const VALID_SORTS: SortKey[] = ['recent', 'oldest', 'relevance', 'entity', 'channel'];
 function parseSort(v: string | null): SortKey {
   return (VALID_SORTS as string[]).includes(v ?? '') ? (v as SortKey) : 'recent';
 }

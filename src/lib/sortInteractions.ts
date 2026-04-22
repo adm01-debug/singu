@@ -1,4 +1,4 @@
-export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity';
+export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity' | 'channel';
 
 interface SortableItem {
   date?: string | Date | null;
@@ -14,6 +14,8 @@ interface SortableItem {
   resumo?: string | null;
   channel?: string | null;
   direction?: string | null;
+  // Tipo de canal local (usado para ordenação por canal/contagem)
+  type?: string | null;
 }
 
 function getTime(item: SortableItem): number {
@@ -62,10 +64,16 @@ function entityKey(item: SortableItem): string {
   return (item.contact_name ?? item.company_name ?? '').trim();
 }
 
+function channelKey(item: SortableItem): string {
+  const raw = item.type ?? item.channel ?? '';
+  return typeof raw === 'string' ? raw.toLowerCase() : '';
+}
+
 export function sortInteractions<T extends SortableItem>(
   items: T[],
   sort: SortKey,
   query?: string,
+  channelCounts?: Record<string, number>,
 ): T[] {
   if (!Array.isArray(items)) return [];
   const arr = items.slice();
@@ -79,6 +87,18 @@ export function sortInteractions<T extends SortableItem>(
       return arr.sort((a, b) => {
         const cmp = entityKey(a).localeCompare(entityKey(b), 'pt-BR', { sensitivity: 'base' });
         return cmp !== 0 ? cmp : getTime(b) - getTime(a);
+      });
+    case 'channel':
+      // Ordena por contagem do canal (decrescente, usando os mesmos números
+      // exibidos nos chips). Empate: nome do canal asc, depois mais recente.
+      return arr.sort((a, b) => {
+        const ka = channelKey(a);
+        const kb = channelKey(b);
+        const ca = channelCounts?.[ka] ?? 0;
+        const cb = channelCounts?.[kb] ?? 0;
+        if (cb !== ca) return cb - ca;
+        if (ka !== kb) return ka.localeCompare(kb, 'pt-BR');
+        return getTime(b) - getTime(a);
       });
     case 'relevance':
       return arr.sort((a, b) => {
