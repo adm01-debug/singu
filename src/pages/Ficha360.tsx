@@ -510,7 +510,20 @@ const Ficha360 = () => {
                   q={q}
                   headerExtra={
                     <>
+                      <RelatoriosFixosBar
+                        days={days}
+                        channels={channels}
+                        tags={tags}
+                        q={q}
+                        onApply={applyRelatorio}
+                        saveDialogOpen={salvarRelatorioOpen}
+                        onSaveDialogOpenChange={setSalvarRelatorioOpen}
+                      />
                       <div className="flex items-center gap-2 flex-wrap">
+                        <GerarResumoIAButton
+                          count={filteredInteractions.length}
+                          onClick={() => setResumoIAOpen(true)}
+                        />
                         <FavoritosFiltrosMenu
                           days={days}
                           channels={channels}
