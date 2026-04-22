@@ -421,7 +421,19 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
           {isGrouped ? (
             <div className="space-y-3">
               {visibleGroups.map((g, idx) => (
-                <TimelineGroupCard key={g.entity_id} group={g} defaultOpen={idx < 3} />
+                <TimelineGroupCard
+                  key={g.entity_id}
+                  group={g}
+                  defaultOpen={idx < 3}
+                  onEditEvent={(id) => {
+                    const it = interactionById.get(id);
+                    if (it) onSetEditingInteraction(it);
+                  }}
+                  onDeleteEvent={(id) => {
+                    const it = interactionById.get(id);
+                    if (it) onSetDeletingInteraction(it);
+                  }}
+                />
               ))}
             </div>
           ) : (() => {
