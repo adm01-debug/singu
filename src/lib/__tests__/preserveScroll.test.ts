@@ -92,6 +92,10 @@ describe('preserveScroll', () => {
     // NÃO deixar 3000 (que o navegador clamparia silenciosamente).
     setLayout({ scrollY: 700, scrollHeight: 1500, innerHeight: 800 });
     await flushFrames(4);
+
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    const call = scrollSpy.mock.calls[0]?.[0] as ScrollToOptions;
+    expect(call.top).toBe(700);
   });
 
   it('não chama scrollTo quando o delta é desprezível (< 1px)', async () => {
