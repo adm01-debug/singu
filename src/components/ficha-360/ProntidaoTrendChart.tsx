@@ -112,6 +112,12 @@ const makeTooltipContent = (target: number) => {
 };
 
 export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
+  const target = useProntidaoTargetStore((s) => s.target);
+  const setTarget = useProntidaoTargetStore((s) => s.setTarget);
+  const resetTarget = useProntidaoTargetStore((s) => s.reset);
+  const [draftTarget, setDraftTarget] = useState<number>(target);
+  const TooltipContent = useMemo(() => makeTooltipContent(target), [target]);
+
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
   // Janela de variação: ¼ da janela total (mín 2, máx 8) para ficar coerente com 4/8/12/24
@@ -120,16 +126,19 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
     return Math.min(8, Math.max(2, Math.round(total / 2)));
   }, [weeks, data.length]);
 
-  const { slope, direction, variation, peak } = useMemo(() => {
+  const { slope, direction, variation, peak, aboveTarget, currentVsTarget } = useMemo(() => {
     const s = computeTrendSlope(data, variationWindow);
     const d = classifyTrend(s);
     const lastN = valid.slice(-variationWindow);
     const v = lastN.length >= 2 ? lastN[lastN.length - 1].score - lastN[0].score : 0;
     const pk = valid.length ? Math.max(...valid.map((p) => p.score)) : 0;
-    return { slope: s, direction: d, variation: v, peak: pk };
-  }, [data, valid, variationWindow]);
+    const above = target > 0 ? valid.filter((p) => p.score >= target).length : 0;
+    const cvt = target > 0 ? currentScore - target : 0;
+    return { slope: s, direction: d, variation: v, peak: pk, aboveTarget: above, currentVsTarget: cvt };
+  }, [data, valid, variationWindow, target, currentScore]);
 
   const meta = trendMeta[direction];
+  const targetActive = target > 0;
 
   if (valid.length < 2) {
     return (
