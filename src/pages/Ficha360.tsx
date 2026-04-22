@@ -35,7 +35,10 @@ import { applySimulation } from '@/lib/prontidaoSimulation';
 import { useProntidaoWeightsStore } from '@/stores/useProntidaoWeightsStore';
 import { useSimulationStore } from '@/stores/useSimulationStore';
 import { useBestContactTime } from '@/hooks/useBestContactTime';
-import { useMemo } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
+import { Input } from '@/components/ui/input';
+import { Search, X as XIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
