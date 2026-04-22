@@ -138,7 +138,18 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
                   )}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom">{tooltip}</TooltipContent>
+              <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+                {disabled ? (
+                  <span>{disabledReason}</span>
+                ) : (
+                  <span>
+                    <span className="font-medium">{label}</span>
+                    <span className="opacity-70"> · Alt+{shortcut}</span>
+                    <br />
+                    <span className="opacity-90">{description}</span>
+                  </span>
+                )}
+              </TooltipContent>
             </Tooltip>
           );
         })}
