@@ -314,14 +314,14 @@ export function useInteractionsAdvancedFilter() {
     else removeLS(COMPANY_STORAGE_KEY);
   }, [filters.company]);
   useEffect(() => {
-    if (filters.de instanceof Date && !isNaN(filters.de.getTime())) {
-      writeLS(DE_STORAGE_KEY, filters.de.toISOString().slice(0, 10));
-    } else removeLS(DE_STORAGE_KEY);
+    const s = serializeDate(filters.de);
+    if (s) writeLS(DE_STORAGE_KEY, s);
+    else removeLS(DE_STORAGE_KEY);
   }, [filters.de]);
   useEffect(() => {
-    if (filters.ate instanceof Date && !isNaN(filters.ate.getTime())) {
-      writeLS(ATE_STORAGE_KEY, filters.ate.toISOString().slice(0, 10));
-    } else removeLS(ATE_STORAGE_KEY);
+    const s = serializeDate(filters.ate);
+    if (s) writeLS(ATE_STORAGE_KEY, s);
+    else removeLS(ATE_STORAGE_KEY);
   }, [filters.ate]);
   useEffect(() => {
     if (filters.sentimento) writeLS(SENTIMENTO_STORAGE_KEY, filters.sentimento);
