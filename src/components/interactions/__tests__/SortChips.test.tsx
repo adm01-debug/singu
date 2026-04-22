@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { SortChips } from '../SortChips';
+import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 
 vi.mock('sonner', () => ({
-  toast: { message: vi.fn() },
+  toast: { message: vi.fn(), warning: vi.fn(), info: vi.fn() },
 }));
 
 describe('SortChips', () => {
@@ -86,5 +88,96 @@ describe('SortChips', () => {
     render(<SortChips value="recent" onChange={onChange} hasQuery={true} />);
     fireEvent.click(screen.getByLabelText('Melhor correspondência'));
     expect(onChange).toHaveBeenCalledWith('relevance');
+  });
+
+  it('"Por canal" fica disabled quando channelCounts vazio', () => {
+    render(<SortChips value="recent" onChange={() => {}} hasQuery={false} channelCounts={{}} />);
+    expect(screen.getByLabelText('Por canal')).toBeDisabled();
+  });
+
+  it('"Por canal" fica habilitado quando há contagens > 0', () => {
+    const onChange = vi.fn();
+    render(<SortChips value="recent" onChange={onChange} hasQuery={false} channelCounts={{ whatsapp: 3 }} />);
+    const btn = screen.getByLabelText('Por canal');
+    expect(btn).not.toBeDisabled();
+    fireEvent.click(btn);
+    expect(onChange).toHaveBeenCalledWith('channel');
+  });
+});
+
+// ---------- Integração com useInteractionsAdvancedFilter (URL) ----------
+
+function Harness() {
+  const { filters, setFilter } = useInteractionsAdvancedFilter();
+  const loc = useLocation();
+  return (
+    <div>
+      <div data-testid="search">{loc.search}</div>
+      <div data-testid="page">{filters.page}</div>
+      <SortChips
+        value={filters.sort}
+        onChange={(v) => setFilter('sort', v)}
+        hasQuery={!!filters.q.trim()}
+        channelCounts={{ whatsapp: 5, email: 2 }}
+      />
+    </div>
+  );
+}
+
+describe('SortChips · integração com useInteractionsAdvancedFilter', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('hidrata o chip ativo a partir do parâmetro ?sort= da URL', () => {
+    render(
+      <MemoryRouter initialEntries={['/interacoes?sort=oldest']}>
+        <Harness />
+      </MemoryRouter>,
+    );
+    expect(screen.getByLabelText('Mais antigas')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByLabelText('Mais recentes')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('clicar em outro chip grava ?sort= na URL (omitindo default "recent")', () => {
+    render(
+      <MemoryRouter initialEntries={['/interacoes?sort=oldest']}>
+        <Harness />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('search').textContent).toContain('sort=oldest');
+
+    // voltar ao default remove o parâmetro
+    act(() => { fireEvent.click(screen.getByLabelText('Mais recentes')); });
+    expect(screen.getByTestId('search').textContent).not.toContain('sort=');
+
+    // mudar para outro non-default re-grava
+    act(() => { fireEvent.click(screen.getByLabelText('Por pessoa/empresa')); });
+    expect(screen.getByTestId('search').textContent).toContain('sort=entity');
+  });
+
+  it('trocar o sort reseta page=1 (remove ?page= da URL) preservando demais filtros', () => {
+    render(
+      <MemoryRouter initialEntries={['/interacoes?canais=whatsapp&page=4&sort=oldest']}>
+        <Harness />
+      </MemoryRouter>,
+    );
+    expect(screen.getByTestId('page').textContent).toBe('4');
+
+    act(() => { fireEvent.click(screen.getByLabelText('Por pessoa/empresa')); });
+
+    const search = screen.getByTestId('search').textContent ?? '';
+    expect(search).toContain('sort=entity');
+    expect(search).toContain('canais=whatsapp');
+    expect(search).not.toContain('page=');
+    expect(screen.getByTestId('page').textContent).toBe('1');
+  });
+
+  it('compatibilidade: sort=relevance sem q efetivo cai para "Mais recentes" visualmente', () => {
+    render(
+      <MemoryRouter initialEntries={['/interacoes?sort=relevance']}>
+        <Harness />
+      </MemoryRouter>,
+    );
+    expect(screen.getByLabelText('Melhor correspondência')).toBeDisabled();
+    expect(screen.getByLabelText('Mais recentes')).toHaveAttribute('aria-pressed', 'true');
   });
 });
