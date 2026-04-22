@@ -46,12 +46,28 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
       searchInputRef.current?.focus();
       searchInputRef.current?.select();
     };
-    const caretEndHandler = () => {
+    /**
+     * Devolve o foco ao input de busca após a remoção de um chip de filtro.
+     *
+     * Acessibilidade:
+     *  - `focus({ preventScroll: true })` evita que o navegador role a página
+     *    para o input quando ele está fora da viewport (ex.: usuário rolou
+     *    para baixo na lista e clicou num chip ainda visível na sticky bar).
+     *  - Se o evento trouxer `caret` no detail (CustomEvent), restauramos a
+     *    posição EXATA do cursor antes da remoção — preserva a edição em
+     *    andamento. Sem `caret`, posicionamos no fim como fallback seguro.
+     *  - `setSelectionRange` é envolto em try/catch porque alguns tipos de
+     *    input (ex.: type="email") lançam InvalidStateError no Firefox.
+     */
+    const caretEndHandler = (ev: Event) => {
       const el = searchInputRef.current;
       if (!el) return;
       const len = el.value?.length ?? 0;
+      const detail = (ev as CustomEvent<{ caret?: number | null }>).detail;
+      const requested = typeof detail?.caret === 'number' ? detail.caret : null;
+      const pos = requested === null ? len : Math.max(0, Math.min(len, requested));
       el.focus({ preventScroll: true });
-      try { el.setSelectionRange(len, len); } catch { /* noop */ }
+      try { el.setSelectionRange(pos, pos); } catch { /* noop */ }
     };
     window.addEventListener('focus-interactions-search', handler);
     window.addEventListener('focus-interactions-search-caret-end', caretEndHandler);
