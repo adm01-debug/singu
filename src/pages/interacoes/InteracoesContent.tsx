@@ -312,9 +312,11 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     alt: true,
     description: 'Limpar filtros de data',
     handler: () => {
-      if (!adv.de && !adv.ate) return;
-      applyDateRange(undefined, undefined);
-      toast.success('Filtros de data removidos');
+      // Usa a função atômica do hook (single setSearchParams) em vez de
+      // applyDateRange(undefined, undefined) — intenção semântica explícita
+      // e zero risco de divergência entre `de` e `ate`.
+      const removed = clearDateRange();
+      if (removed) toast.success('Filtros de data removidos');
     },
   });
 
