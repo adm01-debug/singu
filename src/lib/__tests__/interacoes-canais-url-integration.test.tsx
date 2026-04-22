@@ -80,6 +80,19 @@ function renderAt(initial: string) {
   );
 }
 
+/**
+ * Encontra o botão "X" do chip cujo texto visível contém `label`.
+ * O Badge `closeable` usa aria-label fixo "Remove", então localizamos
+ * primeiro o chip pelo texto e descemos para o botão.
+ */
+function getRemoveButtonForChip(label: string): HTMLButtonElement {
+  const chip = screen.getByText(label).closest('[class*="rounded"]');
+  if (!chip) throw new Error(`Chip não encontrado para "${label}"`);
+  const btn = chip.querySelector('button[aria-label="Remove"]');
+  if (!btn) throw new Error(`Botão de remover ausente no chip "${label}"`);
+  return btn as HTMLButtonElement;
+}
+
 describe('integração /interacoes ?canais= ↔ chips', () => {
   it('hidrata filters.canais a partir da URL preservando ordem e whitelist', () => {
     renderAt('/interacoes?canais=email,call,whatsapp');
