@@ -101,7 +101,7 @@ const trendMeta = {
   },
 } as const;
 
-const makeTooltipContent = (target: number) => {
+const makeTooltipContent = (target: number, milestonesByWeek: Map<string, TrendMilestone[]>) => {
   const Comp = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
     if (!active || !payload?.length) return null;
     const p = payload[0].payload;
@@ -114,6 +114,7 @@ const makeTooltipContent = (target: number) => {
       );
     }
     const diff = target > 0 ? p.score - target : null;
+    const weekMilestones = milestonesByWeek.get(p.weekStart) ?? [];
     return (
       <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
         <div className="font-medium">Semana de {p.weekLabel}</div>
@@ -135,6 +136,23 @@ const makeTooltipContent = (target: number) => {
         <div className="text-muted-foreground">
           {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
         </div>
+        {weekMilestones.length > 0 && (
+          <div className="pt-1 mt-1 border-t border-border space-y-0.5">
+            {weekMilestones.map((m, i) => {
+              const M = MILESTONE_META[m.kind];
+              return (
+                <div key={`${m.kind}-${i}`} className="flex items-center gap-1.5">
+                  <M.Icon
+                    className="h-3 w-3"
+                    style={{ color: `hsl(var(${M.cssVar}))` }}
+                    aria-hidden="true"
+                  />
+                  <span>{m.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
