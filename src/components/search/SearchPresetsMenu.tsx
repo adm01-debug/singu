@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
 import {
   AlertDialog,
