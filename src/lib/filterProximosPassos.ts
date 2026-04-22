@@ -1,5 +1,5 @@
 import type { ProximoPasso, ProximoPassoPriority, ProximoPassoChannel } from '@/lib/proximosPassos';
-import type { NbaPriority, NbaSort } from '@/hooks/useProximosPassosFilters';
+import type { NbaPriority, NbaSort, NbaStatus } from '@/hooks/useProximosPassosFilters';
 import type { PassoFeedback } from '@/hooks/useProximoPassoFeedback';
 
 const PRIORITY_RANK: Record<ProximoPassoPriority, number> = {
@@ -27,10 +27,40 @@ interface RecommendationContext {
   feedbacks?: PassoFeedback[] | null;
 }
 
-interface FilterOpts extends RecommendationContext {
+interface StatusContext {
+  feedbacks?: PassoFeedback[] | null;
+  createdIds?: ReadonlySet<string> | null;
+}
+
+interface FilterOpts extends RecommendationContext, StatusContext {
   priorities: NbaPriority[];
   channels: string[];
+  status?: NbaStatus[];
   sort: NbaSort;
+}
+
+/**
+ * Deriva o status atual de um passo a partir do último feedback registrado
+ * e do conjunto de passos recém-criados nesta sessão.
+ */
+export function derivePassoStatus(
+  passo: ProximoPasso,
+  ctx: StatusContext = {},
+): NbaStatus {
+  if (passo.id === 'agendar-reuniao' && ctx.createdIds?.has(passo.id)) {
+    return 'reuniao_agendada';
+  }
+  const fbs = ctx.feedbacks ?? [];
+  const matching = fbs
+    .filter((f) => f.passo_id === passo.id || f.passo_id?.startsWith(`${passo.id}:`))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const last = matching[0];
+  if (!last) return 'pendente';
+  if (last.outcome === 'respondeu_positivo' && passo.id === 'agendar-reuniao') {
+    return 'reuniao_agendada';
+  }
+  if (last.outcome === 'pulou') return 'pendente';
+  return last.outcome as NbaStatus;
 }
 
 function normalizeChannel(ch?: string | null): string | null {
@@ -84,11 +114,15 @@ export function scorePasso(
  */
 export function filterAndSortPassos(
   passos: ProximoPasso[],
-  { priorities, channels, sort, preferredChannel, feedbacks }: FilterOpts,
+  { priorities, channels, status, sort, preferredChannel, feedbacks, createdIds }: FilterOpts,
 ): ProximoPasso[] {
   const filtered = passos.filter((p) => {
     if (priorities.length > 0 && !priorities.includes(p.priority as NbaPriority)) return false;
     if (channels.length > 0 && !channels.includes(p.channel)) return false;
+    if (Array.isArray(status) && status.length > 0) {
+      const s = derivePassoStatus(p, { feedbacks, createdIds });
+      if (!status.includes(s)) return false;
+    }
     return true;
   });
 

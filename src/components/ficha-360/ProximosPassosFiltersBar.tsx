@@ -7,6 +7,12 @@ import {
   Linkedin,
   ArrowUpDown,
   X,
+  CheckCircle2,
+  MessageSquare,
+  PhoneOff,
+  CalendarCheck,
+  Hourglass,
+  VolumeX,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import type { NbaPriority, NbaSort } from '@/hooks/useProximosPassosFilters';
+import type { NbaPriority, NbaSort, NbaStatus } from '@/hooks/useProximosPassosFilters';
 
 const PRIORITIES: { value: NbaPriority; label: string; activeClass: string }[] = [
   { value: 'alta', label: 'Alta', activeClass: 'bg-destructive/10 text-destructive border-destructive/40' },
@@ -34,15 +40,26 @@ const CHANNELS: { value: string; label: string; icon: typeof Mail }[] = [
   { value: 'linkedin', label: 'LinkedIn', icon: Linkedin },
 ];
 
+const STATUSES: { value: NbaStatus; label: string; icon: typeof Mail; activeClass: string }[] = [
+  { value: 'pendente', label: 'Pendente', icon: Hourglass, activeClass: 'bg-info/10 text-info border-info/40' },
+  { value: 'nao_respondeu', label: 'Sem resposta', icon: VolumeX, activeClass: 'bg-warning/10 text-warning border-warning/40' },
+  { value: 'nao_atendeu', label: 'Sem atender', icon: PhoneOff, activeClass: 'bg-warning/10 text-warning border-warning/40' },
+  { value: 'respondeu_positivo', label: 'Respondeu +', icon: CheckCircle2, activeClass: 'bg-success/10 text-success border-success/40' },
+  { value: 'respondeu_neutro', label: 'Respondeu', icon: MessageSquare, activeClass: 'bg-info/10 text-info border-info/40' },
+  { value: 'reuniao_agendada', label: 'Reunião', icon: CalendarCheck, activeClass: 'bg-primary/10 text-primary border-primary/40' },
+];
+
 interface Props {
   priorities: NbaPriority[];
   channels: string[];
+  status: NbaStatus[];
   sort: NbaSort;
   shownCount: number;
   totalCount: number;
   activeCount: number;
   onTogglePriority: (p: NbaPriority) => void;
   onToggleChannel: (c: string) => void;
+  onToggleStatus: (s: NbaStatus) => void;
   onChangeSort: (s: NbaSort) => void;
   onClear: () => void;
 }
@@ -50,12 +67,14 @@ interface Props {
 function ProximosPassosFiltersBarComponent({
   priorities,
   channels,
+  status,
   sort,
   shownCount,
   totalCount,
   activeCount,
   onTogglePriority,
   onToggleChannel,
+  onToggleStatus,
   onChangeSort,
   onClear,
 }: Props) {
@@ -107,7 +126,32 @@ function ProximosPassosFiltersBarComponent({
         })}
       </div>
 
-      {/* Linha 2: contador + limpar + ordenação */}
+      {/* Linha 2: chips de status do contato */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {STATUSES.map((opt) => {
+          const Icon = opt.icon;
+          const active = status.includes(opt.value);
+          return (
+            <Badge
+              key={opt.value}
+              variant="outline"
+              role="button"
+              aria-pressed={active}
+              title={opt.label}
+              onClick={() => onToggleStatus(opt.value)}
+              className={cn(
+                'cursor-pointer gap-1 px-2 py-0.5 text-[11px] transition-colors select-none',
+                active ? opt.activeClass : 'hover:bg-muted',
+              )}
+            >
+              <Icon className="h-3 w-3" />
+              <span>{opt.label}</span>
+            </Badge>
+          );
+        })}
+      </div>
+
+      {/* Linha 3: contador + limpar + ordenação */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {activeCount > 0 ? (
