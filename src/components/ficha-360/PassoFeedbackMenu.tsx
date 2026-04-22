@@ -85,6 +85,17 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   );
   const history = allFeedbacks.filter((f) => f.passo_id === passoId);
 
+  // Anti-ruído: bloqueia "nao_respondeu" se já houve um nas últimas 24h para este passo
+  const NAO_RESPONDEU_COOLDOWN_HOURS = 24;
+  const lastNaoRespondeu = history.find((f) => f.outcome === 'nao_respondeu');
+  const naoRespondeuLockedUntil = lastNaoRespondeu
+    ? new Date(new Date(lastNaoRespondeu.executed_at).getTime() + NAO_RESPONDEU_COOLDOWN_HOURS * 3600_000)
+    : null;
+  const naoRespondeuLocked = !!naoRespondeuLockedUntil && naoRespondeuLockedUntil.getTime() > Date.now();
+  const hoursLeft = naoRespondeuLockedUntil
+    ? Math.max(1, Math.ceil((naoRespondeuLockedUntil.getTime() - Date.now()) / 3600_000))
+    : 0;
+
   const resetAndClose = () => {
     setNotes('');
     setPendingOutcome(null);
@@ -104,6 +115,12 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   const handleConfirm = () => {
     if (!pendingOutcome) return;
     const outcome = pendingOutcome;
+    if (outcome === 'nao_respondeu' && naoRespondeuLocked) {
+      toast.error('Aguarde antes de repetir', {
+        description: `Você já marcou "Não respondeu" para este passo nas últimas ${NAO_RESPONDEU_COOLDOWN_HOURS}h. Tente novamente em ~${hoursLeft}h.`,
+      });
+      return;
+    }
     mutate(
       {
         contactId,
@@ -287,21 +304,37 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
             <div className="flex flex-col gap-1">
               {OPTIONS.map((opt) => {
                 const Icon = opt.icon;
+                const isLocked = opt.value === 'nao_respondeu' && naoRespondeuLocked;
                 return (
                   <Button
                     key={opt.value}
                     variant="outline"
                     size="sm"
                     className="justify-start h-auto py-2"
-                    disabled={isPending}
+                    disabled={isPending || isLocked}
                     onClick={() => setPendingOutcome(opt.value)}
+                    title={
+                      isLocked
+                        ? `Você já marcou "Não respondeu" recentemente. Aguarde ~${hoursLeft}h para evitar duplicidade.`
+                        : undefined
+                    }
                   >
                     <Icon className={`h-3.5 w-3.5 ${opt.className}`} />
                     <span className="text-xs">{opt.label}</span>
+                    {isLocked ? (
+                      <span className="ml-auto text-[10px] text-muted-foreground">
+                        em ~{hoursLeft}h
+                      </span>
+                    ) : null}
                   </Button>
                 );
               })}
             </div>
+            {naoRespondeuLocked ? (
+              <p className="text-[10px] text-muted-foreground">
+                Para evitar ruído, "Não respondeu" só pode ser registrado a cada {NAO_RESPONDEU_COOLDOWN_HOURS}h por passo.
+              </p>
+            ) : null}
 
             <div className="space-y-1">
               <label htmlFor={`notes-${passoId}`} className="text-xs text-muted-foreground">
