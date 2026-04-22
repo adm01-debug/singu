@@ -98,6 +98,12 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   const [view, setView] = useState<'form' | 'history'>('form');
   const [notes, setNotes] = useState('');
   const [pendingOutcome, setPendingOutcome] = useState<PassoOutcome | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<ChannelKey | null>(() => normalizeChannel(channelHint));
+
+  // Sincroniza com mudança do hint enquanto popover está fechado
+  useEffect(() => {
+    if (!open) setSelectedChannel(normalizeChannel(channelHint));
+  }, [channelHint, open]);
   const { mutate, isPending } = useRegisterPassoFeedback();
   const { data: allFeedbacks = [], isLoading: isLoadingHistory } = useProximoPassoFeedbacks(
     open ? contactId : undefined,
@@ -145,7 +151,7 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
         contactId,
         passoId,
         outcome,
-        channelUsed: channelHint ?? null,
+        channelUsed: selectedChannel ?? channelHint ?? null,
         notes: notes || null,
       },
       {
