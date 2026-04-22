@@ -4168,6 +4168,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ficha360_conversation_summaries: {
+        Row: {
+          contact_id: string
+          created_at: string
+          filters_hash: string
+          filters_summary: Json
+          id: string
+          interaction_ids: string[]
+          interactions_analyzed: number
+          model: string
+          summary: Json
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          filters_hash: string
+          filters_summary?: Json
+          id?: string
+          interaction_ids: string[]
+          interactions_analyzed?: number
+          model: string
+          summary: Json
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          filters_hash?: string
+          filters_summary?: Json
+          id?: string
+          interaction_ids?: string[]
+          interactions_analyzed?: number
+          model?: string
+          summary?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       forecast_categories_history: {
         Row: {
           changed_at: string
