@@ -85,6 +85,17 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   );
   const history = allFeedbacks.filter((f) => f.passo_id === passoId);
 
+  // Anti-ruído: bloqueia "nao_respondeu" se já houve um nas últimas 24h para este passo
+  const NAO_RESPONDEU_COOLDOWN_HOURS = 24;
+  const lastNaoRespondeu = history.find((f) => f.outcome === 'nao_respondeu');
+  const naoRespondeuLockedUntil = lastNaoRespondeu
+    ? new Date(new Date(lastNaoRespondeu.executed_at).getTime() + NAO_RESPONDEU_COOLDOWN_HOURS * 3600_000)
+    : null;
+  const naoRespondeuLocked = !!naoRespondeuLockedUntil && naoRespondeuLockedUntil.getTime() > Date.now();
+  const hoursLeft = naoRespondeuLockedUntil
+    ? Math.max(1, Math.ceil((naoRespondeuLockedUntil.getTime() - Date.now()) / 3600_000))
+    : 0;
+
   const resetAndClose = () => {
     setNotes('');
     setPendingOutcome(null);
