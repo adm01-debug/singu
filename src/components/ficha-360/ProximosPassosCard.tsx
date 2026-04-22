@@ -45,6 +45,7 @@ interface Props {
   firstName?: string;
   sentiment?: SentimentTone;
   companyId?: string | null;
+  preferredChannel?: string | null;
 }
 
 const channelIcon: Record<ProximoPassoChannel, typeof Mail> = {
@@ -91,7 +92,7 @@ function relativeDays(daysAgo: number): string {
   return `há ${daysAgo}d`;
 }
 
-function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment, companyId }: Props) {
+function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime, firstName, sentiment, companyId, preferredChannel }: Props) {
   const { nextAction, isGenerating, generate } = useNextBestAction(contactId);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [createdIds, setCreatedIds] = useState<Set<string>>(new Set());
@@ -152,7 +153,13 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   };
 
   const visiblePassos = passos.filter((p) => !getRecentSkipUntil(feedbacks, p.id));
-  const displayPassos = filterAndSortPassos(visiblePassos, { priorities, channels, sort });
+  const displayPassos = filterAndSortPassos(visiblePassos, {
+    priorities,
+    channels,
+    sort,
+    preferredChannel,
+    feedbacks,
+  });
 
   return (
     <Card>
