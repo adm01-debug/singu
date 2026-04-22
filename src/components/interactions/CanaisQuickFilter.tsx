@@ -354,7 +354,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                   </p>
                   {diffDetail.added.length > 0 && (
                     <div>
-                      <p className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                      <p className="flex items-center gap-1 font-medium text-success">
                         <Plus className="w-3 h-3" /> Será adicionado:
                       </p>
                       <p className="ml-4">{diffDetail.added.join(', ')}</p>
