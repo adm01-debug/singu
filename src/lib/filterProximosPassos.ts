@@ -1,5 +1,5 @@
 import type { ProximoPasso, ProximoPassoPriority, ProximoPassoChannel } from '@/lib/proximosPassos';
-import type { NbaPriority, NbaSort } from '@/hooks/useProximosPassosFilters';
+import type { NbaPriority, NbaSort, NbaStatus } from '@/hooks/useProximosPassosFilters';
 import type { PassoFeedback } from '@/hooks/useProximoPassoFeedback';
 
 const PRIORITY_RANK: Record<ProximoPassoPriority, number> = {
