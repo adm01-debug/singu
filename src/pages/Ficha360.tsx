@@ -491,6 +491,56 @@ const Ficha360 = () => {
               interactions={recentInteractions}
             />
 
+            {/* Toggle: decomposição por fator */}
+            <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="factor-breakdown-toggle"
+                  checked={showFactorBreakdown}
+                  onCheckedChange={setShowFactorBreakdown}
+                />
+                <Label
+                  htmlFor="factor-breakdown-toggle"
+                  className="text-xs font-medium cursor-pointer"
+                >
+                  Decompor tendência por fator
+                </Label>
+              </div>
+              {showFactorBreakdown && (
+                <div className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownAsPercent(false)}
+                    className={`px-2 py-0.5 text-[11px] rounded transition-colors ${
+                      !breakdownAsPercent
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-pressed={!breakdownAsPercent}
+                  >
+                    pts
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownAsPercent(true)}
+                    className={`px-2 py-0.5 text-[11px] rounded transition-colors ${
+                      breakdownAsPercent
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-pressed={breakdownAsPercent}
+                  >
+                    %
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Decomposição por fator (cadência, recência, sentimento, canal) */}
+            {showFactorBreakdown && (
+              <ProntidaoFactorBreakdownChart data={trend} asPercent={breakdownAsPercent} />
+            )}
+
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="space-y-4">
