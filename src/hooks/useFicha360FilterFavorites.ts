@@ -237,15 +237,20 @@ export function useFicha360FilterFavorites() {
    * Retorna `null` apenas se period inválido ou limite atingido.
    */
   const quickSave = useCallback(
-    (days: number, channels: string[]): FilterFavorite | null => {
+    (
+      days: number,
+      channels: string[],
+      tags: InteractionTag[] = [],
+    ): FilterFavorite | null => {
       if (!isValidDays(days)) return null;
       const cleanChannels = sanitizeChannels(channels);
-      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(tags);
+      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       // Dedupe de nome auto-gerado: "30d · WhatsApp" → "30d · WhatsApp (2)" se já usado.
       const used = new Set(favorites.map((f) => f.name));
-      let finalName = suggestFavoriteName(days, cleanChannels);
+      let finalName = suggestFavoriteName(days, cleanChannels, cleanTags);
       if (used.has(finalName)) {
         let i = 2;
         while (used.has(`${finalName} (${i})`)) i++;
@@ -256,6 +261,7 @@ export function useFicha360FilterFavorites() {
         name: finalName,
         days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
@@ -280,7 +286,8 @@ export function useFicha360FilterFavorites() {
   const importShared = useCallback(
     (payload: SharedFavoritePayload): FilterFavorite | null => {
       const cleanChannels = sanitizeChannels(payload.channels);
-      const existing = favorites.find((f) => sameCombo(f, payload.days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(payload.tags);
+      const existing = favorites.find((f) => sameCombo(f, payload.days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       // dedupe de nome
@@ -296,6 +303,7 @@ export function useFicha360FilterFavorites() {
         name: finalName,
         days: payload.days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
