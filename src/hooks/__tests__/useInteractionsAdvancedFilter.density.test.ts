@@ -1,14 +1,22 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 
 const DENSITY_KEY = 'singu-interactions-density-v1';
 
 function wrapperFor(initial: string) {
+  // QueryClient isolado por teste (retries off) — necessário porque o hook
+  // agora usa `useQuery` para sincronizar prefs com o backend.
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return ({ children }: { children: React.ReactNode }) =>
-    React.createElement(MemoryRouter, { initialEntries: [initial] }, children);
+    React.createElement(
+      QueryClientProvider,
+      { client: qc },
+      React.createElement(MemoryRouter, { initialEntries: [initial] }, children),
+    );
 }
 
 describe('useInteractionsAdvancedFilter — densidade', () => {

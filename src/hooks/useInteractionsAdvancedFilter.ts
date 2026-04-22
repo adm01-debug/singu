@@ -11,6 +11,7 @@ import {
   normalizeCanaisArray,
   findIgnoredCanais,
 } from '@/lib/canaisInteracao';
+import { useUiPreferencesSync } from '@/hooks/useUiPreferencesSync';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
@@ -334,6 +335,91 @@ export function useInteractionsAdvancedFilter() {
     if (filters.sentimento) writeLS(SENTIMENTO_STORAGE_KEY, filters.sentimento);
     else removeLS(SENTIMENTO_STORAGE_KEY);
   }, [filters.sentimento]);
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Sync das preferências de UI no perfil do usuário (cross-device).
+  // Escopo: "interactions". Apenas density/perPage/view/sort — campos de
+  // filtro propriamente ditos (q, canais, datas, contact, company,
+  // sentimento, direcao) NÃO viajam pelo backend porque são contexto de
+  // sessão, não preferência permanente.
+  // ──────────────────────────────────────────────────────────────────────
+  type InteractionsUiPrefs = {
+    density: DensityMode;
+    perPage: number;
+    view: ViewMode;
+    sort: SortKey;
+  };
+  const uiPrefsCurrent = useMemo<InteractionsUiPrefs>(
+    () => ({
+      density: filters.density,
+      perPage: filters.perPage,
+      view: filters.view,
+      sort: filters.sort,
+    }),
+    [filters.density, filters.perPage, filters.view, filters.sort],
+  );
+  const uiPrefsDefaults: InteractionsUiPrefs = useMemo(
+    () => ({ density: 'comfortable', perPage: DEFAULT_PER_PAGE, view: 'list', sort: 'recent' }),
+    [],
+  );
+  const sanitizeUiPrefs = useCallback((raw: unknown): InteractionsUiPrefs => {
+    if (!raw || typeof raw !== 'object') return { ...uiPrefsDefaults };
+    const o = raw as Record<string, unknown>;
+    const density: DensityMode = o.density === 'compact' ? 'compact' : 'comfortable';
+    const perPageRaw = typeof o.perPage === 'number' ? o.perPage : parseInt(String(o.perPage ?? ''), 10);
+    const perPage = (VALID_PER_PAGE as readonly number[]).includes(perPageRaw)
+      ? perPageRaw
+      : DEFAULT_PER_PAGE;
+    const view = (VALID_VIEWS as string[]).includes(String(o.view))
+      ? (o.view as ViewMode)
+      : 'list';
+    const sort = (VALID_SORTS as string[]).includes(String(o.sort))
+      ? (o.sort as SortKey)
+      : 'recent';
+    return { density, perPage, view, sort };
+  }, [uiPrefsDefaults]);
+
+  // URL ganha sobre backend: se qualquer um dos 4 já está na URL, NÃO hidrata.
+  // Mesmo assim, mudanças locais sobem (assim outros dispositivos recebem).
+  const hasUrlOverride =
+    !!searchParams.get('density') ||
+    !!searchParams.get('perPage') ||
+    !!searchParams.get('view') ||
+    !!searchParams.get('sort');
+
+  const hydrateFromBackend = useCallback(
+    (prefs: InteractionsUiPrefs) => {
+      // Aplica em UMA passada via URL para evitar 4 re-renders e history spam.
+      const sp = new URLSearchParams(window.location.search);
+      if (prefs.density === 'compact') sp.set('density', 'compact');
+      else sp.delete('density');
+      if (
+        (VALID_PER_PAGE as readonly number[]).includes(prefs.perPage) &&
+        prefs.perPage !== DEFAULT_PER_PAGE
+      ) {
+        sp.set('perPage', String(prefs.perPage));
+      } else {
+        sp.delete('perPage');
+      }
+      if (prefs.view && prefs.view !== 'list') sp.set('view', prefs.view);
+      else sp.delete('view');
+      if (prefs.sort && prefs.sort !== 'recent') sp.set('sort', prefs.sort);
+      else sp.delete('sort');
+      // Mudança de página sempre volta pra 1 quando prefs mudam.
+      sp.delete('page');
+      setSearchParams(sp, { replace: true });
+    },
+    [setSearchParams],
+  );
+
+  useUiPreferencesSync<InteractionsUiPrefs>({
+    scope: 'interactions',
+    current: uiPrefsCurrent,
+    defaults: uiPrefsDefaults,
+    sanitize: sanitizeUiPrefs,
+    hydrate: hydrateFromBackend,
+    hasUrlOverride,
+  });
 
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
