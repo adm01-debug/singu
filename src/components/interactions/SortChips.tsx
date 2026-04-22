@@ -20,6 +20,7 @@ interface Props {
 interface SortConfigItem {
   key: SortKey;
   label: string;
+  description: string;
   icon: React.ComponentType<{ className?: string }>;
   shortcut: string;
   requiresQuery?: boolean;
@@ -27,11 +28,11 @@ interface SortConfigItem {
 }
 
 const SORT_CONFIG: SortConfigItem[] = [
-  { key: 'recent', label: 'Mais recentes', icon: ArrowDown, shortcut: 'R' },
-  { key: 'oldest', label: 'Mais antigas', icon: ArrowUp, shortcut: 'O' },
-  { key: 'relevance', label: 'Melhor correspondência', icon: Sparkles, shortcut: 'M', requiresQuery: true },
-  { key: 'entity', label: 'Por pessoa/empresa', icon: Users, shortcut: 'P' },
-  { key: 'channel', label: 'Por canal', icon: Hash, shortcut: 'C', requiresChannelCounts: true },
+  { key: 'recent', label: 'Mais recentes', description: 'Ordena pela data da interação, das mais novas para as mais antigas.', icon: ArrowDown, shortcut: 'R' },
+  { key: 'oldest', label: 'Mais antigas', description: 'Ordena pela data da interação, das mais antigas para as mais novas.', icon: ArrowUp, shortcut: 'O' },
+  { key: 'relevance', label: 'Melhor correspondência', description: 'Ranqueia pela pontuação do termo buscado (título 3×, tags 2×, conteúdo 1×).', icon: Sparkles, shortcut: 'M', requiresQuery: true },
+  { key: 'entity', label: 'Por pessoa/empresa', description: 'Agrupa as interações pela entidade vinculada (contato ou empresa) e ordena alfabeticamente.', icon: Users, shortcut: 'P' },
+  { key: 'channel', label: 'Por canal', description: 'Agrupa as interações por canal (WhatsApp, e-mail, ligação...) seguindo a ordem dos chips.', icon: Hash, shortcut: 'C', requiresChannelCounts: true },
 ];
 
 export const SortChips = React.memo(function SortChips({ value, onChange, hasQuery, channelCounts }: Props) {
