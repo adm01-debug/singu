@@ -201,12 +201,15 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
         duration: 5000,
       });
     } else {
-      // voltando pro auto: aplica imediatamente o pending pra não deixar estado órfão
+      // Voltando para auto: aplica imediatamente o pending, sincroniza chips
+      // e limpa o pending persistido para evitar estado órfão.
       if (!arraysEqual(pending, safe)) {
         onChange(pending);
       }
+      clearPending();
+      setPending(pending);
       toast.success('Modo automático ativado', {
-        description: 'Os filtros serão aplicados ao clicar nos canais.',
+        description: 'Canais aplicados imediatamente e seleção pendente limpa.',
         duration: 3000,
       });
     }
