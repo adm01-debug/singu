@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
@@ -73,7 +73,7 @@ function parseDate(iso?: string): Date | undefined {
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   filters, setFilter, clear, activeCount, onApplyAll,
 }: Props) {
-  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
+  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, duplicatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
@@ -499,6 +499,25 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                               <RefreshCw className="w-3 h-3 text-muted-foreground" />
                             </Button>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title="Duplicar busca"
+                            aria-label="Duplicar busca"
+                            disabled={presets.length >= 10}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (presets.length >= 10) {
+                                toast.error('Limite de 10 presets atingido');
+                                return;
+                              }
+                              const dup = duplicatePreset(preset.id);
+                              if (dup) toast.success('Busca duplicada!', { description: `"${dup.name}"` });
+                            }}
+                          >
+                            <Copy className="w-3 h-3 text-muted-foreground" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
