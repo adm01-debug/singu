@@ -1,12 +1,13 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Phone, Mail, Calendar, List, Clock } from 'lucide-react';
+import { MessageSquare, Phone, Mail, Calendar, List, Clock, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
 interface Props {
   contactId: string;
   channelCounts: Record<string, number>;
+  companyId?: string | null;
 }
 
 interface Chip {
@@ -16,7 +17,7 @@ interface Chip {
   count?: number;
 }
 
-export const ConversasRelacionadasCard = memo(({ contactId, channelCounts }: Props) => {
+export const ConversasRelacionadasCard = memo(({ contactId, channelCounts, companyId }: Props) => {
   const chips: Chip[] = [
     { label: 'Todas as conversas', to: `/interacoes?contact=${contactId}`, icon: List, count: channelCounts.total },
     { label: 'Timeline cronológica', to: `/interacoes?tab=timeline&contact=${contactId}`, icon: Clock },
@@ -24,6 +25,9 @@ export const ConversasRelacionadasCard = memo(({ contactId, channelCounts }: Pro
     { label: 'E-mails', to: `/interacoes?contact=${contactId}&canal=email`, icon: Mail, count: channelCounts.email },
     { label: 'Ligações', to: `/interacoes?contact=${contactId}&canal=call`, icon: Phone, count: channelCounts.call },
     { label: 'Reuniões', to: `/interacoes?contact=${contactId}&canal=meeting`, icon: Calendar, count: channelCounts.meeting },
+    ...(companyId
+      ? [{ label: 'Interações da empresa por pessoa', to: `/empresas/${companyId}?tab=interactions`, icon: Building2 } as Chip]
+      : []),
   ];
 
   return (
