@@ -86,7 +86,16 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
         {headerExtra}
       </CardHeader>
       <CardContent>
-        {items.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-2 py-1" aria-busy="true" aria-live="polite">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <CompactItemSkeleton
+                key={i}
+                titleMaxWidth={i % 2 === 0 ? 'max-w-[60%]' : 'max-w-[45%]'}
+              />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <InlineEmptyState
             icon={MessageSquare}
             title={filtersActive ? 'Nenhuma interação nos filtros' : 'Sem interações recentes'}
