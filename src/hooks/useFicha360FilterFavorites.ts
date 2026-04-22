@@ -208,6 +208,39 @@ export function useFicha360FilterFavorites() {
     [favorites, persist],
   );
 
+  /**
+   * Salva o conjunto atual sem prompt, usando nome auto-gerado.
+   * Se já existir match exato, devolve-o em vez de duplicar.
+   * Retorna `null` apenas se period inválido ou limite atingido.
+   */
+  const quickSave = useCallback(
+    (days: number, channels: string[]): FilterFavorite | null => {
+      if (!isValidDays(days)) return null;
+      const cleanChannels = sanitizeChannels(channels);
+      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels));
+      if (existing) return existing;
+      if (favorites.length >= MAX_FAVORITES) return null;
+      // Dedupe de nome auto-gerado: "30d · WhatsApp" → "30d · WhatsApp (2)" se já usado.
+      const used = new Set(favorites.map((f) => f.name));
+      let finalName = suggestFavoriteName(days, cleanChannels);
+      if (used.has(finalName)) {
+        let i = 2;
+        while (used.has(`${finalName} (${i})`)) i++;
+        finalName = `${finalName} (${i})`;
+      }
+      const next: FilterFavorite = {
+        id: genId(),
+        name: finalName,
+        days,
+        channels: cleanChannels,
+        createdAt: Date.now(),
+      };
+      persist([next, ...favorites]);
+      return next;
+    },
+    [favorites, persist],
+  );
+
   const rename = useCallback(
     (id: string, name: string) => {
       const cleanName = sanitizeName(name, '');
