@@ -32,7 +32,9 @@ describe('InfiniteScrollSentinel', () => {
     render(
       <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore={false} total={50} totalLoaded={50} />
     );
-    expect(screen.getByText(/Fim da lista — 50 interações exibidas/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Fim da lista — 50 de 50 interações exibidas · densidade confortável/),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 
