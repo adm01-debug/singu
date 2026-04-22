@@ -119,6 +119,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           value={filters.sort}
           onChange={(v) => setFilter('sort', v)}
           hasQuery={!!filters.q.trim()}
+          channelCounts={channelCounts}
         />
 
         <ViewModeChips
