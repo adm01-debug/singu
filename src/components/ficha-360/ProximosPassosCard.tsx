@@ -311,13 +311,32 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
                             onCancel={() => setExpandedId(null)}
                           />
                         ) : (
-                          <ProximoPassoQuickForm
-                            passo={p}
-                            bestTime={bestTime}
-                            contactId={contactId}
-                            onCreated={() => handleCreated(p.id)}
-                            onCancel={() => setExpandedId(null)}
-                          />
+                          (() => {
+                            const idx = displayPassos.findIndex((x) => x.id === p.id);
+                            const next = idx >= 0 ? displayPassos.slice(idx + 1).find((n) => n.id !== 'agendar-reuniao') : undefined;
+                            return (
+                              <ProximoPassoQuickForm
+                                passo={p}
+                                bestTime={bestTime}
+                                contactId={contactId}
+                                onCreated={() => handleCreated(p.id)}
+                                onCancel={() => setExpandedId(null)}
+                                hasNext={!!next}
+                                onCreatedAndAdvance={
+                                  next
+                                    ? () => {
+                                        setCreatedIds((prev) => {
+                                          const ns = new Set(prev);
+                                          ns.add(p.id);
+                                          return ns;
+                                        });
+                                        setExpandedId(next.id);
+                                      }
+                                    : undefined
+                                }
+                              />
+                            );
+                          })()
                         )
                       )}
                     </div>

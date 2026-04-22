@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Loader2, Calendar as CalIcon, Clock, Sparkles } from 'lucide-react';
+import { Loader2, Calendar as CalIcon, Clock, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,9 @@ interface Props {
   contactId: string;
   onCreated: () => void;
   onCancel: () => void;
+  /** Quando informado, habilita o botão "Criar e seguir" para avançar à próxima sugestão. */
+  hasNext?: boolean;
+  onCreatedAndAdvance?: () => void;
 }
 
 const CHANNEL_OPTIONS: Array<{ value: ProximoPassoChannel; label: string }> = [
@@ -50,7 +53,7 @@ function formatDateBr(isoDate: string): string {
   return `${d}/${m}/${y}`;
 }
 
-function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel }: Props) {
+function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel, hasNext = false, onCreatedAndAdvance }: Props) {
   const createTask = useCreateTask();
   const defaults = useMemo(() => computePassoDefaults(passo, bestTime), [passo, bestTime]);
 
@@ -79,11 +82,14 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
     return parts.join(' • ');
   }, [defaults]);
 
-  const handleSubmit = () => {
+  const [pendingMode, setPendingMode] = useState<'close' | 'advance' | null>(null);
+
+  const handleSubmit = (mode: 'close' | 'advance' = 'close') => {
     if (!date || !time) {
       toast.error('Informe data e hora');
       return;
     }
+    setPendingMode(mode);
     createTask.mutate(
       {
         title: passo.title,
@@ -96,9 +102,15 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
       },
       {
         onSuccess: () => {
-          toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
-          onCreated();
+          if (mode === 'advance' && onCreatedAndAdvance) {
+            toast.success(`Tarefa criada • próxima sugestão`);
+            onCreatedAndAdvance();
+          } else {
+            toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
+            onCreated();
+          }
         },
+        onSettled: () => setPendingMode(null),
       },
     );
   };
@@ -169,14 +181,34 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
         <span>{hint}</span>
       </p>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2 flex-wrap">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={createTask.isPending}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={handleSubmit} disabled={createTask.isPending}>
-          {createTask.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+        <Button
+          size="sm"
+          variant={hasNext ? 'outline' : 'default'}
+          onClick={() => handleSubmit('close')}
+          disabled={createTask.isPending}
+        >
+          {createTask.isPending && pendingMode === 'close' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           Confirmar
         </Button>
+        {hasNext && onCreatedAndAdvance && (
+          <Button
+            size="sm"
+            onClick={() => handleSubmit('advance')}
+            disabled={createTask.isPending}
+            title="Cria a tarefa e abre a próxima sugestão"
+          >
+            {createTask.isPending && pendingMode === 'advance' ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" />
+            )}
+            Criar e seguir
+          </Button>
+        )}
       </div>
     </div>
   );
