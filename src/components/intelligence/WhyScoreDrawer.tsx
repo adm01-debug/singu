@@ -152,11 +152,14 @@ export function WhyScoreDrawer({
   const rankedFactors = useMemo(() => {
     const sorted = [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score);
     const totalContribution = sorted.reduce((sum, f) => sum + f.weight * f.score, 0);
+    const totalWeight = sorted.reduce((sum, f) => sum + f.weight, 0);
     return sorted.map((f, i) => {
       const contribution = f.weight * f.score;
       const contributionPct = totalContribution > 0 ? (contribution / totalContribution) * 100 : 0;
+      const normalizedWeightPct = totalWeight > 0 ? (f.weight / totalWeight) * 100 : 0;
       const effectiveDirection: WhyScoreDirection = f.direction ?? inferDirection(f.score);
-      return { ...f, contribution, contributionPct, rank: i + 1, effectiveDirection };
+      const factorBand = getFactorBand(f.score);
+      return { ...f, contribution, contributionPct, normalizedWeightPct, rank: i + 1, effectiveDirection, factorBand };
     });
   }, [factors]);
 
