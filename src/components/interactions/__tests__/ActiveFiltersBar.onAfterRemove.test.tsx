@@ -70,19 +70,23 @@ function renderBar(opts: RenderOpts = {}) {
  * o teste continua válido.
  */
 function clickRemoveOnChip(text: string | RegExp) {
-  // Cada Badge renderiza um <button aria-label="Remove">. Subimos do texto
-  // visível para o container do chip e procuramos o botão dentro dele.
-  const badgeText = screen.getByText(text);
-  // O texto do badge fica DENTRO do mesmo elemento que contém o botão "X".
-  // Subimos níveis até achar um ancestral que tenha o botão Remove.
-  let cursor: HTMLElement | null = badgeText;
-  for (let i = 0; i < 5 && cursor; i++) {
-    const removeBtn = within(cursor).queryByRole('button', { name: /remove/i });
-    if (removeBtn) {
-      fireEvent.click(removeBtn);
-      return removeBtn;
+  // O texto do chip pode aparecer em múltiplos lugares (ex.: "WhatsApp"
+  // também aparece no resumo "1 canal: WhatsApp"). O chip propriamente
+  // dito é o único container que combina o texto + um <button aria-label="Remove">.
+  // Estratégia: pegar TODOS os candidatos com o texto e, para cada um, subir
+  // até 5 níveis procurando um ancestral que contenha o botão Remove. O
+  // primeiro match (que combina texto + botão) é o chip alvo.
+  const matches = screen.getAllByText(text);
+  for (const node of matches) {
+    let cursor: HTMLElement | null = node as HTMLElement;
+    for (let i = 0; i < 5 && cursor; i++) {
+      const removeBtn = within(cursor).queryByRole('button', { name: /remove/i });
+      if (removeBtn) {
+        fireEvent.click(removeBtn);
+        return removeBtn;
+      }
+      cursor = cursor.parentElement;
     }
-    cursor = cursor.parentElement;
   }
   throw new Error(`Botão de remoção não encontrado para o chip "${String(text)}"`);
 }
