@@ -689,10 +689,7 @@ const Ficha360 = () => {
                           setSearchInput('');
                           setQ('');
                         }}
-                        onClearAll={() => {
-                          setSearchInput('');
-                          clear();
-                        }}
+                        onClearAll={requestClearAll}
                       />
                     </>
                   }
