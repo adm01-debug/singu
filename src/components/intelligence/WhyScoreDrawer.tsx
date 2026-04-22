@@ -89,6 +89,35 @@ function writeFeedback(map: Record<string, 'up' | 'down'>) {
   }
 }
 
+// Feedback sobre a explicação ("faz sentido / não faz sentido"), persistido por scoreKey
+// (que já encoda o contato, ex.: "lead-score:contact:abc").
+const EXPLANATION_FEEDBACK_KEY = 'singu-explanation-feedback-v1';
+
+export type ExplanationFeedbackValue = 'makes_sense' | 'does_not_make_sense';
+
+interface ExplanationFeedbackEntry {
+  value: ExplanationFeedbackValue;
+  comment?: string;
+  updatedAt: string;
+}
+
+function readExplanationFeedback(): Record<string, ExplanationFeedbackEntry> {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(EXPLANATION_FEEDBACK_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function writeExplanationFeedback(map: Record<string, ExplanationFeedbackEntry>) {
+  try {
+    window.localStorage.setItem(EXPLANATION_FEEDBACK_KEY, JSON.stringify(map));
+  } catch {
+    /* noop */
+  }
+}
+
 function deriveBand(score: number): 'low' | 'mid' | 'high' {
   if (score >= 70) return 'high';
   if (score >= 40) return 'mid';
