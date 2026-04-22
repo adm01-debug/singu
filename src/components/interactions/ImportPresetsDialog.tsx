@@ -84,15 +84,33 @@ export const ImportPresetsDialog = React.memo(function ImportPresetsDialog({ ope
       toast.error('Selecione ao menos uma busca');
       return;
     }
-    const { added, skipped } = importPresets(items);
+    const total = items.length;
+    const { added, skipped, renamed, renamedDetails } = importPresets(items);
     if (added > 0) {
+      const descParts: string[] = [];
+      if (skipped > 0) {
+        descParts.push(
+          `${skipped} ignorada${skipped > 1 ? 's' : ''} — limite de 10 atingido`,
+        );
+      }
+      if (renamed > 0) {
+        const sample = renamedDetails
+          .slice(0, 2)
+          .map((r) => `"${r.from}" → "${r.to}"`)
+          .join(', ');
+        const extra = renamedDetails.length > 2 ? ` +${renamedDetails.length - 2}` : '';
+        descParts.push(`${renamed} renomeada${renamed > 1 ? 's' : ''} (${sample}${extra})`);
+      }
       toast.success(
-        `${added} busca${added > 1 ? 's' : ''} importada${added > 1 ? 's' : ''}` +
-          (skipped > 0 ? ` · ${skipped} ignorada${skipped > 1 ? 's' : ''} (limite de 10)` : '')
+        `${added} de ${total} busca${total > 1 ? 's' : ''} importada${added > 1 ? 's' : ''}`,
+        descParts.length > 0 ? { description: descParts.join(' · '), duration: 6000 } : undefined,
       );
       handleClose(false);
     } else {
-      toast.error('Limite de 10 buscas atingido — remova algumas antes de importar');
+      toast.error('Nenhuma busca importada', {
+        description: 'Você já tem 10 buscas salvas. Remova alguma antes de importar.',
+        duration: 6000,
+      });
     }
   }, [bundle, selected, importPresets, handleClose]);
 
