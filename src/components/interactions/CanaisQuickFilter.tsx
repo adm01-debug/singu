@@ -27,24 +27,43 @@ const CHANNELS = [
 ] as const;
 
 const PENDING_KEY = 'channel-pending-canais';
+const APPLIED_KEY = 'channel-applied-canais';
 const VALID_VALUES = new Set(CHANNELS.map((c) => c.value));
 
-function readPending(): string[] | null {
+function readStoredArray(key: string): string[] | null {
   try {
-    const raw = localStorage.getItem(PENDING_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
-    const filtered = parsed.filter((v): v is string => typeof v === 'string' && VALID_VALUES.has(v as typeof CHANNELS[number]['value']));
-    return filtered;
+    return parsed.filter(
+      (v): v is string =>
+        typeof v === 'string' && VALID_VALUES.has(v as typeof CHANNELS[number]['value']),
+    );
   } catch {
     return null;
   }
 }
 
+function readPending(): string[] | null {
+  return readStoredArray(PENDING_KEY);
+}
+
+function readApplied(): string[] | null {
+  return readStoredArray(APPLIED_KEY);
+}
+
 function writePending(next: string[]) {
   try {
     localStorage.setItem(PENDING_KEY, JSON.stringify(next));
+  } catch {
+    /* noop */
+  }
+}
+
+function writeApplied(next: string[]) {
+  try {
+    localStorage.setItem(APPLIED_KEY, JSON.stringify(next));
   } catch {
     /* noop */
   }
@@ -80,14 +99,24 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle, setMode } = useChannelSyncMode();
   const [pending, setPendingState] = useState<string[]>(() => {
-    // Restaura pending salvo apenas se modo for manual e diferir do aplicado
+    // Restaura pending salvo apenas se modo for manual e diferir do aplicado.
+    // Se não houver pending salvo, usa o `applied` persistido como base
+    // (cobre o caso em que o pai ainda não hidratou `canais` no primeiro render).
     try {
       const savedMode = localStorage.getItem('channel-sync-mode');
       if (savedMode === 'manual') {
-        const saved = readPending();
-        if (saved) return saved;
+        const savedPending = readPending();
+        if (savedPending) return savedPending;
+        const initial = Array.isArray(canais) ? canais : [];
+        if (initial.length === 0) {
+          const savedApplied = readApplied();
+          if (savedApplied) return savedApplied;
+        }
+        return initial;
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     return Array.isArray(canais) ? canais : [];
   });
 
@@ -146,6 +175,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     });
   }, [safe, mode, setMode]);
 
+
+  // Persiste o estado aplicado (safe) no localStorage para servir de bootstrap
+  // do modo manual em recargas futuras antes do pai hidratar a prop `canais`.
+  useEffect(() => {
+    writeApplied(safe);
+  }, [safe]);
 
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
