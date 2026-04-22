@@ -190,28 +190,62 @@ export const ImportPresetsDialog = React.memo(function ImportPresetsDialog({ ope
         )}
 
         {bundle && (
-          <div className="space-y-2 max-h-56 overflow-y-auto border border-border rounded-md p-2">
-            <p className="text-xs text-muted-foreground px-1">
-              {bundle.presets.length} busca{bundle.presets.length > 1 ? 's' : ''} encontrada{bundle.presets.length > 1 ? 's' : ''}:
-            </p>
-            {bundle.presets.map((p, i) => (
-              <label
-                key={i}
-                className="flex items-center gap-2 p-2 rounded hover:bg-muted/40 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(i)}
-                  onChange={() => toggle(i)}
-                  className="accent-primary"
-                />
-                <span className="text-sm text-foreground truncate flex-1">{p.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {Object.keys(p.filters).length} filtro{Object.keys(p.filters).length !== 1 ? 's' : ''}
+          <>
+            <div className="space-y-2 max-h-56 overflow-y-auto border border-border rounded-md p-2">
+              <p className="text-xs text-muted-foreground px-1">
+                {bundle.presets.length} busca{bundle.presets.length > 1 ? 's' : ''} encontrada{bundle.presets.length > 1 ? 's' : ''}
+                {' · '}
+                <span className={remaining === 0 ? 'text-destructive font-medium' : ''}>
+                  {remaining} vaga{remaining === 1 ? '' : 's'} disponíve{remaining === 1 ? 'l' : 'is'} (máx. 10)
                 </span>
-              </label>
-            ))}
-          </div>
+              </p>
+              {bundle.presets.map((p, i) => {
+                const conflict = existingNames.has(p.name);
+                return (
+                  <label
+                    key={i}
+                    className="flex items-center gap-2 p-2 rounded hover:bg-muted/40 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected.has(i)}
+                      onChange={() => toggle(i)}
+                      className="accent-primary"
+                    />
+                    <span className="text-sm text-foreground truncate flex-1">
+                      {p.name}
+                      {conflict && (
+                        <span
+                          className="ml-1.5 text-[10px] uppercase tracking-wide text-warning"
+                          title="Já existe uma busca com este nome — será renomeada automaticamente"
+                        >
+                          renomear
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {Object.keys(p.filters).length} filtro{Object.keys(p.filters).length !== 1 ? 's' : ''}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            {willOverflow && (
+              <div className="flex items-start gap-2 p-2.5 rounded-md bg-warning/10 border border-warning/30 text-warning text-xs">
+                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                <span>
+                  Você selecionou {selected.size} busca{selected.size > 1 ? 's' : ''}, mas só
+                  cabem {remaining}. As {selected.size - remaining} excedentes serão ignoradas.
+                </span>
+              </div>
+            )}
+            {remaining === 0 && (
+              <div className="flex items-start gap-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs">
+                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                <span>Limite de 10 buscas atingido. Remova alguma antes de importar.</span>
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex justify-end gap-2 pt-2">
