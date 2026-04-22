@@ -67,7 +67,7 @@ function CopyScriptMenuComponent({
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(`Script de ${label} copiado`);
+      toast.success(label);
     } catch {
       toast.error('Não foi possível copiar');
     }
