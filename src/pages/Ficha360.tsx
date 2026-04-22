@@ -193,6 +193,22 @@ const Ficha360 = () => {
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
   const [resumoIAOpen, setResumoIAOpen] = useState(false);
   const [salvarRelatorioOpen, setSalvarRelatorioOpen] = useState(false);
+  // Confirmação de "Limpar tudo": evita reset acidental quando o usuário tem
+  // múltiplos filtros ativos (período, canais, busca e tags). O atalho Shift+C
+  // continua direto — só interceptamos o clique no chip.
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const performClearAll = useCallback(() => {
+    setSearchInput('');
+    clear();
+  }, [clear]);
+  const requestClearAll = useCallback(() => {
+    // Se só houver 1 filtro ativo, não há ambiguidade — limpa direto.
+    if (activeCount <= 1) {
+      performClearAll();
+      return;
+    }
+    setConfirmClearOpen(true);
+  }, [activeCount, performClearAll]);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
 
