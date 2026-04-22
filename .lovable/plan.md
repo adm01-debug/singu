@@ -1,162 +1,118 @@
 
 
-# Plano: Botão "Gerar resumo IA" sobre interações filtradas
+# Plano: Relatórios fixos (presets nomeados com descrição) com 1-clique para resumo IA
 
 ## Contexto
 
-Hoje em **Ficha 360 → Últimas Interações** o usuário aplica filtros (período, canais, tags, busca, ordenação) e vê uma lista. Falta um botão que sintetize **as interações atualmente filtradas** + dados do contato em um resumo executivo: perfil da pessoa, histórico de conversas, decisões, próximos passos e sinais de relacionamento.
+Hoje em **Ficha 360 → Últimas Interações**:
+- `useFicha360FilterFavorites` já persiste presets simples (período + canais + tags) em `localStorage`, com `quickSave`, `rename`, `remove` e import via link compartilhado.
+- `FavoritosFiltrosMenu` expõe esses favoritos atrás de um botão.
+- `ResumoConversaIADialog` + `GerarResumoIAButton` foram criados num passo anterior mas **não estão renderizados** em `Ficha360.tsx` (apenas importados).
+- Faltam: campo **descrição**, **busca livre `q`** no preset, barra horizontal sempre visível, e fluxo "1-clique → aplica + abre resumo IA".
 
-Já existe a edge function `meeting-summary` (resume 1 interação) e `useMeetingSummary` (hook). Não serve aqui — precisamos resumir **N interações + perfil**, com escopo configurável pelos filtros do usuário. Vamos criar uma nova função `ficha360-conversation-summary`.
+A solicitação atual é: salvar preset como **relatório fixo** com **nome + descrição**, alternar entre eles em uma barra, e ao aplicar **já abrir o dialog de resumo IA**. Tudo client-side via `localStorage` — escopo global (mesmo conjunto disponível em qualquer Ficha 360).
 
 ## Mudanças
 
-### 1. Nova edge function: `supabase/functions/ficha360-conversation-summary/index.ts` (~180 linhas)
+### 1. Schema v2 dos favoritos (adiciona descrição + busca)
 
-- `Deno.serve()` + `withAuth` + `rateLimit` (compartilhados de `_shared/`).
-- Rate limit: 10 req/min por usuário (alinhado a `conversation-coaching-digest`).
-- Validação Zod do body:
-  ```ts
-  {
-    contact_id: string (uuid),
-    interaction_ids: string[] (1..200),
-    contact_snapshot: { full_name, role_title?, company_name?, disc_profile?, hobbies?[], interests?[] },
-    filters_summary: { period_days?, channels?[], tags?[], query? } // só para contexto no prompt
-  }
-  ```
-- Carrega as interações do banco externo via proxy `external-data` (ação `read_query` na view `vw_interaction_timeline`) restritas aos `interaction_ids` informados e ao `user_id` autenticado (RLS via service role + WHERE explícito).
-- Trunca conteúdo: máx 200 interações, máx 800 chars de `assunto+resumo` por item.
-- Chama Lovable AI Gateway (`google/gemini-3-flash-preview`) via **tool calling** para output estruturado:
-  ```ts
-  {
-    perfil_resumido: string,           // 2-3 frases sobre quem é a pessoa
-    estilo_comunicacao: string,        // tom, frequência, canal preferido
-    topicos_principais: string[],      // 3-6 temas recorrentes
-    decisoes_acordos: string[],        // o que foi decidido / acordado
-    pendencias: { item: string, prazo_estimado?: string }[],
-    sinais_relacionamento: { tipo: 'positivo' | 'atencao' | 'negativo', descricao: string }[],
-    proximos_passos_sugeridos: string[],
-    risco_churn: 'baixo' | 'medio' | 'alto',
-    confianca_analise: number          // 0-100, baseado em volume/qualidade dos dados
-  }
-  ```
-- Retorna `{ summary, model, generated_at, interactions_analyzed }`.
-- Persiste em nova tabela `ficha360_conversation_summaries` (ver §2) para cache + histórico.
-- Tratamento explícito de 402 / 429 / erro de IA com mensagens PT-BR.
-
-### 2. Migração: tabela `ficha360_conversation_summaries`
-
-```sql
-CREATE TABLE public.ficha360_conversation_summaries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL,
-  contact_id uuid NOT NULL,
-  filters_hash text NOT NULL,           -- sha256 dos filtros + interaction_ids ordenados
-  interaction_ids uuid[] NOT NULL,
-  filters_summary jsonb NOT NULL,
-  summary jsonb NOT NULL,
-  model text NOT NULL,
-  interactions_analyzed integer NOT NULL,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_f360_summ_user_contact ON public.ficha360_conversation_summaries (user_id, contact_id, created_at DESC);
-CREATE INDEX idx_f360_summ_hash ON public.ficha360_conversation_summaries (user_id, contact_id, filters_hash);
-
-ALTER TABLE public.ficha360_conversation_summaries ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users see own summaries"
-  ON public.ficha360_conversation_summaries FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users insert own summaries"
-  ON public.ficha360_conversation_summaries FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users delete own summaries"
-  ON public.ficha360_conversation_summaries FOR DELETE
-  USING (auth.uid() = user_id);
-```
-
-Cache: a edge function calcula `filters_hash`, faz `SELECT` antes de chamar a IA. Se hit < 24h → devolve cache. Senão, gera novo e insere.
-
-### 3. Novo hook: `src/hooks/useFicha360ConversationSummary.ts` (~80 linhas)
+`useFicha360FilterFavorites.ts`:
 
 ```ts
-export function useFicha360ConversationSummary(contactId?: string) {
-  const generate = useMutation({
-    mutationFn: async (params: GenerateParams) => {
-      const { data, error } = await supabase.functions.invoke('ficha360-conversation-summary', { body: params });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      return data as ConversationSummaryResult;
-    },
-    onSuccess: () => toast.success('Resumo gerado!'),
-    onError: (e) => toast.error(e.message),
-  });
-
-  const history = useQuery({
-    queryKey: ['f360-summary-history', contactId],
-    queryFn: async () => { /* últimos 5 do contato */ },
-    enabled: !!contactId,
-    staleTime: 60_000,
-  });
-
-  return { generate: generate.mutateAsync, generating: generate.isPending, history: history.data ?? [] };
+export interface FilterFavorite {
+  id: string;
+  name: string;
+  description?: string;     // NOVO — máx 200 chars
+  days: number;
+  channels: string[];
+  tags: InteractionTag[];
+  q?: string;               // NOVO — termo de busca livre
+  autoOpenSummary?: boolean; // NOVO — ao aplicar, abrir resumo IA (default true)
+  createdAt: number;
+  updatedAt?: number;       // NOVO
 }
 ```
 
-### 4. Novo componente: `src/components/ficha-360/ResumoConversaIADialog.tsx` (~220 linhas)
+- Migração silenciosa: presets v1 sem `description/q/autoOpenSummary/updatedAt` carregam com defaults (`undefined`, `undefined`, `true`, `createdAt`).
+- `sanitizeDescription(raw)` — string ≤200, trim.
+- `sameCombo` passa a comparar também `q` (normalizado: `''` ≡ `undefined`).
+- `findMatch(days, channels, tags, q)` ganha 4º arg.
+- `quickSave` e `save` recebem `q` opcional e `description?`.
+- Novo método `update(id, patch: Partial<Pick<FilterFavorite, 'name' | 'description' | 'autoOpenSummary'>>)` → atualiza `updatedAt`. Valida nome único (case-insensitive contra outros presets, dedup com sufixo `(2)` igual a `quickSave`).
+- `MAX_FAVORITES` continua 10.
 
-Dialog modal disparado pelo botão. Estrutura:
+### 2. Nova barra horizontal `RelatoriosFixosBar.tsx` (~150 linhas)
 
-- **Header**: "Resumo IA da conversa" + chip "X interações analisadas" + chip dos filtros ativos resumidos (`Últimos 30 dias · WhatsApp + Email · 2 tags`).
-- **Estados**:
-  - `idle`: card de preview com "Vou analisar X interações filtradas. Isso usa IA. Continuar?" + botões `[Cancelar] [Gerar resumo]`.
-  - `loading`: skeleton com 6 blocos + texto "Analisando…" + ETA estimado.
-  - `success`: render do `summary` em seções colapsáveis:
-    - 👤 **Perfil resumido** (2-3 frases)
-    - 💬 **Estilo de comunicação**
-    - 📌 **Tópicos principais** (chips)
-    - ✅ **Decisões & acordos** (lista)
-    - ⏳ **Pendências** (lista com prazo opcional)
-    - 🚦 **Sinais de relacionamento** (badges coloridos por tipo)
-    - 🎯 **Próximos passos sugeridos** (lista com botão "Criar tarefa" por item)
-    - 📊 **Risco de churn** + barra de confiança
-  - `error`: mensagem + botão `Tentar novamente`.
-- **Ações no rodapé**: `[Copiar markdown] [Baixar .md] [Fechar]`. "Copiar" usa `navigator.clipboard`; "Baixar" gera blob `.md` client-side.
-- Empty guard: se `interaction_ids.length === 0`, dialog mostra "Não há interações para resumir com os filtros atuais" sem chamar IA.
+Inserida em `Ficha360.tsx` logo **acima** de `FiltrosInteracoesBar`, dentro do `headerExtra` de `UltimasInteracoesCard`:
 
-### 5. Botão de disparo: `src/components/ficha-360/GerarResumoIAButton.tsx` (~60 linhas)
+```
+📊 Relatórios fixos:  [⭐ Quentes 30d] [Aguardando proposta] [+3 ▾]   [+ Salvar atual]
+                              ↑ ring-2 quando preset bate com filtros atuais
+```
 
-- Botão `variant="gradient"` com ícone `Sparkles` + label "Resumo IA" + badge `[N]` mostrando quantas interações serão analisadas.
-- Disabled quando `filteredInteractions.length === 0`, com tooltip "Aplique filtros que retornem ao menos 1 interação".
-- Atalho **Alt + I** (Inteligência) abre o dialog. Aparece no cheatsheet via `useFicha360FilterShortcuts`.
-- Mostra `RefreshCw` discreto se já existe resumo recente (<24h) — com tooltip "Resumo em cache. Clique para ver".
+- Mostra até 4 chips inline; o resto vai para dropdown `[Mais ▾]`.
+- Cada chip:
+  - Botão `role="button"` com `aria-pressed={isActive}` (ativo = `findMatch` bate).
+  - Hover mostra tooltip com `description` (se houver) + resumo `30d · WhatsApp+Email · 2 tags · busca "x"`.
+  - Click → `applyRelatorio(preset)` (aplica filtros + opcionalmente abre resumo IA).
+  - Botão `⋮` (visible on hover/focus): **Editar** (abre dialog), **Atualizar com filtros atuais**, **Excluir**.
+- Botão final `[+ Salvar atual]`:
+  - Se `findMatch` já existe: disabled com tooltip "Já salvo como X".
+  - Se nenhum filtro além do default: disabled com tooltip "Configure filtros antes de salvar".
+  - Senão abre `SalvarRelatorioDialog` em modo `create` com nome sugerido pré-preenchido.
+- Se `favorites.length === 0`: empty state inline `[+ Crie seu primeiro relatório]`.
 
-### 6. `Ficha360.tsx` — integração
+### 3. Dialog `SalvarRelatorioDialog.tsx` (~140 linhas)
 
-- Importar `GerarResumoIAButton` + `ResumoConversaIADialog`.
-- Estado local `const [summaryOpen, setSummaryOpen] = useState(false)`.
-- Renderizar o botão no `headerExtra` da seção "Últimas Interações", **antes** dos toggles de visualização/ordenação (posição de destaque).
-- Passar `interactionIds = filteredInteractions.map(i => i.id)`, `contactSnapshot` (nome, cargo, empresa, DISC, hobbies/interesses do `profile`), `filtersSummary` (período, canais, tags, busca).
-- Atalho `Alt + I` → `setSummaryOpen(true)` (no-op se 0 interações).
+Reaproveita shadcn `Dialog`. Modos `create` | `edit`:
 
-### 7. `useFicha360FilterShortcuts.ts` — atalho Alt+I
+- Campo **Nome** (input, max 40, validação: ≥1 char não-espaço, único).
+- Campo **Descrição** (textarea, max 200, contador, opcional).
+- Switch **"Abrir resumo IA ao aplicar"** (default ON em create).
+- Preview compacto dos filtros capturados: `30d · WhatsApp+Email · 2 tags · busca "abc"`.
+- Footer: `[Cancelar]` `[Salvar]` (disabled enquanto inválido). Atalhos: `Enter` confirma, `Esc` cancela.
+- Em `edit`, valida unicidade de nome contra outros presets (dedup automático com sufixo se houver colisão).
 
-Adicionar no escopo `ficha360-filtros`:
-- `Alt + I` → dispara evento `ficha360:open-ai-summary` (no-op se 0 interações; toast "Sem interações filtradas").
+### 4. Wiring em `Ficha360.tsx`
 
-### 8. Histórico mínimo na Ficha 360 (opcional, dentro do dialog)
+- Renderizar finalmente `<ResumoConversaIADialog>` no JSX (estava importado mas não montado), recebendo `interactions={sortedInteractions}` (já filtradas), `contactSnapshot` (montado a partir de `profile`/`intelligence`/`prontidao`) e `filtersSummary` `{ period_days: days, channels, tags, query: q }`.
+- Inserir `<RelatoriosFixosBar>` no `headerExtra` (acima de `FiltrosInteracoesBar`).
+- `applyRelatorio(preset)`:
+  ```ts
+  setDays(preset.days); setChannels(preset.channels);
+  setTags(preset.tags); setQ(preset.q ?? '');
+  setSearchInput(preset.q ?? '');
+  setDraftDays(preset.days); setDraftChannels(preset.channels);
+  if (preset.autoOpenSummary !== false) {
+    // Pequeno setTimeout(0) para garantir que recompute filteredInteractions antes
+    setTimeout(() => setResumoIAOpen(true), 0);
+  }
+  toast.success(`Relatório aplicado: "${preset.name}"`, { description: preset.description });
+  ```
+- Manter `FavoritosFiltrosMenu` existente como atalho secundário (não remove — já tem atalho `Shift+F`).
 
-No header do dialog, dropdown `[🕘 Últimos resumos ▾]` lista os 5 mais recentes deste contato (do hook `history`). Click carrega o `summary` salvo sem nova chamada à IA. Cada item: `dd/MM HH:mm · X interações · X tags`.
+### 5. Sugestão de nome estendida
+
+`suggestFavoriteName(days, channels, tags, q)` ganha 4º arg: se `q` existe, sufixo ` · "<q.slice(0,12)>"`. Mantém ≤40 chars.
+
+### 6. Compartilhamento
+
+- `encodeFavoriteToToken` v2: inclui `description`, `q`, `autoOpenSummary` no payload (versão `v: 2`). Decoder aceita `v: 1` (defaults para campos novos) e `v: 2`.
+- `AplicarFavoritoCompartilhadoDialog` mostra também descrição (se houver) no preview antes de importar.
+
+### 7. Atalho
+
+- `Shift+R` (novo) abre dialog de salvar relatório atual (equivalente a clicar `[+ Salvar atual]`). Adicionar em `useFicha360FilterShortcuts.ts` e listar no cheatsheet.
 
 ## Não muda
 
-- `meeting-summary` edge function e `useMeetingSummary` (continuam servindo resumo de 1 interação isolada).
-- Filtros, ordenação, timeline, view modes, favoritos, contagens — escopo intacto.
-- Schema das interações, RLS de `interactions`, `vw_interaction_timeline`.
+- Edge functions, banco, RLS — tudo client-side.
+- `useFicha360ConversationSummary` (já existe e funciona).
+- `FavoritosFiltrosMenu`, `useFicha360Sort`, view modes, atalhos existentes.
+- `CompanyInteractionsTab`, `ConversasRelacionadasCard`.
+- Lógica de filtros, `recentInteractions`, `sortedInteractions`.
 
 ## Critérios de aceite
 
-(a) Botão "✨ Resumo IA [N]" aparece no header de "Últimas Interações" mostrando contagem das filtradas; (b) disabled quando N=0 com tooltip explicativo; (c) clique abre dialog com confirmação antes de chamar IA; (d) loading com skeleton, success com 8 seções estruturadas, error com retry; (e) cache 24h via `filters_hash` evita reprocessar mesmos filtros; (f) ações copiar/baixar markdown funcionam no estado success; (g) atalho **Alt + I** abre dialog (no-op se 0 interações) e aparece no cheatsheet; (h) histórico dropdown lista 5 últimos resumos do contato; (i) tratamento explícito de 402 (créditos) e 429 (rate limit) com toasts PT-BR; (j) sem nova dependência, sem `any`, PT-BR, novos arquivos: edge function <200 linhas, hook <100, dialog <250, botão <80; (k) acessibilidade: dialog com `aria-labelledby`, seções com `<h3>`, badges com `aria-label` descritivo.
+(a) Barra `RelatoriosFixosBar` visível acima de `FiltrosInteracoesBar`, com chips dos relatórios; (b) chip cujo combo bate com filtros atuais mostra `ring-2 ring-primary` e `aria-pressed=true`; (c) `[+ Salvar atual]` abre dialog com nome sugerido + descrição opcional + switch "Abrir resumo IA"; (d) ao clicar num chip, filtros são aplicados (período/canais/tags/busca) e, se `autoOpenSummary !== false`, o `ResumoConversaIADialog` abre automaticamente com as interações já filtradas; (e) `⋮` permite **Editar** (nome + descrição + switch), **Atualizar com filtros atuais**, **Excluir** com confirm toast; (f) presets v1 (sem descrição/q) continuam funcionando após migração silenciosa; (g) `Shift+R` abre o dialog de salvar; (h) tokens compartilhados v2 transportam descrição + q + flag, v1 antigos seguem funcionando; (i) sem nova dependência, sem `any`, PT-BR; (j) novos arquivos: `RelatoriosFixosBar.tsx` <160 linhas, `SalvarRelatorioDialog.tsx` <150 linhas; (k) acessibilidade: chips com `aria-pressed` e `aria-label` descritivo, dialog com `aria-labelledby`, switch com `aria-describedby`; (l) `ResumoConversaIADialog` é finalmente renderizado em `Ficha360.tsx` com snapshots corretos.
 
