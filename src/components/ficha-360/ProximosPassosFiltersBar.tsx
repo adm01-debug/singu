@@ -139,6 +139,7 @@ function ProximosPassosFiltersBarComponent({
           </SelectTrigger>
           <SelectContent align="end">
             <SelectItem value="sugerido">Sugerido</SelectItem>
+            <SelectItem value="recomendacao">Recomendação (score)</SelectItem>
             <SelectItem value="prioridade">Prioridade</SelectItem>
             <SelectItem value="canal">Canal</SelectItem>
           </SelectContent>

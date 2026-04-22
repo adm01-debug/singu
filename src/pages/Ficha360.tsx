@@ -563,6 +563,7 @@ const Ficha360 = () => {
                   firstName={effectiveProfile?.first_name ?? fullName.split(' ')[0]}
                   sentiment={(effectiveProfile?.sentiment ?? null) as 'positivo' | 'neutro' | 'negativo' | 'misto' | null}
                   companyId={profile?.company_id ?? null}
+                  preferredChannel={intelligence?.best_channel ?? null}
                 />
                 <UltimasInteracoesCard
                   interactions={sortedInteractions}
