@@ -136,8 +136,102 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
           Feito
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-3">
-        {pendingOption ? (
+      <PopoverContent align="start" className="w-80 p-3">
+        <div className="flex items-center gap-1 mb-2 border-b pb-2">
+          <Button
+            size="xs"
+            variant={view === 'form' ? 'secondary' : 'ghost'}
+            className="h-7 text-xs"
+            onClick={() => setView('form')}
+          >
+            <Check className="h-3 w-3" />
+            Registrar
+          </Button>
+          <Button
+            size="xs"
+            variant={view === 'history' ? 'secondary' : 'ghost'}
+            className="h-7 text-xs"
+            onClick={() => {
+              setPendingOutcome(null);
+              setView('history');
+            }}
+          >
+            <History className="h-3 w-3" />
+            Histórico
+            {history.length > 0 ? (
+              <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] leading-4">
+                {history.length}
+              </span>
+            ) : null}
+          </Button>
+        </div>
+
+        {view === 'history' ? (
+          <div className="space-y-2">
+            <div>
+              <p className="text-sm font-medium">Tentativas anteriores</p>
+              <p className="text-xs text-muted-foreground">
+                Últimos 30 dias deste passo.
+              </p>
+            </div>
+
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : history.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground">
+                <Inbox className="h-5 w-5 mb-1" />
+                <p className="text-xs">Nenhuma tentativa registrada ainda.</p>
+              </div>
+            ) : (
+              <ul className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                {history.map((item) => {
+                  const opt = OPTIONS.find((o) => o.value === item.outcome);
+                  const Icon = opt?.icon ?? Check;
+                  const executedDate = new Date(item.executed_at);
+                  return (
+                    <li
+                      key={item.id}
+                      className="rounded-md border bg-muted/30 p-2 space-y-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Icon
+                            className={`h-3.5 w-3.5 shrink-0 ${opt?.className ?? 'text-muted-foreground'}`}
+                          />
+                          <span className="text-xs font-medium truncate">
+                            {opt?.label ?? item.outcome}
+                          </span>
+                        </div>
+                        <span
+                          className="text-[10px] text-muted-foreground shrink-0"
+                          title={format(executedDate, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        >
+                          {formatDistanceToNow(executedDate, { addSuffix: true, locale: ptBR })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                        <span>
+                          Canal:{' '}
+                          <span className="font-medium text-foreground">
+                            {item.channel_used ?? '—'}
+                          </span>
+                        </span>
+                        <span>{format(executedDate, 'dd/MM HH:mm', { locale: ptBR })}</span>
+                      </div>
+                      {item.notes ? (
+                        <p className="text-[11px] text-muted-foreground border-t pt-1">
+                          {item.notes}
+                        </p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ) : pendingOption ? (
           <div className="space-y-3">
             <div>
               <p className="text-sm font-medium">Confirmar registro?</p>
