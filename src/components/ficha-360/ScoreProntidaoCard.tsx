@@ -13,6 +13,8 @@ interface Props {
   data: ProntidaoResult;
   contactId?: string;
   simulated?: boolean;
+  /** Resultado real (sem simulação) para comparativo lado a lado quando `simulated` está ativo. */
+  realData?: ProntidaoResult;
 }
 
 const levelClasses: Record<ProntidaoLevel, { badge: string; ring: string; text: string }> = {
