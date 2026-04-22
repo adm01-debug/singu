@@ -74,6 +74,25 @@ const CONFIRM_DESCRIPTION: Record<PassoOutcome, string> = {
   pulou: 'Este passo ficará silenciado pelos próximos 7 dias.',
 };
 
+type ChannelKey = 'whatsapp' | 'email' | 'call' | 'meeting';
+
+const CHANNELS: { value: ChannelKey; label: string; icon: typeof Mail }[] = [
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircleIcon },
+  { value: 'email', label: 'E-mail', icon: Mail },
+  { value: 'call', label: 'Ligação', icon: Phone },
+  { value: 'meeting', label: 'Reunião', icon: CalendarDays },
+];
+
+function normalizeChannel(hint?: string | null): ChannelKey | null {
+  if (!hint) return null;
+  const v = hint.toLowerCase();
+  if (v.includes('whats')) return 'whatsapp';
+  if (v.includes('mail') || v === 'email' || v === 'e-mail') return 'email';
+  if (v.includes('call') || v.includes('lig') || v.includes('phone') || v.includes('tel')) return 'call';
+  if (v.includes('meet') || v.includes('reuni')) return 'meeting';
+  return null;
+}
+
 function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<'form' | 'history'>('form');
