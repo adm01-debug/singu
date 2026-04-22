@@ -232,6 +232,7 @@ export function useKeyboardShortcutsEnhanced(options: UseKeyboardShortcutsOption
     { key: 'o', alt: true, action: () => {}, description: 'Ordenar: Mais antigas', category: 'sorting', global: true },
     { key: 'm', alt: true, action: () => {}, description: 'Ordenar: Melhor correspondência', category: 'sorting', global: true },
     { key: 'p', alt: true, action: () => {}, description: 'Ordenar: Por pessoa/empresa', category: 'sorting', global: true },
+    { key: 'c', alt: true, action: () => {}, description: 'Ordenar: Por canal', category: 'sorting', global: true },
   ], [navigate]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
