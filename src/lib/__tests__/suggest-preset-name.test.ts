@@ -57,6 +57,14 @@ describe('suggestInteracoesPresetName', () => {
     expect(out).toContain('últimos 7d');
   });
 
+  it('formata "últimos 14d" quando intervalo bate', () => {
+    const ate = new Date(NOW);
+    const de = new Date(NOW);
+    de.setDate(de.getDate() - 14);
+    const out = suggestInteracoesPresetName(baseFilters({ de, ate }), NOW);
+    expect(out).toContain('últimos 14d');
+  });
+
   it('prioriza termo de busca q com aspas', () => {
     const out = suggestInteracoesPresetName(
       baseFilters({ q: 'proposta', company: 'Acme' }),
