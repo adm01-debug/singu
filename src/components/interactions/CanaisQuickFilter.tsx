@@ -327,15 +327,28 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               size="icon-sm"
               onClick={handleToggleMode}
               aria-label={mode === 'auto' ? 'Mudar para modo manual' : 'Mudar para modo automático'}
-              className="ml-1 text-muted-foreground hover:text-foreground"
+              className={cn(
+                'relative ml-1 text-muted-foreground hover:text-foreground',
+                dirty && 'text-warning hover:text-warning',
+              )}
             >
               {mode === 'auto' ? <Zap className="w-3.5 h-3.5" /> : <MousePointerClick className="w-3.5 h-3.5" />}
+              {dirty && (
+                <span
+                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-warning text-warning-foreground text-[10px] font-bold leading-none flex items-center justify-center ring-2 ring-background"
+                  aria-label={`${diffCount} canal${diffCount === 1 ? '' : 'is'} pendente${diffCount === 1 ? '' : 's'}`}
+                >
+                  {diffCount}
+                </span>
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">
             {mode === 'auto'
               ? 'Modo automático: aplica ao clicar. Clique para mudar para manual.'
-              : 'Modo manual: clique em Aplicar para atualizar. Clique para voltar ao automático.'}
+              : dirty
+                ? `Modo manual: ${diffCount} canal${diffCount === 1 ? '' : 'is'} pendente${diffCount === 1 ? '' : 's'}. Alt+Enter para aplicar.`
+                : 'Modo manual: clique em Aplicar para atualizar. Clique para voltar ao automático.'}
           </TooltipContent>
         </Tooltip>
 
