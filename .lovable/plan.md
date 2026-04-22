@@ -1,48 +1,38 @@
 
 
-# Plano: Contador "Mostrando X de Y" em Últimas Interações
+# Plano: Chip de busca textual em "Últimas Interações"
 
 ## Objetivo
 
-Exibir no cabeçalho do `UltimasInteracoesCard` um contador "Mostrando X de Y" que reflete em tempo real a quantidade visível vs. total, atualizando conforme o usuário rola ou clica em "Carregar mais".
+Adicionar um campo de busca textual no card "Últimas Interações" (Ficha 360) que filtra os itens já carregados por `assunto`/`resumo`/`channel`/`direction` e exibe um chip "Busca: 'termo' (N)" ao lado dos chips de período/canal — removível com um clique. O chip deve indicar quantas interações bateram com o termo.
 
-## Decisão de design
+## Onde encaixar
 
-- Posicionar o contador no `CardHeader`, logo à direita do título "Últimas Interações" (antes do botão "Ver todas"), como `Badge` discreto `variant="secondary"`.
-- Quando `visible.length === items.length` (tudo carregado), simplificar para "Y" sem o "X de" para reduzir ruído visual.
-- Quando `items.length === 0`, esconder o contador.
-- Usar `tabular-nums` para evitar "pulo" de largura conforme os números mudam.
+1. **Estado da query**: estender `useFicha360Filters` com `q: string`, `setQ(next)` e incluir `q` em `clear()`. Param na URL: `?q=`. Adicionar 1 ao `activeCount` quando `q` estiver preenchido (após trim).
 
-## Mudanças
+2. **Filtragem client-side**: em `Ficha360.tsx`, derivar `filteredInteractions = useMemo(...)` aplicando `q` (case/diacritic-insensitive) sobre `recentInteractions` nos campos `assunto`, `resumo`, `channel`, `direction`. Passar isso para `UltimasInteracoesCard` em vez de `recentInteractions` cru. O `matchCount` é `filteredInteractions.length`.
 
-### `src/components/ficha-360/UltimasInteracoesCard.tsx`
+3. **Input de busca**: dentro do `headerExtra` do card, antes de `FiltrosInteracoesBar`, adicionar um pequeno `<Input>` com ícone `Search` à esquerda, debounce de 200ms via `useDebouncedValue` (já existe? — checar; senão usar `setTimeout` simples). Placeholder: "Buscar por assunto, resumo, canal…". Largura responsiva (`max-w-xs`).
 
-1. Desestruturar `visible` e `loadMore` (já feito) do `useInfiniteList` — `visible.length` é a fonte de "X".
-2. Adicionar import de `Badge` (`@/components/ui/badge`).
-3. No `CardHeader`, ajustar o bloco do título:
+4. **Chip "Busca"**: estender `FiltrosAtivosChips` para aceitar prop opcional `searchTerm?: string`, `searchMatchCount?: number` e `onRemoveSearch?: () => void`. Renderizar um `Badge` `closeable` com ícone `Search`: "Busca: 'termo' · N", chamando `onRemoveSearch` no X.
 
-```tsx
-<div className="flex items-center gap-2">
-  <CardTitle className="text-base">Últimas Interações</CardTitle>
-  {items.length > 0 && (
-    <Badge variant="secondary" className="text-xs font-normal tabular-nums">
-      {visible.length < items.length
-        ? `Mostrando ${visible.length} de ${items.length}`
-        : `${items.length}`}
-    </Badge>
-  )}
-</div>
-```
+5. **Ressincronizar `useFicha360DraftFilters`** (opcional): a busca **não** vai por draft — aplica imediatamente como já é padrão de search. Apenas chips de período/canais ficam em draft. (Alinhado com UX do `ActiveFiltersBar` em `/interacoes`.)
 
-4. O contador atualiza automaticamente porque `visible` vem de `useInfiniteList`, que re-renderiza a cada incremento de `count` (scroll ou clique em "Carregar mais").
+6. **Reset de paginação**: o `useInfiniteList` no card já depende de `items` (que agora muda com `q`), então a lista reinicia em 15 ao buscar — sem alteração extra. Para evitar manter `count` antigo no `sessionStorage`, incluir um hash de `q` no `filterKey`: `${days ?? 'all'}-${channelsKey || 'all'}-${qHash}`.
 
-## Não faz parte deste plano
+## Mudanças (arquivos)
 
-- Mexer no `InfiniteScrollSentinel` (ele já mostra "X de Y" inline durante o load — fica como feedback complementar).
-- Adicionar contador em outras telas/cards.
-- Mudar `useInfiniteList`.
+- `src/hooks/useFicha360Filters.ts` — adicionar `q`, `setQ`, incluir em `clear` e `activeCount`.
+- `src/pages/Ficha360.tsx` — derivar `filteredInteractions`, passar `q`, `setQ` para chips e card; passar `filteredInteractions` em vez de `recentInteractions`.
+- `src/components/ficha-360/UltimasInteracoesCard.tsx` — aceitar prop `q?: string`, incluir no `filterKey` para reset de paginação. Adicionar input de busca no `headerExtra`? **Não** — o input fica em `FiltrosInteracoesBar` (próximo passo abaixo) ou direto no `headerExtra` no consumidor. Decisão: input fica em `Ficha360.tsx` dentro do `headerExtra`, antes do `FiltrosInteracoesBar`, para não inflar o card nem misturar com o draft de filtros.
+- `src/components/ficha-360/FiltrosAtivosChips.tsx` — aceitar `searchTerm`, `searchMatchCount`, `onRemoveSearch`; renderizar chip `Search`.
+
+## Não muda
+
+- `useFicha360`, `useExternalInteractions`, `FiltrosInteracoesBar` (draft de período/canais), `useFicha360DraftFilters`, hooks de paginação, layout geral, RLS/edge functions.
+- A busca é **client-side** (sobre os 50 itens já carregados via `interactionsLimit: 50`), consistente com o escopo do card.
 
 ## Critérios de aceite
 
-(a) Badge "Mostrando X de Y" aparece ao lado do título quando há mais itens a carregar; (b) atualiza em tempo real ao rolar ou clicar em "Carregar mais"; (c) quando tudo está carregado, mostra apenas o total ("Y"); (d) quando lista vazia, badge não aparece; (e) usa `tabular-nums` para alinhamento estável; (f) `variant="secondary"` flat, PT-BR, sem emojis; (g) sem nova dependência; (h) arquivo permanece <120 linhas.
+(a) Campo de busca aparece no header do card "Últimas Interações"; (b) ao digitar (com debounce 200ms), a lista filtra ao vivo por `assunto`/`resumo`/`channel`/`direction`, case/diacritic-insensitive; (c) chip "Busca: 'termo' · N" aparece em `FiltrosAtivosChips` mostrando o nº de matches; (d) clicar no X do chip limpa a busca e restaura a lista; (e) "Limpar tudo" também limpa a busca; (f) o param `?q=` persiste na URL (deep-link/back/forward); (g) paginação reinicia em 15 ao mudar busca; (h) sem nova dependência, sem `any`, PT-BR, flat.
 
