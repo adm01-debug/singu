@@ -77,7 +77,16 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, duplicatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
-  const [open, setOpen] = useState(false);
+  // Estado do popover persistido em localStorage:
+  // - se estava aberto antes de aplicar um preset, restaura no próximo mount
+  //   e não fecha automaticamente após aplicar.
+  const OPEN_KEY = 'interacoes-presets-open';
+  const [open, setOpen] = useState<boolean>(() => {
+    try { return localStorage.getItem(OPEN_KEY) === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(OPEN_KEY, open ? '1' : '0'); } catch { /* noop */ }
+  }, [open]);
   const [importOpen, setImportOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
