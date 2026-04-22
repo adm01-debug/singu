@@ -306,6 +306,9 @@ const Ficha360 = () => {
                   interactions={recentInteractions}
                   contactId={id}
                   filtersActive={activeCount > 0}
+                  isLoading={interactionsFetching}
+                  days={days}
+                  channels={channels}
                   headerExtra={
                     <>
                       <FiltrosInteracoesBar
