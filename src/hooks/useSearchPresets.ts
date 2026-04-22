@@ -232,6 +232,7 @@ export function useSearchPresets(context: string = 'contacts') {
     updatePreset,
     duplicatePreset,
     toggleFavorite,
+    toggleProtected,
     markAsUsed,
     importPresets,
   };
