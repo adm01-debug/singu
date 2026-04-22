@@ -330,7 +330,9 @@ export function useInteractionsAdvancedFilter() {
 
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
-    // Reset automático de page sempre que QUALQUER outro filtro mudar.
+    // Reset automático de page sempre que QUALQUER outro filtro mudar
+    // (incluindo `view`: trocar Lista→Por empresa pode reduzir o nº de páginas
+    // e deixar o usuário em uma página inexistente).
     if (key !== 'page') next.delete('page');
     if (key === 'canais') {
       const arr = normalizeCanais(value);
@@ -373,7 +375,12 @@ export function useInteractionsAdvancedFilter() {
       if (v) next.set(key, v);
       else next.delete(key);
     }
-    setSearchParams(next, { replace: true });
+    // Para `view` e `page` criamos uma nova entrada no histórico do navegador:
+    // são mudanças de navegação intencionais e o botão "Voltar" deve revertê-las,
+    // o que é essencial para links compartilhados (estado preservado em recarregar/copiar).
+    // Demais filtros continuam usando `replace` para não poluir o histórico.
+    const pushToHistory = key === 'view' || key === 'page';
+    setSearchParams(next, { replace: !pushToHistory });
   }, [searchParams, setSearchParams]);
 
   const clear = useCallback(() => {
