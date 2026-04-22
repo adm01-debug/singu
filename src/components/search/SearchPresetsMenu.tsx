@@ -327,7 +327,15 @@ export function SearchPresetsMenu({
                       />
                     ) : (
                       <>
-                        <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                        <p className="text-sm font-medium text-foreground truncate flex items-center gap-1">
+                          {preset.isProtected && (
+                            <Lock
+                              className="w-3 h-3 text-muted-foreground shrink-0"
+                              aria-label="Preset protegido"
+                            />
+                          )}
+                          <span className="truncate">{preset.name}</span>
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {Object.values(preset.filters).flat().length} filtros
                           {preset.searchTerm && ` · "${preset.searchTerm}"`}
