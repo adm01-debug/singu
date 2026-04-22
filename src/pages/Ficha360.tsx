@@ -330,14 +330,36 @@ const Ficha360 = () => {
                   companyId={profile?.company_id ?? null}
                 />
                 <UltimasInteracoesCard
-                  interactions={recentInteractions}
+                  interactions={filteredInteractions}
                   contactId={id}
                   filtersActive={activeCount > 0}
                   isLoading={interactionsFetching}
                   days={days}
                   channels={channels}
+                  q={q}
                   headerExtra={
                     <>
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          type="search"
+                          value={searchInput}
+                          onChange={(e) => setSearchInput(e.target.value)}
+                          placeholder="Buscar por assunto, resumo, canal…"
+                          className="h-8 pl-8 pr-8 text-sm max-w-xs"
+                          aria-label="Buscar interações"
+                        />
+                        {searchInput && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchInput('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                            aria-label="Limpar busca"
+                          >
+                            <XIcon className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                       <FiltrosInteracoesBar
                         days={draftDays}
                         channels={draftChannels}
@@ -345,7 +367,7 @@ const Ficha360 = () => {
                         onChannelsChange={setDraftChannels}
                         onClear={clearDraftFilters}
                         activeCount={activeCount}
-                        shownCount={recentInteractions.length}
+                        shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
                         channelCounts={potentialChannelCounts}
                         channelCountsReady={channelCountsReady}
@@ -356,11 +378,20 @@ const Ficha360 = () => {
                       <FiltrosAtivosChips
                         days={days}
                         channels={channels}
-                        shownCount={recentInteractions.length}
+                        shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
+                        searchTerm={q}
+                        searchMatchCount={filteredInteractions.length}
                         onRemoveDays={() => setDays(90)}
                         onRemoveChannel={(c) => setChannels(channels.filter((x) => x !== c))}
-                        onClearAll={clear}
+                        onRemoveSearch={() => {
+                          setSearchInput('');
+                          setQ('');
+                        }}
+                        onClearAll={() => {
+                          setSearchInput('');
+                          clear();
+                        }}
                       />
                     </>
                   }
