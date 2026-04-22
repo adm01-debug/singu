@@ -19,6 +19,7 @@ interface Options {
   onClearPeriod: () => void;
   onClearSearch: () => void;
   onRemoveChannel: (channel: string) => void;
+  onCopyLink?: () => void;
   enabled: boolean;
 }
 
