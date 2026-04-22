@@ -44,7 +44,8 @@ import { useBestContactTime } from '@/hooks/useBestContactTime';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
 import { Search, X as XIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
