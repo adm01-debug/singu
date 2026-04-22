@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
+import { parseCivilDate, formatCivilDate } from '@/lib/civilDate';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
