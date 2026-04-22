@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from 'react';
-import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft, History, Inbox, Mail, Phone, CalendarDays } from 'lucide-react';
+import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft, History, Inbox, Mail, Phone, CalendarDays, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,7 +77,7 @@ const CONFIRM_DESCRIPTION: Record<PassoOutcome, string> = {
 type ChannelKey = 'whatsapp' | 'email' | 'call' | 'meeting';
 
 const CHANNELS: { value: ChannelKey; label: string; icon: typeof Mail }[] = [
-  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircleIcon },
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
   { value: 'email', label: 'E-mail', icon: Mail },
   { value: 'call', label: 'Ligação', icon: Phone },
   { value: 'meeting', label: 'Reunião', icon: CalendarDays },
