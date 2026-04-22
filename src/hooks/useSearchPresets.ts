@@ -139,9 +139,11 @@ export function useSearchPresets(context: string = 'contacts') {
    * Importa presets em lote. Respeita limite de 10 e faz dedup de nomes.
    * Retorna contagem de adicionados e ignorados (por limite).
    */
-  const importPresets = useCallback((items: Array<Omit<SearchPreset, 'id' | 'createdAt'>>): { added: number; skipped: number } => {
+  const importPresets = useCallback((items: Array<Omit<SearchPreset, 'id' | 'createdAt'>>): { added: number; skipped: number; renamed: number; renamedDetails: Array<{ from: string; to: string }> } => {
     let added = 0;
     let skipped = 0;
+    let renamed = 0;
+    const renamedDetails: Array<{ from: string; to: string }> = [];
     setPresets(prev => {
       const next = [...prev];
       const existingNames = new Set(next.map(p => p.name));
@@ -155,6 +157,8 @@ export function useSearchPresets(context: string = 'contacts') {
           let i = 2;
           while (existingNames.has(`${item.name} (${i})`)) i++;
           finalName = `${item.name} (${i})`;
+          renamed++;
+          renamedDetails.push({ from: item.name, to: finalName });
         }
         const newPreset: SearchPreset = {
           ...item,
@@ -168,7 +172,7 @@ export function useSearchPresets(context: string = 'contacts') {
       }
       return next.slice(0, 10);
     });
-    return { added, skipped };
+    return { added, skipped, renamed, renamedDetails };
   }, []);
 
   const sortedPresets = useMemo(
