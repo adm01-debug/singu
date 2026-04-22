@@ -31,7 +31,7 @@ import { useNextPagePrefetch } from '@/hooks/useNextPagePrefetch';
 import { useScopedShortcut } from '@/lib/keyboardShortcutRegistry';
 import { VALID_PER_PAGE } from '@/hooks/useInteractionsAdvancedFilter';
 import { toast } from 'sonner';
-import { DensityChips } from '@/components/interactions/DensityChips';
+import { ViewPrefsSummary } from '@/components/interactions/ViewPrefsSummary';
 import { SentimentQuickFilter } from '@/components/interactions/SentimentQuickFilter';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
@@ -461,13 +461,16 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         }}
       />
 
-      <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-        {adv.view === 'list' && (
-          <>
-            <span className="hidden sm:inline">Densidade</span>
-            <DensityChips value={adv.density} onChange={(d) => setFilter('density', d)} />
-          </>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ViewPrefsSummary
+          density={adv.density}
+          perPage={adv.perPage}
+          perPageOptions={VALID_PER_PAGE}
+          total={total}
+          densityEnabled={adv.view === 'list'}
+          onDensityChange={(d) => setFilter('density', d)}
+          onPerPageChange={(pp) => setFilter('perPage', pp)}
+        />
         <Button
           variant="ghost"
           size="xs"
