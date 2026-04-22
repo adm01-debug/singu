@@ -4,10 +4,11 @@ import { ptBR } from 'date-fns/locale';
 import {
   Building2, User, MessageSquare, Phone, Mail, Users as UsersIcon,
   Video, FileText, Clock, MoreVertical, Edit, Trash2,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
