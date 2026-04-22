@@ -389,8 +389,32 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           return (
             <Tooltip key={opt.value}>
               <TooltipTrigger asChild>{chip}</TooltipTrigger>
-              <TooltipContent side="top">
-                {isEmpty ? `Sem interações neste canal (${shortcutLabel})` : `${opt.label} (${shortcutLabel})`}
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="space-y-1 text-xs">
+                  <p className="font-medium">
+                    {opt.label}{' '}
+                    <span className="text-muted-foreground font-normal">({shortcutLabel})</span>
+                  </p>
+                  {hasCounts && (
+                    isEmpty ? (
+                      <p className="text-muted-foreground">
+                        Sem interações neste canal no escopo atual.
+                        <br />
+                        Refine sua busca para ver mais interações neste canal.
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground">
+                        <span className="tabular-nums font-semibold text-foreground">{count}</span>{' '}
+                        interaç{count === 1 ? 'ão' : 'ões'} disponíve{count === 1 ? 'l' : 'is'} no escopo atual.
+                      </p>
+                    )
+                  )}
+                  {inPending && (
+                    <p className="text-[10px] text-muted-foreground border-t border-border pt-1">
+                      Clique para {mode === 'manual' ? 'desmarcar (pendente)' : 'remover'}.
+                    </p>
+                  )}
+                </div>
               </TooltipContent>
             </Tooltip>
           );
