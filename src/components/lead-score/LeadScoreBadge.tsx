@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { LeadGrade, GRADE_CONFIG } from '@/hooks/useLeadScore';
 import { WhyScoreDrawer, type WhyScoreFactor } from '@/components/intelligence/WhyScoreDrawer';
+import { useWhyScoreDrawerPreference } from '@/hooks/useWhyScoreDrawerPreference';
 
 interface Props {
   score: number;
@@ -45,9 +46,16 @@ function LeadScoreBadgeInner({
   const config = GRADE_CONFIG[grade];
   const TrendIcon = !change || change === 0 ? Minus : change > 0 ? TrendingUp : TrendingDown;
   const trendColor = !change || change === 0 ? 'text-muted-foreground' : change > 0 ? 'text-emerald-500' : 'text-red-500';
-  const [open, setOpen] = useState(false);
 
   const interactive = !!contactId && !!factors;
+  const { shouldAutoOpen, rememberOpen, forgetOpen } = useWhyScoreDrawerPreference();
+  const [open, setOpen] = useState<boolean>(shouldAutoOpen && interactive);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) rememberOpen();
+    else forgetOpen();
+  };
 
   const badge = (
     <Badge
@@ -69,7 +77,7 @@ function LeadScoreBadgeInner({
           {interactive ? (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+              onClick={(e) => { e.stopPropagation(); setOpen(true); rememberOpen(); }}
               className="inline-flex"
               aria-label={`Lead score ${Math.round(score)} de 100. Clique para ver detalhes.`}
             >
@@ -92,7 +100,7 @@ function LeadScoreBadgeInner({
       {interactive && contactId && factors && (
         <WhyScoreDrawer
           open={open}
-          onOpenChange={setOpen}
+          onOpenChange={handleOpenChange}
           scoreKey={`lead-score:contact:${contactId}`}
           title={contactName ? `Lead Score · ${contactName}` : 'Lead Score'}
           subtitle={`Pontuação ${Math.round(score)}/100 — ${config.label}`}
