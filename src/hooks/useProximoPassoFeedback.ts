@@ -71,7 +71,15 @@ export function useRegisterPassoFeedback() {
       return data as PassoFeedback;
     },
     onSuccess: (_data, vars) => {
+      // Atualiza imediatamente a lista de feedbacks (alimenta feedbackHints → computeProximosPassos)
       qc.invalidateQueries({ queryKey: FEEDBACK_KEY(vars.contactId) });
+      // Recalcula Next Best Action (recomendação IA) para refletir o novo outcome
+      // Match por prefixo: ['next-best-action', userId, contactId]
+      qc.invalidateQueries({ queryKey: ['next-best-action'] });
+      // Atualiza inteligência/intenção do contato, que pondera priorização
+      qc.invalidateQueries({ queryKey: ['contact-intelligence', vars.contactId] });
+      // Sinais de prontidão e timeline derivada
+      qc.invalidateQueries({ queryKey: ['contact-view-360', vars.contactId] });
     },
   });
 }
