@@ -80,7 +80,63 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
     return parts.join(' • ');
   }, [defaults]);
 
+  const conflicts = useMemo(() => {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (!date) errors.push('Data não informada.');
+    if (!time) errors.push('Hora não informada.');
+    if (!priority) errors.push('Prioridade ausente — selecione alta, média ou baixa.');
+    if (!channel) errors.push('Canal ausente — selecione um canal de contato.');
+
+    if (date && time) {
+      const due = new Date(dueDateIso);
+      const now = new Date();
+      if (Number.isNaN(due.getTime())) {
+        errors.push('Data/hora inválida.');
+      } else if (due.getTime() < now.getTime() - 60_000) {
+        errors.push(`Data/hora no passado (${formatDateBr(date)} às ${time}).`);
+      }
+
+      const [hh] = time.split(':').map((x) => parseInt(x, 10));
+      if ((channel === 'call' || channel === 'meeting') && (hh < 8 || hh >= 19)) {
+        warnings.push(`${channel === 'call' ? 'Ligações' : 'Reuniões'} fora do horário comercial (08h–19h) costumam ter baixa resposta.`);
+      }
+
+      const dow = due.getDay();
+      if ((dow === 0 || dow === 6) && (channel === 'email' || channel === 'linkedin' || channel === 'call' || channel === 'meeting')) {
+        warnings.push('Data cai em fim de semana — considere mover para dia útil.');
+      }
+    }
+
+    if (passo.id === 'agendar-reuniao' && channel !== 'meeting') {
+      warnings.push('Este passo é "Agendar reunião" mas o canal selecionado não é Reunião.');
+    }
+    if (passo.id === 'whatsapp-followup' && channel !== 'whatsapp') {
+      warnings.push('Este passo é um follow-up de WhatsApp mas o canal selecionado é diferente.');
+    }
+    if (passo.id === 'aniversario' && channel === 'email') {
+      warnings.push('Mensagens de aniversário costumam ter melhor recepção via WhatsApp.');
+    }
+
+    if (priority === 'alta' && date && time) {
+      const due = new Date(dueDateIso);
+      const diffDays = Math.floor((due.getTime() - Date.now()) / 86_400_000);
+      if (diffDays > 2) {
+        warnings.push(`Prioridade Alta agendada para ${diffDays} dias — considere antecipar ou reduzir prioridade.`);
+      }
+    }
+
+    return { errors, warnings };
+  }, [date, time, channel, priority, dueDateIso, passo.id]);
+
+  const hasErrors = conflicts.errors.length > 0;
+
   const handleSubmit = () => {
+    if (hasErrors) {
+      toast.error(conflicts.errors[0]);
+      return;
+    }
     if (!date || !time) {
       toast.error('Informe data e hora');
       return;
