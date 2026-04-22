@@ -53,6 +53,20 @@ export function useProximosPassosFilters() {
     return (VALID_SORTS as readonly string[]).includes(raw) ? (raw as NbaSort) : DEFAULT_SORT;
   }, [searchParams]);
 
+  const status = useMemo<NbaStatus[]>(() => {
+    const raw = searchParams.get('nbaStatus');
+    if (!raw) return [];
+    return raw
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s): s is NbaStatus => (VALID_STATUS as readonly string[]).includes(s));
+  }, [searchParams]);
+
+  const sort = useMemo<NbaSort>(() => {
+    const raw = (searchParams.get('nbaSort') || '').toLowerCase();
+    return (VALID_SORTS as readonly string[]).includes(raw) ? (raw as NbaSort) : DEFAULT_SORT;
+  }, [searchParams]);
+
   const setPriorities = useCallback(
     (next: NbaPriority[]) => {
       setSearchParams(
