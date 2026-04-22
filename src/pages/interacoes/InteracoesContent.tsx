@@ -389,6 +389,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         totalCount={interactions.length}
         applyAll={applyAll}
         applyDateRange={applyDateRange}
+        clearDateRange={clearDateRange}
         channelCounts={channelCounts}
       />
 
