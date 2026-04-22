@@ -464,7 +464,7 @@ const Ficha360 = () => {
                   companyId={profile?.company_id ?? null}
                 />
                 <UltimasInteracoesCard
-                  interactions={filteredInteractions}
+                  interactions={sortedInteractions}
                   contactId={id}
                   filtersActive={activeCount > 0}
                   isLoading={interactionsFetching}
@@ -486,6 +486,11 @@ const Ficha360 = () => {
                           channels={channels}
                           q={q}
                           activeCount={activeCount}
+                        />
+                        <OrdenacaoToggle
+                          sort={sort}
+                          onChange={setSort}
+                          hasQuery={!!q.trim()}
                         />
                         <div className="relative">
                           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
