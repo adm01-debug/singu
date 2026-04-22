@@ -100,6 +100,7 @@ function arraysEqual(a: string[], b: string[]) {
 export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange, counts }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle, setMode } = useChannelSyncMode();
+  const { history, record: recordCombo, remove: removeCombo, clear: clearHistory } = useChannelHistory();
   const [pending, setPendingState] = useState<string[]>(() => {
     // Restaura pending salvo apenas se modo for manual e diferir do aplicado.
     // Se não houver pending salvo, usa o `applied` persistido como base
