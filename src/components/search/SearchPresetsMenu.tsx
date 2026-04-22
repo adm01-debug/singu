@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { suggestGenericPresetName } from '@/lib/suggestPresetName';
 import { dedupeNameAgainst } from '@/lib/searchPresetTransport';
+import { PresetFiltersDiff } from './PresetFiltersDiff';
 import {
   Popover,
   PopoverContent,
@@ -454,17 +455,27 @@ export function SearchPresetsMenu({
     </Popover>
 
     <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Os filtros salvos serão substituídos pelos filtros ativos agora.
-            As estatísticas de uso e o favorito serão preservados.
-            {pendingFilterUpdate && (
-              <span className="mt-2 block text-foreground">
-                {activeFilterCount} filtro{activeFilterCount !== 1 ? 's' : ''} ativo{activeFilterCount !== 1 ? 's' : ''} será{activeFilterCount !== 1 ? 'ão' : ''} salvo{activeFilterCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
-              </span>
-            )}
+          <AlertDialogDescription asChild>
+            <div className="space-y-3">
+              <p>
+                Os filtros salvos serão substituídos pelos filtros ativos agora.
+                As estatísticas de uso e o favorito serão preservados.
+              </p>
+              {pendingFilterUpdate && (
+                <p className="text-foreground">
+                  Mudanças em <strong>"{pendingFilterUpdate.name}"</strong>:
+                </p>
+              )}
+              {pendingFilterUpdate && (
+                <PresetFiltersDiff
+                  before={pendingFilterUpdate.filters}
+                  after={currentFilters}
+                />
+              )}
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
