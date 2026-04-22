@@ -78,9 +78,12 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
     );
   }
 
+  const densityLabel = effectiveDensity === 'compact' ? 'compacta' : 'confortável';
   return (
     <div className="py-4 text-center text-xs text-muted-foreground">
-      Fim da lista — {totalLoaded} {totalLoaded === 1 ? 'interação exibida' : 'interações exibidas'}
+      Fim da lista — {totalLoaded} de {total}{' '}
+      {totalLoaded === 1 ? 'interação exibida' : 'interações exibidas'}
+      {' · '}densidade {densityLabel}
     </div>
   );
 });
