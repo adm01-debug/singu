@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
@@ -86,6 +86,9 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
   const [recentlyAppliedId, setRecentlyAppliedId] = useState<string | null>(null);
+  // Modo de pré-visualização: clique no item abre painel diff em vez de aplicar.
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
@@ -427,6 +430,18 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <SelectItem value="alfabetica" className="text-xs">Alfabética</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                type="button"
+                variant={previewMode ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-2 gap-1 text-xs shrink-0"
+                onClick={() => { setPreviewMode((v) => !v); setPreviewId(null); }}
+                title={previewMode ? 'Desativar pré-visualização' : 'Ativar pré-visualização — clique mostra o diff antes de aplicar'}
+                aria-pressed={previewMode}
+              >
+                {previewMode ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                Prévia
+              </Button>
             </div>
           )}
 
@@ -443,15 +458,23 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                 };
                 const usage = preset.usageCount ?? 0;
                 return (
+                  <React.Fragment key={preset.id}>
                   <div
-                    key={preset.id}
                     className={[
                       'flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group relative transition-colors',
                       activePresetId === preset.id ? 'bg-primary/5 border-l-2 border-primary' : '',
                       recentlyAppliedId === preset.id ? 'animate-preset-flash' : '',
+                      previewId === preset.id ? 'bg-muted/40' : '',
                     ].filter(Boolean).join(' ')}
                     aria-current={activePresetId === preset.id ? 'true' : undefined}
-                    onClick={() => { if (editingId !== preset.id) applyPreset(preset); }}
+                    onClick={() => {
+                      if (editingId === preset.id) return;
+                      if (previewMode) {
+                        setPreviewId((cur) => (cur === preset.id ? null : preset.id));
+                      } else {
+                        applyPreset(preset);
+                      }
+                    }}
                   >
                     <button
                       type="button"
@@ -493,6 +516,11 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                                 Ativo
                               </span>
                             )}
+                            {previewId === preset.id && (
+                              <span className="shrink-0 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                                Prévia
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {summarize(payload)}
@@ -525,6 +553,22 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                         </>
                       ) : (
                         <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            title={previewId === preset.id ? 'Fechar prévia' : 'Pré-visualizar mudanças'}
+                            aria-label="Pré-visualizar mudanças"
+                            aria-expanded={previewId === preset.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPreviewId((cur) => (cur === preset.id ? null : preset.id));
+                            }}
+                          >
+                            {previewId === preset.id
+                              ? <EyeOff className="w-3 h-3 text-foreground" />
+                              : <Eye className="w-3 h-3 text-muted-foreground" />}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -601,6 +645,57 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                       )}
                     </div>
                   </div>
+                  {previewId === preset.id && (
+                    <div className="px-2.5 py-2 bg-muted/20 border-l-2 border-muted-foreground/30 space-y-2">
+                      <p className="text-[11px] text-muted-foreground">
+                        Mudanças que serão aplicadas (atual → preset):
+                      </p>
+                      <PresetFiltersDiff
+                        before={{
+                          q: currentPayload.q ? [currentPayload.q] : [],
+                          contact: currentPayload.contact ? [currentPayload.contact] : [],
+                          company: currentPayload.company ? [currentPayload.company] : [],
+                          canais: currentPayload.canais,
+                          de: currentPayload.de ? [currentPayload.de] : [],
+                          ate: currentPayload.ate ? [currentPayload.ate] : [],
+                          sort: currentPayload.sort ? [currentPayload.sort] : [],
+                        }}
+                        after={preset.filters}
+                        labelFor={{
+                          q: 'Busca livre',
+                          contact: 'Contato',
+                          company: 'Empresa',
+                          canais: 'Canais',
+                          de: 'De',
+                          ate: 'Até',
+                          sort: 'Ordenação',
+                        }}
+                      />
+                      <div className="flex items-center justify-end gap-1.5 pt-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={(e) => { e.stopPropagation(); setPreviewId(null); }}
+                        >
+                          Fechar
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 text-xs gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPreviewId(null);
+                            applyPreset(preset);
+                          }}
+                        >
+                          <Check className="w-3 h-3" />
+                          Aplicar
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  </React.Fragment>
                 );
               })}
             </div>
