@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -9,9 +9,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AccessibleChart } from '@/components/ui/accessible-chart';
 import {
   Select,
@@ -25,6 +30,10 @@ import {
   computeTrendSlope,
   type ProntidaoTrendPoint,
 } from '@/lib/prontidaoTrend';
+import {
+  useProntidaoTargetStore,
+  PRONTIDAO_TARGET_DEFAULT,
+} from '@/stores/useProntidaoTargetStore';
 import { cn } from '@/lib/utils';
 
 export type TrendWeeks = 4 | 8 | 12 | 24;
