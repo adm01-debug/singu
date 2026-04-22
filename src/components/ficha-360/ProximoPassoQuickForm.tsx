@@ -29,6 +29,9 @@ interface Props {
   contactId: string;
   onCreated: () => void;
   onCancel: () => void;
+  /** Quando informado, habilita o botão "Criar e seguir" para avançar à próxima sugestão. */
+  hasNext?: boolean;
+  onCreatedAndAdvance?: () => void;
 }
 
 const CHANNEL_OPTIONS: Array<{ value: ProximoPassoChannel; label: string }> = [
