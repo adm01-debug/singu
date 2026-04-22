@@ -89,6 +89,9 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   // Modo de pré-visualização: clique no item abre painel diff em vez de aplicar.
   const [previewMode, setPreviewMode] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // Navegação por teclado: índice do preset focado na lista (-1 = nenhum).
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
@@ -189,6 +192,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     }
   };
 
+  // Reseta o índice focado sempre que o popover abre/fecha ou a lista muda.
+  useEffect(() => {
+    if (!open) {
+      setFocusedIndex(-1);
+    }
+  }, [open]);
 
 
   const applyPreset = (preset: typeof presets[number]) => {
@@ -408,7 +417,33 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-96 p-0" align="end">
+        <PopoverContent
+          className="w-96 p-0"
+          align="end"
+          onKeyDown={(e) => {
+            // Navegação por teclado nos presets: ↑/↓ move, Enter aplica, Esc fecha.
+            if (sortedPresets.length === 0) return;
+            if (editingId || isNaming) return;
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setFocusedIndex((i) => {
+                const next = i < sortedPresets.length - 1 ? i + 1 : 0;
+                requestAnimationFrame(() => itemRefs.current[next]?.scrollIntoView({ block: 'nearest' }));
+                return next;
+              });
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setFocusedIndex((i) => {
+                const next = i <= 0 ? sortedPresets.length - 1 : i - 1;
+                requestAnimationFrame(() => itemRefs.current[next]?.scrollIntoView({ block: 'nearest' }));
+                return next;
+              });
+            } else if (e.key === 'Enter' && focusedIndex >= 0 && focusedIndex < sortedPresets.length) {
+              e.preventDefault();
+              applyPreset(sortedPresets[focusedIndex]);
+            }
+          }}
+        >
           <div className="p-3 border-b border-border">
             <h4 className="font-medium text-sm text-foreground">Buscas salvas</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -447,7 +482,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
           {sortedPresets.length > 0 && (
             <div className="max-h-64 overflow-y-auto divide-y divide-border">
-              {sortedPresets.map(preset => {
+              {sortedPresets.map((preset, index) => {
                 const payload: SerializedPayload = {
                   q: preset.filters.q?.[0] ?? '',
                   contact: preset.filters.contact?.[0] ?? '',
@@ -457,16 +492,20 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   ate: preset.filters.ate?.[0],
                 };
                 const usage = preset.usageCount ?? 0;
+                const isFocused = focusedIndex === index;
                 return (
                   <React.Fragment key={preset.id}>
                   <div
+                    ref={(el) => { itemRefs.current[index] = el; }}
                     className={[
                       'flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group relative transition-colors',
                       activePresetId === preset.id ? 'bg-primary/5 border-l-2 border-primary' : '',
                       recentlyAppliedId === preset.id ? 'animate-preset-flash' : '',
                       previewId === preset.id ? 'bg-muted/40' : '',
+                      isFocused ? 'bg-accent/40 ring-1 ring-inset ring-primary/40' : '',
                     ].filter(Boolean).join(' ')}
                     aria-current={activePresetId === preset.id ? 'true' : undefined}
+                    onMouseEnter={() => setFocusedIndex(index)}
                     onClick={() => {
                       if (editingId === preset.id) return;
                       if (previewMode) {
