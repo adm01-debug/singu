@@ -4,10 +4,11 @@ import { ptBR } from 'date-fns/locale';
 import {
   Building2, User, MessageSquare, Phone, Mail, Users as UsersIcon,
   Video, FileText, Clock, MoreVertical, Edit, Trash2,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -45,6 +46,8 @@ interface MinimalGroup {
   entity_type: 'contact' | 'company';
   events: MinimalEvent[];
   last_event_at: string;
+  /** Pontuação acumulada de relevância (apenas no sort 'relevance'). */
+  relevance_total?: number;
 }
 
 interface Props {
@@ -59,16 +62,23 @@ interface Props {
   onEditEvent?: (eventId: string) => void;
   /** Quando fornecido, exibe botão "Excluir" por evento. Recebe o id da interação. */
   onDeleteEvent?: (eventId: string) => void;
+  /**
+   * Sort ativo. Quando 'relevance', exibe um indicador visual de pontuação
+   * no header do grupo (badge "Sparkles" + barra horizontal).
+   */
+  sort?: string;
+  /** Maior pontuação entre os grupos visíveis — usado para normalizar 0..1. */
+  maxRelevance?: number;
 }
 
 export const TimelineGroupCard = React.memo(function TimelineGroupCard({
   group, defaultOpen = false, collapsedByDefault = true, onEditEvent, onDeleteEvent,
+  sort, maxRelevance = 0,
 }: Props) {
   const EntityIcon = group.entity_type === 'company' ? Building2 : User;
   const hasActions = !!onEditEvent || !!onDeleteEvent;
 
-  // Eventos vêm em ordem cronológica do agrupador. O "último" = mais recente
-  // = aquele com created_at mais alto. Calculamos sem mutar o array original.
+  // Eventos vêm em ordem cronológica do agrupador. O "último" = mais recente.
   const sortedEvents = React.useMemo(
     () => [...group.events].sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
@@ -80,13 +90,47 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
   const visibleEvents = showAll || !hasMultiple ? sortedEvents : sortedEvents.slice(0, 1);
   const hiddenCount = sortedEvents.length - visibleEvents.length;
 
+  // Indicador de relevância: visível apenas no sort 'relevance' e quando o grupo
+  // tem pontuação real. A intensidade é normalizada pelo maior score visível em
+  // 3 níveis (alta ≥0.66, média ≥0.33, baixa) para criar ranking visual sem
+  // depender de números absolutos.
+  const showRelevance = sort === 'relevance'
+    && typeof group.relevance_total === 'number'
+    && group.relevance_total > 0
+    && maxRelevance > 0;
+  const relevanceRatio = showRelevance ? Math.min(1, group.relevance_total! / maxRelevance) : 0;
+  const relevanceTier: 'high' | 'mid' | 'low' = relevanceRatio >= 0.66
+    ? 'high' : relevanceRatio >= 0.33 ? 'mid' : 'low';
+  const relevanceBadgeClass = relevanceTier === 'high'
+    ? 'bg-primary/15 text-primary border-primary/30'
+    : relevanceTier === 'mid'
+      ? 'bg-primary/10 text-primary border-primary/20'
+      : 'bg-muted text-muted-foreground border-border';
+  const relevanceLabel = relevanceTier === 'high'
+    ? 'Alta correspondência' : relevanceTier === 'mid' ? 'Média correspondência' : 'Baixa correspondência';
+
   return (
     <Accordion
       type="single"
       collapsible
       defaultValue={defaultOpen ? group.entity_id : undefined}
-      className="border border-border/60 rounded-lg bg-card"
+      className="border border-border/60 rounded-lg bg-card overflow-hidden"
     >
+      {/* Barra fina de relevância no topo do card — fora do trigger para não
+          interferir com a área de clique do Accordion. Largura proporcional
+          ao score normalizado (0..1), com mínimo de 8% para visibilidade. */}
+      {showRelevance && (
+        <div className="h-0.5 w-full" aria-hidden="true">
+          <div
+            className={
+              relevanceTier === 'high' ? 'h-full bg-primary'
+              : relevanceTier === 'mid' ? 'h-full bg-primary/60'
+              : 'h-full bg-primary/30'
+            }
+            style={{ width: `${Math.max(8, Math.round(relevanceRatio * 100))}%` }}
+          />
+        </div>
+      )}
       <AccordionItem value={group.entity_id} className="border-0">
         <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30 rounded-lg">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -99,6 +143,24 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                 Última atividade {formatDistanceToNow(new Date(group.last_event_at), { locale: ptBR, addSuffix: true })}
               </p>
             </div>
+            {showRelevance && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] shrink-0 gap-1 ${relevanceBadgeClass}`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      {Math.round(relevanceRatio * 100)}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {relevanceLabel} · score {group.relevance_total} (relativo ao topo {maxRelevance})
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <Badge variant="outline" className="text-[10px] shrink-0">{group.events.length}</Badge>
           </div>
         </AccordionTrigger>

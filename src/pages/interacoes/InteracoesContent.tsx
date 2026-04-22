@@ -434,21 +434,32 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         <>
           {isGrouped ? (
             <div className="space-y-3">
-              {visibleGroups.map((g, idx) => (
-                <TimelineGroupCard
-                  key={g.entity_id}
-                  group={g}
-                  defaultOpen={idx < 3}
-                  onEditEvent={(id) => {
-                    const it = interactionById.get(id);
-                    if (it) onSetEditingInteraction(it);
-                  }}
-                  onDeleteEvent={(id) => {
-                    const it = interactionById.get(id);
-                    if (it) onSetDeletingInteraction(it);
-                  }}
-                />
-              ))}
+              {(() => {
+                // Maior pontuação entre os grupos visíveis — usado pelos cards
+                // para normalizar o indicador de relevância (0..100). Calculado
+                // inline para evitar acoplamento de estado e por ser O(n) em N pequeno.
+                const maxRelevance = visibleGroups.reduce(
+                  (m, g) => Math.max(m, g.relevance_total ?? 0),
+                  0,
+                );
+                return visibleGroups.map((g, idx) => (
+                  <TimelineGroupCard
+                    key={g.entity_id}
+                    group={g}
+                    defaultOpen={idx < 3}
+                    sort={adv.sort}
+                    maxRelevance={maxRelevance}
+                    onEditEvent={(id) => {
+                      const it = interactionById.get(id);
+                      if (it) onSetEditingInteraction(it);
+                    }}
+                    onDeleteEvent={(id) => {
+                      const it = interactionById.get(id);
+                      if (it) onSetDeletingInteraction(it);
+                    }}
+                  />
+                ));
+              })()}
             </div>
           ) : (() => {
             const isCompact = adv.density === 'compact';
