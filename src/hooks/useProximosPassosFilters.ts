@@ -3,9 +3,24 @@ import { useSearchParams } from 'react-router-dom';
 
 export type NbaPriority = 'alta' | 'media' | 'baixa';
 export type NbaSort = 'sugerido' | 'recomendacao' | 'prioridade' | 'canal';
+export type NbaStatus =
+  | 'pendente'
+  | 'nao_respondeu'
+  | 'nao_atendeu'
+  | 'respondeu_positivo'
+  | 'respondeu_neutro'
+  | 'reuniao_agendada';
 
 const VALID_PRIORITIES: readonly NbaPriority[] = ['alta', 'media', 'baixa'];
 const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'recomendacao', 'prioridade', 'canal'];
+const VALID_STATUS: readonly NbaStatus[] = [
+  'pendente',
+  'nao_respondeu',
+  'nao_atendeu',
+  'respondeu_positivo',
+  'respondeu_neutro',
+  'reuniao_agendada',
+];
 const DEFAULT_SORT: NbaSort = 'sugerido';
 
 /**
