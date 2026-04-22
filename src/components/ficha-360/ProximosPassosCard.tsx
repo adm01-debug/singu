@@ -34,7 +34,9 @@ import type { SentimentTone } from '@/lib/scriptGenerator';
 import { useProximosPassosFilters, type NbaPriority } from '@/hooks/useProximosPassosFilters';
 import { filterAndSortPassos } from '@/lib/filterProximosPassos';
 import { ProximosPassosFiltersBar } from './ProximosPassosFiltersBar';
+import { ProximosPassosPresets } from './ProximosPassosPresets';
 import { useFicha360PreferencesSync } from '@/hooks/useFicha360PreferencesSync';
+import type { FilterPreset } from '@/hooks/useFicha360FilterPresets';
 import { useSearchParams } from 'react-router-dom';
 
 interface Props {
@@ -130,6 +132,12 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
     else setChannels([...channels, c]);
   };
 
+  const applyPreset = (preset: FilterPreset) => {
+    setPriorities(preset.priorities);
+    setChannels(preset.channels);
+    setSort(preset.sort);
+  };
+
   // Limpa badges "criada" após 4s
   useEffect(() => {
     if (createdIds.size === 0) return;
@@ -169,18 +177,25 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
           </CardTitle>
         </div>
         {visiblePassos.length >= 2 && (
-          <ProximosPassosFiltersBar
-            priorities={priorities}
-            channels={channels}
-            sort={sort}
-            shownCount={displayPassos.length}
-            totalCount={visiblePassos.length}
-            activeCount={activeCount}
-            onTogglePriority={togglePriority}
-            onToggleChannel={toggleChannel}
-            onChangeSort={setSort}
-            onClear={clearFilters}
-          />
+          <>
+            <ProximosPassosPresets
+              current={{ priorities, channels, sort }}
+              hasActiveFilters={activeCount > 0}
+              onApply={applyPreset}
+            />
+            <ProximosPassosFiltersBar
+              priorities={priorities}
+              channels={channels}
+              sort={sort}
+              shownCount={displayPassos.length}
+              totalCount={visiblePassos.length}
+              activeCount={activeCount}
+              onTogglePriority={togglePriority}
+              onToggleChannel={toggleChannel}
+              onChangeSort={setSort}
+              onClear={clearFilters}
+            />
+          </>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
