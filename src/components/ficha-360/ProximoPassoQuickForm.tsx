@@ -1,8 +1,9 @@
 import { memo, useMemo, useState } from 'react';
-import { Loader2, Calendar as CalIcon, Clock, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, Calendar as CalIcon, Clock, Sparkles, AlertTriangle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -29,9 +30,6 @@ interface Props {
   contactId: string;
   onCreated: () => void;
   onCancel: () => void;
-  /** Quando informado, habilita o botão "Criar e seguir" para avançar à próxima sugestão. */
-  hasNext?: boolean;
-  onCreatedAndAdvance?: () => void;
 }
 
 const CHANNEL_OPTIONS: Array<{ value: ProximoPassoChannel; label: string }> = [
@@ -53,7 +51,7 @@ function formatDateBr(isoDate: string): string {
   return `${d}/${m}/${y}`;
 }
 
-function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel, hasNext = false, onCreatedAndAdvance }: Props) {
+function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel }: Props) {
   const createTask = useCreateTask();
   const defaults = useMemo(() => computePassoDefaults(passo, bestTime), [passo, bestTime]);
 
@@ -82,14 +80,67 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
     return parts.join(' • ');
   }, [defaults]);
 
-  const [pendingMode, setPendingMode] = useState<'close' | 'advance' | null>(null);
+  const conflicts = useMemo(() => {
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
-  const handleSubmit = (mode: 'close' | 'advance' = 'close') => {
+    if (!date) errors.push('Data não informada.');
+    if (!time) errors.push('Hora não informada.');
+    if (!priority) errors.push('Prioridade ausente — selecione alta, média ou baixa.');
+    if (!channel) errors.push('Canal ausente — selecione um canal de contato.');
+
+    if (date && time) {
+      const due = new Date(dueDateIso);
+      const now = new Date();
+      if (Number.isNaN(due.getTime())) {
+        errors.push('Data/hora inválida.');
+      } else if (due.getTime() < now.getTime() - 60_000) {
+        errors.push(`Data/hora no passado (${formatDateBr(date)} às ${time}).`);
+      }
+
+      const [hh] = time.split(':').map((x) => parseInt(x, 10));
+      if ((channel === 'call' || channel === 'meeting') && (hh < 8 || hh >= 19)) {
+        warnings.push(`${channel === 'call' ? 'Ligações' : 'Reuniões'} fora do horário comercial (08h–19h) costumam ter baixa resposta.`);
+      }
+
+      const dow = due.getDay();
+      if ((dow === 0 || dow === 6) && (channel === 'email' || channel === 'linkedin' || channel === 'call' || channel === 'meeting')) {
+        warnings.push('Data cai em fim de semana — considere mover para dia útil.');
+      }
+    }
+
+    if (passo.id === 'agendar-reuniao' && channel !== 'meeting') {
+      warnings.push('Este passo é "Agendar reunião" mas o canal selecionado não é Reunião.');
+    }
+    if (passo.id === 'whatsapp-followup' && channel !== 'whatsapp') {
+      warnings.push('Este passo é um follow-up de WhatsApp mas o canal selecionado é diferente.');
+    }
+    if (passo.id === 'aniversario' && channel === 'email') {
+      warnings.push('Mensagens de aniversário costumam ter melhor recepção via WhatsApp.');
+    }
+
+    if (priority === 'alta' && date && time) {
+      const due = new Date(dueDateIso);
+      const diffDays = Math.floor((due.getTime() - Date.now()) / 86_400_000);
+      if (diffDays > 2) {
+        warnings.push(`Prioridade Alta agendada para ${diffDays} dias — considere antecipar ou reduzir prioridade.`);
+      }
+    }
+
+    return { errors, warnings };
+  }, [date, time, channel, priority, dueDateIso, passo.id]);
+
+  const hasErrors = conflicts.errors.length > 0;
+
+  const handleSubmit = () => {
+    if (hasErrors) {
+      toast.error(conflicts.errors[0]);
+      return;
+    }
     if (!date || !time) {
       toast.error('Informe data e hora');
       return;
     }
-    setPendingMode(mode);
     createTask.mutate(
       {
         title: passo.title,
@@ -102,15 +153,9 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
       },
       {
         onSuccess: () => {
-          if (mode === 'advance' && onCreatedAndAdvance) {
-            toast.success(`Tarefa criada • próxima sugestão`);
-            onCreatedAndAdvance();
-          } else {
-            toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
-            onCreated();
-          }
+          toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
+          onCreated();
         },
-        onSettled: () => setPendingMode(null),
       },
     );
   };
@@ -181,34 +226,47 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
         <span>{hint}</span>
       </p>
 
-      <div className="flex items-center justify-end gap-2 flex-wrap">
+      {conflicts.errors.length > 0 && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong className="block mb-1">Conflito{conflicts.errors.length > 1 ? 's' : ''} impedindo confirmação:</strong>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {conflicts.errors.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {conflicts.errors.length === 0 && conflicts.warnings.length > 0 && (
+        <Alert className="py-2 border-warning/50 bg-warning/10 [&>svg]:text-warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong className="block mb-1">Atenção antes de confirmar:</strong>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {conflicts.warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex items-center justify-end gap-2">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={createTask.isPending}>
           Cancelar
         </Button>
         <Button
           size="sm"
-          variant={hasNext ? 'outline' : 'default'}
-          onClick={() => handleSubmit('close')}
-          disabled={createTask.isPending}
+          onClick={handleSubmit}
+          disabled={createTask.isPending || hasErrors}
+          title={hasErrors ? 'Resolva os conflitos para confirmar' : undefined}
         >
-          {createTask.isPending && pendingMode === 'close' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+          {createTask.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           Confirmar
         </Button>
-        {hasNext && onCreatedAndAdvance && (
-          <Button
-            size="sm"
-            onClick={() => handleSubmit('advance')}
-            disabled={createTask.isPending}
-            title="Cria a tarefa e abre a próxima sugestão"
-          >
-            {createTask.isPending && pendingMode === 'advance' ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <ArrowRight className="h-3.5 w-3.5" />
-            )}
-            Criar e seguir
-          </Button>
-        )}
       </div>
     </div>
   );
