@@ -62,10 +62,6 @@ export function useProximosPassosFilters() {
       .filter((s): s is NbaStatus => (VALID_STATUS as readonly string[]).includes(s));
   }, [searchParams]);
 
-  const sort = useMemo<NbaSort>(() => {
-    const raw = (searchParams.get('nbaSort') || '').toLowerCase();
-    return (VALID_SORTS as readonly string[]).includes(raw) ? (raw as NbaSort) : DEFAULT_SORT;
-  }, [searchParams]);
 
   const setPriorities = useCallback(
     (next: NbaPriority[]) => {
@@ -97,6 +93,21 @@ export function useProximosPassosFilters() {
     [setSearchParams],
   );
 
+  const setStatus = useCallback(
+    (next: NbaStatus[]) => {
+      setSearchParams(
+        (prev) => {
+          const sp = new URLSearchParams(prev);
+          if (!Array.isArray(next) || next.length === 0) sp.delete('nbaStatus');
+          else sp.set('nbaStatus', next.join(','));
+          return sp;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   const setSort = useCallback(
     (next: NbaSort) => {
       setSearchParams(
@@ -118,6 +129,7 @@ export function useProximosPassosFilters() {
         const sp = new URLSearchParams(prev);
         sp.delete('nbaPrio');
         sp.delete('nbaCanal');
+        sp.delete('nbaStatus');
         sp.delete('nbaSort');
         return sp;
       },
@@ -128,7 +140,19 @@ export function useProximosPassosFilters() {
   const activeCount =
     (priorities.length > 0 ? 1 : 0) +
     (channels.length > 0 ? 1 : 0) +
+    (status.length > 0 ? 1 : 0) +
     (sort !== DEFAULT_SORT ? 1 : 0);
 
-  return { priorities, channels, sort, setPriorities, setChannels, setSort, clear, activeCount };
+  return {
+    priorities,
+    channels,
+    status,
+    sort,
+    setPriorities,
+    setChannels,
+    setStatus,
+    setSort,
+    clear,
+    activeCount,
+  };
 }
