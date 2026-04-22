@@ -14,6 +14,13 @@ interface Props {
   ate?: Date;
   /** Aplica datas atomicamente. Retorna true se o hook precisou trocar de/até. */
   applyDateRange: (de?: Date, ate?: Date) => boolean;
+  /**
+   * Limpa `de` e `ate` em uma única operação atômica. Quando fornecida, é
+   * usada pelo botão "Limpar período" e pelo atalho Alt+D — preferível a
+   * `applyDateRange(undefined, undefined)` por explicitar a intenção.
+   * Retorna `true` se removeu algo, `false` se já estava vazio.
+   */
+  clearDateRange?: () => boolean;
 }
 
 interface Preset {
@@ -32,7 +39,7 @@ const PRESETS: Preset[] = [
 
 function fmt(d: Date) { return format(d, 'd MMM', { locale: ptBR }); }
 
-export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, applyDateRange }: Props) {
+export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, applyDateRange, clearDateRange }: Props) {
   const [open, setOpen] = useState(false);
 
   const triggerLabel = useMemo(() => {
