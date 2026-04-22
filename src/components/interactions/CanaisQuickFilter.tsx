@@ -122,14 +122,17 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [pending, safe, mode]);
 
   const dirty = mode === 'manual' && !arraysEqual(pending, safe);
-  const diffCount = useMemo(() => {
+  const diffDetail = useMemo(() => {
     const setA = new Set(safe);
     const setB = new Set(pending);
-    let n = 0;
-    setB.forEach((v) => { if (!setA.has(v)) n++; });
-    setA.forEach((v) => { if (!setB.has(v)) n++; });
-    return n;
+    const labelOf = (v: string) => CHANNELS.find((c) => c.value === v)?.label ?? v;
+    const added: string[] = [];
+    const removed: string[] = [];
+    setB.forEach((v) => { if (!setA.has(v)) added.push(labelOf(v)); });
+    setA.forEach((v) => { if (!setB.has(v)) removed.push(labelOf(v)); });
+    return { added, removed, count: added.length + removed.length };
   }, [safe, pending]);
+  const diffCount = diffDetail.count;
 
   const toggleCanal = useCallback((value: string) => {
     const base = mode === 'manual' ? pending : safe;
