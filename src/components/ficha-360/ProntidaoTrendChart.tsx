@@ -138,10 +138,32 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
               </Badge>
             )}
           </CardTitle>
-          <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
-            <meta.Icon className="h-3 w-3" aria-hidden="true" />
-            {meta.label}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {weeks !== undefined && onWeeksChange && (
+              <Select
+                value={String(weeks)}
+                onValueChange={(v) => onWeeksChange(Number(v) as TrendWeeks)}
+              >
+                <SelectTrigger
+                  className="h-7 w-[130px] text-xs"
+                  aria-label="Período da tendência"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEEKS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={String(opt.value)} className="text-xs">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
+              <meta.Icon className="h-3 w-3" aria-hidden="true" />
+              {meta.label}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -153,7 +175,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
           </div>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              Variação 4 sem.
+              Variação {variationWindow} sem.
             </div>
             <div
               className={cn(
@@ -241,7 +263,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
 
         <p className="text-[11px] text-muted-foreground">
           Linhas tracejadas marcam os limiares Morno (40) e Quente (70). Tendência calculada pelos
-          últimos 4 pontos · slope {slope.toFixed(1)}.
+          últimos {variationWindow} pontos · slope {slope.toFixed(1)}.
         </p>
       </CardContent>
     </Card>
