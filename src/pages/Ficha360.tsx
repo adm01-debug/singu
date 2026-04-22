@@ -24,6 +24,7 @@ import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelac
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
+import { ContagemPorTipoBar } from '@/components/ficha-360/ContagemPorTipoBar';
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
 import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
@@ -89,8 +90,13 @@ const Ficha360 = () => {
     isLoading,
     interactionsFetching,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
-  const { counts: potentialChannelCounts, isFetched: channelCountsReady } =
-    useFicha360ChannelCounts(id, draftDays);
+  const {
+    counts: potentialChannelCounts,
+    totals: tipoTotals,
+    filtered: tipoFiltered,
+    isFetched: channelCountsReady,
+    isLoading: channelCountsLoading,
+  } = useFicha360ChannelCounts(id, draftDays, q, channels);
 
   const applyDraftFilters = () => {
     setDays(draftDays);
@@ -493,6 +499,11 @@ const Ficha360 = () => {
                         isDirty={filtersDirty}
                         onApply={applyDraftFilters}
                         onDiscard={resetDraft}
+                      />
+                      <ContagemPorTipoBar
+                        totals={tipoTotals}
+                        filtered={tipoFiltered}
+                        isLoading={channelCountsLoading}
                       />
                       <FiltrosAtivosChips
                         days={days}
