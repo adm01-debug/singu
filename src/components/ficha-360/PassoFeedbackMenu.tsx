@@ -290,8 +290,14 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
               <p className="text-xs text-muted-foreground">
                 {CONFIRM_DESCRIPTION[pendingOption.value]}
               </p>
+              <p className="text-[11px] text-muted-foreground border-t pt-1.5 mt-1.5">
+                <span className="font-medium">Canal:</span>{' '}
+                {selectedChannel
+                  ? CHANNELS.find((c) => c.value === selectedChannel)?.label
+                  : 'não informado'}
+              </p>
               {notes ? (
-                <p className="text-[11px] text-muted-foreground border-t pt-1.5 mt-1.5">
+                <p className="text-[11px] text-muted-foreground">
                   <span className="font-medium">Observação:</span> {notes}
                 </p>
               ) : null}
