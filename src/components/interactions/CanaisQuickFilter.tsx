@@ -109,7 +109,6 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     const externalClear = wasNonEmpty && isNowEmpty;
     const safeChanged = !arraysEqual(prevSafe, safe);
     prevSafeRef.current = safe;
-    prevSafeLenRef.current = safe.length;
 
     setPendingState((prev) => {
       if (arraysEqual(prev, safe)) return prev;
