@@ -1,68 +1,67 @@
 
 
-# Plano: Salvar e recarregar filtros de "Últimas Interações"
+# Plano: Contador "X de Y" por tipo de interação no topo
+
+## Objetivo
+
+Mostrar, no topo da seção "Últimas Interações", um resumo compacto **por canal** no formato `X de Y` — onde `X` = quantos passam pelos filtros ativos (período + canais + busca) e `Y` = total no período (ignorando canais e busca). Permite avaliar de relance quantos itens de cada tipo estão sendo filtrados.
 
 ## Status atual
 
-Esta funcionalidade **já está implementada** na Ficha 360. A análise do código confirma:
+- `useFicha360ChannelCounts(contactId, days)` já calcula contagens por canal no período, **ignorando** filtro de canais — isso vira o `Y` (denominador).
+- Falta o `X` (numerador): contagens dentro do mesmo período + canais + `q` aplicados (a lista renderizada).
+- Os chips ativos em `FiltrosAtivosChips` já mostram um total agregado (`shownCount` de `totalCount`), mas não detalham por canal.
 
-- **`src/hooks/useFicha360FilterFavorites.ts`** já existe — gerencia favoritos em `localStorage` (com sort, limite, dedupe e schema versionado).
-- **`FavoritosFiltrosMenu`** já está montado no `headerExtra` do card "Últimas Interações" em `Ficha360.tsx`, com:
-  - Listagem dos favoritos salvos (clique = aplica)
-  - "Salvar filtros atuais como favorito" (com nome custom)
-  - Renomear / excluir
-  - Compartilhar via `?favorito=<token>` + `AplicarFavoritoCompartilhadoDialog`
-- **Período + canais** já são as duas dimensões salvas (busca textual `q` é volátil por design — ver decisão na rodada anterior).
+## Mudanças
 
-Ou seja: o pedido literal já é entregue hoje. O que **agrega valor real** sem reinventar a roda:
+### 1. `src/hooks/useFicha360ChannelCounts.ts` — exportar duas contagens
 
-## Lacunas reais a fechar
+Estender o hook para retornar **dois mapas**:
+- `totals: Record<string, number>` — Y por canal (período only, como hoje).
+- `filtered: Record<string, number>` — X por canal (período + canais + q aplicados).
 
-1. **Descoberta**: o `FavoritosFiltrosMenu` é um botão `Star` icon-only no header. Usuário novo pode não perceber que é "salvar/recarregar filtros".
-2. **Quick-save sem nomear**: hoje exige abrir popover → digitar nome → confirmar. Para o usuário que só quer "salvar isto agora", são 3 cliques.
-3. **Indicação de favorito ativo**: se o conjunto atual de filtros bate com um favorito salvo, não há feedback visual ("você está vendo o favorito X").
-4. **Atalho de teclado**: existem atalhos para limpar/remover chips e copiar link, mas nenhum para salvar/abrir favoritos.
+Implementação: receber `q?: string` e `channels?: string[]` opcionais. Reaproveita a query principal já existente (`useExternalInteractions(contactId, 200, { days })`) e calcula **ambas as contagens em memória** sobre o mesmo array, aplicando filtros adicionais para `filtered`. Sem nova query, sem custo de rede extra.
 
-## Mudanças propostas
+Helpers reutilizados: `normalizeForSearch` (já extraído em `src/lib/normalizeText.ts`) para o filtro `q`.
 
-### 1. `useFicha360FilterFavorites.ts` — utilitários novos
+### 2. Novo: `src/components/ficha-360/ContagemPorTipoBar.tsx` (~110 linhas)
 
-- Adicionar `quickSave(days, channels): SavedFavorite | null` que gera nome automático (`"30d · WhatsApp, Email"` truncado em 40 chars) e salva direto, sem prompt. Reutiliza a normalização e o limite (`MAX_FAVORITES`) já existentes; se já houver match exato (`findMatch`), retorna o existente em vez de duplicar.
-- Sem mudança nos consumidores atuais (função adicional).
+Faixa visual compacta no topo do card "Últimas Interações", **acima** dos chips ativos.
 
-### 2. `FavoritosFiltrosMenu.tsx` — pequenas melhorias UX
+Layout:
+```
+Por tipo: 💬 WhatsApp 8/12 · 📞 Ligação 0/4 · ✉️ Email 7/7 · 👥 Reunião 0/0 · 📝 Nota 1/1
+```
 
-- **Badge de match ativo**: se `findMatch(days, channels)` retorna um favorito, o ícone `Star` ganha `fill-primary text-primary` (em vez de outline) e um tooltip "Vendo: {nome}". Sinaliza ao usuário que ele está num estado salvo.
-- **Item "Salvar como…" → divide em dois**: 
-  - "💾 Salvar agora" (quick-save, sem prompt) — desabilitado quando já existe match
-  - "✏️ Salvar com nome…" (fluxo atual com prompt)
+Regras visuais:
+- Cada item: ícone + label PT-BR + `X/Y` em fonte tabular.
+- Quando `Y === 0` (canal sem interações no período): item com `opacity-40`, sem `hover`.
+- Quando `X === 0` mas `Y > 0` (canal totalmente filtrado fora): item com `opacity-60` e `text-muted-foreground` — sinaliza "tem dados mas seu filtro escondeu".
+- Quando `X === Y && Y > 0`: item com cor padrão sem destaque adicional ("tudo passa").
+- Quando `0 < X < Y`: numerador em `text-primary font-medium` para destacar a fração.
+- Item com `aria-label="WhatsApp: 8 de 12 interações visíveis"`.
 
-### 3. `useFicha360FilterShortcuts.ts` — 2 novos atalhos
+Sem clique nesta primeira versão (mantém escopo: apenas exibir contadores). A interação de toggle por canal continua em `FiltrosAtivosChips` e na `FiltrosInteracoesBar`.
 
-- `Shift + S` → quick-save dos filtros atuais (chama `quickSave`); toast "Favorito salvo: {nome}" ou "Já existe favorito: {nome}".
-- `Shift + F` → abrir o `FavoritosFiltrosMenu` (controlled state). Toast não dispara; só abre o popover para escolher.
+### 3. `src/pages/Ficha360.tsx` — integração
 
-Ambos no escopo `ficha360-filtros`, aparecem no cheatsheet automaticamente.
+- Chamar `useFicha360ChannelCounts(contactId, days, q, channels)` (assinatura estendida).
+- Renderizar `<ContagemPorTipoBar totals={totals} filtered={filtered} isLoading={isLoading} />` no `headerExtra` do `UltimasInteracoesCard`, **acima** de `<FiltrosAtivosChips>`.
+- Esconder a faixa quando todos os totais somam 0 (sem dados no período) — evita poluição em contatos sem histórico.
 
-### 4. `Ficha360.tsx` — wiring mínimo
+### 4. Loading & a11y
 
-- Estado `favoritosMenuOpen` controlado, passado a `FavoritosFiltrosMenu` (`open` + `onOpenChange`) para permitir abertura via atalho `Shift + F`.
-- Handler `handleQuickSave` chama `quickSave(days, channels)` e dispara toast com resultado.
-- Passar handlers ao `useFicha360FilterShortcuts({ ..., onQuickSaveFavorito, onAbrirFavoritos })`.
-
-### 5. Acessibilidade
-
-- Botão de quick-save no menu: `aria-label="Salvar filtros atuais como favorito sem nomear"`.
-- Estado ativo do `Star`: `aria-pressed={!!matchAtivo}` + `aria-label` dinâmico.
+- Skeletons inline (`h-4 w-20`, 5 unidades) enquanto `isLoading=true`.
+- Container com `role="group"` + `aria-label="Resumo por tipo de interação"`.
+- Texto inicial "Por tipo:" em `text-xs text-muted-foreground` para hierarquia visual.
 
 ## Não muda
 
-- Estrutura de armazenamento (`localStorage`, schema versionado, limite, sort).
-- `AplicarFavoritoCompartilhadoDialog`, `CopiarLinkFiltrosButton`, `useFicha360DeeplinkToast`, `useFicha360Filters`, `useFicha360DraftFilters`.
-- RLS, edge functions, tabelas externas — favoritos seguem locais ao navegador (decisão prévia: simples, sem custo, sem rede).
-- Atalhos existentes (`Shift+C/P/B/L/1…5`).
+- `useExternalInteractions`, `countByChannel`, `useFicha360Filters`, `FiltrosAtivosChips`, `FavoritosFiltrosMenu`, atalhos de teclado, deeplink toast.
+- Estrutura de query params, RLS, edge functions, tabelas.
+- Limite de 200 itens da query de counts (já cobre cenário comum; lista principal segue separada com 50).
 
 ## Critérios de aceite
 
-(a) Item "Salvar agora" aparece no `FavoritosFiltrosMenu` e cria favorito com nome auto-gerado em 1 clique; (b) item desabilita quando o estado atual já bate com um favorito existente, com tooltip explicando; (c) ícone `Star` do menu fica preenchido (`fill-primary`) quando os filtros ativos batem com um favorito salvo, com tooltip "Vendo: {nome}"; (d) `Shift + S` faz quick-save com toast confirmando (criado ou já existente); (e) `Shift + F` abre o menu de favoritos via teclado; (f) ambos atalhos listados no cheatsheet (`?`) sob `ficha360-filtros`; (g) sem nova dependência, sem `any`, PT-BR, flat, todos os arquivos abaixo de 200 linhas.
+(a) Faixa "Por tipo: WhatsApp 8/12 · Ligação 0/4 · Email 7/7 · …" aparece no topo do card "Últimas Interações", acima dos chips ativos; (b) `Y` (denominador) ignora `channels` e `q`; (c) `X` (numerador) reflete os filtros ativos atuais (período + canais + busca); (d) canais com `Y=0` ficam discretos (`opacity-40`), canais com `X=0 && Y>0` em opacidade média; (e) numerador destacado quando há filtragem parcial; (f) faixa esconde quando não há dados no período; (g) skeletons durante loading; (h) `aria-label` descritivo em cada item; (i) sem nova query/rede, sem nova dependência, sem `any`, PT-BR, flat, novo arquivo <120 linhas.
 
