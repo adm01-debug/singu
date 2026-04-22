@@ -143,7 +143,8 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
                   <span>{disabledReason}</span>
                 ) : (
                   <span>
-                    <span className="font-medium">{label}</span>
+                    {/* Linha 1: igual ao texto da cheatsheet (?) — "Ordenar: <Label> · Alt+<X>" */}
+                    <span className="font-medium">Ordenar: {label}</span>
                     <span className="opacity-70"> · Alt+{shortcut}</span>
                     <br />
                     <span className="opacity-90">{description}</span>
