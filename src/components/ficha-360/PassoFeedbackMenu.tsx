@@ -326,6 +326,32 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
               </p>
             </div>
 
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium text-muted-foreground">Canal usado</p>
+              <div className="grid grid-cols-4 gap-1">
+                {CHANNELS.map((ch) => {
+                  const ChIcon = ch.icon;
+                  const active = selectedChannel === ch.value;
+                  return (
+                    <Button
+                      key={ch.value}
+                      type="button"
+                      variant={active ? 'default' : 'outline'}
+                      size="xs"
+                      className="h-8 flex-col gap-0.5 px-1 text-[10px]"
+                      disabled={isPending}
+                      onClick={() => setSelectedChannel(active ? null : ch.value)}
+                      title={ch.label}
+                      aria-pressed={active}
+                    >
+                      <ChIcon className="h-3 w-3" />
+                      <span className="leading-none">{ch.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="flex flex-col gap-1">
               {OPTIONS.map((opt) => {
                 const Icon = opt.icon;
