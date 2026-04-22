@@ -202,15 +202,49 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
 
             {/* Canal preferido */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Canal preferido</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">Canal preferido</Label>
+                {overrides.best_channel !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setOverride('best_channel', null)}
+                    className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Limpar
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5" role="group" aria-label="Trocar canal preferido">
+                {CHANNEL_OPTIONS.map((opt) => {
+                  const active = (overrides.best_channel ?? null) === opt.value;
+                  return (
+                    <Button
+                      key={opt.label}
+                      type="button"
+                      variant={active ? 'default' : 'outline'}
+                      size="xs"
+                      onClick={() => setOverride('best_channel', opt.value)}
+                      title={opt.title}
+                      aria-pressed={active}
+                    >
+                      {opt.label}
+                    </Button>
+                  );
+                })}
+              </div>
               <Input
                 type="text"
-                value={overrides.best_channel ?? ''}
-                placeholder="Ex.: WhatsApp"
+                value={
+                  overrides.best_channel !== null &&
+                  !CHANNEL_OPTIONS.some((o) => o.value === overrides.best_channel)
+                    ? overrides.best_channel
+                    : ''
+                }
+                placeholder="Outro canal (opcional)"
                 onChange={(e) =>
                   setOverride('best_channel', e.target.value === '' ? null : e.target.value)
                 }
-                className="h-9 text-sm"
+                className="h-8 text-xs"
               />
             </div>
 
