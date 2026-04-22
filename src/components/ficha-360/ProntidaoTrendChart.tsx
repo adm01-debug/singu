@@ -445,6 +445,27 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                   activeDot={{ r: 5, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
                   isAnimationActive={false}
                 />
+                {Array.from(milestonesByWeek.entries()).flatMap(([weekStart, list]) => {
+                  const point = data.find((p) => p.weekStart === weekStart);
+                  if (!point) return [];
+                  return list.map((m, idx) => {
+                    const yPos = Math.min(100, point.score + 8 + idx * 7);
+                    const color = `hsl(var(${MILESTONE_META[m.kind].cssVar}))`;
+                    return (
+                      <ReferenceDot
+                        key={`${weekStart}-${m.kind}-${idx}`}
+                        x={point.weekLabel}
+                        y={yPos}
+                        r={4}
+                        fill={color}
+                        stroke="hsl(var(--background))"
+                        strokeWidth={1.5}
+                        ifOverflow="extendDomain"
+                        isFront
+                      />
+                    );
+                  });
+                })}
               </AreaChart>
             </ResponsiveContainer>
           </div>
