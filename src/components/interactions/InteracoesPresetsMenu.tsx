@@ -85,6 +85,9 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
+  const [pendingProtectedAction, setPendingProtectedAction] = useState<
+    { kind: 'rename' | 'updateFilters'; preset: typeof presets[number] } | null
+  >(null);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
@@ -304,8 +307,24 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
   const startRename = (preset: typeof presets[number], e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'rename', preset });
+      return;
+    }
     setEditingId(preset.id);
     setRenameValue(preset.name);
+  };
+
+  const proceedProtectedAction = () => {
+    if (!pendingProtectedAction) return;
+    const { kind, preset } = pendingProtectedAction;
+    setPendingProtectedAction(null);
+    if (kind === 'rename') {
+      setEditingId(preset.id);
+      setRenameValue(preset.name);
+    } else {
+      setPendingFilterUpdate(preset);
+    }
   };
 
   const cancelRename = () => {
@@ -345,6 +364,10 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
   const askUpdateFilters = (preset: typeof presets[number], e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'updateFilters', preset });
+      return;
+    }
     setPendingFilterUpdate(preset);
   };
 
