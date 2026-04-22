@@ -231,6 +231,24 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return () => window.removeEventListener('keydown', onKey);
   }, [safePage, totalPages, setFilter]);
 
+  // Auto-scroll para o topo da tabela quando um preset é aplicado.
+  // O foco no input de busca é tratado por outro evento e preservado aqui
+  // (scrollIntoView usa block:'start' apenas no container, não move o caret).
+  const listTopRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handler = () => {
+      const el = listTopRef.current;
+      if (!el) return;
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch {
+        el.scrollIntoView();
+      }
+    };
+    window.addEventListener('scroll-interactions-top', handler);
+    return () => window.removeEventListener('scroll-interactions-top', handler);
+  }, []);
+
   return (
     <div className="p-6 space-y-6">
       <SmartBreadcrumbs />
@@ -288,6 +306,9 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       />
 
       <AdvancedFilters filters={filterConfigs} sortOptions={sortOptions} activeFilters={activeFilters} onFiltersChange={setActiveFilters} sortBy={sortBy} sortOrder={sortOrder} onSortChange={(sb, so) => { setSortBy(sb); setSortOrder(so); }} />
+
+      {/* Âncora para auto-scroll após aplicar preset */}
+      <div ref={listTopRef} aria-hidden="true" className="scroll-mt-24" />
 
       {loading ? <InteractionsListSkeleton /> : (
         <>
