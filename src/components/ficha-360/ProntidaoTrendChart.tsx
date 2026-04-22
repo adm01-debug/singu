@@ -87,17 +87,23 @@ const TooltipContent = ({ active, payload }: { active?: boolean; payload?: Array
   );
 };
 
-export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Props) => {
+export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
+  // Janela de variação: ¼ da janela total (mín 2, máx 8) para ficar coerente com 4/8/12/24
+  const variationWindow = useMemo(() => {
+    const total = weeks ?? data.length ?? 8;
+    return Math.min(8, Math.max(2, Math.round(total / 2)));
+  }, [weeks, data.length]);
+
   const { slope, direction, variation, peak } = useMemo(() => {
-    const s = computeTrendSlope(data, 4);
+    const s = computeTrendSlope(data, variationWindow);
     const d = classifyTrend(s);
-    const last4 = valid.slice(-4);
-    const v = last4.length >= 2 ? last4[last4.length - 1].score - last4[0].score : 0;
+    const lastN = valid.slice(-variationWindow);
+    const v = lastN.length >= 2 ? lastN[lastN.length - 1].score - lastN[0].score : 0;
     const pk = valid.length ? Math.max(...valid.map((p) => p.score)) : 0;
     return { slope: s, direction: d, variation: v, peak: pk };
-  }, [data, valid]);
+  }, [data, valid, variationWindow]);
 
   const meta = trendMeta[direction];
 
