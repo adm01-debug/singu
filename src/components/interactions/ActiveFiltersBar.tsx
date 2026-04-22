@@ -68,7 +68,7 @@ function prettifyChannel(raw: string): string {
 }
 
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
-  filters, setFilter, clear, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
+  filters, setFilter, clear, clearDateRange, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
   groupedMode = false, groupCount = 0, groupLabelSingular = 'grupo', groupLabelPlural = 'grupos',
 }: Props) {
   const canais = Array.isArray(filters.canais) ? filters.canais : [];
@@ -177,7 +177,18 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
       })}
 
       {filters.de instanceof Date && (
-        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('de', undefined))} icon={<Calendar className="w-3 h-3" />}>
+        <Badge
+          variant="secondary"
+          closeable
+          onClose={wrap(() => {
+            // Atomicidade: se o range completo (de + ate) está aplicado, usa
+            // clearDateRange para remover ambos em um único setSearchParams.
+            // Caso contrário, basta remover só `de` via setFilter.
+            if (clearDateRange && filters.ate instanceof Date) clearDateRange();
+            else setFilter('de', undefined);
+          })}
+          icon={<Calendar className="w-3 h-3" />}
+        >
           Período desde {fmtDate(filters.de)}
         </Badge>
       )}
