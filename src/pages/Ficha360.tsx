@@ -185,8 +185,31 @@ const Ficha360 = () => {
   // Controle do menu de favoritos (atalho Shift+F abre o popover).
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
   const [resumoIAOpen, setResumoIAOpen] = useState(false);
+  const [salvarRelatorioOpen, setSalvarRelatorioOpen] = useState(false);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
+
+  // Aplica relatório fixo: filtros + (opcionalmente) abre resumo IA.
+  const applyRelatorio = (preset: FilterFavorite) => {
+    const validDays = ([7, 30, 90, 365] as const).includes(preset.days as Ficha360Period)
+      ? (preset.days as Ficha360Period)
+      : 90;
+    setDays(validDays);
+    setChannels(preset.channels);
+    setTags(preset.tags);
+    setQ(preset.q ?? '');
+    setSearchInput(preset.q ?? '');
+    setDraftDays(validDays);
+    setDraftChannels(preset.channels);
+    if (preset.autoOpenSummary !== false) {
+      // Aguarda recompute de filteredInteractions antes de abrir
+      setTimeout(() => setResumoIAOpen(true), 0);
+    }
+    toast.success(`Relatório aplicado: "${preset.name}"`, {
+      description: preset.description,
+      duration: 2200,
+    });
+  };
 
   const quickSaveRef = useRef<() => void>(() => {});
   quickSaveRef.current = () => {
