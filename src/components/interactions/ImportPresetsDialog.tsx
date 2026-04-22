@@ -17,12 +17,15 @@ interface Props {
 const MAX_BYTES = 50 * 1024;
 
 export const ImportPresetsDialog = React.memo(function ImportPresetsDialog({ open, onOpenChange }: Props) {
-  const { importPresets } = useSearchPresets('interactions');
+  const { importPresets, presets } = useSearchPresets('interactions');
+  const remaining = Math.max(0, 10 - presets.length);
   const [rawJson, setRawJson] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [bundle, setBundle] = useState<PresetBundle | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
+  const willOverflow = bundle ? selected.size > remaining : false;
+  const existingNames = new Set(presets.map((p) => p.name));
 
   const reset = useCallback(() => {
     setRawJson('');
