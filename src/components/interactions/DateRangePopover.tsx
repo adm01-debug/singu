@@ -60,6 +60,30 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
     setOpen(false);
   };
 
+  // Atalho global Alt+D: limpa APENAS o filtro de datas (de/ate), preservando
+  // canais, busca, sentimento e demais filtros. Ignorado se já não houver
+  // datas aplicadas (no-op silencioso) ou se o foco está em campo editável,
+  // para não conflitar com texto que use a tecla "d".
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.key.toLowerCase() !== 'd') return;
+      const tgt = e.target as HTMLElement | null;
+      const tag = tgt?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tgt?.isContentEditable) return;
+      if (!de && !ate) return;
+      e.preventDefault();
+      applyDateRange(undefined, undefined);
+      setOpen(false);
+      toast.success('Filtro de datas limpo', {
+        description: 'Apenas o período foi removido — outros filtros mantidos.',
+        duration: 2000,
+      });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [de, ate, applyDateRange]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
