@@ -29,7 +29,7 @@ import { DensityChips } from '@/components/interactions/DensityChips';
 import { SentimentQuickFilter } from '@/components/interactions/SentimentQuickFilter';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
-import { countByChannel } from '@/lib/countByChannel';
+import { getChannelCountsCached } from '@/lib/channelCountsCache';
 import { groupInteractions } from '@/lib/groupInteractions';
 import { TimelineGroupCard } from '@/components/interactions/TimelineGroupCard';
 
@@ -103,9 +103,33 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     return baseWithoutCanaisAndSentimento.filter(i => i.sentiment === adv.sentimento);
   }, [baseWithoutCanaisAndSentimento, adv.sentimento]);
 
+  // Cache LRU: chave estável pelos filtros não-canal evita recomputar quando
+  // o usuário alterna rapidamente entre chips e revisita combinações.
   const channelCounts = useMemo(
-    () => countByChannel(advancedFilteredWithoutCanais.map(i => ({ type: i.type }))),
-    [advancedFilteredWithoutCanais]
+    () => getChannelCountsCached(
+      {
+        datasetSize: Array.isArray(interactions) ? interactions.length : 0,
+        q: debouncedQ ?? '',
+        contact: adv.contact ?? '',
+        company: adv.company ?? '',
+        direcao: adv.direcao ?? 'all',
+        de: adv.de ? new Date(adv.de).toISOString() : null,
+        ate: adv.ate ? new Date(adv.ate).toISOString() : null,
+        sentimento: adv.sentimento ?? null,
+      },
+      () => advancedFilteredWithoutCanais.map(i => ({ type: i.type })),
+    ),
+    [
+      advancedFilteredWithoutCanais,
+      interactions,
+      debouncedQ,
+      adv.contact,
+      adv.company,
+      adv.direcao,
+      adv.de,
+      adv.ate,
+      adv.sentimento,
+    ],
   );
 
   // Apply advanced filters (URL-driven) — agora derivado, aplicando o filtro de canais
