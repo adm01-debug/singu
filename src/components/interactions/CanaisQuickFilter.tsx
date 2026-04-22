@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useChannelSyncMode } from '@/hooks/useChannelSyncMode';
+import { useChannelHistory } from '@/hooks/useChannelHistory';
+import { RecentChannelCombos } from '@/components/interactions/RecentChannelCombos';
 import { toast } from 'sonner';
 
 const CHANNELS = [
@@ -98,6 +100,7 @@ function arraysEqual(a: string[], b: string[]) {
 export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange, counts }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle, setMode } = useChannelSyncMode();
+  const { history, record: recordCombo, remove: removeCombo, clear: clearHistory } = useChannelHistory();
   const [pending, setPendingState] = useState<string[]>(() => {
     // Restaura pending salvo apenas se modo for manual e diferir do aplicado.
     // Se não houver pending salvo, usa o `applied` persistido como base
@@ -181,6 +184,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   useEffect(() => {
     writeApplied(safe);
   }, [safe]);
+
+  // Registra cada combinação aplicada não-vazia no histórico MRU.
+  // Combinação vazia (== "todos") é ignorada porque já é o estado default.
+  useEffect(() => {
+    if (safe.length > 0) recordCombo(safe);
+  }, [safe, recordCombo]);
 
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
@@ -270,6 +279,30 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [mode, safe, pending, onChange, setPending]);
 
   const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
+
+  /**
+   * Aplica uma combinação salva em 1 clique.
+   * - auto: chama `onChange` direto, atualizando os filtros aplicados.
+   * - manual: escreve em pending e pede confirmação via Aplicar.
+   */
+  const applyCombo = useCallback((combo: string[]) => {
+    const target = combo.filter((v) => VALID_VALUES.has(v as typeof CHANNELS[number]['value']));
+    if (mode === 'auto') {
+      if (arraysEqual(safe, target)) return;
+      onChange(target);
+      toast.success('Combinação aplicada', {
+        description: target.map((v) => CHANNELS.find((c) => c.value === v)?.label ?? v).join(' + '),
+        duration: 2500,
+      });
+    } else {
+      if (arraysEqual(pending, target)) return;
+      setPending(target);
+      toast.info('Combinação carregada como pendente', {
+        description: 'Clique em "Aplicar" para confirmar.',
+        duration: 3000,
+      });
+    }
+  }, [mode, safe, pending, onChange, setPending]);
 
   // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa.
   // Setas ←/→ no campo de busca movem um cursor circular pelos canais e
@@ -371,6 +404,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   return (
     <TooltipProvider delayDuration={200}>
+     <div className="flex flex-col gap-0">
       <div className="flex flex-wrap items-center gap-1">
         {CHANNELS.map((opt, idx) => {
           const Icon = opt.icon;
@@ -664,6 +698,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      <RecentChannelCombos
+        history={history}
+        current={safe}
+        onApply={applyCombo}
+        onRemove={removeCombo}
+        onClearAll={clearHistory}
+      />
+     </div>
     </TooltipProvider>
   );
 });
