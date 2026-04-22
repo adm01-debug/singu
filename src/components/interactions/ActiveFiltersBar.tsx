@@ -49,6 +49,13 @@ interface Props {
   /** Rótulo da entidade agrupadora ('pessoa' | 'empresa'). Default: 'grupo'. */
   groupLabelSingular?: string;
   groupLabelPlural?: string;
+  /**
+   * Microdetalhe por filtro: para cada filtro ativo, quantos itens existiriam
+   * no dataset bruto se APENAS aquele filtro estivesse ativo. Usado para
+   * exibir, em modo compacto, os 2 filtros que mais reduzem o resultado
+   * quando há mais de 3 filtros ativos.
+   */
+  isolatedFilterCounts?: IsolatedFilterCount[];
 }
 
 function pad2(n: number): string {
@@ -72,6 +79,7 @@ function prettifyChannel(raw: string): string {
 export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
   filters, setFilter, clear, clearDateRange, activeCount, totalCount, visibleCount, contactLabel, companyLabel, onAfterRemove,
   groupedMode = false, groupCount = 0, groupLabelSingular = 'grupo', groupLabelPlural = 'grupos',
+  isolatedFilterCounts,
 }: Props) {
   const canais = Array.isArray(filters.canais) ? filters.canais : [];
   const qTrim = (filters.q ?? '').trim();
