@@ -66,7 +66,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange } = useInteractionsAdvancedFilter();
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange } = useInteractionsAdvancedFilter();
   const { companies } = useCompanies();
 
   const contactOptions = useMemo(
