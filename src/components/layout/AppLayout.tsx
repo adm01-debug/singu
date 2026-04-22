@@ -241,7 +241,21 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
         onOpenAsk={() => window.dispatchEvent(new CustomEvent('open-ask-crm'))}
       />
       <GlobalSearch open={legacySearchOpen} onOpenChange={setLegacySearchOpen} voiceMode={voiceMode} onVoiceModeChange={setVoiceMode} />
-      <div className="hidden md:flex fixed bottom-8 right-8 lg:bottom-10 lg:right-10 z-50 flex-col items-end gap-3">
+      {/*
+        Stack flutuante única: empilha ScrollToTopButton (topo) acima do
+        QuickAddButton (base) com `gap-3`, garantindo que jamais se sobreponham
+        — nem visualmente, nem quando o menu radial do QuickAdd abre para cima.
+        Mobile usa `bottom-24` para folgar a MobileBottomNav (h-16) + safe-area;
+        desktop usa `bottom-8`/`lg:bottom-10`. Ambos em `items-end` para
+        alinhar à direita.
+      */}
+      <div
+        className={cn(
+          'fixed right-4 md:right-8 lg:right-10 z-50',
+          'bottom-24 md:bottom-8 lg:bottom-10',
+          'flex flex-col items-end gap-3',
+        )}
+      >
         <ScrollToTopButton className="relative" />
         <QuickAddButton className="relative z-10" />
       </div>
@@ -256,9 +270,6 @@ function AppLayoutInner({ children, title }: AppLayoutProps) {
           <AIEmailComposer />
         </Suspense>
       )}
-      <div className="md:hidden">
-        <ScrollToTopButton />
-      </div>
     </div>
   );
 }
