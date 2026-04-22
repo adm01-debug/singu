@@ -1,16 +1,24 @@
 import { memo, useEffect, useState } from 'react';
-import { Sliders, RotateCcw } from 'lucide-react';
+import { Sliders, RotateCcw, Info, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   useProntidaoWeightsStore,
   useEffectiveProntidaoWeights,
 } from '@/stores/useProntidaoWeightsStore';
 import type { ProntidaoWeights } from '@/lib/prontidaoScore';
+import { evaluateWeightsHealth } from '@/lib/prontidaoWeightsHealth';
 
 const FACTORS: Array<{ key: keyof ProntidaoWeights; label: string }> = [
   { key: 'cadence', label: 'Cadência' },
