@@ -10,6 +10,7 @@ import {
   Check,
   CornerDownLeft,
   Keyboard,
+  Calendar as CalendarIcon,
   X,
 } from 'lucide-react';
 import {
