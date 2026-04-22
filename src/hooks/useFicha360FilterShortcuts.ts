@@ -22,6 +22,8 @@ interface Options {
   onCopyLink?: () => void;
   onQuickSaveFavorito?: () => void;
   onAbrirFavoritos?: () => void;
+  onSortRecente?: () => void;
+  onSortRelevante?: () => void;
   enabled: boolean;
 }
 
@@ -43,6 +45,8 @@ export function useFicha360FilterShortcuts({
   onCopyLink,
   onQuickSaveFavorito,
   onAbrirFavoritos,
+  onSortRecente,
+  onSortRelevante,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
@@ -59,6 +63,8 @@ export function useFicha360FilterShortcuts({
     onCopyLink,
     onQuickSaveFavorito,
     onAbrirFavoritos,
+    onSortRecente,
+    onSortRelevante,
   });
   useEffect(() => {
     handlersRef.current = {
@@ -69,6 +75,8 @@ export function useFicha360FilterShortcuts({
       onCopyLink,
       onQuickSaveFavorito,
       onAbrirFavoritos,
+      onSortRecente,
+      onSortRelevante,
     };
   }, [
     onClearAll,
@@ -78,6 +86,8 @@ export function useFicha360FilterShortcuts({
     onCopyLink,
     onQuickSaveFavorito,
     onAbrirFavoritos,
+    onSortRecente,
+    onSortRelevante,
   ]);
 
   useScopedShortcut({
@@ -156,6 +166,34 @@ export function useFicha360FilterShortcuts({
       const s = stateRef.current;
       if (!s.enabled) return;
       handlersRef.current.onAbrirFavoritos?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'r',
+    alt: true,
+    description: 'Ordenar interações por mais recente',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onSortRecente?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'm',
+    alt: true,
+    description: 'Ordenar interações por mais relevante (requer busca)',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      if (!s.q.trim()) {
+        toast.info('Digite um termo de busca para ordenar por relevância', { duration: 1800 });
+        return;
+      }
+      handlersRef.current.onSortRelevante?.();
     },
   });
 

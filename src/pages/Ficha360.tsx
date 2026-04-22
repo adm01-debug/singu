@@ -26,6 +26,9 @@ import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
 import { ContagemPorTipoBar } from '@/components/ficha-360/ContagemPorTipoBar';
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
+import { OrdenacaoToggle } from '@/components/ficha-360/OrdenacaoToggle';
+import { useFicha360Sort } from '@/hooks/useFicha360Sort';
+import { sortInteractions } from '@/lib/sortInteractions';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
 import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
 import { useFicha360FilterFavorites, suggestFavoriteName } from '@/hooks/useFicha360FilterFavorites';
@@ -142,6 +145,19 @@ const Ficha360 = () => {
     });
   }, [recentInteractions, q]);
 
+  const { sort, setSort } = useFicha360Sort();
+
+  const sortedInteractions = useMemo(
+    () => sortInteractions(filteredInteractions, sort === 'relevante' ? 'relevance' : 'recent', q),
+    [filteredInteractions, sort, q],
+  );
+
+  // Quando a busca é limpa, "relevante" perde sentido — volta ao default
+  // e remove `?ordem` da URL (evita estado fantasma).
+  useEffect(() => {
+    if (!q.trim() && sort === 'relevante') setSort('recente');
+  }, [q, sort, setSort]);
+
   const hasPeriodChip = days !== 90;
 
   // Handler de "copiar link" — guardado em ref para o atalho Shift+L sempre
@@ -215,6 +231,14 @@ const Ficha360 = () => {
     onCopyLink: () => copyLinkRef.current(),
     onQuickSaveFavorito: () => quickSaveRef.current(),
     onAbrirFavoritos: () => setFavoritosMenuOpen(true),
+    onSortRecente: () => {
+      setSort('recente');
+      toast.info('Ordenação: mais recente', { duration: 1500 });
+    },
+    onSortRelevante: () => {
+      setSort('relevante');
+      toast.info('Ordenação: mais relevante', { duration: 1500 });
+    },
   });
 
   // Toast informativo quando a página abre com filtros vindos da URL.
@@ -440,7 +464,7 @@ const Ficha360 = () => {
                   companyId={profile?.company_id ?? null}
                 />
                 <UltimasInteracoesCard
-                  interactions={filteredInteractions}
+                  interactions={sortedInteractions}
                   contactId={id}
                   filtersActive={activeCount > 0}
                   isLoading={interactionsFetching}
@@ -462,6 +486,11 @@ const Ficha360 = () => {
                           channels={channels}
                           q={q}
                           activeCount={activeCount}
+                        />
+                        <OrdenacaoToggle
+                          sort={sort}
+                          onChange={setSort}
+                          hasQuery={!!q.trim()}
                         />
                         <div className="relative">
                           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
