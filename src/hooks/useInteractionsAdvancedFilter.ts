@@ -37,6 +37,13 @@ const DENSITY_STORAGE_KEY = 'singu-interactions-density-v1';
 const PERPAGE_STORAGE_KEY = 'singu-interactions-perPage-v1';
 const VIEW_STORAGE_KEY = 'singu-interactions-view-v1';
 const SORT_STORAGE_KEY = 'singu-interactions-sort-v1';
+const Q_STORAGE_KEY = 'singu-interactions-q-v1';
+const DIRECAO_STORAGE_KEY = 'singu-interactions-direcao-v1';
+const CONTACT_STORAGE_KEY = 'singu-interactions-contact-v1';
+const COMPANY_STORAGE_KEY = 'singu-interactions-company-v1';
+const DE_STORAGE_KEY = 'singu-interactions-de-v1';
+const ATE_STORAGE_KEY = 'singu-interactions-ate-v1';
+const SENTIMENTO_STORAGE_KEY = 'singu-interactions-sentimento-v1';
 
 function readLS(key: string): string | null {
   try {
