@@ -444,10 +444,8 @@ export function useInteractionsAdvancedFilter() {
     }
     const sp = new URLSearchParams(searchParams);
     sp.delete('page');
-    if (from instanceof Date && !isNaN(from.getTime())) sp.set('de', from.toISOString().slice(0, 10));
-    else sp.delete('de');
-    if (to instanceof Date && !isNaN(to.getTime())) sp.set('ate', to.toISOString().slice(0, 10));
-    else sp.delete('ate');
+    { const s = serializeDate(from); if (s) sp.set('de', s); else sp.delete('de'); }
+    { const s = serializeDate(to); if (s) sp.set('ate', s); else sp.delete('ate'); }
     setSearchParams(sp, { replace: true });
     return swapped;
   }, [searchParams, setSearchParams]);
