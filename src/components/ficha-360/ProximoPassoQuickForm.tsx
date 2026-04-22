@@ -181,14 +181,34 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
         <span>{hint}</span>
       </p>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-end gap-2 flex-wrap">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={createTask.isPending}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={handleSubmit} disabled={createTask.isPending}>
-          {createTask.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+        <Button
+          size="sm"
+          variant={hasNext ? 'outline' : 'default'}
+          onClick={() => handleSubmit('close')}
+          disabled={createTask.isPending}
+        >
+          {createTask.isPending && pendingMode === 'close' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           Confirmar
         </Button>
+        {hasNext && onCreatedAndAdvance && (
+          <Button
+            size="sm"
+            onClick={() => handleSubmit('advance')}
+            disabled={createTask.isPending}
+            title="Cria a tarefa e abre a próxima sugestão"
+          >
+            {createTask.isPending && pendingMode === 'advance' ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <ArrowRight className="h-3.5 w-3.5" />
+            )}
+            Criar e seguir
+          </Button>
+        )}
       </div>
     </div>
   );
