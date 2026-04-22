@@ -31,7 +31,7 @@ import {
   type PassoOutcome,
 } from '@/hooks/useProximoPassoFeedback';
 import type { SentimentTone } from '@/lib/scriptGenerator';
-import { useProximosPassosFilters, type NbaPriority } from '@/hooks/useProximosPassosFilters';
+import { useProximosPassosFilters, type NbaPriority, type NbaStatus } from '@/hooks/useProximosPassosFilters';
 import { filterAndSortPassos } from '@/lib/filterProximosPassos';
 import { ProximosPassosFiltersBar } from './ProximosPassosFiltersBar';
 import { useFicha360PreferencesSync } from '@/hooks/useFicha360PreferencesSync';
@@ -100,9 +100,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   const {
     priorities,
     channels,
+    status,
     sort,
     setPriorities,
     setChannels,
+    setStatus,
     setSort,
     clear: clearFilters,
     activeCount,
@@ -111,13 +113,17 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   // Persistência por usuário (cross-device) das preferências de filtros
   const [urlParams] = useSearchParams();
   const hasUrlOverride =
-    urlParams.has('nbaPrio') || urlParams.has('nbaCanal') || urlParams.has('nbaSort');
+    urlParams.has('nbaPrio') ||
+    urlParams.has('nbaCanal') ||
+    urlParams.has('nbaStatus') ||
+    urlParams.has('nbaSort');
   useFicha360PreferencesSync({
-    current: { priorities, channels, sort },
+    current: { priorities, channels, status, sort },
     hasUrlOverride,
     hydrate: (prefs) => {
       setPriorities(prefs.priorities);
       setChannels(prefs.channels);
+      setStatus(prefs.status ?? []);
       setSort(prefs.sort);
     },
   });
@@ -129,6 +135,10 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   const toggleChannel = (c: string) => {
     if (channels.includes(c)) setChannels(channels.filter((x) => x !== c));
     else setChannels([...channels, c]);
+  };
+  const toggleStatus = (s: NbaStatus) => {
+    if (status.includes(s)) setStatus(status.filter((x) => x !== s));
+    else setStatus([...status, s]);
   };
 
   // Limpa badges "criada" após 4s
@@ -156,9 +166,11 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
   const displayPassos = filterAndSortPassos(visiblePassos, {
     priorities,
     channels,
+    status,
     sort,
     preferredChannel,
     feedbacks,
+    createdIds,
   });
 
   return (
