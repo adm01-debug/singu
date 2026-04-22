@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   Building2, User, MessageSquare, Phone, Mail, Users as UsersIcon,
   Video, FileText, Clock, MoreVertical, Edit, Trash2,
+  ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -49,6 +50,11 @@ interface MinimalGroup {
 interface Props {
   group: MinimalGroup;
   defaultOpen?: boolean;
+  /**
+   * Quando true (default), inicia mostrando apenas o último evento do grupo
+   * com um botão "Ver todos" para expandir. Quando false, mostra todos.
+   */
+  collapsedByDefault?: boolean;
   /** Quando fornecido, exibe botão "Editar" por evento. Recebe o id da interação. */
   onEditEvent?: (eventId: string) => void;
   /** Quando fornecido, exibe botão "Excluir" por evento. Recebe o id da interação. */
@@ -56,10 +62,23 @@ interface Props {
 }
 
 export const TimelineGroupCard = React.memo(function TimelineGroupCard({
-  group, defaultOpen = false, onEditEvent, onDeleteEvent,
+  group, defaultOpen = false, collapsedByDefault = true, onEditEvent, onDeleteEvent,
 }: Props) {
   const EntityIcon = group.entity_type === 'company' ? Building2 : User;
   const hasActions = !!onEditEvent || !!onDeleteEvent;
+
+  // Eventos vêm em ordem cronológica do agrupador. O "último" = mais recente
+  // = aquele com created_at mais alto. Calculamos sem mutar o array original.
+  const sortedEvents = React.useMemo(
+    () => [...group.events].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    ),
+    [group.events],
+  );
+  const hasMultiple = sortedEvents.length > 1;
+  const [showAll, setShowAll] = useState(!collapsedByDefault);
+  const visibleEvents = showAll || !hasMultiple ? sortedEvents : sortedEvents.slice(0, 1);
+  const hiddenCount = sortedEvents.length - visibleEvents.length;
 
   return (
     <Accordion
@@ -86,7 +105,7 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
         <AccordionContent className="px-4 pb-4">
           <div className="relative pl-4">
             <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-            {group.events.map(event => {
+            {visibleEvents.map(event => {
               const Icon = eventIcons[event.type] || FileText;
               const colorClass = eventColors[event.type] || eventColors.note;
               return (
@@ -116,7 +135,6 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                                 aria-label="Ações da interação"
                                 className="h-6 w-6 opacity-0 group-hover/event:opacity-100 focus-visible:opacity-100 transition-opacity"
                                 onClick={(e) => {
-                                  // Impede que o clique propague e feche/abra o Accordion.
                                   e.stopPropagation();
                                   e.preventDefault();
                                 }}
@@ -163,6 +181,34 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                 </div>
               );
             })}
+
+            {hasMultiple && (
+              <div className="pt-2 pl-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAll(v => !v)}
+                  aria-expanded={showAll}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                >
+                  {showAll ? (
+                    <>
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      Mostrar apenas o último
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      Ver todos os {sortedEvents.length} eventos
+                      {hiddenCount > 0 && (
+                        <span className="ml-1 text-[10px] opacity-70">(+{hiddenCount})</span>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>
