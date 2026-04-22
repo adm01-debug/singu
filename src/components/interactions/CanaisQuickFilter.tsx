@@ -271,8 +271,11 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
 
-  // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa. Funciona com foco em inputs.
+  // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa.
+  // Setas ←/→ no campo de busca movem um cursor circular pelos canais e
+  // alternam o canal correspondente — atalho ergonômico que não exige Alt.
   const [altPressed, setAltPressed] = useState(false);
+  const arrowCursorRef = React.useRef(0);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Cmd/Ctrl+Enter: aplica canais pendentes no modo manual (sem Alt/Shift).
@@ -295,6 +298,31 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
         revert();
         return;
       }
+
+      // ←/→ apenas quando o foco está no campo de busca de interações.
+      // Não interceptamos se há modificadores (preserva navegação nativa de
+      // texto com Shift/Alt/Ctrl).
+      if (
+        (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+        !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey
+      ) {
+        const tgt = e.target as HTMLElement | null;
+        const isSearch =
+          tgt?.tagName === 'INPUT' &&
+          (tgt as HTMLInputElement).dataset.interacoesSearch !== undefined;
+        if (isSearch) {
+          e.preventDefault();
+          const dir = e.key === 'ArrowRight' ? 1 : -1;
+          const next = (arrowCursorRef.current + dir + CHANNELS.length) % CHANNELS.length;
+          arrowCursorRef.current = next;
+          const canal = CHANNELS[next];
+          const wasActive = (mode === 'manual' ? pending : safe).includes(canal.value);
+          toggleCanal(canal.value);
+          toast.message(`${canal.label} ${wasActive ? 'desativado' : 'ativado'}`, { duration: 1500 });
+          return;
+        }
+      }
+
       if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
       // Alt+Enter: aplica canais pendentes no modo manual (atalho legado).
       if (e.key === 'Enter') {
@@ -317,6 +345,8 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
       e.preventDefault();
       const canal = CHANNELS[idx - 1];
       const wasActive = (mode === 'manual' ? pending : safe).includes(canal.value);
+      // Alinha o cursor de setas com a última ação por número.
+      arrowCursorRef.current = idx - 1;
       toggleCanal(canal.value);
       toast.message(`${canal.label} ${wasActive ? 'desativado' : 'ativado'}`, { duration: 1500 });
     };
