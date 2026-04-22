@@ -91,9 +91,35 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
     return `Mostrando ${visibleCount} de ${totalCount}`;
   })();
 
+  // Resumo de canais ativos — reflete exatamente o param ?canais= da URL
+  // (filters.canais vem do hook useInteractionsAdvancedFilter, que parseia a URL).
+  // Mostramos até 3 nomes inline e abreviamos o restante com "+N", com tooltip
+  // contendo a lista completa para acessibilidade e descoberta.
+  const channelLabels = canais.map((c) => CHANNEL_META[c]?.label ?? prettifyChannel(c));
+  const MAX_INLINE = 3;
+  const inlineLabels = channelLabels.slice(0, MAX_INLINE);
+  const overflowCount = channelLabels.length - inlineLabels.length;
+  const fullChannelsTitle = channelLabels.join(', ');
+
   return (
     <div className="flex flex-wrap items-center gap-2 px-1">
       <span className="text-xs text-muted-foreground mr-1">{summary}</span>
+
+      {canais.length > 0 && (
+        <span
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground border-l border-border/60 pl-2"
+          title={`Canais ativos (${canais.length}): ${fullChannelsTitle}`}
+          aria-label={`${canais.length} ${canais.length === 1 ? 'canal ativo' : 'canais ativos'}: ${fullChannelsTitle}`}
+        >
+          <span className="font-medium text-foreground/80 tabular-nums">
+            {canais.length} {canais.length === 1 ? 'canal' : 'canais'}:
+          </span>
+          <span className="max-w-[260px] truncate">
+            {inlineLabels.join(', ')}
+            {overflowCount > 0 && ` +${overflowCount}`}
+          </span>
+        </span>
+      )}
 
       {qTrim && (
         <Badge variant="secondary" closeable onClose={wrap(() => setFilter('q', ''))} icon={<Search className="w-3 h-3" />}>
