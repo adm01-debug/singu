@@ -558,7 +558,7 @@ const Ficha360 = () => {
               </div>
             </div>
 
-            <ConversasRelacionadasCard contactId={id} channelCounts={channelCounts} />
+            <ConversasRelacionadasCard contactId={id} channelCounts={channelCounts} companyId={profile?.company_id ?? null} />
           </>
         )}
       </div>
