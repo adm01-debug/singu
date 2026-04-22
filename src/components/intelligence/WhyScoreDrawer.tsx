@@ -101,6 +101,31 @@ const BAND_META: Record<'low' | 'mid' | 'high', { label: string; cls: string; in
   high: { label: 'Alto', cls: 'text-success', indicator: 'bg-success' },
 };
 
+/** Banda por fator (0-100), alinhada com inferDirection: <35 baixa, 35-65 média, >65 alta. */
+type FactorBand = 'low' | 'mid' | 'high';
+function getFactorBand(score: number): FactorBand {
+  if (score >= 65) return 'high';
+  if (score <= 35) return 'low';
+  return 'mid';
+}
+const FACTOR_BAND_META: Record<FactorBand, { label: string; range: string; badgeClass: string }> = {
+  low: {
+    label: 'baixa',
+    range: 'até 35',
+    badgeClass: 'bg-destructive/10 text-destructive border-destructive/30',
+  },
+  mid: {
+    label: 'média',
+    range: 'entre 35 e 65',
+    badgeClass: 'bg-warning/10 text-warning border-warning/30',
+  },
+  high: {
+    label: 'alta',
+    range: 'acima de 65',
+    badgeClass: 'bg-success/10 text-success border-success/30',
+  },
+};
+
 /**
  * Drawer universal "Por que esse score?". Mostra fatores ponderados,
  * recomendações e captura feedback do usuário (👍/👎) em localStorage
@@ -127,11 +152,14 @@ export function WhyScoreDrawer({
   const rankedFactors = useMemo(() => {
     const sorted = [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score);
     const totalContribution = sorted.reduce((sum, f) => sum + f.weight * f.score, 0);
+    const totalWeight = sorted.reduce((sum, f) => sum + f.weight, 0);
     return sorted.map((f, i) => {
       const contribution = f.weight * f.score;
       const contributionPct = totalContribution > 0 ? (contribution / totalContribution) * 100 : 0;
+      const normalizedWeightPct = totalWeight > 0 ? (f.weight / totalWeight) * 100 : 0;
       const effectiveDirection: WhyScoreDirection = f.direction ?? inferDirection(f.score);
-      return { ...f, contribution, contributionPct, rank: i + 1, effectiveDirection };
+      const factorBand = getFactorBand(f.score);
+      return { ...f, contribution, contributionPct, normalizedWeightPct, rank: i + 1, effectiveDirection, factorBand };
     });
   }, [factors]);
 
@@ -191,8 +219,8 @@ export function WhyScoreDrawer({
                       <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[260px] text-xs">
-                    Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total.
+                  <TooltipContent side="top" className="max-w-[280px] text-xs">
+                    Ordenados pela contribuição real (peso × score). Cada fator mostra direção (favorece/prejudica/neutro) e banda da nota: <strong>baixa</strong> (até 35), <strong>média</strong> (35–65) e <strong>alta</strong> (acima de 65).
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -246,6 +274,11 @@ export function WhyScoreDrawer({
                     ? 'Está prejudicando'
                     : 'Contribuição';
 
+              const bandMeta = FACTOR_BAND_META[f.factorBand];
+              const normWeightInt = Math.round(f.normalizedWeightPct);
+              const rawWeightInt = Math.round(f.weight * 100);
+              const scoreInt = Math.round(f.score);
+
               return (
                 <div key={f.key} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs gap-2">
@@ -260,10 +293,35 @@ export function WhyScoreDrawer({
                         <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
                         {dirMeta.label}
                       </Badge>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="outline"
+                              className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 font-normal cursor-help', bandMeta.badgeClass)}
+                              aria-label={`Banda ${bandMeta.label}: score ${scoreInt} ${bandMeta.range}`}
+                            >
+                              Banda: {bandMeta.label}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[240px] text-xs">
+                            Cortes da banda: <strong>baixa</strong> até 35, <strong>média</strong> de 35 a 65, <strong>alta</strong> acima de 65. Este fator atingiu <strong>{scoreInt}</strong>, caindo na banda <strong>{bandMeta.label}</strong>.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </span>
-                    <span className="text-muted-foreground shrink-0">
-                      {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-muted-foreground shrink-0 cursor-help">
+                            {scoreInt}/100 · representa {normWeightInt}% do total
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[240px] text-xs">
+                          Peso normalizado entre os fatores listados: <strong>{normWeightInt}%</strong>. Peso bruto configurado: <strong>{rawWeightInt}%</strong>.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <Progress
                     value={f.score}
