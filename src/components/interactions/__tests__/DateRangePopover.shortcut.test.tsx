@@ -84,7 +84,11 @@ describe('DateRangePopover · atalho Alt+D', () => {
     fireEvent.keyDown(ta, { key: 'd', altKey: true, bubbles: true });
     expect(apply).not.toHaveBeenCalled();
 
+    // jsdom não trata `contentEditable` no JSX como editável; forçamos a flag
+    // via DOM API para refletir o comportamento real do browser.
     const ce = screen.getByTestId('ce');
+    ce.setAttribute('contenteditable', 'true');
+    Object.defineProperty(ce, 'isContentEditable', { configurable: true, get: () => true });
     ce.focus();
     fireEvent.keyDown(ce, { key: 'd', altKey: true, bubbles: true });
     expect(apply).not.toHaveBeenCalled();
