@@ -23,6 +23,7 @@ interface SortConfigItem {
   icon: React.ComponentType<{ className?: string }>;
   shortcut: string;
   requiresQuery?: boolean;
+  requiresChannelCounts?: boolean;
 }
 
 const SORT_CONFIG: SortConfigItem[] = [
@@ -30,10 +31,19 @@ const SORT_CONFIG: SortConfigItem[] = [
   { key: 'oldest', label: 'Mais antigas', icon: ArrowUp, shortcut: 'O' },
   { key: 'relevance', label: 'Melhor correspondência', icon: Sparkles, shortcut: 'M', requiresQuery: true },
   { key: 'entity', label: 'Por pessoa/empresa', icon: Users, shortcut: 'P' },
+  { key: 'channel', label: 'Por canal', icon: Hash, shortcut: 'C', requiresChannelCounts: true },
 ];
 
-export const SortChips = React.memo(function SortChips({ value, onChange, hasQuery }: Props) {
-  const effective: SortKey = value === 'relevance' && !hasQuery ? 'recent' : value;
+export const SortChips = React.memo(function SortChips({ value, onChange, hasQuery, channelCounts }: Props) {
+  const hasChannelCounts = useMemo(
+    () => !!channelCounts && Object.values(channelCounts).some((n) => n > 0),
+    [channelCounts],
+  );
+  const effective: SortKey = useMemo(() => {
+    if (value === 'relevance' && !hasQuery) return 'recent';
+    if (value === 'channel' && !hasChannelCounts) return 'recent';
+    return value;
+  }, [value, hasQuery, hasChannelCounts]);
   const [altDown, setAltDown] = useState(false);
 
   useEffect(() => {
@@ -44,6 +54,7 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
       const item = SORT_CONFIG.find(i => i.shortcut.toLowerCase() === k);
       if (!item) return;
       if (item.requiresQuery && !hasQuery) return;
+      if (item.requiresChannelCounts && !hasChannelCounts) return;
       e.preventDefault();
       if (effective !== item.key) {
         onChange(item.key);
