@@ -8,6 +8,7 @@ import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { InfiniteScrollSentinel, CompactItemSkeleton } from '@/components/interactions/InfiniteScrollSentinel';
+import { IncrementalLoadStickyBar } from '@/components/interactions/IncrementalLoadStickyBar';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 
 interface Props {
