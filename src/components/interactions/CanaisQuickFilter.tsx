@@ -418,20 +418,28 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="default"
-                  size="xs"
-                  onClick={apply}
-                  aria-keyshortcuts="Alt+Enter"
-                  className="gap-1"
-                >
-                  <Check className="w-3 h-3" />
-                  Aplicar
-                  <span className="text-[10px] opacity-80">({diffCount})</span>
-                </Button>
+                <span>
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="xs"
+                    onClick={apply}
+                    disabled={!dirty}
+                    aria-keyshortcuts="Alt+Enter"
+                    aria-disabled={!dirty}
+                    className="gap-1"
+                  >
+                    <Check className="w-3 h-3" />
+                    Aplicar
+                    <span className="text-[10px] opacity-80">({diffCount})</span>
+                  </Button>
+                </span>
               </TooltipTrigger>
-              <TooltipContent side="top">Aplicar canais pendentes (Alt+Enter)</TooltipContent>
+              <TooltipContent side="top">
+                {dirty
+                  ? 'Aplicar canais pendentes (Alt+Enter)'
+                  : 'Nenhuma mudança pendente para aplicar'}
+              </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
