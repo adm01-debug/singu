@@ -199,6 +199,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      // Alt+Enter: aplica canais pendentes no modo manual.
+      if (e.key === 'Enter') {
+        if (mode !== 'manual') return;
+        if (arraysEqual(pending, safe)) return;
+        e.preventDefault();
+        apply();
+        return;
+      }
       if (e.key === '0') {
         e.preventDefault();
         const hasAny = mode === 'auto' ? safe.length > 0 : pending.length > 0;
@@ -217,7 +225,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [mode, safe, pending, toggleCanal, clearAll]);
+  }, [mode, safe, pending, toggleCanal, clearAll, apply]);
 
   // Detecta Alt pressionado para mostrar badges Alt+N nos chips
   useEffect(() => {
