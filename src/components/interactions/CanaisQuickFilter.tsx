@@ -78,7 +78,7 @@ function arraysEqual(a: string[], b: string[]) {
 
 export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange, counts }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
-  const { mode, toggle } = useChannelSyncMode();
+  const { mode, toggle, setMode } = useChannelSyncMode();
   const [pending, setPendingState] = useState<string[]>(() => {
     // Restaura pending salvo apenas se modo for manual e diferir do aplicado
     try {
