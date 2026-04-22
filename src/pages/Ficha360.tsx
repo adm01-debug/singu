@@ -319,6 +319,8 @@ const Ficha360 = () => {
   );
 
   const [trendWeeks, setTrendWeeks] = useState<4 | 8 | 12 | 24>(8);
+  const [showFactorBreakdown, setShowFactorBreakdown] = useState(false);
+  const [breakdownAsPercent, setBreakdownAsPercent] = useState(false);
 
   const trend = useMemo(
     () =>
