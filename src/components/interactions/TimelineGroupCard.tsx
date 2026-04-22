@@ -105,7 +105,7 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
         <AccordionContent className="px-4 pb-4">
           <div className="relative pl-4">
             <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
-            {group.events.map(event => {
+            {visibleEvents.map(event => {
               const Icon = eventIcons[event.type] || FileText;
               const colorClass = eventColors[event.type] || eventColors.note;
               return (
@@ -135,7 +135,6 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                                 aria-label="Ações da interação"
                                 className="h-6 w-6 opacity-0 group-hover/event:opacity-100 focus-visible:opacity-100 transition-opacity"
                                 onClick={(e) => {
-                                  // Impede que o clique propague e feche/abra o Accordion.
                                   e.stopPropagation();
                                   e.preventDefault();
                                 }}
@@ -182,6 +181,34 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                 </div>
               );
             })}
+
+            {hasMultiple && (
+              <div className="pt-2 pl-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAll(v => !v)}
+                  aria-expanded={showAll}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
+                >
+                  {showAll ? (
+                    <>
+                      <ChevronUp className="w-3.5 h-3.5" />
+                      Mostrar apenas o último
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3.5 h-3.5" />
+                      Ver todos os {sortedEvents.length} eventos
+                      {hiddenCount > 0 && (
+                        <span className="ml-1 text-[10px] opacity-70">(+{hiddenCount})</span>
+                      )}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </AccordionContent>
       </AccordionItem>
