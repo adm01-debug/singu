@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -9,9 +9,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Target, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { AccessibleChart } from '@/components/ui/accessible-chart';
 import {
   Select,
@@ -25,6 +30,10 @@ import {
   computeTrendSlope,
   type ProntidaoTrendPoint,
 } from '@/lib/prontidaoTrend';
+import {
+  useProntidaoTargetStore,
+  PRONTIDAO_TARGET_DEFAULT,
+} from '@/stores/useProntidaoTargetStore';
 import { cn } from '@/lib/utils';
 
 export type TrendWeeks = 4 | 8 | 12 | 24;
@@ -62,32 +71,53 @@ const trendMeta = {
   },
 } as const;
 
-const TooltipContent = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
-  if (!active || !payload?.length) return null;
-  const p = payload[0].payload;
-  if (!p.hasData) {
+const makeTooltipContent = (target: number) => {
+  const Comp = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0].payload;
+    if (!p.hasData) {
+      return (
+        <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
+          <div className="font-medium">Semana de {p.weekLabel}</div>
+          <div className="text-muted-foreground">Sem interações registradas</div>
+        </div>
+      );
+    }
+    const diff = target > 0 ? p.score - target : null;
     return (
-      <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
+      <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
         <div className="font-medium">Semana de {p.weekLabel}</div>
-        <div className="text-muted-foreground">Sem interações registradas</div>
+        <div>
+          Score: <span className="tabular-nums font-semibold">{p.score}</span> ·{' '}
+          <span className="capitalize">{p.levelLabel}</span>
+        </div>
+        {diff !== null && (
+          <div
+            className={cn(
+              'tabular-nums',
+              diff >= 0 ? 'text-success' : 'text-destructive',
+            )}
+          >
+            {diff >= 0 ? '+' : ''}
+            {diff} pts vs. meta ({target})
+          </div>
+        )}
+        <div className="text-muted-foreground">
+          {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
+        </div>
       </div>
     );
-  }
-  return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
-      <div className="font-medium">Semana de {p.weekLabel}</div>
-      <div>
-        Score: <span className="tabular-nums font-semibold">{p.score}</span> ·{' '}
-        <span className="capitalize">{p.levelLabel}</span>
-      </div>
-      <div className="text-muted-foreground">
-        {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
-      </div>
-    </div>
-  );
+  };
+  return Comp;
 };
 
 export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
+  const target = useProntidaoTargetStore((s) => s.target);
+  const setTarget = useProntidaoTargetStore((s) => s.setTarget);
+  const resetTarget = useProntidaoTargetStore((s) => s.reset);
+  const [draftTarget, setDraftTarget] = useState<number>(target);
+  const TooltipContent = useMemo(() => makeTooltipContent(target), [target]);
+
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
   // Janela de variação: ¼ da janela total (mín 2, máx 8) para ficar coerente com 4/8/12/24
@@ -96,16 +126,19 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
     return Math.min(8, Math.max(2, Math.round(total / 2)));
   }, [weeks, data.length]);
 
-  const { slope, direction, variation, peak } = useMemo(() => {
+  const { slope, direction, variation, peak, aboveTarget, currentVsTarget } = useMemo(() => {
     const s = computeTrendSlope(data, variationWindow);
     const d = classifyTrend(s);
     const lastN = valid.slice(-variationWindow);
     const v = lastN.length >= 2 ? lastN[lastN.length - 1].score - lastN[0].score : 0;
     const pk = valid.length ? Math.max(...valid.map((p) => p.score)) : 0;
-    return { slope: s, direction: d, variation: v, peak: pk };
-  }, [data, valid, variationWindow]);
+    const above = target > 0 ? valid.filter((p) => p.score >= target).length : 0;
+    const cvt = target > 0 ? currentScore - target : 0;
+    return { slope: s, direction: d, variation: v, peak: pk, aboveTarget: above, currentVsTarget: cvt };
+  }, [data, valid, variationWindow, target, currentScore]);
 
   const meta = trendMeta[direction];
+  const targetActive = target > 0;
 
   if (valid.length < 2) {
     return (
@@ -138,7 +171,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
               </Badge>
             )}
           </CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {weeks !== undefined && onWeeksChange && (
               <Select
                 value={String(weeks)}
@@ -159,6 +192,66 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                 </SelectContent>
               </Select>
             )}
+            <Popover onOpenChange={(open) => open && setDraftTarget(target)}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs gap-1"
+                  aria-label="Configurar meta do score"
+                >
+                  <Target className="h-3 w-3" aria-hidden="true" />
+                  Meta {targetActive ? target : 'off'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 space-y-3">
+                <div className="space-y-1">
+                  <Label htmlFor="prontidao-target-input" className="text-xs">
+                    Meta semanal (linha-alvo)
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">
+                    O score de cada semana é comparado a esse valor. Use 0 para desativar.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="prontidao-target-input"
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={draftTarget}
+                    onChange={(e) => setDraftTarget(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                    className="h-8 w-20 text-sm tabular-nums"
+                  />
+                  <span className="text-xs text-muted-foreground">/ 100</span>
+                </div>
+                <Slider
+                  value={[draftTarget]}
+                  min={0}
+                  max={100}
+                  step={5}
+                  onValueChange={(v) => setDraftTarget(v[0] ?? 0)}
+                  aria-label="Meta do score de prontidão"
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={() => {
+                      resetTarget();
+                      setDraftTarget(PRONTIDAO_TARGET_DEFAULT);
+                    }}
+                  >
+                    <RotateCcw className="h-3 w-3" aria-hidden="true" />
+                    Padrão ({PRONTIDAO_TARGET_DEFAULT})
+                  </Button>
+                  <Button size="sm" className="h-7 px-3 text-xs" onClick={() => setTarget(draftTarget)}>
+                    Salvar
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
               <meta.Icon className="h-3 w-3" aria-hidden="true" />
               {meta.label}
@@ -168,10 +261,24 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Stat row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className={cn('grid gap-3', targetActive ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')}>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Atual</div>
-            <div className="text-lg font-semibold tabular-nums">{currentScore}</div>
+            <div className="flex items-baseline gap-1.5">
+              <div className="text-lg font-semibold tabular-nums">{currentScore}</div>
+              {targetActive && (
+                <span
+                  className={cn(
+                    'text-[11px] font-medium tabular-nums',
+                    currentVsTarget >= 0 ? 'text-success' : 'text-destructive',
+                  )}
+                  aria-label={`${currentVsTarget >= 0 ? 'Acima' : 'Abaixo'} da meta em ${Math.abs(currentVsTarget)} pontos`}
+                >
+                  {currentVsTarget >= 0 ? '+' : ''}
+                  {currentVsTarget}
+                </span>
+              )}
+            </div>
           </div>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -192,6 +299,17 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Pico</div>
             <div className="text-lg font-semibold tabular-nums">{peak}</div>
           </div>
+          {targetActive && (
+            <div className="space-y-0.5">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Acima da meta
+              </div>
+              <div className="text-lg font-semibold tabular-nums">
+                {aboveTarget}
+                <span className="text-sm text-muted-foreground font-normal">/{valid.length}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Chart */}
@@ -242,6 +360,20 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                   strokeDasharray="4 4"
                   strokeOpacity={0.6}
                 />
+                {targetActive && (
+                  <ReferenceLine
+                    y={target}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={1.5}
+                    strokeDasharray="6 3"
+                    label={{
+                      value: `Meta ${target}`,
+                      position: 'right',
+                      fill: 'hsl(var(--primary))',
+                      fontSize: 10,
+                    }}
+                  />
+                )}
                 <Tooltip
                   content={<TooltipContent />}
                   cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
@@ -262,7 +394,8 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
         </AccessibleChart>
 
         <p className="text-[11px] text-muted-foreground">
-          Linhas tracejadas marcam os limiares Morno (40) e Quente (70). Tendência calculada pelos
+          Linhas tracejadas marcam os limiares Morno (40) e Quente (70)
+          {targetActive && <> · linha cheia em {target} é sua meta</>}. Tendência calculada pelos
           últimos {variationWindow} pontos · slope {slope.toFixed(1)}.
         </p>
       </CardContent>
