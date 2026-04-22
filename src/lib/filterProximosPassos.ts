@@ -27,10 +27,40 @@ interface RecommendationContext {
   feedbacks?: PassoFeedback[] | null;
 }
 
-interface FilterOpts extends RecommendationContext {
+interface StatusContext {
+  feedbacks?: PassoFeedback[] | null;
+  createdIds?: ReadonlySet<string> | null;
+}
+
+interface FilterOpts extends RecommendationContext, StatusContext {
   priorities: NbaPriority[];
   channels: string[];
+  status?: NbaStatus[];
   sort: NbaSort;
+}
+
+/**
+ * Deriva o status atual de um passo a partir do último feedback registrado
+ * e do conjunto de passos recém-criados nesta sessão.
+ */
+export function derivePassoStatus(
+  passo: ProximoPasso,
+  ctx: StatusContext = {},
+): NbaStatus {
+  if (passo.id === 'agendar-reuniao' && ctx.createdIds?.has(passo.id)) {
+    return 'reuniao_agendada';
+  }
+  const fbs = ctx.feedbacks ?? [];
+  const matching = fbs
+    .filter((f) => f.passo_id === passo.id || f.passo_id?.startsWith(`${passo.id}:`))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const last = matching[0];
+  if (!last) return 'pendente';
+  if (last.outcome === 'respondeu_positivo' && passo.id === 'agendar-reuniao') {
+    return 'reuniao_agendada';
+  }
+  if (last.outcome === 'pulou') return 'pendente';
+  return last.outcome as NbaStatus;
 }
 
 function normalizeChannel(ch?: string | null): string | null {
