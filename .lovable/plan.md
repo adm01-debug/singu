@@ -1,65 +1,33 @@
 
 
-# Plano: Persistir e restaurar o estado aberto do WhyScoreDrawer ao trocar de contato
+# Plano: Mostrar peso percentual e razão da banda (low/mid/high) no WhyScoreDrawer
 
 ## Estado atual
 
-`WhyScoreDrawer` é controlado por `open`/`onOpenChange`. Cada consumidor (ex.: `LeadScoreBadge`) mantém `useState(false)` local. Ao navegar entre contatos na Ficha 360 (`/contatos/:id`), o componente desmonta e monta de novo → o drawer sempre volta fechado, mesmo que o usuário estivesse comparando "por que" entre contatos.
+`WhyScoreDrawer` mostra para cada fator: ícone de direção, label, score/100, peso bruto (`peso X%`), contribuição em pts e duas barras. Mas:
+
+1. O **peso exibido é o peso bruto do fator** (ex.: 30%), não o peso **normalizado em relação ao total dos fatores ranqueados** — o usuário não vê "este fator vale X% do score final".
+2. O **score do fator** (0–100) é mostrado como número e barra, mas não há explicação de **por que ele caiu na banda atual** (low <35 / mid 35–65 / high >65). O `inferDirection` já usa esses cortes, mas o motivo é invisível.
 
 ## Objetivo
 
-Se o usuário fechou o drawer com ele aberto e navega para outro contato (ou recarrega a página), o drawer deve **reabrir automaticamente** mostrando o score do novo contato. Quando o usuário **explicitamente fechar** o drawer (X / clique fora / ESC), a preferência é apagada e ele não reabre mais até ser aberto manualmente de novo.
+Adicionar duas informações por fator:
+
+- **Peso percentual normalizado**: `peso_fator / soma_pesos × 100` → "representa X% do score". Mantém o `peso bruto` como tooltip secundário.
+- **Razão da banda**: chip discreto `Banda: baixa/média/alta` com tooltip explicando os cortes (`<35 baixa`, `35–65 média`, `>65 alta`) e qual deles este fator atingiu.
 
 ## Mudanças
 
-### 1. Novo hook `useWhyScoreDrawerPreference` (arquivo novo)
+Único arquivo: `src/components/intelligence/WhyScoreDrawer.tsx` (ou `whyScoreHelpers.ts` se já extraído — checar primeiro).
 
-`src/hooks/useWhyScoreDrawerPreference.ts` (~50 linhas).
-
-Persiste um único flag global em `sessionStorage` (chave `singu-whyscore-open-v1`). Por que sessionStorage e não localStorage: a "intenção de manter aberto" é uma preferência de sessão de trabalho, não cross-device. Sai quando fecha o navegador.
-
-API:
-```ts
-export function useWhyScoreDrawerPreference(): {
-  shouldAutoOpen: boolean;     // valor inicial lido do storage
-  rememberOpen: () => void;    // grava flag = true
-  forgetOpen: () => void;      // remove flag
-};
-```
-
-Implementação: lê `sessionStorage` no `useState(() => ...)` para evitar flicker. `rememberOpen`/`forgetOpen` apenas escrevem/removem. Sem listeners cross-tab (não é necessário).
-
-Tratamento defensivo: try/catch em todos os acessos a `sessionStorage` (modo privado, SSR).
-
-### 2. `LeadScoreBadge` consome o hook
-
-Em `src/components/lead-score/LeadScoreBadge.tsx`:
-
-- importar `useWhyScoreDrawerPreference`.
-- substituir `const [open, setOpen] = useState(false)` por:
-  ```ts
-  const { shouldAutoOpen, rememberOpen, forgetOpen } = useWhyScoreDrawerPreference();
-  const [open, setOpen] = useState(shouldAutoOpen && interactive);
-  ```
-- handler de abertura (clique no badge): `setOpen(true); rememberOpen();`.
-- callback do drawer: 
-  ```ts
-  const handleOpenChange = (next: boolean) => {
-    setOpen(next);
-    if (next) rememberOpen(); else forgetOpen();
-  };
-  ```
-  e passar `onOpenChange={handleOpenChange}` ao `WhyScoreDrawer`.
-
-Isto garante que: (a) ao navegar para outro contato e o `LeadScoreBadge` remontar com `interactive=true`, o drawer reaparece com os fatores do novo contato; (b) ao fechar manualmente, a flag é apagada e o drawer não reaparece em contatos seguintes.
-
-Guard: só auto-abre se `interactive` for verdadeiro (badge sem `factors`/`contactId` não consegue abrir o drawer; abrir vazio seria pior UX).
-
-### 3. Nada muda em outros consumidores
-
-`ScoreProntidaoCard`, `DealRiskDrawer`, `WhyScoreDrawer` em si não precisam mudar. A persistência fica no consumidor específico que o usuário usa para "comparar entre contatos" (LeadScoreBadge na Ficha 360 é o caso real). Outros consumidores podem adotar o hook depois, se quiserem o mesmo comportamento.
+1. **Helper `getBand(score)`** retornando `'low' | 'mid' | 'high'` + `BAND_META` com label PT-BR e classe de cor (reusa tokens semânticos existentes).
+2. **Cálculo do peso normalizado**: somar `factor.weight` de todos os fatores ranqueados, dividir cada um pela soma × 100. Adicionar como `normalizedWeight` no objeto enriquecido por `rankFactors` (ou inline).
+3. **UI por fator**: 
+   - Linha de meta atual (`Score/100 · peso X% (bruto Y%)`) → reescrever como `Score/100 · representa X% do total`.
+   - Adicionar chip `Banda: {label}` ao lado do chip de direção, com `Tooltip` explicando a faixa.
+4. **Tooltip explicativo no header da seção de fatores**: já existe, adicionar uma linha sobre bandas.
 
 ## Critérios de aceite
 
-(a) Abrir o drawer no contato A, navegar para o contato B → o drawer abre automaticamente em B com os fatores de B; (b) fechar o drawer (X, ESC ou clique fora) em qualquer contato → ao navegar para outro, o drawer fica fechado; (c) recarregar a página com drawer aberto: ao remontar a Ficha 360 do mesmo contato, o drawer volta aberto; após fechar o navegador, sessão expira; (d) badge não-interativo (sem `factors` ou `contactId`) nunca auto-abre, mesmo com flag setada; (e) sem nova dependência, sem `any`, PT-BR; (f) hook isolado e reusável (<60 linhas), `LeadScoreBadge` continua <120 linhas; (g) tratamento defensivo de `sessionStorage` (try/catch).
+(a) Cada fator mostra "representa X% do score" usando peso normalizado; (b) cada fator mostra chip "Banda: baixa/média/alta" alinhado com a cor semântica; (c) tooltip do chip de banda explica os cortes (`<35`, `35–65`, `>65`) e indica qual o fator atingiu; (d) tooltip do peso mostra o valor bruto como referência secundária; (e) cores via tokens semânticos (sem hex direto); (f) sem nova dependência, sem `any`, PT-BR; (g) `WhyScoreDrawer` permanece <320 linhas; (h) `aria-label` do chip de banda informa "Banda {label}: score {N} entre {min} e {max}".
 
