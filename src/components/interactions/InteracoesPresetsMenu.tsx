@@ -119,10 +119,13 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   }, [editingId]);
 
   const handleStartNaming = () => {
-    const suggested = suggestInteracoesPresetName(filters);
-    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
-    setName(finalName);
+    setName(suggestedName);
     setIsNaming(true);
+  };
+
+  const handleQuickSave = () => {
+    if (!suggestedName) return;
+    saveWithName(suggestedName);
   };
 
   const handleRegenerateSuggestion = () => {
