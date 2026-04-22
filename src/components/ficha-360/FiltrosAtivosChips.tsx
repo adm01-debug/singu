@@ -116,6 +116,7 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
           size="xs"
           onClick={onClearAll}
           className="ml-auto gap-1 text-muted-foreground"
+          title="Atalho: Shift + C"
         >
           <X className="h-3 w-3" /> Limpar tudo
         </Button>
