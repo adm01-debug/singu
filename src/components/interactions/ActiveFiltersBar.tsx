@@ -150,9 +150,16 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
         </Badge>
       )}
 
-      {activeCount >= 2 && (
-        <Button variant="ghost" size="xs" onClick={wrap(clear)} className="ml-auto">
-          Limpar tudo
+      {activeCount >= 1 && (
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={wrap(clear)}
+          aria-label="Limpar todos os filtros e remover preferências salvas"
+          title="Apaga canais aplicados, datas, sentimento, busca e remove a persistência do localStorage"
+          className="ml-auto"
+        >
+          Limpar filtros
         </Button>
       )}
     </div>

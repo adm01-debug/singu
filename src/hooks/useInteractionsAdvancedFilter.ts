@@ -356,6 +356,25 @@ export function useInteractionsAdvancedFilter() {
     const next = new URLSearchParams(searchParams);
     KEYS.forEach(k => next.delete(k));
     setSearchParams(next, { replace: true });
+    // Também remove TODA a persistência de filtros do localStorage para
+    // que o estado limpo sobreviva a um reload da página.
+    [
+      DENSITY_STORAGE_KEY,
+      PERPAGE_STORAGE_KEY,
+      VIEW_STORAGE_KEY,
+      SORT_STORAGE_KEY,
+      Q_STORAGE_KEY,
+      DIRECAO_STORAGE_KEY,
+      CONTACT_STORAGE_KEY,
+      COMPANY_STORAGE_KEY,
+      DE_STORAGE_KEY,
+      ATE_STORAGE_KEY,
+      SENTIMENTO_STORAGE_KEY,
+      // Chips de canal (aplicados, pendentes e modo auto/manual).
+      'channel-applied-canais',
+      'channel-pending-canais',
+      'channel-sync-mode',
+    ].forEach(removeLS);
   }, [searchParams, setSearchParams]);
 
   const applyAll = useCallback((next: Partial<AdvancedFilters>) => {
