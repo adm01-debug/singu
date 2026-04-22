@@ -3,8 +3,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDown, Minus, MessageSquare, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -89,6 +90,35 @@ function writeFeedback(map: Record<string, 'up' | 'down'>) {
   }
 }
 
+// Feedback sobre a explicação ("faz sentido / não faz sentido"), persistido por scoreKey
+// (que já encoda o contato, ex.: "lead-score:contact:abc").
+const EXPLANATION_FEEDBACK_KEY = 'singu-explanation-feedback-v1';
+
+export type ExplanationFeedbackValue = 'makes_sense' | 'does_not_make_sense';
+
+interface ExplanationFeedbackEntry {
+  value: ExplanationFeedbackValue;
+  comment?: string;
+  updatedAt: string;
+}
+
+function readExplanationFeedback(): Record<string, ExplanationFeedbackEntry> {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(EXPLANATION_FEEDBACK_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function writeExplanationFeedback(map: Record<string, ExplanationFeedbackEntry>) {
+  try {
+    window.localStorage.setItem(EXPLANATION_FEEDBACK_KEY, JSON.stringify(map));
+  } catch {
+    /* noop */
+  }
+}
+
 function deriveBand(score: number): 'low' | 'mid' | 'high' {
   if (score >= 70) return 'high';
   if (score >= 40) return 'mid';
@@ -149,6 +179,15 @@ export function WhyScoreDrawer({
     return readFeedback()[scoreKey] ?? null;
   });
 
+  const initialExplanation = useMemo<ExplanationFeedbackEntry | null>(() => {
+    return readExplanationFeedback()[scoreKey] ?? null;
+  }, [scoreKey]);
+  const [explanationFeedback, setExplanationFeedback] = useState<ExplanationFeedbackValue | null>(
+    initialExplanation?.value ?? null,
+  );
+  const [explanationComment, setExplanationComment] = useState<string>(initialExplanation?.comment ?? '');
+  const [showCommentBox, setShowCommentBox] = useState<boolean>(false);
+
   const rankedFactors = useMemo(() => {
     const sorted = [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score);
     const totalContribution = sorted.reduce((sum, f) => sum + f.weight * f.score, 0);
@@ -181,6 +220,35 @@ export function WhyScoreDrawer({
     toast.success(value === 'up' ? 'Feedback registrado: score correto' : 'Feedback registrado: score incorreto', {
       description: 'Usaremos esse sinal para refinar o modelo localmente.',
     });
+  };
+
+  const persistExplanationFeedback = (value: ExplanationFeedbackValue, comment: string) => {
+    const all = readExplanationFeedback();
+    all[scoreKey] = {
+      value,
+      comment: comment.trim() ? comment.trim() : undefined,
+      updatedAt: new Date().toISOString(),
+    };
+    writeExplanationFeedback(all);
+  };
+
+  const submitExplanationFeedback = (value: ExplanationFeedbackValue) => {
+    setExplanationFeedback(value);
+    setShowCommentBox(true);
+    persistExplanationFeedback(value, explanationComment);
+    toast.success(
+      value === 'makes_sense'
+        ? 'Obrigado! Marcamos a explicação como coerente.'
+        : 'Anotado. Conte o que ficou estranho para melhorarmos.',
+      { description: 'Salvo localmente neste contato.' },
+    );
+  };
+
+  const saveExplanationComment = () => {
+    if (!explanationFeedback) return;
+    persistExplanationFeedback(explanationFeedback, explanationComment);
+    setShowCommentBox(false);
+    toast.success('Comentário salvo neste contato.');
   };
 
   return (
@@ -389,6 +457,86 @@ export function WhyScoreDrawer({
                 Incorreto
               </Button>
             </div>
+          </div>
+
+          <div className="space-y-2 border-t pt-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+              A explicação faz sentido?
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Avalie se os fatores acima refletem bem este contato. Salvo por contato e usado para refinar o que mostramos aqui.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={explanationFeedback === 'makes_sense' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => submitExplanationFeedback('makes_sense')}
+                className="gap-1.5"
+                aria-pressed={explanationFeedback === 'makes_sense'}
+              >
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                Faz sentido
+              </Button>
+              <Button
+                type="button"
+                variant={explanationFeedback === 'does_not_make_sense' ? 'destructive' : 'outline'}
+                size="sm"
+                onClick={() => submitExplanationFeedback('does_not_make_sense')}
+                className="gap-1.5"
+                aria-pressed={explanationFeedback === 'does_not_make_sense'}
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                Não faz sentido
+              </Button>
+            </div>
+
+            {explanationFeedback && !showCommentBox && (
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                <span>
+                  {explanationFeedback === 'makes_sense'
+                    ? '✓ Marcado como coerente para este contato.'
+                    : '✗ Marcado como incoerente para este contato.'}
+                  {explanationComment && <span className="block italic mt-0.5">"{explanationComment}"</span>}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[11px] px-2"
+                  onClick={() => setShowCommentBox(true)}
+                >
+                  {explanationComment ? 'Editar comentário' : 'Adicionar comentário'}
+                </Button>
+              </div>
+            )}
+
+            {explanationFeedback && showCommentBox && (
+              <div className="space-y-2 pt-1">
+                <Textarea
+                  value={explanationComment}
+                  onChange={(e) => setExplanationComment(e.target.value)}
+                  placeholder={
+                    explanationFeedback === 'does_not_make_sense'
+                      ? 'O que ficou estranho? Ex.: "recência não deveria pesar tanto"'
+                      : 'Quer adicionar algo? (opcional)'
+                  }
+                  rows={2}
+                  className="text-xs resize-none"
+                  maxLength={280}
+                  aria-label="Comentário sobre a explicação do score"
+                />
+                <div className="flex items-center justify-end gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setShowCommentBox(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="button" size="sm" onClick={saveExplanationComment}>
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </SheetContent>
