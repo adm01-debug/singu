@@ -77,7 +77,16 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, duplicatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
-  const [open, setOpen] = useState(false);
+  // Estado do popover persistido em localStorage:
+  // - se estava aberto antes de aplicar um preset, restaura no próximo mount
+  //   e não fecha automaticamente após aplicar.
+  const OPEN_KEY = 'interacoes-presets-open';
+  const [open, setOpen] = useState<boolean>(() => {
+    try { return localStorage.getItem(OPEN_KEY) === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(OPEN_KEY, open ? '1' : '0'); } catch { /* noop */ }
+  }, [open]);
   const [importOpen, setImportOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -246,10 +255,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     window.setTimeout(() => {
       setRecentlyAppliedId((cur) => (cur === preset.id ? null : cur));
     }, 1500);
-    setOpen(false);
+    // Mantém o popover aberto após aplicar (estado restaurado de localStorage),
+    // permitindo trocar rapidamente entre presets sem reabrir o menu.
     toast.success('Filtros atualizados', { description: `Preset "${preset.name}" aplicado` });
     requestAnimationFrame(() => {
-      // Rola até o topo da tabela e devolve o foco ao input de busca.
+      // Rola até o topo da tabela e devolve o foco ao input de busca
+      // (sem fechar o popover — Radix permite foco fora mantendo-o aberto).
       window.dispatchEvent(new CustomEvent('scroll-interactions-top'));
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
@@ -420,6 +431,17 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
         <PopoverContent
           className="w-96 p-0"
           align="end"
+          onOpenAutoFocus={(e) => {
+            // Não roubamos foco ao abrir/restaurar — preserva o foco da barra de busca.
+            e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            // Não fecha quando o foco/click vai para a barra de busca de interações.
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-interacoes-search]')) {
+              e.preventDefault();
+            }
+          }}
           onKeyDown={(e) => {
             // Navegação por teclado nos presets: ↑/↓ move, Enter aplica, Esc fecha.
             if (sortedPresets.length === 0) return;
