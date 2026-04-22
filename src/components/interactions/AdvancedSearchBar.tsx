@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Search, X, User, Building2, Check, Sigma,
+  MessageSquare, Phone, Mail, Users as UsersIcon, Video, FileText,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
@@ -86,6 +87,11 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
             </Button>
           )}
         </div>
+
+        <SelectedChannelsIndicator
+          canais={filters.canais}
+          onChange={(next) => setFilter('canais', next)}
+        />
 
         <CanaisQuickFilter
           canais={filters.canais}
