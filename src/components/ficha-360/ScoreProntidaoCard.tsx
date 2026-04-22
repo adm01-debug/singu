@@ -13,6 +13,8 @@ interface Props {
   data: ProntidaoResult;
   contactId?: string;
   simulated?: boolean;
+  /** Resultado real (sem simulação) para comparativo lado a lado quando `simulated` está ativo. */
+  realData?: ProntidaoResult;
 }
 
 const levelClasses: Record<ProntidaoLevel, { badge: string; ring: string; text: string }> = {
@@ -62,15 +64,22 @@ const factorIcons = {
   channel: Radio,
 } as const;
 
-export const ScoreProntidaoCard = memo(({ data, contactId, simulated }: Props) => {
+export const ScoreProntidaoCard = memo(({ data, contactId, simulated, realData }: Props) => {
   const cls = levelClasses[data.level];
   const [whyOpen, setWhyOpen] = useState(false);
-  const factors: Array<{ key: keyof typeof factorIcons; factor: typeof data.breakdown.cadence }> = [
-    { key: 'cadence', factor: data.breakdown.cadence },
-    { key: 'recency', factor: data.breakdown.recency },
-    { key: 'sentiment', factor: data.breakdown.sentiment },
-    { key: 'channel', factor: data.breakdown.channel },
+  const showCompare = !!simulated && !!realData;
+  const factors: Array<{
+    key: keyof typeof factorIcons;
+    factor: typeof data.breakdown.cadence;
+    real?: typeof data.breakdown.cadence;
+  }> = [
+    { key: 'cadence', factor: data.breakdown.cadence, real: realData?.breakdown.cadence },
+    { key: 'recency', factor: data.breakdown.recency, real: realData?.breakdown.recency },
+    { key: 'sentiment', factor: data.breakdown.sentiment, real: realData?.breakdown.sentiment },
+    { key: 'channel', factor: data.breakdown.channel, real: realData?.breakdown.channel },
   ];
+
+  const totalDelta = showCompare ? data.score - (realData?.score ?? data.score) : 0;
 
   const whyFactors = useMemo<WhyScoreFactor[]>(
     () =>
@@ -116,32 +125,88 @@ export const ScoreProntidaoCard = memo(({ data, contactId, simulated }: Props) =
               </span>
               <ProntidaoWeightsEditor contactId={contactId} />
             </div>
+            {showCompare && (
+              <div className="flex items-center justify-between rounded-md border border-warning/30 bg-warning/5 px-2.5 py-1.5 text-[11px]">
+                <span className="text-muted-foreground">
+                  Real: <span className="font-semibold tabular-nums text-foreground">{realData?.score}</span>
+                  <span className="mx-1.5 text-muted-foreground/60">·</span>
+                  Simulado: <span className="font-semibold tabular-nums text-foreground">{data.score}</span>
+                </span>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'tabular-nums text-[10px] px-1.5 py-0',
+                    totalDelta > 0 && 'border-success/40 bg-success/10 text-success',
+                    totalDelta < 0 && 'border-destructive/40 bg-destructive/10 text-destructive',
+                    totalDelta === 0 && 'border-border bg-muted text-muted-foreground',
+                  )}
+                >
+                  {totalDelta > 0 ? '+' : ''}
+                  {totalDelta} pts
+                </Badge>
+              </div>
+            )}
             <div className="space-y-2.5">
-              {factors.map(({ key, factor }) => {
+              {factors.map(({ key, factor, real }) => {
                 const Icon = factorIcons[key];
+                const delta = real ? factor.score - real.score : 0;
                 return (
-                  <div key={key} className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground w-32 min-w-0">
-                      <Icon className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{factor.label}</span>
-                      <span className="text-[10px] text-muted-foreground/70">{factor.weight}%</span>
+                  <div key={key} className="space-y-1">
+                    <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground w-32 min-w-0">
+                        <Icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{factor.label}</span>
+                        <span className="text-[10px] text-muted-foreground/70">{factor.weight}%</span>
+                      </div>
+                      <Progress
+                        value={factor.score}
+                        className="h-1.5 bg-muted"
+                        indicatorClassName={cn('bg-gradient-to-r from-current to-current', statusBar[factor.status])}
+                      />
+                      <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">
+                        {factor.score}
+                      </span>
                     </div>
-                    <Progress
-                      value={factor.score}
-                      className="h-1.5 bg-muted"
-                      indicatorClassName={cn('bg-gradient-to-r from-current to-current', statusBar[factor.status])}
-                    />
-                    <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">
-                      {factor.score}
-                    </span>
+                    {showCompare && real && (
+                      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 pl-0.5">
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/80 w-32 min-w-0">
+                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/50 ml-[18px]" aria-hidden="true" />
+                          <span className="truncate">Real</span>
+                        </div>
+                        <Progress
+                          value={real.score}
+                          className="h-1 bg-muted/60"
+                          indicatorClassName={cn('opacity-60', statusBar[real.status])}
+                        />
+                        <span
+                          className={cn(
+                            'text-[10px] tabular-nums w-10 text-right',
+                            delta > 0 && 'text-success',
+                            delta < 0 && 'text-destructive',
+                            delta === 0 && 'text-muted-foreground',
+                          )}
+                        >
+                          {real.score}
+                          <span className="ml-1 text-[9px]">
+                            ({delta > 0 ? '+' : ''}
+                            {delta})
+                          </span>
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
               {/* detalhes pequenos */}
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 pt-1 text-[11px] text-muted-foreground">
-                {factors.map(({ key, factor }) => (
+                {factors.map(({ key, factor, real }) => (
                   <div key={`${key}-d`} className="truncate">
                     <span className="font-medium text-foreground/70">{factor.label}:</span> {factor.detail}
+                    {showCompare && real && real.detail !== factor.detail && (
+                      <span className="ml-1 text-muted-foreground/70">
+                        (real: {real.detail})
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
