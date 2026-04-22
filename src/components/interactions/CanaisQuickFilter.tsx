@@ -27,24 +27,43 @@ const CHANNELS = [
 ] as const;
 
 const PENDING_KEY = 'channel-pending-canais';
+const APPLIED_KEY = 'channel-applied-canais';
 const VALID_VALUES = new Set(CHANNELS.map((c) => c.value));
 
-function readPending(): string[] | null {
+function readStoredArray(key: string): string[] | null {
   try {
-    const raw = localStorage.getItem(PENDING_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return null;
-    const filtered = parsed.filter((v): v is string => typeof v === 'string' && VALID_VALUES.has(v as typeof CHANNELS[number]['value']));
-    return filtered;
+    return parsed.filter(
+      (v): v is string =>
+        typeof v === 'string' && VALID_VALUES.has(v as typeof CHANNELS[number]['value']),
+    );
   } catch {
     return null;
   }
 }
 
+function readPending(): string[] | null {
+  return readStoredArray(PENDING_KEY);
+}
+
+function readApplied(): string[] | null {
+  return readStoredArray(APPLIED_KEY);
+}
+
 function writePending(next: string[]) {
   try {
     localStorage.setItem(PENDING_KEY, JSON.stringify(next));
+  } catch {
+    /* noop */
+  }
+}
+
+function writeApplied(next: string[]) {
+  try {
+    localStorage.setItem(APPLIED_KEY, JSON.stringify(next));
   } catch {
     /* noop */
   }
