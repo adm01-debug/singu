@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -84,6 +85,33 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
 
+  // Auto-save: persistent toggle + active preset id (last applied/saved)
+  const AUTOSAVE_KEY = 'interacoes-presets-autosave';
+  const ACTIVE_KEY = 'interacoes-presets-active-id';
+  const [autoSave, setAutoSave] = useState<boolean>(() => {
+    try { return localStorage.getItem(AUTOSAVE_KEY) === '1'; } catch { return false; }
+  });
+  const [activePresetId, setActivePresetId] = useState<string | null>(() => {
+    try { return localStorage.getItem(ACTIVE_KEY); } catch { return null; }
+  });
+  const [autoSavedAt, setAutoSavedAt] = useState<number | null>(null);
+  useEffect(() => {
+    try { localStorage.setItem(AUTOSAVE_KEY, autoSave ? '1' : '0'); } catch { /* noop */ }
+  }, [autoSave]);
+  useEffect(() => {
+    try {
+      if (activePresetId) localStorage.setItem(ACTIVE_KEY, activePresetId);
+      else localStorage.removeItem(ACTIVE_KEY);
+    } catch { /* noop */ }
+  }, [activePresetId]);
+  // If the active preset was deleted elsewhere, clear the reference
+  useEffect(() => {
+    if (activePresetId && !presets.some(p => p.id === activePresetId)) {
+      setActivePresetId(null);
+    }
+  }, [presets, activePresetId]);
+
+
   useEffect(() => {
     if (editingId) {
       requestAnimationFrame(() => renameInputRef.current?.select());
@@ -123,7 +151,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const handleSave = () => {
     const trimmed = name.trim().slice(0, 60);
     if (!trimmed) return;
-    savePreset({
+    const created = savePreset({
       name: trimmed,
       filters: {
         q: currentPayload.q ? [currentPayload.q] : [],
@@ -137,10 +165,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       sortBy: '',
       sortOrder: 'desc',
     });
+    setActivePresetId(created.id);
     setName('');
     setIsNaming(false);
     toast.success('Busca salva!');
   };
+
 
   const applyPreset = (preset: typeof presets[number]) => {
     const presetFilters = preset.filters;
@@ -183,12 +213,40 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     }
 
     markAsUsed(preset.id);
+    setActivePresetId(preset.id);
     setOpen(false);
     toast.success('Preset aplicado');
     requestAnimationFrame(() => {
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
   };
+
+  // Auto-save: when enabled and there's an active preset, persist filter changes
+  // into that preset after a debounce. Skip if filters match the saved snapshot.
+  useEffect(() => {
+    if (!autoSave || !activePresetId) return;
+    const target = presets.find(p => p.id === activePresetId);
+    if (!target) return;
+
+    const nextFilters = {
+      q: currentPayload.q ? [currentPayload.q] : [],
+      contact: currentPayload.contact ? [currentPayload.contact] : [],
+      company: currentPayload.company ? [currentPayload.company] : [],
+      canais: currentPayload.canais,
+      de: currentPayload.de ? [currentPayload.de] : [],
+      ate: currentPayload.ate ? [currentPayload.ate] : [],
+      sort: currentPayload.sort ? [currentPayload.sort] : [],
+    };
+    // Shallow compare via JSON to avoid redundant writes
+    if (JSON.stringify(target.filters) === JSON.stringify(nextFilters)) return;
+
+    const handle = window.setTimeout(() => {
+      updatePreset(activePresetId, { filters: nextFilters, sortBy: '', sortOrder: 'desc' });
+      setAutoSavedAt(Date.now());
+    }, 1200);
+    return () => window.clearTimeout(handle);
+  }, [autoSave, activePresetId, currentPayload, presets, updatePreset]);
+
 
   const exportOne = (preset: typeof presets[number]) => {
     const item: ExportablePreset = {
@@ -475,8 +533,34 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
             </div>
           )}
 
+          <div className="px-2.5 py-2 border-t border-border flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Zap className={`w-3.5 h-3.5 shrink-0 ${autoSave && activePresetId ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className="min-w-0">
+                <label htmlFor="autosave-toggle" className="text-xs font-medium text-foreground cursor-pointer">
+                  Auto-salvar preset
+                </label>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {!activePresetId
+                    ? 'Aplique ou salve um preset para ativar'
+                    : autoSave
+                      ? `Salvando em "${presets.find(p => p.id === activePresetId)?.name ?? '—'}"${autoSavedAt ? ' · sincronizado' : ''}`
+                      : `Preset ativo: "${presets.find(p => p.id === activePresetId)?.name ?? '—'}"`}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="autosave-toggle"
+              checked={autoSave}
+              onCheckedChange={setAutoSave}
+              disabled={!activePresetId}
+              aria-label="Alternar auto-salvar preset"
+            />
+          </div>
+
           <div className="p-2.5 border-t border-border space-y-1.5">
             {isNaming ? (
+
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
