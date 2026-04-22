@@ -185,6 +185,27 @@ export function useInteractionsAdvancedFilter() {
       const next = new URLSearchParams(searchParams);
       next.set('canais', cached.join(','));
       setSearchParams(next, { replace: true });
+      const labelMap: Record<string, string> = {
+        whatsapp: 'WhatsApp',
+        call: 'Ligação',
+        email: 'E-mail',
+        meeting: 'Reunião',
+        video_call: 'Vídeo',
+        note: 'Nota',
+      };
+      const labels = cached.map((c) => labelMap[c] ?? c).join(', ');
+      toast.info('Filtros de canal restaurados', {
+        description: labels,
+        duration: 3500,
+        action: {
+          label: 'Limpar',
+          onClick: () => {
+            const sp = new URLSearchParams(window.location.search);
+            sp.delete('canais');
+            setSearchParams(sp, { replace: true });
+          },
+        },
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
