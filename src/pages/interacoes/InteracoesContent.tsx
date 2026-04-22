@@ -73,7 +73,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   );
 
   // Aplica todos os filtros avançados EXCETO o de canais — usado para os
-  // contadores por canal nos chips (ignora o próprio filtro pra mostrar potencial).
+  // contadores por canal nos chips (ignora o próprio filtro pra mostrar o
+  // potencial real dentro do escopo atual, incluindo sentimento).
   const advancedFilteredWithoutCanais = useMemo(() => {
     if (!Array.isArray(interactions)) return [];
     const q = debouncedQ ? normalize(debouncedQ) : '';
@@ -84,6 +85,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       if (adv.company && i.company_id !== adv.company) return false;
       if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
       if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
+      if (adv.sentimento && i.sentiment !== adv.sentimento) return false;
       const ts = new Date(i.created_at).getTime();
       if (deTs !== null && ts < deTs) return false;
       if (ateTs !== null && ts > ateTs) return false;
@@ -93,7 +95,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       }
       return true;
     });
-  }, [interactions, adv.contact, adv.company, adv.direcao, adv.de, adv.ate, debouncedQ]);
+  }, [interactions, adv.contact, adv.company, adv.direcao, adv.de, adv.ate, adv.sentimento, debouncedQ]);
 
   const channelCounts = useMemo(
     () => countByChannel(advancedFilteredWithoutCanais.map(i => ({ type: i.type }))),
