@@ -82,11 +82,14 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
     return parts.join(' • ');
   }, [defaults]);
 
-  const handleSubmit = () => {
+  const [pendingMode, setPendingMode] = useState<'close' | 'advance' | null>(null);
+
+  const handleSubmit = (mode: 'close' | 'advance' = 'close') => {
     if (!date || !time) {
       toast.error('Informe data e hora');
       return;
     }
+    setPendingMode(mode);
     createTask.mutate(
       {
         title: passo.title,
@@ -99,9 +102,15 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
       },
       {
         onSuccess: () => {
-          toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
-          onCreated();
+          if (mode === 'advance' && onCreatedAndAdvance) {
+            toast.success(`Tarefa criada • próxima sugestão`);
+            onCreatedAndAdvance();
+          } else {
+            toast.success(`Tarefa criada para ${formatDateBr(date)} às ${time}`);
+            onCreated();
+          }
         },
+        onSettled: () => setPendingMode(null),
       },
     );
   };
