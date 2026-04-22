@@ -189,20 +189,27 @@ export function useFicha360FilterFavorites() {
   }, []);
 
   const findMatch = useCallback(
-    (days: number, channels: string[]): FilterFavorite | null => {
+    (days: number, channels: string[], tags: InteractionTag[] = []): FilterFavorite | null => {
       const sorted = sanitizeChannels(channels);
-      return favorites.find((f) => sameCombo(f, days, sorted)) ?? null;
+      const cleanTags = sanitizeTagsLib(tags);
+      return favorites.find((f) => sameCombo(f, days, sorted, cleanTags)) ?? null;
     },
     [favorites],
   );
 
   const save = useCallback(
-    (name: string, days: number, channels: string[]): FilterFavorite | null => {
+    (
+      name: string,
+      days: number,
+      channels: string[],
+      tags: InteractionTag[] = [],
+    ): FilterFavorite | null => {
       if (!isValidDays(days)) return null;
       const cleanName = sanitizeName(name, '');
       if (!cleanName) return null;
       const cleanChannels = sanitizeChannels(channels);
-      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(tags);
+      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       const next: FilterFavorite = {
@@ -210,6 +217,7 @@ export function useFicha360FilterFavorites() {
         name: cleanName,
         days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
