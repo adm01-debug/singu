@@ -64,6 +64,7 @@ function readAll(): FilterFavorite[] {
         name: sanitizeName(r.name),
         days: r.days,
         channels: sanitizeChannels(r.channels),
+        tags: sanitizeTagsLib(r.tags),
         createdAt: typeof r.createdAt === 'number' ? r.createdAt : Date.now(),
       });
     }
@@ -88,11 +89,22 @@ function genId(): string {
   return `fav_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function sameCombo(a: FilterFavorite, days: number, channels: string[]): boolean {
+function sameCombo(
+  a: FilterFavorite,
+  days: number,
+  channels: string[],
+  tags: InteractionTag[] = [],
+): boolean {
   if (a.days !== days) return false;
   if (a.channels.length !== channels.length) return false;
   for (let i = 0; i < a.channels.length; i++) {
     if (a.channels[i] !== channels[i]) return false;
+  }
+  const aTags = (a.tags ?? []).slice().sort();
+  const bTags = tags.slice().sort();
+  if (aTags.length !== bTags.length) return false;
+  for (let i = 0; i < aTags.length; i++) {
+    if (aTags[i] !== bTags[i]) return false;
   }
   return true;
 }
