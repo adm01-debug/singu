@@ -282,6 +282,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
 
   return (
     <div className="p-6 space-y-6">
+      <ChannelShortcutsHelpOverlay appliedCanais={adv.canais} channelCounts={channelCounts} />
       <SmartBreadcrumbs />
       <div className="grid grid-cols-3 gap-4 max-w-lg">
         <Card className="border-border/50"><CardContent className="p-4 text-center"><MorphingNumber value={stats.total} className="text-2xl font-bold text-foreground" /><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
