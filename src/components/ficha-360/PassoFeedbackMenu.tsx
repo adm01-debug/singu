@@ -76,13 +76,19 @@ const CONFIRM_DESCRIPTION: Record<PassoOutcome, string> = {
 
 function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<'form' | 'history'>('form');
   const [notes, setNotes] = useState('');
   const [pendingOutcome, setPendingOutcome] = useState<PassoOutcome | null>(null);
   const { mutate, isPending } = useRegisterPassoFeedback();
+  const { data: allFeedbacks = [], isLoading: isLoadingHistory } = useProximoPassoFeedbacks(
+    open ? contactId : undefined,
+  );
+  const history = allFeedbacks.filter((f) => f.passo_id === passoId);
 
   const resetAndClose = () => {
     setNotes('');
     setPendingOutcome(null);
+    setView('form');
     setOpen(false);
   };
 
@@ -90,6 +96,7 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
     if (!next) {
       setPendingOutcome(null);
       setNotes('');
+      setView('form');
     }
     setOpen(next);
   };
