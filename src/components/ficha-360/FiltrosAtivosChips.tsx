@@ -69,14 +69,16 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
           onClose={onRemoveDays}
           icon={<Calendar className="h-3 w-3" />}
           className="text-xs"
+          title="Atalho: Shift + P"
         >
           Período: {PERIOD_LABEL[days] ?? `${days}d`}
         </Badge>
       )}
 
-      {safeChannels.map((c) => {
+      {safeChannels.map((c, idx) => {
         const meta = CHANNEL_META[c] ?? { label: c, icon: FileText };
         const Icon = meta.icon;
+        const shortcutHint = idx < 5 ? ` · Atalho: Shift + ${idx + 1}` : '';
         return (
           <Badge
             key={c}
@@ -85,6 +87,7 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
             onClose={() => onRemoveChannel(c)}
             icon={<Icon className="h-3 w-3" />}
             className="text-xs"
+            title={`Remover canal${shortcutHint}`}
           >
             {meta.label}
           </Badge>
@@ -98,6 +101,7 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
           onClose={onRemoveSearch}
           icon={<Search className="h-3 w-3" />}
           className="text-xs"
+          title="Atalho: Shift + B"
         >
           Busca: “{trimmedSearch}”
           {typeof searchMatchCount === 'number' && (
@@ -112,6 +116,7 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
           size="xs"
           onClick={onClearAll}
           className="ml-auto gap-1 text-muted-foreground"
+          title="Atalho: Shift + C"
         >
           <X className="h-3 w-3" /> Limpar tudo
         </Button>
