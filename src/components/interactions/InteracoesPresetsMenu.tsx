@@ -431,6 +431,17 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
         <PopoverContent
           className="w-96 p-0"
           align="end"
+          onOpenAutoFocus={(e) => {
+            // Não roubamos foco ao abrir/restaurar — preserva o foco da barra de busca.
+            e.preventDefault();
+          }}
+          onInteractOutside={(e) => {
+            // Não fecha quando o foco/click vai para a barra de busca de interações.
+            const target = e.target as HTMLElement | null;
+            if (target?.closest('[data-interacoes-search]')) {
+              e.preventDefault();
+            }
+          }}
           onKeyDown={(e) => {
             // Navegação por teclado nos presets: ↑/↓ move, Enter aplica, Esc fecha.
             if (sortedPresets.length === 0) return;
