@@ -133,10 +133,20 @@ export const FavoritosFiltrosMenu = memo(function FavoritosFiltrosMenu({
           variant={activeMatch ? 'default' : 'outline'}
           size="sm"
           className="h-8 gap-1.5 text-xs"
-          aria-label="Filtros favoritos"
-          title={activeMatch ? `Favorito ativo: ${activeMatch.name}` : 'Filtros favoritos'}
+          aria-pressed={!!activeMatch}
+          aria-label={
+            activeMatch
+              ? `Filtros favoritos — vendo: ${activeMatch.name}`
+              : 'Filtros favoritos'
+          }
+          title={activeMatch ? `Vendo: ${activeMatch.name}` : 'Filtros favoritos'}
         >
-          <Star className={cn('h-3.5 w-3.5', activeMatch && 'fill-current')} />
+          <Star
+            className={cn(
+              'h-3.5 w-3.5',
+              activeMatch && 'fill-primary text-primary',
+            )}
+          />
           <span className="hidden sm:inline">
             {activeMatch ? activeMatch.name : 'Favoritos'}
           </span>
