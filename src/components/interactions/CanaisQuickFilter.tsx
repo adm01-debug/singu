@@ -362,7 +362,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                   )}
                   {diffDetail.removed.length > 0 && (
                     <div>
-                      <p className="flex items-center gap-1 font-medium text-rose-600 dark:text-rose-400">
+                      <p className="flex items-center gap-1 font-medium text-destructive">
                         <Minus className="w-3 h-3" /> Será removido:
                       </p>
                       <p className="ml-4">{diffDetail.removed.join(', ')}</p>
