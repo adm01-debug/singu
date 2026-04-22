@@ -219,6 +219,7 @@ export function useSearchPresets(context: string = 'contacts') {
     savePreset,
     deletePreset,
     updatePreset,
+    duplicatePreset,
     toggleFavorite,
     markAsUsed,
     importPresets,
