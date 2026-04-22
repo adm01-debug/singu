@@ -1,60 +1,77 @@
 
 
-# Plano: Ordenação "Mais recente" vs "Mais relevante" em Últimas Interações
+# Plano: Filtro por pessoa e por cargo nas interações da empresa
 
-## Status
+## Reinterpretação justificada do pedido
 
-A lista em "Últimas Interações" (Ficha 360) hoje vem ordenada por data desc (`data_interacao`) direto do `useExternalInteractions`. Não há controle de ordenação na UI desta seção.
+Na Ficha 360, todas as interações já são de **uma única pessoa** (o contato da página) — filtrar por pessoa/cargo aqui não restringe nada. O lugar onde esse filtro faz sentido é **`/empresa/:id` → aba Interações** (`CompanyInteractionsTab`), onde aparecem interações de **múltiplos contatos da mesma empresa** (compradores, gerentes, proprietários etc.). É lá que o usuário vê uma timeline misturada e precisa restringir.
 
-Existe `src/lib/sortInteractions.ts` com modos `recent | oldest | relevance | entity`, mas opera sobre campos `title/content/tags` — incompatíveis com `ExternalInteraction` (que usa `assunto/resumo/data_interacao`). Existe `SortChips` em `src/components/interactions/SortChips.tsx`, porém é volumoso (4 modos, atalhos Alt+R/O/M/P) e exibe texto "Mais antigas" e "Por pessoa/empresa" que não fazem sentido na Ficha 360 (1 só pessoa, queremos mínimo).
+A tab hoje é uma simples lista, **sem nenhum filtro**. Vamos torná-la inteligente: filtro por pessoa e por papel (`ContactRole`) no topo, com chips de pessoas presentes e dropdown de papéis.
 
 ## Mudanças
 
-### 1. `src/lib/sortInteractions.ts` — estender para suportar ExternalInteraction
+### 1. `CompanyInteractionsTab.tsx` — receber `contacts` e adicionar filtros
 
-Trocar `SortableItem` por uma união flexível: aceitar tanto os campos antigos (`title/content/tags`) **quanto** os novos (`assunto/resumo/channel/direction` + `data_interacao`). `getTime` já lê `date` ou `created_at` — adicionar fallback para `data_interacao`. `relevanceScore` passa a contar ocorrências em **assunto (peso 3) + resumo (peso 1) + channel/direction (peso 1)** quando `title/tags/content` ausentes. Sem breaking change: chamadas antigas continuam funcionando.
+Hoje recebe só `interactions: Interaction[]`. Passa a também receber `contacts: Contact[]` (`EmpresaDetalhe.tsx` já tem `contacts` em mãos — basta passar adiante).
 
-### 2. Novo: `src/hooks/useFicha360Sort.ts` (~30 linhas)
+Estado interno:
+- `selectedContactId: string | null` — filtro por pessoa específica.
+- `selectedRoles: ContactRole[]` — filtro multi-select por papel (compradores, gerentes, proprietários, decisores, influenciadores).
 
-Persiste sort em URL via `useSearchParams`: `?ordem=relevante` (omitido quando = `recente`, default). Whitelist `'recente' | 'relevante'`. Retorna `{ sort, setSort }`.
+Aplicação: `interactions.filter(i => (!selectedContactId || i.contact_id === selectedContactId) && (selectedRoles.length === 0 || selectedRoles.includes(contactById[i.contact_id]?.role)))`.
 
-### 3. Novo: `src/components/ficha-360/OrdenacaoToggle.tsx` (~70 linhas)
+Persistência em URL via `useSearchParams`: `?pessoa=<contactId>` e `?papeis=owner,manager` (ambos omitidos quando default). Whitelist de papéis usando o tipo `ContactRole` exportado de `@/types`.
 
-Toggle compacto inline (2 botões segmentados, sem dropdown):
+### 2. Novo: `src/components/company-detail/InteracoesPessoaCargoBar.tsx` (~150 linhas)
+
+Barra de filtros compacta no topo da tab:
 
 ```
-[🕐 Recente] [✨ Relevante]
+Pessoa: [👤 Todas ▾]   Papel: [🏷 Todos ▾]   3 de 24 interações   [Limpar]
 ```
 
-- `role="radiogroup"` + `aria-label="Ordenar por"`.
-- "Relevante" desabilita (`opacity-50` + tooltip "Disponível ao buscar por palavra-chave") quando `q` está vazio. Clique vira no-op nesse caso.
-- Atalho **Alt+R** (recente) / **Alt+M** (mais relevante). Toast curto "Ordenação: …".
-- Mostra ícone `Info` ao lado de "Relevante" com tooltip explicando: "Pontuação por ocorrências do termo: assunto conta 3×, resumo/canal 1×. Empate desempata pela mais recente."
+- **Dropdown "Pessoa"**: avatar + nome + `RoleBadge` para cada contato com pelo menos 1 interação no conjunto. Item "Todas" reseta. Conta entre parênteses por contato (`João (8)`).
+- **Dropdown "Papel"** (multi-select com checkboxes): lista os papéis que **existem** entre os contatos da empresa (omite papéis sem ninguém). Reusa labels do `roleConfig` em `RoleBadge`. Mostra checkmark + label PT-BR.
+- **Resumo**: "X de Y interações" alinhado à direita.
+- **Limpar**: aparece só quando há filtro ativo.
 
-### 4. `Ficha360.tsx` — integração
+A11y: `role="group"` + `aria-label="Filtros por pessoa e cargo"`. Cada dropdown com `aria-label` próprio. Itens com checkbox usam `role="menuitemcheckbox"` + `aria-checked`.
 
-- `const { sort, setSort } = useFicha360Sort();`
-- Aplicar `sortInteractions(filteredInteractions, sort, q)` num `useMemo` antes de passar para `<UltimasInteracoesCard>`.
-- Renderizar `<OrdenacaoToggle sort={sort} onChange={setSort} hasQuery={!!q.trim()} />` no `headerExtra`, **ao lado** de `CopiarLinkFiltrosButton` (linha de controles de cabeçalho).
-- Quando `q` é limpo e `sort === 'relevante'`, `sortInteractions` já cai automaticamente em "recente" (via `effective`), mas sincronizamos: `useEffect` reseta `setSort('recente')` se `q` ficar vazio — evita estado fantasma na URL.
+### 3. `EmpresaDetalhe.tsx` — passar `contacts` para a tab
 
-### 5. Atalhos via `useFicha360FilterShortcuts.ts`
+Mudança de 1 linha em `<CompanyInteractionsTab interactions={interactions} contacts={contacts} />`.
 
-Adicionar 2 novos no escopo `ficha360-filtros`:
-- `Alt + R` → `setSort('recente')`
-- `Alt + M` → `setSort('relevante')` (no-op se `!q.trim()`)
+### 4. Chips ativos inline (não barra separada)
 
-Aparecem automaticamente no cheatsheet (`?`).
+Quando há filtro aplicado, exibir chips fechaveis logo abaixo dos dropdowns:
+- `👤 João Silva ×` (clica × → reseta `pessoa`)
+- `🏷 Comprador ×` `🏷 Gerente ×` (× remove daquele papel)
+
+Usa `Badge` existente com `closeable`.
+
+### 5. Empty state diferenciado
+
+Quando `interactions.length > 0` mas `filtered.length === 0` (filtros eliminaram tudo), substituir o empty state genérico por:
+
+> "Nenhuma interação para esses filtros."  
+> Botão "Limpar filtros" → reseta tudo.
+
+### 6. Discoverability na Ficha 360 (mínimo)
+
+Como o usuário pediu "dentro da empresa", o link `ConversasRelacionadasCard` (que já existe na Ficha 360) ganha um chip extra:
+
+- **"Ver interações da empresa por pessoa"** → `/empresa/{companyId}?tab=interactions` (tab params já é suportado pelo `Tabs` do EmpresaDetalhe).
+
+Só renderizado quando `profile.company_id` existe. Fica visível, não intrusivo.
 
 ## Não muda
 
-- `useExternalInteractions` (continua trazendo ordenado por data desc no servidor — apenas reordenamos client-side).
-- `useFicha360Filters`, `useFicha360DraftFilters`, `useFicha360FilterFavorites`, `FiltrosInteracoesBar`, `ContagemPorTipoBar`, `FiltrosAtivosChips`.
-- `SortChips` da `Inbox` permanece intacto (lista própria de modos).
-- RLS, edge functions, tabelas.
-- Ordenação de favoritos: `sort` é volátil (não entra em favoritos), igual `q`.
+- `useExternalInteractions`, `useFicha360Filters`, atalhos, favoritos, `OrdenacaoToggle`, `ContagemPorTipoBar` — escopo Ficha 360 intacto.
+- Tabela `interactions`, RLS, edge functions.
+- `/interacoes` global (já tem seu próprio filtro avançado).
+- O comportamento default da tab "Interações" da empresa quando ninguém aplicou filtro.
 
 ## Critérios de aceite
 
-(a) Toggle "Recente / Relevante" visível no header de "Últimas Interações"; (b) clique reordena a lista imediatamente; (c) "Relevante" desabilitado e em opacidade reduzida quando não há `q`; (d) sort persistido em `?ordem=relevante` (omitido quando default); (e) atalhos `Alt + R` e `Alt + M` funcionam, com toast e cheatsheet; (f) limpar a busca quando sort=`relevante` reseta para `recente` e remove `?ordem` da URL; (g) tooltip `Info` explica o cálculo; (h) `aria-pressed` correto em cada botão; (i) sem nova dependência, sem `any`, PT-BR, flat, novos arquivos <120 linhas.
+(a) Em `/empresa/:id` aba "Interações", aparecem dois dropdowns no topo: "Pessoa" e "Papel"; (b) "Pessoa" lista contatos com interações + contagem; "Papel" multi-select dos cargos presentes; (c) seleção filtra a lista imediatamente, com resumo "X de Y"; (d) chips fechaveis aparecem para cada filtro ativo abaixo dos dropdowns; (e) URL sincroniza via `?pessoa=<id>&papeis=owner,manager` (omitidos quando vazio); (f) empty state específico quando filtros eliminam tudo, com "Limpar"; (g) na Ficha 360, `ConversasRelacionadasCard` ganha chip "Interações da empresa por pessoa" linkando para a empresa do contato (oculto se sem `company_id`); (h) sem nova dependência, sem `any`, PT-BR, flat, novo arquivo <150 linhas; (i) acessibilidade: `role="group"`, `aria-label`, `menuitemcheckbox` nos papéis.
 
