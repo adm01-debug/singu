@@ -63,7 +63,7 @@ describe('preserveScroll', () => {
   });
 
   it('re-aplica scroll após dois rAFs (commit + layout estabilizado)', async () => {
-    // Simulamos uma página longa onde o usuário rolou bem para baixo.
+    // Página longa: usuário em scrollY=3000 numa lista de 10.000.
     setLayout({ scrollY: 3000, scrollHeight: 10_000, innerHeight: 800 });
     preserveScroll();
 
@@ -71,11 +71,13 @@ describe('preserveScroll', () => {
     // antes do React commitar a nova altura.
     expect(scrollSpy).not.toHaveBeenCalled();
 
-    // Drena com folga (4 frames) para acomodar o aninhamento rAF(rAF(...))
-    // independentemente da implementação subjacente do shim no ambiente.
-    // A mutação reduziu a altura para 9.000 (>3000+800), a posição original
-    // ainda é válida → scrollTo restaura exatamente 3000.
+    // Simula o comportamento real do navegador: ao encolher o documento para
+    // 3500 (cabe a posição original com folga), o `scrollY` PERMANECE em 3000.
+    // Para forçar o caminho de restauração, simulamos que algum efeito colateral
+    // moveu o scroll para 0 (cenário real: foco em chip rolou a página).
+    setLayout({ scrollY: 0, scrollHeight: 9000, innerHeight: 800 });
     await flushFrames(4);
+
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     const call = scrollSpy.mock.calls[0]?.[0] as ScrollToOptions;
     expect(call.top).toBe(3000);
@@ -88,8 +90,10 @@ describe('preserveScroll', () => {
     preserveScroll();
 
     // Após remover o chip, a lista encolheu drasticamente: nova altura 1.500.
-    // Máximo válido = 1500 - 800 = 700. preserveScroll deve clampar para 700,
-    // NÃO deixar 3000 (que o navegador clamparia silenciosamente).
+    // O navegador clampou silenciosamente scrollY para 700 (= 1500 - 800).
+    // preserveScroll deve detectar a divergência e re-emitir scrollTo(700) —
+    // confirmando que NÃO tenta voltar para 3000 (impossível) nem deixa o
+    // valor clampado errado.
     setLayout({ scrollY: 700, scrollHeight: 1500, innerHeight: 800 });
     await flushFrames(4);
 
