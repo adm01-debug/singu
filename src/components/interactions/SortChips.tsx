@@ -114,7 +114,7 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
                   )}
                 >
                   <Icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{label}</span>
+                  <span className={cn(active ? 'inline' : 'hidden sm:inline')}>{label}</span>
                   {key === 'relevance' && !disabled && (
                     <Tooltip delayDuration={150}>
                       <TooltipTrigger asChild>
