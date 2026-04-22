@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
 import {
   AlertDialog,
@@ -144,10 +144,14 @@ export function SearchPresetsMenu({
     requestAnimationFrame(() => inputRef.current?.select());
   };
 
-  useEffect(() => {
-    if (isNaming) {
-      requestAnimationFrame(() => inputRef.current?.select());
-    }
+  // useLayoutEffect garante focus+select síncronos antes do paint,
+  // evitando flicker de cursor sem seleção e seleção dupla.
+  useLayoutEffect(() => {
+    if (!isNaming) return;
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    el.select();
   }, [isNaming]);
 
   const handleSave = () => {

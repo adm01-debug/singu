@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -132,10 +132,14 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     requestAnimationFrame(() => inputRef.current?.select());
   };
 
-  useEffect(() => {
-    if (isNaming) {
-      requestAnimationFrame(() => inputRef.current?.select());
-    }
+  // useLayoutEffect garante focus+select síncronos antes do paint,
+  // evitando flicker de cursor sem seleção e seleção dupla.
+  useLayoutEffect(() => {
+    if (!isNaming) return;
+    const el = inputRef.current;
+    if (!el) return;
+    el.focus();
+    el.select();
   }, [isNaming]);
 
   const currentPayload: SerializedPayload = useMemo(() => ({
