@@ -698,6 +698,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           </AlertDialogContent>
         </AlertDialog>
       </div>
+      <RecentChannelCombos
+        history={history}
+        current={safe}
+        onApply={applyCombo}
+        onRemove={removeCombo}
+        onClearAll={clearHistory}
+      />
+     </div>
     </TooltipProvider>
   );
 });
