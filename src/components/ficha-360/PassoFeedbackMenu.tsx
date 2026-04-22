@@ -304,21 +304,37 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
             <div className="flex flex-col gap-1">
               {OPTIONS.map((opt) => {
                 const Icon = opt.icon;
+                const isLocked = opt.value === 'nao_respondeu' && naoRespondeuLocked;
                 return (
                   <Button
                     key={opt.value}
                     variant="outline"
                     size="sm"
                     className="justify-start h-auto py-2"
-                    disabled={isPending}
+                    disabled={isPending || isLocked}
                     onClick={() => setPendingOutcome(opt.value)}
+                    title={
+                      isLocked
+                        ? `Você já marcou "Não respondeu" recentemente. Aguarde ~${hoursLeft}h para evitar duplicidade.`
+                        : undefined
+                    }
                   >
                     <Icon className={`h-3.5 w-3.5 ${opt.className}`} />
                     <span className="text-xs">{opt.label}</span>
+                    {isLocked ? (
+                      <span className="ml-auto text-[10px] text-muted-foreground">
+                        em ~{hoursLeft}h
+                      </span>
+                    ) : null}
                   </Button>
                 );
               })}
             </div>
+            {naoRespondeuLocked ? (
+              <p className="text-[10px] text-muted-foreground">
+                Para evitar ruído, "Não respondeu" só pode ser registrado a cada {NAO_RESPONDEU_COOLDOWN_HOURS}h por passo.
+              </p>
+            ) : null}
 
             <div className="space-y-1">
               <label htmlFor={`notes-${passoId}`} className="text-xs text-muted-foreground">
