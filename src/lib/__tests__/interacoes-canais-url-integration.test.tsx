@@ -108,10 +108,7 @@ describe('integração /interacoes ?canais= ↔ chips', () => {
     const user = userEvent.setup();
     renderAt('/interacoes?canais=email,call,whatsapp');
 
-    // O Badge `closeable` renderiza um botão "Remover" — usamos o aria-label
-    // padrão do componente. O chip "Email" deve sumir e os outros permanecer.
-    const removeEmail = screen.getByRole('button', { name: /remover.*email/i });
-    await user.click(removeEmail);
+    await user.click(getRemoveButtonForChip('Email'));
 
     expect(screen.getByTestId('canais-csv').textContent).toBe('call,whatsapp');
     expect(screen.getByTestId('canais-count').textContent).toBe('2');
@@ -126,9 +123,8 @@ describe('integração /interacoes ?canais= ↔ chips', () => {
     expect(screen.getByTestId('canais-count').textContent).toBe('1');
     expect(screen.getByTestId('url-search').textContent).toContain('canais=email');
 
-    await user.click(screen.getByRole('button', { name: /remover.*email/i }));
+    await user.click(getRemoveButtonForChip('Email'));
 
-    // Estado interno zera e o param some da URL — sem `canais=` vazio.
     expect(screen.getByTestId('canais-count').textContent).toBe('0');
     expect(screen.getByTestId('canais-csv').textContent).toBe('');
     expect(screen.getByTestId('url-search').textContent).not.toContain('canais=');
@@ -138,14 +134,14 @@ describe('integração /interacoes ?canais= ↔ chips', () => {
     const user = userEvent.setup();
     renderAt('/interacoes?canais=email,call,whatsapp');
 
-    await user.click(screen.getByRole('button', { name: /remover.*whatsapp/i }));
+    await user.click(getRemoveButtonForChip('WhatsApp'));
     expect(screen.getByTestId('canais-csv').textContent).toBe('email,call');
 
-    await user.click(screen.getByRole('button', { name: /remover.*email/i }));
+    await user.click(getRemoveButtonForChip('Email'));
     expect(screen.getByTestId('canais-csv').textContent).toBe('call');
     expect(screen.getByTestId('url-search').textContent).toContain('canais=call');
 
-    await user.click(screen.getByRole('button', { name: /remover.*ligação/i }));
+    await user.click(getRemoveButtonForChip('Ligação'));
     expect(screen.getByTestId('canais-count').textContent).toBe('0');
     expect(screen.getByTestId('url-search').textContent).not.toContain('canais=');
   });
