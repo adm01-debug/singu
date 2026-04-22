@@ -159,12 +159,21 @@ const makeTooltipContent = (target: number, milestonesByWeek: Map<string, TrendM
   return Comp;
 };
 
-export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
+export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange, interactions }: Props) => {
   const target = useProntidaoTargetStore((s) => s.target);
   const setTarget = useProntidaoTargetStore((s) => s.setTarget);
   const resetTarget = useProntidaoTargetStore((s) => s.reset);
   const [draftTarget, setDraftTarget] = useState<number>(target);
-  const TooltipContent = useMemo(() => makeTooltipContent(target), [target]);
+
+  const milestones = useMemo(
+    () => computeTrendMilestones(interactions ?? [], data),
+    [interactions, data],
+  );
+  const milestonesByWeek = useMemo(() => groupMilestonesByWeek(milestones), [milestones]);
+  const TooltipContent = useMemo(
+    () => makeTooltipContent(target, milestonesByWeek),
+    [target, milestonesByWeek],
+  );
 
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
