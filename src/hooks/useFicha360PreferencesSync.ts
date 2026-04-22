@@ -1,21 +1,31 @@
 import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { NbaPriority, NbaSort } from './useProximosPassosFilters';
+import type { NbaPriority, NbaSort, NbaStatus } from './useProximosPassosFilters';
 
 const SCOPE = 'ficha360';
 const VALID_PRIORITIES: readonly NbaPriority[] = ['alta', 'media', 'baixa'];
 const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'recomendacao', 'prioridade', 'canal'];
+const VALID_STATUS: readonly NbaStatus[] = [
+  'pendente',
+  'nao_respondeu',
+  'nao_atendeu',
+  'respondeu_positivo',
+  'respondeu_neutro',
+  'reuniao_agendada',
+];
 
 export interface Ficha360Preferences {
   priorities: NbaPriority[];
   channels: string[];
+  status: NbaStatus[];
   sort: NbaSort;
 }
 
 const DEFAULTS: Ficha360Preferences = {
   priorities: [],
   channels: [],
+  status: [],
   sort: 'sugerido',
 };
 
@@ -30,11 +40,16 @@ function sanitize(raw: unknown): Ficha360Preferences {
   const channels = Array.isArray(obj.channels)
     ? (obj.channels as unknown[]).map((v) => String(v).toLowerCase()).filter(Boolean)
     : [];
+  const status = Array.isArray(obj.status)
+    ? (obj.status as unknown[])
+        .map((v) => String(v).toLowerCase())
+        .filter((v): v is NbaStatus => (VALID_STATUS as readonly string[]).includes(v))
+    : [];
   const sortRaw = String(obj.sort ?? '').toLowerCase();
   const sort = (VALID_SORTS as readonly string[]).includes(sortRaw)
     ? (sortRaw as NbaSort)
     : DEFAULTS.sort;
-  return { priorities, channels, sort };
+  return { priorities, channels, status, sort };
 }
 
 function arraysEqual(a: string[], b: string[]) {
@@ -45,7 +60,12 @@ function arraysEqual(a: string[], b: string[]) {
 }
 
 function prefsEqual(a: Ficha360Preferences, b: Ficha360Preferences) {
-  return arraysEqual(a.priorities, b.priorities) && arraysEqual(a.channels, b.channels) && a.sort === b.sort;
+  return (
+    arraysEqual(a.priorities, b.priorities) &&
+    arraysEqual(a.channels, b.channels) &&
+    arraysEqual(a.status, b.status) &&
+    a.sort === b.sort
+  );
 }
 
 const QK = ['user-ui-preferences', SCOPE] as const;
@@ -126,5 +146,5 @@ export function useFicha360PreferencesSync(opts: {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current.priorities, current.channels, current.sort]);
+  }, [current.priorities, current.channels, current.status, current.sort]);
 }
