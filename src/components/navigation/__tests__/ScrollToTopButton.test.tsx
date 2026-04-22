@@ -115,4 +115,29 @@ describe('ScrollToTopButton', () => {
     await flushRaf();
     expect(screen.getByRole('button', { name: /voltar ao topo/i })).toBeInTheDocument();
   });
+
+  it('densidade compact reduz threshold default (~280px)', async () => {
+    localStorage.setItem('singu-table-density', 'compact');
+    render(<ScrollToTopButton />);
+    // 250px < 280px → ainda invisível
+    setScrollY(250);
+    fireEvent.scroll(window);
+    await flushRaf();
+    expect(screen.queryByRole('button', { name: /voltar ao topo/i })).not.toBeInTheDocument();
+    // 290px > 280px → aparece (em comfortable, 290 < 400 e ficaria oculto)
+    setScrollY(290);
+    fireEvent.scroll(window);
+    await flushRaf();
+    expect(screen.getByRole('button', { name: /voltar ao topo/i })).toBeInTheDocument();
+  });
+
+  it('compactRatio=1 desabilita o ajuste de densidade', async () => {
+    localStorage.setItem('singu-table-density', 'compact');
+    render(<ScrollToTopButton compactRatio={1} />);
+    setScrollY(290);
+    fireEvent.scroll(window);
+    await flushRaf();
+    // Sem desconto, comportamento idêntico a comfortable: 290 < 400 → oculto
+    expect(screen.queryByRole('button', { name: /voltar ao topo/i })).not.toBeInTheDocument();
+  });
 });
