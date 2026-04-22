@@ -151,8 +151,11 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const handleSave = () => {
     const trimmed = name.trim().slice(0, 60);
     if (!trimmed) return;
+    // Garante dedupe normalizado (case/acentos/pontuação) contra TODOS os presets,
+    // incluindo favoritos — evita "Acme · WhatsApp" vs "acme whatsapp" duplicados.
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), trimmed);
     const created = savePreset({
-      name: trimmed,
+      name: finalName,
       filters: {
         q: currentPayload.q ? [currentPayload.q] : [],
         contact: currentPayload.contact ? [currentPayload.contact] : [],
@@ -168,8 +171,15 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     setActivePresetId(created.id);
     setName('');
     setIsNaming(false);
-    toast.success('Busca salva!');
+    if (finalName !== trimmed) {
+      toast.success('Busca salva!', {
+        description: `Nome ajustado para "${finalName}" para evitar duplicidade.`,
+      });
+    } else {
+      toast.success('Busca salva!');
+    }
   };
+
 
 
   const applyPreset = (preset: typeof presets[number]) => {
