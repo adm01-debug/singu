@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { sanitizeTags as sanitizeTagsLib, type InteractionTag } from '@/lib/interactionTags';
 
 const STORAGE_KEY = 'ficha360-filter-favorites-v1';
 const MAX_FAVORITES = 10;
@@ -10,6 +11,7 @@ export interface FilterFavorite {
   name: string;
   days: number;
   channels: string[];
+  tags: InteractionTag[];
   createdAt: number;
 }
 
@@ -17,6 +19,7 @@ export interface SharedFavoritePayload {
   name: string;
   days: number;
   channels: string[];
+  tags?: InteractionTag[];
 }
 
 function isValidDays(d: unknown): d is number {
