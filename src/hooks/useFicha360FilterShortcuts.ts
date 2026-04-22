@@ -49,13 +49,15 @@ export function useFicha360FilterShortcuts({
   onAbrirFavoritos,
   onSortRecente,
   onSortRelevante,
+  onAbrirResumoIA,
+  filteredCount = 0,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
-  const stateRef = useRef({ days, channels, q, hasPeriodChip, enabled });
+  const stateRef = useRef({ days, channels, q, hasPeriodChip, enabled, filteredCount });
   useEffect(() => {
-    stateRef.current = { days, channels, q, hasPeriodChip, enabled };
-  }, [days, channels, q, hasPeriodChip, enabled]);
+    stateRef.current = { days, channels, q, hasPeriodChip, enabled, filteredCount };
+  }, [days, channels, q, hasPeriodChip, enabled, filteredCount]);
 
   const handlersRef = useRef({
     onClearAll,
@@ -67,6 +69,7 @@ export function useFicha360FilterShortcuts({
     onAbrirFavoritos,
     onSortRecente,
     onSortRelevante,
+    onAbrirResumoIA,
   });
   useEffect(() => {
     handlersRef.current = {
@@ -79,6 +82,7 @@ export function useFicha360FilterShortcuts({
       onAbrirFavoritos,
       onSortRecente,
       onSortRelevante,
+      onAbrirResumoIA,
     };
   }, [
     onClearAll,
@@ -90,6 +94,7 @@ export function useFicha360FilterShortcuts({
     onAbrirFavoritos,
     onSortRecente,
     onSortRelevante,
+    onAbrirResumoIA,
   ]);
 
   useScopedShortcut({
