@@ -1,10 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { ALL_TAGS, sanitizeTags, type InteractionTag } from '@/lib/interactionTags';
 
 const VALID_PERIODS = [7, 30, 90, 365] as const;
 const DEFAULT_DAYS = 90;
 const KNOWN_CHANNELS = ['whatsapp', 'call', 'email', 'meeting', 'note'] as const;
 const KNOWN_CHANNELS_SET = new Set<string>(KNOWN_CHANNELS);
+const KNOWN_TAGS_SET = new Set<string>(ALL_TAGS);
 
 export type Ficha360Period = (typeof VALID_PERIODS)[number];
 
@@ -15,9 +17,9 @@ interface SetterOptions {
 
 /**
  * Sincroniza filtros da seção "Últimas Interações" da Ficha 360 com a URL.
- * Query params: ?periodo=<days>&canais=<csv>&q=<termo>
+ * Query params: ?periodo=<days>&canais=<csv>&q=<termo>&tags=<csv>
  *
- * Canais inválidos colados na URL são descartados via whitelist (KNOWN_CHANNELS).
+ * Valores inválidos colados na URL são descartados via whitelist.
  */
 export function useFicha360Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,6 +41,16 @@ export function useFicha360Filters() {
   }, [searchParams]);
 
   const q: string = useMemo(() => searchParams.get('q')?.trim() ?? '', [searchParams]);
+
+  const tags: InteractionTag[] = useMemo(() => {
+    const raw = searchParams.get('tags');
+    if (!raw) return [];
+    const parts = raw
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter((t) => t && KNOWN_TAGS_SET.has(t));
+    return sanitizeTags(parts);
+  }, [searchParams]);
 
   const setDays = useCallback(
     (next: Ficha360Period, opts?: SetterOptions) => {
@@ -91,6 +103,22 @@ export function useFicha360Filters() {
     [setSearchParams],
   );
 
+  const setTags = useCallback(
+    (next: InteractionTag[], opts?: SetterOptions) => {
+      setSearchParams(
+        (prev) => {
+          const sp = new URLSearchParams(prev);
+          const cleaned = sanitizeTags(next);
+          if (cleaned.length === 0) sp.delete('tags');
+          else sp.set('tags', cleaned.join(','));
+          return sp;
+        },
+        { replace: !opts?.pushHistory },
+      );
+    },
+    [setSearchParams],
+  );
+
   const clear = useCallback(
     (opts?: SetterOptions) => {
       setSearchParams(
@@ -99,6 +127,7 @@ export function useFicha360Filters() {
           sp.delete('periodo');
           sp.delete('canais');
           sp.delete('q');
+          sp.delete('tags');
           return sp;
         },
         { replace: !opts?.pushHistory },
@@ -108,7 +137,22 @@ export function useFicha360Filters() {
   );
 
   const activeCount =
-    (days !== DEFAULT_DAYS ? 1 : 0) + (channels.length > 0 ? 1 : 0) + (q ? 1 : 0);
+    (days !== DEFAULT_DAYS ? 1 : 0) +
+    (channels.length > 0 ? 1 : 0) +
+    (q ? 1 : 0) +
+    (tags.length > 0 ? 1 : 0);
 
-  return { days, channels, q, setDays, setChannels, setQ, clear, activeCount, periods: VALID_PERIODS };
+  return {
+    days,
+    channels,
+    q,
+    tags,
+    setDays,
+    setChannels,
+    setQ,
+    setTags,
+    clear,
+    activeCount,
+    periods: VALID_PERIODS,
+  };
 }
