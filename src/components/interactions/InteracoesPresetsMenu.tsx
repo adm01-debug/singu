@@ -417,7 +417,33 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-96 p-0" align="end">
+        <PopoverContent
+          className="w-96 p-0"
+          align="end"
+          onKeyDown={(e) => {
+            // Navegação por teclado nos presets: ↑/↓ move, Enter aplica, Esc fecha.
+            if (sortedPresets.length === 0) return;
+            if (editingId || isNaming) return;
+            if (e.key === 'ArrowDown') {
+              e.preventDefault();
+              setFocusedIndex((i) => {
+                const next = i < sortedPresets.length - 1 ? i + 1 : 0;
+                requestAnimationFrame(() => itemRefs.current[next]?.scrollIntoView({ block: 'nearest' }));
+                return next;
+              });
+            } else if (e.key === 'ArrowUp') {
+              e.preventDefault();
+              setFocusedIndex((i) => {
+                const next = i <= 0 ? sortedPresets.length - 1 : i - 1;
+                requestAnimationFrame(() => itemRefs.current[next]?.scrollIntoView({ block: 'nearest' }));
+                return next;
+              });
+            } else if (e.key === 'Enter' && focusedIndex >= 0 && focusedIndex < sortedPresets.length) {
+              e.preventDefault();
+              applyPreset(sortedPresets[focusedIndex]);
+            }
+          }}
+        >
           <div className="p-3 border-b border-border">
             <h4 className="font-medium text-sm text-foreground">Buscas salvas</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
