@@ -27,6 +27,8 @@ import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMen
 import { ContagemPorTipoBar } from '@/components/ficha-360/ContagemPorTipoBar';
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { OrdenacaoToggle } from '@/components/ficha-360/OrdenacaoToggle';
+import { FiltroTagsDropdown } from '@/components/ficha-360/FiltroTagsDropdown';
+import { countByTag, interactionMatchesTags } from '@/lib/interactionTags';
 import { useFicha360Sort } from '@/hooks/useFicha360Sort';
 import { sortInteractions } from '@/lib/sortInteractions';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
@@ -74,7 +76,7 @@ const Ficha360Skeleton = () => (
 
 const Ficha360 = () => {
   const { id } = useParams<{ id: string }>();
-  const { days, channels, q, setDays, setChannels, setQ, clear, activeCount } = useFicha360Filters();
+  const { days, channels, q, tags, setDays, setChannels, setQ, setTags, clear, activeCount } = useFicha360Filters();
   const {
     draftDays,
     draftChannels,
@@ -131,19 +133,24 @@ const Ficha360 = () => {
     if (debouncedSearch.trim() !== q) setQ(debouncedSearch);
   }, [debouncedSearch, q, setQ]);
 
+  // Contagens por tag — calculadas sobre o conjunto já filtrado por período/canais
+  // (mesma base de Y do ContagemPorTipoBar). Eixo independente da busca livre.
+  const tagCounts = useMemo(() => countByTag(recentInteractions), [recentInteractions]);
+
   const filteredInteractions = useMemo(() => {
     const term = q.trim();
-    if (!term) return recentInteractions;
     const norm = (s: string) =>
       s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const needle = norm(term);
+    const needle = term ? norm(term) : '';
     return recentInteractions.filter((it) => {
+      if (tags.length > 0 && !interactionMatchesTags(it, tags)) return false;
+      if (!needle) return true;
       const haystack = norm(
         [it.assunto ?? '', it.resumo ?? '', it.channel ?? '', it.direction ?? ''].join(' '),
       );
       return haystack.includes(needle);
     });
-  }, [recentInteractions, q]);
+  }, [recentInteractions, q, tags]);
 
   const { sort, setSort } = useFicha360Sort();
 
@@ -492,6 +499,11 @@ const Ficha360 = () => {
                           onChange={setSort}
                           hasQuery={!!q.trim()}
                         />
+                        <FiltroTagsDropdown
+                          selected={tags}
+                          onChange={setTags}
+                          counts={tagCounts}
+                        />
                         <div className="relative">
                           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
@@ -537,12 +549,14 @@ const Ficha360 = () => {
                       <FiltrosAtivosChips
                         days={days}
                         channels={channels}
+                        tags={tags}
                         shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
                         searchTerm={q}
                         searchMatchCount={filteredInteractions.length}
                         onRemoveDays={() => setDays(90)}
                         onRemoveChannel={(c) => setChannels(channels.filter((x) => x !== c))}
+                        onRemoveTag={(t) => setTags(tags.filter((x) => x !== t))}
                         onRemoveSearch={() => {
                           setSearchInput('');
                           setQ('');

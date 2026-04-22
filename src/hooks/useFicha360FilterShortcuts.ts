@@ -197,6 +197,18 @@ export function useFicha360FilterShortcuts({
     },
   });
 
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 't',
+    shift: true,
+    description: 'Abrir filtro de tags temáticas',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      window.dispatchEvent(new CustomEvent('ficha360:open-tags'));
+    },
+  });
+
   // Shift+1..5 → remove o N-ésimo chip de canal visível.
   for (let i = 1; i <= 5; i++) {
     // eslint-disable-next-line react-hooks/rules-of-hooks

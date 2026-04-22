@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { Calendar, MessageSquare, Phone, Mail, FileText, Search, X } from 'lucide-react';
+import { Calendar, MessageSquare, Phone, Mail, FileText, Search, X, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
+import { TAG_DICTIONARY, type InteractionTag } from '@/lib/interactionTags';
 
 const CHANNEL_META: Record<string, { label: string; icon: typeof MessageSquare }> = {
   whatsapp: { label: 'WhatsApp', icon: MessageSquare },
@@ -22,12 +23,14 @@ const PERIOD_LABEL: Record<number, string> = {
 interface Props {
   days: Ficha360Period;
   channels: string[];
+  tags?: InteractionTag[];
   shownCount: number;
   totalCount: number;
   searchTerm?: string;
   searchMatchCount?: number;
   onRemoveDays: () => void;
   onRemoveChannel: (c: string) => void;
+  onRemoveTag?: (t: InteractionTag) => void;
   onRemoveSearch?: () => void;
   onClearAll: () => void;
 }
@@ -35,21 +38,24 @@ interface Props {
 export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
   days,
   channels,
+  tags,
   shownCount,
   totalCount,
   searchTerm,
   searchMatchCount,
   onRemoveDays,
   onRemoveChannel,
+  onRemoveTag,
   onRemoveSearch,
   onClearAll,
 }: Props) {
   const hasPeriodChip = days !== 90;
   const safeChannels = Array.isArray(channels) ? channels : [];
+  const safeTags = Array.isArray(tags) ? tags : [];
   const trimmedSearch = (searchTerm ?? '').trim();
   const hasSearchChip = trimmedSearch.length > 0;
   const activeChipCount =
-    (hasPeriodChip ? 1 : 0) + safeChannels.length + (hasSearchChip ? 1 : 0);
+    (hasPeriodChip ? 1 : 0) + safeChannels.length + safeTags.length + (hasSearchChip ? 1 : 0);
 
   if (totalCount === 0 && activeChipCount === 0) return null;
 
@@ -88,6 +94,24 @@ export const FiltrosAtivosChips = memo(function FiltrosAtivosChips({
             icon={<Icon className="h-3 w-3" />}
             className="text-xs"
             title={`Remover canal${shortcutHint}`}
+          >
+            {meta.label}
+          </Badge>
+        );
+      })}
+
+      {safeTags.map((t) => {
+        const meta = TAG_DICTIONARY[t];
+        if (!meta || !onRemoveTag) return null;
+        return (
+          <Badge
+            key={t}
+            variant="secondary"
+            closeable
+            onClose={() => onRemoveTag(t)}
+            icon={<Tag className="h-3 w-3" />}
+            className="text-xs"
+            title="Remover tag"
           >
             {meta.label}
           </Badge>

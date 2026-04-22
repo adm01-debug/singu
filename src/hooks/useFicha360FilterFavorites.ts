@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { sanitizeTags as sanitizeTagsLib, type InteractionTag } from '@/lib/interactionTags';
 
 const STORAGE_KEY = 'ficha360-filter-favorites-v1';
 const MAX_FAVORITES = 10;
@@ -10,6 +11,7 @@ export interface FilterFavorite {
   name: string;
   days: number;
   channels: string[];
+  tags: InteractionTag[];
   createdAt: number;
 }
 
@@ -17,6 +19,7 @@ export interface SharedFavoritePayload {
   name: string;
   days: number;
   channels: string[];
+  tags?: InteractionTag[];
 }
 
 function isValidDays(d: unknown): d is number {
@@ -61,6 +64,7 @@ function readAll(): FilterFavorite[] {
         name: sanitizeName(r.name),
         days: r.days,
         channels: sanitizeChannels(r.channels),
+        tags: sanitizeTagsLib(r.tags),
         createdAt: typeof r.createdAt === 'number' ? r.createdAt : Date.now(),
       });
     }
@@ -85,11 +89,22 @@ function genId(): string {
   return `fav_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function sameCombo(a: FilterFavorite, days: number, channels: string[]): boolean {
+function sameCombo(
+  a: FilterFavorite,
+  days: number,
+  channels: string[],
+  tags: InteractionTag[] = [],
+): boolean {
   if (a.days !== days) return false;
   if (a.channels.length !== channels.length) return false;
   for (let i = 0; i < a.channels.length; i++) {
     if (a.channels[i] !== channels[i]) return false;
+  }
+  const aTags = (a.tags ?? []).slice().sort();
+  const bTags = tags.slice().sort();
+  if (aTags.length !== bTags.length) return false;
+  for (let i = 0; i < aTags.length; i++) {
+    if (aTags[i] !== bTags[i]) return false;
   }
   return true;
 }
@@ -174,20 +189,27 @@ export function useFicha360FilterFavorites() {
   }, []);
 
   const findMatch = useCallback(
-    (days: number, channels: string[]): FilterFavorite | null => {
+    (days: number, channels: string[], tags: InteractionTag[] = []): FilterFavorite | null => {
       const sorted = sanitizeChannels(channels);
-      return favorites.find((f) => sameCombo(f, days, sorted)) ?? null;
+      const cleanTags = sanitizeTagsLib(tags);
+      return favorites.find((f) => sameCombo(f, days, sorted, cleanTags)) ?? null;
     },
     [favorites],
   );
 
   const save = useCallback(
-    (name: string, days: number, channels: string[]): FilterFavorite | null => {
+    (
+      name: string,
+      days: number,
+      channels: string[],
+      tags: InteractionTag[] = [],
+    ): FilterFavorite | null => {
       if (!isValidDays(days)) return null;
       const cleanName = sanitizeName(name, '');
       if (!cleanName) return null;
       const cleanChannels = sanitizeChannels(channels);
-      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(tags);
+      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       const next: FilterFavorite = {
@@ -195,6 +217,7 @@ export function useFicha360FilterFavorites() {
         name: cleanName,
         days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
@@ -214,15 +237,20 @@ export function useFicha360FilterFavorites() {
    * Retorna `null` apenas se period inválido ou limite atingido.
    */
   const quickSave = useCallback(
-    (days: number, channels: string[]): FilterFavorite | null => {
+    (
+      days: number,
+      channels: string[],
+      tags: InteractionTag[] = [],
+    ): FilterFavorite | null => {
       if (!isValidDays(days)) return null;
       const cleanChannels = sanitizeChannels(channels);
-      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(tags);
+      const existing = favorites.find((f) => sameCombo(f, days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       // Dedupe de nome auto-gerado: "30d · WhatsApp" → "30d · WhatsApp (2)" se já usado.
       const used = new Set(favorites.map((f) => f.name));
-      let finalName = suggestFavoriteName(days, cleanChannels);
+      let finalName = suggestFavoriteName(days, cleanChannels, cleanTags);
       if (used.has(finalName)) {
         let i = 2;
         while (used.has(`${finalName} (${i})`)) i++;
@@ -233,6 +261,7 @@ export function useFicha360FilterFavorites() {
         name: finalName,
         days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
@@ -257,7 +286,8 @@ export function useFicha360FilterFavorites() {
   const importShared = useCallback(
     (payload: SharedFavoritePayload): FilterFavorite | null => {
       const cleanChannels = sanitizeChannels(payload.channels);
-      const existing = favorites.find((f) => sameCombo(f, payload.days, cleanChannels));
+      const cleanTags = sanitizeTagsLib(payload.tags);
+      const existing = favorites.find((f) => sameCombo(f, payload.days, cleanChannels, cleanTags));
       if (existing) return existing;
       if (favorites.length >= MAX_FAVORITES) return null;
       // dedupe de nome
@@ -273,6 +303,7 @@ export function useFicha360FilterFavorites() {
         name: finalName,
         days: payload.days,
         channels: cleanChannels,
+        tags: cleanTags,
         createdAt: Date.now(),
       };
       persist([next, ...favorites]);
@@ -294,7 +325,11 @@ export function useFicha360FilterFavorites() {
   };
 }
 
-export function suggestFavoriteName(days: number, channels: string[]): string {
+export function suggestFavoriteName(
+  days: number,
+  channels: string[],
+  tags: InteractionTag[] = [],
+): string {
   const periodLabel =
     days === 7 ? '7d' : days === 30 ? '30d' : days === 365 ? '1a' : '90d';
   const labels: Record<string, string> = {
@@ -310,5 +345,7 @@ export function suggestFavoriteName(days: number, channels: string[]): string {
   else if (sorted.length === 1) chPart = labels[sorted[0]] ?? sorted[0];
   else if (sorted.length === 2) chPart = sorted.map((c) => labels[c] ?? c).join('+');
   else chPart = `${sorted.length} canais`;
-  return `${periodLabel} · ${chPart}`.slice(0, 40);
+  const cleanTags = sanitizeTagsLib(tags);
+  const tagSuffix = cleanTags.length > 0 ? ` · ${cleanTags.length} tag${cleanTags.length === 1 ? '' : 's'}` : '';
+  return `${periodLabel} · ${chPart}${tagSuffix}`.slice(0, 40);
 }
