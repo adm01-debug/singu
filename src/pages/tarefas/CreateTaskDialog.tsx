@@ -344,7 +344,9 @@ export function CreateTaskDialog() {
             </div>
           </div>
 
-
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="task-time">Hora (opcional)</Label>
               <Input
                 id="task-time"
                 type="time"
