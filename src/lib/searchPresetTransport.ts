@@ -172,7 +172,6 @@ export function normalizePresetName(s: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s*\(\d+\)\s*$/g, '')
     .replace(/[·•\-–—/:|]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
