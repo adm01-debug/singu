@@ -146,11 +146,7 @@ export function useInteractionsAdvancedFilter() {
     const raw = searchParams.get('canais');
     if (!raw) return;
     warnedUrlRef.current = true;
-    const rawList = raw.split(',').map((s) => s.trim()).filter(Boolean);
-    const valid = new Set(parseCanais(raw));
-    const ignored = Array.from(
-      new Set(rawList.filter((c) => !valid.has(c.toLowerCase())))
-    );
+    const ignored = findIgnoredCanais(raw, INTERACTION_CHANNELS_SET);
     if (ignored.length > 0) {
       toast.warning('Alguns canais foram ignorados', {
         description: `Valores inválidos: ${ignored.join(', ')}`,
