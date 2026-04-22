@@ -99,14 +99,24 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
   const { mode, toggle, setMode } = useChannelSyncMode();
   const [pending, setPendingState] = useState<string[]>(() => {
-    // Restaura pending salvo apenas se modo for manual e diferir do aplicado
+    // Restaura pending salvo apenas se modo for manual e diferir do aplicado.
+    // Se não houver pending salvo, usa o `applied` persistido como base
+    // (cobre o caso em que o pai ainda não hidratou `canais` no primeiro render).
     try {
       const savedMode = localStorage.getItem('channel-sync-mode');
       if (savedMode === 'manual') {
-        const saved = readPending();
-        if (saved) return saved;
+        const savedPending = readPending();
+        if (savedPending) return savedPending;
+        const initial = Array.isArray(canais) ? canais : [];
+        if (initial.length === 0) {
+          const savedApplied = readApplied();
+          if (savedApplied) return savedApplied;
+        }
+        return initial;
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
     return Array.isArray(canais) ? canais : [];
   });
 
