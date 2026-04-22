@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
@@ -86,6 +86,9 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
   const [recentlyAppliedId, setRecentlyAppliedId] = useState<string | null>(null);
+  // Modo de pré-visualização: clique no item abre painel diff em vez de aplicar.
+  const [previewMode, setPreviewMode] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   // Auto-save: persistent toggle + active preset id (last applied/saved)
   const AUTOSAVE_KEY = 'interacoes-presets-autosave';
