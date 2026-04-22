@@ -81,16 +81,20 @@ function renderAt(initial: string) {
 }
 
 /**
- * Encontra o botão "X" do chip cujo texto visível contém `label`.
- * O Badge `closeable` usa aria-label fixo "Remove", então localizamos
- * primeiro o chip pelo texto e descemos para o botão.
+ * Encontra o botão "X" do chip cujo texto visível inclui `label`.
+ * Estratégia: varre TODOS os botões `aria-label="Remove"` e escolhe aquele
+ * cujo elemento-pai (o Badge) contém o texto exato do canal. Isso ignora o
+ * resumo lateral "N canais: …" que também renderiza o nome.
  */
 function getRemoveButtonForChip(label: string): HTMLButtonElement {
-  const chip = screen.getByText(label).closest('[class*="rounded"]');
-  if (!chip) throw new Error(`Chip não encontrado para "${label}"`);
-  const btn = chip.querySelector('button[aria-label="Remove"]');
-  if (!btn) throw new Error(`Botão de remover ausente no chip "${label}"`);
-  return btn as HTMLButtonElement;
+  const buttons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('button[aria-label="Remove"]'),
+  );
+  const match = buttons.find((btn) => btn.parentElement?.textContent?.trim() === label);
+  if (!match) {
+    throw new Error(`Botão "Remove" do chip "${label}" não encontrado entre ${buttons.length} botões`);
+  }
+  return match;
 }
 
 describe('integração /interacoes ?canais= ↔ chips', () => {
