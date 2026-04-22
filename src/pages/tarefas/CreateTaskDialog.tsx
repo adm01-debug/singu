@@ -106,6 +106,25 @@ const todayIso = () => {
   return `${y}-${m}-${day}`;
 };
 
+const addDaysIso = (days: number): string => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const DUE_WINDOWS: Array<{ days: number; label: string }> = [
+  { days: 0, label: 'Hoje' },
+  { days: 1, label: 'Amanhã' },
+  { days: 2, label: 'Em 2 dias' },
+  { days: 3, label: 'Em 3 dias' },
+  { days: 7, label: 'Em 1 semana' },
+  { days: 14, label: 'Em 2 semanas' },
+];
+
 export function CreateTaskDialog() {
   const createTask = useCreateTask();
   const [open, setOpen] = useState(false);
