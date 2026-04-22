@@ -39,14 +39,10 @@ export function useFicha360Filters() {
       : DEFAULT_DAYS;
   }, [searchParams]);
 
-  const channels: string[] = useMemo(() => {
-    const raw = searchParams.get('canais');
-    if (!raw) return [];
-    return raw
-      .split(',')
-      .map((c) => c.trim().toLowerCase())
-      .filter((c) => c && KNOWN_CHANNELS_SET.has(c));
-  }, [searchParams]);
+  const channels: string[] = useMemo(
+    () => parseCanaisFromString(searchParams.get('canais'), KNOWN_CHANNELS_SET),
+    [searchParams],
+  );
 
   const q: string = useMemo(() => searchParams.get('q')?.trim() ?? '', [searchParams]);
 
