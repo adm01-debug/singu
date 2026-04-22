@@ -482,13 +482,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                   variant="ghost"
                   size="xs"
                   onClick={() => setConfirmRevertOpen(true)}
+                  aria-keyshortcuts="Escape"
                   className="gap-1"
                 >
                   <X className="w-3 h-3" />
                   Reverter
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top">Descartar alterações pendentes</TooltipContent>
+              <TooltipContent side="top">Descartar alterações pendentes (Esc)</TooltipContent>
             </Tooltip>
           </div>
         )}
