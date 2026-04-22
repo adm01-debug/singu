@@ -126,7 +126,7 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
           {isActive && (
             <X
               className="w-3.5 h-3.5 ml-1 opacity-60 hover:opacity-100"
-              onClick={(e) => { e.stopPropagation(); applyDateRange(undefined, undefined); }}
+              onClick={(e) => { e.stopPropagation(); clearRange(); }}
               aria-label="Limpar período"
             />
           )}
