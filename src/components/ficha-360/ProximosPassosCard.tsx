@@ -34,6 +34,8 @@ import type { SentimentTone } from '@/lib/scriptGenerator';
 import { useProximosPassosFilters, type NbaPriority } from '@/hooks/useProximosPassosFilters';
 import { filterAndSortPassos } from '@/lib/filterProximosPassos';
 import { ProximosPassosFiltersBar } from './ProximosPassosFiltersBar';
+import { useFicha360PreferencesSync } from '@/hooks/useFicha360PreferencesSync';
+import { useSearchParams } from 'react-router-dom';
 
 interface Props {
   contactId: string;
@@ -104,6 +106,20 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
     clear: clearFilters,
     activeCount,
   } = useProximosPassosFilters();
+
+  // Persistência por usuário (cross-device) das preferências de filtros
+  const [urlParams] = useSearchParams();
+  const hasUrlOverride =
+    urlParams.has('nbaPrio') || urlParams.has('nbaCanal') || urlParams.has('nbaSort');
+  useFicha360PreferencesSync({
+    current: { priorities, channels, sort },
+    hasUrlOverride,
+    hydrate: (prefs) => {
+      setPriorities(prefs.priorities);
+      setChannels(prefs.channels);
+      setSort(prefs.sort);
+    },
+  });
 
   const togglePriority = (p: NbaPriority) => {
     if (priorities.includes(p)) setPriorities(priorities.filter((x) => x !== p));
