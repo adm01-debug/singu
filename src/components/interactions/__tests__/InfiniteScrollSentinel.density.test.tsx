@@ -15,8 +15,8 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
     const { container } = render(
       <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore total={100} totalLoaded={10} />,
     );
-    // 3 skeletons no modo comfortable
-    expect(container.querySelectorAll('.h-20').length).toBe(3);
+    // 3 ComfortableItemSkeleton, cada um com avatar .h-9.w-9
+    expect(container.querySelectorAll('.h-9.w-9').length).toBe(3);
   });
 
   it('lê "compact" do localStorage automaticamente', () => {
@@ -27,7 +27,7 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
     );
     // 2 CompactItemSkeleton, cada um com avatar .h-7.w-7
     expect(container.querySelectorAll('.h-7.w-7').length).toBe(2);
-    expect(container.querySelectorAll('.h-20').length).toBe(0);
+    expect(container.querySelectorAll('.h-9.w-9').length).toBe(0);
   });
 
   it('DensityProvider tem prioridade sobre localStorage', () => {
@@ -38,7 +38,7 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
       </DensityProvider>,
     );
     expect(container.querySelectorAll('.h-7.w-7').length).toBe(2);
-    expect(container.querySelectorAll('.h-20').length).toBe(0);
+    expect(container.querySelectorAll('.h-9.w-9').length).toBe(0);
   });
 
   it('prop density explícita sobrescreve provider', () => {
@@ -53,7 +53,7 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
         />
       </DensityProvider>,
     );
-    expect(container.querySelectorAll('.h-20').length).toBe(3);
+    expect(container.querySelectorAll('.h-9.w-9').length).toBe(3);
   });
 
   it('mensagem final inclui total exibido e densidade compacta', () => {
