@@ -244,24 +244,49 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     const goingToManual = mode === 'auto';
     toggle();
     if (goingToManual) {
+      // Entrando em manual: alinha pending ao estado aplicado para evitar
+      // divergência visual herdada (ex: pending órfão de sessão anterior
+      // que sobreviveu à hidratação porque o usuário não tinha tocado nos
+      // chips desde então). O usuário sempre começa com a mesma seleção
+      // que está na URL.
+      if (!arraysEqual(pending, safe)) {
+        setPending(safe);
+        clearPending();
+      }
       toast.info('Você está no modo manual', {
         description: 'Clique em "Aplicar" para atualizar os filtros após selecionar os canais.',
         duration: 5000,
       });
     } else {
-      // Voltando para auto: aplica imediatamente o pending, sincroniza chips
-      // e limpa o pending persistido para evitar estado órfão.
+      // Voltando para auto: aplica imediatamente o pending e limpa o
+      // pending persistido. O realinhamento final fica a cargo do effect
+      // `syncPendingOnAutoSwitch` abaixo, porque o pai pode normalizar o
+      // array recebido (whitelist) — confiar cegamente em `pending` aqui
+      // produziria divergência fantasma se voltássemos a manual depois.
       if (!arraysEqual(pending, safe)) {
         onChange(pending);
       }
       clearPending();
-      setPending(pending);
       toast.success('Modo automático ativado', {
         description: 'Canais aplicados imediatamente e seleção pendente limpa.',
         duration: 3000,
       });
     }
-  }, [mode, toggle, pending, safe, onChange]);
+  }, [mode, toggle, pending, safe, onChange, setPending]);
+
+  // Após alternar manual→auto, realinha `pending` com o `safe` recém-aplicado
+  // pelo pai (que pode ter descartado canais inválidos). Sem isso, voltar
+  // para manual depois mostraria uma "alteração pendente" que o usuário
+  // nunca fez. Disparado APENAS na transição de modo (não em cada mudança
+  // de safe), o que preserva o comportamento normal do pending no manual.
+  const prevModeRef = React.useRef(mode);
+  useEffect(() => {
+    const prev = prevModeRef.current;
+    prevModeRef.current = mode;
+    if (prev === 'manual' && mode === 'auto' && !arraysEqual(pending, safe)) {
+      setPending(safe);
+    }
+  }, [mode, safe, pending, setPending]);
 
   const clearAll = useCallback(() => {
     if (mode === 'auto') {
