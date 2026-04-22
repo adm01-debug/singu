@@ -21,6 +21,17 @@ interface IntelligenceLike {
   best_time?: string | null;
 }
 
+/**
+ * Contribuição ponderada de cada fator para o score da semana.
+ * cadence + recency + sentiment + channel ≈ score (arredondamentos podem causar ±1).
+ */
+export interface ProntidaoFactorContribution {
+  cadence: number;
+  recency: number;
+  sentiment: number;
+  channel: number;
+}
+
 export interface ProntidaoTrendPoint {
   weekStart: string; // ISO yyyy-MM-dd (segunda-feira)
   weekEnd: string; // ISO yyyy-MM-dd (domingo)
@@ -30,6 +41,8 @@ export interface ProntidaoTrendPoint {
   levelLabel: string;
   interactionCount: number;
   hasData: boolean;
+  /** Decomposição ponderada (somam ≈ score). Ausente quando hasData=false. */
+  contribution?: ProntidaoFactorContribution;
 }
 
 interface ComputeTrendArgs {
@@ -157,6 +170,18 @@ export function computeProntidaoTrend({
       weights,
     });
 
+    const b = result.breakdown;
+    const totalW =
+      b.cadence.weight + b.recency.weight + b.sentiment.weight + b.channel.weight;
+    const contribution: ProntidaoFactorContribution = totalW > 0
+      ? {
+          cadence: Math.round((b.cadence.score * b.cadence.weight) / totalW),
+          recency: Math.round((b.recency.score * b.recency.weight) / totalW),
+          sentiment: Math.round((b.sentiment.score * b.sentiment.weight) / totalW),
+          channel: Math.round((b.channel.score * b.channel.weight) / totalW),
+        }
+      : { cadence: 0, recency: 0, sentiment: 0, channel: 0 };
+
     points.push({
       weekStart: fmtIso(wStart),
       weekEnd: fmtIso(wEnd),
@@ -166,6 +191,7 @@ export function computeProntidaoTrend({
       levelLabel: result.levelLabel,
       interactionCount: inWeek.length,
       hasData: true,
+      contribution,
     });
   }
 

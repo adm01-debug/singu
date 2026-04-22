@@ -42,6 +42,7 @@ import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { ProntidaoTrendChart } from '@/components/ficha-360/ProntidaoTrendChart';
+import { ProntidaoFactorBreakdownChart } from '@/components/ficha-360/ProntidaoFactorBreakdownChart';
 import { SimulationModePanel } from '@/components/ficha-360/SimulationModePanel';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProntidaoTrend } from '@/lib/prontidaoTrend';
@@ -53,6 +54,8 @@ import { useSimulationStore } from '@/stores/useSimulationStore';
 import { useBestContactTime } from '@/hooks/useBestContactTime';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Search, X as XIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -316,6 +319,8 @@ const Ficha360 = () => {
   );
 
   const [trendWeeks, setTrendWeeks] = useState<4 | 8 | 12 | 24>(8);
+  const [showFactorBreakdown, setShowFactorBreakdown] = useState(false);
+  const [breakdownAsPercent, setBreakdownAsPercent] = useState(false);
 
   const trend = useMemo(
     () =>
@@ -485,6 +490,56 @@ const Ficha360 = () => {
               onWeeksChange={setTrendWeeks}
               interactions={recentInteractions}
             />
+
+            {/* Toggle: decomposição por fator */}
+            <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="factor-breakdown-toggle"
+                  checked={showFactorBreakdown}
+                  onCheckedChange={setShowFactorBreakdown}
+                />
+                <Label
+                  htmlFor="factor-breakdown-toggle"
+                  className="text-xs font-medium cursor-pointer"
+                >
+                  Decompor tendência por fator
+                </Label>
+              </div>
+              {showFactorBreakdown && (
+                <div className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownAsPercent(false)}
+                    className={`px-2 py-0.5 text-[11px] rounded transition-colors ${
+                      !breakdownAsPercent
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-pressed={!breakdownAsPercent}
+                  >
+                    pts
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBreakdownAsPercent(true)}
+                    className={`px-2 py-0.5 text-[11px] rounded transition-colors ${
+                      breakdownAsPercent
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    aria-pressed={breakdownAsPercent}
+                  >
+                    %
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Decomposição por fator (cadência, recência, sentimento, canal) */}
+            {showFactorBreakdown && (
+              <ProntidaoFactorBreakdownChart data={trend} asPercent={breakdownAsPercent} />
+            )}
 
             {/* Grid 2 colunas */}
             <div className="grid gap-4 lg:grid-cols-2">
