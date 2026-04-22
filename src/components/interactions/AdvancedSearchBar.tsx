@@ -31,11 +31,13 @@ interface Props {
   totalCount: number;
   applyAll?: (next: Partial<AdvancedFilters>) => void;
   applyDateRange: (de?: Date, ate?: Date) => boolean;
+  /** Limpeza atômica do range — repassada ao DateRangePopover e ao botão "X". */
+  clearDateRange?: () => boolean;
   channelCounts?: Record<string, number>;
 }
 
 export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
-  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll, applyDateRange, channelCounts,
+  filters, setFilter, clear, activeCount, contacts, companies, resultsCount, totalCount, applyAll, applyDateRange, clearDateRange, channelCounts,
 }: Props) {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,7 +124,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           onSelect={(id) => setFilter('company', id)}
         />
 
-        <DateRangePopover de={filters.de} ate={filters.ate} applyDateRange={applyDateRange} />
+        <DateRangePopover de={filters.de} ate={filters.ate} applyDateRange={applyDateRange} clearDateRange={clearDateRange} />
 
         {(filters.de || filters.ate) && (
           <Tooltip>
