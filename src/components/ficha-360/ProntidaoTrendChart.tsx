@@ -394,7 +394,8 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
         </AccessibleChart>
 
         <p className="text-[11px] text-muted-foreground">
-          Linhas tracejadas marcam os limiares Morno (40) e Quente (70). Tendência calculada pelos
+          Linhas tracejadas marcam os limiares Morno (40) e Quente (70)
+          {targetActive && <> · linha cheia em {target} é sua meta</>}. Tendência calculada pelos
           últimos {variationWindow} pontos · slope {slope.toFixed(1)}.
         </p>
       </CardContent>
