@@ -261,10 +261,24 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Stat row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className={cn('grid gap-3', targetActive ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3')}>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Atual</div>
-            <div className="text-lg font-semibold tabular-nums">{currentScore}</div>
+            <div className="flex items-baseline gap-1.5">
+              <div className="text-lg font-semibold tabular-nums">{currentScore}</div>
+              {targetActive && (
+                <span
+                  className={cn(
+                    'text-[11px] font-medium tabular-nums',
+                    currentVsTarget >= 0 ? 'text-success' : 'text-destructive',
+                  )}
+                  aria-label={`${currentVsTarget >= 0 ? 'Acima' : 'Abaixo'} da meta em ${Math.abs(currentVsTarget)} pontos`}
+                >
+                  {currentVsTarget >= 0 ? '+' : ''}
+                  {currentVsTarget}
+                </span>
+              )}
+            </div>
           </div>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -285,6 +299,17 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Pico</div>
             <div className="text-lg font-semibold tabular-nums">{peak}</div>
           </div>
+          {targetActive && (
+            <div className="space-y-0.5">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Acima da meta
+              </div>
+              <div className="text-lg font-semibold tabular-nums">
+                {aboveTarget}
+                <span className="text-sm text-muted-foreground font-normal">/{valid.length}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Chart */}
@@ -335,6 +360,20 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks,
                   strokeDasharray="4 4"
                   strokeOpacity={0.6}
                 />
+                {targetActive && (
+                  <ReferenceLine
+                    y={target}
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={1.5}
+                    strokeDasharray="6 3"
+                    label={{
+                      value: `Meta ${target}`,
+                      position: 'right',
+                      fill: 'hsl(var(--primary))',
+                      fontSize: 10,
+                    }}
+                  />
+                )}
                 <Tooltip
                   content={<TooltipContent />}
                   cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
