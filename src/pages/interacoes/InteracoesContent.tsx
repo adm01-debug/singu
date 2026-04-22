@@ -37,6 +37,7 @@ import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFi
 import { useCompanies } from '@/hooks/useCompanies';
 import { getChannelCountsCached } from '@/lib/channelCountsCache';
 import { computeIsolatedFilterCounts } from '@/lib/computeIsolatedFilterCounts';
+import { preserveScroll } from '@/lib/preserveScroll';
 import { groupInteractions } from '@/lib/groupInteractions';
 import { TimelineGroupCard } from '@/components/interactions/TimelineGroupCard';
 
