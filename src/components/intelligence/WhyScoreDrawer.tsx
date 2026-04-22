@@ -458,6 +458,86 @@ export function WhyScoreDrawer({
               </Button>
             </div>
           </div>
+
+          <div className="space-y-2 border-t pt-4">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" aria-hidden="true" />
+              A explicação faz sentido?
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Avalie se os fatores acima refletem bem este contato. Salvo por contato e usado para refinar o que mostramos aqui.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant={explanationFeedback === 'makes_sense' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => submitExplanationFeedback('makes_sense')}
+                className="gap-1.5"
+                aria-pressed={explanationFeedback === 'makes_sense'}
+              >
+                <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                Faz sentido
+              </Button>
+              <Button
+                type="button"
+                variant={explanationFeedback === 'does_not_make_sense' ? 'destructive' : 'outline'}
+                size="sm"
+                onClick={() => submitExplanationFeedback('does_not_make_sense')}
+                className="gap-1.5"
+                aria-pressed={explanationFeedback === 'does_not_make_sense'}
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                Não faz sentido
+              </Button>
+            </div>
+
+            {explanationFeedback && !showCommentBox && (
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+                <span>
+                  {explanationFeedback === 'makes_sense'
+                    ? '✓ Marcado como coerente para este contato.'
+                    : '✗ Marcado como incoerente para este contato.'}
+                  {explanationComment && <span className="block italic mt-0.5">"{explanationComment}"</span>}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-[11px] px-2"
+                  onClick={() => setShowCommentBox(true)}
+                >
+                  {explanationComment ? 'Editar comentário' : 'Adicionar comentário'}
+                </Button>
+              </div>
+            )}
+
+            {explanationFeedback && showCommentBox && (
+              <div className="space-y-2 pt-1">
+                <Textarea
+                  value={explanationComment}
+                  onChange={(e) => setExplanationComment(e.target.value)}
+                  placeholder={
+                    explanationFeedback === 'does_not_make_sense'
+                      ? 'O que ficou estranho? Ex.: "recência não deveria pesar tanto"'
+                      : 'Quer adicionar algo? (opcional)'
+                  }
+                  rows={2}
+                  className="text-xs resize-none"
+                  maxLength={280}
+                  aria-label="Comentário sobre a explicação do score"
+                />
+                <div className="flex items-center justify-end gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setShowCommentBox(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="button" size="sm" onClick={saveExplanationComment}>
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </SheetContent>
     </Sheet>
