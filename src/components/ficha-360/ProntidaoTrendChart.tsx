@@ -46,7 +46,6 @@ import {
   useProntidaoTargetStore,
   PRONTIDAO_TARGET_DEFAULT,
 } from '@/stores/useProntidaoTargetStore';
-import { cn } from '@/lib/utils';
 
 import {
   computeTrendMilestones,
