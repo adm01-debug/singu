@@ -3,15 +3,21 @@ export type SortKey = 'recent' | 'oldest' | 'relevance' | 'entity';
 interface SortableItem {
   date?: string | Date | null;
   created_at?: string | Date | null;
+  data_interacao?: string | Date | null;
   title?: string | null;
   content?: string | null;
   tags?: string[] | null;
   contact_name?: string | null;
   company_name?: string | null;
+  // Campos do ExternalInteraction (Ficha 360)
+  assunto?: string | null;
+  resumo?: string | null;
+  channel?: string | null;
+  direction?: string | null;
 }
 
 function getTime(item: SortableItem): number {
-  const v = item.date ?? item.created_at;
+  const v = item.date ?? item.data_interacao ?? item.created_at;
   if (!v) return 0;
   const t = new Date(v).getTime();
   return Number.isNaN(t) ? 0 : t;
@@ -34,10 +40,21 @@ function relevanceScore(item: SortableItem, q: string): number {
   const title = item.title ?? '';
   const content = item.content ?? '';
   const tags = Array.isArray(item.tags) ? item.tags.join(' ') : '';
-  return (
+  const legacy =
     countOccurrences(title, q) * 3 +
     countOccurrences(tags, q) * 2 +
-    countOccurrences(content, q)
+    countOccurrences(content, q);
+  if (legacy > 0) return legacy;
+  // Fallback para ExternalInteraction (assunto 3×, resumo/canal/direction 1×)
+  const assunto = item.assunto ?? '';
+  const resumo = item.resumo ?? '';
+  const channel = item.channel ?? '';
+  const direction = item.direction ?? '';
+  return (
+    countOccurrences(assunto, q) * 3 +
+    countOccurrences(resumo, q) +
+    countOccurrences(channel, q) +
+    countOccurrences(direction, q)
   );
 }
 
