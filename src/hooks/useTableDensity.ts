@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { notifyDensityChange } from '@/contexts/DensityContext';
 
 export type TableDensity = 'comfortable' | 'compact';
 
@@ -6,7 +7,9 @@ const STORAGE_KEY = 'singu-table-density';
 
 /**
  * Hook to manage table density preference (comfortable vs compact).
- * Persists choice in localStorage.
+ * Persists choice in localStorage and notifies in-tab listeners
+ * (e.g., `useListDensity`) so passive consumers like `InfiniteScrollSentinel`
+ * react instantly without prop drilling.
  */
 export function useTableDensity() {
   const [density, setDensityState] = useState<TableDensity>(() => {
@@ -23,7 +26,9 @@ export function useTableDensity() {
     try {
       localStorage.setItem(STORAGE_KEY, d);
     } catch {}
+    notifyDensityChange();
   }, []);
+
 
   const toggle = useCallback(() => {
     setDensity(density === 'comfortable' ? 'compact' : 'comfortable');
