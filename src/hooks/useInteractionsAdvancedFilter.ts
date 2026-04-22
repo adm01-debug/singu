@@ -113,11 +113,11 @@ function parsePerPage(v: string | null): number {
   return (VALID_PER_PAGE as readonly number[]).includes(n) ? n : DEFAULT_PER_PAGE;
 }
 
-function parseDate(v: string | null): Date | undefined {
-  if (!v) return undefined;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? undefined : d;
-}
+// `parseDate`/`serializeDate` delegam para o helper civil (sem fuso) — evita
+// que `2025-01-15` vire `2025-01-14` em fusos a oeste ou avance um dia em fusos a leste.
+const parseDate = parseCivilDate;
+const serializeDate = formatCivilDate;
+
 
 export function useInteractionsAdvancedFilter() {
   const [searchParams, setSearchParams] = useSearchParams();
