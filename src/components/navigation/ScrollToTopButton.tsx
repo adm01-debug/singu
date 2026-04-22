@@ -20,25 +20,44 @@ interface ScrollToTopButtonProps {
   className?: string;
   /** Limiar (px) de scrollY para tornar o botão visível. Default 400. */
   threshold?: number;
+  /**
+   * Multiplicador aplicado ao threshold quando a densidade ambiente é
+   * `compact`. Em listas compactas cabem ~50% mais itens por viewport, então
+   * faz sentido o botão aparecer mais cedo. Default 0.7 (≈ 280px com threshold
+   * default de 400). Use 1 para desabilitar o ajuste.
+   */
+  compactRatio?: number;
 }
 
 /**
  * Floating scroll-to-top button.
  * - Limiar adaptativo em listas longas (scrollHeight > 4000 → 300px).
+ * - Limiar reduzido em densidade `compact` (multiplicado por `compactRatio`).
  * - Scroll instantâneo em rolagens muito altas (>5000) ou prefers-reduced-motion.
  * - Listener de scroll throttled via requestAnimationFrame.
  * - Hides when overlays (e.g., MobileBottomNav "More") are open.
  */
-export function ScrollToTopButton({ className, threshold = 400 }: ScrollToTopButtonProps) {
+export function ScrollToTopButton({
+  className,
+  threshold = 400,
+  compactRatio = 0.7,
+}: ScrollToTopButtonProps) {
   const [visible, setVisible] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [progress, setProgress] = useState<InfiniteScrollProgress | null>(null);
   const rafRef = useRef<number | null>(null);
+  const density = useListDensity();
+
+  // Threshold efetivo combinado: densidade compacta encurta, lista longa
+  // (>4000px) ainda aplica o teto de 300 — o menor dos dois vence.
+  const densityAdjusted =
+    density === 'compact' ? Math.max(120, Math.round(threshold * compactRatio)) : threshold;
 
   useEffect(() => {
     const compute = () => {
       const docHeight = document.documentElement.scrollHeight;
-      const effective = docHeight > 4000 ? Math.min(threshold, 300) : threshold;
+      const longListCap = docHeight > 4000 ? 300 : densityAdjusted;
+      const effective = Math.min(densityAdjusted, longListCap);
       setVisible(window.scrollY > effective);
       rafRef.current = null;
     };
