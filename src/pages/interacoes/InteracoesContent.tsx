@@ -295,6 +295,19 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     },
   });
 
+  // Atalho: Alt+D limpa filtros de data (de/ate) — paridade com botão "Limpar datas".
+  useScopedShortcut({
+    scope: 'interacoes',
+    keys: 'd',
+    alt: true,
+    description: 'Limpar filtros de data',
+    handler: () => {
+      if (!adv.de && !adv.ate) return;
+      applyDateRange(undefined, undefined);
+      toast.success('Filtros de data removidos');
+    },
+  });
+
 
   useEffect(() => {
     if (total > 0 && adv.page > totalPages) setFilter('page', totalPages);
