@@ -206,13 +206,13 @@ export function WhyScoreDrawer({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground" aria-label="Resumo de direção dos fatores">
                 {directionCounts.positive > 0 && (
                   <span className="inline-flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    <TrendingUp className="h-3 w-3 text-success" aria-hidden="true" />
                     {directionCounts.positive} favorecendo
                   </span>
                 )}
                 {directionCounts.negative > 0 && (
                   <span className="inline-flex items-center gap-1">
-                    <TrendingDown className="h-3 w-3 text-red-600 dark:text-red-400" aria-hidden="true" />
+                    <TrendingDown className="h-3 w-3 text-destructive" aria-hidden="true" />
                     {directionCounts.negative} prejudicando
                   </span>
                 )}
