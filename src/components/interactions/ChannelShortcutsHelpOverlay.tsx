@@ -10,6 +10,7 @@ import {
   Check,
   CornerDownLeft,
   Keyboard,
+  Calendar as CalendarIcon,
   X,
 } from 'lucide-react';
 import {
@@ -246,6 +247,13 @@ export const ChannelShortcutsHelpOverlay = React.memo(function ChannelShortcutsH
               <KeyChip>Alt+0</KeyChip>
               <Eraser className="w-4 h-4 text-muted-foreground" />
               <span className="text-muted-foreground">Limpar todos os canais</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-md border border-border bg-card text-sm">
+            <div className="flex items-center gap-2">
+              <KeyChip>Alt+D</KeyChip>
+              <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Limpar filtro de datas (sem afetar outros)</span>
             </div>
           </div>
           {mode === 'manual' && (
