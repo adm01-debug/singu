@@ -73,7 +73,7 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
       window.removeEventListener('keyup', onUp);
       window.removeEventListener('blur', onBlur);
     };
-  }, [effective, hasQuery, onChange]);
+  }, [effective, hasQuery, hasChannelCounts, onChange]);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -82,11 +82,15 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
         role="group"
         aria-label="Ordenar lista"
       >
-        {SORT_CONFIG.map(({ key, label, icon: Icon, shortcut, requiresQuery }) => {
+        {SORT_CONFIG.map(({ key, label, icon: Icon, shortcut, requiresQuery, requiresChannelCounts }) => {
           const active = effective === key;
-          const disabled = !!requiresQuery && !hasQuery;
+          const disabled =
+            (!!requiresQuery && !hasQuery) ||
+            (!!requiresChannelCounts && !hasChannelCounts);
           const tooltip = disabled
-            ? 'Disponível ao buscar por palavra-chave'
+            ? requiresQuery
+              ? 'Disponível ao buscar por palavra-chave'
+              : 'Disponível quando houver interações nos canais do escopo atual'
             : `${label} · Alt+${shortcut}`;
 
           return (
