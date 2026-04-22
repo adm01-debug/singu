@@ -28,6 +28,8 @@ import { ContagemPorTipoBar } from '@/components/ficha-360/ContagemPorTipoBar';
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { OrdenacaoToggle } from '@/components/ficha-360/OrdenacaoToggle';
 import { FiltroTagsDropdown } from '@/components/ficha-360/FiltroTagsDropdown';
+import { GerarResumoIAButton } from '@/components/ficha-360/GerarResumoIAButton';
+import { ResumoConversaIADialog } from '@/components/ficha-360/ResumoConversaIADialog';
 import { countByTag, interactionMatchesTags } from '@/lib/interactionTags';
 import { useFicha360Sort } from '@/hooks/useFicha360Sort';
 import { sortInteractions } from '@/lib/sortInteractions';
