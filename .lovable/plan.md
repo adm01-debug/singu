@@ -1,67 +1,60 @@
 
 
-# Plano: Contador "X de Y" por tipo de interação no topo
+# Plano: Ordenação "Mais recente" vs "Mais relevante" em Últimas Interações
 
-## Objetivo
+## Status
 
-Mostrar, no topo da seção "Últimas Interações", um resumo compacto **por canal** no formato `X de Y` — onde `X` = quantos passam pelos filtros ativos (período + canais + busca) e `Y` = total no período (ignorando canais e busca). Permite avaliar de relance quantos itens de cada tipo estão sendo filtrados.
+A lista em "Últimas Interações" (Ficha 360) hoje vem ordenada por data desc (`data_interacao`) direto do `useExternalInteractions`. Não há controle de ordenação na UI desta seção.
 
-## Status atual
-
-- `useFicha360ChannelCounts(contactId, days)` já calcula contagens por canal no período, **ignorando** filtro de canais — isso vira o `Y` (denominador).
-- Falta o `X` (numerador): contagens dentro do mesmo período + canais + `q` aplicados (a lista renderizada).
-- Os chips ativos em `FiltrosAtivosChips` já mostram um total agregado (`shownCount` de `totalCount`), mas não detalham por canal.
+Existe `src/lib/sortInteractions.ts` com modos `recent | oldest | relevance | entity`, mas opera sobre campos `title/content/tags` — incompatíveis com `ExternalInteraction` (que usa `assunto/resumo/data_interacao`). Existe `SortChips` em `src/components/interactions/SortChips.tsx`, porém é volumoso (4 modos, atalhos Alt+R/O/M/P) e exibe texto "Mais antigas" e "Por pessoa/empresa" que não fazem sentido na Ficha 360 (1 só pessoa, queremos mínimo).
 
 ## Mudanças
 
-### 1. `src/hooks/useFicha360ChannelCounts.ts` — exportar duas contagens
+### 1. `src/lib/sortInteractions.ts` — estender para suportar ExternalInteraction
 
-Estender o hook para retornar **dois mapas**:
-- `totals: Record<string, number>` — Y por canal (período only, como hoje).
-- `filtered: Record<string, number>` — X por canal (período + canais + q aplicados).
+Trocar `SortableItem` por uma união flexível: aceitar tanto os campos antigos (`title/content/tags`) **quanto** os novos (`assunto/resumo/channel/direction` + `data_interacao`). `getTime` já lê `date` ou `created_at` — adicionar fallback para `data_interacao`. `relevanceScore` passa a contar ocorrências em **assunto (peso 3) + resumo (peso 1) + channel/direction (peso 1)** quando `title/tags/content` ausentes. Sem breaking change: chamadas antigas continuam funcionando.
 
-Implementação: receber `q?: string` e `channels?: string[]` opcionais. Reaproveita a query principal já existente (`useExternalInteractions(contactId, 200, { days })`) e calcula **ambas as contagens em memória** sobre o mesmo array, aplicando filtros adicionais para `filtered`. Sem nova query, sem custo de rede extra.
+### 2. Novo: `src/hooks/useFicha360Sort.ts` (~30 linhas)
 
-Helpers reutilizados: `normalizeForSearch` (já extraído em `src/lib/normalizeText.ts`) para o filtro `q`.
+Persiste sort em URL via `useSearchParams`: `?ordem=relevante` (omitido quando = `recente`, default). Whitelist `'recente' | 'relevante'`. Retorna `{ sort, setSort }`.
 
-### 2. Novo: `src/components/ficha-360/ContagemPorTipoBar.tsx` (~110 linhas)
+### 3. Novo: `src/components/ficha-360/OrdenacaoToggle.tsx` (~70 linhas)
 
-Faixa visual compacta no topo do card "Últimas Interações", **acima** dos chips ativos.
+Toggle compacto inline (2 botões segmentados, sem dropdown):
 
-Layout:
 ```
-Por tipo: 💬 WhatsApp 8/12 · 📞 Ligação 0/4 · ✉️ Email 7/7 · 👥 Reunião 0/0 · 📝 Nota 1/1
+[🕐 Recente] [✨ Relevante]
 ```
 
-Regras visuais:
-- Cada item: ícone + label PT-BR + `X/Y` em fonte tabular.
-- Quando `Y === 0` (canal sem interações no período): item com `opacity-40`, sem `hover`.
-- Quando `X === 0` mas `Y > 0` (canal totalmente filtrado fora): item com `opacity-60` e `text-muted-foreground` — sinaliza "tem dados mas seu filtro escondeu".
-- Quando `X === Y && Y > 0`: item com cor padrão sem destaque adicional ("tudo passa").
-- Quando `0 < X < Y`: numerador em `text-primary font-medium` para destacar a fração.
-- Item com `aria-label="WhatsApp: 8 de 12 interações visíveis"`.
+- `role="radiogroup"` + `aria-label="Ordenar por"`.
+- "Relevante" desabilita (`opacity-50` + tooltip "Disponível ao buscar por palavra-chave") quando `q` está vazio. Clique vira no-op nesse caso.
+- Atalho **Alt+R** (recente) / **Alt+M** (mais relevante). Toast curto "Ordenação: …".
+- Mostra ícone `Info` ao lado de "Relevante" com tooltip explicando: "Pontuação por ocorrências do termo: assunto conta 3×, resumo/canal 1×. Empate desempata pela mais recente."
 
-Sem clique nesta primeira versão (mantém escopo: apenas exibir contadores). A interação de toggle por canal continua em `FiltrosAtivosChips` e na `FiltrosInteracoesBar`.
+### 4. `Ficha360.tsx` — integração
 
-### 3. `src/pages/Ficha360.tsx` — integração
+- `const { sort, setSort } = useFicha360Sort();`
+- Aplicar `sortInteractions(filteredInteractions, sort, q)` num `useMemo` antes de passar para `<UltimasInteracoesCard>`.
+- Renderizar `<OrdenacaoToggle sort={sort} onChange={setSort} hasQuery={!!q.trim()} />` no `headerExtra`, **ao lado** de `CopiarLinkFiltrosButton` (linha de controles de cabeçalho).
+- Quando `q` é limpo e `sort === 'relevante'`, `sortInteractions` já cai automaticamente em "recente" (via `effective`), mas sincronizamos: `useEffect` reseta `setSort('recente')` se `q` ficar vazio — evita estado fantasma na URL.
 
-- Chamar `useFicha360ChannelCounts(contactId, days, q, channels)` (assinatura estendida).
-- Renderizar `<ContagemPorTipoBar totals={totals} filtered={filtered} isLoading={isLoading} />` no `headerExtra` do `UltimasInteracoesCard`, **acima** de `<FiltrosAtivosChips>`.
-- Esconder a faixa quando todos os totais somam 0 (sem dados no período) — evita poluição em contatos sem histórico.
+### 5. Atalhos via `useFicha360FilterShortcuts.ts`
 
-### 4. Loading & a11y
+Adicionar 2 novos no escopo `ficha360-filtros`:
+- `Alt + R` → `setSort('recente')`
+- `Alt + M` → `setSort('relevante')` (no-op se `!q.trim()`)
 
-- Skeletons inline (`h-4 w-20`, 5 unidades) enquanto `isLoading=true`.
-- Container com `role="group"` + `aria-label="Resumo por tipo de interação"`.
-- Texto inicial "Por tipo:" em `text-xs text-muted-foreground` para hierarquia visual.
+Aparecem automaticamente no cheatsheet (`?`).
 
 ## Não muda
 
-- `useExternalInteractions`, `countByChannel`, `useFicha360Filters`, `FiltrosAtivosChips`, `FavoritosFiltrosMenu`, atalhos de teclado, deeplink toast.
-- Estrutura de query params, RLS, edge functions, tabelas.
-- Limite de 200 itens da query de counts (já cobre cenário comum; lista principal segue separada com 50).
+- `useExternalInteractions` (continua trazendo ordenado por data desc no servidor — apenas reordenamos client-side).
+- `useFicha360Filters`, `useFicha360DraftFilters`, `useFicha360FilterFavorites`, `FiltrosInteracoesBar`, `ContagemPorTipoBar`, `FiltrosAtivosChips`.
+- `SortChips` da `Inbox` permanece intacto (lista própria de modos).
+- RLS, edge functions, tabelas.
+- Ordenação de favoritos: `sort` é volátil (não entra em favoritos), igual `q`.
 
 ## Critérios de aceite
 
-(a) Faixa "Por tipo: WhatsApp 8/12 · Ligação 0/4 · Email 7/7 · …" aparece no topo do card "Últimas Interações", acima dos chips ativos; (b) `Y` (denominador) ignora `channels` e `q`; (c) `X` (numerador) reflete os filtros ativos atuais (período + canais + busca); (d) canais com `Y=0` ficam discretos (`opacity-40`), canais com `X=0 && Y>0` em opacidade média; (e) numerador destacado quando há filtragem parcial; (f) faixa esconde quando não há dados no período; (g) skeletons durante loading; (h) `aria-label` descritivo em cada item; (i) sem nova query/rede, sem nova dependência, sem `any`, PT-BR, flat, novo arquivo <120 linhas.
+(a) Toggle "Recente / Relevante" visível no header de "Últimas Interações"; (b) clique reordena a lista imediatamente; (c) "Relevante" desabilitado e em opacidade reduzida quando não há `q`; (d) sort persistido em `?ordem=relevante` (omitido quando default); (e) atalhos `Alt + R` e `Alt + M` funcionam, com toast e cheatsheet; (f) limpar a busca quando sort=`relevante` reseta para `recente` e remove `?ordem` da URL; (g) tooltip `Info` explica o cálculo; (h) `aria-pressed` correto em cada botão; (i) sem nova dependência, sem `any`, PT-BR, flat, novos arquivos <120 linhas.
 
