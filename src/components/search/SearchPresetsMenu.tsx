@@ -74,6 +74,9 @@ export function SearchPresetsMenu({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<SearchPreset | null>(null);
+  const [pendingProtectedAction, setPendingProtectedAction] = useState<
+    { kind: 'rename' | 'updateFilters'; preset: SearchPreset } | null
+  >(null);
 
   useEffect(() => {
     if (editingId) {
@@ -88,8 +91,24 @@ export function SearchPresetsMenu({
 
   const startRename = (preset: SearchPreset, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'rename', preset });
+      return;
+    }
     setEditingId(preset.id);
     setRenameValue(preset.name);
+  };
+
+  const proceedProtectedAction = () => {
+    if (!pendingProtectedAction) return;
+    const { kind, preset } = pendingProtectedAction;
+    setPendingProtectedAction(null);
+    if (kind === 'rename') {
+      setEditingId(preset.id);
+      setRenameValue(preset.name);
+    } else {
+      setPendingFilterUpdate(preset);
+    }
   };
 
   const cancelRename = () => {
