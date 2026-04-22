@@ -325,7 +325,11 @@ export function useFicha360FilterFavorites() {
   };
 }
 
-export function suggestFavoriteName(days: number, channels: string[]): string {
+export function suggestFavoriteName(
+  days: number,
+  channels: string[],
+  tags: InteractionTag[] = [],
+): string {
   const periodLabel =
     days === 7 ? '7d' : days === 30 ? '30d' : days === 365 ? '1a' : '90d';
   const labels: Record<string, string> = {
@@ -341,5 +345,7 @@ export function suggestFavoriteName(days: number, channels: string[]): string {
   else if (sorted.length === 1) chPart = labels[sorted[0]] ?? sorted[0];
   else if (sorted.length === 2) chPart = sorted.map((c) => labels[c] ?? c).join('+');
   else chPart = `${sorted.length} canais`;
-  return `${periodLabel} · ${chPart}`.slice(0, 40);
+  const cleanTags = sanitizeTagsLib(tags);
+  const tagSuffix = cleanTags.length > 0 ? ` · ${cleanTags.length} tag${cleanTags.length === 1 ? '' : 's'}` : '';
+  return `${periodLabel} · ${chPart}${tagSuffix}`.slice(0, 40);
 }
