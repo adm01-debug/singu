@@ -119,10 +119,13 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   }, [editingId]);
 
   const handleStartNaming = () => {
-    const suggested = suggestInteracoesPresetName(filters);
-    const finalName = dedupeNameAgainst(presets.map((p) => p.name), suggested);
-    setName(finalName);
+    setName(suggestedName);
     setIsNaming(true);
+  };
+
+  const handleQuickSave = () => {
+    if (!suggestedName) return;
+    saveWithName(suggestedName);
   };
 
   const handleRegenerateSuggestion = () => {
@@ -148,8 +151,14 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     sort: filters.sort,
   }), [filters]);
 
-  const handleSave = () => {
-    const trimmed = name.trim().slice(0, 60);
+  // Sugestão de nome reativa aos filtros, com dedup contra presets existentes
+  const suggestedName = useMemo(
+    () => dedupeNameAgainst(presets.map((p) => p.name), suggestInteracoesPresetName(filters)),
+    [filters, presets]
+  );
+
+  const saveWithName = (rawName: string) => {
+    const trimmed = rawName.trim().slice(0, 60);
     if (!trimmed) return;
     const created = savePreset({
       name: trimmed,
@@ -168,8 +177,11 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     setActivePresetId(created.id);
     setName('');
     setIsNaming(false);
-    toast.success('Busca salva!');
+    toast.success('Busca salva!', { description: `"${trimmed}"` });
   };
+
+  const handleSave = () => saveWithName(name);
+
 
 
   const applyPreset = (preset: typeof presets[number]) => {
@@ -590,18 +602,44 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <Check className="w-3.5 h-3.5" />
                 </Button>
               </div>
-            ) : (
+            ) : activeCount === 0 || presets.length >= 10 ? (
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-xs"
                 onClick={handleStartNaming}
-                disabled={activeCount === 0 || presets.length >= 10}
+                disabled
               >
                 <BookmarkPlus className="w-3.5 h-3.5" />
                 {presets.length >= 10 ? 'Limite de 10 buscas atingido' : 'Salvar busca atual'}
               </Button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex-1 justify-start gap-2 text-xs h-8 min-w-0"
+                  onClick={handleQuickSave}
+                  title={`Salvar como "${suggestedName}"`}
+                  aria-label={`Salvar busca como ${suggestedName}`}
+                >
+                  <BookmarkPlus className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-muted-foreground/80 shrink-0">Salvar como</span>
+                  <span className="font-medium truncate">{suggestedName}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2 shrink-0"
+                  onClick={handleStartNaming}
+                  title="Editar nome antes de salvar"
+                  aria-label="Editar nome antes de salvar"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             )}
+
 
             <div className="flex gap-1.5">
               <Button
