@@ -93,6 +93,30 @@ const Ficha360 = () => {
     setDraftChannels([]);
   };
 
+  // Busca textual local — input controlado, sincroniza com URL via debounce 200ms.
+  const [searchInput, setSearchInput] = useState(q);
+  useEffect(() => {
+    setSearchInput(q);
+  }, [q]);
+  const debouncedSearch = useDebounce(searchInput, 200);
+  useEffect(() => {
+    if (debouncedSearch.trim() !== q) setQ(debouncedSearch);
+  }, [debouncedSearch, q, setQ]);
+
+  const filteredInteractions = useMemo(() => {
+    const term = q.trim();
+    if (!term) return recentInteractions;
+    const norm = (s: string) =>
+      s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const needle = norm(term);
+    return recentInteractions.filter((it) => {
+      const haystack = norm(
+        [it.assunto ?? '', it.resumo ?? '', it.channel ?? '', it.direction ?? ''].join(' '),
+      );
+      return haystack.includes(needle);
+    });
+  }, [recentInteractions, q]);
+
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
   const simOverrides = useSimulationStore((s) => s.overrides);
