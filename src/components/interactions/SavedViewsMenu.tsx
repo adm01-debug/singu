@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Bookmark, Check, MoreVertical, Plus, Trash2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Bookmark, Check, MoreVertical, Plus, Star, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,59 +18,69 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useSavedViews } from '@/hooks/useSavedViews';
-import {
-  SAVED_VIEWS_MAX_PER_SCOPE,
-  SAVED_VIEWS_NAME_MAX_LENGTH,
-} from '@/config/savedViews.config';
+import { useSavedViews, type SavedView } from '@/hooks/useSavedViews';
 import { cn } from '@/lib/utils';
 
+const NAME_MAX = 60;
+
+interface SavedViewState {
+  query: string;
+}
+
 interface Props {
-  /** Escopo lógico, geralmente o pathname (ex.: `/interacoes`). */
+  /** Escopo lógico, geralmente o pathname (ex.: `interacoes`). */
   scope: string;
   className?: string;
 }
 
 /**
- * Botão + dropdown para salvar e reaplicar visualizações nomeadas
- * (filtros + sort + paginação). Persistência local; sem backend.
+ * Botão + dropdown para salvar e reaplicar visualizações nomeadas.
+ * O snapshot é a query string atual da URL (filtros, sort, paginação).
+ * Persistência local via `useSavedViews` (escopo isolado por rota).
  */
 export function SavedViewsMenu({ scope, className }: Props) {
-  const { views, currentQuery, save, apply, remove } = useSavedViews(scope);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { views, save, remove, toggleFavorite } = useSavedViews<SavedViewState>(scope);
+
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);
   const [savePopoverOpen, setSavePopoverOpen] = useState(false);
 
+  const currentQuery = searchParams.toString();
   const trimmed = name.trim();
   const hasFilters = currentQuery.length > 0;
 
-  const handleSave = (overwrite = false) => {
+  const sortedViews = [...views].sort((a, b) => {
+    const fa = a.isFavorite ? 1 : 0;
+    const fb = b.isFavorite ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return a.name.localeCompare(b.name);
+  });
+
+  const handleSave = () => {
     if (!trimmed) {
       toast.warning('Dê um nome para a visualização');
       return;
     }
-    const result = save({ name: trimmed, overwrite });
-    if (result.ok) {
-      toast.success('Visualização salva', { description: result.view.name });
-      setName('');
-      setSavePopoverOpen(false);
-      setOpen(false);
-      return;
-    }
-    if (result.reason === 'duplicate') {
+    const duplicate = views.some((v) => v.name.toLowerCase() === trimmed.toLowerCase());
+    if (duplicate) {
       toast.warning('Já existe uma visualização com esse nome', {
-        description: 'Use outro nome ou sobrescreva.',
-        action: { label: 'Sobrescrever', onClick: () => handleSave(true) },
+        description: 'Escolha outro nome.',
       });
       return;
     }
-    if (result.reason === 'limit-reached') {
-      toast.error(`Limite de ${SAVED_VIEWS_MAX_PER_SCOPE} visualizações atingido`, {
-        description: 'Apague alguma antes de salvar uma nova.',
-      });
-      return;
-    }
-    toast.error('Não foi possível salvar a visualização');
+    const created = save(trimmed.slice(0, NAME_MAX), { query: currentQuery });
+    toast.success('Visualização salva', { description: created.name });
+    setName('');
+    setSavePopoverOpen(false);
+    setOpen(false);
+  };
+
+  const applyView = (view: SavedView<SavedViewState>) => {
+    const sp = new URLSearchParams(view.state?.query ?? '');
+    setSearchParams(sp, { replace: false });
+    toast.success('Visualização aplicada', { description: view.name });
+    setOpen(false);
   };
 
   return (
@@ -118,12 +129,12 @@ export function SavedViewsMenu({ scope, className }: Props) {
                     autoFocus
                     placeholder="Ex.: Meu pipeline"
                     value={name}
-                    maxLength={SAVED_VIEWS_NAME_MAX_LENGTH}
+                    maxLength={NAME_MAX}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleSave(false);
+                        handleSave();
                       }
                     }}
                   />
@@ -142,7 +153,7 @@ export function SavedViewsMenu({ scope, className }: Props) {
                   >
                     Cancelar
                   </Button>
-                  <Button size="sm" onClick={() => handleSave(false)} disabled={!trimmed}>
+                  <Button size="sm" onClick={handleSave} disabled={!trimmed}>
                     <Check className="w-3.5 h-3.5 mr-1" />
                     Salvar
                   </Button>
@@ -153,7 +164,7 @@ export function SavedViewsMenu({ scope, className }: Props) {
 
           <DropdownMenuSeparator />
 
-          {views.length === 0 ? (
+          {sortedViews.length === 0 ? (
             <div className="px-3 py-6 text-center text-xs text-muted-foreground">
               Nenhuma visualização salva ainda.
               <br />
@@ -161,23 +172,35 @@ export function SavedViewsMenu({ scope, className }: Props) {
             </div>
           ) : (
             <div className="max-h-72 overflow-y-auto py-1">
-              {views.map((v) => (
-                <div
-                  key={v.id}
-                  className="flex items-center gap-1 px-1"
-                >
+              {sortedViews.map((v) => (
+                <div key={v.id} className="flex items-center gap-1 px-1">
                   <DropdownMenuItem
                     className="flex-1 cursor-pointer"
                     onSelect={(e) => {
                       e.preventDefault();
-                      apply(v);
-                      setOpen(false);
-                      toast.success('Visualização aplicada', { description: v.name });
+                      applyView(v);
                     }}
                   >
                     <Bookmark className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                     <span className="truncate">{v.name}</span>
                   </DropdownMenuItem>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    aria-label={v.isFavorite ? `Desfavoritar ${v.name}` : `Favoritar ${v.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(v.id);
+                    }}
+                  >
+                    <Star
+                      className={cn(
+                        'w-3.5 h-3.5',
+                        v.isFavorite ? 'fill-warning text-warning' : 'text-muted-foreground',
+                      )}
+                    />
+                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
