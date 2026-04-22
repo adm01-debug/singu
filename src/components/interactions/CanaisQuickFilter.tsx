@@ -533,7 +533,18 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                   Reverter
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="top">Descartar alterações pendentes (Esc)</TooltipContent>
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="space-y-1 text-xs">
+                  <p className="font-medium">Reverter pendências</p>
+                  <p className="text-muted-foreground">
+                    Descarta apenas a sua seleção pendente e volta aos filtros de canal
+                    atualmente aplicados. Não altera os filtros já em uso na lista.
+                  </p>
+                  <p className="pt-1 text-muted-foreground border-t border-border">
+                    Atalho: <kbd className="px-1 rounded border border-border bg-muted text-[10px]">Esc</kbd>
+                  </p>
+                </div>
+              </TooltipContent>
             </Tooltip>
           </div>
         )}
