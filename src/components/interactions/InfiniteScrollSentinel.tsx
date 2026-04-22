@@ -1,5 +1,7 @@
 import React, { type RefObject } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -8,6 +10,7 @@ interface Props {
   totalLoaded: number;
   total: number;
   density?: 'comfortable' | 'compact';
+  onLoadMore?: () => void;
 }
 
 export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel({
