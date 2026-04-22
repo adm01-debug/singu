@@ -135,6 +135,30 @@ export function useFicha360FilterShortcuts({
     },
   });
 
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 's',
+    shift: true,
+    description: 'Salvar filtros atuais como favorito (auto-nome)',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onQuickSaveFavorito?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'f',
+    shift: true,
+    description: 'Abrir menu de filtros favoritos',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onAbrirFavoritos?.();
+    },
+  });
+
   // Shift+1..5 → remove o N-ésimo chip de canal visível.
   for (let i = 1; i <= 5; i++) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
