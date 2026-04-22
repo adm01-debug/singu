@@ -91,7 +91,7 @@ export function useFicha360PreferencesSync(opts: {
       const { error } = await supabase
         .from('user_ui_preferences')
         .upsert(
-          [{ user_id: userId, scope: SCOPE, preferences: prefs as unknown as Record<string, unknown> }],
+          [{ user_id: userId, scope: SCOPE, preferences: prefs as unknown as never }],
           { onConflict: 'user_id,scope' },
         );
       if (error) throw error;
