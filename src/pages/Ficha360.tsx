@@ -448,6 +448,8 @@ const Ficha360 = () => {
                           days={days}
                           channels={channels}
                           onApply={applyFavoriteFilters}
+                          open={favoritosMenuOpen}
+                          onOpenChange={setFavoritosMenuOpen}
                         />
                         <CopiarLinkFiltrosButton
                           days={days}
