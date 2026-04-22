@@ -113,6 +113,20 @@ describe('suggestInteracoesPresetName', () => {
     expect(out).toBe('abr/25');
   });
 
+  it('formata mês passado completo como "mar/25"', () => {
+    const de = new Date('2025-03-01T12:00:00Z');
+    const ate = new Date('2025-03-31T12:00:00Z');
+    const out = formatDateRange(de, ate, NOW);
+    expect(out).toBe('mar/25');
+  });
+
+  it('formata fevereiro (28 dias) como "fev/25"', () => {
+    const de = new Date('2025-02-01T12:00:00Z');
+    const ate = new Date('2025-02-28T12:00:00Z');
+    const out = formatDateRange(de, ate, NOW);
+    expect(out).toBe('fev/25');
+  });
+
   it('formata intervalo arbitrário com "→"', () => {
     const de = new Date('2025-04-01T12:00:00Z');
     const ate = new Date('2025-04-15T12:00:00Z');
