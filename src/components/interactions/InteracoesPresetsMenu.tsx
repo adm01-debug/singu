@@ -151,7 +151,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const handleSave = () => {
     const trimmed = name.trim().slice(0, 60);
     if (!trimmed) return;
-    savePreset({
+    const created = savePreset({
       name: trimmed,
       filters: {
         q: currentPayload.q ? [currentPayload.q] : [],
@@ -165,10 +165,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       sortBy: '',
       sortOrder: 'desc',
     });
+    setActivePresetId(created.id);
     setName('');
     setIsNaming(false);
     toast.success('Busca salva!');
   };
+
 
   const applyPreset = (preset: typeof presets[number]) => {
     const presetFilters = preset.filters;
