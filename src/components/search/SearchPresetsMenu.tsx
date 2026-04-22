@@ -104,9 +104,20 @@ export function SearchPresetsMenu({
     if (trimmed === current.name) { cancelRename(); return; }
     const otherNames = presets.filter(p => p.id !== editingId).map(p => p.name);
     const finalName = dedupeNameAgainst(otherNames, trimmed);
-    updatePreset(editingId, { name: finalName });
+    const previousName = current.name;
+    const targetId = editingId;
+    updatePreset(targetId, { name: finalName });
     cancelRename();
-    toast.success('Preset renomeado');
+    toast.success('Preset renomeado', {
+      description: `"${previousName}" → "${finalName}"`,
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          updatePreset(targetId, { name: previousName });
+          toast('Renomeio desfeito');
+        },
+      },
+    });
   };
 
   const handleRenameKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -121,14 +132,31 @@ export function SearchPresetsMenu({
 
   const confirmUpdateFilters = () => {
     if (!pendingFilterUpdate) return;
-    updatePreset(pendingFilterUpdate.id, {
+    const target = pendingFilterUpdate;
+    // Snapshot dos campos que vamos sobrescrever, para permitir undo.
+    const snapshot = {
+      filters: target.filters,
+      sortBy: target.sortBy,
+      sortOrder: target.sortOrder,
+      searchTerm: target.searchTerm,
+    };
+    updatePreset(target.id, {
       filters: currentFilters,
       sortBy: currentSortBy,
       sortOrder: currentSortOrder,
       searchTerm: currentSearchTerm,
     });
     setPendingFilterUpdate(null);
-    toast.success('Filtros do preset atualizados');
+    toast.success('Filtros do preset atualizados', {
+      description: `"${target.name}"`,
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          updatePreset(target.id, snapshot);
+          toast('Atualização desfeita');
+        },
+      },
+    });
   };
 
   const handleStartNaming = () => {
