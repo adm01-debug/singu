@@ -266,4 +266,85 @@ describe('CanaisQuickFilter', () => {
       expect(localStorage.getItem('channel-pending-canais')).not.toBeNull();
     });
   });
+
+  describe('estado visual via prop `canais` e onChange add/remove', () => {
+    // O chip usa `aria-pressed` (true para ativo, false para inativo).
+    // Estes testes blindam o contrato visual: mudar a prop `canais` deve
+    // atualizar imediatamente o estado pressed dos chips, e cliques em modo
+    // auto devem chamar onChange com o array final (add/remove do canal).
+
+    it('marca aria-pressed=true apenas nos chips presentes em `canais`', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email', 'whatsapp']} onChange={onChange} />);
+
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTitle('WhatsApp')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTitle('Ligação')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTitle('Reunião')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('todos os chips começam desmarcados quando `canais` é vazio', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+
+      ['Email', 'WhatsApp', 'Ligação', 'Reunião'].forEach((label) => {
+        expect(screen.getByTitle(label)).toHaveAttribute('aria-pressed', 'false');
+      });
+    });
+
+    it('auto mode: clicar em chip INATIVO chama onChange adicionando o canal', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      expect(screen.getByTitle('WhatsApp')).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const next = onChange.mock.calls[0][0] as string[];
+      expect(next).toEqual(expect.arrayContaining(['email', 'whatsapp']));
+      expect(next).toHaveLength(2);
+    });
+
+    it('auto mode: clicar em chip ATIVO chama onChange removendo só aquele canal', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email', 'whatsapp', 'call']} onChange={onChange} />);
+
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(screen.getByTitle('Email'));
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      const next = onChange.mock.calls[0][0] as string[];
+      expect(next).not.toContain('email');
+      expect(next).toEqual(expect.arrayContaining(['whatsapp', 'call']));
+      expect(next).toHaveLength(2);
+    });
+
+    it('auto mode: remover o ÚNICO canal ativo chama onChange com []', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('Email'));
+      expect(onChange).toHaveBeenCalledWith([]);
+    });
+
+    it('atualiza aria-pressed quando a prop `canais` muda em re-render', () => {
+      const onChange = vi.fn();
+      const { rerender } = render(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'false');
+
+      rerender(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+
+      rerender(<CanaisQuickFilter canais={[]} onChange={onChange} />);
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('chip ativo recebe estilo sólido (bg-primary); inativo, não', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      expect(screen.getByTitle('Email').className).toContain('bg-primary');
+      expect(screen.getByTitle('WhatsApp').className).not.toContain('bg-primary');
+    });
+  });
 });
