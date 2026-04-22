@@ -370,8 +370,9 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               onClick={handleToggleMode}
               aria-label={mode === 'auto' ? 'Mudar para modo manual' : 'Mudar para modo automático'}
               className={cn(
-                'relative ml-1 text-muted-foreground hover:text-foreground',
+                'relative ml-1 text-muted-foreground hover:text-foreground transition-colors',
                 dirty && 'text-warning hover:text-warning',
+                justReverted && 'text-success hover:text-success ring-1 ring-success/50 rounded-md',
               )}
             >
               {mode === 'auto' ? <Zap className="w-3.5 h-3.5" /> : <MousePointerClick className="w-3.5 h-3.5" />}
