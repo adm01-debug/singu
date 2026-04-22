@@ -56,8 +56,15 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
   };
 
   const handleClear = () => {
+    const had = !!(de || ate);
     applyDateRange(undefined, undefined);
     setOpen(false);
+    if (had) {
+      toast.success('Período removido', {
+        description: 'Outros filtros foram mantidos.',
+        duration: 2000,
+      });
+    }
   };
 
   // Atalho global Alt+D: limpa APENAS o filtro de datas (de/ate), preservando
