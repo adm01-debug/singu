@@ -64,15 +64,22 @@ const factorIcons = {
   channel: Radio,
 } as const;
 
-export const ScoreProntidaoCard = memo(({ data, contactId, simulated }: Props) => {
+export const ScoreProntidaoCard = memo(({ data, contactId, simulated, realData }: Props) => {
   const cls = levelClasses[data.level];
   const [whyOpen, setWhyOpen] = useState(false);
-  const factors: Array<{ key: keyof typeof factorIcons; factor: typeof data.breakdown.cadence }> = [
-    { key: 'cadence', factor: data.breakdown.cadence },
-    { key: 'recency', factor: data.breakdown.recency },
-    { key: 'sentiment', factor: data.breakdown.sentiment },
-    { key: 'channel', factor: data.breakdown.channel },
+  const showCompare = !!simulated && !!realData;
+  const factors: Array<{
+    key: keyof typeof factorIcons;
+    factor: typeof data.breakdown.cadence;
+    real?: typeof data.breakdown.cadence;
+  }> = [
+    { key: 'cadence', factor: data.breakdown.cadence, real: realData?.breakdown.cadence },
+    { key: 'recency', factor: data.breakdown.recency, real: realData?.breakdown.recency },
+    { key: 'sentiment', factor: data.breakdown.sentiment, real: realData?.breakdown.sentiment },
+    { key: 'channel', factor: data.breakdown.channel, real: realData?.breakdown.channel },
   ];
+
+  const totalDelta = showCompare ? data.score - (realData?.score ?? data.score) : 0;
 
   const whyFactors = useMemo<WhyScoreFactor[]>(
     () =>
