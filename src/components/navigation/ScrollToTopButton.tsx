@@ -14,6 +14,7 @@ import {
   INFINITE_SCROLL_CLEAR_EVENT,
   type InfiniteScrollProgress,
 } from '@/hooks/useReportInfiniteScrollProgress';
+import { useListDensity } from '@/contexts/DensityContext';
 
 interface ScrollToTopButtonProps {
   className?: string;
