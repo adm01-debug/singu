@@ -271,12 +271,14 @@ export function useInteractionsAdvancedFilter() {
     if (!searchParams.get('de')) {
       const v = readLS(DE_STORAGE_KEY);
       const d = parseDate(v);
-      if (d) { next.set('de', d.toISOString().slice(0, 10)); changed = true; }
+      const s = serializeDate(d);
+      if (s) { next.set('de', s); changed = true; }
     }
     if (!searchParams.get('ate')) {
       const v = readLS(ATE_STORAGE_KEY);
       const d = parseDate(v);
-      if (d) { next.set('ate', d.toISOString().slice(0, 10)); changed = true; }
+      const s = serializeDate(d);
+      if (s) { next.set('ate', s); changed = true; }
     }
     if (!searchParams.get('sentimento')) {
       const v = readLS(SENTIMENTO_STORAGE_KEY);
