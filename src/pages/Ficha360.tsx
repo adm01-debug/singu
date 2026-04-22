@@ -27,6 +27,7 @@ import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMen
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
 import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
+import { useFicha360FilterFavorites, suggestFavoriteName } from '@/hooks/useFicha360FilterFavorites';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
