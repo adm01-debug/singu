@@ -20,6 +20,8 @@ interface Options {
   onClearSearch: () => void;
   onRemoveChannel: (channel: string) => void;
   onCopyLink?: () => void;
+  onQuickSaveFavorito?: () => void;
+  onAbrirFavoritos?: () => void;
   enabled: boolean;
 }
 
@@ -39,6 +41,8 @@ export function useFicha360FilterShortcuts({
   onClearSearch,
   onRemoveChannel,
   onCopyLink,
+  onQuickSaveFavorito,
+  onAbrirFavoritos,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
@@ -47,10 +51,34 @@ export function useFicha360FilterShortcuts({
     stateRef.current = { days, channels, q, hasPeriodChip, enabled };
   }, [days, channels, q, hasPeriodChip, enabled]);
 
-  const handlersRef = useRef({ onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink });
+  const handlersRef = useRef({
+    onClearAll,
+    onClearPeriod,
+    onClearSearch,
+    onRemoveChannel,
+    onCopyLink,
+    onQuickSaveFavorito,
+    onAbrirFavoritos,
+  });
   useEffect(() => {
-    handlersRef.current = { onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink };
-  }, [onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink]);
+    handlersRef.current = {
+      onClearAll,
+      onClearPeriod,
+      onClearSearch,
+      onRemoveChannel,
+      onCopyLink,
+      onQuickSaveFavorito,
+      onAbrirFavoritos,
+    };
+  }, [
+    onClearAll,
+    onClearPeriod,
+    onClearSearch,
+    onRemoveChannel,
+    onCopyLink,
+    onQuickSaveFavorito,
+    onAbrirFavoritos,
+  ]);
 
   useScopedShortcut({
     scope: 'ficha360-filtros',
