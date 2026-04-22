@@ -27,9 +27,8 @@ describe('preserveScroll', () => {
     // jsdom não implementa rAF realista — instalamos um shim baseado em
     // setTimeout(0) para que `flushFrames` consiga aguardar o agendamento.
     if (typeof window.requestAnimationFrame !== 'function') {
-      // @ts-expect-error — augment para o ambiente de teste
-      window.requestAnimationFrame = (cb: FrameRequestCallback) =>
-        setTimeout(() => cb(performance.now()), 0) as unknown as number;
+      (window as unknown as { requestAnimationFrame: (cb: FrameRequestCallback) => number }).requestAnimationFrame =
+        (cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 0) as unknown as number;
     }
     scrollSpy = vi.fn();
     originalScrollTo = window.scrollTo;
