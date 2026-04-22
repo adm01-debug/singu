@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X, Copy } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X, Copy, Lock, Unlock } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,6 +63,7 @@ export function SearchPresetsMenu({
     updatePreset,
     duplicatePreset,
     toggleFavorite,
+    toggleProtected,
     markAsUsed,
   } = useSearchPresets(context);
   const [isNaming, setIsNaming] = useState(false);
@@ -73,6 +74,9 @@ export function SearchPresetsMenu({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<SearchPreset | null>(null);
+  const [pendingProtectedAction, setPendingProtectedAction] = useState<
+    { kind: 'rename' | 'updateFilters'; preset: SearchPreset } | null
+  >(null);
 
   useEffect(() => {
     if (editingId) {
@@ -87,8 +91,24 @@ export function SearchPresetsMenu({
 
   const startRename = (preset: SearchPreset, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'rename', preset });
+      return;
+    }
     setEditingId(preset.id);
     setRenameValue(preset.name);
+  };
+
+  const proceedProtectedAction = () => {
+    if (!pendingProtectedAction) return;
+    const { kind, preset } = pendingProtectedAction;
+    setPendingProtectedAction(null);
+    if (kind === 'rename') {
+      setEditingId(preset.id);
+      setRenameValue(preset.name);
+    } else {
+      setPendingFilterUpdate(preset);
+    }
   };
 
   const cancelRename = () => {
@@ -128,6 +148,10 @@ export function SearchPresetsMenu({
 
   const askUpdateFilters = (preset: SearchPreset, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'updateFilters', preset });
+      return;
+    }
     setPendingFilterUpdate(preset);
   };
 
@@ -303,7 +327,15 @@ export function SearchPresetsMenu({
                       />
                     ) : (
                       <>
-                        <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                        <p className="text-sm font-medium text-foreground truncate flex items-center gap-1">
+                          {preset.isProtected && (
+                            <Lock
+                              className="w-3 h-3 text-muted-foreground shrink-0"
+                              aria-label="Preset protegido"
+                            />
+                          )}
+                          <span className="truncate">{preset.name}</span>
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {Object.values(preset.filters).flat().length} filtros
                           {preset.searchTerm && ` · "${preset.searchTerm}"`}
@@ -336,6 +368,26 @@ export function SearchPresetsMenu({
                       </>
                     ) : (
                       <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title={preset.isProtected ? 'Desproteger preset' : 'Proteger preset'}
+                          aria-label={preset.isProtected ? 'Desproteger preset' : 'Proteger preset'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleProtected(preset.id);
+                            toast(preset.isProtected ? 'Preset desprotegido' : 'Preset protegido', {
+                              description: preset.isProtected
+                                ? 'Renomear e atualizar filtros voltam ao normal.'
+                                : 'Renomear e atualizar filtros agora exigem confirmação.',
+                            });
+                          }}
+                        >
+                          {preset.isProtected
+                            ? <Unlock className="w-3 h-3 text-muted-foreground" />
+                            : <Lock className="w-3 h-3 text-muted-foreground" />}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -481,6 +533,27 @@ export function SearchPresetsMenu({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction onClick={confirmUpdateFilters}>Atualizar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={!!pendingProtectedAction} onOpenChange={(o) => !o && setPendingProtectedAction(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-muted-foreground" />
+            Preset protegido
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            <strong>"{pendingProtectedAction?.preset.name}"</strong> está protegido contra modificações acidentais.
+            {pendingProtectedAction?.kind === 'rename'
+              ? ' Tem certeza que deseja renomeá-lo?'
+              : ' Tem certeza que deseja atualizar seus filtros?'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={proceedProtectedAction}>Continuar mesmo assim</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
