@@ -14,16 +14,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AccessibleChart } from '@/components/ui/accessible-chart';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   classifyTrend,
   computeTrendSlope,
   type ProntidaoTrendPoint,
 } from '@/lib/prontidaoTrend';
 import { cn } from '@/lib/utils';
 
+export type TrendWeeks = 4 | 8 | 12 | 24;
+
+const WEEKS_OPTIONS: { value: TrendWeeks; label: string }[] = [
+  { value: 4, label: '4 semanas' },
+  { value: 8, label: '8 semanas' },
+  { value: 12, label: '12 semanas' },
+  { value: 24, label: '24 semanas' },
+];
+
 interface Props {
   data: ProntidaoTrendPoint[];
   currentScore: number;
   simulated?: boolean;
+  weeks?: TrendWeeks;
+  onWeeksChange?: (w: TrendWeeks) => void;
 }
 
 const trendMeta = {

@@ -315,6 +315,8 @@ const Ficha360 = () => {
     [effectiveProfile, effectiveIntel, weights],
   );
 
+  const [trendWeeks, setTrendWeeks] = useState<4 | 8 | 12 | 24>(8);
+
   const trend = useMemo(
     () =>
       computeProntidaoTrend({
@@ -322,9 +324,9 @@ const Ficha360 = () => {
         profile: effectiveProfile,
         intelligence: effectiveIntel,
         weights,
-        weeks: 8,
+        weeks: trendWeeks,
       }),
-    [recentInteractions, effectiveProfile, effectiveIntel, weights],
+    [recentInteractions, effectiveProfile, effectiveIntel, weights, trendWeeks],
   );
 
   const { data: passoFeedbacks = [] } = useProximoPassoFeedbacks(id);
@@ -479,6 +481,8 @@ const Ficha360 = () => {
               data={trend}
               currentScore={prontidao.score}
               simulated={simEnabled}
+              weeks={trendWeeks}
+              onWeeksChange={setTrendWeeks}
             />
 
             {/* Grid 2 colunas */}
