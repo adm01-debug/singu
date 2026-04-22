@@ -71,29 +71,44 @@ const trendMeta = {
   },
 } as const;
 
-const TooltipContent = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
-  if (!active || !payload?.length) return null;
-  const p = payload[0].payload;
-  if (!p.hasData) {
+const makeTooltipContent = (target: number) => {
+  const Comp = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ProntidaoTrendPoint }> }) => {
+    if (!active || !payload?.length) return null;
+    const p = payload[0].payload;
+    if (!p.hasData) {
+      return (
+        <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
+          <div className="font-medium">Semana de {p.weekLabel}</div>
+          <div className="text-muted-foreground">Sem interações registradas</div>
+        </div>
+      );
+    }
+    const diff = target > 0 ? p.score - target : null;
     return (
-      <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground">
+      <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
         <div className="font-medium">Semana de {p.weekLabel}</div>
-        <div className="text-muted-foreground">Sem interações registradas</div>
+        <div>
+          Score: <span className="tabular-nums font-semibold">{p.score}</span> ·{' '}
+          <span className="capitalize">{p.levelLabel}</span>
+        </div>
+        {diff !== null && (
+          <div
+            className={cn(
+              'tabular-nums',
+              diff >= 0 ? 'text-success' : 'text-destructive',
+            )}
+          >
+            {diff >= 0 ? '+' : ''}
+            {diff} pts vs. meta ({target})
+          </div>
+        )}
+        <div className="text-muted-foreground">
+          {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
+        </div>
       </div>
     );
-  }
-  return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground space-y-0.5">
-      <div className="font-medium">Semana de {p.weekLabel}</div>
-      <div>
-        Score: <span className="tabular-nums font-semibold">{p.score}</span> ·{' '}
-        <span className="capitalize">{p.levelLabel}</span>
-      </div>
-      <div className="text-muted-foreground">
-        {p.interactionCount} {p.interactionCount === 1 ? 'interação' : 'interações'} na semana
-      </div>
-    </div>
-  );
+  };
+  return Comp;
 };
 
 export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
