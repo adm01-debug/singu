@@ -125,6 +125,25 @@ const DUE_WINDOWS: Array<{ days: number; label: string }> = [
   { days: 14, label: 'Em 2 semanas' },
 ];
 
+const CHANNEL_NOTE_MAX = 200;
+const CHANNEL_NOTE_SUGGESTIONS = [
+  'Tom amigável',
+  'Cliente apressado',
+  'Confirmar antes de ligar',
+  'Mencionar última reunião',
+  'Evitar pressão de venda',
+];
+
+/** Compõe a descrição final unindo a nota do canal, sem perder o que o usuário digitou. */
+function composeDescription(description: string, note: string): string | undefined {
+  const desc = description.trim();
+  const n = note.trim();
+  if (!desc && !n) return undefined;
+  if (!n) return desc;
+  if (!desc) return `📝 Nota do canal: ${n}`;
+  return `${desc}\n\n📝 Nota do canal: ${n}`;
+}
+
 export function CreateTaskDialog() {
   const createTask = useCreateTask();
   const [open, setOpen] = useState(false);
@@ -134,6 +153,7 @@ export function CreateTaskDialog() {
   const [dueDate, setDueDate] = useState('');
   const [dueTime, setDueTime] = useState('');
   const [taskType, setTaskType] = useState('');
+  const [channelNote, setChannelNote] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -146,6 +166,7 @@ export function CreateTaskDialog() {
     setDueDate('');
     setDueTime('');
     setTaskType('');
+    setChannelNote('');
     setErrors({});
     setSubmitAttempted(false);
   };
@@ -188,7 +209,7 @@ export function CreateTaskDialog() {
     createTask.mutate(
       {
         title: data.title,
-        description: data.description?.trim() || undefined,
+        description: composeDescription(data.description ?? '', channelNote),
         priority: data.priority,
         due_date: dueIso,
         task_type: data.taskType || undefined,
@@ -384,7 +405,46 @@ export function CreateTaskDialog() {
               </Select>
             </div>
           </div>
-        </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="task-channel-note" className="text-sm">
+                Nota do canal <span className="text-muted-foreground font-normal">(opcional)</span>
+              </Label>
+              <span className="text-[10px] tabular-nums text-muted-foreground">
+                {channelNote.length}/{CHANNEL_NOTE_MAX}
+              </span>
+            </div>
+            <Input
+              id="task-channel-note"
+              value={channelNote}
+              maxLength={CHANNEL_NOTE_MAX}
+              placeholder="Ex.: tom amigável, ponto a abordar…"
+              onChange={(e) => setChannelNote(e.target.value.slice(0, CHANNEL_NOTE_MAX))}
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {CHANNEL_NOTE_SUGGESTIONS.map((s) => {
+                const active = channelNote.trim() === s;
+                return (
+                  <Button
+                    key={s}
+                    type="button"
+                    variant={active ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() =>
+                      setChannelNote((prev) => (prev.trim() === s ? '' : s))
+                    }
+                    aria-pressed={active}
+                  >
+                    {s}
+                  </Button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Será anexada ao final da descrição da tarefa.
+            </p>
+          </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancelar
