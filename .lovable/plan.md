@@ -1,44 +1,104 @@
 
 
-# Plano: Exibir contribuição (peso × score) e ranking no WhyScoreDrawer
+# Plano: Exibir direção de impacto (positivo/negativo/neutro) por fator no WhyScoreDrawer
 
 ## Estado atual
 
-`WhyScoreDrawer.tsx` linhas 90–93 já ordena por `b.weight * b.score - a.weight * a.score`. Porém, na UI o usuário vê apenas `Score/100 · peso X%` sem entender por que a ordem é aquela. Falta tornar a **contribuição** visível.
+`WhyScoreDrawer.tsx` mostra para cada fator: label, score/100, peso%, contribuição, duas barras e `detail` (texto livre). Falta um sinal **visual e semântico** indicando se aquele fator está **ajudando** (puxa o score pra cima), **prejudicando** (puxa pra baixo) ou é **neutro**. Hoje o usuário tem que inferir pela barra colorida (band) — pouco claro.
 
 ## Mudanças
 
-Único arquivo: `src/components/intelligence/WhyScoreDrawer.tsx`.
+Único arquivo: `src/components/intelligence/WhyScoreDrawer.tsx`. API pública preservada (campo opcional, não-quebrante).
 
-### 1. Calcular contribuição e contribuição relativa
+### 1. Schema: campo opcional `direction` em `WhyScoreFactor`
 
-No `useMemo` existente, em vez de retornar só `sortedFactors`, devolver também `contribution` (= `weight * score`, escala 0–100) e `contributionPct` (= contribuição do fator ÷ soma das contribuições, em %), além do `rank` (1, 2, 3…).
+```ts
+export interface WhyScoreFactor {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  detail?: string;
+  direction?: 'positive' | 'negative' | 'neutral'; // NOVO opcional
+}
+```
 
-### 2. Mostrar badge "#1 maior impacto" no fator de topo
+Backwards-compatible: consumidores existentes (`ScoreProntidaoCard`, `LeadScoreBadge`, `DealRiskDrawer`, etc.) continuam funcionando sem mudanças.
 
-No primeiro item de `sortedFactors`, renderizar pequeno `Badge` com texto `#1 maior impacto` ao lado do label. Itens 2 e 3 ganham badge sutil `#2` / `#3` (variant outline, text-[10px]). Demais sem badge.
+### 2. Inferência automática quando `direction` não vier
 
-### 3. Linha de contribuição abaixo do score/peso
+Helper `inferDirection(score: number): Direction`:
+- `score >= 65` → `'positive'`
+- `score <= 35` → `'negative'`
+- caso contrário → `'neutral'`
 
-Logo abaixo da linha `Score/100 · peso X%`, adicionar `Contribuição: <X> pts (Y% do total)` em texto pequeno, com `<X>` = `Math.round(contribution)` e `<Y>` = `Math.round(contributionPct)`. Isso explica matematicamente por que o fator está naquela posição.
+No `useMemo` que monta `rankedFactors`, computar `effectiveDirection = f.direction ?? inferDirection(f.score)`.
 
-### 4. Mini-barra de contribuição relativa (opcional, leve)
+### 3. Mapa visual `DIRECTION_META`
 
-Trocar a `<Progress value={f.score} />` atual por um layout de duas linhas:
-- linha 1 (mantém): `<Progress value={f.score}>` — mostra a "qualidade" do fator
-- linha 2 (NOVA): barra fininha (`h-1`) com `value={contributionPct}` e cor `bg-primary/60` — mostra "quanto pesou no total"
+```ts
+const DIRECTION_META = {
+  positive: {
+    icon: TrendingUp,
+    label: 'favorece',
+    badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+    verb: 'Está ajudando',
+  },
+  negative: {
+    icon: TrendingDown,
+    label: 'prejudica',
+    badgeClass: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
+    verb: 'Está prejudicando',
+  },
+  neutral: {
+    icon: Minus,
+    label: 'neutro',
+    badgeClass: 'bg-muted text-muted-foreground border-border',
+    verb: 'Impacto neutro',
+  },
+};
+```
 
-Cada barra com `aria-label` próprio para leitores de tela: `"Qualidade do fator: 72/100"` e `"Contribuição relativa: 35% do score total"`.
+Importar `TrendingUp, TrendingDown, Minus` de `lucide-react`.
 
-### 5. Tooltip explicativo no header da seção
+### 4. Renderização no card de cada fator
 
-Em "Fatores que contribuíram", adicionar pequeno ícone `Info` com tooltip: `"Ordenados pela contribuição real (peso × score). O fator no topo é o que mais influenciou o resultado."`.
+Próximo ao label (mesma linha dos badges de rank), adicionar um pequeno chip de direção:
 
-### 6. Nada muda em consumidores
+```tsx
+<Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1', meta.badgeClass)}>
+  <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
+  {meta.label}
+</Badge>
+```
 
-A API pública (`WhyScoreFactor`, props) permanece idêntica. `ScoreProntidaoCard`, `LeadScoreBadge`, `DealRiskDrawer` e demais não precisam mudar.
+Aria-label do badge: `"Este fator ${meta.verb.toLowerCase()} o score"`.
+
+E no parágrafo de contribuição existente, prefixar com o verbo:
+- positivo: `"Está ajudando: contribuição X pts (Y% do total)"`
+- negativo: `"Está prejudicando: contribuição X pts (Y% do total)"`
+- neutro: mantém atual `"Contribuição: X pts (Y% do total)"`
+
+### 5. Resumo no topo da lista
+
+Acima dos cards de fator, adicionar uma micro-legenda contando quantos puxam pra cada lado:
+
+```
+✓ 2 favorecendo  ✗ 1 prejudicando  · 1 neutro
+```
+
+Cada item com ícone e cor correspondente; só renderiza categorias com `count > 0`. Texto pequeno (`text-[11px] text-muted-foreground`), serve como visão geral antes do detalhe.
+
+### 6. Tooltip do header atualizado
+
+Trocar texto do tooltip do header para:
+> "Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total."
+
+### 7. Nada muda em consumidores
+
+Nenhum consumidor precisa passar `direction` — a inferência por score cobre o caso padrão. Quem quiser sobrescrever (ex.: `ScoreProntidaoCard` poderia marcar "recência baixa" como `negative` mesmo com score médio) pode passar explicitamente em rodada futura.
 
 ## Critérios de aceite
 
-(a) Fatores continuam ordenados por `weight × score` desc; (b) primeiro fator exibe badge `#1 maior impacto`, 2º e 3º exibem `#2`/`#3` discretos; (c) cada fator mostra `Contribuição: X pts (Y% do total)` abaixo de score/peso; (d) duas barras visíveis: qualidade (existente) + contribuição relativa (nova, mais fina); (e) header da seção tem tooltip explicando o critério de ordenação; (f) `aria-label` claros nas duas barras; (g) sem `any`, sem nova dependência, PT-BR; (h) arquivo permanece <250 linhas.
+(a) Cada fator exibe chip de direção (favorece / prejudica / neutro) ao lado do label, com ícone (`TrendingUp`/`TrendingDown`/`Minus`) e cor semântica (verde/vermelho/cinza); (b) quando `direction` não vier no payload, é inferida do score (≥65 positivo, ≤35 negativo, resto neutro); (c) parágrafo de contribuição ganha prefixo verbal ("Está ajudando" / "Está prejudicando") quando aplicável; (d) acima da lista aparece resumo `✓ N favorecendo · ✗ N prejudicando · N neutro` mostrando só categorias não-vazias; (e) tooltip do header explica o conceito de direção; (f) `WhyScoreFactor.direction` é opcional — consumidores existentes seguem funcionando sem alteração; (g) `aria-label` no chip descreve o impacto para leitores de tela; (h) sem nova dependência (lucide já tem os ícones), sem `any`, PT-BR; (i) arquivo permanece <280 linhas.
 
