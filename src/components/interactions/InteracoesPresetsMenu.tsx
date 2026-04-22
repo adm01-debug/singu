@@ -430,6 +430,18 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <SelectItem value="alfabetica" className="text-xs">Alfabética</SelectItem>
                 </SelectContent>
               </Select>
+              <Button
+                type="button"
+                variant={previewMode ? 'default' : 'ghost'}
+                size="sm"
+                className="h-7 px-2 gap-1 text-xs shrink-0"
+                onClick={() => { setPreviewMode((v) => !v); setPreviewId(null); }}
+                title={previewMode ? 'Desativar pré-visualização' : 'Ativar pré-visualização — clique mostra o diff antes de aplicar'}
+                aria-pressed={previewMode}
+              >
+                {previewMode ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                Prévia
+              </Button>
             </div>
           )}
 
