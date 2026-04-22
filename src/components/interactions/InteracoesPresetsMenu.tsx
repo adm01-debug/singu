@@ -255,10 +255,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     window.setTimeout(() => {
       setRecentlyAppliedId((cur) => (cur === preset.id ? null : cur));
     }, 1500);
-    setOpen(false);
+    // Mantém o popover aberto após aplicar (estado restaurado de localStorage),
+    // permitindo trocar rapidamente entre presets sem reabrir o menu.
     toast.success('Filtros atualizados', { description: `Preset "${preset.name}" aplicado` });
     requestAnimationFrame(() => {
-      // Rola até o topo da tabela e devolve o foco ao input de busca.
+      // Rola até o topo da tabela e devolve o foco ao input de busca
+      // (sem fechar o popover — Radix permite foco fora mantendo-o aberto).
       window.dispatchEvent(new CustomEvent('scroll-interactions-top'));
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
