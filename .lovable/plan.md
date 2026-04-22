@@ -1,104 +1,65 @@
 
 
-# Plano: Exibir direção de impacto (positivo/negativo/neutro) por fator no WhyScoreDrawer
+# Plano: Persistir e restaurar o estado aberto do WhyScoreDrawer ao trocar de contato
 
 ## Estado atual
 
-`WhyScoreDrawer.tsx` mostra para cada fator: label, score/100, peso%, contribuição, duas barras e `detail` (texto livre). Falta um sinal **visual e semântico** indicando se aquele fator está **ajudando** (puxa o score pra cima), **prejudicando** (puxa pra baixo) ou é **neutro**. Hoje o usuário tem que inferir pela barra colorida (band) — pouco claro.
+`WhyScoreDrawer` é controlado por `open`/`onOpenChange`. Cada consumidor (ex.: `LeadScoreBadge`) mantém `useState(false)` local. Ao navegar entre contatos na Ficha 360 (`/contatos/:id`), o componente desmonta e monta de novo → o drawer sempre volta fechado, mesmo que o usuário estivesse comparando "por que" entre contatos.
+
+## Objetivo
+
+Se o usuário fechou o drawer com ele aberto e navega para outro contato (ou recarrega a página), o drawer deve **reabrir automaticamente** mostrando o score do novo contato. Quando o usuário **explicitamente fechar** o drawer (X / clique fora / ESC), a preferência é apagada e ele não reabre mais até ser aberto manualmente de novo.
 
 ## Mudanças
 
-Único arquivo: `src/components/intelligence/WhyScoreDrawer.tsx`. API pública preservada (campo opcional, não-quebrante).
+### 1. Novo hook `useWhyScoreDrawerPreference` (arquivo novo)
 
-### 1. Schema: campo opcional `direction` em `WhyScoreFactor`
+`src/hooks/useWhyScoreDrawerPreference.ts` (~50 linhas).
 
+Persiste um único flag global em `sessionStorage` (chave `singu-whyscore-open-v1`). Por que sessionStorage e não localStorage: a "intenção de manter aberto" é uma preferência de sessão de trabalho, não cross-device. Sai quando fecha o navegador.
+
+API:
 ```ts
-export interface WhyScoreFactor {
-  key: string;
-  label: string;
-  score: number;
-  weight: number;
-  detail?: string;
-  direction?: 'positive' | 'negative' | 'neutral'; // NOVO opcional
-}
-```
-
-Backwards-compatible: consumidores existentes (`ScoreProntidaoCard`, `LeadScoreBadge`, `DealRiskDrawer`, etc.) continuam funcionando sem mudanças.
-
-### 2. Inferência automática quando `direction` não vier
-
-Helper `inferDirection(score: number): Direction`:
-- `score >= 65` → `'positive'`
-- `score <= 35` → `'negative'`
-- caso contrário → `'neutral'`
-
-No `useMemo` que monta `rankedFactors`, computar `effectiveDirection = f.direction ?? inferDirection(f.score)`.
-
-### 3. Mapa visual `DIRECTION_META`
-
-```ts
-const DIRECTION_META = {
-  positive: {
-    icon: TrendingUp,
-    label: 'favorece',
-    badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
-    verb: 'Está ajudando',
-  },
-  negative: {
-    icon: TrendingDown,
-    label: 'prejudica',
-    badgeClass: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
-    verb: 'Está prejudicando',
-  },
-  neutral: {
-    icon: Minus,
-    label: 'neutro',
-    badgeClass: 'bg-muted text-muted-foreground border-border',
-    verb: 'Impacto neutro',
-  },
+export function useWhyScoreDrawerPreference(): {
+  shouldAutoOpen: boolean;     // valor inicial lido do storage
+  rememberOpen: () => void;    // grava flag = true
+  forgetOpen: () => void;      // remove flag
 };
 ```
 
-Importar `TrendingUp, TrendingDown, Minus` de `lucide-react`.
+Implementação: lê `sessionStorage` no `useState(() => ...)` para evitar flicker. `rememberOpen`/`forgetOpen` apenas escrevem/removem. Sem listeners cross-tab (não é necessário).
 
-### 4. Renderização no card de cada fator
+Tratamento defensivo: try/catch em todos os acessos a `sessionStorage` (modo privado, SSR).
 
-Próximo ao label (mesma linha dos badges de rank), adicionar um pequeno chip de direção:
+### 2. `LeadScoreBadge` consome o hook
 
-```tsx
-<Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1', meta.badgeClass)}>
-  <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
-  {meta.label}
-</Badge>
-```
+Em `src/components/lead-score/LeadScoreBadge.tsx`:
 
-Aria-label do badge: `"Este fator ${meta.verb.toLowerCase()} o score"`.
+- importar `useWhyScoreDrawerPreference`.
+- substituir `const [open, setOpen] = useState(false)` por:
+  ```ts
+  const { shouldAutoOpen, rememberOpen, forgetOpen } = useWhyScoreDrawerPreference();
+  const [open, setOpen] = useState(shouldAutoOpen && interactive);
+  ```
+- handler de abertura (clique no badge): `setOpen(true); rememberOpen();`.
+- callback do drawer: 
+  ```ts
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) rememberOpen(); else forgetOpen();
+  };
+  ```
+  e passar `onOpenChange={handleOpenChange}` ao `WhyScoreDrawer`.
 
-E no parágrafo de contribuição existente, prefixar com o verbo:
-- positivo: `"Está ajudando: contribuição X pts (Y% do total)"`
-- negativo: `"Está prejudicando: contribuição X pts (Y% do total)"`
-- neutro: mantém atual `"Contribuição: X pts (Y% do total)"`
+Isto garante que: (a) ao navegar para outro contato e o `LeadScoreBadge` remontar com `interactive=true`, o drawer reaparece com os fatores do novo contato; (b) ao fechar manualmente, a flag é apagada e o drawer não reaparece em contatos seguintes.
 
-### 5. Resumo no topo da lista
+Guard: só auto-abre se `interactive` for verdadeiro (badge sem `factors`/`contactId` não consegue abrir o drawer; abrir vazio seria pior UX).
 
-Acima dos cards de fator, adicionar uma micro-legenda contando quantos puxam pra cada lado:
+### 3. Nada muda em outros consumidores
 
-```
-✓ 2 favorecendo  ✗ 1 prejudicando  · 1 neutro
-```
-
-Cada item com ícone e cor correspondente; só renderiza categorias com `count > 0`. Texto pequeno (`text-[11px] text-muted-foreground`), serve como visão geral antes do detalhe.
-
-### 6. Tooltip do header atualizado
-
-Trocar texto do tooltip do header para:
-> "Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total."
-
-### 7. Nada muda em consumidores
-
-Nenhum consumidor precisa passar `direction` — a inferência por score cobre o caso padrão. Quem quiser sobrescrever (ex.: `ScoreProntidaoCard` poderia marcar "recência baixa" como `negative` mesmo com score médio) pode passar explicitamente em rodada futura.
+`ScoreProntidaoCard`, `DealRiskDrawer`, `WhyScoreDrawer` em si não precisam mudar. A persistência fica no consumidor específico que o usuário usa para "comparar entre contatos" (LeadScoreBadge na Ficha 360 é o caso real). Outros consumidores podem adotar o hook depois, se quiserem o mesmo comportamento.
 
 ## Critérios de aceite
 
-(a) Cada fator exibe chip de direção (favorece / prejudica / neutro) ao lado do label, com ícone (`TrendingUp`/`TrendingDown`/`Minus`) e cor semântica (verde/vermelho/cinza); (b) quando `direction` não vier no payload, é inferida do score (≥65 positivo, ≤35 negativo, resto neutro); (c) parágrafo de contribuição ganha prefixo verbal ("Está ajudando" / "Está prejudicando") quando aplicável; (d) acima da lista aparece resumo `✓ N favorecendo · ✗ N prejudicando · N neutro` mostrando só categorias não-vazias; (e) tooltip do header explica o conceito de direção; (f) `WhyScoreFactor.direction` é opcional — consumidores existentes seguem funcionando sem alteração; (g) `aria-label` no chip descreve o impacto para leitores de tela; (h) sem nova dependência (lucide já tem os ícones), sem `any`, PT-BR; (i) arquivo permanece <280 linhas.
+(a) Abrir o drawer no contato A, navegar para o contato B → o drawer abre automaticamente em B com os fatores de B; (b) fechar o drawer (X, ESC ou clique fora) em qualquer contato → ao navegar para outro, o drawer fica fechado; (c) recarregar a página com drawer aberto: ao remontar a Ficha 360 do mesmo contato, o drawer volta aberto; após fechar o navegador, sessão expira; (d) badge não-interativo (sem `factors` ou `contactId`) nunca auto-abre, mesmo com flag setada; (e) sem nova dependência, sem `any`, PT-BR; (f) hook isolado e reusável (<60 linhas), `LeadScoreBadge` continua <120 linhas; (g) tratamento defensivo de `sessionStorage` (try/catch).
 
