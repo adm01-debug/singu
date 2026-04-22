@@ -8,6 +8,8 @@ import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDow
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+export type WhyScoreDirection = 'positive' | 'negative' | 'neutral';
+
 export interface WhyScoreFactor {
   key: string;
   label: string;
@@ -17,7 +19,41 @@ export interface WhyScoreFactor {
   weight: number;
   detail?: string;
   trend?: 'up' | 'down' | 'flat';
+  /** Direção do impacto deste fator no score total. Se ausente, é inferida do score. */
+  direction?: WhyScoreDirection;
 }
+
+function inferDirection(score: number): WhyScoreDirection {
+  if (score >= 65) return 'positive';
+  if (score <= 35) return 'negative';
+  return 'neutral';
+}
+
+const DIRECTION_META: Record<WhyScoreDirection, {
+  icon: typeof TrendingUp;
+  label: string;
+  badgeClass: string;
+  verb: string;
+}> = {
+  positive: {
+    icon: TrendingUp,
+    label: 'favorece',
+    badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+    verb: 'Está ajudando',
+  },
+  negative: {
+    icon: TrendingDown,
+    label: 'prejudica',
+    badgeClass: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
+    verb: 'Está prejudicando',
+  },
+  neutral: {
+    icon: Minus,
+    label: 'neutro',
+    badgeClass: 'bg-muted text-muted-foreground border-border',
+    verb: 'Impacto neutro',
+  },
+};
 
 interface WhyScoreDrawerProps {
   open: boolean;
