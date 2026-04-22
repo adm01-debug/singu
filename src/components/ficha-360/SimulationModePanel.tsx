@@ -50,10 +50,60 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
   const enabled = useSimulationStore((s) => s.enabled);
   const overrides = useSimulationStore((s) => s.overrides);
   const presetName = useSimulationStore((s) => s.presetName);
+  const presetId = useSimulationStore((s) => s.presetId);
   const setEnabled = useSimulationStore((s) => s.setEnabled);
   const setOverride = useSimulationStore((s) => s.setOverride);
   const applyPreset = useSimulationStore((s) => s.applyPreset);
+  const applyCustomPreset = useSimulationStore((s) => s.applyCustomPreset);
   const reset = useSimulationStore((s) => s.reset);
+
+  const customPresets = useCustomSimulationPresetsStore((s) => s.presets);
+  const savePreset = useCustomSimulationPresetsStore((s) => s.save);
+  const updatePreset = useCustomSimulationPresetsStore((s) => s.update);
+  const removePreset = useCustomSimulationPresetsStore((s) => s.remove);
+
+  const activeCustom = presetId ? customPresets.find((p) => p.id === presetId) : null;
+  const canSave = enabled && hasActiveOverrides(overrides);
+
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [draftName, setDraftName] = useState('');
+
+  const openSaveAsNew = () => {
+    setDraftName('');
+    setSaveOpen(true);
+  };
+
+  const handleSaveNew = () => {
+    const name = draftName.trim();
+    if (!name) {
+      toast.error('Dê um nome ao preset.');
+      return;
+    }
+    if (customPresets.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
+      toast.error('Já existe um preset com esse nome.');
+      return;
+    }
+    const id = savePreset(name, overrides);
+    applyCustomPreset(id, name, overrides);
+    setSaveOpen(false);
+    toast.success(`Preset "${name}" salvo.`);
+  };
+
+  const handleUpdateActive = () => {
+    if (!activeCustom) return;
+    updatePreset(activeCustom.id, { overrides });
+    applyCustomPreset(activeCustom.id, activeCustom.name, overrides);
+    toast.success(`Preset "${activeCustom.name}" atualizado.`);
+  };
+
+  const handleRemoveCustom = (id: string, name: string) => {
+    removePreset(id);
+    if (presetId === id) {
+      // o preset ativo foi removido — mantém overrides mas limpa marcação
+      useSimulationStore.setState({ presetId: null, presetName: null });
+    }
+    toast.success(`Preset "${name}" removido.`);
+  };
 
   const delta = simulatedScore - realScore;
 
