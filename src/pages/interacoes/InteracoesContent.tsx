@@ -241,8 +241,8 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   );
 
   // Pré-aquece o slice da próxima página em idle time + sob demanda no hover/focus.
-  const nextDataset = isGrouped ? groups : sortedForView;
-  const { warmNext } = useNextPagePrefetch({
+  const nextDataset: readonly unknown[] = isGrouped ? groups : sortedForView;
+  const { warmNext } = useNextPagePrefetch<unknown>({
     items: nextDataset,
     page: safePage,
     perPage: adv.perPage,
