@@ -619,6 +619,35 @@ const Ficha360 = () => {
           </>
         )}
       </div>
+      {id && (
+        <ResumoConversaIADialog
+          open={resumoIAOpen}
+          onOpenChange={setResumoIAOpen}
+          contactId={id}
+          interactions={sortedInteractions.map((it) => ({
+            id: it.id,
+            channel: it.channel ?? null,
+            direction: it.direction ?? null,
+            data_interacao: it.data_interacao ?? null,
+            assunto: it.assunto ?? null,
+            resumo: it.resumo ?? null,
+          }))}
+          contactSnapshot={{
+            full_name: fullName,
+            role_title: profile?.cargo ?? null,
+            company_name: profile?.company_name ?? null,
+            disc_profile: null,
+            hobbies: [],
+            interests: [],
+          }}
+          filtersSummary={{
+            period_days: days,
+            channels,
+            tags,
+            query: q,
+          }}
+        />
+      )}
     </AppLayout>
   );
 };
