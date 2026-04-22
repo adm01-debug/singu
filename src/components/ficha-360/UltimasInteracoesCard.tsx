@@ -8,6 +8,7 @@ import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useInfiniteList } from '@/hooks/useInfiniteList';
 import { InfiniteScrollSentinel, CompactItemSkeleton } from '@/components/interactions/InfiniteScrollSentinel';
+import { IncrementalLoadStickyBar } from '@/components/interactions/IncrementalLoadStickyBar';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 
 interface Props {
@@ -116,7 +117,13 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
           />
         ) : (
           <>
+            <IncrementalLoadStickyBar
+              hasMore={hasMore}
+              totalLoaded={visible.length}
+              total={items.length}
+            />
             <ul className="space-y-1">
+
               {visible.map((it) => {
                 const Icon = channelIcon(it.channel);
                 return (
