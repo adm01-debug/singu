@@ -444,9 +444,12 @@ export function useInteractionsAdvancedFilter() {
       if (v && v !== 'list') next.set('view', v);
       else next.delete('view');
     } else if (key === 'density') {
+      // Sempre escreve `density` na URL (inclusive `comfortable`) para que
+      // links compartilhados consigam sobrepor o localStorage do destinatário.
+      // Sem isso, `comfortable` "some" da URL e o destinatário em `compact`
+      // continua em `compact` por causa da hidratação do cache local.
       const d = (value as DensityMode) ?? 'comfortable';
-      if (d === 'compact') next.set('density', 'compact');
-      else next.delete('density');
+      next.set('density', d === 'compact' ? 'compact' : 'comfortable');
     } else if (key === 'direcao') {
       const d = (value as DirecaoFilter) ?? 'all';
       if (d && d !== 'all') next.set('direcao', d);
@@ -456,9 +459,11 @@ export function useInteractionsAdvancedFilter() {
       if (Number.isFinite(n) && n > 1) next.set('page', String(n));
       else next.delete('page');
     } else if (key === 'perPage') {
+      // Mesmo princípio: persiste o valor escolhido na URL mesmo quando é o
+      // padrão, para o link compartilhado bater o cache do outro usuário.
       const n = value as number;
-      if ((VALID_PER_PAGE as readonly number[]).includes(n) && n !== DEFAULT_PER_PAGE) next.set('perPage', String(n));
-      else next.delete('perPage');
+      const v = (VALID_PER_PAGE as readonly number[]).includes(n) ? n : DEFAULT_PER_PAGE;
+      next.set('perPage', String(v));
     } else if (key === 'sentimento') {
       const s = value as SentimentoFilter | undefined;
       if (s && (VALID_SENTIMENTOS as string[]).includes(s)) next.set('sentimento', s);
