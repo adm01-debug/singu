@@ -64,13 +64,24 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
             </Button>
           </div>
         )}
-        {Array.from({ length: skeletonCount }).map((_, i) =>
-          isCompact ? (
-            <CompactItemSkeleton key={i} titleMaxWidth={i === 0 ? 'max-w-[60%]' : 'max-w-[45%]'} />
+        {Array.from({ length: skeletonCount }).map((_, i) => {
+          const variant = SKELETON_VARIANTS[i % SKELETON_VARIANTS.length];
+          return isCompact ? (
+            <CompactItemSkeleton
+              key={i}
+              titleMaxWidth={variant.titleWidth}
+              metaWidth={variant.metaWidth}
+              tagCount={variant.tagCount}
+            />
           ) : (
-            <Skeleton key={i} className="h-20 w-full rounded-lg" />
-          )
-        )}
+            <ComfortableItemSkeleton
+              key={i}
+              titleWidth={variant.titleWidth}
+              bodyLines={variant.bodyLines}
+              tagCount={variant.tagCount}
+            />
+          );
+        })}
         <p className="text-center text-xs text-muted-foreground">
           Carregando mais interações… ({totalLoaded} de {total})
         </p>
