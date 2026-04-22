@@ -53,7 +53,7 @@ function formatDateBr(isoDate: string): string {
   return `${d}/${m}/${y}`;
 }
 
-function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel }: Props) {
+function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated, onCancel, hasNext = false, onCreatedAndAdvance }: Props) {
   const createTask = useCreateTask();
   const defaults = useMemo(() => computePassoDefaults(passo, bestTime), [passo, bestTime]);
 
