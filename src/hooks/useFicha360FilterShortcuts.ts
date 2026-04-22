@@ -237,6 +237,18 @@ export function useFicha360FilterShortcuts({
     },
   });
 
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'r',
+    shift: true,
+    description: 'Salvar filtros atuais como relatório fixo',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onSalvarRelatorio?.();
+    },
+  });
+
   // Shift+1..5 → remove o N-ésimo chip de canal visível.
   for (let i = 1; i <= 5; i++) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
