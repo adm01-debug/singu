@@ -138,7 +138,7 @@ describe('preserveScroll', () => {
 
   it('é seguro em ambiente sem DOM (SSR-safe)', () => {
     const originalWindow = globalThis.window;
-    // @ts-expect-error — simulando ambiente sem window
+    // simulando ambiente sem window (cast já cobre o delete)
     delete (globalThis as { window?: unknown }).window;
     try {
       const handle = preserveScroll();
