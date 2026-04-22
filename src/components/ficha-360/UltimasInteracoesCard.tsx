@@ -122,6 +122,7 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
               totalLoaded={visible.length}
               total={items.length}
               density="compact"
+              onLoadMore={loadMore}
             />
           </>
         )}
