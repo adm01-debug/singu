@@ -1,5 +1,5 @@
-import { memo, useState } from 'react';
-import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft, History, Inbox } from 'lucide-react';
+import { memo, useEffect, useState } from 'react';
+import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft, History, Inbox, Mail, Phone, CalendarDays, MessageCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,11 +74,36 @@ const CONFIRM_DESCRIPTION: Record<PassoOutcome, string> = {
   pulou: 'Este passo ficará silenciado pelos próximos 7 dias.',
 };
 
+type ChannelKey = 'whatsapp' | 'email' | 'call' | 'meeting';
+
+const CHANNELS: { value: ChannelKey; label: string; icon: typeof Mail }[] = [
+  { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+  { value: 'email', label: 'E-mail', icon: Mail },
+  { value: 'call', label: 'Ligação', icon: Phone },
+  { value: 'meeting', label: 'Reunião', icon: CalendarDays },
+];
+
+function normalizeChannel(hint?: string | null): ChannelKey | null {
+  if (!hint) return null;
+  const v = hint.toLowerCase();
+  if (v.includes('whats')) return 'whatsapp';
+  if (v.includes('mail') || v === 'email' || v === 'e-mail') return 'email';
+  if (v.includes('call') || v.includes('lig') || v.includes('phone') || v.includes('tel')) return 'call';
+  if (v.includes('meet') || v.includes('reuni')) return 'meeting';
+  return null;
+}
+
 function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<'form' | 'history'>('form');
   const [notes, setNotes] = useState('');
   const [pendingOutcome, setPendingOutcome] = useState<PassoOutcome | null>(null);
+  const [selectedChannel, setSelectedChannel] = useState<ChannelKey | null>(() => normalizeChannel(channelHint));
+
+  // Sincroniza com mudança do hint enquanto popover está fechado
+  useEffect(() => {
+    if (!open) setSelectedChannel(normalizeChannel(channelHint));
+  }, [channelHint, open]);
   const { mutate, isPending } = useRegisterPassoFeedback();
   const { data: allFeedbacks = [], isLoading: isLoadingHistory } = useProximoPassoFeedbacks(
     open ? contactId : undefined,
@@ -126,7 +151,7 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
         contactId,
         passoId,
         outcome,
-        channelUsed: channelHint ?? null,
+        channelUsed: selectedChannel ?? channelHint ?? null,
         notes: notes || null,
       },
       {
@@ -265,8 +290,14 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
               <p className="text-xs text-muted-foreground">
                 {CONFIRM_DESCRIPTION[pendingOption.value]}
               </p>
+              <p className="text-[11px] text-muted-foreground border-t pt-1.5 mt-1.5">
+                <span className="font-medium">Canal:</span>{' '}
+                {selectedChannel
+                  ? CHANNELS.find((c) => c.value === selectedChannel)?.label
+                  : 'não informado'}
+              </p>
               {notes ? (
-                <p className="text-[11px] text-muted-foreground border-t pt-1.5 mt-1.5">
+                <p className="text-[11px] text-muted-foreground">
                   <span className="font-medium">Observação:</span> {notes}
                 </p>
               ) : null}
@@ -299,6 +330,32 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
               <p className="text-xs text-muted-foreground">
                 Seu feedback melhora as próximas recomendações.
               </p>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-[11px] font-medium text-muted-foreground">Canal usado</p>
+              <div className="grid grid-cols-4 gap-1">
+                {CHANNELS.map((ch) => {
+                  const ChIcon = ch.icon;
+                  const active = selectedChannel === ch.value;
+                  return (
+                    <Button
+                      key={ch.value}
+                      type="button"
+                      variant={active ? 'default' : 'outline'}
+                      size="xs"
+                      className="h-8 flex-col gap-0.5 px-1 text-[10px]"
+                      disabled={isPending}
+                      onClick={() => setSelectedChannel(active ? null : ch.value)}
+                      title={ch.label}
+                      aria-pressed={active}
+                    >
+                      <ChIcon className="h-3 w-3" />
+                      <span className="leading-none">{ch.label}</span>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex flex-col gap-1">
