@@ -25,6 +25,7 @@ interface Options {
   onSortRecente?: () => void;
   onSortRelevante?: () => void;
   onAbrirResumoIA?: () => void;
+  onSalvarRelatorio?: () => void;
   filteredCount?: number;
   enabled: boolean;
 }
@@ -50,6 +51,7 @@ export function useFicha360FilterShortcuts({
   onSortRecente,
   onSortRelevante,
   onAbrirResumoIA,
+  onSalvarRelatorio,
   filteredCount = 0,
   enabled,
 }: Options) {
