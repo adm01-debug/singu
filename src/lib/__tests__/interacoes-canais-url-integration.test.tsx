@@ -102,10 +102,12 @@ describe('integração /interacoes ?canais= ↔ chips', () => {
     renderAt('/interacoes?canais=email,call,whatsapp');
     expect(screen.getByTestId('canais-csv').textContent).toBe('email,call,whatsapp');
     expect(screen.getByTestId('canais-count').textContent).toBe('3');
-    // Cada canal vira um chip (Email/Ligação/WhatsApp).
-    expect(screen.getByText('Email')).toBeInTheDocument();
-    expect(screen.getByText('Ligação')).toBeInTheDocument();
-    expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+    // Cada canal aparece pelo menos uma vez (chip + resumo lateral).
+    expect(screen.getAllByText('Email').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Ligação').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('WhatsApp').length).toBeGreaterThanOrEqual(1);
+    // Há exatamente 3 botões de "Remove" — um por chip de canal.
+    expect(document.querySelectorAll('button[aria-label="Remove"]')).toHaveLength(3);
   });
 
   it('remove um canal via clique no X do chip e mantém os demais na URL', async () => {
@@ -117,7 +119,10 @@ describe('integração /interacoes ?canais= ↔ chips', () => {
     expect(screen.getByTestId('canais-csv').textContent).toBe('call,whatsapp');
     expect(screen.getByTestId('canais-count').textContent).toBe('2');
     expect(screen.getByTestId('url-search').textContent).toContain('canais=call%2Cwhatsapp');
+    // Sobrou só o resumo mencionando "Email"? Não — o resumo também atualiza.
     expect(screen.queryByText('Email')).not.toBeInTheDocument();
+    // Restaram 2 chips (2 botões "Remove").
+    expect(document.querySelectorAll('button[aria-label="Remove"]')).toHaveLength(2);
   });
 
   it('remover o ÚLTIMO canal apaga o param ?canais= da URL', async () => {
