@@ -139,17 +139,19 @@ describe('SortChips · integração com useInteractionsAdvancedFilter', () => {
 
   it('clicar em outro chip grava ?sort= na URL (omitindo default "recent")', () => {
     render(
-      <MemoryRouter initialEntries={['/interacoes']}>
+      <MemoryRouter initialEntries={['/interacoes?sort=oldest']}>
         <Harness />
       </MemoryRouter>,
     );
-    expect(screen.getByTestId('search').textContent).toBe('');
-
-    act(() => { fireEvent.click(screen.getByLabelText('Mais antigas')); });
     expect(screen.getByTestId('search').textContent).toContain('sort=oldest');
 
+    // voltar ao default remove o parâmetro
     act(() => { fireEvent.click(screen.getByLabelText('Mais recentes')); });
     expect(screen.getByTestId('search').textContent).not.toContain('sort=');
+
+    // mudar para outro non-default re-grava
+    act(() => { fireEvent.click(screen.getByLabelText('Por pessoa/empresa')); });
+    expect(screen.getByTestId('search').textContent).toContain('sort=entity');
   });
 
   it('trocar o sort reseta page=1 (remove ?page= da URL) preservando demais filtros', () => {
