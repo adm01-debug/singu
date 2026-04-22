@@ -22,6 +22,9 @@ import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesC
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
+import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
+import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
+import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
@@ -91,6 +94,17 @@ const Ficha360 = () => {
   const clearDraftFilters = () => {
     setDraftDays(90);
     setDraftChannels([]);
+  };
+
+  // Aplica um favorito (próprio ou compartilhado): atualiza estado aplicado e draft.
+  const applyFavoriteFilters = (favDays: number, favChannels: string[]) => {
+    const validDays = ([7, 30, 90, 365] as const).includes(favDays as Ficha360Period)
+      ? (favDays as Ficha360Period)
+      : 90;
+    setDays(validDays);
+    setChannels(favChannels);
+    setDraftDays(validDays);
+    setDraftChannels(favChannels);
   };
 
   // Busca textual local — input controlado, sincroniza com URL via debounce 200ms.
@@ -218,6 +232,7 @@ const Ficha360 = () => {
         title={`Ficha 360 — ${fullName}`}
         description={`Visão consolidada de ${fullName}: perfil, interesses, frequência de contato e conversas relacionadas.`}
       />
+      <AplicarFavoritoCompartilhadoDialog onApply={applyFavoriteFilters} />
       <div className="min-h-screen p-4 md:p-6 space-y-4">
         <PageHeader
           backTo="/contatos"
@@ -339,26 +354,33 @@ const Ficha360 = () => {
                   q={q}
                   headerExtra={
                     <>
-                      <div className="relative">
-                        <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        <Input
-                          type="search"
-                          value={searchInput}
-                          onChange={(e) => setSearchInput(e.target.value)}
-                          placeholder="Buscar por assunto, resumo, canal…"
-                          className="h-8 pl-8 pr-8 text-sm max-w-xs"
-                          aria-label="Buscar interações"
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <FavoritosFiltrosMenu
+                          days={days}
+                          channels={channels}
+                          onApply={applyFavoriteFilters}
                         />
-                        {searchInput && (
-                          <button
-                            type="button"
-                            onClick={() => setSearchInput('')}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                            aria-label="Limpar busca"
-                          >
-                            <XIcon className="h-3.5 w-3.5" />
-                          </button>
-                        )}
+                        <div className="relative">
+                          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                          <Input
+                            type="search"
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            placeholder="Buscar por assunto, resumo, canal…"
+                            className="h-8 pl-8 pr-8 text-sm max-w-xs"
+                            aria-label="Buscar interações"
+                          />
+                          {searchInput && (
+                            <button
+                              type="button"
+                              onClick={() => setSearchInput('')}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                              aria-label="Limpar busca"
+                            >
+                              <XIcon className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <FiltrosInteracoesBar
                         days={draftDays}
