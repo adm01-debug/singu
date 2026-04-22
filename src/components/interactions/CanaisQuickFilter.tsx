@@ -335,6 +335,45 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
         {dirty && (
           <div className="flex items-center gap-1 ml-1" aria-live="polite">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className="gap-1 px-2 py-1 text-xs border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300 cursor-help"
+                  aria-label={`${diffCount} divergência${diffCount === 1 ? '' : 's'} entre seleção pendente e filtros aplicados`}
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span className="font-semibold">{diffCount}</span>
+                  <span className="hidden sm:inline">pendente{diffCount === 1 ? '' : 's'}</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <div className="space-y-2 text-xs">
+                  <p className="font-medium">
+                    Sua seleção difere dos filtros aplicados em {diffCount} canal{diffCount === 1 ? '' : 'is'}.
+                  </p>
+                  {diffDetail.added.length > 0 && (
+                    <div>
+                      <p className="flex items-center gap-1 font-medium text-emerald-600 dark:text-emerald-400">
+                        <Plus className="w-3 h-3" /> Será adicionado:
+                      </p>
+                      <p className="ml-4">{diffDetail.added.join(', ')}</p>
+                    </div>
+                  )}
+                  {diffDetail.removed.length > 0 && (
+                    <div>
+                      <p className="flex items-center gap-1 font-medium text-rose-600 dark:text-rose-400">
+                        <Minus className="w-3 h-3" /> Será removido:
+                      </p>
+                      <p className="ml-4">{diffDetail.removed.join(', ')}</p>
+                    </div>
+                  )}
+                  <p className="pt-1 text-muted-foreground border-t border-border">
+                    Clique em <strong>Aplicar</strong> para confirmar ou em <strong>Reverter</strong> para descartar.
+                  </p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
             <Button
               type="button"
               variant="default"
