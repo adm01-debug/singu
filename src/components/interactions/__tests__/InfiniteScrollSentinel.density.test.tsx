@@ -56,7 +56,7 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
     expect(container.querySelectorAll('.h-20').length).toBe(3);
   });
 
-  it('mantém estado final independente da densidade', () => {
+  it('mensagem final inclui total exibido e densidade compacta', () => {
     localStorage.setItem('singu-table-density', 'compact');
     render(
       <InfiniteScrollSentinel
@@ -66,6 +66,22 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
         totalLoaded={50}
       />,
     );
-    expect(screen.getByText(/Fim da lista — 50 interações exibidas/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Fim da lista — 50 de 50 interações exibidas · densidade compacta/),
+    ).toBeInTheDocument();
+  });
+
+  it('mensagem final usa singular quando total=1 (densidade confortável)', () => {
+    render(
+      <InfiniteScrollSentinel
+        sentinelRef={makeRef()}
+        hasMore={false}
+        total={1}
+        totalLoaded={1}
+      />,
+    );
+    expect(
+      screen.getByText(/Fim da lista — 1 de 1 interação exibida · densidade confortável/),
+    ).toBeInTheDocument();
   });
 });
