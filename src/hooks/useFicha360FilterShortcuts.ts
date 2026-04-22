@@ -24,6 +24,8 @@ interface Options {
   onAbrirFavoritos?: () => void;
   onSortRecente?: () => void;
   onSortRelevante?: () => void;
+  onAbrirResumoIA?: () => void;
+  filteredCount?: number;
   enabled: boolean;
 }
 
