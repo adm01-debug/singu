@@ -141,6 +141,72 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     }
   }, [isNaming]);
 
+  // Atalho Ctrl/Cmd+S: salva a busca atual com o nome sugerido (ou atualiza o preset ativo).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isSaveCombo = (e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S');
+      if (!isSaveCombo) return;
+      // Ignora se foco está em campo editável (mas permite se for nosso próprio Input de nomear)
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isEditable =
+        target?.isContentEditable ||
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT';
+      if (isEditable && target !== inputRef.current && target !== renameInputRef.current) return;
+
+      // Se está renomeando inline, deixa o navegador (não há ação útil aqui)
+      if (editingId) return;
+
+      e.preventDefault();
+
+      if (activeCount === 0) {
+        toast.info('Aplique algum filtro para salvar a busca');
+        return;
+      }
+
+      // Se já existe preset ativo, atualiza-o (ou avisa se autosave já cobriu)
+      if (activePresetId) {
+        const target = presets.find(p => p.id === activePresetId);
+        if (target) {
+          if (autoSave) {
+            toast.success('Preset já está sincronizado', { description: `"${target.name}"` });
+          } else {
+            updatePreset(activePresetId, {
+              filters: {
+                q: currentPayload.q ? [currentPayload.q] : [],
+                contact: currentPayload.contact ? [currentPayload.contact] : [],
+                company: currentPayload.company ? [currentPayload.company] : [],
+                canais: currentPayload.canais,
+                de: currentPayload.de ? [currentPayload.de] : [],
+                ate: currentPayload.ate ? [currentPayload.ate] : [],
+                sort: currentPayload.sort ? [currentPayload.sort] : [],
+              },
+              sortBy: '',
+              sortOrder: 'desc',
+            });
+            toast.success('Preset atualizado', { description: `"${target.name}"` });
+          }
+          return;
+        }
+      }
+
+      // Caso contrário, cria novo com o nome sugerido
+      if (presets.length >= 10) {
+        toast.error('Limite de 10 buscas atingido');
+        return;
+      }
+      if (isNaming && name.trim()) {
+        saveWithName(name);
+      } else {
+        saveWithName(suggestedName);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  });
+
   const currentPayload: SerializedPayload = useMemo(() => ({
     q: filters.q,
     contact: filters.contact,
@@ -630,12 +696,13 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   size="sm"
                   className="flex-1 justify-start gap-2 text-xs h-8 min-w-0"
                   onClick={handleQuickSave}
-                  title={`Salvar como "${suggestedName}"`}
+                  title={`Salvar como "${suggestedName}" (Ctrl+S)`}
                   aria-label={`Salvar busca como ${suggestedName}`}
                 >
                   <BookmarkPlus className="w-3.5 h-3.5 shrink-0" />
                   <span className="text-muted-foreground/80 shrink-0">Salvar como</span>
                   <span className="font-medium truncate">{suggestedName}</span>
+                  <kbd className="ml-auto shrink-0 hidden sm:inline-flex items-center rounded border border-border bg-muted/50 px-1 text-[10px] text-muted-foreground">⌘S</kbd>
                 </Button>
                 <Button
                   variant="outline"
