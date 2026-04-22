@@ -1,63 +1,70 @@
 
 
-# Plano: Atalhos de teclado para chips de filtros ativos
+# Plano: Persistência de período e canais na URL (deep-link)
 
-## Objetivo
+## Status atual
 
-Permitir gerenciar os chips ativos de "Últimas Interações" (Ficha 360) sem mouse: remover individualmente período / canais / busca e limpar tudo via teclado.
+A persistência **já está implementada** em `src/hooks/useFicha360Filters.ts`:
 
-## Atalhos propostos
+- `?periodo=<7|30|90|365>` para período (omitido quando = 90, o default)
+- `?canais=<csv>` para canais (omitido quando vazio)
+- `?q=<termo>` para busca textual
+- `clear()` remove os 3 params
+- `useSearchParams` do react-router garante reatividade a back/forward, refresh e colagem de URL
 
-Escopo: ativos somente quando a Ficha 360 está montada e o foco **não** está em campo editável (input/textarea/select/contenteditable). Registrados via `useScopedShortcut` (registry já existente em `src/lib/keyboardShortcutRegistry.ts`), o que garante listagem automática no cheatsheet (`?`).
+Os setters (`setDays`, `setChannels`, `setQ`) usam `setSearchParams(..., { replace: true })`, o que **substitui** a entrada do histórico em vez de empilhar — bom para digitação, mas ruim para compartilhar (o usuário não consegue voltar a um estado anterior por engano e a URL nem sempre está "settled").
 
-| Atalho | Ação |
-|---|---|
-| `Shift + C` | Limpar tudo (período → 90d, canais → [], busca → "") |
-| `Shift + P` | Remover chip de período (volta para 90d) |
-| `Shift + B` | Remover chip de busca textual |
-| `Shift + 1…5` | Remover canal pela ordem em que aparecem nos chips ativos (1=primeiro chip de canal, 2=segundo, etc.) |
+O que falta para a experiência de **compartilhar link** ficar redonda:
 
-Decisões:
-- `Shift + tecla` evita conflito com atalhos globais (`?`, `g d`, `Cmd/Ctrl+B` da sidebar) e com digitação normal.
-- `Shift + 1…5` usa a **ordem visual atual** dos chips (após sort do `useFicha360FilterFavorites`), não a ordem fixa do whitelist — assim o usuário sempre vê "1 = primeiro chip à esquerda".
-- Quando não há nada para remover (ex.: `Shift+B` sem busca ativa), o handler vira no-op silencioso (sem toast de erro).
-- Toda ação bem-sucedida dispara um toast curto (`sonner`, info, 1.5s) confirmando: "Período limpo", "Canal WhatsApp removido", "Filtros limpos".
+## Lacunas identificadas
 
-## Mudanças (arquivos)
+1. **Sem botão "Copiar link"** dedicado para a configuração atual de filtros. Hoje o usuário precisa copiar a URL do navegador manualmente — usável, mas não óbvio. Já existe `FavoritosFiltrosMenu` com "Compartilhar favorito", mas isso exige salvar como favorito antes.
+2. **`replace: true` em todos os setters**: ao mudar período/canais, o histórico não cresce, então `back` não restaura o estado anterior dos filtros. Para deep-link compartilhável isso é OK, mas para navegação intra-página é ruim.
+3. **Validação defensiva ao colar URL**: `parseCanais` em `useFicha360Filters` filtra por whitelist? Vou conferir — se não, valores inválidos no link entram silenciosamente.
+4. **Sem feedback visual ao abrir um deep-link**: usuário que recebe o link não sabe que filtros vieram da URL. Toast curto resolveria.
 
-### 1. `src/components/ficha-360/FiltrosAtivosChips.tsx`
-- Adicionar dica visual de atalho no chip ao passar o mouse: usar `<KeyboardHint keys={['⇧','P']} />` (componente já existe em `src/components/ui/keyboard-hint.tsx`) **dentro do `title`** do botão de fechar do `Badge` (tooltip nativo, sem inflar o layout). Não muda layout flat.
-- Sem novo prop: o componente continua puramente visual; os atalhos vivem no consumidor.
+## Mudanças
 
-### 2. Novo: `src/hooks/useFicha360FilterShortcuts.ts` (~70 linhas)
-Hook que recebe estado e setters atuais e registra os atalhos via `useScopedShortcut`:
+### 1. `src/hooks/useFicha360Filters.ts` — endurecer parse e push vs replace
 
-```ts
-useFicha360FilterShortcuts({
-  days, channels, q,
-  onClearAll, onClearPeriod, onClearSearch, onRemoveChannel,
-  enabled, // false em loading/erro para evitar disparar enquanto não há chips
-});
-```
+- **Whitelist de canais** no parse: aplicar `KNOWN_CHANNELS = ['whatsapp','call','email','meeting','note']` e descartar valores fora da lista (consistente com `useInteractionsAdvancedFilter` que já faz isso — ver `use-interactions-advanced-filter-apply-all.test.ts`).
+- **Push vs replace**: aceitar opção `{ pushHistory?: boolean }` em `setDays`, `setChannels`, `setQ` e `clear`. Default segue `replace: true` (não quebra debounce de busca). Botão "Copiar link" e "Aplicar favorito" passariam `pushHistory: true` para criar entrada navegável.
+- Sem mudança de assinatura pública: param opcional → consumidores existentes intactos.
 
-Internamente:
-- 1 `useScopedShortcut` por atalho fixo (`Shift+C`, `Shift+P`, `Shift+B`).
-- 5 `useScopedShortcut` para `Shift+1`…`Shift+5`, cada um lendo `channels[i]` no momento do disparo (via ref para evitar re-registrar a cada mudança).
-- `scope: 'ficha360-filtros'` para aparecer agrupado no cheatsheet.
+### 2. Novo: `src/components/ficha-360/CopiarLinkFiltrosButton.tsx` (~70 linhas)
 
-### 3. `src/pages/Ficha360.tsx`
-- Importar e chamar `useFicha360FilterShortcuts` passando handlers já existentes (`clearFilters`, `setDays(90)`, `setQ('')`, `setChannels(channels.filter(...))`) + sincronização com draft (igual ao `applyFavoriteFilters`).
-- `enabled = !contactLoading && !!contactData`.
+- Botão `Link2` icon-only no `headerExtra` do `UltimasInteracoesCard`, **ao lado** do `FavoritosFiltrosMenu`.
+- `aria-label="Copiar link com filtros atuais"`, tooltip explicativo.
+- Ao clicar:
+  1. Monta URL absoluta usando `window.location.origin + window.location.pathname + '?' + searchParams.toString()`.
+  2. `navigator.clipboard.writeText(url)` com fallback para `document.execCommand('copy')` em browsers antigos (já existe util `copyToClipboard` em `src/lib/clipboard.ts`? — verificar e reutilizar; senão inline).
+  3. Toast `sonner` "Link copiado · período + N canais + busca" descrevendo o estado.
+- Desabilitado (`opacity-50`) quando não há filtros ativos (`activeCount === 0`) com tooltip "Configure ao menos um filtro para gerar link".
 
-### 4. Cheatsheet
-- Nada a fazer: o `KeyboardShortcutsDialogEnhanced` (carregado em `AppChrome.tsx`) já consome `getRegisteredShortcuts()` do registry, então os 8 atalhos aparecerão automaticamente sob a seção "ficha360-filtros" quando a página estiver montada.
+### 3. `src/pages/Ficha360.tsx` — integração
+
+- Importar `CopiarLinkFiltrosButton` e renderizar no `headerExtra` antes de `FavoritosFiltrosMenu`.
+- Hook novo `useFicha360DeeplinkToast`:
+  - Em `useEffect` de mount-only, se `activeCount > 0` ao montar (ou seja, página abriu **com** filtros na URL), dispara toast info uma vez: "Filtros aplicados via link · {resumo}".
+  - Usa `useRef` para garantir que dispara só uma vez por sessão de página.
+
+### 4. Atalho de teclado
+
+- Adicionar em `useFicha360FilterShortcuts`: `Shift + L` → "Copiar link com filtros atuais", reusando o handler do botão (passar via prop `onCopyLink`).
+- Aparece automaticamente no cheatsheet sob escopo `ficha360-filtros`.
+
+### 5. Tooltip nos chips
+
+- Em `FiltrosAtivosChips`, adicionar dica visual no rodapé "Compartilhe este link: {url}" — **não**, isso polui. Decisão: pular. O botão dedicado + atalho já resolvem.
 
 ## Não muda
 
-- Outras páginas, hooks de paginação, `useFicha360Filters`, `useFicha360FilterFavorites`, `FiltrosInteracoesBar`, layout/CSS dos chips.
-- Sem novo atalho global; tudo escopado e com guarda anti-input.
+- Estrutura de query params (`?periodo`, `?canais`, `?q` permanecem); back/forward para usuários que recebem link funciona via histórico do browser nativo.
+- `useFicha360DraftFilters`, `FiltrosInteracoesBar`, `FavoritosFiltrosMenu` (que já tem fluxo de compartilhar **favorito** com `?favorito=` separado, complementar a este).
+- RLS, edge functions, tabelas.
+- Whitelist de períodos (já validada como `[7,30,90,365]`).
 
 ## Critérios de aceite
 
-(a) `Shift+C` limpa período, canais e busca de uma vez, com toast; (b) `Shift+P` reseta período para 90d quando havia chip de período, no-op caso contrário; (c) `Shift+B` limpa a busca quando há `q`, no-op caso contrário; (d) `Shift+1…5` removem o N-ésimo chip de canal visível, no-op se índice fora do range; (e) atalhos não disparam quando foco está em input/textarea/select/contenteditable; (f) atalhos só ficam ativos enquanto Ficha 360 está montada e dados carregaram; (g) cheatsheet (`?`) lista os 8 atalhos sob "ficha360-filtros" com descrição em PT-BR; (h) tooltip dos chips mostra o atalho correspondente; (i) sem nova dependência, sem `any`, todos os arquivos <200 linhas.
+(a) Botão `Link2` no header de "Últimas Interações" copia URL absoluta com `?periodo=`, `?canais=`, `?q=` (omitindo defaults); (b) toast `Link copiado` confirma com descrição do estado; (c) botão desabilitado quando não há filtro ativo; (d) `Shift + L` faz o mesmo via teclado e aparece no cheatsheet; (e) abrir um link com filtros aplica-os automaticamente (já funciona) e dispara toast `Filtros aplicados via link` 1x por sessão; (f) canais inválidos colados na URL são descartados via whitelist; (g) sem nova dependência, sem `any`, PT-BR, flat, todos os arquivos novos <120 linhas.
 
