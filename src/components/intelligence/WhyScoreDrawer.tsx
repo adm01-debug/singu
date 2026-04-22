@@ -137,28 +137,68 @@ export function WhyScoreDrawer({
             <h4 className="text-sm font-semibold flex items-center gap-2">
               <Activity className="h-4 w-4" aria-hidden="true" />
               Fatores que contribuíram
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="inline-flex" aria-label="Sobre a ordenação dos fatores">
+                      <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[240px] text-xs">
+                    Ordenados pela contribuição real (peso × score). O fator no topo é o que mais influenciou o resultado.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </h4>
-            {sortedFactors.length === 0 && (
+            {rankedFactors.length === 0 && (
               <p className="text-xs text-muted-foreground">
                 Sem fatores detalhados disponíveis para esse score.
               </p>
             )}
-            {sortedFactors.map((f) => (
-              <div key={f.key} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">{f.label}</span>
-                  <span className="text-muted-foreground">
-                    {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
-                  </span>
+            {rankedFactors.map((f) => {
+              const contribInt = Math.round(f.contribution);
+              const contribPctInt = Math.round(f.contributionPct);
+              const rankBadge =
+                f.rank === 1 ? (
+                  <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    #1 maior impacto
+                  </Badge>
+                ) : f.rank === 2 || f.rank === 3 ? (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    #{f.rank}
+                  </Badge>
+                ) : null;
+
+              return (
+                <div key={f.key} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs gap-2">
+                    <span className="font-medium flex items-center gap-1.5 min-w-0">
+                      <span className="truncate">{f.label}</span>
+                      {rankBadge}
+                    </span>
+                    <span className="text-muted-foreground shrink-0">
+                      {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={f.score}
+                    className="h-2"
+                    indicatorClassName={BAND_META[deriveBand(f.score)].indicator}
+                    aria-label={`Qualidade do fator: ${Math.round(f.score)}/100`}
+                  />
+                  <Progress
+                    value={f.contributionPct}
+                    className="h-1 bg-muted"
+                    indicatorClassName="bg-primary/60"
+                    aria-label={`Contribuição relativa: ${contribPctInt}% do score total`}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Contribuição: <span className="font-medium text-foreground/80">{contribInt} pts</span> ({contribPctInt}% do total)
+                  </p>
+                  {f.detail && <p className="text-[11px] text-muted-foreground">{f.detail}</p>}
                 </div>
-                <Progress
-                  value={f.score}
-                  className="h-2"
-                  indicatorClassName={BAND_META[deriveBand(f.score)].indicator}
-                />
-                {f.detail && <p className="text-[11px] text-muted-foreground">{f.detail}</p>}
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {recommendations.length > 0 && (
