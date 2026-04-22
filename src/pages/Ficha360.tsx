@@ -76,6 +76,7 @@ const Ficha360 = () => {
     rapportPoints,
     channelCounts,
     isLoading,
+    interactionsFetching,
   } = useFicha360(id, { days, channels, interactionsLimit: 50 });
   const { counts: potentialChannelCounts, isFetched: channelCountsReady } =
     useFicha360ChannelCounts(id, draftDays);
