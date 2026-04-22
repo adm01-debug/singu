@@ -59,7 +59,8 @@ export const SortChips = React.memo(function SortChips({ value, onChange, hasQue
       e.preventDefault();
       if (effective !== item.key) {
         onChange(item.key);
-        toast.message(`Ordenação: ${item.label}`, { duration: 1500 });
+        // Toast curto e único — não dispara no no-op (mesmo chip ativo).
+        toast.message(`↕ ${item.label}`, { id: 'sort-change', duration: 1200 });
       }
     };
     const onUp = (e: KeyboardEvent) => {
