@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useInfiniteList } from '@/hooks/useInfiniteList';
-import { InfiniteScrollSentinel } from '@/components/interactions/InfiniteScrollSentinel';
+import { InfiniteScrollSentinel, CompactItemSkeleton } from '@/components/interactions/InfiniteScrollSentinel';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
 
 interface Props {
@@ -15,6 +15,9 @@ interface Props {
   contactId: string;
   headerExtra?: React.ReactNode;
   filtersActive?: boolean;
+  isLoading?: boolean;
+  days?: number;
+  channels?: string[];
 }
 
 const channelIcon = (channel: string | null) => {
@@ -49,13 +52,15 @@ function formatDate(iso?: string | null): string {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive }: Props) => {
+export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive, isLoading, days, channels }: Props) => {
   const items = Array.isArray(interactions) ? interactions : [];
+  const channelsKey = Array.isArray(channels) ? [...channels].map((c) => c.toLowerCase()).sort().join(',') : '';
+  const filterKey = `${days ?? 'all'}-${channelsKey || 'all'}`;
   const { visible, hasMore, sentinelRef, loadMore } = useInfiniteList(
     items,
     15,
-    [items, contactId],
-    { persistKey: contactId ? `ficha-ultimas-${contactId}` : undefined }
+    [items, contactId, filterKey],
+    { persistKey: contactId ? `ficha-ultimas-${contactId}-${filterKey}` : undefined }
   );
 
   return (
@@ -81,7 +86,16 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
         {headerExtra}
       </CardHeader>
       <CardContent>
-        {items.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-2 py-1" aria-busy="true" aria-live="polite">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <CompactItemSkeleton
+                key={i}
+                titleMaxWidth={i % 2 === 0 ? 'max-w-[60%]' : 'max-w-[45%]'}
+              />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
           <InlineEmptyState
             icon={MessageSquare}
             title={filtersActive ? 'Nenhuma interação nos filtros' : 'Sem interações recentes'}

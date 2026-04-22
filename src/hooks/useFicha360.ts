@@ -61,6 +61,7 @@ export function useFicha360(contactId: string | undefined, options: UseFicha360O
     rapportPoints: rapportPoints.data ?? null,
     channelCounts,
     isLoading,
+    interactionsFetching: interactions.isFetching,
     isError:
       view360.isError &&
       intelligence.isError &&
