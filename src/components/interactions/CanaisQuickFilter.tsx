@@ -78,7 +78,7 @@ function arraysEqual(a: string[], b: string[]) {
 
 export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais, onChange, counts }: Props) {
   const safe = useMemo(() => (Array.isArray(canais) ? canais : []), [canais]);
-  const { mode, toggle } = useChannelSyncMode();
+  const { mode, toggle, setMode } = useChannelSyncMode();
   const [pending, setPendingState] = useState<string[]>(() => {
     // Restaura pending salvo apenas se modo for manual e diferir do aplicado
     try {
@@ -98,24 +98,22 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     });
   }, []);
 
-  // Rastreia o tamanho anterior de `safe` para detectar um "clear" externo
-  // (transição de N>0 para 0). Nesse caso, sincronizamos o pending mesmo no
-  // modo manual — evita chips pendentes órfãos após Limpar todos os filtros.
-  const prevSafeLenRef = React.useRef(safe.length);
+  // Rastreia o `safe` anterior para distinguir mudanças externas (preset/clear)
+  // de transições internas (apply/revert/toggle no auto).
+  const prevSafeRef = React.useRef<string[]>(safe);
 
-  // Sincroniza pending com prop quando ela muda externamente (preset, clear, etc.)
-  // Só sobrescreve se NÃO houver pending persistido divergente no modo manual,
-  // exceto quando for um clear global (safe → []).
   useEffect(() => {
-    const wasNonEmpty = prevSafeLenRef.current > 0;
+    const prevSafe = prevSafeRef.current;
+    const wasNonEmpty = prevSafe.length > 0;
     const isNowEmpty = safe.length === 0;
     const externalClear = wasNonEmpty && isNowEmpty;
-    prevSafeLenRef.current = safe.length;
+    const safeChanged = !arraysEqual(prevSafe, safe);
+    prevSafeRef.current = safe;
 
     setPendingState((prev) => {
-      // Se prev já é igual a safe, nada a fazer
       if (arraysEqual(prev, safe)) return prev;
-      // Clear global externo: força sincronização mesmo em manual
+
+      // Clear externo: força sincronização mesmo em manual
       if (externalClear) {
         if (mode === 'manual' && prev.length > 0) {
           toast.info('Filtros limpos', {
@@ -125,13 +123,29 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
         }
         return safe;
       }
-      // No modo manual, mantém o pending divergente (não sobrescreve seleções do usuário)
-      if (mode === 'manual' && !arraysEqual(prev, safe)) {
+
+      // Preset/mudança externa para canais não-vazios: se o `safe` mudou
+      // (não é apenas o pending divergente do mount) e estamos em manual,
+      // o preset venceu — voltamos para auto e sincronizamos.
+      if (safeChanged && safe.length > 0 && mode === 'manual') {
+        setMode('auto');
+        clearPending();
+        toast.info('Preset aplicado', {
+          description: 'Canais sincronizados e modo manual desativado.',
+          duration: 3000,
+        });
+        return safe;
+      }
+
+      // No modo manual sem mudança externa em safe, mantém pending divergente
+      if (mode === 'manual' && !safeChanged) {
         return prev;
       }
+
       return safe;
     });
-  }, [safe, mode]);
+  }, [safe, mode, setMode]);
+
 
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
