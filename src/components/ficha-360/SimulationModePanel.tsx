@@ -39,6 +39,15 @@ const SENTIMENT_OPTIONS: Array<{ value: 'none' | NonNullable<SimulationSentiment
   { value: 'negativo', label: 'Negativo' },
 ];
 
+const CHANNEL_OPTIONS: Array<{ value: string; label: string; title: string }> = [
+  { value: 'WhatsApp', label: 'WhatsApp', title: 'Simular WhatsApp como canal preferido' },
+  { value: 'Telefone', label: 'Telefone', title: 'Simular ligação como canal preferido' },
+  { value: 'E-mail', label: 'E-mail', title: 'Simular e-mail como canal preferido' },
+  { value: 'LinkedIn', label: 'LinkedIn', title: 'Simular LinkedIn como canal preferido' },
+  { value: 'Reunião', label: 'Reunião', title: 'Simular reunião presencial/vídeo' },
+  { value: '', label: 'Sem canal', title: 'Simular ausência de canal preferido' },
+];
+
 export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) => {
   const enabled = useSimulationStore((s) => s.enabled);
   const overrides = useSimulationStore((s) => s.overrides);
