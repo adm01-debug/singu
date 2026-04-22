@@ -404,6 +404,13 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         visibleCount={visibleEventsCount}
         contactLabel={contactOptions.find(c => c.id === adv.contact)?.label}
         companyLabel={companyOptions.find(c => c.id === adv.company)?.label}
+        isolatedFilterCounts={computeIsolatedFilterCounts(
+          interactions,
+          adv,
+          debouncedQ,
+          contactOptions.find(c => c.id === adv.contact)?.label,
+          companyOptions.find(c => c.id === adv.company)?.label,
+        )}
         groupedMode={isGrouped}
         groupCount={visibleGroups.length}
         groupLabelSingular={adv.view === 'by-contact' ? 'pessoa' : 'empresa'}
