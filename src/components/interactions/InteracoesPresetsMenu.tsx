@@ -443,13 +443,23 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                         />
                       ) : (
                         <>
-                          <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                          <p
+                            className="text-sm font-medium text-foreground truncate cursor-text select-none"
+                            title="Duplo clique para renomear"
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              startRename(preset, e);
+                            }}
+                          >
+                            {preset.name}
+                          </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {summarize(payload)}
                             {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
                           </p>
                         </>
                       )}
+
                     </div>
                     <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 flex-shrink-0">
                       {editingId === preset.id ? (
