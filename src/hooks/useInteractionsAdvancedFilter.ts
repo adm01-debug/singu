@@ -412,8 +412,8 @@ export function useInteractionsAdvancedFilter() {
       if (arr.length > 0) sp.set('canais', arr.join(','));
     }
     if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
-    if (next.de instanceof Date && !isNaN(next.de.getTime())) sp.set('de', next.de.toISOString().slice(0, 10));
-    if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
+    { const s = serializeDate(next.de); if (s) sp.set('de', s); }
+    { const s = serializeDate(next.ate); if (s) sp.set('ate', s); }
     if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
     if (next.view && next.view !== 'list') sp.set('view', next.view);
     if (next.density === 'compact') sp.set('density', 'compact');
