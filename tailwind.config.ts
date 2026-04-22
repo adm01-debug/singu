@@ -113,6 +113,11 @@ export default {
         "pulse-glow": { "0%, 100%": { opacity: "0.4" }, "50%": { opacity: "1" } },
         "slide-up": { from: { opacity: "0", transform: "translateY(8px)" }, to: { opacity: "1", transform: "translateY(0)" } },
         "skeleton": { "0%": { backgroundColor: "hsl(var(--muted))" }, "50%": { backgroundColor: "hsl(var(--muted) / 0.5)" }, "100%": { backgroundColor: "hsl(var(--muted))" } },
+        "preset-flash": {
+          "0%": { backgroundColor: "hsl(var(--primary) / 0.25)", boxShadow: "inset 2px 0 0 0 hsl(var(--primary))" },
+          "60%": { backgroundColor: "hsl(var(--primary) / 0.12)", boxShadow: "inset 2px 0 0 0 hsl(var(--primary))" },
+          "100%": { backgroundColor: "transparent", boxShadow: "inset 2px 0 0 0 hsl(var(--primary) / 0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -126,6 +131,7 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "slide-up": "slide-up 0.3s ease-out",
         "skeleton": "skeleton 1.5s ease-in-out infinite",
+        "preset-flash": "preset-flash 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
       transitionTimingFunction: {
         'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
