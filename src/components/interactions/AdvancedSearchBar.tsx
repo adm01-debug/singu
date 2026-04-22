@@ -312,6 +312,7 @@ function SelectedChannelsIndicator({
   );
 }
 
+interface EntityPickerProps {
   icon: typeof User;
   placeholder: string;
   options: { id: string; label: string }[];
