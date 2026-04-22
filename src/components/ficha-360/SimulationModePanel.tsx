@@ -2,8 +2,8 @@
  * Painel "Modo de testes" da Ficha 360 — sandbox para simular cenários
  * (sentimento, cadência, recência, canal) e validar regras do score.
  */
-import { memo } from 'react';
-import { FlaskConical, RotateCcw } from 'lucide-react';
+import { memo, useState } from 'react';
+import { FlaskConical, RotateCcw, Save, Plus, X, Pencil } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -19,12 +19,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   useSimulationStore,
   type SimulationSentiment,
 } from '@/stores/useSimulationStore';
-import { SIMULATION_PRESETS } from '@/lib/prontidaoSimulation';
+import { useCustomSimulationPresetsStore } from '@/stores/useCustomSimulationPresetsStore';
+import { SIMULATION_PRESETS, hasActiveOverrides } from '@/lib/prontidaoSimulation';
 
 interface Props {
   realScore: number;
