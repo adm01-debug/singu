@@ -43,6 +43,22 @@ function CopyScriptMenuComponent({
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<ScriptChannel>('whatsapp');
 
+  const simEnabled = useSimulationStore((s) => s.enabled);
+  const simOverrides = useSimulationStore((s) => s.overrides);
+
+  // Validação do Modo de Testes: garante que sentimento e melhor horário/canal
+  // existam antes de gerar os scripts. Lista o que está faltando para mostrar aviso.
+  const missingSimFields = useMemo<string[]>(() => {
+    if (!simEnabled) return [];
+    const missing: string[] = [];
+    if (!simOverrides.sentiment && !sentiment) missing.push('sentimento');
+    if (!simOverrides.best_channel) missing.push('canal preferido');
+    if (!simOverrides.best_time && !bestTime) missing.push('melhor horário');
+    return missing;
+  }, [simEnabled, simOverrides, sentiment, bestTime]);
+
+  const hasSimWarning = missingSimFields.length > 0;
+
   const scripts = useMemo<GeneratedScript[]>(() => {
     const list = generateScripts({
       passoId,
