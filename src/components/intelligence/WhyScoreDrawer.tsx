@@ -274,6 +274,11 @@ export function WhyScoreDrawer({
                     ? 'Está prejudicando'
                     : 'Contribuição';
 
+              const bandMeta = FACTOR_BAND_META[f.factorBand];
+              const normWeightInt = Math.round(f.normalizedWeightPct);
+              const rawWeightInt = Math.round(f.weight * 100);
+              const scoreInt = Math.round(f.score);
+
               return (
                 <div key={f.key} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs gap-2">
@@ -288,10 +293,35 @@ export function WhyScoreDrawer({
                         <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
                         {dirMeta.label}
                       </Badge>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge
+                              variant="outline"
+                              className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 font-normal cursor-help', bandMeta.badgeClass)}
+                              aria-label={`Banda ${bandMeta.label}: score ${scoreInt} ${bandMeta.range}`}
+                            >
+                              Banda: {bandMeta.label}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[240px] text-xs">
+                            Cortes da banda: <strong>baixa</strong> até 35, <strong>média</strong> de 35 a 65, <strong>alta</strong> acima de 65. Este fator atingiu <strong>{scoreInt}</strong>, caindo na banda <strong>{bandMeta.label}</strong>.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </span>
-                    <span className="text-muted-foreground shrink-0">
-                      {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
-                    </span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-muted-foreground shrink-0 cursor-help">
+                            {scoreInt}/100 · representa {normWeightInt}% do total
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[240px] text-xs">
+                          Peso normalizado entre os fatores listados: <strong>{normWeightInt}%</strong>. Peso bruto configurado: <strong>{rawWeightInt}%</strong>.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <Progress
                     value={f.score}
