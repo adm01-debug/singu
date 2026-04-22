@@ -237,6 +237,8 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     setOpen(false);
     toast.success('Filtros atualizados', { description: `Preset "${preset.name}" aplicado` });
     requestAnimationFrame(() => {
+      // Rola até o topo da tabela e devolve o foco ao input de busca.
+      window.dispatchEvent(new CustomEvent('scroll-interactions-top'));
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
   };
