@@ -164,6 +164,11 @@ function byKey(counts: IsolatedFilterCount[]): Record<string, number> {
 }
 
 describe('Microdetalhe ↔ filtros isolados (integração com o hook)', () => {
+  // Cada teste monta seu próprio MemoryRouter; sem cleanup, o snapshot do hook
+  // de um teste anterior pode "vazar" ao testing-library reaproveitando o root,
+  // gerando contagens fantasmas no `captureHook` seguinte.
+  afterEach(() => cleanup());
+
   it('cada contagem do microdetalhe bate com aplicar SÓ aquele filtro', () => {
     const url =
       '/interacoes?q=proposta&contact=cA&company=E1&canais=whatsapp,email&direcao=outbound&de=2025-02-01&ate=2025-03-31&sentimento=positive';
