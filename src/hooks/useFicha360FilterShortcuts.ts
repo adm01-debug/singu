@@ -25,6 +25,7 @@ interface Options {
   onSortRecente?: () => void;
   onSortRelevante?: () => void;
   onAbrirResumoIA?: () => void;
+  onSalvarRelatorio?: () => void;
   filteredCount?: number;
   enabled: boolean;
 }
@@ -50,6 +51,7 @@ export function useFicha360FilterShortcuts({
   onSortRecente,
   onSortRelevante,
   onAbrirResumoIA,
+  onSalvarRelatorio,
   filteredCount = 0,
   enabled,
 }: Options) {
@@ -70,6 +72,7 @@ export function useFicha360FilterShortcuts({
     onSortRecente,
     onSortRelevante,
     onAbrirResumoIA,
+    onSalvarRelatorio,
   });
   useEffect(() => {
     handlersRef.current = {
@@ -83,6 +86,7 @@ export function useFicha360FilterShortcuts({
       onSortRecente,
       onSortRelevante,
       onAbrirResumoIA,
+      onSalvarRelatorio,
     };
   }, [
     onClearAll,
@@ -95,6 +99,7 @@ export function useFicha360FilterShortcuts({
     onSortRecente,
     onSortRelevante,
     onAbrirResumoIA,
+    onSalvarRelatorio,
   ]);
 
   useScopedShortcut({
@@ -229,6 +234,18 @@ export function useFicha360FilterShortcuts({
         return;
       }
       handlersRef.current.onAbrirResumoIA?.();
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'r',
+    shift: true,
+    description: 'Salvar filtros atuais como relatório fixo',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      handlersRef.current.onSalvarRelatorio?.();
     },
   });
 

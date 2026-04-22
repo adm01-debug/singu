@@ -35,7 +35,8 @@ import { useFicha360Sort } from '@/hooks/useFicha360Sort';
 import { sortInteractions } from '@/lib/sortInteractions';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
 import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
-import { useFicha360FilterFavorites, suggestFavoriteName } from '@/hooks/useFicha360FilterFavorites';
+import { useFicha360FilterFavorites, suggestFavoriteName, type FilterFavorite } from '@/hooks/useFicha360FilterFavorites';
+import { RelatoriosFixosBar } from '@/components/ficha-360/RelatoriosFixosBar';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
@@ -184,8 +185,31 @@ const Ficha360 = () => {
   // Controle do menu de favoritos (atalho Shift+F abre o popover).
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
   const [resumoIAOpen, setResumoIAOpen] = useState(false);
+  const [salvarRelatorioOpen, setSalvarRelatorioOpen] = useState(false);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
+
+  // Aplica relatório fixo: filtros + (opcionalmente) abre resumo IA.
+  const applyRelatorio = (preset: FilterFavorite) => {
+    const validDays = ([7, 30, 90, 365] as const).includes(preset.days as Ficha360Period)
+      ? (preset.days as Ficha360Period)
+      : 90;
+    setDays(validDays);
+    setChannels(preset.channels);
+    setTags(preset.tags);
+    setQ(preset.q ?? '');
+    setSearchInput(preset.q ?? '');
+    setDraftDays(validDays);
+    setDraftChannels(preset.channels);
+    if (preset.autoOpenSummary !== false) {
+      // Aguarda recompute de filteredInteractions antes de abrir
+      setTimeout(() => setResumoIAOpen(true), 0);
+    }
+    toast.success(`Relatório aplicado: "${preset.name}"`, {
+      description: preset.description,
+      duration: 2200,
+    });
+  };
 
   const quickSaveRef = useRef<() => void>(() => {});
   quickSaveRef.current = () => {
@@ -250,6 +274,7 @@ const Ficha360 = () => {
       toast.info('Ordenação: mais relevante', { duration: 1500 });
     },
     onAbrirResumoIA: () => setResumoIAOpen(true),
+    onSalvarRelatorio: () => setSalvarRelatorioOpen(true),
     filteredCount: filteredInteractions.length,
   });
 
@@ -485,7 +510,20 @@ const Ficha360 = () => {
                   q={q}
                   headerExtra={
                     <>
+                      <RelatoriosFixosBar
+                        days={days}
+                        channels={channels}
+                        tags={tags}
+                        q={q}
+                        onApply={applyRelatorio}
+                        saveDialogOpen={salvarRelatorioOpen}
+                        onSaveDialogOpenChange={setSalvarRelatorioOpen}
+                      />
                       <div className="flex items-center gap-2 flex-wrap">
+                        <GerarResumoIAButton
+                          count={filteredInteractions.length}
+                          onClick={() => setResumoIAOpen(true)}
+                        />
                         <FavoritosFiltrosMenu
                           days={days}
                           channels={channels}
@@ -581,6 +619,35 @@ const Ficha360 = () => {
           </>
         )}
       </div>
+      {id && (
+        <ResumoConversaIADialog
+          open={resumoIAOpen}
+          onOpenChange={setResumoIAOpen}
+          contactId={id}
+          interactions={sortedInteractions.map((it) => ({
+            id: it.id,
+            channel: it.channel ?? null,
+            direction: it.direction ?? null,
+            data_interacao: it.data_interacao ?? null,
+            assunto: it.assunto ?? null,
+            resumo: it.resumo ?? null,
+          }))}
+          contactSnapshot={{
+            full_name: fullName,
+            role_title: profile?.cargo ?? null,
+            company_name: profile?.company_name ?? null,
+            disc_profile: null,
+            hobbies: [],
+            interests: [],
+          }}
+          filtersSummary={{
+            period_days: days,
+            channels,
+            tags,
+            query: q,
+          }}
+        />
+      )}
     </AppLayout>
   );
 };
