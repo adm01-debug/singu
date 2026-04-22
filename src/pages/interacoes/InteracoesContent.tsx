@@ -434,6 +434,14 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
           const caret = active && active === searchEl && typeof active.selectionStart === 'number'
             ? active.selectionStart
             : null;
+
+          // Preserva a posição de scroll: remover um chip pode encolher a lista
+          // e fazer o navegador clampar `scrollY` para baixo da posição atual,
+          // gerando um "salto" visual em páginas longas. `preserveScroll`
+          // captura `scrollY` agora e re-aplica em dois rAFs, depois que o
+          // novo `scrollHeight` já reflete a lista filtrada.
+          preserveScroll();
+
           requestAnimationFrame(() => {
             window.dispatchEvent(
               new CustomEvent('focus-interactions-search-caret-end', { detail: { caret } }),
