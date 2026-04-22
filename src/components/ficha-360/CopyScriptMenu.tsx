@@ -63,11 +63,11 @@ function CopyScriptMenuComponent({
     return map;
   }, [scripts]);
 
-  const copy = async (text: string, label: string) => {
+  const copy = async (text: string, label: string, options?: { description?: string }) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(label);
+      toast.success(label, options);
     } catch {
       toast.error('Não foi possível copiar');
     }
