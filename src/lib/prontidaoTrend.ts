@@ -170,6 +170,18 @@ export function computeProntidaoTrend({
       weights,
     });
 
+    const b = result.breakdown;
+    const totalW =
+      b.cadence.weight + b.recency.weight + b.sentiment.weight + b.channel.weight;
+    const contribution: ProntidaoFactorContribution = totalW > 0
+      ? {
+          cadence: Math.round((b.cadence.score * b.cadence.weight) / totalW),
+          recency: Math.round((b.recency.score * b.recency.weight) / totalW),
+          sentiment: Math.round((b.sentiment.score * b.sentiment.weight) / totalW),
+          channel: Math.round((b.channel.score * b.channel.weight) / totalW),
+        }
+      : { cadence: 0, recency: 0, sentiment: 0, channel: 0 };
+
     points.push({
       weekStart: fmtIso(wStart),
       weekEnd: fmtIso(wEnd),
@@ -179,6 +191,7 @@ export function computeProntidaoTrend({
       levelLabel: result.levelLabel,
       interactionCount: inWeek.length,
       hasData: true,
+      contribution,
     });
   }
 
