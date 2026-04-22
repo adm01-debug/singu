@@ -27,7 +27,7 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
   if (total === 0) return null;
 
   if (hasMore) {
-    const isCompact = density === 'compact';
+    const isCompact = effectiveDensity === 'compact';
     const pct = total > 0 ? Math.min(100, Math.round((totalLoaded / total) * 100)) : 0;
     const skeletonCount = isCompact ? 2 : 3;
 
