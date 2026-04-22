@@ -22,7 +22,6 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
     const isCompact = density === 'compact';
     const pct = total > 0 ? Math.min(100, Math.round((totalLoaded / total) * 100)) : 0;
     const skeletonCount = isCompact ? 2 : 3;
-    const skeletonHeight = isCompact ? 'h-12' : 'h-20';
 
     return (
       <div
@@ -57,9 +56,13 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
             </Button>
           </div>
         )}
-        {Array.from({ length: skeletonCount }).map((_, i) => (
-          <Skeleton key={i} className={cn(skeletonHeight, 'w-full rounded-lg')} />
-        ))}
+        {Array.from({ length: skeletonCount }).map((_, i) =>
+          isCompact ? (
+            <CompactItemSkeleton key={i} titleMaxWidth={i === 0 ? 'max-w-[60%]' : 'max-w-[45%]'} />
+          ) : (
+            <Skeleton key={i} className="h-20 w-full rounded-lg" />
+          )
+        )}
         <p className="text-center text-xs text-muted-foreground">
           Carregando mais interações… ({totalLoaded} de {total})
         </p>
@@ -73,3 +76,18 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
     </div>
   );
 });
+
+function CompactItemSkeleton({ titleMaxWidth = 'max-w-[60%]' }: { titleMaxWidth?: string }) {
+  return (
+    <div className="flex items-start gap-3 px-2 py-2">
+      <Skeleton className="mt-0.5 h-7 w-7 rounded-md shrink-0" />
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <Skeleton className={cn('h-3.5 flex-1 rounded-sm', titleMaxWidth)} />
+          <Skeleton className="h-1.5 w-1.5 rounded-full shrink-0" />
+        </div>
+        <Skeleton className="h-3 w-2/5 rounded-sm" />
+      </div>
+    </div>
+  );
+}
