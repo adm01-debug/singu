@@ -201,7 +201,117 @@ function ChannelsTotalBadge({ counts }: { counts?: Record<string, number> }) {
   );
 }
 
-interface EntityPickerProps {
+const CHANNEL_ICON_META: Array<{
+  value: string;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}> = [
+  { value: 'whatsapp', label: 'WhatsApp', Icon: MessageSquare },
+  { value: 'call', label: 'Ligação', Icon: Phone },
+  { value: 'email', label: 'Email', Icon: Mail },
+  { value: 'meeting', label: 'Reunião', Icon: UsersIcon },
+  { value: 'video_call', label: 'Vídeo', Icon: Video },
+  { value: 'note', label: 'Nota', Icon: FileText },
+];
+
+/**
+ * Indicador compacto ao lado da busca: exibe ícones+labels dos canais
+ * selecionados com o atalho `Alt+N` correspondente. Cada chip é clicável
+ * para remover o canal individualmente; tooltip mostra o atalho completo.
+ *
+ * Aparece apenas quando há ao menos um canal selecionado.
+ */
+function SelectedChannelsIndicator({
+  canais,
+  onChange,
+}: {
+  canais: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const selected = useMemo(() => {
+    const set = new Set(canais);
+    return CHANNEL_ICON_META
+      .map((meta, idx) => ({ ...meta, shortcut: `Alt+${idx + 1}` }))
+      .filter((c) => set.has(c.value));
+  }, [canais]);
+
+  if (selected.length === 0) return null;
+
+  const remove = (value: string) => {
+    onChange(canais.filter((c) => c !== value));
+  };
+
+  // Mostra até 3 com label legível; o restante vira contador "+N".
+  const visible = selected.slice(0, 3);
+  const overflow = selected.length - visible.length;
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <div
+        role="group"
+        aria-label={`Canais selecionados: ${selected.map((c) => c.label).join(', ')}`}
+        className="inline-flex items-center gap-1 h-8 px-1 rounded-md border border-primary/30 bg-primary/5"
+      >
+        <span className="hidden md:inline text-[10px] uppercase tracking-wide text-primary/80 px-1 font-semibold">
+          Canais
+        </span>
+        {visible.map((c) => {
+          const Icon = c.Icon;
+          return (
+            <Tooltip key={c.value}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => remove(c.value)}
+                  aria-label={`Remover ${c.label} (${c.shortcut})`}
+                  className="group inline-flex items-center gap-1 h-6 px-1.5 rounded text-xs font-medium text-foreground bg-background hover:bg-destructive/10 hover:text-destructive transition-colors"
+                >
+                  <Icon className="w-3 h-3 shrink-0" />
+                  <span className="hidden lg:inline">{c.label}</span>
+                  <kbd className="hidden md:inline-flex items-center justify-center min-w-[28px] h-4 px-1 rounded bg-muted text-[9px] font-mono font-semibold text-muted-foreground group-hover:bg-destructive/20">
+                    {c.shortcut}
+                  </kbd>
+                  <X className="w-3 h-3 opacity-50 group-hover:opacity-100" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {c.label} · pressione <span className="font-mono font-semibold">{c.shortcut}</span> para alternar
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+        {overflow > 0 && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center justify-center h-6 px-1.5 rounded text-[10px] font-semibold text-primary bg-primary/10">
+                +{overflow}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs max-w-[240px]">
+              {selected.slice(3).map((c) => `${c.label} (${c.shortcut})`).join(', ')}
+            </TooltipContent>
+          </Tooltip>
+        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={() => onChange([])}
+              aria-label="Limpar todos os canais (Alt+0)"
+              className="inline-flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs">
+            Limpar todos · <span className="font-mono font-semibold">Alt+0</span>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  );
+}
+
   icon: typeof User;
   placeholder: string;
   options: { id: string; label: string }[];
