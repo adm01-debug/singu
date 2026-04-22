@@ -19,6 +19,7 @@ interface Options {
   onClearPeriod: () => void;
   onClearSearch: () => void;
   onRemoveChannel: (channel: string) => void;
+  onCopyLink?: () => void;
   enabled: boolean;
 }
 
@@ -37,6 +38,7 @@ export function useFicha360FilterShortcuts({
   onClearPeriod,
   onClearSearch,
   onRemoveChannel,
+  onCopyLink,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
@@ -45,10 +47,10 @@ export function useFicha360FilterShortcuts({
     stateRef.current = { days, channels, q, hasPeriodChip, enabled };
   }, [days, channels, q, hasPeriodChip, enabled]);
 
-  const handlersRef = useRef({ onClearAll, onClearPeriod, onClearSearch, onRemoveChannel });
+  const handlersRef = useRef({ onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink });
   useEffect(() => {
-    handlersRef.current = { onClearAll, onClearPeriod, onClearSearch, onRemoveChannel };
-  }, [onClearAll, onClearPeriod, onClearSearch, onRemoveChannel]);
+    handlersRef.current = { onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink };
+  }, [onClearAll, onClearPeriod, onClearSearch, onRemoveChannel, onCopyLink]);
 
   useScopedShortcut({
     scope: 'ficha360-filtros',
@@ -88,6 +90,20 @@ export function useFicha360FilterShortcuts({
       if (!s.enabled || !s.q.trim()) return;
       handlersRef.current.onClearSearch();
       toast.info('Busca limpa', { duration: 1500 });
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'l',
+    shift: true,
+    description: 'Copiar link com filtros atuais',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      const hasAny = s.hasPeriodChip || s.channels.length > 0 || s.q.trim().length > 0;
+      if (!hasAny) return;
+      handlersRef.current.onCopyLink?.();
     },
   });
 

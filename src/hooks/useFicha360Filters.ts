@@ -3,12 +3,21 @@ import { useSearchParams } from 'react-router-dom';
 
 const VALID_PERIODS = [7, 30, 90, 365] as const;
 const DEFAULT_DAYS = 90;
+const KNOWN_CHANNELS = ['whatsapp', 'call', 'email', 'meeting', 'note'] as const;
+const KNOWN_CHANNELS_SET = new Set<string>(KNOWN_CHANNELS);
 
 export type Ficha360Period = (typeof VALID_PERIODS)[number];
+
+interface SetterOptions {
+  /** Quando true, empilha entrada no histórico (back/forward navega entre estados). Default: false (replace). */
+  pushHistory?: boolean;
+}
 
 /**
  * Sincroniza filtros da seção "Últimas Interações" da Ficha 360 com a URL.
  * Query params: ?periodo=<days>&canais=<csv>&q=<termo>
+ *
+ * Canais inválidos colados na URL são descartados via whitelist (KNOWN_CHANNELS).
  */
 export function useFicha360Filters() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,13 +35,13 @@ export function useFicha360Filters() {
     return raw
       .split(',')
       .map((c) => c.trim().toLowerCase())
-      .filter(Boolean);
+      .filter((c) => c && KNOWN_CHANNELS_SET.has(c));
   }, [searchParams]);
 
   const q: string = useMemo(() => searchParams.get('q')?.trim() ?? '', [searchParams]);
 
   const setDays = useCallback(
-    (next: Ficha360Period) => {
+    (next: Ficha360Period, opts?: SetterOptions) => {
       setSearchParams(
         (prev) => {
           const sp = new URLSearchParams(prev);
@@ -40,29 +49,34 @@ export function useFicha360Filters() {
           else sp.set('periodo', String(next));
           return sp;
         },
-        { replace: true },
+        { replace: !opts?.pushHistory },
       );
     },
     [setSearchParams],
   );
 
   const setChannels = useCallback(
-    (next: string[]) => {
+    (next: string[], opts?: SetterOptions) => {
       setSearchParams(
         (prev) => {
           const sp = new URLSearchParams(prev);
-          if (!Array.isArray(next) || next.length === 0) sp.delete('canais');
-          else sp.set('canais', next.join(','));
+          const cleaned = Array.isArray(next)
+            ? next
+                .map((c) => c.trim().toLowerCase())
+                .filter((c) => c && KNOWN_CHANNELS_SET.has(c))
+            : [];
+          if (cleaned.length === 0) sp.delete('canais');
+          else sp.set('canais', cleaned.join(','));
           return sp;
         },
-        { replace: true },
+        { replace: !opts?.pushHistory },
       );
     },
     [setSearchParams],
   );
 
   const setQ = useCallback(
-    (next: string) => {
+    (next: string, opts?: SetterOptions) => {
       setSearchParams(
         (prev) => {
           const sp = new URLSearchParams(prev);
@@ -71,24 +85,27 @@ export function useFicha360Filters() {
           else sp.set('q', trimmed);
           return sp;
         },
-        { replace: true },
+        { replace: !opts?.pushHistory },
       );
     },
     [setSearchParams],
   );
 
-  const clear = useCallback(() => {
-    setSearchParams(
-      (prev) => {
-        const sp = new URLSearchParams(prev);
-        sp.delete('periodo');
-        sp.delete('canais');
-        sp.delete('q');
-        return sp;
-      },
-      { replace: true },
-    );
-  }, [setSearchParams]);
+  const clear = useCallback(
+    (opts?: SetterOptions) => {
+      setSearchParams(
+        (prev) => {
+          const sp = new URLSearchParams(prev);
+          sp.delete('periodo');
+          sp.delete('canais');
+          sp.delete('q');
+          return sp;
+        },
+        { replace: !opts?.pushHistory },
+      );
+    },
+    [setSearchParams],
+  );
 
   const activeCount =
     (days !== DEFAULT_DAYS ? 1 : 0) + (channels.length > 0 ? 1 : 0) + (q ? 1 : 0);

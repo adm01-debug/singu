@@ -24,7 +24,9 @@ import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelac
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
 import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
+import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
+import { useFicha360DeeplinkToast } from '@/hooks/useFicha360DeeplinkToast';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
@@ -42,7 +44,8 @@ import { useBestContactTime } from '@/hooks/useBestContactTime';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
 import { Search, X as XIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const sentimentClass = (s?: string | null) => {
   const v = (s || '').toLowerCase();
@@ -133,6 +136,19 @@ const Ficha360 = () => {
   }, [recentInteractions, q]);
 
   const hasPeriodChip = days !== 90;
+
+  // Handler de "copiar link" — guardado em ref para o atalho Shift+L sempre
+  // ler o estado mais recente sem causar re-registro do listener.
+  const copyLinkRef = useRef<() => void>(() => {});
+  copyLinkRef.current = () => {
+    if (activeCount === 0) return;
+    const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => toast.success('Link copiado', { duration: 2000 }))
+      .catch(() => toast.error('Não foi possível copiar o link'));
+  };
+
   useFicha360FilterShortcuts({
     days,
     channels,
@@ -158,6 +174,16 @@ const Ficha360 = () => {
       setChannels(next);
       setDraftChannels(next);
     },
+    onCopyLink: () => copyLinkRef.current(),
+  });
+
+  // Toast informativo quando a página abre com filtros vindos da URL.
+  useFicha360DeeplinkToast({
+    days,
+    channels,
+    q,
+    activeCount,
+    ready: !isLoading && !!profile,
   });
 
   const weights = useProntidaoWeightsStore((s) => s.weights);
@@ -388,6 +414,12 @@ const Ficha360 = () => {
                           days={days}
                           channels={channels}
                           onApply={applyFavoriteFilters}
+                        />
+                        <CopiarLinkFiltrosButton
+                          days={days}
+                          channels={channels}
+                          q={q}
+                          activeCount={activeCount}
                         />
                         <div className="relative">
                           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
