@@ -117,7 +117,13 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
           />
         ) : (
           <>
+            <IncrementalLoadStickyBar
+              hasMore={hasMore}
+              totalLoaded={visible.length}
+              total={items.length}
+            />
             <ul className="space-y-1">
+
               {visible.map((it) => {
                 const Icon = channelIcon(it.channel);
                 return (
