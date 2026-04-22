@@ -280,6 +280,30 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
 
   const showClear = mode === 'auto' ? safe.length > 0 : pending.length > 0;
 
+  /**
+   * Aplica uma combinação salva em 1 clique.
+   * - auto: chama `onChange` direto, atualizando os filtros aplicados.
+   * - manual: escreve em pending e pede confirmação via Aplicar.
+   */
+  const applyCombo = useCallback((combo: string[]) => {
+    const target = combo.filter((v) => VALID_VALUES.has(v as typeof CHANNELS[number]['value']));
+    if (mode === 'auto') {
+      if (arraysEqual(safe, target)) return;
+      onChange(target);
+      toast.success('Combinação aplicada', {
+        description: target.map((v) => CHANNELS.find((c) => c.value === v)?.label ?? v).join(' + '),
+        duration: 2500,
+      });
+    } else {
+      if (arraysEqual(pending, target)) return;
+      setPending(target);
+      toast.info('Combinação carregada como pendente', {
+        description: 'Clique em "Aplicar" para confirmar.',
+        duration: 3000,
+      });
+    }
+  }, [mode, safe, pending, onChange, setPending]);
+
   // ── Atalhos de teclado: Alt+1..6 alterna canal, Alt+0 limpa.
   // Setas ←/→ no campo de busca movem um cursor circular pelos canais e
   // alternam o canal correspondente — atalho ergonômico que não exige Alt.
