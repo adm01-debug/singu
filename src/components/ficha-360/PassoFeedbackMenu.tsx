@@ -1,10 +1,16 @@
 import { memo, useState } from 'react';
-import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft } from 'lucide-react';
+import { Check, MessageSquareReply, MessageSquare, VolumeX, PhoneOff, SkipForward, Loader2, ArrowLeft, History, Inbox } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useRegisterPassoFeedback, type PassoOutcome } from '@/hooks/useProximoPassoFeedback';
+import { formatDistanceToNow, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import {
+  useRegisterPassoFeedback,
+  useProximoPassoFeedbacks,
+  type PassoOutcome,
+} from '@/hooks/useProximoPassoFeedback';
 
 interface Props {
   passoId: string;
