@@ -3,13 +3,25 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Minus, Target, RotateCcw } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Target,
+  RotateCcw,
+  Phone,
+  MessageCircle,
+  Mail,
+  Users,
+  Sparkles,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +48,15 @@ import {
 } from '@/stores/useProntidaoTargetStore';
 import { cn } from '@/lib/utils';
 
+import {
+  computeTrendMilestones,
+  groupMilestonesByWeek,
+  type MilestoneKind,
+  type TrendMilestone,
+} from '@/lib/prontidaoTrendMilestones';
+import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
+import { cn } from '@/lib/utils';
+
 export type TrendWeeks = 4 | 8 | 12 | 24;
 
 const WEEKS_OPTIONS: { value: TrendWeeks; label: string }[] = [
@@ -51,7 +72,17 @@ interface Props {
   simulated?: boolean;
   weeks?: TrendWeeks;
   onWeeksChange?: (w: TrendWeeks) => void;
+  /** Lista de interações usada para detectar marcos importantes por semana. */
+  interactions?: ExternalInteraction[];
 }
+
+const MILESTONE_META: Record<MilestoneKind, { Icon: typeof Phone; cssVar: string; legend: string }> = {
+  'first-call': { Icon: Phone, cssVar: '--primary', legend: 'Primeira ligação' },
+  'first-whatsapp': { Icon: MessageCircle, cssVar: '--success', legend: 'Primeira conversa WhatsApp' },
+  'first-email': { Icon: Mail, cssVar: '--accent-foreground', legend: 'Primeiro e-mail' },
+  'first-meeting': { Icon: Users, cssVar: '--warning', legend: 'Primeira reunião' },
+  peak: { Icon: Sparkles, cssVar: '--destructive', legend: 'Pico de atividade' },
+};
 
 const trendMeta = {
   up: {
