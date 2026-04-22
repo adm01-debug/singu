@@ -63,11 +63,11 @@ function CopyScriptMenuComponent({
     return map;
   }, [scripts]);
 
-  const copy = async (text: string, label: string) => {
+  const copy = async (text: string, label: string, options?: { description?: string }) => {
     if (!text) return;
     try {
       await navigator.clipboard.writeText(text);
-      toast.success(label);
+      toast.success(label, options);
     } catch {
       toast.error('Não foi possível copiar');
     }
@@ -158,14 +158,14 @@ function CopyScriptMenuComponent({
                     <div className="flex items-center justify-end gap-2 pt-1">
                       <Button
                         size="xs"
-                        onClick={() =>
-                          copy(
-                            c === 'email' && s.subject ? `Assunto: ${s.subject}\n\n${s.body}` : s.body,
-                            c === 'email' && s.subject
-                              ? 'E-mail copiado (assunto + corpo)'
-                              : `Script de ${channelMeta[c].label} copiado`,
-                          )
-                        }
+                        onClick={() => {
+                          const text =
+                            c === 'email' && s.subject ? `Assunto: ${s.subject}\n\n${s.body}` : s.body;
+                          copy(text, `Script de ${channelMeta[c].label} copiado`, {
+                            description:
+                              c === 'email' && s.subject ? 'Assunto + corpo prontos na área de transferência' : undefined,
+                          });
+                        }}
                       >
                         <Copy className="h-3 w-3" />
                         Copiar
