@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { Calendar, MessageSquare, Phone, Mail, FileText, Search, X } from 'lucide-react';
+import { Calendar, MessageSquare, Phone, Mail, FileText, Search, X, Tag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Ficha360Period } from '@/hooks/useFicha360Filters';
+import { TAG_DICTIONARY, type InteractionTag } from '@/lib/interactionTags';
 
 const CHANNEL_META: Record<string, { label: string; icon: typeof MessageSquare }> = {
   whatsapp: { label: 'WhatsApp', icon: MessageSquare },
@@ -22,12 +23,14 @@ const PERIOD_LABEL: Record<number, string> = {
 interface Props {
   days: Ficha360Period;
   channels: string[];
+  tags?: InteractionTag[];
   shownCount: number;
   totalCount: number;
   searchTerm?: string;
   searchMatchCount?: number;
   onRemoveDays: () => void;
   onRemoveChannel: (c: string) => void;
+  onRemoveTag?: (t: InteractionTag) => void;
   onRemoveSearch?: () => void;
   onClearAll: () => void;
 }
