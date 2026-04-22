@@ -226,11 +226,44 @@ function ProximoPassoQuickFormComponent({ passo, bestTime, contactId, onCreated,
         <span>{hint}</span>
       </p>
 
+      {conflicts.errors.length > 0 && (
+        <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong className="block mb-1">Conflito{conflicts.errors.length > 1 ? 's' : ''} impedindo confirmação:</strong>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {conflicts.errors.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {conflicts.errors.length === 0 && conflicts.warnings.length > 0 && (
+        <Alert className="py-2 border-warning/50 bg-warning/10 [&>svg]:text-warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            <strong className="block mb-1">Atenção antes de confirmar:</strong>
+            <ul className="list-disc pl-4 space-y-0.5">
+              {conflicts.warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-end gap-2">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={createTask.isPending}>
           Cancelar
         </Button>
-        <Button size="sm" onClick={handleSubmit} disabled={createTask.isPending}>
+        <Button
+          size="sm"
+          onClick={handleSubmit}
+          disabled={createTask.isPending || hasErrors}
+          title={hasErrors ? 'Resolva os conflitos para confirmar' : undefined}
+        >
           {createTask.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
           Confirmar
         </Button>
