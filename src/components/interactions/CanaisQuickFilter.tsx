@@ -381,27 +381,43 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           const count = hasCounts ? (counts?.[opt.value] ?? 0) : undefined;
           const isEmpty = hasCounts && count === 0 && !inPending;
           const shortcutLabel = `Alt+${idx + 1}`;
+          const stateLabel = inPending ? 'selecionado' : 'não selecionado';
+          const countLabel =
+            typeof count === 'number'
+              ? `, ${count} ${count === 1 ? 'interação' : 'interações'}`
+              : '';
+          const pendingLabel = isDifferent ? ', alteração pendente' : '';
+          const ariaLabel = `Canal ${opt.label}, ${stateLabel}${countLabel}${pendingLabel}. Atalho ${shortcutLabel} para alternar.`;
           const chip = (
             <div className="relative inline-flex">
               <Badge
                 variant={inPending ? 'default' : 'outline'}
                 role="button"
+                tabIndex={0}
                 aria-pressed={inPending}
                 aria-keyshortcuts={`Alt+${idx + 1}`}
+                aria-label={ariaLabel}
                 title={opt.label}
                 onClick={() => toggleCanal(opt.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCanal(opt.value);
+                  }
+                }}
                 className={cn(
                   'cursor-pointer gap-1 px-2 py-1 text-xs transition-all select-none',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   !inPending && 'hover:bg-muted',
                   isDifferent && 'border-dashed border-warning/70 text-warning ring-1 ring-warning/40 bg-warning/5',
                   isEmpty && 'opacity-50',
                   justReverted && 'ring-1 ring-success/60 bg-success/5',
                 )}
               >
-                <Icon className="w-3 h-3" />
+                <Icon className="w-3 h-3" aria-hidden="true" />
                 <span className="hidden sm:inline">{opt.label}</span>
                 {typeof count === 'number' && (
-                  <span className="ml-0.5 text-[10px] tabular-nums opacity-70">
+                  <span className="ml-0.5 text-[10px] tabular-nums opacity-70" aria-hidden="true">
                     {count > 999 ? '999+' : count}
                   </span>
                 )}
