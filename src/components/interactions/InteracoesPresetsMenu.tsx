@@ -85,6 +85,33 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<typeof presets[number] | null>(null);
 
+  // Auto-save: persistent toggle + active preset id (last applied/saved)
+  const AUTOSAVE_KEY = 'interacoes-presets-autosave';
+  const ACTIVE_KEY = 'interacoes-presets-active-id';
+  const [autoSave, setAutoSave] = useState<boolean>(() => {
+    try { return localStorage.getItem(AUTOSAVE_KEY) === '1'; } catch { return false; }
+  });
+  const [activePresetId, setActivePresetId] = useState<string | null>(() => {
+    try { return localStorage.getItem(ACTIVE_KEY); } catch { return null; }
+  });
+  const [autoSavedAt, setAutoSavedAt] = useState<number | null>(null);
+  useEffect(() => {
+    try { localStorage.setItem(AUTOSAVE_KEY, autoSave ? '1' : '0'); } catch { /* noop */ }
+  }, [autoSave]);
+  useEffect(() => {
+    try {
+      if (activePresetId) localStorage.setItem(ACTIVE_KEY, activePresetId);
+      else localStorage.removeItem(ACTIVE_KEY);
+    } catch { /* noop */ }
+  }, [activePresetId]);
+  // If the active preset was deleted elsewhere, clear the reference
+  useEffect(() => {
+    if (activePresetId && !presets.some(p => p.id === activePresetId)) {
+      setActivePresetId(null);
+    }
+  }, [presets, activePresetId]);
+
+
   useEffect(() => {
     if (editingId) {
       requestAnimationFrame(() => renameInputRef.current?.select());
