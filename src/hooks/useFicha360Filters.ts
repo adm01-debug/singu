@@ -1,11 +1,19 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ALL_TAGS, sanitizeTags, type InteractionTag } from '@/lib/interactionTags';
+import {
+  FICHA360_CHANNELS,
+  FICHA360_CHANNELS_SET,
+  parseCanaisFromString,
+  normalizeCanaisArray,
+} from '@/lib/canaisInteracao';
 
 const VALID_PERIODS = [7, 30, 90, 365] as const;
 const DEFAULT_DAYS = 90;
-const KNOWN_CHANNELS = ['whatsapp', 'call', 'email', 'meeting', 'note'] as const;
-const KNOWN_CHANNELS_SET = new Set<string>(KNOWN_CHANNELS);
+// Whitelist e parsing de canais centralizados em `@/lib/canaisInteracao` —
+// mantém aliases locais para preservar a API pública do hook.
+const KNOWN_CHANNELS = FICHA360_CHANNELS;
+const KNOWN_CHANNELS_SET = FICHA360_CHANNELS_SET;
 const KNOWN_TAGS_SET = new Set<string>(ALL_TAGS);
 
 export type Ficha360Period = (typeof VALID_PERIODS)[number];
