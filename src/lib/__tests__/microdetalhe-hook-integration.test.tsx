@@ -15,7 +15,8 @@
  */
 import React, { useEffect } from 'react';
 import { describe, it, expect, vi } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import {
@@ -216,15 +217,17 @@ describe('Microdetalhe ↔ filtros isolados (integração com o hook)', () => {
   });
 
   it('busca textual usa a mesma normalização (NFD + lowercase) que o filtro real', () => {
-    // Termo com acento + caixa alta: precisa achar "Proposta" no title sem diferença.
+    // Caixa alta + acento na query devem casar com "Proposta" (sem acento) no
+    // title, porque a normalização aplicada é NFD + lowercase nos dois lados.
     const { filters, debouncedQ } = captureHook('/interacoes?q=PROP%C3%93STA');
-    // Sanidade: o hook preservou a string como veio (a normalização ocorre na contagem).
-    expect(filters.q.toLowerCase()).toContain('proposta');
+    // Sanidade: o hook preservou a string original (normalização é na contagem).
+    expect(filters.q).toBe('PROPÓSTA');
 
     const counts = computeIsolatedFilterCounts(DATASET, filters, debouncedQ);
-    expect(counts.find((c) => c.key === 'q')?.count).toBe(
-      applyOnly(DATASET, { key: 'q', value: filters.q }),
-    );
+    const got = counts.find((c) => c.key === 'q')?.count;
+    expect(got).toBe(applyOnly(DATASET, { key: 'q', value: filters.q }));
+    // E precisa achar os 3 itens com "proposta" no dataset, ignorando acento/caixa.
+    expect(got).toBe(3);
   });
 
   it('sentimento inválido na URL é descartado e NÃO aparece no microdetalhe', () => {
