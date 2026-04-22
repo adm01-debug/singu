@@ -185,6 +185,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     writeApplied(safe);
   }, [safe]);
 
+  // Registra cada combinação aplicada não-vazia no histórico MRU.
+  // Combinação vazia (== "todos") é ignorada porque já é o estado default.
+  useEffect(() => {
+    if (safe.length > 0) recordCombo(safe);
+  }, [safe, recordCombo]);
+
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
     if (mode === 'manual' && !arraysEqual(pending, safe)) {
