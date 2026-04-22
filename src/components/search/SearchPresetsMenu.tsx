@@ -151,9 +151,13 @@ export function SearchPresetsMenu({
   }, [isNaming]);
 
   const handleSave = () => {
-    if (!presetName.trim()) return;
+    const trimmed = presetName.trim();
+    if (!trimmed) return;
+    // Dedupe normalizado contra TODOS os presets (inclui favoritos),
+    // case/acentos/pontuação insensível.
+    const finalName = dedupeNameAgainst(presets.map((p) => p.name), trimmed);
     savePreset({
-      name: presetName.trim(),
+      name: finalName,
       filters: currentFilters,
       sortBy: currentSortBy,
       sortOrder: currentSortOrder,
@@ -161,8 +165,15 @@ export function SearchPresetsMenu({
     });
     setPresetName('');
     setIsNaming(false);
-    toast.success('Preset salvo!');
+    if (finalName !== trimmed) {
+      toast.success('Preset salvo!', {
+        description: `Nome ajustado para "${finalName}" para evitar duplicidade.`,
+      });
+    } else {
+      toast.success('Preset salvo!');
+    }
   };
+
 
   const handleApply = (preset: SearchPreset) => {
     markAsUsed(preset.id);
