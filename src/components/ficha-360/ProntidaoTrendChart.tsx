@@ -14,16 +14,34 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AccessibleChart } from '@/components/ui/accessible-chart';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   classifyTrend,
   computeTrendSlope,
   type ProntidaoTrendPoint,
 } from '@/lib/prontidaoTrend';
 import { cn } from '@/lib/utils';
 
+export type TrendWeeks = 4 | 8 | 12 | 24;
+
+const WEEKS_OPTIONS: { value: TrendWeeks; label: string }[] = [
+  { value: 4, label: '4 semanas' },
+  { value: 8, label: '8 semanas' },
+  { value: 12, label: '12 semanas' },
+  { value: 24, label: '24 semanas' },
+];
+
 interface Props {
   data: ProntidaoTrendPoint[];
   currentScore: number;
   simulated?: boolean;
+  weeks?: TrendWeeks;
+  onWeeksChange?: (w: TrendWeeks) => void;
 }
 
 const trendMeta = {
@@ -69,17 +87,23 @@ const TooltipContent = ({ active, payload }: { active?: boolean; payload?: Array
   );
 };
 
-export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Props) => {
+export const ProntidaoTrendChart = memo(({ data, currentScore, simulated, weeks, onWeeksChange }: Props) => {
   const valid = useMemo(() => data.filter((p) => p.hasData), [data]);
 
+  // Janela de variação: ¼ da janela total (mín 2, máx 8) para ficar coerente com 4/8/12/24
+  const variationWindow = useMemo(() => {
+    const total = weeks ?? data.length ?? 8;
+    return Math.min(8, Math.max(2, Math.round(total / 2)));
+  }, [weeks, data.length]);
+
   const { slope, direction, variation, peak } = useMemo(() => {
-    const s = computeTrendSlope(data, 4);
+    const s = computeTrendSlope(data, variationWindow);
     const d = classifyTrend(s);
-    const last4 = valid.slice(-4);
-    const v = last4.length >= 2 ? last4[last4.length - 1].score - last4[0].score : 0;
+    const lastN = valid.slice(-variationWindow);
+    const v = lastN.length >= 2 ? lastN[lastN.length - 1].score - lastN[0].score : 0;
     const pk = valid.length ? Math.max(...valid.map((p) => p.score)) : 0;
     return { slope: s, direction: d, variation: v, peak: pk };
-  }, [data, valid]);
+  }, [data, valid, variationWindow]);
 
   const meta = trendMeta[direction];
 
@@ -114,10 +138,32 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Prop
               </Badge>
             )}
           </CardTitle>
-          <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
-            <meta.Icon className="h-3 w-3" aria-hidden="true" />
-            {meta.label}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {weeks !== undefined && onWeeksChange && (
+              <Select
+                value={String(weeks)}
+                onValueChange={(v) => onWeeksChange(Number(v) as TrendWeeks)}
+              >
+                <SelectTrigger
+                  className="h-7 w-[130px] text-xs"
+                  aria-label="Período da tendência"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEEKS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={String(opt.value)} className="text-xs">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <Badge variant="outline" className={cn('text-xs gap-1', meta.className)}>
+              <meta.Icon className="h-3 w-3" aria-hidden="true" />
+              {meta.label}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -129,7 +175,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Prop
           </div>
           <div className="space-y-0.5">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-              Variação 4 sem.
+              Variação {variationWindow} sem.
             </div>
             <div
               className={cn(
@@ -217,7 +263,7 @@ export const ProntidaoTrendChart = memo(({ data, currentScore, simulated }: Prop
 
         <p className="text-[11px] text-muted-foreground">
           Linhas tracejadas marcam os limiares Morno (40) e Quente (70). Tendência calculada pelos
-          últimos 4 pontos · slope {slope.toFixed(1)}.
+          últimos {variationWindow} pontos · slope {slope.toFixed(1)}.
         </p>
       </CardContent>
     </Card>
