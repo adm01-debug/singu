@@ -420,21 +420,31 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
           // Devolve o foco ao input de busca após o re-render disparado pelo setFilter,
           // sem reposicionar a página (preventScroll) e preservando o cursor.
           //
-          // Como capturamos a posição do cursor:
-          //  - Se o input de busca já estava focado quando o usuário clicou no chip
-          //    (raro, mas acontece em fluxos rápidos com teclado/Tab), preservamos
-          //    a posição exata do cursor para não atrapalhar a edição em curso.
-          //  - Caso contrário (foco no botão "X" do chip — caso mais comum),
-          //    o handler usa o fim do texto como fallback seguro.
+          // Como capturamos a posição do cursor (em ordem de prioridade):
+          //  1. Input atualmente focado: lê `selectionStart` direto — cobre
+          //     o caso (raro) em que o usuário acionou o chip via teclado/Tab
+          //     com o foco ainda no input.
+          //  2. Atributo `data-last-caret` no input: o `AdvancedSearchBar`
+          //     mantém esse atributo atualizado a cada keyup/click/select/
+          //     input/focus. Cobre o caso COMUM: usuário digita no meio da
+          //     string, clica no "X" do chip (o mousedown já tirou o foco do
+          //     input antes do `onAfterRemove` rodar) e ainda assim queremos
+          //     restaurar exatamente onde ele estava digitando.
+          //  3. `null` (fim do texto): fallback seguro quando não há nenhuma
+          //     posição registrada — primeira interação com a página.
           //
-          // A captura ocorre AGORA (síncrono), porque depois do `setFilter` o
-          // React re-renderiza, o foco já saiu do botão clicado e o `document
-          // .activeElement` deixa de apontar para o input.
+          // A captura ocorre AGORA (síncrono): após o `setFilter` o React
+          // re-renderiza e o `document.activeElement` já não aponta para o
+          // input — perderíamos a posição se esperássemos.
           const active = document.activeElement as HTMLInputElement | null;
           const searchEl = document.querySelector<HTMLInputElement>('[data-interacoes-search]');
-          const caret = active && active === searchEl && typeof active.selectionStart === 'number'
-            ? active.selectionStart
-            : null;
+          let caret: number | null = null;
+          if (active && active === searchEl && typeof active.selectionStart === 'number') {
+            caret = active.selectionStart;
+          } else if (searchEl?.dataset.lastCaret) {
+            const parsed = Number.parseInt(searchEl.dataset.lastCaret, 10);
+            caret = Number.isFinite(parsed) ? parsed : null;
+          }
 
           // Preserva a posição de scroll: remover um chip pode encolher a lista
           // e fazer o navegador clampar `scrollY` para baixo da posição atual,
