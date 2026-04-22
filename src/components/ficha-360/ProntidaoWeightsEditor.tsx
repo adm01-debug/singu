@@ -52,11 +52,8 @@ export const ProntidaoWeightsEditor = memo(({ contactId }: Props) => {
 
   // Pesos exibidos: efetivos para o contato (override se existir, senão padrão)
   const displayedWeights = useEffectiveProntidaoWeights(contactId);
-  const total =
-    displayedWeights.cadence +
-    displayedWeights.recency +
-    displayedWeights.sentiment +
-    displayedWeights.channel;
+  const health = evaluateWeightsHealth(displayedWeights);
+  const total = health.total;
 
   const localDisabled = !contactId;
 
