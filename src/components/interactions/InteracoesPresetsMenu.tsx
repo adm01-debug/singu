@@ -533,8 +533,34 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
             </div>
           )}
 
+          <div className="px-2.5 py-2 border-t border-border flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Zap className={`w-3.5 h-3.5 shrink-0 ${autoSave && activePresetId ? 'text-primary' : 'text-muted-foreground'}`} />
+              <div className="min-w-0">
+                <label htmlFor="autosave-toggle" className="text-xs font-medium text-foreground cursor-pointer">
+                  Auto-salvar preset
+                </label>
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {!activePresetId
+                    ? 'Aplique ou salve um preset para ativar'
+                    : autoSave
+                      ? `Salvando em "${presets.find(p => p.id === activePresetId)?.name ?? '—'}"${autoSavedAt ? ' · sincronizado' : ''}`
+                      : `Preset ativo: "${presets.find(p => p.id === activePresetId)?.name ?? '—'}"`}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="autosave-toggle"
+              checked={autoSave}
+              onCheckedChange={setAutoSave}
+              disabled={!activePresetId}
+              aria-label="Alternar auto-salvar preset"
+            />
+          </div>
+
           <div className="p-2.5 border-t border-border space-y-1.5">
             {isNaming ? (
+
               <div className="flex gap-2">
                 <Input
                   ref={inputRef}
