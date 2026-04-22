@@ -25,6 +25,7 @@ import { useSearchPresets, type PresetSortMode } from '@/hooks/useSearchPresets'
 import { toast } from 'sonner';
 import type { AdvancedFilters } from '@/hooks/useInteractionsAdvancedFilter';
 import { ImportPresetsDialog } from './ImportPresetsDialog';
+import { PresetFiltersDiff } from '@/components/search/PresetFiltersDiff';
 import {
   buildBundle,
   bundleToBase64Url,
@@ -694,17 +695,44 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
       <ImportPresetsDialog open={importOpen} onOpenChange={setImportOpen} />
 
       <AlertDialog open={!!pendingFilterUpdate} onOpenChange={(o) => !o && setPendingFilterUpdate(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Atualizar filtros deste preset?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Os filtros salvos serão substituídos pelos filtros ativos agora.
-              As estatísticas de uso e o favorito serão preservados.
-              {pendingFilterUpdate && (
-                <span className="mt-2 block text-foreground">
-                  {activeCount} filtro{activeCount !== 1 ? 's' : ''} ativo{activeCount !== 1 ? 's' : ''} será{activeCount !== 1 ? 'ão' : ''} salvo{activeCount !== 1 ? 's' : ''} em "{pendingFilterUpdate.name}".
-                </span>
-              )}
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Os filtros salvos serão substituídos pelos filtros ativos agora.
+                  As estatísticas de uso e o favorito serão preservados.
+                </p>
+                {pendingFilterUpdate && (
+                  <p className="text-foreground">
+                    Mudanças em <strong>"{pendingFilterUpdate.name}"</strong>:
+                  </p>
+                )}
+                {pendingFilterUpdate && (
+                  <PresetFiltersDiff
+                    before={pendingFilterUpdate.filters}
+                    after={{
+                      q: currentPayload.q ? [currentPayload.q] : [],
+                      contact: currentPayload.contact ? [currentPayload.contact] : [],
+                      company: currentPayload.company ? [currentPayload.company] : [],
+                      canais: currentPayload.canais,
+                      de: currentPayload.de ? [currentPayload.de] : [],
+                      ate: currentPayload.ate ? [currentPayload.ate] : [],
+                      sort: currentPayload.sort ? [currentPayload.sort] : [],
+                    }}
+                    labelFor={{
+                      q: 'Busca livre',
+                      contact: 'Contato',
+                      company: 'Empresa',
+                      canais: 'Canais',
+                      de: 'De',
+                      ate: 'Até',
+                      sort: 'Ordenação',
+                    }}
+                  />
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
