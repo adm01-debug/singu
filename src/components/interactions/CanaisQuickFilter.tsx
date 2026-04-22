@@ -233,8 +233,28 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   const [altPressed, setAltPressed] = useState(false);
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+Enter: aplica canais pendentes no modo manual (sem Alt/Shift).
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
+        if (mode !== 'manual') return;
+        if (arraysEqual(pending, safe)) return;
+        e.preventDefault();
+        apply();
+        return;
+      }
+      // Esc: reverte alterações pendentes no modo manual.
+      if (e.key === 'Escape' && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        if (mode !== 'manual') return;
+        if (arraysEqual(pending, safe)) return;
+        // Não interceptar se foco em input/textarea/contenteditable (deixa Esc nativo)
+        const tgt = e.target as HTMLElement | null;
+        const tag = tgt?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tgt?.isContentEditable) return;
+        e.preventDefault();
+        revert();
+        return;
+      }
       if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      // Alt+Enter: aplica canais pendentes no modo manual.
+      // Alt+Enter: aplica canais pendentes no modo manual (atalho legado).
       if (e.key === 'Enter') {
         if (mode !== 'manual') return;
         if (arraysEqual(pending, safe)) return;
@@ -260,7 +280,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [mode, safe, pending, toggleCanal, clearAll, apply]);
+  }, [mode, safe, pending, toggleCanal, clearAll, apply, revert]);
 
   // Detecta Alt pressionado para mostrar badges Alt+N nos chips
   useEffect(() => {
