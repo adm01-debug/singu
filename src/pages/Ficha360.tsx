@@ -499,6 +499,11 @@ const Ficha360 = () => {
                           onChange={setSort}
                           hasQuery={!!q.trim()}
                         />
+                        <FiltroTagsDropdown
+                          selected={tags}
+                          onChange={setTags}
+                          counts={tagCounts}
+                        />
                         <div className="relative">
                           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                           <Input
@@ -544,12 +549,14 @@ const Ficha360 = () => {
                       <FiltrosAtivosChips
                         days={days}
                         channels={channels}
+                        tags={tags}
                         shownCount={filteredInteractions.length}
                         totalCount={channelCounts.total}
                         searchTerm={q}
                         searchMatchCount={filteredInteractions.length}
                         onRemoveDays={() => setDays(90)}
                         onRemoveChannel={(c) => setChannels(channels.filter((x) => x !== c))}
+                        onRemoveTag={(t) => setTags(tags.filter((x) => x !== t))}
                         onRemoveSearch={() => {
                           setSearchInput('');
                           setQ('');
