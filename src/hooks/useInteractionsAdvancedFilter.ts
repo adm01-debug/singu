@@ -207,8 +207,20 @@ export function useInteractionsAdvancedFilter() {
   }, []);
 
   // Persistência reativa: sincroniza canais aplicados com localStorage.
+  // Debounce curto (250ms) coalesce rajadas de toggles de chips em uma única
+  // escrita. Flush no unmount/troca rápida garante que a última seleção sempre
+  // chega ao storage mesmo se o usuário navegar imediatamente.
+  const pendingCanaisRef = useRef<string[]>(filters.canais);
   useEffect(() => {
-    writeAppliedCanais(filters.canais);
+    pendingCanaisRef.current = filters.canais;
+    const timer = setTimeout(() => {
+      writeAppliedCanais(pendingCanaisRef.current);
+    }, 250);
+    return () => {
+      clearTimeout(timer);
+      // Garante persistência da última versão se o efeito foi cancelado.
+      writeAppliedCanais(pendingCanaisRef.current);
+    };
   }, [filters.canais]);
 
   // Hidratação one-shot consolidada das preferências de visualização: URL ganha sobre cache.
