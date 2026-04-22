@@ -18,6 +18,14 @@ interface Props {
   isLoading?: boolean;
   days?: number;
   channels?: string[];
+  q?: string;
+}
+
+// Hash simples e estável (djb2) para chave de paginação por termo de busca.
+function hashString(s: string): string {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+  return (h >>> 0).toString(36);
 }
 
 const channelIcon = (channel: string | null) => {
@@ -52,10 +60,11 @@ function formatDate(iso?: string | null): string {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive, isLoading, days, channels }: Props) => {
+export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtra, filtersActive, isLoading, days, channels, q }: Props) => {
   const items = Array.isArray(interactions) ? interactions : [];
   const channelsKey = Array.isArray(channels) ? [...channels].map((c) => c.toLowerCase()).sort().join(',') : '';
-  const filterKey = `${days ?? 'all'}-${channelsKey || 'all'}`;
+  const qKey = q ? hashString(q.trim().toLowerCase()) : 'noq';
+  const filterKey = `${days ?? 'all'}-${channelsKey || 'all'}-${qKey}`;
   const { visible, hasMore, sentinelRef, loadMore } = useInfiniteList(
     items,
     15,

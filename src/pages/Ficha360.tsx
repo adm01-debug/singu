@@ -59,7 +59,7 @@ const Ficha360Skeleton = () => (
 
 const Ficha360 = () => {
   const { id } = useParams<{ id: string }>();
-  const { days, channels, setDays, setChannels, clear, activeCount } = useFicha360Filters();
+  const { days, channels, q, setDays, setChannels, setQ, clear, activeCount } = useFicha360Filters();
   const {
     draftDays,
     draftChannels,
