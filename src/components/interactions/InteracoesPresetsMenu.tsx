@@ -482,7 +482,7 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
 
           {sortedPresets.length > 0 && (
             <div className="max-h-64 overflow-y-auto divide-y divide-border">
-              {sortedPresets.map(preset => {
+              {sortedPresets.map((preset, index) => {
                 const payload: SerializedPayload = {
                   q: preset.filters.q?.[0] ?? '',
                   contact: preset.filters.contact?.[0] ?? '',
@@ -492,16 +492,20 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   ate: preset.filters.ate?.[0],
                 };
                 const usage = preset.usageCount ?? 0;
+                const isFocused = focusedIndex === index;
                 return (
                   <React.Fragment key={preset.id}>
                   <div
+                    ref={(el) => { itemRefs.current[index] = el; }}
                     className={[
                       'flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group relative transition-colors',
                       activePresetId === preset.id ? 'bg-primary/5 border-l-2 border-primary' : '',
                       recentlyAppliedId === preset.id ? 'animate-preset-flash' : '',
                       previewId === preset.id ? 'bg-muted/40' : '',
+                      isFocused ? 'bg-accent/40 ring-1 ring-inset ring-primary/40' : '',
                     ].filter(Boolean).join(' ')}
                     aria-current={activePresetId === preset.id ? 'true' : undefined}
+                    onMouseEnter={() => setFocusedIndex(index)}
                     onClick={() => {
                       if (editingId === preset.id) return;
                       if (previewMode) {
