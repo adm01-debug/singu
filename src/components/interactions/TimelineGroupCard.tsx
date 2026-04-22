@@ -114,8 +114,23 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
       type="single"
       collapsible
       defaultValue={defaultOpen ? group.entity_id : undefined}
-      className="border border-border/60 rounded-lg bg-card"
+      className="border border-border/60 rounded-lg bg-card overflow-hidden"
     >
+      {/* Barra fina de relevância no topo do card — fora do trigger para não
+          interferir com a área de clique do Accordion. Largura proporcional
+          ao score normalizado (0..1), com mínimo de 8% para visibilidade. */}
+      {showRelevance && (
+        <div className="h-0.5 w-full" aria-hidden="true">
+          <div
+            className={
+              relevanceTier === 'high' ? 'h-full bg-primary'
+              : relevanceTier === 'mid' ? 'h-full bg-primary/60'
+              : 'h-full bg-primary/30'
+            }
+            style={{ width: `${Math.max(8, Math.round(relevanceRatio * 100))}%` }}
+          />
+        </div>
+      )}
       <AccordionItem value={group.entity_id} className="border-0">
         <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/30 rounded-lg">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -128,6 +143,24 @@ export const TimelineGroupCard = React.memo(function TimelineGroupCard({
                 Última atividade {formatDistanceToNow(new Date(group.last_event_at), { locale: ptBR, addSuffix: true })}
               </p>
             </div>
+            {showRelevance && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] shrink-0 gap-1 ${relevanceBadgeClass}`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      {Math.round(relevanceRatio * 100)}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {relevanceLabel} · score {group.relevance_total} (relativo ao topo {maxRelevance})
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             <Badge variant="outline" className="text-[10px] shrink-0">{group.events.length}</Badge>
           </div>
         </AccordionTrigger>
