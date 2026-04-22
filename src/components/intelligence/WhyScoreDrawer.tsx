@@ -4,9 +4,11 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info } from 'lucide-react';
+import { ThumbsDown, ThumbsUp, Activity, Sparkles, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+export type WhyScoreDirection = 'positive' | 'negative' | 'neutral';
 
 export interface WhyScoreFactor {
   key: string;
@@ -17,7 +19,41 @@ export interface WhyScoreFactor {
   weight: number;
   detail?: string;
   trend?: 'up' | 'down' | 'flat';
+  /** Direção do impacto deste fator no score total. Se ausente, é inferida do score. */
+  direction?: WhyScoreDirection;
 }
+
+function inferDirection(score: number): WhyScoreDirection {
+  if (score >= 65) return 'positive';
+  if (score <= 35) return 'negative';
+  return 'neutral';
+}
+
+const DIRECTION_META: Record<WhyScoreDirection, {
+  icon: typeof TrendingUp;
+  label: string;
+  badgeClass: string;
+  verb: string;
+}> = {
+  positive: {
+    icon: TrendingUp,
+    label: 'favorece',
+    badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
+    verb: 'Está ajudando',
+  },
+  negative: {
+    icon: TrendingDown,
+    label: 'prejudica',
+    badgeClass: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30',
+    verb: 'Está prejudicando',
+  },
+  neutral: {
+    icon: Minus,
+    label: 'neutro',
+    badgeClass: 'bg-muted text-muted-foreground border-border',
+    verb: 'Impacto neutro',
+  },
+};
 
 interface WhyScoreDrawerProps {
   open: boolean;
@@ -94,9 +130,20 @@ export function WhyScoreDrawer({
     return sorted.map((f, i) => {
       const contribution = f.weight * f.score;
       const contributionPct = totalContribution > 0 ? (contribution / totalContribution) * 100 : 0;
-      return { ...f, contribution, contributionPct, rank: i + 1 };
+      const effectiveDirection: WhyScoreDirection = f.direction ?? inferDirection(f.score);
+      return { ...f, contribution, contributionPct, rank: i + 1, effectiveDirection };
     });
   }, [factors]);
+
+  const directionCounts = useMemo(() => {
+    return rankedFactors.reduce(
+      (acc, f) => {
+        acc[f.effectiveDirection] += 1;
+        return acc;
+      },
+      { positive: 0, negative: 0, neutral: 0 } as Record<WhyScoreDirection, number>,
+    );
+  }, [rankedFactors]);
 
   const submitFeedback = (value: 'up' | 'down') => {
     setFeedback(value);
@@ -144,8 +191,8 @@ export function WhyScoreDrawer({
                       <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[240px] text-xs">
-                    Ordenados pela contribuição real (peso × score). O fator no topo é o que mais influenciou o resultado.
+                  <TooltipContent side="top" className="max-w-[260px] text-xs">
+                    Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -155,9 +202,33 @@ export function WhyScoreDrawer({
                 Sem fatores detalhados disponíveis para esse score.
               </p>
             )}
+            {rankedFactors.length > 0 && (directionCounts.positive + directionCounts.negative + directionCounts.neutral) > 0 && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground" aria-label="Resumo de direção dos fatores">
+                {directionCounts.positive > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-success" aria-hidden="true" />
+                    {directionCounts.positive} favorecendo
+                  </span>
+                )}
+                {directionCounts.negative > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <TrendingDown className="h-3 w-3 text-destructive" aria-hidden="true" />
+                    {directionCounts.negative} prejudicando
+                  </span>
+                )}
+                {directionCounts.neutral > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <Minus className="h-3 w-3" aria-hidden="true" />
+                    {directionCounts.neutral} neutro
+                  </span>
+                )}
+              </div>
+            )}
             {rankedFactors.map((f) => {
               const contribInt = Math.round(f.contribution);
               const contribPctInt = Math.round(f.contributionPct);
+              const dirMeta = DIRECTION_META[f.effectiveDirection];
+              const DirIcon = dirMeta.icon;
               const rankBadge =
                 f.rank === 1 ? (
                   <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
@@ -168,13 +239,27 @@ export function WhyScoreDrawer({
                     #{f.rank}
                   </Badge>
                 ) : null;
+              const contribLabel =
+                f.effectiveDirection === 'positive'
+                  ? 'Está ajudando'
+                  : f.effectiveDirection === 'negative'
+                    ? 'Está prejudicando'
+                    : 'Contribuição';
 
               return (
                 <div key={f.key} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs gap-2">
-                    <span className="font-medium flex items-center gap-1.5 min-w-0">
+                    <span className="font-medium flex items-center gap-1.5 min-w-0 flex-wrap">
                       <span className="truncate">{f.label}</span>
                       {rankBadge}
+                      <Badge
+                        variant="outline"
+                        className={cn('text-[10px] px-1.5 py-0 h-4 shrink-0 gap-1 font-normal', dirMeta.badgeClass)}
+                        aria-label={`Este fator ${dirMeta.verb.toLowerCase()} o score`}
+                      >
+                        <DirIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                        {dirMeta.label}
+                      </Badge>
                     </span>
                     <span className="text-muted-foreground shrink-0">
                       {Math.round(f.score)}/100 · peso {Math.round(f.weight * 100)}%
@@ -193,7 +278,7 @@ export function WhyScoreDrawer({
                     aria-label={`Contribuição relativa: ${contribPctInt}% do score total`}
                   />
                   <p className="text-[10px] text-muted-foreground">
-                    Contribuição: <span className="font-medium text-foreground/80">{contribInt} pts</span> ({contribPctInt}% do total)
+                    {contribLabel}: <span className="font-medium text-foreground/80">{contribInt} pts</span> ({contribPctInt}% do total)
                   </p>
                   {f.detail && <p className="text-[11px] text-muted-foreground">{f.detail}</p>}
                 </div>
