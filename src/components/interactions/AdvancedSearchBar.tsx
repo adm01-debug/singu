@@ -77,6 +77,46 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
     };
   }, []);
 
+  /**
+   * Rastreia continuamente a última posição conhecida do cursor no input de
+   * busca e a persiste em `data-last-caret` no próprio elemento DOM.
+   *
+   * Por que isso é necessário:
+   *  - Quando o usuário digita algo no meio da string e clica no "X" de um
+   *    chip de filtro, o foco sai do input ANTES de `onAfterRemove` rodar.
+   *    Nesse instante `document.activeElement` já não é o input e
+   *    `selectionStart` perde o valor anterior — o handler externo não tem
+   *    como recuperar a posição original sem essa memória persistida.
+   *  - Armazenar no atributo `data-last-caret` mantém o acoplamento mínimo:
+   *    `InteracoesContent` lê via querySelector sem precisar de contexto,
+   *    callback prop ou estado compartilhado.
+   *
+   * Eventos cobertos (todos disparam ANTES do blur causado pelo mousedown
+   * no chip): `keyup` (digitação/setas), `click` (reposicionamento via
+   * mouse), `select` (seleção arrastada), `input` (colar/cortar).
+   */
+  useEffect(() => {
+    const el = searchInputRef.current;
+    if (!el) return;
+    const track = () => {
+      if (typeof el.selectionStart === 'number') {
+        el.dataset.lastCaret = String(el.selectionStart);
+      }
+    };
+    el.addEventListener('keyup', track);
+    el.addEventListener('click', track);
+    el.addEventListener('select', track);
+    el.addEventListener('input', track);
+    el.addEventListener('focus', track);
+    return () => {
+      el.removeEventListener('keyup', track);
+      el.removeEventListener('click', track);
+      el.removeEventListener('select', track);
+      el.removeEventListener('input', track);
+      el.removeEventListener('focus', track);
+    };
+  }, []);
+
   const selectedContact = useMemo(
     () => contacts.find(c => c.id === filters.contact),
     [contacts, filters.contact]
