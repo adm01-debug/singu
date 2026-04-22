@@ -24,6 +24,7 @@ import { SwipeBackIndicator } from '@/components/navigation/SwipeBackIndicator';
 import { RouteProgressBar } from '@/components/navigation/RouteProgressBar';
 import { ScrollToTopButton } from '@/components/navigation/ScrollToTopButton';
 import { SidebarProvider, SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
