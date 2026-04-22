@@ -77,7 +77,7 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
   );
 });
 
-function CompactItemSkeleton({ titleMaxWidth = 'max-w-[60%]' }: { titleMaxWidth?: string }) {
+export function CompactItemSkeleton({ titleMaxWidth = 'max-w-[60%]' }: { titleMaxWidth?: string }) {
   return (
     <div className="flex items-start gap-3 px-2 py-2">
       <Skeleton className="mt-0.5 h-7 w-7 rounded-md shrink-0" />
