@@ -24,6 +24,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
+import { SavedViewsMenu } from '@/components/interactions/SavedViewsMenu';
 import { ChannelShortcutsHelpOverlay } from '@/components/interactions/ChannelShortcutsHelpOverlay';
 import { PaginationBar } from '@/components/interactions/PaginationBar';
 import { DensityChips } from '@/components/interactions/DensityChips';
@@ -291,6 +292,10 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       </div>
 
       <Suspense fallback={<Card className="border-border/50"><CardContent className="p-4"><div className="h-48 animate-pulse bg-muted/30 rounded-lg" /></CardContent></Card>}><ActivityHeatmapChart /></Suspense>
+
+      <div className="flex items-center justify-end">
+        <SavedViewsMenu scope="interacoes" />
+      </div>
 
       <AdvancedSearchBar
         filters={adv}
