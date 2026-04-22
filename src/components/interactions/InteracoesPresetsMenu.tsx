@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Download, Link2, Upload, FileJson, Star, Sparkles, Pencil, RefreshCw, X, Zap, Copy, Lock, Unlock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
@@ -74,7 +74,7 @@ function parseDate(iso?: string): Date | undefined {
 export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
   filters, setFilter, clear, activeCount, onApplyAll,
 }: Props) {
-  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, duplicatePreset, toggleFavorite, markAsUsed } = useSearchPresets('interactions');
+  const { presets, sortedPresets, sortMode, setSortMode, savePreset, deletePreset, updatePreset, duplicatePreset, toggleFavorite, toggleProtected, markAsUsed } = useSearchPresets('interactions');
   const [isNaming, setIsNaming] = useState(false);
   const [name, setName] = useState('');
   const [open, setOpen] = useState(false);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X, Copy } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X, Copy, Lock, Unlock } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,6 +63,7 @@ export function SearchPresetsMenu({
     updatePreset,
     duplicatePreset,
     toggleFavorite,
+    toggleProtected,
     markAsUsed,
   } = useSearchPresets(context);
   const [isNaming, setIsNaming] = useState(false);
