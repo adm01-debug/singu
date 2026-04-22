@@ -93,9 +93,16 @@ function CopyScriptMenuComponent({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="xs" variant="ghost">
+        <Button size="xs" variant="ghost" className="relative">
           <Copy className="h-3 w-3" />
           Copiar script
+          {hasSimWarning && (
+            <span
+              className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-warning"
+              aria-label="Modo de testes com dados incompletos"
+              title="Modo de testes: faltam dados para gerar o script"
+            />
+          )}
           <ChevronDown className={cn('h-3 w-3 transition-transform', open && 'rotate-180')} aria-hidden="true" />
         </Button>
       </PopoverTrigger>
