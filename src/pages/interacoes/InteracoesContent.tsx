@@ -417,9 +417,27 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         groupLabelPlural={adv.view === 'by-contact' ? 'pessoas' : 'empresas'}
         onAfterRemove={() => {
           // Devolve o foco ao input de busca após o re-render disparado pelo setFilter,
-          // sem reposicionar a página e mantendo o cursor ao final do texto.
+          // sem reposicionar a página (preventScroll) e preservando o cursor.
+          //
+          // Como capturamos a posição do cursor:
+          //  - Se o input de busca já estava focado quando o usuário clicou no chip
+          //    (raro, mas acontece em fluxos rápidos com teclado/Tab), preservamos
+          //    a posição exata do cursor para não atrapalhar a edição em curso.
+          //  - Caso contrário (foco no botão "X" do chip — caso mais comum),
+          //    o handler usa o fim do texto como fallback seguro.
+          //
+          // A captura ocorre AGORA (síncrono), porque depois do `setFilter` o
+          // React re-renderiza, o foco já saiu do botão clicado e o `document
+          // .activeElement` deixa de apontar para o input.
+          const active = document.activeElement as HTMLInputElement | null;
+          const searchEl = document.querySelector<HTMLInputElement>('[data-interacoes-search]');
+          const caret = active && active === searchEl && typeof active.selectionStart === 'number'
+            ? active.selectionStart
+            : null;
           requestAnimationFrame(() => {
-            window.dispatchEvent(new Event('focus-interactions-search-caret-end'));
+            window.dispatchEvent(
+              new CustomEvent('focus-interactions-search-caret-end', { detail: { caret } }),
+            );
           });
         }}
       />
