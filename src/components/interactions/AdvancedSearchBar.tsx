@@ -68,6 +68,16 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
       const pos = requested === null ? len : Math.max(0, Math.min(len, requested));
       el.focus({ preventScroll: true });
       try { el.setSelectionRange(pos, pos); } catch { /* noop */ }
+      // Pulso visual de foco: sinaliza que o input voltou a aceitar digitação
+      // após a remoção do chip. Reaplica a classe (remove + reflow + add) para
+      // que o `animation` reinicie mesmo se múltiplos chips forem removidos
+      // em sequência rápida (o navegador só reinicia animation com troca real).
+      el.classList.remove('search-focus-flash');
+      // Forçar reflow garantindo o restart da animação. Acessar offsetWidth é
+      // o padrão clássico para sincronizar o style recalc antes do próximo add.
+      void el.offsetWidth;
+      el.classList.add('search-focus-flash');
+      window.setTimeout(() => el.classList.remove('search-focus-flash'), 1000);
     };
     window.addEventListener('focus-interactions-search', handler);
     window.addEventListener('focus-interactions-search-caret-end', caretEndHandler);
