@@ -132,6 +132,34 @@ const Ficha360 = () => {
     });
   }, [recentInteractions, q]);
 
+  const hasPeriodChip = days !== 90;
+  useFicha360FilterShortcuts({
+    days,
+    channels,
+    q,
+    hasPeriodChip,
+    enabled: !isLoading && !!profile,
+    onClearAll: () => {
+      setSearchInput('');
+      clear();
+      setDraftDays(90);
+      setDraftChannels([]);
+    },
+    onClearPeriod: () => {
+      setDays(90);
+      setDraftDays(90);
+    },
+    onClearSearch: () => {
+      setSearchInput('');
+      setQ('');
+    },
+    onRemoveChannel: (c) => {
+      const next = channels.filter((x) => x !== c);
+      setChannels(next);
+      setDraftChannels(next);
+    },
+  });
+
   const weights = useProntidaoWeightsStore((s) => s.weights);
   const simEnabled = useSimulationStore((s) => s.enabled);
   const simOverrides = useSimulationStore((s) => s.overrides);
