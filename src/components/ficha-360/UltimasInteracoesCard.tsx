@@ -62,7 +62,16 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
     <Card>
       <CardHeader className="pb-3 space-y-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Últimas Interações</CardTitle>
+          <div className="flex items-center gap-2 min-w-0">
+            <CardTitle className="text-base">Últimas Interações</CardTitle>
+            {items.length > 0 && (
+              <Badge variant="secondary" className="text-xs font-normal tabular-nums">
+                {visible.length < items.length
+                  ? `Mostrando ${visible.length} de ${items.length}`
+                  : `${items.length}`}
+              </Badge>
+            )}
+          </div>
           <Button asChild variant="ghost" size="sm" className="h-7 px-2 text-xs">
             <Link to={`/interacoes?contact=${contactId}`}>
               Ver todas <ArrowRight className="h-3 w-3 ml-1" />
