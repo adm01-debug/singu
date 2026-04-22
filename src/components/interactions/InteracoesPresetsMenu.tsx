@@ -151,8 +151,14 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     sort: filters.sort,
   }), [filters]);
 
-  const handleSave = () => {
-    const trimmed = name.trim().slice(0, 60);
+  // Sugestão de nome reativa aos filtros, com dedup contra presets existentes
+  const suggestedName = useMemo(
+    () => dedupeNameAgainst(presets.map((p) => p.name), suggestInteracoesPresetName(filters)),
+    [filters, presets]
+  );
+
+  const saveWithName = (rawName: string) => {
+    const trimmed = rawName.trim().slice(0, 60);
     if (!trimmed) return;
     const created = savePreset({
       name: trimmed,
@@ -171,8 +177,11 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     setActivePresetId(created.id);
     setName('');
     setIsNaming(false);
-    toast.success('Busca salva!');
+    toast.success('Busca salva!', { description: `"${trimmed}"` });
   };
+
+  const handleSave = () => saveWithName(name);
+
 
 
   const applyPreset = (preset: typeof presets[number]) => {
