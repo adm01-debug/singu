@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { Star, Trash2, Check, Plus, Link2 } from 'lucide-react';
+import { Star, Trash2, Check, Plus, Link2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,8 @@ interface Props {
   days: number;
   channels: string[];
   onApply: (days: number, channels: string[]) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const CHANNEL_LABELS: Record<string, string> = {
@@ -57,10 +59,17 @@ export const FavoritosFiltrosMenu = memo(function FavoritosFiltrosMenu({
   days,
   channels,
   onApply,
+  open: controlledOpen,
+  onOpenChange,
 }: Props) {
-  const { favorites, save, remove, findMatch, canSaveMore, maxFavorites } =
+  const { favorites, save, quickSave, remove, findMatch, canSaveMore, maxFavorites } =
     useFicha360FilterFavorites();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   const [savingMode, setSavingMode] = useState(false);
   const [draftName, setDraftName] = useState('');
 
