@@ -72,6 +72,7 @@ export function useFicha360FilterShortcuts({
     onSortRecente,
     onSortRelevante,
     onAbrirResumoIA,
+    onSalvarRelatorio,
   });
   useEffect(() => {
     handlersRef.current = {
@@ -85,6 +86,7 @@ export function useFicha360FilterShortcuts({
       onSortRecente,
       onSortRelevante,
       onAbrirResumoIA,
+      onSalvarRelatorio,
     };
   }, [
     onClearAll,
@@ -97,6 +99,7 @@ export function useFicha360FilterShortcuts({
     onSortRecente,
     onSortRelevante,
     onAbrirResumoIA,
+    onSalvarRelatorio,
   ]);
 
   useScopedShortcut({
