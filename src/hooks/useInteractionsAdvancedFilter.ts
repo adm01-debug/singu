@@ -59,6 +59,12 @@ function writeLS(key: string, value: string): void {
     localStorage.setItem(key, value);
   } catch { /* noop */ }
 }
+function removeLS(key: string): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    localStorage.removeItem(key);
+  } catch { /* noop */ }
+}
 
 function parseDensity(v: string | null): DensityMode {
   return v === 'compact' ? 'compact' : 'comfortable';
