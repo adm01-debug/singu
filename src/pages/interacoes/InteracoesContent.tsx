@@ -72,10 +72,10 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     [companies]
   );
 
-  // Aplica todos os filtros avançados EXCETO o de canais — usado para os
-  // contadores por canal nos chips (ignora o próprio filtro pra mostrar o
-  // potencial real dentro do escopo atual, incluindo sentimento).
-  const advancedFilteredWithoutCanais = useMemo(() => {
+  // Aplica os filtros não-canal e não-sentimento — base reutilizada pelos
+  // contadores e filtros derivados (ignoramos o próprio filtro ao calcular
+  // o "potencial" de cada bucket).
+  const baseWithoutCanaisAndSentimento = useMemo(() => {
     if (!Array.isArray(interactions)) return [];
     const q = debouncedQ ? normalize(debouncedQ) : '';
     const deTs = adv.de ? new Date(adv.de).setHours(0, 0, 0, 0) : null;
@@ -85,7 +85,6 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       if (adv.company && i.company_id !== adv.company) return false;
       if (adv.direcao === 'inbound' && i.initiated_by !== 'them') return false;
       if (adv.direcao === 'outbound' && i.initiated_by !== 'us') return false;
-      if (adv.sentimento && i.sentiment !== adv.sentimento) return false;
       const ts = new Date(i.created_at).getTime();
       if (deTs !== null && ts < deTs) return false;
       if (ateTs !== null && ts > ateTs) return false;
@@ -95,7 +94,14 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       }
       return true;
     });
-  }, [interactions, adv.contact, adv.company, adv.direcao, adv.de, adv.ate, adv.sentimento, debouncedQ]);
+  }, [interactions, adv.contact, adv.company, adv.direcao, adv.de, adv.ate, debouncedQ]);
+
+  // Aplica TODOS os filtros não-canal (inclui sentimento) — usado como base
+  // para os contadores por canal e para o dataset filtrado.
+  const advancedFilteredWithoutCanais = useMemo(() => {
+    if (!adv.sentimento) return baseWithoutCanaisAndSentimento;
+    return baseWithoutCanaisAndSentimento.filter(i => i.sentiment === adv.sentimento);
+  }, [baseWithoutCanaisAndSentimento, adv.sentimento]);
 
   const channelCounts = useMemo(
     () => countByChannel(advancedFilteredWithoutCanais.map(i => ({ type: i.type }))),
@@ -110,11 +116,12 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       : advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
   }, [advancedFilteredWithoutCanais, adv.canais]);
 
-  // Contagem por bucket de sentimento (ignora o próprio filtro de sentimento).
+  // Contagem por bucket de sentimento (ignora o próprio filtro de sentimento;
+  // respeita o filtro de canal para refletir o escopo visível).
   const sentimentCounts = useMemo(() => {
     const base = adv.canais.length === 0
-      ? advancedFilteredWithoutCanais
-      : advancedFilteredWithoutCanais.filter(i => adv.canais.includes(i.type));
+      ? baseWithoutCanaisAndSentimento
+      : baseWithoutCanaisAndSentimento.filter(i => adv.canais.includes(i.type));
     const acc: Record<'positive' | 'neutral' | 'negative' | 'mixed', number> = {
       positive: 0, neutral: 0, negative: 0, mixed: 0,
     };
@@ -123,7 +130,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
       if (s && s in acc) acc[s] += 1;
     }
     return acc;
-  }, [advancedFilteredWithoutCanais, adv.canais]);
+  }, [baseWithoutCanaisAndSentimento, adv.canais]);
 
   const filteredAndSorted = useMemo(() => {
     const result = advancedFiltered.filter(interaction => {
