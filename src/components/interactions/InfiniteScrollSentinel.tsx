@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel({
-  sentinelRef, hasMore, totalLoaded, total, density = 'comfortable',
+  sentinelRef, hasMore, totalLoaded, total, density = 'comfortable', onLoadMore,
 }: Props) {
   if (total === 0) return null;
 
