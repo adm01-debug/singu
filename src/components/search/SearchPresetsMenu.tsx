@@ -73,6 +73,8 @@ export function SearchPresetsMenu({
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [pendingFilterUpdate, setPendingFilterUpdate] = useState<SearchPreset | null>(null);
+  const [activePresetId, setActivePresetId] = useState<string | null>(null);
+  const [recentlyAppliedId, setRecentlyAppliedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (editingId) {
@@ -212,6 +214,12 @@ export function SearchPresetsMenu({
   const handleApply = (preset: SearchPreset) => {
     markAsUsed(preset.id);
     onApplyPreset(preset);
+    setActivePresetId(preset.id);
+    setRecentlyAppliedId(preset.id);
+    window.setTimeout(() => {
+      setRecentlyAppliedId((cur) => (cur === preset.id ? null : cur));
+    }, 1500);
+    toast.success('Filtros atualizados', { description: `Preset "${preset.name}" aplicado` });
   };
 
   return (
@@ -267,7 +275,12 @@ export function SearchPresetsMenu({
               return (
                 <div
                   key={preset.id}
-                  className="flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group"
+                  className={[
+                    'flex items-center justify-between p-2.5 hover:bg-muted/50 cursor-pointer group transition-colors',
+                    activePresetId === preset.id ? 'bg-primary/5 border-l-2 border-primary' : '',
+                    recentlyAppliedId === preset.id ? 'animate-preset-flash' : '',
+                  ].filter(Boolean).join(' ')}
+                  aria-current={activePresetId === preset.id ? 'true' : undefined}
                   onClick={() => { if (editingId !== preset.id) handleApply(preset); }}
                 >
                   <button
@@ -303,7 +316,14 @@ export function SearchPresetsMenu({
                       />
                     ) : (
                       <>
-                        <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                        <p className="text-sm font-medium text-foreground truncate flex items-center gap-1.5">
+                          <span className="truncate">{preset.name}</span>
+                          {activePresetId === preset.id && (
+                            <span className="shrink-0 text-[10px] uppercase tracking-wide font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                              Ativo
+                            </span>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           {Object.values(preset.filters).flat().length} filtros
                           {preset.searchTerm && ` · "${preset.searchTerm}"`}
