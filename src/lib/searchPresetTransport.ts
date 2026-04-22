@@ -160,10 +160,48 @@ export function downloadBundleAsFile(bundle: PresetBundle, filename?: string): v
 
 // ── Dedup ──
 
+/**
+ * Normaliza para comparação fuzzy de nomes:
+ * - lowercase
+ * - remove acentos (NFD + strip diacríticos)
+ * - colapsa espaços e remove pontuação leve (· - – — / : |)
+ * - remove sufixos numéricos " (2)", " (10)"...
+ */
+export function normalizePresetName(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[·•\-–—/:|]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Retorna nome único contra `existing`, comparando de forma normalizada
+ * (case/acentos/pontuação insensível). Inclui favoritos automaticamente
+ * porque `existing` deve ser todos os presets já salvos.
+ */
 export function dedupeNameAgainst(existing: string[], proposed: string): string {
-  const set = new Set(existing);
-  if (!set.has(proposed)) return proposed;
+  const base = proposed.trim();
+  if (!base) return base;
+  const normalizedExisting = new Set(existing.map(normalizePresetName));
+  if (!normalizedExisting.has(normalizePresetName(base))) return base;
   let i = 2;
-  while (set.has(`${proposed} (${i})`)) i++;
-  return `${proposed} (${i})`;
+  while (i < 1000 && normalizedExisting.has(normalizePresetName(`${base} (${i})`))) i++;
+  return `${base} (${i})`;
+}
+
+/**
+ * Detecta colisão (exata ou aproximada) contra a lista de presets existentes.
+ * Útil para feedback visual antes de salvar.
+ */
+export function findSimilarPresetName(
+  existing: string[],
+  proposed: string,
+): { conflict: boolean; matched: string | null } {
+  const norm = normalizePresetName(proposed);
+  if (!norm) return { conflict: false, matched: null };
+  const matched = existing.find((n) => normalizePresetName(n) === norm) ?? null;
+  return { conflict: !!matched, matched };
 }
