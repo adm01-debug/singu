@@ -11,6 +11,8 @@ interface Props {
   total: number;
   onPageChange: (p: number) => void;
   onPerPageChange: (pp: number) => void;
+  /** Disparado ao passar o mouse / focar no botão "Próxima" — pré-aquece a transição. */
+  onPrefetchNext?: () => void;
 }
 
 /**
@@ -30,7 +32,7 @@ function buildWindow(current: number, totalPages: number): Array<number | 'ellip
 }
 
 export const PaginationBar = React.memo(function PaginationBar({
-  page, perPage, total, onPageChange, onPerPageChange,
+  page, perPage, total, onPageChange, onPerPageChange, onPrefetchNext,
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   const window = useMemo(() => buildWindow(page, totalPages), [page, totalPages]);
@@ -79,6 +81,9 @@ export const PaginationBar = React.memo(function PaginationBar({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(page + 1)}
+          onMouseEnter={onPrefetchNext}
+          onFocus={onPrefetchNext}
+          onTouchStart={onPrefetchNext}
           disabled={page >= totalPages}
           aria-label="Próxima página"
           className="gap-1"
