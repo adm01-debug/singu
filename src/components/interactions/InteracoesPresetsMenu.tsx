@@ -213,12 +213,40 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     }
 
     markAsUsed(preset.id);
+    setActivePresetId(preset.id);
     setOpen(false);
     toast.success('Preset aplicado');
     requestAnimationFrame(() => {
       window.dispatchEvent(new CustomEvent('focus-interactions-search'));
     });
   };
+
+  // Auto-save: when enabled and there's an active preset, persist filter changes
+  // into that preset after a debounce. Skip if filters match the saved snapshot.
+  useEffect(() => {
+    if (!autoSave || !activePresetId) return;
+    const target = presets.find(p => p.id === activePresetId);
+    if (!target) return;
+
+    const nextFilters = {
+      q: currentPayload.q ? [currentPayload.q] : [],
+      contact: currentPayload.contact ? [currentPayload.contact] : [],
+      company: currentPayload.company ? [currentPayload.company] : [],
+      canais: currentPayload.canais,
+      de: currentPayload.de ? [currentPayload.de] : [],
+      ate: currentPayload.ate ? [currentPayload.ate] : [],
+      sort: currentPayload.sort ? [currentPayload.sort] : [],
+    };
+    // Shallow compare via JSON to avoid redundant writes
+    if (JSON.stringify(target.filters) === JSON.stringify(nextFilters)) return;
+
+    const handle = window.setTimeout(() => {
+      updatePreset(activePresetId, { filters: nextFilters, sortBy: '', sortOrder: 'desc' });
+      setAutoSavedAt(Date.now());
+    }, 1200);
+    return () => window.clearTimeout(handle);
+  }, [autoSave, activePresetId, currentPayload, presets, updatePreset]);
+
 
   const exportOne = (preset: typeof presets[number]) => {
     const item: ExportablePreset = {
