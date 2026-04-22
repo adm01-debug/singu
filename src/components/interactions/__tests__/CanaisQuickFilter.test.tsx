@@ -188,4 +188,82 @@ describe('CanaisQuickFilter', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByText('Aplicar')).toBeInTheDocument();
   });
+
+  describe('Reverter (descarta pendências)', () => {
+    it('restaura pending para os filtros aplicados após confirmar', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      // Cria divergência adicionando WhatsApp e removendo Email
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      fireEvent.click(screen.getByTitle('Email'));
+      expect(screen.getByText('Aplicar')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: /Reverter/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+
+      // Pending volta a bater com aplicado → bloco dirty some
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Reverter/i })).not.toBeInTheDocument();
+      // Não propaga mudanças para o pai
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('remove channel-pending-canais do localStorage após reverter', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      expect(localStorage.getItem('channel-pending-canais')).not.toBeNull();
+
+      fireEvent.click(screen.getByRole('button', { name: /Reverter/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+
+      expect(localStorage.getItem('channel-pending-canais')).toBeNull();
+    });
+
+    it('preserva channel-applied-canais no localStorage após reverter', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      fireEvent.click(screen.getByRole('button', { name: /Reverter/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+
+      const applied = JSON.parse(localStorage.getItem('channel-applied-canais') || '[]');
+      expect(applied).toEqual(['email']);
+    });
+
+    it('Esc reverte pendências sem abrir o diálogo de confirmação', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      expect(screen.getByText('Aplicar')).toBeInTheDocument();
+      expect(localStorage.getItem('channel-pending-canais')).not.toBeNull();
+
+      fireEvent.keyDown(window, { key: 'Escape' });
+
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+      expect(localStorage.getItem('channel-pending-canais')).toBeNull();
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('cancelar o diálogo mantém as pendências intactas', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      fireEvent.click(screen.getByRole('button', { name: /Reverter/i }));
+      fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      expect(screen.getByText('Aplicar')).toBeInTheDocument();
+      expect(localStorage.getItem('channel-pending-canais')).not.toBeNull();
+    });
+  });
 });
