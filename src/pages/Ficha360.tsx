@@ -22,6 +22,9 @@ import { UltimasInteracoesCard } from '@/components/ficha-360/UltimasInteracoesC
 import { ConversasRelacionadasCard } from '@/components/ficha-360/ConversasRelacionadasCard';
 import { FiltrosInteracoesBar } from '@/components/ficha-360/FiltrosInteracoesBar';
 import { FiltrosAtivosChips } from '@/components/ficha-360/FiltrosAtivosChips';
+import { FavoritosFiltrosMenu } from '@/components/ficha-360/FavoritosFiltrosMenu';
+import { AplicarFavoritoCompartilhadoDialog } from '@/components/ficha-360/AplicarFavoritoCompartilhadoDialog';
+import type { Ficha360Period } from '@/hooks/useFicha360Filters';
 import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
@@ -91,6 +94,17 @@ const Ficha360 = () => {
   const clearDraftFilters = () => {
     setDraftDays(90);
     setDraftChannels([]);
+  };
+
+  // Aplica um favorito (próprio ou compartilhado): atualiza estado aplicado e draft.
+  const applyFavoriteFilters = (favDays: number, favChannels: string[]) => {
+    const validDays = ([7, 30, 90, 365] as const).includes(favDays as Ficha360Period)
+      ? (favDays as Ficha360Period)
+      : 90;
+    setDays(validDays);
+    setChannels(favChannels);
+    setDraftDays(validDays);
+    setDraftChannels(favChannels);
   };
 
   // Busca textual local — input controlado, sincroniza com URL via debounce 200ms.
