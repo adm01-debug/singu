@@ -484,7 +484,14 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                         />
                       ) : (
                         <>
-                          <p className="text-sm font-medium text-foreground truncate">{preset.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate flex items-center gap-1.5">
+                            <span className="truncate">{preset.name}</span>
+                            {activePresetId === preset.id && (
+                              <span className="shrink-0 text-[10px] uppercase tracking-wide font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                Ativo
+                              </span>
+                            )}
+                          </p>
                           <p className="text-xs text-muted-foreground truncate">
                             {summarize(payload)}
                             {usage >= 3 && <span className="ml-1.5">· Usado {usage}x</span>}
