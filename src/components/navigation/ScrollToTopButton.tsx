@@ -2,7 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import {
+  INFINITE_SCROLL_PROGRESS_EVENT,
+  INFINITE_SCROLL_CLEAR_EVENT,
+  type InfiniteScrollProgress,
+} from '@/hooks/useReportInfiniteScrollProgress';
 
 interface ScrollToTopButtonProps {
   className?: string;
@@ -20,6 +31,7 @@ interface ScrollToTopButtonProps {
 export function ScrollToTopButton({ className, threshold = 400 }: ScrollToTopButtonProps) {
   const [visible, setVisible] = useState(false);
   const [overlayOpen, setOverlayOpen] = useState(false);
+  const [progress, setProgress] = useState<InfiniteScrollProgress | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -38,15 +50,29 @@ export function ScrollToTopButton({ className, threshold = 400 }: ScrollToTopBut
     const handleOverlayOpen = () => setOverlayOpen(true);
     const handleOverlayClose = () => setOverlayOpen(false);
 
+    const handleProgress = (e: Event) => {
+      const detail = (e as CustomEvent<InfiniteScrollProgress>).detail;
+      if (!detail) return;
+      setProgress(detail);
+    };
+    const handleClear = (e: Event) => {
+      const detail = (e as CustomEvent<{ scope: string }>).detail;
+      setProgress((prev) => (prev && prev.scope === detail?.scope ? null : prev));
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('mobile-overlay-open', handleOverlayOpen);
     window.addEventListener('mobile-overlay-close', handleOverlayClose);
+    window.addEventListener(INFINITE_SCROLL_PROGRESS_EVENT, handleProgress);
+    window.addEventListener(INFINITE_SCROLL_CLEAR_EVENT, handleClear);
     compute();
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('mobile-overlay-open', handleOverlayOpen);
       window.removeEventListener('mobile-overlay-close', handleOverlayClose);
+      window.removeEventListener(INFINITE_SCROLL_PROGRESS_EVENT, handleProgress);
+      window.removeEventListener(INFINITE_SCROLL_CLEAR_EVENT, handleClear);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
   }, [threshold]);
@@ -62,6 +88,15 @@ export function ScrollToTopButton({ className, threshold = 400 }: ScrollToTopBut
 
   const shouldShow = visible && !overlayOpen;
 
+  // Tooltip enriquecido quando há progresso de infinite scroll publicado.
+  // Fallback para "Voltar ao topo" simples quando nenhuma lista publicou.
+  const itemLabel = progress?.itemLabel ?? 'itens';
+  const tooltipLabel = progress
+    ? progress.hasMore
+      ? `Voltar ao topo · ${progress.totalLoaded} de ${progress.total} ${itemLabel} carregados`
+      : `Voltar ao topo · ${progress.total} ${itemLabel} carregados`
+    : 'Voltar ao topo';
+
   return (
     <AnimatePresence>
       {shouldShow && (
@@ -72,16 +107,41 @@ export function ScrollToTopButton({ className, threshold = 400 }: ScrollToTopBut
           transition={{ duration: 0.2 }}
           className={cn('z-40', className ?? 'fixed bottom-24 md:bottom-8 right-4 md:right-8')}
         >
-          <Button
-            onClick={scrollToTop}
-            size="icon"
-            variant="outline"
-            className="h-10 w-10 rounded-full shadow-sm bg-background/90 backdrop-blur-sm border-border/80 hover:bg-primary hover:text-primary-foreground transition-all"
-            aria-label="Voltar ao topo"
-            title="Voltar ao topo"
-          >
-            <ArrowUp className="h-4 w-4" />
-          </Button>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={scrollToTop}
+                  size="icon"
+                  variant="outline"
+                  className="h-10 w-10 rounded-full shadow-sm bg-background/90 backdrop-blur-sm border-border/80 hover:bg-primary hover:text-primary-foreground transition-all"
+                  aria-label={tooltipLabel}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="text-xs">
+                {progress ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">Voltar ao topo</span>
+                    <span className="text-muted-foreground tabular-nums">
+                      {progress.hasMore ? (
+                        <>
+                          {progress.totalLoaded} de {progress.total} {itemLabel} carregados
+                        </>
+                      ) : (
+                        <>
+                          {progress.total} {itemLabel} carregados
+                        </>
+                      )}
+                    </span>
+                  </div>
+                ) : (
+                  'Voltar ao topo'
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </motion.div>
       )}
     </AnimatePresence>

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { InlineEmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useInfiniteList } from '@/hooks/useInfiniteList';
+import { useReportInfiniteScrollProgress } from '@/hooks/useReportInfiniteScrollProgress';
 import { InfiniteScrollSentinel, CompactItemSkeleton } from '@/components/interactions/InfiniteScrollSentinel';
 import { IncrementalLoadStickyBar } from '@/components/interactions/IncrementalLoadStickyBar';
 import type { ExternalInteraction } from '@/hooks/useExternalInteractions';
@@ -71,6 +72,15 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
     15,
     [items, contactId, filterKey],
     { persistKey: contactId ? `ficha-ultimas-${contactId}-${filterKey}` : undefined }
+  );
+
+  // Publica progresso para overlays globais (ex.: tooltip do botão "Voltar ao topo").
+  useReportInfiniteScrollProgress(
+    `ficha-ultimas-${contactId}`,
+    visible.length,
+    items.length,
+    hasMore,
+    'interações',
   );
 
   return (
