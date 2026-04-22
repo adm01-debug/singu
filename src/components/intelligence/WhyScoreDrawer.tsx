@@ -219,8 +219,8 @@ export function WhyScoreDrawer({
                       <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[260px] text-xs">
-                    Ordenados pela contribuição real (peso × score). Cada fator mostra se está favorecendo, prejudicando ou neutro em relação ao score total.
+                  <TooltipContent side="top" className="max-w-[280px] text-xs">
+                    Ordenados pela contribuição real (peso × score). Cada fator mostra direção (favorece/prejudica/neutro) e banda da nota: <strong>baixa</strong> (até 35), <strong>média</strong> (35–65) e <strong>alta</strong> (acima de 65).
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
