@@ -42,6 +42,7 @@ import { ScoreProntidaoCard } from '@/components/ficha-360/ScoreProntidaoCard';
 import { ProximaAcaoCTA } from '@/components/ficha-360/ProximaAcaoCTA';
 import { ProximosPassosCard } from '@/components/ficha-360/ProximosPassosCard';
 import { ProntidaoTrendChart } from '@/components/ficha-360/ProntidaoTrendChart';
+import { ProntidaoFactorBreakdownChart } from '@/components/ficha-360/ProntidaoFactorBreakdownChart';
 import { SimulationModePanel } from '@/components/ficha-360/SimulationModePanel';
 import { computeProntidaoScore } from '@/lib/prontidaoScore';
 import { computeProntidaoTrend } from '@/lib/prontidaoTrend';
