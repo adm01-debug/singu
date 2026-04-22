@@ -191,12 +191,14 @@ function ProximosPassosCardComponent({ contactId, contactName, passos, bestTime,
           <ProximosPassosFiltersBar
             priorities={priorities}
             channels={channels}
+            status={status}
             sort={sort}
             shownCount={displayPassos.length}
             totalCount={visiblePassos.length}
             activeCount={activeCount}
             onTogglePriority={togglePriority}
             onToggleChannel={toggleChannel}
+            onToggleStatus={toggleStatus}
             onChangeSort={setSort}
             onClear={clearFilters}
           />
