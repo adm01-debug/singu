@@ -222,6 +222,35 @@ export function WhyScoreDrawer({
     });
   };
 
+  const persistExplanationFeedback = (value: ExplanationFeedbackValue, comment: string) => {
+    const all = readExplanationFeedback();
+    all[scoreKey] = {
+      value,
+      comment: comment.trim() ? comment.trim() : undefined,
+      updatedAt: new Date().toISOString(),
+    };
+    writeExplanationFeedback(all);
+  };
+
+  const submitExplanationFeedback = (value: ExplanationFeedbackValue) => {
+    setExplanationFeedback(value);
+    setShowCommentBox(true);
+    persistExplanationFeedback(value, explanationComment);
+    toast.success(
+      value === 'makes_sense'
+        ? 'Obrigado! Marcamos a explicação como coerente.'
+        : 'Anotado. Conte o que ficou estranho para melhorarmos.',
+      { description: 'Salvo localmente neste contato.' },
+    );
+  };
+
+  const saveExplanationComment = () => {
+    if (!explanationFeedback) return;
+    persistExplanationFeedback(explanationFeedback, explanationComment);
+    setShowCommentBox(false);
+    toast.success('Comentário salvo neste contato.');
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
