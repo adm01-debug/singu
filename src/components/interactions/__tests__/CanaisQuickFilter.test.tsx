@@ -347,4 +347,103 @@ describe('CanaisQuickFilter', () => {
       expect(screen.getByTitle('WhatsApp').className).not.toContain('bg-primary');
     });
   });
+
+  describe('sincronização entre modo manual e estado aplicado pela URL', () => {
+    // Cenários blindados: ao alternar modo, o estado visual dos chips
+    // (`aria-pressed`) deve refletir EXATAMENTE o `canais` aplicado pelo
+    // pai (URL), sem deixar pendências fantasmas herdadas de estado órfão.
+
+    it('auto→manual: pending órfão do localStorage não causa divergência ao entrar em manual', () => {
+      // Pending salvo de uma sessão anterior, mas usuário está agora em auto
+      // com canais=[email] vindo da URL.
+      localStorage.setItem('channel-sync-mode', 'auto');
+      localStorage.setItem('channel-pending-canais', JSON.stringify(['whatsapp', 'call']));
+
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      // Em auto: não deve mostrar Aplicar.
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+
+      // Alterna para manual.
+      fireEvent.click(screen.getByRole('button', { name: /Mudar para modo manual/i }));
+
+      // O bloco "Aplicar" NÃO deve aparecer — pending foi alinhado a safe.
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+
+      // Chips refletem URL: só Email pressionado.
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTitle('WhatsApp')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTitle('Ligação')).toHaveAttribute('aria-pressed', 'false');
+
+      // Pending órfão foi removido do storage.
+      expect(localStorage.getItem('channel-pending-canais')).toBeNull();
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('manual→auto: aplica pending e re-sincroniza chips com o novo safe via re-render', () => {
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      const { rerender } = render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      // Cria divergência: adiciona WhatsApp pendente.
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      expect(screen.getByText('Aplicar')).toBeInTheDocument();
+
+      // Volta para auto.
+      fireEvent.click(screen.getByRole('button', { name: /Mudar para modo automático/i }));
+
+      // onChange foi chamado com o pending.
+      expect(onChange).toHaveBeenCalledWith(['email', 'whatsapp']);
+
+      // Pai propaga o novo safe via re-render.
+      rerender(<CanaisQuickFilter canais={['email', 'whatsapp']} onChange={onChange} />);
+
+      // Chips refletem o novo aplicado, sem pending residual.
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTitle('WhatsApp')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+      expect(localStorage.getItem('channel-pending-canais')).toBeNull();
+    });
+
+    it('manual→auto: pai descarta canal inválido — voltar para manual NÃO mostra divergência fantasma', () => {
+      // Cenário: pai (whitelist da URL) ignorou um canal pendente. Sem o
+      // realinhamento, voltar para manual mostraria Aplicar sem o usuário
+      // ter feito nada na nova sessão de modo.
+      localStorage.setItem('channel-sync-mode', 'manual');
+      const onChange = vi.fn();
+      const { rerender } = render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      fireEvent.click(screen.getByTitle('WhatsApp'));
+      expect(screen.getByText('Aplicar')).toBeInTheDocument();
+
+      // Vai para auto…
+      fireEvent.click(screen.getByRole('button', { name: /Mudar para modo automático/i }));
+      // …mas o pai aplicou só ['email'] (descartou whatsapp por algum motivo).
+      rerender(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      // Volta para manual.
+      fireEvent.click(screen.getByRole('button', { name: /Mudar para modo manual/i }));
+
+      // Sem divergência: pending foi realinhado ao safe pelo effect.
+      expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+      expect(screen.getByTitle('WhatsApp')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('alternâncias repetidas auto↔manual sem mudanças não criam divergência', () => {
+      const onChange = vi.fn();
+      render(<CanaisQuickFilter canais={['email']} onChange={onChange} />);
+
+      for (let i = 0; i < 3; i++) {
+        fireEvent.click(screen.getByRole('button', { name: /Mudar para modo manual/i }));
+        expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: /Mudar para modo automático/i }));
+        expect(screen.queryByText('Aplicar')).not.toBeInTheDocument();
+      }
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByTitle('Email')).toHaveAttribute('aria-pressed', 'true');
+    });
+  });
 });
