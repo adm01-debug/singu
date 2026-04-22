@@ -274,6 +274,7 @@ const Ficha360 = () => {
       toast.info('Ordenação: mais relevante', { duration: 1500 });
     },
     onAbrirResumoIA: () => setResumoIAOpen(true),
+    onSalvarRelatorio: () => setSalvarRelatorioOpen(true),
     filteredCount: filteredInteractions.length,
   });
 
