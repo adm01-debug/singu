@@ -590,18 +590,44 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   <Check className="w-3.5 h-3.5" />
                 </Button>
               </div>
-            ) : (
+            ) : activeCount === 0 || presets.length >= 10 ? (
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-xs"
                 onClick={handleStartNaming}
-                disabled={activeCount === 0 || presets.length >= 10}
+                disabled
               >
                 <BookmarkPlus className="w-3.5 h-3.5" />
                 {presets.length >= 10 ? 'Limite de 10 buscas atingido' : 'Salvar busca atual'}
               </Button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="flex-1 justify-start gap-2 text-xs h-8 min-w-0"
+                  onClick={handleQuickSave}
+                  title={`Salvar como "${suggestedName}"`}
+                  aria-label={`Salvar busca como ${suggestedName}`}
+                >
+                  <BookmarkPlus className="w-3.5 h-3.5 shrink-0" />
+                  <span className="text-muted-foreground/80 shrink-0">Salvar como</span>
+                  <span className="font-medium truncate">{suggestedName}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2 shrink-0"
+                  onClick={handleStartNaming}
+                  title="Editar nome antes de salvar"
+                  aria-label="Editar nome antes de salvar"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             )}
+
 
             <div className="flex gap-1.5">
               <Button
