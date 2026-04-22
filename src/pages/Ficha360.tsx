@@ -56,7 +56,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Search, X as XIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
