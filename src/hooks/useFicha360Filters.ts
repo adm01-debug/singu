@@ -76,11 +76,7 @@ export function useFicha360Filters() {
       setSearchParams(
         (prev) => {
           const sp = new URLSearchParams(prev);
-          const cleaned = Array.isArray(next)
-            ? next
-                .map((c) => c.trim().toLowerCase())
-                .filter((c) => c && KNOWN_CHANNELS_SET.has(c))
-            : [];
+          const cleaned = normalizeCanaisArray(next, KNOWN_CHANNELS_SET);
           if (cleaned.length === 0) sp.delete('canais');
           else sp.set('canais', cleaned.join(','));
           return sp;
