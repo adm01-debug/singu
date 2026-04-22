@@ -72,19 +72,25 @@ function renderBar(opts: RenderOpts = {}) {
 function clickRemoveOnChip(text: string | RegExp) {
   // O texto do chip pode aparecer em múltiplos lugares (ex.: "WhatsApp"
   // também aparece no resumo "1 canal: WhatsApp"). O chip propriamente
-  // dito é o único container que combina o texto + um <button aria-label="Remove">.
-  // Estratégia: pegar TODOS os candidatos com o texto e, para cada um, subir
-  // até 5 níveis procurando um ancestral que contenha o botão Remove. O
-  // primeiro match (que combina texto + botão) é o chip alvo.
+  // dito é o único container que combina o texto + EXATAMENTE UM botão
+  // <button aria-label="Remove"> (o "X" do badge).
+  //
+  // Estratégia: para cada candidato com o texto, subir até 5 níveis e
+  // aceitar APENAS o ancestral mínimo cujo `queryAllByRole` retorna 1
+  // botão Remove. Isso descarta o resumo (0 botões Remove) e o container
+  // raiz (>1 botões Remove) — fica só o badge correto.
   const matches = screen.getAllByText(text);
   for (const node of matches) {
     let cursor: HTMLElement | null = node as HTMLElement;
     for (let i = 0; i < 5 && cursor; i++) {
-      const removeBtn = within(cursor).queryByRole('button', { name: /remove/i });
-      if (removeBtn) {
-        fireEvent.click(removeBtn);
-        return removeBtn;
+      const removeBtns = within(cursor).queryAllByRole('button', { name: /remove/i });
+      if (removeBtns.length === 1) {
+        fireEvent.click(removeBtns[0]);
+        return removeBtns[0];
       }
+      // Se já encontramos mais de 1, este ramo passou do badge — desiste
+      // dele e tenta o próximo candidato (evita clicar no botão errado).
+      if (removeBtns.length > 1) break;
       cursor = cursor.parentElement;
     }
   }
