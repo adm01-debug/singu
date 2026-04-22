@@ -57,7 +57,11 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Search, X as XIcon } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 const sentimentClass = (s?: string | null) => {
@@ -189,6 +193,22 @@ const Ficha360 = () => {
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
   const [resumoIAOpen, setResumoIAOpen] = useState(false);
   const [salvarRelatorioOpen, setSalvarRelatorioOpen] = useState(false);
+  // Confirmação de "Limpar tudo": evita reset acidental quando o usuário tem
+  // múltiplos filtros ativos (período, canais, busca e tags). O atalho Shift+C
+  // continua direto — só interceptamos o clique no chip.
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const performClearAll = useCallback(() => {
+    setSearchInput('');
+    clear();
+  }, [clear]);
+  const requestClearAll = useCallback(() => {
+    // Se só houver 1 filtro ativo, não há ambiguidade — limpa direto.
+    if (activeCount <= 1) {
+      performClearAll();
+      return;
+    }
+    setConfirmClearOpen(true);
+  }, [activeCount, performClearAll]);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
 
@@ -669,10 +689,7 @@ const Ficha360 = () => {
                           setSearchInput('');
                           setQ('');
                         }}
-                        onClearAll={() => {
-                          setSearchInput('');
-                          clear();
-                        }}
+                        onClearAll={requestClearAll}
                       />
                     </>
                   }
@@ -713,6 +730,24 @@ const Ficha360 = () => {
           }}
         />
       )}
+      <AlertDialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar todos os filtros?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isso vai desativar {channels.length > 0 ? `${channels.length} canal${channels.length === 1 ? '' : 'is'}` : 'os canais'}
+              {tags.length > 0 ? `, remover ${tags.length} tag${tags.length === 1 ? '' : 's'}` : ''}
+              {q ? ', limpar a busca' : ''}
+              {days !== 90 ? ' e voltar o período para 90 dias' : ''}.
+              Os parâmetros serão removidos da URL — links já compartilhados continuam funcionando.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={performClearAll}>Limpar tudo</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
