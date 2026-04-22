@@ -44,6 +44,19 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
             style={{ width: `${pct}%` }}
           />
         </div>
+        {onLoadMore && (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMore}
+              className="h-7 px-3 text-xs gap-1"
+              aria-label="Carregar mais interações"
+            >
+              <ChevronDown className="h-3 w-3" /> Carregar mais
+            </Button>
+          </div>
+        )}
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <Skeleton key={i} className={cn(skeletonHeight, 'w-full rounded-lg')} />
         ))}
