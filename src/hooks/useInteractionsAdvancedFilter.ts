@@ -5,6 +5,12 @@ import { useDebounce } from '@/hooks/useDebounce';
 import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
 import { parseCivilDate, formatCivilDate } from '@/lib/civilDate';
+import {
+  INTERACTION_CHANNELS_SET,
+  parseCanaisFromString,
+  normalizeCanaisArray,
+  findIgnoredCanais,
+} from '@/lib/canaisInteracao';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
@@ -71,21 +77,14 @@ function parseDensity(v: string | null): DensityMode {
   return v === 'compact' ? 'compact' : 'comfortable';
 }
 
-const VALID_CHANNELS = new Set(['whatsapp', 'call', 'email', 'meeting', 'video_call', 'note']);
-function parseCanais(v: string | null): string[] {
-  if (!v) return [];
-  const raw = v.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-  const dedup = Array.from(new Set(raw));
-  return dedup.filter((c) => VALID_CHANNELS.has(c));
-}
-function normalizeCanais(arr: unknown): string[] {
-  if (!Array.isArray(arr)) return [];
-  const lowered = arr
-    .filter((v): v is string => typeof v === 'string')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  return Array.from(new Set(lowered)).filter((c) => VALID_CHANNELS.has(c));
-}
+// Whitelist e parsers de canais agora vivem em `@/lib/canaisInteracao` para
+// evitar divergência com `useFicha360Filters`. Mantemos aliases locais para
+// compatibilidade com o restante do arquivo (e `VALID_CHANNELS` exportado).
+const VALID_CHANNELS = INTERACTION_CHANNELS_SET;
+const parseCanais = (v: string | null): string[] =>
+  parseCanaisFromString(v, INTERACTION_CHANNELS_SET);
+const normalizeCanais = (arr: unknown): string[] =>
+  normalizeCanaisArray(arr, INTERACTION_CHANNELS_SET);
 
 const VALID_VIEWS: ViewMode[] = ['list', 'by-contact', 'by-company'];
 function parseView(v: string | null): ViewMode {
@@ -147,11 +146,7 @@ export function useInteractionsAdvancedFilter() {
     const raw = searchParams.get('canais');
     if (!raw) return;
     warnedUrlRef.current = true;
-    const rawList = raw.split(',').map((s) => s.trim()).filter(Boolean);
-    const valid = new Set(parseCanais(raw));
-    const ignored = Array.from(
-      new Set(rawList.filter((c) => !valid.has(c.toLowerCase())))
-    );
+    const ignored = findIgnoredCanais(raw, INTERACTION_CHANNELS_SET);
     if (ignored.length > 0) {
       toast.warning('Alguns canais foram ignorados', {
         description: `Valores inválidos: ${ignored.join(', ')}`,

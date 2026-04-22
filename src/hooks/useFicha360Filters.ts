@@ -1,11 +1,19 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ALL_TAGS, sanitizeTags, type InteractionTag } from '@/lib/interactionTags';
+import {
+  FICHA360_CHANNELS,
+  FICHA360_CHANNELS_SET,
+  parseCanaisFromString,
+  normalizeCanaisArray,
+} from '@/lib/canaisInteracao';
 
 const VALID_PERIODS = [7, 30, 90, 365] as const;
 const DEFAULT_DAYS = 90;
-const KNOWN_CHANNELS = ['whatsapp', 'call', 'email', 'meeting', 'note'] as const;
-const KNOWN_CHANNELS_SET = new Set<string>(KNOWN_CHANNELS);
+// Whitelist e parsing de canais centralizados em `@/lib/canaisInteracao` —
+// mantém aliases locais para preservar a API pública do hook.
+const KNOWN_CHANNELS = FICHA360_CHANNELS;
+const KNOWN_CHANNELS_SET = FICHA360_CHANNELS_SET;
 const KNOWN_TAGS_SET = new Set<string>(ALL_TAGS);
 
 export type Ficha360Period = (typeof VALID_PERIODS)[number];
@@ -31,14 +39,10 @@ export function useFicha360Filters() {
       : DEFAULT_DAYS;
   }, [searchParams]);
 
-  const channels: string[] = useMemo(() => {
-    const raw = searchParams.get('canais');
-    if (!raw) return [];
-    return raw
-      .split(',')
-      .map((c) => c.trim().toLowerCase())
-      .filter((c) => c && KNOWN_CHANNELS_SET.has(c));
-  }, [searchParams]);
+  const channels: string[] = useMemo(
+    () => parseCanaisFromString(searchParams.get('canais'), KNOWN_CHANNELS_SET),
+    [searchParams],
+  );
 
   const q: string = useMemo(() => searchParams.get('q')?.trim() ?? '', [searchParams]);
 
@@ -72,11 +76,7 @@ export function useFicha360Filters() {
       setSearchParams(
         (prev) => {
           const sp = new URLSearchParams(prev);
-          const cleaned = Array.isArray(next)
-            ? next
-                .map((c) => c.trim().toLowerCase())
-                .filter((c) => c && KNOWN_CHANNELS_SET.has(c))
-            : [];
+          const cleaned = normalizeCanaisArray(next, KNOWN_CHANNELS_SET);
           if (cleaned.length === 0) sp.delete('canais');
           else sp.set('canais', cleaned.join(','));
           return sp;
