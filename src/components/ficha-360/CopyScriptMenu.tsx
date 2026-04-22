@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Copy, ChevronDown, MessageCircle, Mail, Phone } from 'lucide-react';
+import { Copy, ChevronDown, MessageCircle, Mail, Phone, FlaskConical, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,6 +13,7 @@ import {
   type ScriptContext,
   type GeneratedScript,
 } from '@/lib/scriptGenerator';
+import { useSimulationStore } from '@/stores/useSimulationStore';
 
 interface Props {
   passoId: string;
@@ -41,6 +42,22 @@ function CopyScriptMenuComponent({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<ScriptChannel>('whatsapp');
+
+  const simEnabled = useSimulationStore((s) => s.enabled);
+  const simOverrides = useSimulationStore((s) => s.overrides);
+
+  // Validação do Modo de Testes: garante que sentimento e melhor horário/canal
+  // existam antes de gerar os scripts. Lista o que está faltando para mostrar aviso.
+  const missingSimFields = useMemo<string[]>(() => {
+    if (!simEnabled) return [];
+    const missing: string[] = [];
+    if (!simOverrides.sentiment && !sentiment) missing.push('sentimento');
+    if (!simOverrides.best_channel) missing.push('canal preferido');
+    if (!simOverrides.best_time && !bestTime) missing.push('melhor horário');
+    return missing;
+  }, [simEnabled, simOverrides, sentiment, bestTime]);
+
+  const hasSimWarning = missingSimFields.length > 0;
 
   const scripts = useMemo<GeneratedScript[]>(() => {
     const list = generateScripts({
@@ -76,13 +93,39 @@ function CopyScriptMenuComponent({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button size="xs" variant="ghost">
+        <Button size="xs" variant="ghost" className="relative">
           <Copy className="h-3 w-3" />
           Copiar script
+          {hasSimWarning && (
+            <span
+              className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-warning"
+              aria-label="Modo de testes com dados incompletos"
+              title="Modo de testes: faltam dados para gerar o script"
+            />
+          )}
           <ChevronDown className={cn('h-3 w-3 transition-transform', open && 'rotate-180')} aria-hidden="true" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[360px] p-3" align="start">
+        {hasSimWarning && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-[11px] text-warning-foreground"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" aria-hidden="true" />
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1 font-medium text-warning">
+                <FlaskConical className="h-3 w-3" aria-hidden="true" />
+                Modo de testes — dados incompletos
+              </div>
+              <p className="text-muted-foreground leading-snug">
+                Os scripts foram gerados sem{' '}
+                <span className="font-medium text-foreground">{missingSimFields.join(', ')}</span>.
+                Defina esses campos no painel "Modo de testes" para um cenário mais realista.
+              </p>
+            </div>
+          </div>
+        )}
         <Tabs value={tab} onValueChange={(v) => setTab(v as ScriptChannel)}>
           <TabsList className="grid w-full grid-cols-3 min-h-9 p-1">
             {(Object.keys(channelMeta) as ScriptChannel[]).map((c) => {
