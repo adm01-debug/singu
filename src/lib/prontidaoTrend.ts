@@ -21,6 +21,17 @@ interface IntelligenceLike {
   best_time?: string | null;
 }
 
+/**
+ * Contribuição ponderada de cada fator para o score da semana.
+ * cadence + recency + sentiment + channel ≈ score (arredondamentos podem causar ±1).
+ */
+export interface ProntidaoFactorContribution {
+  cadence: number;
+  recency: number;
+  sentiment: number;
+  channel: number;
+}
+
 export interface ProntidaoTrendPoint {
   weekStart: string; // ISO yyyy-MM-dd (segunda-feira)
   weekEnd: string; // ISO yyyy-MM-dd (domingo)
@@ -30,6 +41,8 @@ export interface ProntidaoTrendPoint {
   levelLabel: string;
   interactionCount: number;
   hasData: boolean;
+  /** Decomposição ponderada (somam ≈ score). Ausente quando hasData=false. */
+  contribution?: ProntidaoFactorContribution;
 }
 
 interface ComputeTrendArgs {
