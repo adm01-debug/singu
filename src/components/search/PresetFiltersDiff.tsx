@@ -98,9 +98,9 @@ export const PresetFiltersDiff = React.memo(function PresetFiltersDiff({
 
 function StatusIcon({ status }: { status: DiffRow['status'] }) {
   const cls = 'w-3 h-3 shrink-0';
-  if (status === 'added') return <Plus className={cn(cls, 'text-emerald-600 dark:text-emerald-400')} aria-label="Adicionado" />;
-  if (status === 'removed') return <Minus className={cn(cls, 'text-red-600 dark:text-red-400')} aria-label="Removido" />;
-  if (status === 'changed') return <ArrowRight className={cn(cls, 'text-amber-600 dark:text-amber-400')} aria-label="Alterado" />;
+  if (status === 'added') return <Plus className={cn(cls, 'text-success')} aria-label="Adicionado" />;
+  if (status === 'removed') return <Minus className={cn(cls, 'text-destructive')} aria-label="Removido" />;
+  if (status === 'changed') return <ArrowRight className={cn(cls, 'text-warning')} aria-label="Alterado" />;
   return <Equal className={cn(cls, 'text-muted-foreground')} aria-label="Sem mudança" />;
 }
 
@@ -116,8 +116,8 @@ function ValueChips({
   }
   const chipCls = cn(
     'inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium',
-    variant === 'before' && 'bg-red-500/10 text-red-700 dark:text-red-300 line-through decoration-red-500/40',
-    variant === 'after' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    variant === 'before' && 'bg-destructive/10 text-destructive line-through decoration-destructive/40',
+    variant === 'after' && 'bg-success/10 text-success',
     variant === 'neutral' && 'bg-muted text-muted-foreground',
   );
   return (
