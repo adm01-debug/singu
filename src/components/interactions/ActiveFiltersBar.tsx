@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AdvancedFilters, SentimentoFilter } from '@/hooks/useInteractionsAdvancedFilter';
+import { pickMostReducingFilters, type IsolatedFilterCount } from '@/lib/computeIsolatedFilterCounts';
 
 const CHANNEL_META: Record<string, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
   whatsapp: { label: 'WhatsApp', Icon: MessageSquare },
