@@ -100,6 +100,25 @@ function CopyScriptMenuComponent({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[360px] p-3" align="start">
+        {hasSimWarning && (
+          <div
+            role="alert"
+            className="mb-3 flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 px-2.5 py-2 text-[11px] text-warning-foreground"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5 text-warning" aria-hidden="true" />
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-1 font-medium text-warning">
+                <FlaskConical className="h-3 w-3" aria-hidden="true" />
+                Modo de testes — dados incompletos
+              </div>
+              <p className="text-muted-foreground leading-snug">
+                Os scripts foram gerados sem{' '}
+                <span className="font-medium text-foreground">{missingSimFields.join(', ')}</span>.
+                Defina esses campos no painel "Modo de testes" para um cenário mais realista.
+              </p>
+            </div>
+          </div>
+        )}
         <Tabs value={tab} onValueChange={(v) => setTab(v as ScriptChannel)}>
           <TabsList className="grid w-full grid-cols-3 min-h-9 p-1">
             {(Object.keys(channelMeta) as ScriptChannel[]).map((c) => {
