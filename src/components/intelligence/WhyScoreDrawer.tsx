@@ -179,6 +179,15 @@ export function WhyScoreDrawer({
     return readFeedback()[scoreKey] ?? null;
   });
 
+  const initialExplanation = useMemo<ExplanationFeedbackEntry | null>(() => {
+    return readExplanationFeedback()[scoreKey] ?? null;
+  }, [scoreKey]);
+  const [explanationFeedback, setExplanationFeedback] = useState<ExplanationFeedbackValue | null>(
+    initialExplanation?.value ?? null,
+  );
+  const [explanationComment, setExplanationComment] = useState<string>(initialExplanation?.comment ?? '');
+  const [showCommentBox, setShowCommentBox] = useState<boolean>(false);
+
   const rankedFactors = useMemo(() => {
     const sorted = [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score);
     const totalContribution = sorted.reduce((sum, f) => sum + f.weight * f.score, 0);
