@@ -1,33 +1,76 @@
 
 
-# Plano: Mostrar peso percentual e razão da banda (low/mid/high) no WhyScoreDrawer
+# Plano: Seção em Configurações para ajustar pesos padrão do Score de Prontidão com escopo (global vs. somente esta tela)
 
 ## Estado atual
 
-`WhyScoreDrawer` mostra para cada fator: ícone de direção, label, score/100, peso bruto (`peso X%`), contribuição em pts e duas barras. Mas:
+`useProntidaoWeightsStore` (Zustand + persist em `localStorage` chave `singu-prontidao-weights`) guarda os 4 pesos (`cadence`, `recency`, `sentiment`, `channel`) que alimentam o Score de Prontidão. O editor inline `ProntidaoWeightsEditor` (Popover com sliders) já existe e altera esses pesos ao vivo — porém é **único e global**: qualquer ajuste vale para todas as fichas, e não há um lugar em "Configurações" para definir um padrão e nem distinção entre "padrão global" e "override desta tela".
 
-1. O **peso exibido é o peso bruto do fator** (ex.: 30%), não o peso **normalizado em relação ao total dos fatores ranqueados** — o usuário não vê "este fator vale X% do score final".
-2. O **score do fator** (0–100) é mostrado como número e barra, mas não há explicação de **por que ele caiu na banda atual** (low <35 / mid 35–65 / high >65). O `inferDirection` já usa esses cortes, mas o motivo é invisível.
+Não existe hoje conceito de **escopo** (global vs. local-da-tela) nem página de configuração dedicada.
 
 ## Objetivo
 
-Adicionar duas informações por fator:
-
-- **Peso percentual normalizado**: `peso_fator / soma_pesos × 100` → "representa X% do score". Mantém o `peso bruto` como tooltip secundário.
-- **Razão da banda**: chip discreto `Banda: baixa/média/alta` com tooltip explicando os cortes (`<35 baixa`, `35–65 média`, `>65 alta`) e qual deles este fator atingiu.
+1. Criar uma seção "Score de Prontidão" em **Configurações** onde o usuário ajusta os **pesos padrão globais** (aplicados a todas as fichas por padrão).
+2. Manter o editor inline na ficha (`ProntidaoWeightsEditor`) com um **toggle de escopo**: "Aplicar a todas as fichas" (atualiza o padrão global) vs. "Apenas nesta tela" (cria override só para o contato atual da sessão).
+3. Override "apenas nesta tela" expira ao trocar de contato/recarregar — é intencional e leve (sessão de análise pontual). Padrão global persiste.
 
 ## Mudanças
 
-Único arquivo: `src/components/intelligence/WhyScoreDrawer.tsx` (ou `whyScoreHelpers.ts` se já extraído — checar primeiro).
+### 1. Refatorar `useProntidaoWeightsStore`
 
-1. **Helper `getBand(score)`** retornando `'low' | 'mid' | 'high'` + `BAND_META` com label PT-BR e classe de cor (reusa tokens semânticos existentes).
-2. **Cálculo do peso normalizado**: somar `factor.weight` de todos os fatores ranqueados, dividir cada um pela soma × 100. Adicionar como `normalizedWeight` no objeto enriquecido por `rankFactors` (ou inline).
-3. **UI por fator**: 
-   - Linha de meta atual (`Score/100 · peso X% (bruto Y%)`) → reescrever como `Score/100 · representa X% do total`.
-   - Adicionar chip `Banda: {label}` ao lado do chip de direção, com `Tooltip` explicando a faixa.
-4. **Tooltip explicativo no header da seção de fatores**: já existe, adicionar uma linha sobre bandas.
+Arquivo: `src/stores/useProntidaoWeightsStore.ts` (continua <80 linhas).
+
+Novo shape:
+```ts
+interface State {
+  defaultWeights: ProntidaoWeights;            // padrão global (persistido em localStorage)
+  sessionOverride: { contactId: string; weights: ProntidaoWeights } | null; // não persistido
+  setDefaultWeight: (key, value) => void;
+  setSessionOverrideWeight: (contactId, key, value) => void;
+  clearSessionOverride: () => void;
+  resetDefaults: () => void;
+}
+```
+
+`persist` middleware com `partialize` para gravar **apenas** `defaultWeights` (mesma chave `singu-prontidao-weights` — migração transparente: se ler shape antigo `{ weights }`, mover para `defaultWeights`).
+
+Novo seletor exportado: `useEffectiveProntidaoWeights(contactId?: string): ProntidaoWeights` — retorna `sessionOverride.weights` se `sessionOverride.contactId === contactId`, senão `defaultWeights`. Consumidores do score (cards/widgets que hoje leem `weights`) passam a usar este seletor com o `contactId` da ficha em foco.
+
+### 2. Atualizar consumidores existentes
+
+- Trocar `useProntidaoWeightsStore(s => s.weights)` por `useEffectiveProntidaoWeights(contactId)` em todos os locais (provavelmente `lib/prontidaoScore.ts` callers, ScoreProntidaoCard, etc. — confirmar via search).
+- Onde o `contactId` não estiver disponível (raríssimo para esse score), usar `defaultWeights`.
+
+### 3. Atualizar `ProntidaoWeightsEditor`
+
+Arquivo: `src/components/ficha-360/ProntidaoWeightsEditor.tsx` (~+40 linhas, segue <180).
+
+- Receber prop `contactId: string`.
+- Adicionar `RadioGroup` (ou `Tabs` compactas) no topo do popover: 
+  - **"Aplicar a todas as fichas"** (default — escreve em `defaultWeights`)
+  - **"Apenas nesta tela"** (escreve em `sessionOverride` para o `contactId`)
+- Sliders mudam o alvo conforme o escopo selecionado. Estado inicial do escopo: "Apenas nesta tela" se já houver `sessionOverride` para esse contato, senão "Aplicar a todas as fichas".
+- Botão "Restaurar padrão" passa a ter dois comportamentos contextuais: no escopo global → `resetDefaults()`; no escopo local → `clearSessionOverride()`.
+- Badge "Total" e dica "essas mudanças aplicam ao vivo" mantidos. Nova legenda discreta abaixo do radio explicando: "O padrão vale para todas as fichas. O override desta tela é temporário e termina ao trocar de contato."
+
+### 4. Nova página/seção de Configurações
+
+Identificar onde fica "Configurações" (provável `src/pages/Configuracoes.tsx` ou similar — pesquisar). Adicionar uma nova seção/aba **"Score de Prontidão"** com:
+
+- Título + descrição curta.
+- Mesmos 4 sliders (`Cadência`, `Recência`, `Sentimento`, `Canal`) operando direto sobre `defaultWeights` via `setDefaultWeight`.
+- Badge total + botão "Restaurar padrões".
+- Texto explicativo: "Estes pesos definem o cálculo do Score de Prontidão para todas as fichas. Você pode sobrescrever pontualmente em uma ficha específica usando o ícone de ajuste no card de score."
+
+Componente novo `src/components/settings/ProntidaoDefaultsSection.tsx` (~120 linhas) reutilizando `Slider`, `Badge`, `Button` (sem duplicar lógica do popover — apenas escreve em `defaultWeights`).
+
+Se não houver página "Configurações" preexistente apropriada, criar `src/pages/Configuracoes.tsx` minimalista com essa seção e adicionar rota `/configuracoes` + entrada na sidebar (seção "Sistema") — confirmar via exploração antes de assumir.
+
+### 5. Sem mudanças em `lib/prontidaoScore.ts`
+
+Continua puro. Apenas seus callers mudam para passar os pesos efetivos.
 
 ## Critérios de aceite
 
-(a) Cada fator mostra "representa X% do score" usando peso normalizado; (b) cada fator mostra chip "Banda: baixa/média/alta" alinhado com a cor semântica; (c) tooltip do chip de banda explica os cortes (`<35`, `35–65`, `>65`) e indica qual o fator atingiu; (d) tooltip do peso mostra o valor bruto como referência secundária; (e) cores via tokens semânticos (sem hex direto); (f) sem nova dependência, sem `any`, PT-BR; (g) `WhyScoreDrawer` permanece <320 linhas; (h) `aria-label` do chip de banda informa "Banda {label}: score {N} entre {min} e {max}".
+(a) `useProntidaoWeightsStore` separa `defaultWeights` (persistidos) de `sessionOverride` (efêmero, por contactId), com migração transparente da chave antiga; (b) novo seletor `useEffectiveProntidaoWeights(contactId)` retorna o override se aplicável, senão o padrão; (c) `ProntidaoWeightsEditor` no popover da ficha ganha radio "Aplicar a todas as fichas" / "Apenas nesta tela", com estado inicial inteligente e botão de reset contextual; (d) Configurações ganha seção "Score de Prontidão" que edita o padrão global, com descrição clara do escopo; (e) trocar de contato limpa o escopo "apenas nesta tela" daquele contato anterior (não vaza override entre fichas); (f) cards/widgets que mostram o score consomem o seletor efetivo e refletem mudanças ao vivo nos dois escopos; (g) sem nova dependência, sem `any`, PT-BR; (h) cada arquivo permanece <200 linhas; nenhum tem regressão visual além das adições previstas; (i) acessibilidade: radio de escopo com `aria-label` e legenda associada; sliders mantêm `aria-label` por fator.
 
