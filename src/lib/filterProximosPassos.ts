@@ -114,11 +114,15 @@ export function scorePasso(
  */
 export function filterAndSortPassos(
   passos: ProximoPasso[],
-  { priorities, channels, sort, preferredChannel, feedbacks }: FilterOpts,
+  { priorities, channels, status, sort, preferredChannel, feedbacks, createdIds }: FilterOpts,
 ): ProximoPasso[] {
   const filtered = passos.filter((p) => {
     if (priorities.length > 0 && !priorities.includes(p.priority as NbaPriority)) return false;
     if (channels.length > 0 && !channels.includes(p.channel)) return false;
+    if (Array.isArray(status) && status.length > 0) {
+      const s = derivePassoStatus(p, { feedbacks, createdIds });
+      if (!status.includes(s)) return false;
+    }
     return true;
   });
 
