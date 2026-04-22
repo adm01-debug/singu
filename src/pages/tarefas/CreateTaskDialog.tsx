@@ -1,55 +1,259 @@
-import { useState } from 'react';
-import { Plus, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Plus, Loader2, AlertCircle } from 'lucide-react';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useCreateTask } from '@/hooks/useTasks';
+import { cn } from '@/lib/utils';
+
+/**
+ * Validações do formulário rápido:
+ * - título obrigatório (3–140 chars).
+ * - descrição opcional (≤2000 chars).
+ * - data limite opcional, mas se informada deve ser hoje ou no futuro.
+ * - se hora informada exige data; data+hora juntas não podem estar no passado
+ *   (com tolerância de 1 minuto para evitar corrida de relógio).
+ */
+const PAST_TOLERANCE_MS = 60_000;
+
+const taskSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(3, { message: 'Informe um título com pelo menos 3 caracteres.' })
+      .max(140, { message: 'Título muito longo (máx. 140).' }),
+    description: z
+      .string()
+      .trim()
+      .max(2000, { message: 'Descrição muito longa (máx. 2000).' })
+      .optional()
+      .or(z.literal('')),
+    priority: z.enum(['urgent', 'high', 'medium', 'low']),
+    dueDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Data inválida.' })
+      .optional()
+      .or(z.literal('')),
+    dueTime: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/, { message: 'Hora inválida.' })
+      .optional()
+      .or(z.literal('')),
+    taskType: z.string().optional().or(z.literal('')),
+  })
+  .superRefine((val, ctx) => {
+    const date = val.dueDate?.trim();
+    const time = val.dueTime?.trim();
+
+    if (time && !date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['dueDate'],
+        message: 'Defina a data ao informar a hora.',
+      });
+      return;
+    }
+
+    if (!date) return;
+
+    const composed = time ? `${date}T${time}:00` : `${date}T23:59:59`;
+    const ts = new Date(composed).getTime();
+    if (Number.isNaN(ts)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['dueDate'],
+        message: 'Data/hora inválida.',
+      });
+      return;
+    }
+
+    if (ts < Date.now() - PAST_TOLERANCE_MS) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: time ? ['dueTime'] : ['dueDate'],
+        message: time
+          ? 'Data/hora não podem estar no passado.'
+          : 'A data limite não pode estar no passado.',
+      });
+    }
+  });
+
+type FormErrors = Partial<Record<'title' | 'description' | 'dueDate' | 'dueTime', string>>;
+
+const todayIso = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 export function CreateTaskDialog() {
   const createTask = useCreateTask();
+  const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('medium');
+  const [priority, setPriority] = useState<'urgent' | 'high' | 'medium' | 'low'>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('');
   const [taskType, setTaskType] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const minDate = useMemo(todayIso, [open]);
+
+  const reset = () => {
+    setTitle('');
+    setDescription('');
+    setPriority('medium');
+    setDueDate('');
+    setDueTime('');
+    setTaskType('');
+    setErrors({});
+    setSubmitAttempted(false);
+  };
+
+  const validate = (): { ok: boolean; data?: z.infer<typeof taskSchema> } => {
+    const parsed = taskSchema.safeParse({
+      title,
+      description,
+      priority,
+      dueDate,
+      dueTime,
+      taskType,
+    });
+    if (parsed.success) {
+      setErrors({});
+      return { ok: true, data: parsed.data };
+    }
+    const next: FormErrors = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof FormErrors | undefined;
+      if (key && !next[key]) next[key] = issue.message;
+    }
+    setErrors(next);
+    return { ok: false };
+  };
+
+  const handleBlur = () => {
+    if (submitAttempted) validate();
+  };
 
   const handleSubmit = () => {
-    if (!title.trim()) return;
-    createTask.mutate({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      priority,
-      due_date: dueDate || undefined,
-      task_type: taskType || undefined,
-      status: 'pending',
-    });
-    setTitle(''); setDescription(''); setPriority('medium'); setDueDate(''); setTaskType('');
+    setSubmitAttempted(true);
+    const { ok, data } = validate();
+    if (!ok || !data) return;
+
+    const dueIso = data.dueDate
+      ? new Date(`${data.dueDate}T${data.dueTime || '23:59'}:00`).toISOString()
+      : undefined;
+
+    createTask.mutate(
+      {
+        title: data.title,
+        description: data.description?.trim() || undefined,
+        priority: data.priority,
+        due_date: dueIso,
+        task_type: data.taskType || undefined,
+        status: 'pending',
+      },
+      {
+        onSuccess: () => {
+          reset();
+          setOpen(false);
+        },
+      },
+    );
+  };
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (!next) reset();
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" />Nova Tarefa</Button>
+        <Button size="sm" className="gap-1.5">
+          <Plus className="h-4 w-4" />
+          Nova Tarefa
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader><DialogTitle>Criar Nova Tarefa</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Criar Nova Tarefa</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="task-title">Título *</Label>
-            <Input id="task-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Ligar para cliente X" />
+            <Input
+              id="task-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleBlur}
+              placeholder="Ex: Ligar para cliente X"
+              maxLength={140}
+              aria-invalid={!!errors.title}
+              aria-describedby={errors.title ? 'task-title-error' : undefined}
+              className={cn(errors.title && 'border-destructive focus-visible:ring-destructive')}
+            />
+            {errors.title && (
+              <p id="task-title-error" className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.title}
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="task-desc">Descrição</Label>
-            <Textarea id="task-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes opcionais..." rows={3} />
+            <Textarea
+              id="task-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleBlur}
+              placeholder="Detalhes opcionais..."
+              rows={3}
+              maxLength={2000}
+              aria-invalid={!!errors.description}
+              aria-describedby={errors.description ? 'task-desc-error' : undefined}
+              className={cn(
+                errors.description && 'border-destructive focus-visible:ring-destructive',
+              )}
+            />
+            {errors.description && (
+              <p id="task-desc-error" className="text-xs text-destructive flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                {errors.description}
+              </p>
+            )}
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Prioridade</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={priority} onValueChange={(v) => setPriority(v as typeof priority)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="urgent">🔴 Urgente</SelectItem>
                   <SelectItem value="high">🟠 Alta</SelectItem>
@@ -60,31 +264,80 @@ export function CreateTaskDialog() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-due">Data Limite</Label>
-              <Input id="task-due" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
+              <Input
+                id="task-due"
+                type="date"
+                value={dueDate}
+                min={minDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                onBlur={handleBlur}
+                aria-invalid={!!errors.dueDate}
+                aria-describedby={errors.dueDate ? 'task-due-error' : undefined}
+                className={cn(
+                  errors.dueDate && 'border-destructive focus-visible:ring-destructive',
+                )}
+              />
+              {errors.dueDate && (
+                <p id="task-due-error" className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.dueDate}
+                </p>
+              )}
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Tipo</Label>
-            <Select value={taskType} onValueChange={setTaskType}>
-              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="call">📞 Ligação</SelectItem>
-                <SelectItem value="email">📧 E-mail</SelectItem>
-                <SelectItem value="meeting">📅 Reunião</SelectItem>
-                <SelectItem value="follow_up">🔄 Follow-up</SelectItem>
-                <SelectItem value="proposal">📝 Proposta</SelectItem>
-                <SelectItem value="other">📌 Outro</SelectItem>
-              </SelectContent>
-            </Select>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="task-time">Hora (opcional)</Label>
+              <Input
+                id="task-time"
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                onBlur={handleBlur}
+                disabled={!dueDate}
+                aria-invalid={!!errors.dueTime}
+                aria-describedby={errors.dueTime ? 'task-time-error' : undefined}
+                className={cn(
+                  errors.dueTime && 'border-destructive focus-visible:ring-destructive',
+                )}
+              />
+              {errors.dueTime && (
+                <p id="task-time-error" className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.dueTime}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo</Label>
+              <Select value={taskType} onValueChange={setTaskType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="call">📞 Ligação</SelectItem>
+                  <SelectItem value="email">📧 E-mail</SelectItem>
+                  <SelectItem value="meeting">📅 Reunião</SelectItem>
+                  <SelectItem value="follow_up">🔄 Follow-up</SelectItem>
+                  <SelectItem value="proposal">📝 Proposta</SelectItem>
+                  <SelectItem value="other">📌 Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-          <DialogClose asChild>
-            <Button onClick={handleSubmit} disabled={!title.trim() || createTask.isPending}>
-              {createTask.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}Criar Tarefa
-            </Button>
-          </DialogClose>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!title.trim() || createTask.isPending}
+          >
+            {createTask.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+            Criar Tarefa
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
