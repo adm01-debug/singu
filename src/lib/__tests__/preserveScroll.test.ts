@@ -36,7 +36,12 @@ describe('preserveScroll', () => {
     window.scrollTo = scrollSpy as unknown as typeof window.scrollTo;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Drena rAFs pendentes ANTES de restaurar o spy/scrollY: caso contrário
+    // callbacks agendados pela chamada do teste atual poderiam disparar
+    // durante o próximo `beforeEach` (já com novo spy) e poluir suas
+    // contagens — bug clássico de leak entre testes assíncronos.
+    await flushFrames(3);
     window.scrollTo = originalScrollTo;
     vi.restoreAllMocks();
     Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 });
