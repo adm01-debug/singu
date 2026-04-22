@@ -337,8 +337,8 @@ export function useInteractionsAdvancedFilter() {
       if (arr.length > 0) next.set('canais', arr.join(','));
       else next.delete('canais');
     } else if (key === 'de' || key === 'ate') {
-      const d = value as Date | undefined;
-      if (d) next.set(key, d.toISOString().slice(0, 10));
+      const s = serializeDate(value as Date | undefined);
+      if (s) next.set(key, s);
       else next.delete(key);
     } else if (key === 'sort') {
       const s = (value as SortKey) ?? 'recent';
