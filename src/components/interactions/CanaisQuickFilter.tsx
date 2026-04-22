@@ -185,10 +185,14 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [pending, onChange]);
 
   const [confirmRevertOpen, setConfirmRevertOpen] = useState(false);
+  // Sinaliza visualmente (pulso verde) que pendências foram desfeitas após Reverter.
+  const [justReverted, setJustReverted] = useState(false);
 
   const revert = useCallback(() => {
     setPending(safe);
     setConfirmRevertOpen(false);
+    setJustReverted(true);
+    window.setTimeout(() => setJustReverted(false), 1400);
     toast.success('Alterações pendentes descartadas');
   }, [safe]);
 
@@ -322,10 +326,11 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
                 title={opt.label}
                 onClick={() => toggleCanal(opt.value)}
                 className={cn(
-                  'cursor-pointer gap-1 px-2 py-1 text-xs transition-colors select-none',
+                  'cursor-pointer gap-1 px-2 py-1 text-xs transition-all select-none',
                   !inPending && 'hover:bg-muted',
-                  isDifferent && 'border-dashed',
+                  isDifferent && 'border-dashed border-warning/70 text-warning ring-1 ring-warning/40 bg-warning/5',
                   isEmpty && 'opacity-50',
+                  justReverted && 'ring-1 ring-success/60 bg-success/5',
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -365,8 +370,9 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               onClick={handleToggleMode}
               aria-label={mode === 'auto' ? 'Mudar para modo manual' : 'Mudar para modo automático'}
               className={cn(
-                'relative ml-1 text-muted-foreground hover:text-foreground',
+                'relative ml-1 text-muted-foreground hover:text-foreground transition-colors',
                 dirty && 'text-warning hover:text-warning',
+                justReverted && 'text-success hover:text-success ring-1 ring-success/50 rounded-md',
               )}
             >
               {mode === 'auto' ? <Zap className="w-3.5 h-3.5" /> : <MousePointerClick className="w-3.5 h-3.5" />}
@@ -494,6 +500,16 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               </TooltipTrigger>
               <TooltipContent side="top">Descartar alterações pendentes (Esc)</TooltipContent>
             </Tooltip>
+          </div>
+        )}
+
+        {!dirty && justReverted && (
+          <div
+            className="ml-1 inline-flex items-center gap-1 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-xs text-success animate-in fade-in"
+            aria-live="polite"
+          >
+            <Check className="w-3 h-3" />
+            Pendências desfeitas
           </div>
         )}
 
