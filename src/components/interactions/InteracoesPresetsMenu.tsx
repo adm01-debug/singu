@@ -192,6 +192,12 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
     }
   };
 
+  // Reseta o índice focado sempre que o popover abre/fecha ou a lista muda.
+  useEffect(() => {
+    if (!open) {
+      setFocusedIndex(-1);
+    }
+  }, [open]);
 
 
   const applyPreset = (preset: typeof presets[number]) => {
