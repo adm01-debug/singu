@@ -57,6 +57,14 @@ describe('suggestInteracoesPresetName', () => {
     expect(out).toContain('últimos 7d');
   });
 
+  it('formata "últimos 14d" quando intervalo bate', () => {
+    const ate = new Date(NOW);
+    const de = new Date(NOW);
+    de.setDate(de.getDate() - 14);
+    const out = suggestInteracoesPresetName(baseFilters({ de, ate }), NOW);
+    expect(out).toContain('últimos 14d');
+  });
+
   it('prioriza termo de busca q com aspas', () => {
     const out = suggestInteracoesPresetName(
       baseFilters({ q: 'proposta', company: 'Acme' }),
@@ -103,6 +111,20 @@ describe('suggestInteracoesPresetName', () => {
     const ate = new Date('2025-04-30T12:00:00Z');
     const out = formatDateRange(de, ate, NOW);
     expect(out).toBe('abr/25');
+  });
+
+  it('formata mês passado completo como "mar/25"', () => {
+    const de = new Date('2025-03-01T12:00:00Z');
+    const ate = new Date('2025-03-31T12:00:00Z');
+    const out = formatDateRange(de, ate, NOW);
+    expect(out).toBe('mar/25');
+  });
+
+  it('formata fevereiro (28 dias) como "fev/25"', () => {
+    const de = new Date('2025-02-01T12:00:00Z');
+    const ate = new Date('2025-02-28T12:00:00Z');
+    const out = formatDateRange(de, ate, NOW);
+    expect(out).toBe('fev/25');
   });
 
   it('formata intervalo arbitrário com "→"', () => {
