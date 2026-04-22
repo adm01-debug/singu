@@ -284,6 +284,7 @@ export function useFicha360FilterFavorites() {
   return {
     favorites,
     save,
+    quickSave,
     remove,
     rename,
     findMatch,
