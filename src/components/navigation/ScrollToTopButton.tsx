@@ -95,7 +95,7 @@ export function ScrollToTopButton({
       window.removeEventListener(INFINITE_SCROLL_CLEAR_EVENT, handleClear);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, [threshold]);
+  }, [densityAdjusted]);
 
   const scrollToTop = () => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
