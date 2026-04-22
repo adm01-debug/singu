@@ -435,10 +435,12 @@ export const SimulationModePanel = memo(({ realScore, simulatedScore }: Props) =
               {delta > 0 ? '+' : ''}
               {delta} pts
             </Badge>
-            {presetName && (
+            {(presetName || activeCustom) && (
               <Badge variant="outline" className="text-[10px] border-warning/40 bg-warning/10 text-warning">
                 Preset:{' '}
-                {SIMULATION_PRESETS.find((p) => p.name === presetName)?.label ?? presetName}
+                {activeCustom
+                  ? activeCustom.name
+                  : SIMULATION_PRESETS.find((p) => p.name === presetName)?.label ?? presetName}
               </Badge>
             )}
           </div>
