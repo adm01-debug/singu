@@ -396,6 +396,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         filters={adv}
         setFilter={setFilter}
         clear={clear}
+        clearDateRange={clearDateRange}
         activeCount={activeCount}
         totalCount={interactions.length}
         visibleCount={visibleEventsCount}
