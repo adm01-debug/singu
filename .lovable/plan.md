@@ -1,77 +1,108 @@
 
 
-# Plano: Filtro por pessoa e por cargo nas interações da empresa
+# Plano: Filtro por tags/assuntos nas interações
 
-## Reinterpretação justificada do pedido
+## Contexto
 
-Na Ficha 360, todas as interações já são de **uma única pessoa** (o contato da página) — filtrar por pessoa/cargo aqui não restringe nada. O lugar onde esse filtro faz sentido é **`/empresa/:id` → aba Interações** (`CompanyInteractionsTab`), onde aparecem interações de **múltiplos contatos da mesma empresa** (compradores, gerentes, proprietários etc.). É lá que o usuário vê uma timeline misturada e precisa restringir.
+Hoje em **Ficha 360 → Últimas Interações** existem filtros por período, canais e busca livre. Falta o filtro temático por **assuntos/tags** (ex.: "orçamento", "follow-up", "proposta") — um eixo distinto da busca livre porque:
+- É **multi-seleção** (orçamento E proposta).
+- Usa **vocabulário curado** com sinônimos (ex.: "follow-up" pega "followup", "retomada").
+- Persiste no URL e em favoritos.
 
-A tab hoje é uma simples lista, **sem nenhum filtro**. Vamos torná-la inteligente: filtro por pessoa e por papel (`ContactRole`) no topo, com chips de pessoas presentes e dropdown de papéis.
+A view `vw_interaction_timeline` traz `assunto` e `resumo` como texto livre — sem coluna de tags. Vamos derivar tags **client-side** via dicionário de palavras-chave aplicado a `assunto + resumo`, sem nova query nem mudança de schema.
 
 ## Mudanças
 
-### 1. `CompanyInteractionsTab.tsx` — receber `contacts` e adicionar filtros
+### 1. Novo: `src/lib/interactionTags.ts` (~80 linhas)
 
-Hoje recebe só `interactions: Interaction[]`. Passa a também receber `contacts: Contact[]` (`EmpresaDetalhe.tsx` já tem `contacts` em mãos — basta passar adiante).
+Dicionário canônico de tags + extração:
 
-Estado interno:
-- `selectedContactId: string | null` — filtro por pessoa específica.
-- `selectedRoles: ContactRole[]` — filtro multi-select por papel (compradores, gerentes, proprietários, decisores, influenciadores).
+```ts
+export const TAG_DICTIONARY = {
+  orcamento:  { label: 'Orçamento',  keywords: ['orçamento','orcamento','cotação','cotacao','preço','valor','quanto custa'] },
+  proposta:   { label: 'Proposta',   keywords: ['proposta','contrato','minuta','termos'] },
+  followup:   { label: 'Follow-up',  keywords: ['follow-up','followup','follow up','retomar','retomada','lembrete'] },
+  reuniao:    { label: 'Reunião',    keywords: ['reunião','reuniao','call','agenda','agendar','marcar'] },
+  duvida:     { label: 'Dúvida',     keywords: ['dúvida','duvida','pergunta','esclarecer'] },
+  objecao:    { label: 'Objeção',    keywords: ['objeção','objecao','caro','não tenho interesse','não posso'] },
+  fechamento: { label: 'Fechamento', keywords: ['fechado','assinou','assinado','aprovado','ganhamos'] },
+  suporte:    { label: 'Suporte',    keywords: ['suporte','problema','erro','bug','reclamação','reclamacao'] },
+} as const;
 
-Aplicação: `interactions.filter(i => (!selectedContactId || i.contact_id === selectedContactId) && (selectedRoles.length === 0 || selectedRoles.includes(contactById[i.contact_id]?.role)))`.
+export type InteractionTag = keyof typeof TAG_DICTIONARY;
 
-Persistência em URL via `useSearchParams`: `?pessoa=<contactId>` e `?papeis=owner,manager` (ambos omitidos quando default). Whitelist de papéis usando o tipo `ContactRole` exportado de `@/types`.
+export function extractTags(text: string): InteractionTag[];          // normaliza + scan
+export function interactionMatchesTags(i, selected): boolean;          // OR entre tags
+export function countByTag(items): Record<InteractionTag, number>;
+```
 
-### 2. Novo: `src/components/company-detail/InteracoesPessoaCargoBar.tsx` (~150 linhas)
+Normalização: `toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')` (já existe `normalizeForSearch` em `src/lib/normalizeText.ts` — reusar).
 
-Barra de filtros compacta no topo da tab:
+### 2. `src/hooks/useFicha360Filters.ts` — adicionar `tags`
+
+Novo query param `?tags=orcamento,proposta`. Whitelist usando `Object.keys(TAG_DICTIONARY)`. Setter `setTags(next)`. Incluir em `clear()` e em `activeCount`.
+
+### 3. Novo: `src/components/ficha-360/FiltroTagsDropdown.tsx` (~110 linhas)
+
+Botão `[🏷 Tags ▾]` no `FiltrosInteracoesBar`, ao lado dos chips de canais. Dropdown multi-seleção com checkboxes:
 
 ```
-Pessoa: [👤 Todas ▾]   Papel: [🏷 Todos ▾]   3 de 24 interações   [Limpar]
+🏷 Tags  [3]
+─────────
+☑ Orçamento (8)
+☑ Proposta (3)
+☐ Follow-up (12)
+☐ Reunião (5)
+...
+─────────
+[Limpar tags]
 ```
 
-- **Dropdown "Pessoa"**: avatar + nome + `RoleBadge` para cada contato com pelo menos 1 interação no conjunto. Item "Todas" reseta. Conta entre parênteses por contato (`João (8)`).
-- **Dropdown "Papel"** (multi-select com checkboxes): lista os papéis que **existem** entre os contatos da empresa (omite papéis sem ninguém). Reusa labels do `roleConfig` em `RoleBadge`. Mostra checkmark + label PT-BR.
-- **Resumo**: "X de Y interações" alinhado à direita.
-- **Limpar**: aparece só quando há filtro ativo.
+- Contagem entre parênteses vem de `countByTag(allInteractionsInPeriod)` — calculada em `Ficha360.tsx` e passada via props.
+- Tags com count `0` ficam `opacity-50` mas continuam clicáveis (pode futuramente aparecer).
+- Item com `role="menuitemcheckbox"` + `aria-checked`. `onSelect={(e) => e.preventDefault()}` para manter aberto ao clicar.
+- Botão `Limpar tags` no rodapé só quando há seleção.
 
-A11y: `role="group"` + `aria-label="Filtros por pessoa e cargo"`. Cada dropdown com `aria-label` próprio. Itens com checkbox usam `role="menuitemcheckbox"` + `aria-checked`.
+### 4. `Ficha360.tsx` — aplicação do filtro
 
-### 3. `EmpresaDetalhe.tsx` — passar `contacts` para a tab
+- Ler `tags` do `useFicha360Filters()`.
+- Calcular `tagCounts = useMemo(() => countByTag(externalInteractions), [externalInteractions])` sobre o conjunto **já filtrado por período e canais** (mesma lógica que `ContagemPorTipoBar` usa para `Y`).
+- Aplicar filtro de tags ao lado do filtro de busca: `if (tags.length > 0 && !interactionMatchesTags(it, tags)) return false;`
+- Renderizar `<FiltroTagsDropdown selected={tags} onChange={setTags} counts={tagCounts} />` na barra de filtros.
 
-Mudança de 1 linha em `<CompanyInteractionsTab interactions={interactions} contacts={contacts} />`.
+### 5. `FiltrosAtivosChips.tsx` — chips para tags ativas
 
-### 4. Chips ativos inline (não barra separada)
+Adicionar bloco depois dos chips de canal:
 
-Quando há filtro aplicado, exibir chips fechaveis logo abaixo dos dropdowns:
-- `👤 João Silva ×` (clica × → reseta `pessoa`)
-- `🏷 Comprador ×` `🏷 Gerente ×` (× remove daquele papel)
+```tsx
+{tags.map(t => (
+  <Badge variant="secondary" closeable onClose={() => onRemoveTag(t)} icon={<Tag className="h-3 w-3" />}>
+    {TAG_DICTIONARY[t].label}
+  </Badge>
+))}
+```
 
-Usa `Badge` existente com `closeable`.
+Props extra: `tags: InteractionTag[]`, `onRemoveTag: (t) => void`. Atualizar `activeChipCount` para incluir `tags.length`. Atualizar regra de "Limpar tudo" (já era `>= 2` chips ativos).
 
-### 5. Empty state diferenciado
+### 6. Favoritos: incluir `tags` no schema
 
-Quando `interactions.length > 0` mas `filtered.length === 0` (filtros eliminaram tudo), substituir o empty state genérico por:
+Em `useFicha360FilterFavorites.ts` adicionar `tags: InteractionTag[]` ao tipo `FilterPreset` e bumpar `SCHEMA_VERSION`. Migração: presets antigos sem `tags` recebem `tags: []` ao carregar. Comparação de "preset ativo" (que destaca o ⭐) passa a comparar tags ordenadas também.
 
-> "Nenhuma interação para esses filtros."  
-> Botão "Limpar filtros" → reseta tudo.
+### 7. Atalho de teclado
 
-### 6. Discoverability na Ficha 360 (mínimo)
+Em `useFicha360FilterShortcuts.ts`, adicionar `Shift + T` → abre o `FiltroTagsDropdown` (foco no botão via `ref` exposto ou via evento custom `ficha360:open-tags`). Aparece automaticamente no cheatsheet (`?`).
 
-Como o usuário pediu "dentro da empresa", o link `ConversasRelacionadasCard` (que já existe na Ficha 360) ganha um chip extra:
+### 8. `ContagemPorTipoBar` (sem mudança)
 
-- **"Ver interações da empresa por pessoa"** → `/empresa/{companyId}?tab=interactions` (tab params já é suportado pelo `Tabs` do EmpresaDetalhe).
-
-Só renderizado quando `profile.company_id` existe. Fica visível, não intrusivo.
+Continua mostrando contagem por **canal**. Tags são um eixo diferente — não duplicamos a barra. As contagens por tag aparecem dentro do próprio dropdown.
 
 ## Não muda
 
-- `useExternalInteractions`, `useFicha360Filters`, atalhos, favoritos, `OrdenacaoToggle`, `ContagemPorTipoBar` — escopo Ficha 360 intacto.
-- Tabela `interactions`, RLS, edge functions.
-- `/interacoes` global (já tem seu próprio filtro avançado).
-- O comportamento default da tab "Interações" da empresa quando ninguém aplicou filtro.
+- `useExternalInteractions`, `vw_interaction_timeline`, edge functions, RLS, schema.
+- `OrdenacaoToggle`, `ConversasRelacionadasCard`, `CompanyInteractionsTab`.
+- Busca livre `q` permanece independente (busca em qualquer texto; tags são curadas).
 
 ## Critérios de aceite
 
-(a) Em `/empresa/:id` aba "Interações", aparecem dois dropdowns no topo: "Pessoa" e "Papel"; (b) "Pessoa" lista contatos com interações + contagem; "Papel" multi-select dos cargos presentes; (c) seleção filtra a lista imediatamente, com resumo "X de Y"; (d) chips fechaveis aparecem para cada filtro ativo abaixo dos dropdowns; (e) URL sincroniza via `?pessoa=<id>&papeis=owner,manager` (omitidos quando vazio); (f) empty state específico quando filtros eliminam tudo, com "Limpar"; (g) na Ficha 360, `ConversasRelacionadasCard` ganha chip "Interações da empresa por pessoa" linkando para a empresa do contato (oculto se sem `company_id`); (h) sem nova dependência, sem `any`, PT-BR, flat, novo arquivo <150 linhas; (i) acessibilidade: `role="group"`, `aria-label`, `menuitemcheckbox` nos papéis.
+(a) Botão "🏷 Tags" aparece em `FiltrosInteracoesBar` com badge mostrando quantas tags estão selecionadas; (b) dropdown lista 8 tags do dicionário com contagem por tag no período/canais correntes; (c) seleção múltipla com OR (tag A **ou** B) reflete imediatamente na lista; (d) URL persiste `?tags=orcamento,proposta` (omitido quando vazio); (e) chips fechaveis por tag ativa em `FiltrosAtivosChips`; (f) atalho `Shift + T` abre o dropdown e aparece no cheatsheet; (g) presets favoritos incluem tags (com migração automática para presets antigos); (h) `aria-label` em cada checkbox com label PT-BR + count; (i) sem nova dependência, sem `any`, PT-BR, novo arquivo `interactionTags.ts` <100 linhas, dropdown <120 linhas.
 
