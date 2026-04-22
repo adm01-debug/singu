@@ -156,6 +156,56 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
         )}
       </span>
 
+      {/*
+        Microdetalhe compacto: quando há mais de 3 filtros ativos, listar os
+        chips um a um polui a barra. Em vez disso, exibimos inline os 2 filtros
+        que mais reduzem o resultado (menores contagens isoladas) — assim o
+        usuário entende rapidamente "quais filtros estão pesando mais".
+      */}
+      {activeCount > 3 && Array.isArray(isolatedFilterCounts) && isolatedFilterCounts.length >= 2 && (() => {
+        const top = pickMostReducingFilters(isolatedFilterCounts, 2);
+        if (top.length < 2) return null;
+        const tooltipBody = isolatedFilterCounts
+          .slice()
+          .sort((a, b) => a.count - b.count)
+          .map((c) => `${c.label}: ${c.count}`)
+          .join(' · ');
+        return (
+          <TooltipProvider delayDuration={150}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border-l border-border/60 pl-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm transition-colors"
+                  aria-label={`Filtros que mais reduzem o resultado: ${tooltipBody}`}
+                >
+                  <span className="font-medium text-foreground/80">Mais restritivos:</span>
+                  <span className="inline-flex items-center gap-1">
+                    {top.map((c, i) => (
+                      <React.Fragment key={c.key}>
+                        {i > 0 && <span aria-hidden="true" className="text-muted-foreground/60">·</span>}
+                        <span className="inline-flex items-center gap-1 max-w-[140px]">
+                          <span className="truncate">{c.label}</span>
+                          <span className="tabular-nums text-foreground/70">({c.count})</span>
+                        </span>
+                      </React.Fragment>
+                    ))}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="start" className="max-w-[320px] text-xs leading-relaxed">
+                <p className="font-medium mb-1">Microdetalhe compacto</p>
+                <p className="text-muted-foreground">
+                  Cada número é quantos resultados existiriam <span className="text-foreground">se apenas aquele filtro estivesse ativo</span>.
+                  Os 2 menores aparecem aqui — são os que mais restringem a lista.
+                </p>
+                <p className="text-foreground mt-1.5">{tooltipBody}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      })()}
+
       {canais.length > 0 && (
         <span
           className="inline-flex items-center gap-1 text-xs text-muted-foreground border-l border-border/60 pl-2"
