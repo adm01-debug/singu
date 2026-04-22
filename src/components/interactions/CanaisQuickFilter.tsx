@@ -339,7 +339,7 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
               <TooltipTrigger asChild>
                 <Badge
                   variant="outline"
-                  className="gap-1 px-2 py-1 text-xs border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-300 cursor-help"
+                  className="gap-1 px-2 py-1 text-xs border-warning/50 bg-warning/10 text-warning cursor-help"
                   aria-label={`${diffCount} divergência${diffCount === 1 ? '' : 's'} entre seleção pendente e filtros aplicados`}
                 >
                   <AlertCircle className="w-3.5 h-3.5" />
