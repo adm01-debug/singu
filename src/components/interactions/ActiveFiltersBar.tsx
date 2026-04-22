@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles } from 'lucide-react';
+import { Search, User, Building2, Calendar, MessageSquare, Phone, Mail, Users, Video, FileText, ArrowDownLeft, ArrowUpRight, Tag, Smile, Meh, Frown, Sparkles, Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AdvancedFilters, SentimentoFilter } from '@/hooks/useInteractionsAdvancedFilter';
