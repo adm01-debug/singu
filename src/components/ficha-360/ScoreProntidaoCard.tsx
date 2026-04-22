@@ -114,7 +114,7 @@ export const ScoreProntidaoCard = memo(({ data, contactId, simulated }: Props) =
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Fatores
               </span>
-              <ProntidaoWeightsEditor />
+              <ProntidaoWeightsEditor contactId={contactId} />
             </div>
             <div className="space-y-2.5">
               {factors.map(({ key, factor }) => {
