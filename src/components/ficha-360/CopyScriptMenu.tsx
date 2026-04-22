@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Copy, ChevronDown, MessageCircle, Mail, Phone } from 'lucide-react';
+import { Copy, ChevronDown, MessageCircle, Mail, Phone, FlaskConical, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,6 +13,7 @@ import {
   type ScriptContext,
   type GeneratedScript,
 } from '@/lib/scriptGenerator';
+import { useSimulationStore } from '@/stores/useSimulationStore';
 
 interface Props {
   passoId: string;
