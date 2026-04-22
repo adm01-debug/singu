@@ -25,8 +25,8 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
     const { container } = render(
       <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore total={100} totalLoaded={10} />,
     );
-    // 2 skeletons no modo compact
-    expect(container.querySelectorAll('.h-12').length).toBe(2);
+    // 2 CompactItemSkeleton, cada um com avatar .h-7.w-7
+    expect(container.querySelectorAll('.h-7.w-7').length).toBe(2);
     expect(container.querySelectorAll('.h-20').length).toBe(0);
   });
 
@@ -37,7 +37,8 @@ describe('InfiniteScrollSentinel — densidade ambiente', () => {
         <InfiniteScrollSentinel sentinelRef={makeRef()} hasMore total={100} totalLoaded={10} />
       </DensityProvider>,
     );
-    expect(container.querySelectorAll('.h-12').length).toBe(2);
+    expect(container.querySelectorAll('.h-7.w-7').length).toBe(2);
+    expect(container.querySelectorAll('.h-20').length).toBe(0);
   });
 
   it('prop density explícita sobrescreve provider', () => {
