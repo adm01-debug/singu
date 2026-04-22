@@ -36,6 +36,7 @@ import { SentimentQuickFilter } from '@/components/interactions/SentimentQuickFi
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import { useCompanies } from '@/hooks/useCompanies';
 import { getChannelCountsCached } from '@/lib/channelCountsCache';
+import { computeIsolatedFilterCounts } from '@/lib/computeIsolatedFilterCounts';
 import { groupInteractions } from '@/lib/groupInteractions';
 import { TimelineGroupCard } from '@/components/interactions/TimelineGroupCard';
 
