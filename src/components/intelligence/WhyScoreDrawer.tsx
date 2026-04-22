@@ -88,10 +88,15 @@ export function WhyScoreDrawer({
     return readFeedback()[scoreKey] ?? null;
   });
 
-  const sortedFactors = useMemo(
-    () => [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score),
-    [factors],
-  );
+  const rankedFactors = useMemo(() => {
+    const sorted = [...factors].sort((a, b) => b.weight * b.score - a.weight * a.score);
+    const totalContribution = sorted.reduce((sum, f) => sum + f.weight * f.score, 0);
+    return sorted.map((f, i) => {
+      const contribution = f.weight * f.score;
+      const contributionPct = totalContribution > 0 ? (contribution / totalContribution) * 100 : 0;
+      return { ...f, contribution, contributionPct, rank: i + 1 };
+    });
+  }, [factors]);
 
   const submitFeedback = (value: 'up' | 'down') => {
     setFeedback(value);
