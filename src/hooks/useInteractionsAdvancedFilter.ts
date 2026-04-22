@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { SortKey } from '@/lib/sortInteractions';
 import { readAppliedCanais, writeAppliedCanais } from '@/lib/channelPersistence';
+import { parseCivilDate, formatCivilDate } from '@/lib/civilDate';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
@@ -112,11 +113,11 @@ function parsePerPage(v: string | null): number {
   return (VALID_PER_PAGE as readonly number[]).includes(n) ? n : DEFAULT_PER_PAGE;
 }
 
-function parseDate(v: string | null): Date | undefined {
-  if (!v) return undefined;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? undefined : d;
-}
+// `parseDate`/`serializeDate` delegam para o helper civil (sem fuso) — evita
+// que `2025-01-15` vire `2025-01-14` em fusos a oeste ou avance um dia em fusos a leste.
+const parseDate = parseCivilDate;
+const serializeDate = formatCivilDate;
+
 
 export function useInteractionsAdvancedFilter() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -270,12 +271,14 @@ export function useInteractionsAdvancedFilter() {
     if (!searchParams.get('de')) {
       const v = readLS(DE_STORAGE_KEY);
       const d = parseDate(v);
-      if (d) { next.set('de', d.toISOString().slice(0, 10)); changed = true; }
+      const s = serializeDate(d);
+      if (s) { next.set('de', s); changed = true; }
     }
     if (!searchParams.get('ate')) {
       const v = readLS(ATE_STORAGE_KEY);
       const d = parseDate(v);
-      if (d) { next.set('ate', d.toISOString().slice(0, 10)); changed = true; }
+      const s = serializeDate(d);
+      if (s) { next.set('ate', s); changed = true; }
     }
     if (!searchParams.get('sentimento')) {
       const v = readLS(SENTIMENTO_STORAGE_KEY);
@@ -311,14 +314,14 @@ export function useInteractionsAdvancedFilter() {
     else removeLS(COMPANY_STORAGE_KEY);
   }, [filters.company]);
   useEffect(() => {
-    if (filters.de instanceof Date && !isNaN(filters.de.getTime())) {
-      writeLS(DE_STORAGE_KEY, filters.de.toISOString().slice(0, 10));
-    } else removeLS(DE_STORAGE_KEY);
+    const s = serializeDate(filters.de);
+    if (s) writeLS(DE_STORAGE_KEY, s);
+    else removeLS(DE_STORAGE_KEY);
   }, [filters.de]);
   useEffect(() => {
-    if (filters.ate instanceof Date && !isNaN(filters.ate.getTime())) {
-      writeLS(ATE_STORAGE_KEY, filters.ate.toISOString().slice(0, 10));
-    } else removeLS(ATE_STORAGE_KEY);
+    const s = serializeDate(filters.ate);
+    if (s) writeLS(ATE_STORAGE_KEY, s);
+    else removeLS(ATE_STORAGE_KEY);
   }, [filters.ate]);
   useEffect(() => {
     if (filters.sentimento) writeLS(SENTIMENTO_STORAGE_KEY, filters.sentimento);
@@ -334,8 +337,8 @@ export function useInteractionsAdvancedFilter() {
       if (arr.length > 0) next.set('canais', arr.join(','));
       else next.delete('canais');
     } else if (key === 'de' || key === 'ate') {
-      const d = value as Date | undefined;
-      if (d) next.set(key, d.toISOString().slice(0, 10));
+      const s = serializeDate(value as Date | undefined);
+      if (s) next.set(key, s);
       else next.delete(key);
     } else if (key === 'sort') {
       const s = (value as SortKey) ?? 'recent';
@@ -409,8 +412,8 @@ export function useInteractionsAdvancedFilter() {
       if (arr.length > 0) sp.set('canais', arr.join(','));
     }
     if (next.direcao && next.direcao !== 'all') sp.set('direcao', next.direcao);
-    if (next.de instanceof Date && !isNaN(next.de.getTime())) sp.set('de', next.de.toISOString().slice(0, 10));
-    if (next.ate instanceof Date && !isNaN(next.ate.getTime())) sp.set('ate', next.ate.toISOString().slice(0, 10));
+    { const s = serializeDate(next.de); if (s) sp.set('de', s); }
+    { const s = serializeDate(next.ate); if (s) sp.set('ate', s); }
     if (next.sort && next.sort !== 'recent') sp.set('sort', next.sort);
     if (next.view && next.view !== 'list') sp.set('view', next.view);
     if (next.density === 'compact') sp.set('density', 'compact');
@@ -441,10 +444,8 @@ export function useInteractionsAdvancedFilter() {
     }
     const sp = new URLSearchParams(searchParams);
     sp.delete('page');
-    if (from instanceof Date && !isNaN(from.getTime())) sp.set('de', from.toISOString().slice(0, 10));
-    else sp.delete('de');
-    if (to instanceof Date && !isNaN(to.getTime())) sp.set('ate', to.toISOString().slice(0, 10));
-    else sp.delete('ate');
+    { const s = serializeDate(from); if (s) sp.set('de', s); else sp.delete('de'); }
+    { const s = serializeDate(to); if (s) sp.set('ate', s); else sp.delete('ate'); }
     setSearchParams(sp, { replace: true });
     return swapped;
   }, [searchParams, setSearchParams]);
