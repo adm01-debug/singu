@@ -1,5 +1,7 @@
 import React, { type RefObject } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -8,10 +10,11 @@ interface Props {
   totalLoaded: number;
   total: number;
   density?: 'comfortable' | 'compact';
+  onLoadMore?: () => void;
 }
 
 export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel({
-  sentinelRef, hasMore, totalLoaded, total, density = 'comfortable',
+  sentinelRef, hasMore, totalLoaded, total, density = 'comfortable', onLoadMore,
 }: Props) {
   if (total === 0) return null;
 
@@ -41,6 +44,19 @@ export const InfiniteScrollSentinel = React.memo(function InfiniteScrollSentinel
             style={{ width: `${pct}%` }}
           />
         </div>
+        {onLoadMore && (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLoadMore}
+              className="h-7 px-3 text-xs gap-1"
+              aria-label="Carregar mais interações"
+            >
+              <ChevronDown className="h-3 w-3" /> Carregar mais
+            </Button>
+          </div>
+        )}
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <Skeleton key={i} className={cn(skeletonHeight, 'w-full rounded-lg')} />
         ))}
