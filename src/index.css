@@ -1247,3 +1247,33 @@ html.density-compact [data-density-aware].py-3 { padding-top: 0.375rem; padding-
   ::view-transition-new(root) { animation: none; }
 }
 
+/**
+ * Pulso de foco para o input de busca após remoção de chip de filtro.
+ *
+ * Objetivo: dar feedback visual claro de que o input voltou a estar
+ * focado/pronto para digitação, sem usar cores hardcoded.
+ *
+ * - Usa `--ring` (token semântico do design system) com opacidade decrescente
+ *   via `box-shadow`, para preservar o `outline` nativo de foco do navegador
+ *   (acessibilidade) e apenas REFORÇAR o sinal visual.
+ * - 900ms é tempo suficiente para o olho perceber sem virar distração.
+ * - `prefers-reduced-motion`: substitui o pulso por um anel estático que
+ *   desaparece ao final, mantendo o feedback sem animação.
+ */
+@keyframes search-focus-flash {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--ring) / 0.55); }
+  60%  { box-shadow: 0 0 0 6px hsl(var(--ring) / 0.18); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--ring) / 0); }
+}
+.search-focus-flash {
+  animation: search-focus-flash 900ms ease-out;
+  border-radius: var(--radius);
+}
+@media (prefers-reduced-motion: reduce) {
+  .search-focus-flash {
+    animation: none;
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.35);
+    transition: box-shadow 600ms ease-out 300ms;
+  }
+}
+
