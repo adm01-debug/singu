@@ -730,6 +730,24 @@ const Ficha360 = () => {
           }}
         />
       )}
+      <AlertDialog open={confirmClearOpen} onOpenChange={setConfirmClearOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Limpar todos os filtros?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Isso vai desativar {channels.length > 0 ? `${channels.length} canal${channels.length === 1 ? '' : 'is'}` : 'os canais'}
+              {tags.length > 0 ? `, remover ${tags.length} tag${tags.length === 1 ? '' : 's'}` : ''}
+              {q ? ', limpar a busca' : ''}
+              {days !== 90 ? ' e voltar o período para 90 dias' : ''}.
+              Os parâmetros serão removidos da URL — links já compartilhados continuam funcionando.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={performClearAll}>Limpar tudo</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
