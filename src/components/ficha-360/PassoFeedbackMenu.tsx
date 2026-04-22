@@ -115,6 +115,12 @@ function PassoFeedbackMenuComponent({ passoId, contactId, channelHint }: Props) 
   const handleConfirm = () => {
     if (!pendingOutcome) return;
     const outcome = pendingOutcome;
+    if (outcome === 'nao_respondeu' && naoRespondeuLocked) {
+      toast.error('Aguarde antes de repetir', {
+        description: `Você já marcou "Não respondeu" para este passo nas últimas ${NAO_RESPONDEU_COOLDOWN_HOURS}h. Tente novamente em ~${hoursLeft}h.`,
+      });
+      return;
+    }
     mutate(
       {
         contactId,
