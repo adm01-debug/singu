@@ -73,6 +73,7 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             ref={searchInputRef}
+            data-interacoes-search
             placeholder="Buscar palavra-chave em título, conteúdo ou tags..."
             value={filters.q}
             onChange={(e) => setFilter('q', e.target.value)}
