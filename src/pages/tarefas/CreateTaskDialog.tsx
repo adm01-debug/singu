@@ -106,6 +106,25 @@ const todayIso = () => {
   return `${y}-${m}-${day}`;
 };
 
+const addDaysIso = (days: number): string => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const DUE_WINDOWS: Array<{ days: number; label: string }> = [
+  { days: 0, label: 'Hoje' },
+  { days: 1, label: 'Amanhã' },
+  { days: 2, label: 'Em 2 dias' },
+  { days: 3, label: 'Em 3 dias' },
+  { days: 7, label: 'Em 1 semana' },
+  { days: 14, label: 'Em 2 semanas' },
+];
+
 export function CreateTaskDialog() {
   const createTask = useCreateTask();
   const [open, setOpen] = useState(false);
@@ -282,6 +301,45 @@ export function CreateTaskDialog() {
                   <AlertCircle className="h-3 w-3" />
                   {errors.dueDate}
                 </p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Janela rápida</Label>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Definir data limite por janela de dias">
+              {DUE_WINDOWS.map((w) => {
+                const iso = addDaysIso(w.days);
+                const active = dueDate === iso;
+                return (
+                  <Button
+                    key={w.days}
+                    type="button"
+                    variant={active ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() => {
+                      setDueDate(iso);
+                      setErrors((prev) => ({ ...prev, dueDate: undefined, dueTime: undefined }));
+                    }}
+                    aria-pressed={active}
+                  >
+                    {w.label}
+                  </Button>
+                );
+              })}
+              {dueDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => {
+                    setDueDate('');
+                    setDueTime('');
+                    setErrors((prev) => ({ ...prev, dueDate: undefined, dueTime: undefined }));
+                  }}
+                >
+                  Limpar
+                </Button>
               )}
             </div>
           </div>
