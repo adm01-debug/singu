@@ -90,11 +90,11 @@ describe('preserveScroll', () => {
     preserveScroll();
 
     // Após remover o chip, a lista encolheu drasticamente: nova altura 1.500.
-    // O navegador clampou silenciosamente scrollY para 700 (= 1500 - 800).
-    // preserveScroll deve detectar a divergência e re-emitir scrollTo(700) —
-    // confirmando que NÃO tenta voltar para 3000 (impossível) nem deixa o
-    // valor clampado errado.
-    setLayout({ scrollY: 700, scrollHeight: 1500, innerHeight: 800 });
+    // Cenário pessimista: o navegador clampou scrollY para 0 (ou algum efeito
+    // interno reposicionou). preserveScroll deve detectar a divergência e
+    // restaurar para o máximo válido = 1500 - 800 = 700, NÃO para 3000
+    // (impossível) e NÃO deixar 0 (salto visível).
+    setLayout({ scrollY: 0, scrollHeight: 1500, innerHeight: 800 });
     await flushFrames(4);
 
     expect(scrollSpy).toHaveBeenCalledTimes(1);
