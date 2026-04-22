@@ -227,6 +227,42 @@ export function useInteractionsAdvancedFilter() {
         changed = true;
       }
     }
+    if (!searchParams.get('q')) {
+      const v = readLS(Q_STORAGE_KEY);
+      if (v && v.trim()) { next.set('q', v); changed = true; }
+    }
+    if (!searchParams.get('direcao')) {
+      const v = readLS(DIRECAO_STORAGE_KEY);
+      if (v && (VALID_DIRECAO as string[]).includes(v) && v !== 'all') {
+        next.set('direcao', v);
+        changed = true;
+      }
+    }
+    if (!searchParams.get('contact')) {
+      const v = readLS(CONTACT_STORAGE_KEY);
+      if (v) { next.set('contact', v); changed = true; }
+    }
+    if (!searchParams.get('company')) {
+      const v = readLS(COMPANY_STORAGE_KEY);
+      if (v) { next.set('company', v); changed = true; }
+    }
+    if (!searchParams.get('de')) {
+      const v = readLS(DE_STORAGE_KEY);
+      const d = parseDate(v);
+      if (d) { next.set('de', d.toISOString().slice(0, 10)); changed = true; }
+    }
+    if (!searchParams.get('ate')) {
+      const v = readLS(ATE_STORAGE_KEY);
+      const d = parseDate(v);
+      if (d) { next.set('ate', d.toISOString().slice(0, 10)); changed = true; }
+    }
+    if (!searchParams.get('sentimento')) {
+      const v = readLS(SENTIMENTO_STORAGE_KEY);
+      if (v && (VALID_SENTIMENTOS as string[]).includes(v)) {
+        next.set('sentimento', v);
+        changed = true;
+      }
+    }
     if (changed) setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -236,6 +272,37 @@ export function useInteractionsAdvancedFilter() {
   useEffect(() => { writeLS(PERPAGE_STORAGE_KEY, String(filters.perPage)); }, [filters.perPage]);
   useEffect(() => { writeLS(VIEW_STORAGE_KEY, filters.view); }, [filters.view]);
   useEffect(() => { writeLS(SORT_STORAGE_KEY, filters.sort); }, [filters.sort]);
+  // Persistência reativa adicional: busca, direção, entidades, datas e sentimento.
+  useEffect(() => {
+    if (filters.q && filters.q.trim()) writeLS(Q_STORAGE_KEY, filters.q);
+    else removeLS(Q_STORAGE_KEY);
+  }, [filters.q]);
+  useEffect(() => {
+    if (filters.direcao && filters.direcao !== 'all') writeLS(DIRECAO_STORAGE_KEY, filters.direcao);
+    else removeLS(DIRECAO_STORAGE_KEY);
+  }, [filters.direcao]);
+  useEffect(() => {
+    if (filters.contact) writeLS(CONTACT_STORAGE_KEY, filters.contact);
+    else removeLS(CONTACT_STORAGE_KEY);
+  }, [filters.contact]);
+  useEffect(() => {
+    if (filters.company) writeLS(COMPANY_STORAGE_KEY, filters.company);
+    else removeLS(COMPANY_STORAGE_KEY);
+  }, [filters.company]);
+  useEffect(() => {
+    if (filters.de instanceof Date && !isNaN(filters.de.getTime())) {
+      writeLS(DE_STORAGE_KEY, filters.de.toISOString().slice(0, 10));
+    } else removeLS(DE_STORAGE_KEY);
+  }, [filters.de]);
+  useEffect(() => {
+    if (filters.ate instanceof Date && !isNaN(filters.ate.getTime())) {
+      writeLS(ATE_STORAGE_KEY, filters.ate.toISOString().slice(0, 10));
+    } else removeLS(ATE_STORAGE_KEY);
+  }, [filters.ate]);
+  useEffect(() => {
+    if (filters.sentimento) writeLS(SENTIMENTO_STORAGE_KEY, filters.sentimento);
+    else removeLS(SENTIMENTO_STORAGE_KEY);
+  }, [filters.sentimento]);
 
   const setFilter = useCallback(<K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => {
     const next = new URLSearchParams(searchParams);
