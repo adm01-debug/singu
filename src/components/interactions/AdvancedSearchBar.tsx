@@ -124,6 +124,24 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
 
         <DateRangePopover de={filters.de} ate={filters.ate} applyDateRange={applyDateRange} />
 
+        {(filters.de || filters.ate) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => applyDateRange(undefined, undefined)}
+                className="h-9 px-2 text-muted-foreground hover:text-destructive"
+                aria-label="Limpar filtros de data"
+              >
+                <X className="w-4 h-4" />
+                <span className="hidden md:inline ml-1">Limpar datas</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Limpar filtros de data (Alt+D)</TooltipContent>
+          </Tooltip>
+        )}
+
         <SortChips
           value={filters.sort}
           onChange={(v) => setFilter('sort', v)}
