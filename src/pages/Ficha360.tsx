@@ -28,6 +28,8 @@ import { ContagemPorTipoBar } from '@/components/ficha-360/ContagemPorTipoBar';
 import { CopiarLinkFiltrosButton } from '@/components/ficha-360/CopiarLinkFiltrosButton';
 import { OrdenacaoToggle } from '@/components/ficha-360/OrdenacaoToggle';
 import { FiltroTagsDropdown } from '@/components/ficha-360/FiltroTagsDropdown';
+import { GerarResumoIAButton } from '@/components/ficha-360/GerarResumoIAButton';
+import { ResumoConversaIADialog } from '@/components/ficha-360/ResumoConversaIADialog';
 import { countByTag, interactionMatchesTags } from '@/lib/interactionTags';
 import { useFicha360Sort } from '@/hooks/useFicha360Sort';
 import { sortInteractions } from '@/lib/sortInteractions';
@@ -181,6 +183,7 @@ const Ficha360 = () => {
 
   // Controle do menu de favoritos (atalho Shift+F abre o popover).
   const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
+  const [resumoIAOpen, setResumoIAOpen] = useState(false);
   const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
     useFicha360FilterFavorites();
 
@@ -246,6 +249,8 @@ const Ficha360 = () => {
       setSort('relevante');
       toast.info('Ordenação: mais relevante', { duration: 1500 });
     },
+    onAbrirResumoIA: () => setResumoIAOpen(true),
+    filteredCount: filteredInteractions.length,
   });
 
   // Toast informativo quando a página abre com filtros vindos da URL.

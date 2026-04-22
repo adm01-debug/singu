@@ -24,6 +24,8 @@ interface Options {
   onAbrirFavoritos?: () => void;
   onSortRecente?: () => void;
   onSortRelevante?: () => void;
+  onAbrirResumoIA?: () => void;
+  filteredCount?: number;
   enabled: boolean;
 }
 
@@ -47,13 +49,15 @@ export function useFicha360FilterShortcuts({
   onAbrirFavoritos,
   onSortRecente,
   onSortRelevante,
+  onAbrirResumoIA,
+  filteredCount = 0,
   enabled,
 }: Options) {
   // Refs garantem que handlers leiam estado atual sem re-registrar atalhos.
-  const stateRef = useRef({ days, channels, q, hasPeriodChip, enabled });
+  const stateRef = useRef({ days, channels, q, hasPeriodChip, enabled, filteredCount });
   useEffect(() => {
-    stateRef.current = { days, channels, q, hasPeriodChip, enabled };
-  }, [days, channels, q, hasPeriodChip, enabled]);
+    stateRef.current = { days, channels, q, hasPeriodChip, enabled, filteredCount };
+  }, [days, channels, q, hasPeriodChip, enabled, filteredCount]);
 
   const handlersRef = useRef({
     onClearAll,
@@ -65,6 +69,7 @@ export function useFicha360FilterShortcuts({
     onAbrirFavoritos,
     onSortRecente,
     onSortRelevante,
+    onAbrirResumoIA,
   });
   useEffect(() => {
     handlersRef.current = {
@@ -77,6 +82,7 @@ export function useFicha360FilterShortcuts({
       onAbrirFavoritos,
       onSortRecente,
       onSortRelevante,
+      onAbrirResumoIA,
     };
   }, [
     onClearAll,
@@ -88,6 +94,7 @@ export function useFicha360FilterShortcuts({
     onAbrirFavoritos,
     onSortRecente,
     onSortRelevante,
+    onAbrirResumoIA,
   ]);
 
   useScopedShortcut({
@@ -206,6 +213,22 @@ export function useFicha360FilterShortcuts({
       const s = stateRef.current;
       if (!s.enabled) return;
       window.dispatchEvent(new CustomEvent('ficha360:open-tags'));
+    },
+  });
+
+  useScopedShortcut({
+    scope: 'ficha360-filtros',
+    keys: 'i',
+    alt: true,
+    description: 'Abrir resumo IA das interações filtradas',
+    handler: () => {
+      const s = stateRef.current;
+      if (!s.enabled) return;
+      if (s.filteredCount === 0) {
+        toast.info('Sem interações filtradas para resumir', { duration: 1800 });
+        return;
+      }
+      handlersRef.current.onAbrirResumoIA?.();
     },
   });
 
