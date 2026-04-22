@@ -14,9 +14,8 @@
  *   esse contrato de ponta a ponta.
  */
 import React, { useEffect } from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { afterEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import { useInteractionsAdvancedFilter } from '@/hooks/useInteractionsAdvancedFilter';
 import {
@@ -164,9 +163,13 @@ function byKey(counts: IsolatedFilterCount[]): Record<string, number> {
 }
 
 describe('Microdetalhe ↔ filtros isolados (integração com o hook)', () => {
-  // Cada teste monta seu próprio MemoryRouter; sem cleanup, o snapshot do hook
-  // de um teste anterior pode "vazar" ao testing-library reaproveitando o root,
-  // gerando contagens fantasmas no `captureHook` seguinte.
+  // O hook persiste filtros (q/contact/canais/de/ate/sentimento/...) em
+  // localStorage e o testing-library pode reusar o root entre testes. Sem
+  // isolar ambos, o snapshot capturado vaza filtros do teste anterior e
+  // contagens fantasmas aparecem no microdetalhe.
+  beforeEach(() => {
+    try { localStorage.clear(); } catch { /* noop */ }
+  });
   afterEach(() => cleanup());
 
   it('cada contagem do microdetalhe bate com aplicar SÓ aquele filtro', () => {
