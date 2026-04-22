@@ -10,6 +10,11 @@ export interface SearchPreset {
   createdAt: string;
   updatedAt?: string;
   isFavorite?: boolean;
+  /**
+   * Quando true, renomear ou atualizar filtros exige confirmação extra.
+   * Não impede aplicar/duplicar/excluir/marcar favorito.
+   */
+  isProtected?: boolean;
   usageCount?: number;
   lastUsedAt?: string;
 }
@@ -120,6 +125,12 @@ export function useSearchPresets(context: string = 'contacts') {
   const toggleFavorite = useCallback((id: string) => {
     setPresets(prev => prev.map(p =>
       p.id === id ? { ...p, isFavorite: !(p.isFavorite ?? false) } : p
+    ));
+  }, []);
+
+  const toggleProtected = useCallback((id: string) => {
+    setPresets(prev => prev.map(p =>
+      p.id === id ? { ...p, isProtected: !(p.isProtected ?? false) } : p
     ));
   }, []);
 
