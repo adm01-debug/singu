@@ -5,7 +5,7 @@ import type { NbaPriority, NbaSort } from './useProximosPassosFilters';
 
 const SCOPE = 'ficha360';
 const VALID_PRIORITIES: readonly NbaPriority[] = ['alta', 'media', 'baixa'];
-const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'prioridade', 'canal'];
+const VALID_SORTS: readonly NbaSort[] = ['sugerido', 'recomendacao', 'prioridade', 'canal'];
 
 export interface Ficha360Preferences {
   priorities: NbaPriority[];
