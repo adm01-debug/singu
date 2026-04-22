@@ -1,5 +1,5 @@
 import { memo, useMemo, useState } from 'react';
-import { Loader2, Calendar as CalIcon, Clock, Sparkles } from 'lucide-react';
+import { Loader2, Calendar as CalIcon, Clock, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
