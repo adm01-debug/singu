@@ -24,6 +24,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AdvancedSearchBar } from '@/components/interactions/AdvancedSearchBar';
 import { ActiveFiltersBar } from '@/components/interactions/ActiveFiltersBar';
+import { ChannelShortcutsHelpOverlay } from '@/components/interactions/ChannelShortcutsHelpOverlay';
 import { PaginationBar } from '@/components/interactions/PaginationBar';
 import { DensityChips } from '@/components/interactions/DensityChips';
 import { SentimentQuickFilter } from '@/components/interactions/SentimentQuickFilter';
