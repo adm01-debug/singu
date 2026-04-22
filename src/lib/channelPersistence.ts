@@ -1,6 +1,10 @@
-const KEY = 'channel-applied-canais';
-const TTL_MS = 30 * 24 * 60 * 60 * 1000;
-const VALID = new Set(['whatsapp', 'call', 'email', 'meeting', 'video_call', 'note']);
+import {
+  CHANNEL_PERSISTENCE_KEY as KEY,
+  CHANNEL_PERSISTENCE_TTL_MS as TTL_MS,
+  CHANNEL_PERSISTENCE_VALID_VALUES,
+} from '@/config/channelPersistence.config';
+
+const VALID = new Set<string>(CHANNEL_PERSISTENCE_VALID_VALUES);
 
 interface Stored {
   canais: string[];
