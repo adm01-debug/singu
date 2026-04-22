@@ -148,6 +148,10 @@ export function SearchPresetsMenu({
 
   const askUpdateFilters = (preset: SearchPreset, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (preset.isProtected) {
+      setPendingProtectedAction({ kind: 'updateFilters', preset });
+      return;
+    }
     setPendingFilterUpdate(preset);
   };
 
