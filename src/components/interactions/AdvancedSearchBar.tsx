@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
-  Search, X, User, Building2, Check,
+  Search, X, User, Building2, Check, Sigma,
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -92,6 +93,8 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           counts={channelCounts}
         />
 
+        <ChannelsTotalBadge counts={channelCounts} />
+
         <DirecaoQuickFilter
           value={filters.direcao}
           onChange={(v) => setFilter('direcao', v)}
@@ -151,6 +154,46 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
     </div>
   );
 });
+
+/**
+ * Total geral de interações no escopo atual (somatório dos canais visíveis).
+ * Fica visível ao lado do seletor de canais para o usuário ter o "tamanho do
+ * universo filtrado" sem precisar recorrer aos chips de busca avançada.
+ */
+function ChannelsTotalBadge({ counts }: { counts?: Record<string, number> }) {
+  const { total, channelsCount } = useMemo(() => {
+    if (!counts) return { total: 0, channelsCount: 0 };
+    const values = Object.values(counts);
+    return {
+      total: values.reduce((acc, n) => acc + (Number.isFinite(n) ? n : 0), 0),
+      channelsCount: values.filter((n) => n > 0).length,
+    };
+  }, [counts]);
+
+  if (!counts || total === 0) return null;
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            role="status"
+            aria-label={`Total de ${total} interações no escopo atual`}
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border bg-muted/40 text-xs text-muted-foreground"
+          >
+            <Sigma className="w-3.5 h-3.5" />
+            <span className="tabular-nums font-semibold text-foreground">{total}</span>
+            <span className="hidden sm:inline">interaç{total === 1 ? 'ão' : 'ões'}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-[260px] text-xs">
+          Somatório dos canais no escopo atual ({channelsCount} cana{channelsCount === 1 ? 'l' : 'is'} com interações).
+          Atualiza conforme você ajusta busca, pessoa, empresa, período ou sentimento.
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 interface EntityPickerProps {
   icon: typeof User;
