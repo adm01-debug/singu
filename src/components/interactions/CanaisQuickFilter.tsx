@@ -503,6 +503,16 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
           </div>
         )}
 
+        {!dirty && justReverted && (
+          <div
+            className="ml-1 inline-flex items-center gap-1 rounded-md border border-success/50 bg-success/10 px-2 py-1 text-xs text-success animate-in fade-in"
+            aria-live="polite"
+          >
+            <Check className="w-3 h-3" />
+            Pendências desfeitas
+          </div>
+        )}
+
         <AlertDialog open={confirmRevertOpen} onOpenChange={setConfirmRevertOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
