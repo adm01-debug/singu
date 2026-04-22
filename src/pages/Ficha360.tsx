@@ -140,16 +140,14 @@ const Ficha360 = () => {
   // Handler de "copiar link" — guardado em ref para o atalho Shift+L sempre
   // ler o estado mais recente sem causar re-registro do listener.
   const copyLinkRef = useRef<() => void>(() => {});
-  copyLinkRef.current = useCallback(async () => {
+  copyLinkRef.current = () => {
     if (activeCount === 0) return;
     const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copiado', { duration: 2000 });
-    } catch {
-      toast.error('Não foi possível copiar o link');
-    }
-  }, [activeCount]) as unknown as () => void;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => toast.success('Link copiado', { duration: 2000 }))
+      .catch(() => toast.error('Não foi possível copiar o link'));
+  };
 
   useFicha360FilterShortcuts({
     days,
