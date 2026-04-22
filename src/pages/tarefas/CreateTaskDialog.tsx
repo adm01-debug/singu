@@ -305,9 +305,46 @@ export function CreateTaskDialog() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="task-time">Hora (opcional)</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Janela rápida</Label>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Definir data limite por janela de dias">
+              {DUE_WINDOWS.map((w) => {
+                const iso = addDaysIso(w.days);
+                const active = dueDate === iso;
+                return (
+                  <Button
+                    key={w.days}
+                    type="button"
+                    variant={active ? 'default' : 'outline'}
+                    size="xs"
+                    onClick={() => {
+                      setDueDate(iso);
+                      setErrors((prev) => ({ ...prev, dueDate: undefined, dueTime: undefined }));
+                    }}
+                    aria-pressed={active}
+                  >
+                    {w.label}
+                  </Button>
+                );
+              })}
+              {dueDate && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => {
+                    setDueDate('');
+                    setDueTime('');
+                    setErrors((prev) => ({ ...prev, dueDate: undefined, dueTime: undefined }));
+                  }}
+                >
+                  Limpar
+                </Button>
+              )}
+            </div>
+          </div>
+
+
               <Input
                 id="task-time"
                 type="time"
