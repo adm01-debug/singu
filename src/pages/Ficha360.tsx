@@ -150,6 +150,37 @@ const Ficha360 = () => {
       .catch(() => toast.error('Não foi possível copiar o link'));
   };
 
+  // Controle do menu de favoritos (atalho Shift+F abre o popover).
+  const [favoritosMenuOpen, setFavoritosMenuOpen] = useState(false);
+  const { quickSave: quickSaveFavorito, findMatch: findFavoritoMatch, canSaveMore: canSaveMoreFavoritos, maxFavorites: maxFavoritos } =
+    useFicha360FilterFavorites();
+
+  const quickSaveRef = useRef<() => void>(() => {});
+  quickSaveRef.current = () => {
+    if (days === 90 && channels.length === 0) {
+      toast.info('Configure ao menos um filtro antes de salvar.', { duration: 1800 });
+      return;
+    }
+    const existing = findFavoritoMatch(days, channels);
+    if (existing) {
+      toast.info(`Já existe favorito: "${existing.name}"`, { duration: 1800 });
+      return;
+    }
+    const result = quickSaveFavorito(days, channels);
+    if (!result) {
+      toast.error(
+        !canSaveMoreFavoritos
+          ? `Limite de ${maxFavoritos} favoritos atingido.`
+          : `Não foi possível salvar (período inválido).`,
+      );
+      return;
+    }
+    toast.success(`Favorito salvo: "${result.name}"`, {
+      description: suggestFavoriteName(days, channels),
+      duration: 2200,
+    });
+  };
+
   useFicha360FilterShortcuts({
     days,
     channels,
@@ -176,6 +207,8 @@ const Ficha360 = () => {
       setDraftChannels(next);
     },
     onCopyLink: () => copyLinkRef.current(),
+    onQuickSaveFavorito: () => quickSaveRef.current(),
+    onAbrirFavoritos: () => setFavoritosMenuOpen(true),
   });
 
   // Toast informativo quando a página abre com filtros vindos da URL.
