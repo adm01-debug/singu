@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Info, Sparkles, Users } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowDown, ArrowUp, Hash, Info, Sparkles, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -9,6 +9,12 @@ interface Props {
   value: SortKey;
   onChange: (value: SortKey) => void;
   hasQuery: boolean;
+  /**
+   * Contagens por canal já calculadas no escopo atual (mesmos números dos
+   * chips de canal). Quando ausente ou vazio, a opção "Por canal" fica
+   * desabilitada porque não há referência para ordenar.
+   */
+  channelCounts?: Record<string, number>;
 }
 
 interface SortConfigItem {
