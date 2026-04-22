@@ -44,10 +44,12 @@ describe('ScrollToTopButton', () => {
     setScrollY(0);
     scrollToSpy = vi.fn();
     window.scrollTo = scrollToSpy as unknown as typeof window.scrollTo;
+    try { localStorage.removeItem('singu-table-density'); } catch { /* noop */ }
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    try { localStorage.removeItem('singu-table-density'); } catch { /* noop */ }
   });
 
   it('não fica visível com scrollY=0 (default threshold)', async () => {
