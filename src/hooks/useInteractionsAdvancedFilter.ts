@@ -11,6 +11,7 @@ import {
   normalizeCanaisArray,
   findIgnoredCanais,
 } from '@/lib/canaisInteracao';
+import { useUiPreferencesSync } from '@/hooks/useUiPreferencesSync';
 
 export type DirecaoFilter = 'all' | 'inbound' | 'outbound';
 export type ViewMode = 'list' | 'by-contact' | 'by-company';
