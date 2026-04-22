@@ -1,55 +1,60 @@
 
 
-# Plano: Botão "Carregar mais" em Últimas Interações
+# Plano: Skeletons detalhados por item em "Últimas Interações"
 
 ## Objetivo
 
-Adicionar um botão explícito "Carregar mais" em `UltimasInteracoesCard` que revele +15 itens por clique, complementando (sem substituir) o auto-load via `IntersectionObserver` já existente.
+Substituir os skeletons genéricos (`h-12` retangulares) exibidos durante o auto-load de `UltimasInteracoesCard` por skeletons que **espelham a estrutura real** do item da lista (ícone do canal + título + linha de metadados), tornando a transição visualmente contínua.
+
+## Decisão de design
+
+- O skeleton deve ter o **mesmo layout** do `<li>` real: ícone 7×7 à esquerda, bloco de texto à direita com 2 linhas (título + meta).
+- Usado **somente em `density="compact"`** (que é o usado pelo card). O modo `comfortable` mantém o `h-20` atual para não regredir outras telas.
+- Implementado como subcomponente local em `InfiniteScrollSentinel.tsx` para manter o card intacto e a lógica de paginação centralizada.
 
 ## Mudanças
 
-### 1. `src/hooks/useInfiniteList.ts`
+### 1. `src/components/interactions/InfiniteScrollSentinel.tsx`
 
-Expor `loadMore` no tipo `UseInfiniteListResult<T>` — já existe internamente, basta consumir. Sem alteração no hook (já retorna `loadMore`).
-
-### 2. `src/components/interactions/InfiniteScrollSentinel.tsx`
-
-Adicionar prop opcional `onLoadMore?: () => void`. Quando presente e `hasMore === true`, renderizar botão "Carregar mais (+15)" acima dos skeletons (ou substituindo-os, ver abaixo).
-
-Decisão: manter os skeletons + barra de progresso (feedback de auto-load por scroll) e adicionar o botão **acima** deles. O usuário escolhe: clicar no botão (ação explícita imediata) ou rolar (auto-load).
+**a)** Criar subcomponente `CompactItemSkeleton` (≈15 linhas) que reproduz a estrutura do item da `UltimasInteracoesCard`:
 
 ```tsx
-{onLoadMore && (
-  <div className="flex justify-center">
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={onLoadMore}
-      className="h-7 px-3 text-xs gap-1"
-      aria-label="Carregar mais interações"
-    >
-      <ChevronDown className="h-3 w-3" /> Carregar mais
-    </Button>
-  </div>
-)}
+function CompactItemSkeleton() {
+  return (
+    <div className="flex items-start gap-3 px-2 py-2">
+      <Skeleton className="mt-0.5 h-7 w-7 rounded-md shrink-0" />
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-3.5 flex-1 max-w-[60%] rounded-sm" />
+          <Skeleton className="h-1.5 w-1.5 rounded-full shrink-0" />
+        </div>
+        <Skeleton className="h-3 w-2/5 rounded-sm" />
+      </div>
+    </div>
+  );
+}
 ```
 
-Sem prop, comportamento atual preservado (retrocompatível).
+**b)** No bloco `hasMore`, quando `isCompact === true`, renderizar `CompactItemSkeleton` no lugar dos `Skeleton h-12`. Manter a contagem de 2 (já parametrizada em `skeletonCount`).
 
-### 3. `src/components/ficha-360/UltimasInteracoesCard.tsx`
+**c)** Modo `comfortable` permanece com `Skeleton h-20` (sem regressão).
 
-- Desestruturar `loadMore` de `useInfiniteList`.
-- Passar `onLoadMore={loadMore}` para `InfiniteScrollSentinel`.
+**d)** Variar levemente a largura do título com offset por índice (`max-w-[60%]` no primeiro, `max-w-[45%]` no segundo) para reduzir sensação de repetição mecânica.
 
-Nada mais muda — `pageSize=15` já é o usado no card, então cada clique soma +15 automaticamente (a lógica `setCount(prev => prev + pageSize)` já existe).
+### 2. Não muda
 
-## Não faz parte deste plano
+- `UltimasInteracoesCard.tsx` — passa `density="compact"` e `onLoadMore`, sem precisar saber do skeleton interno.
+- `useInfiniteList.ts` — sem alteração.
+- Outros consumidores de `InfiniteScrollSentinel` (modo `comfortable`) — comportamento preservado.
+- Barra de progresso, botão "Carregar mais", contador "X de Y" — todos preservados.
 
-- Mudar o `pageSize` de outras instâncias de `useInfiniteList`.
-- Adicionar o botão em outras telas (ex.: `ExternalInteractionsTimeline`) — escopo restrito ao `UltimasInteracoesCard` conforme pedido.
-- Trocar `IntersectionObserver` por carregamento puramente manual (auto-load continua ativo).
+### 3. Acessibilidade e performance
+
+- `aria-live="polite"` e `aria-busy="true"` já existem no contêiner — mantêm-se.
+- Sem nova animação custom: reutiliza o `variant="shimmer"` do `<Skeleton>` (já no design system).
+- Sem nova dependência. Sem mudança de tokens.
 
 ## Critérios de aceite
 
-(a) Botão "Carregar mais" visível em `UltimasInteracoesCard` enquanto `hasMore === true`; (b) cada clique adiciona +15 itens à lista visível; (c) auto-load por scroll continua funcionando (não regride); (d) botão some quando não há mais itens (mesma condição de `hasMore`); (e) `InfiniteScrollSentinel` ganha prop opcional `onLoadMore`, sem quebra para chamadores atuais; (f) ícone `ChevronDown` + label PT-BR; (g) `aria-label` descritivo; (h) estilo flat consistente (variant `outline`, size `sm`); (i) sem nova dependência, sem mudança em `useInfiniteList.ts`.
+(a) Durante o auto-load/carregamento progressivo no `UltimasInteracoesCard`, os skeletons exibem ícone redondo + 2 linhas de texto (título + meta), espelhando o item real; (b) o card mantém botão "Carregar mais", barra de progresso e contador "X de Y"; (c) o modo `density="comfortable"` continua com skeletons `h-20` (sem regressão para outras telas); (d) larguras das linhas variam por índice para evitar aparência mecânica; (e) `InfiniteScrollSentinel.tsx` permanece <120 linhas, sem `any`, sem nova dependência; (f) reutiliza `Skeleton` do design system com `variant="shimmer"`; (g) flat, PT-BR, sem emojis.
 
