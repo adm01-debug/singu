@@ -696,12 +696,13 @@ export const InteracoesPresetsMenu = React.memo(function InteracoesPresetsMenu({
                   size="sm"
                   className="flex-1 justify-start gap-2 text-xs h-8 min-w-0"
                   onClick={handleQuickSave}
-                  title={`Salvar como "${suggestedName}"`}
+                  title={`Salvar como "${suggestedName}" (Ctrl+S)`}
                   aria-label={`Salvar busca como ${suggestedName}`}
                 >
                   <BookmarkPlus className="w-3.5 h-3.5 shrink-0" />
                   <span className="text-muted-foreground/80 shrink-0">Salvar como</span>
                   <span className="font-medium truncate">{suggestedName}</span>
+                  <kbd className="ml-auto shrink-0 hidden sm:inline-flex items-center rounded border border-border bg-muted/50 px-1 text-[10px] text-muted-foreground">⌘S</kbd>
                 </Button>
                 <Button
                   variant="outline"
