@@ -176,6 +176,12 @@ export const CanaisQuickFilter = React.memo(function CanaisQuickFilter({ canais,
   }, [safe, mode, setMode]);
 
 
+  // Persiste o estado aplicado (safe) no localStorage para servir de bootstrap
+  // do modo manual em recargas futuras antes do pai hidratar a prop `canais`.
+  useEffect(() => {
+    writeApplied(safe);
+  }, [safe]);
+
   // Persiste pending no localStorage quando estiver no modo manual e houver divergência
   useEffect(() => {
     if (mode === 'manual' && !arraysEqual(pending, safe)) {
