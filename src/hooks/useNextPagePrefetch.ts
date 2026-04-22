@@ -4,7 +4,7 @@ type IdleCallbackHandle = number;
 type IdleDeadline = { didTimeout: boolean; timeRemaining: () => number };
 type IdleCallback = (deadline: IdleDeadline) => void;
 
-interface IdleWindow extends Window {
+interface IdleWindow {
   requestIdleCallback?: (cb: IdleCallback, opts?: { timeout?: number }) => IdleCallbackHandle;
   cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
 }
