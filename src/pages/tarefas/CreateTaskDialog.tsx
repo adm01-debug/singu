@@ -445,6 +445,7 @@ export function CreateTaskDialog() {
               Será anexada ao final da descrição da tarefa.
             </p>
           </div>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancelar
