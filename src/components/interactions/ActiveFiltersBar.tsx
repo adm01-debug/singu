@@ -209,7 +209,17 @@ export const ActiveFiltersBar = React.memo(function ActiveFiltersBar({
       })()}
 
       {filters.ate instanceof Date && (
-        <Badge variant="secondary" closeable onClose={wrap(() => setFilter('ate', undefined))} icon={<Calendar className="w-3 h-3" />}>
+        <Badge
+          variant="secondary"
+          closeable
+          onClose={wrap(() => {
+            // Mesma lógica do badge "desde": se o range completo está aplicado,
+            // remove `de` + `ate` atomicamente para evitar dois setFilter em sequência.
+            if (clearDateRange && filters.de instanceof Date) clearDateRange();
+            else setFilter('ate', undefined);
+          })}
+          icon={<Calendar className="w-3 h-3" />}
+        >
           Período até {fmtDate(filters.ate)}
         </Badge>
       )}
