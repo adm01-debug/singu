@@ -1,16 +1,24 @@
 import { memo, useEffect, useState } from 'react';
-import { Sliders, RotateCcw } from 'lucide-react';
+import { Sliders, RotateCcw, Info, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   useProntidaoWeightsStore,
   useEffectiveProntidaoWeights,
 } from '@/stores/useProntidaoWeightsStore';
 import type { ProntidaoWeights } from '@/lib/prontidaoScore';
+import { evaluateWeightsHealth } from '@/lib/prontidaoWeightsHealth';
 
 const FACTORS: Array<{ key: keyof ProntidaoWeights; label: string }> = [
   { key: 'cadence', label: 'Cadência' },
@@ -44,11 +52,8 @@ export const ProntidaoWeightsEditor = memo(({ contactId }: Props) => {
 
   // Pesos exibidos: efetivos para o contato (override se existir, senão padrão)
   const displayedWeights = useEffectiveProntidaoWeights(contactId);
-  const total =
-    displayedWeights.cadence +
-    displayedWeights.recency +
-    displayedWeights.sentiment +
-    displayedWeights.channel;
+  const health = evaluateWeightsHealth(displayedWeights);
+  const total = health.total;
 
   const localDisabled = !contactId;
 
@@ -117,6 +122,28 @@ export const ProntidaoWeightsEditor = memo(({ contactId }: Props) => {
           </p>
         </div>
 
+        {health.status === 'zero' && (
+          <Alert
+            role="status"
+            className="border-destructive/50 text-destructive [&>svg]:text-destructive py-2"
+          >
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              Soma dos pesos é zero. Sem proporção definida, o score volta ao padrão de fábrica.
+              Aumente pelo menos um fator.
+            </AlertDescription>
+          </Alert>
+        )}
+        {health.status === 'low' && (
+          <Alert role="status" className="border-warning/50 text-foreground py-2">
+            <Info className="h-4 w-4 text-warning" />
+            <AlertDescription className="text-xs">
+              Pesos muito baixos (soma {total}%). O sistema vai normalizar automaticamente, mas
+              a precisão fica reduzida. Considere aumentar a proporção entre os fatores.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-4 pt-1 border-t border-border/60">
           {FACTORS.map(({ key, label }) => (
             <div key={key} className="space-y-2">
@@ -136,20 +163,54 @@ export const ProntidaoWeightsEditor = memo(({ contactId }: Props) => {
           ))}
         </div>
 
-        <div className="flex items-center justify-between pt-1 border-t border-border/60">
-          <Badge variant="outline" className="text-[11px] tabular-nums">
-            Total: {total}%
-          </Badge>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs gap-1.5"
-            onClick={handleReset}
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            {scope === 'local' ? 'Limpar override' : 'Restaurar padrão'}
-          </Button>
+        <div className="space-y-2 pt-1 border-t border-border/60">
+          <div className="flex items-center justify-between">
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant="outline"
+                    className="text-[11px] tabular-nums cursor-help"
+                    aria-label={
+                      health.status === 'ok'
+                        ? `Total ${total}%. Normalizados: Cadência ${health.normalized.cadence}%, Recência ${health.normalized.recency}%, Sentimento ${health.normalized.sentiment}%, Canal ${health.normalized.channel}%.`
+                        : `Total ${total}%`
+                    }
+                  >
+                    Total: {total}%
+                  </Badge>
+                </TooltipTrigger>
+                {health.status === 'ok' && (
+                  <TooltipContent side="top" className="text-xs">
+                    <div className="font-medium mb-1">Após normalização</div>
+                    <div className="space-y-0.5 tabular-nums">
+                      <div>Cadência: {health.normalized.cadence}%</div>
+                      <div>Recência: {health.normalized.recency}%</div>
+                      <div>Sentimento: {health.normalized.sentiment}%</div>
+                      <div>Canal: {health.normalized.channel}%</div>
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={handleReset}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              {scope === 'local' ? 'Limpar override' : 'Restaurar padrão'}
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground leading-relaxed flex items-start gap-1">
+            <Info className="h-3 w-3 mt-0.5 shrink-0" />
+            <span>
+              O que importa é a <strong>proporção</strong> entre os fatores, não a soma. Os pesos
+              são normalizados automaticamente.
+            </span>
+          </p>
         </div>
       </PopoverContent>
     </Popover>
