@@ -142,6 +142,10 @@ export const AdvancedSearchBar = React.memo(function AdvancedSearchBar({
           </Tooltip>
         )}
 
+        <div className="hidden h-6 w-px bg-border sm:block" aria-hidden="true" />
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground hidden sm:inline">
+          Ordenar:
+        </span>
         <SortChips
           value={filters.sort}
           onChange={(v) => setFilter('sort', v)}
