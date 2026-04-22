@@ -24,6 +24,12 @@ interface Props {
   filters: AdvancedFilters;
   setFilter: <K extends keyof AdvancedFilters>(key: K, value: AdvancedFilters[K]) => void;
   clear: () => void;
+  /**
+   * Limpa `de` e `ate` em uma única operação atômica (single setSearchParams).
+   * Usado nas badges de período para evitar dois `setFilter` em sequência que
+   * poderiam divergir caso o usuário fechasse ambas as badges no mesmo tick.
+   */
+  clearDateRange?: () => boolean;
   activeCount: number;
   totalCount: number;
   visibleCount: number;
