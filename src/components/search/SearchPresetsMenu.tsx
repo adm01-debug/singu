@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X } from 'lucide-react';
+import { Bookmark, BookmarkPlus, Trash2, Check, Star, Sparkles, Pencil, RefreshCw, X, Copy } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +60,7 @@ export function SearchPresetsMenu({
     savePreset,
     deletePreset,
     updatePreset,
+    duplicatePreset,
     toggleFavorite,
     markAsUsed,
   } = useSearchPresets(context);
@@ -328,6 +329,25 @@ export function SearchPresetsMenu({
                             <RefreshCw className="w-3 h-3 text-muted-foreground" />
                           </Button>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6"
+                          title="Duplicar preset"
+                          aria-label="Duplicar preset"
+                          disabled={presets.length >= 10}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (presets.length >= 10) {
+                              toast.error('Limite de 10 presets atingido');
+                              return;
+                            }
+                            const dup = duplicatePreset(preset.id);
+                            if (dup) toast.success('Preset duplicado!', { description: `"${dup.name}"` });
+                          }}
+                        >
+                          <Copy className="w-3 h-3 text-muted-foreground" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
