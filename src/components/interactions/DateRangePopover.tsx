@@ -14,6 +14,13 @@ interface Props {
   ate?: Date;
   /** Aplica datas atomicamente. Retorna true se o hook precisou trocar de/até. */
   applyDateRange: (de?: Date, ate?: Date) => boolean;
+  /**
+   * Limpa `de` e `ate` em uma única operação atômica. Quando fornecida, é
+   * usada pelo botão "Limpar período" e pelo atalho Alt+D — preferível a
+   * `applyDateRange(undefined, undefined)` por explicitar a intenção.
+   * Retorna `true` se removeu algo, `false` se já estava vazio.
+   */
+  clearDateRange?: () => boolean;
 }
 
 interface Preset {
@@ -32,7 +39,7 @@ const PRESETS: Preset[] = [
 
 function fmt(d: Date) { return format(d, 'd MMM', { locale: ptBR }); }
 
-export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, applyDateRange }: Props) {
+export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, applyDateRange, clearDateRange }: Props) {
   const [open, setOpen] = useState(false);
 
   const triggerLabel = useMemo(() => {
@@ -55,9 +62,19 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
     setOpen(false);
   };
 
-  const handleClear = () => {
+  // Helper único de limpeza: usa a função atômica do hook quando fornecida
+  // (single setSearchParams), com fallback transparente para applyDateRange
+  // — ambas removem `de` e `ate` em uma única operação. Centralizar aqui
+  // evita divergência entre os 3 callers (botão "Limpar", X inline, Alt+D).
+  const clearRange = (): boolean => {
     const had = !!(de || ate);
-    applyDateRange(undefined, undefined);
+    if (clearDateRange) clearDateRange();
+    else applyDateRange(undefined, undefined);
+    return had;
+  };
+
+  const handleClear = () => {
+    const had = clearRange();
     setOpen(false);
     if (had) {
       toast.success('Período removido', {
@@ -80,7 +97,8 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tgt?.isContentEditable) return;
       if (!de && !ate) return;
       e.preventDefault();
-      applyDateRange(undefined, undefined);
+      if (clearDateRange) clearDateRange();
+      else applyDateRange(undefined, undefined);
       setOpen(false);
       toast.success('Filtro de datas limpo', {
         description: 'Apenas o período foi removido — outros filtros mantidos.',
@@ -89,7 +107,7 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [de, ate, applyDateRange]);
+  }, [de, ate, applyDateRange, clearDateRange]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -108,7 +126,7 @@ export const DateRangePopover = React.memo(function DateRangePopover({ de, ate, 
           {isActive && (
             <X
               className="w-3.5 h-3.5 ml-1 opacity-60 hover:opacity-100"
-              onClick={(e) => { e.stopPropagation(); applyDateRange(undefined, undefined); }}
+              onClick={(e) => { e.stopPropagation(); clearRange(); }}
               aria-label="Limpar período"
             />
           )}

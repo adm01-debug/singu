@@ -464,6 +464,27 @@ export function useInteractionsAdvancedFilter() {
     return swapped;
   }, [searchParams, setSearchParams]);
 
+  /**
+   * Limpa SOMENTE o intervalo de datas (`de` e `ate`) em uma única operação
+   * atômica — um único `setSearchParams`. Preserva canais, busca, sentimento,
+   * direção, ordenação e demais filtros. Retorna `true` se removeu algo, ou
+   * `false` quando já não havia datas (no-op silencioso para os callers).
+   *
+   * Existe como função própria (em vez de dois `setFilter` em sequência) para
+   * eliminar qualquer condição de corrida sobre `searchParams` quando o caller
+   * remove `de` e `ate` no mesmo tick.
+   */
+  const clearDateRange = useCallback((): boolean => {
+    const had = searchParams.has('de') || searchParams.has('ate');
+    if (!had) return false;
+    const sp = new URLSearchParams(searchParams);
+    sp.delete('de');
+    sp.delete('ate');
+    sp.delete('page');
+    setSearchParams(sp, { replace: true });
+    return true;
+  }, [searchParams, setSearchParams]);
+
   const activeCount =
     (filters.q ? 1 : 0) +
     (filters.contact ? 1 : 0) +
@@ -474,5 +495,5 @@ export function useInteractionsAdvancedFilter() {
     (filters.ate ? 1 : 0) +
     (filters.sentimento ? 1 : 0);
 
-  return { filters, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange };
+  return { filters, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange };
 }

@@ -66,7 +66,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange } = useInteractionsAdvancedFilter();
+  const { filters: adv, debouncedQ, setFilter, clear, activeCount, applyAll, applyDateRange, clearDateRange } = useInteractionsAdvancedFilter();
   const { companies } = useCompanies();
 
   const contactOptions = useMemo(
@@ -312,9 +312,11 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
     alt: true,
     description: 'Limpar filtros de data',
     handler: () => {
-      if (!adv.de && !adv.ate) return;
-      applyDateRange(undefined, undefined);
-      toast.success('Filtros de data removidos');
+      // Usa a função atômica do hook (single setSearchParams) em vez de
+      // applyDateRange(undefined, undefined) — intenção semântica explícita
+      // e zero risco de divergência entre `de` e `ate`.
+      const removed = clearDateRange();
+      if (removed) toast.success('Filtros de data removidos');
     },
   });
 
@@ -387,6 +389,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         totalCount={interactions.length}
         applyAll={applyAll}
         applyDateRange={applyDateRange}
+        clearDateRange={clearDateRange}
         channelCounts={channelCounts}
       />
 
@@ -394,6 +397,7 @@ export function InteracoesContent({ interactions, loading, contactMap, stats, on
         filters={adv}
         setFilter={setFilter}
         clear={clear}
+        clearDateRange={clearDateRange}
         activeCount={activeCount}
         totalCount={interactions.length}
         visibleCount={visibleEventsCount}
