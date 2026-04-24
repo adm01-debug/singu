@@ -277,4 +277,77 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       expect(document.activeElement).toBe(externalBtn);
     });
   });
+
+  describe("atalhos globais (sem foco prévio na legenda)", () => {
+    function ControlledChart() {
+      const [active, setActive] = useState<SentimentOverall | null>(null);
+      return (
+        <>
+          <button data-testid="external">externo</button>
+          <SentimentDistributionChart
+            data={baseData}
+            activeBucket={active}
+            onSelectBucket={setActive}
+          />
+        </>
+      );
+    }
+
+    it("ArrowRight global foca a primeira fatia quando nenhum item está focado", () => {
+      render(<ControlledChart />);
+      const externalBtn = screen.getByTestId("external");
+      externalBtn.focus();
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" });
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      expect(document.activeElement).toBe(positive);
+    });
+
+    it("ArrowRight global avança para a próxima fatia (cursor persistente)", () => {
+      render(<ControlledChart />);
+      const externalBtn = screen.getByTestId("external");
+      externalBtn.focus();
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" }); // → positive
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      fireEvent.keyDown(positive, { key: "ArrowRight" }); // → neutral (handler local)
+      const neutral = getLegendButtons().find((b) => b.dataset.bucketKey === "neutral")!;
+      expect(document.activeElement).toBe(neutral);
+    });
+
+    it("ArrowLeft global retorna ao bucket anterior usando o cursor memorizado", () => {
+      render(<ControlledChart />);
+      const buttons = getLegendButtons();
+      const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+      positive.focus();
+      fireEvent.keyDown(positive, { key: "ArrowRight" }); // cursor → neutral
+      const externalBtn = screen.getByTestId("external");
+      externalBtn.focus();
+      fireEvent.keyDown(externalBtn, { key: "ArrowLeft" });
+      expect(document.activeElement).toBe(positive);
+    });
+
+    it("Enter global seleciona a fatia sob o cursor mesmo sem foco na lista", () => {
+      render(<ControlledChart />);
+      const externalBtn = screen.getByTestId("external");
+      externalBtn.focus();
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" }); // cursor + foco → positive
+      externalBtn.focus(); // tira o foco
+      fireEvent.keyDown(externalBtn, { key: "Enter" });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
+        "Bucket selecionado: positivo",
+      );
+    });
+
+    it("atalhos globais são ignorados quando o foco está em um input", () => {
+      render(
+        <>
+          <input data-testid="input" />
+          <ControlledChart />
+        </>,
+      );
+      const input = screen.getByTestId("input") as HTMLInputElement;
+      input.focus();
+      fireEvent.keyDown(input, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(input);
+    });
+  });
 });

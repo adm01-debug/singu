@@ -1,9 +1,10 @@
-import { memo, useEffect, useRef, type KeyboardEvent } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, type KeyboardEvent } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type TooltipProps } from "recharts";
 import { CheckCircle2 } from "lucide-react";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useScopedShortcut } from "@/lib/keyboardShortcutRegistry";
 
 const AFFORDANCE_HINT = "Clique para ver conversas";
 
@@ -43,6 +44,9 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
   const lastActiveRef = useRef<SentimentOverall | null>(null);
   // Marca se o usuário interagiu via teclado, para evitar roubar foco em cliques de mouse.
   const keyboardRef = useRef(false);
+  // "Cursor" do navegador global por atalho — mantém memória entre keydowns mesmo
+  // quando o foco do DOM está fora da legenda.
+  const cursorRef = useRef<SentimentOverall | null>(null);
 
   useEffect(() => {
     const onKey = () => { keyboardRef.current = true; };
@@ -60,52 +64,112 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
   // não roubar o foco quando o usuário clicou com o mouse.
   useEffect(() => {
     if (!keyboardRef.current) {
-      // Ainda assim atualiza a referência do último ativo, sem mover foco.
       if (activeBucket) lastActiveRef.current = activeBucket;
       return;
     }
     if (activeBucket) {
       lastActiveRef.current = activeBucket;
+      cursorRef.current = activeBucket;
       const el = itemRefs.current.get(activeBucket);
       if (el && document.activeElement !== el) el.focus();
     } else if (lastActiveRef.current) {
-      // Drawer fechou: devolve foco ao último bucket ativo.
       const el = itemRefs.current.get(lastActiveRef.current);
       if (el) el.focus();
     }
   }, [activeBucket]);
 
-  const filtered = data.filter((d) => d.count > 0);
-  if (!filtered.length) {
-    return <p className="text-sm text-muted-foreground text-center py-12">Sem dados de sentimento no período.</p>;
-  }
+  // Derivações memoizadas (precisam vir antes de qualquer early-return).
+  const filtered = useMemo(() => data.filter((d) => d.count > 0), [data]);
+  const navigableKeys = useMemo<SentimentOverall[]>(
+    () => (onSelectBucket ? data.filter((d) => d.count > 0).map((d) => d.key as SentimentOverall) : []),
+    [data, onSelectBucket],
+  );
 
-
-  const handleSelect = (key: string) => {
+  const handleSelect = useCallback((key: string) => {
     if (!onSelectBucket || !isSentimentKey(key)) return;
     const slice = data.find((d) => d.key === key);
     if (!slice || slice.count === 0) return;
     onSelectBucket(key);
-  };
+  }, [onSelectBucket, data]);
 
-  // Lista de buckets navegáveis (apenas clicáveis: count > 0).
-  const navigableKeys = data.filter((d) => d.count > 0 && !!onSelectBucket).map((d) => d.key);
-
-  const focusKey = (key: string) => {
+  const focusKey = useCallback((key: string) => {
     const el = itemRefs.current.get(key);
     if (el) el.focus();
+  }, []);
+
+  // Move o cursor global em uma direção; usado pelos atalhos globais (setas).
+  // Sincroniza foco no <li> correspondente para feedback visual + screen reader.
+  // Primeira ativação (sem cursor e sem activeBucket) apenas posiciona no primeiro/último,
+  // sem avançar — o usuário precisa "entrar" na navegação antes de movimentar.
+  const moveCursor = useCallback((direction: -1 | 1 | "first" | "last") => {
+    if (navigableKeys.length === 0) return;
+    const seed = cursorRef.current ?? activeBucket ?? null;
+    let nextIdx: number;
+    if (direction === "first") nextIdx = 0;
+    else if (direction === "last") nextIdx = navigableKeys.length - 1;
+    else if (seed === null) {
+      // Bootstrap: primeira tecla → primeiro item se ArrowRight, último se ArrowLeft.
+      nextIdx = direction === 1 ? 0 : navigableKeys.length - 1;
+    } else {
+      const currentIdx = navigableKeys.indexOf(seed);
+      nextIdx = currentIdx === -1
+        ? 0
+        : (currentIdx + direction + navigableKeys.length) % navigableKeys.length;
+    }
+    const next = navigableKeys[nextIdx];
+    cursorRef.current = next;
+    focusKey(next);
+  }, [navigableKeys, activeBucket, focusKey]);
+
+  // Pula o atalho global quando o evento já está sendo tratado localmente
+  // (foco em um item da legenda) — evita "double step".
+  const isFromLegend = (e: KeyboardEvent | globalThis.KeyboardEvent) => {
+    const t = e.target as HTMLElement | null;
+    return !!t?.dataset?.bucketKey;
   };
 
+  // Atalhos globais (escopo "insights"): setas navegam, Enter seleciona.
+  // O hook ignora automaticamente quando o foco está em input/textarea/select/contentEditable.
+  useScopedShortcut({
+    scope: "insights",
+    keys: "ArrowRight",
+    description: "Próxima fatia de sentimento",
+    handler: (e) => { if (!isFromLegend(e)) moveCursor(1); },
+  });
+  useScopedShortcut({
+    scope: "insights",
+    keys: "ArrowLeft",
+    description: "Fatia de sentimento anterior",
+    handler: (e) => { if (!isFromLegend(e)) moveCursor(-1); },
+  });
+  useScopedShortcut({
+    scope: "insights",
+    keys: "Enter",
+    description: "Abrir conversas do sentimento focado",
+    handler: (e) => {
+      if (isFromLegend(e)) return; // o handler da <li> já cuida via Enter/Espaço
+      const key = cursorRef.current ?? activeBucket ?? navigableKeys[0];
+      if (key) handleSelect(key);
+    },
+  });
+
+  if (!filtered.length) {
+    return <p className="text-sm text-muted-foreground text-center py-12">Sem dados de sentimento no período.</p>;
+  }
+
+  // Handler local da <ul> — preserva navegação completa (Arrow*, Home, End, Enter, Espaço)
+  // quando o foco já está em um item. Os atalhos globais cobrem o caso "foco fora da lista".
   const handleListKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
     if (navigableKeys.length === 0) return;
     const target = e.target as HTMLElement;
     const currentKey = target?.dataset?.bucketKey;
-    const currentIdx = currentKey ? navigableKeys.indexOf(currentKey) : -1;
+    const currentIdx = currentKey ? navigableKeys.indexOf(currentKey as SentimentOverall) : -1;
     if (currentIdx === -1) return;
 
     const moveTo = (nextIdx: number) => {
       e.preventDefault();
       const next = navigableKeys[(nextIdx + navigableKeys.length) % navigableKeys.length];
+      cursorRef.current = next;
       focusKey(next);
     };
 
