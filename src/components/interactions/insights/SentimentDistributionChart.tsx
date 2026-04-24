@@ -338,14 +338,21 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
                   else itemRefs.current.delete(d.key);
                 }}
                 data-bucket-key={d.key}
-                className={`relative flex items-center gap-2 rounded pl-2 pr-1 py-0.5 transition-all border-l-2 ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60 shadow-sm" : ""} ${dim ? "opacity-50" : ""}`}
+                className={`relative flex items-center gap-2 rounded pl-2 pr-1 py-0.5 transition-all border-l-2 ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60 shadow-sm" : ""} ${dim ? "opacity-50" : ""} ${!clickable && d.count === 0 ? "opacity-60 cursor-not-allowed" : ""}`}
                 style={{ borderLeftColor: isActive ? sliceColor : "transparent" }}
                 onClick={clickable ? () => handleSelect(d.key) : undefined}
                 onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
-                role={clickable ? "button" : undefined}
-                tabIndex={clickable ? 0 : undefined}
+                role={clickable ? "button" : (d.count === 0 ? "button" : undefined)}
+                tabIndex={clickable ? 0 : -1}
                 aria-pressed={clickable ? isActive : undefined}
-                aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}${isActive ? " (selecionado)" : ""}` : undefined}
+                aria-disabled={d.count === 0 ? true : undefined}
+                aria-label={
+                  clickable
+                    ? `Ver conversas com sentimento ${LABELS[d.key]}${isActive ? " (selecionado)" : ""}`
+                    : d.count === 0
+                      ? `Sem conversas no bucket ${LABELS[d.key]}`
+                      : undefined
+                }
               >
                 <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: sliceColor }} />
                 <span className={isActive ? "text-foreground font-medium" : "text-muted-foreground"}>{LABELS[d.key]}</span>
