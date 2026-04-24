@@ -21,23 +21,37 @@ function isPeriod(v: string | null): v is Period {
   return v === "7d" || v === "30d" || v === "90d";
 }
 
+function isSentimentBucket(v: string | null): v is SentimentOverall {
+  return v === "positive" || v === "neutral" || v === "negative" || v === "mixed";
+}
+
 export function InsightsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const periodParam = searchParams.get("periodo");
   const period: Period = isPeriod(periodParam) ? periodParam : "30d";
+  const sentimentParam = searchParams.get("sentimento");
+  const selectedBucket: SentimentOverall | null = isSentimentBucket(sentimentParam) ? sentimentParam : null;
 
   const handlePeriod = useCallback((p: string) => {
     const next = new URLSearchParams(searchParams);
     next.set("periodo", p);
+    // Trocar período invalida o bucket selecionado (drawer fecha junto).
+    next.delete("sentimento");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleSelectBucket = useCallback((bucket: SentimentOverall | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (bucket) next.set("sentimento", bucket);
+    else next.delete("sentimento");
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
   const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
-  const [selectedBucket, setSelectedBucket] = useState<SentimentOverall | null>(null);
 
-  // Fechar drawer ao trocar período
-  useEffect(() => { setSelectedBucket(null); setSelectedTheme(null); }, [period]);
+  // Fechar drawer de temas ao trocar período (bucket é tratado via URL em handlePeriod).
+  useEffect(() => { setSelectedTheme(null); }, [period]);
 
   const isEmpty = !isLoading && kpis.totalAnalyzed === 0;
 
