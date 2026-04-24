@@ -1,0 +1,154 @@
+import { describe, it, expect, vi, beforeAll } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { SentimentDistributionChart } from "../SentimentDistributionChart";
+
+// Recharts ResponsiveContainer requires layout dimensions; jsdom doesn't provide them.
+// Stub a fixed size so the chart renders deterministically in tests.
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, value: 400 });
+  Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, value: 224 });
+  if (!(globalThis as { ResizeObserver?: unknown }).ResizeObserver) {
+    (globalThis as { ResizeObserver: unknown }).ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
+});
+
+const baseData = [
+  { key: "positive", count: 12, pct: 40 },
+  { key: "neutral", count: 9, pct: 30 },
+  { key: "negative", count: 6, pct: 20 },
+  { key: "mixed", count: 3, pct: 10 },
+];
+
+function getLegendButtons() {
+  return screen.getAllByRole("button").filter((el) => el.tagName.toLowerCase() === "li");
+}
+
+describe("SentimentDistributionChart — acessibilidade da legenda", () => {
+  it("renderiza um botão acessível por bucket clicável com aria-label e aria-pressed", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    expect(buttons).toHaveLength(4);
+    buttons.forEach((b) => {
+      expect(b).toHaveAttribute("aria-label");
+      expect(b).toHaveAttribute("aria-pressed", "false");
+      expect(b).toHaveAttribute("tabindex", "0");
+    });
+  });
+
+  it("destaca o bucket ativo com aria-pressed=true e sufixo (selecionado) no aria-label", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket="neutral" />);
+    const buttons = getLegendButtons();
+    const neutral = buttons.find((b) => b.dataset.bucketKey === "neutral");
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive");
+    expect(neutral).toHaveAttribute("aria-pressed", "true");
+    expect(neutral?.getAttribute("aria-label")).toMatch(/\(selecionado\)/i);
+    expect(positive).toHaveAttribute("aria-pressed", "false");
+    expect(positive?.getAttribute("aria-label") ?? "").not.toMatch(/\(selecionado\)/i);
+  });
+
+  it("Enter dispara onSelectBucket no item focado", () => {
+    const onSelect = vi.fn();
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={onSelect} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+    positive.focus();
+    fireEvent.keyDown(positive, { key: "Enter" });
+    expect(onSelect).toHaveBeenCalledWith("positive");
+  });
+
+  it("Espaço dispara onSelectBucket no item focado", () => {
+    const onSelect = vi.fn();
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={onSelect} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const negative = buttons.find((b) => b.dataset.bucketKey === "negative")!;
+    negative.focus();
+    fireEvent.keyDown(negative, { key: " " });
+    expect(onSelect).toHaveBeenCalledWith("negative");
+  });
+
+  it("ArrowRight move o foco para o próximo bucket clicável", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+    const neutral = buttons.find((b) => b.dataset.bucketKey === "neutral")!;
+    positive.focus();
+    fireEvent.keyDown(positive, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(neutral);
+  });
+
+  it("ArrowLeft move o foco para o bucket anterior (com wrap-around)", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+    const mixed = buttons.find((b) => b.dataset.bucketKey === "mixed")!;
+    positive.focus();
+    fireEvent.keyDown(positive, { key: "ArrowLeft" });
+    expect(document.activeElement).toBe(mixed);
+  });
+
+  it("ArrowDown e ArrowUp também navegam entre buckets", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+    const neutral = buttons.find((b) => b.dataset.bucketKey === "neutral")!;
+    positive.focus();
+    fireEvent.keyDown(positive, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(neutral);
+    fireEvent.keyDown(neutral, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(positive);
+  });
+
+  it("Home foca o primeiro e End foca o último bucket clicável", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+    const mixed = buttons.find((b) => b.dataset.bucketKey === "mixed")!;
+    const neutral = buttons.find((b) => b.dataset.bucketKey === "neutral")!;
+    neutral.focus();
+    fireEvent.keyDown(neutral, { key: "End" });
+    expect(document.activeElement).toBe(mixed);
+    fireEvent.keyDown(mixed, { key: "Home" });
+    expect(document.activeElement).toBe(positive);
+  });
+
+  it("ignora buckets vazios (count=0) na navegação por teclado", () => {
+    const data = [
+      { key: "positive", count: 5, pct: 50 },
+      { key: "neutral", count: 0, pct: 0 },
+      { key: "negative", count: 5, pct: 50 },
+      { key: "mixed", count: 0, pct: 0 },
+    ];
+    render(<SentimentDistributionChart data={data} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const buttons = getLegendButtons();
+    expect(buttons.map((b) => b.dataset.bucketKey)).toEqual(["positive", "negative"]);
+    const positive = buttons[0];
+    positive.focus();
+    fireEvent.keyDown(positive, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(buttons[1]);
+  });
+
+  it("a <ul> expõe role=group com aria-label de instrução", () => {
+    render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const group = screen.getByRole("group");
+    expect(group.tagName.toLowerCase()).toBe("ul");
+    expect(group.getAttribute("aria-label") ?? "").toMatch(/setas/i);
+    expect(group.getAttribute("aria-label") ?? "").toMatch(/enter/i);
+  });
+
+  it("não chama onSelectBucket em buckets sem dados", () => {
+    const onSelect = vi.fn();
+    const data = [
+      { key: "positive", count: 5, pct: 100 },
+      { key: "neutral", count: 0, pct: 0 },
+    ];
+    render(<SentimentDistributionChart data={data} onSelectBucket={onSelect} activeBucket={null} />);
+    // Item neutro não deve estar entre os botões clicáveis.
+    const buttons = getLegendButtons();
+    expect(buttons.find((b) => b.dataset.bucketKey === "neutral")).toBeUndefined();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+});
