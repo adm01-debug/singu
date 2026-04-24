@@ -219,6 +219,7 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       fireEvent.keyDown(positive, { key: "ArrowRight" });
       fireEvent.keyDown(positive, { key: "ArrowDown" });
       expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe("");
+    });
   });
 
   describe("retenção e restauração de foco no ciclo do drawer", () => {
