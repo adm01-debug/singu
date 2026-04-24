@@ -43,11 +43,52 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
     return <p className="text-sm text-muted-foreground text-center py-12">Sem dados de sentimento no período.</p>;
   }
 
+  const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+
   const handleSelect = (key: string) => {
     if (!onSelectBucket || !isSentimentKey(key)) return;
     const slice = data.find((d) => d.key === key);
     if (!slice || slice.count === 0) return;
     onSelectBucket(key);
+  };
+
+  // Lista de buckets navegáveis (apenas clicáveis: count > 0).
+  const navigableKeys = data.filter((d) => d.count > 0 && !!onSelectBucket).map((d) => d.key);
+
+  const focusKey = (key: string) => {
+    const el = itemRefs.current.get(key);
+    if (el) el.focus();
+  };
+
+  const handleListKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
+    if (navigableKeys.length === 0) return;
+    const target = e.target as HTMLElement;
+    const currentKey = target?.dataset?.bucketKey;
+    const currentIdx = currentKey ? navigableKeys.indexOf(currentKey) : -1;
+    if (currentIdx === -1) return;
+
+    const moveTo = (nextIdx: number) => {
+      e.preventDefault();
+      const next = navigableKeys[(nextIdx + navigableKeys.length) % navigableKeys.length];
+      focusKey(next);
+    };
+
+    switch (e.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        moveTo(currentIdx + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        moveTo(currentIdx - 1);
+        break;
+      case "Home":
+        moveTo(0);
+        break;
+      case "End":
+        moveTo(navigableKeys.length - 1);
+        break;
+    }
   };
 
   const hasActive = !!activeBucket && filtered.some((d) => d.key === activeBucket);
