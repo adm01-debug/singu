@@ -154,6 +154,20 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
+  it("buckets vazios são removidos do tab order e expõem aria-disabled + aria-label informativo", () => {
+    const data = [
+      { key: "positive", count: 5, pct: 100 },
+      { key: "neutral", count: 0, pct: 0 },
+    ];
+    render(<SentimentDistributionChart data={data} onSelectBucket={vi.fn()} activeBucket={null} />);
+    const empty = document.querySelector('[data-bucket-key="neutral"]') as HTMLElement;
+    expect(empty).toBeTruthy();
+    expect(empty.getAttribute("tabindex")).toBe("-1");
+    expect(empty.getAttribute("aria-disabled")).toBe("true");
+    expect(empty.getAttribute("aria-label")).toBe("Sem conversas no bucket Neutro");
+    expect(empty.getAttribute("role")).toBeNull();
+  });
+
   describe("live region de seleção", () => {
     function ControlledChart() {
       const [active, setActive] = useState<SentimentOverall | null>(null);
