@@ -128,8 +128,31 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
               </Pie>
             )}
             <Tooltip
-              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-              formatter={(v: number, _n, p) => [`${v} (${(p.payload as Slice).pct}%)`, LABELS[(p.payload as Slice).key]]}
+              cursor={false}
+              content={(tp: TooltipProps<number, string>) => {
+                const item = tp.payload?.[0];
+                if (!item) return null;
+                const slice = item.payload as Slice;
+                const clickable = !!onSelectBucket && slice.count > 0;
+                return (
+                  <div
+                    style={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      padding: "6px 8px",
+                      boxShadow: "0 4px 12px hsl(var(--background) / 0.4)",
+                    }}
+                  >
+                    <div className="font-medium text-foreground">{LABELS[slice.key]}</div>
+                    <div className="text-muted-foreground">{slice.count} ({slice.pct}%)</div>
+                    {clickable && (
+                      <div className="mt-1 text-[10px] text-primary">{AFFORDANCE_HINT}</div>
+                    )}
+                  </div>
+                );
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
