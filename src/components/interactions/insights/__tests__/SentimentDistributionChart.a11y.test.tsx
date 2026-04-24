@@ -221,4 +221,60 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe("");
     });
   });
+
+  describe("retenção e restauração de foco no ciclo do drawer", () => {
+    function ControlledChart() {
+      const [active, setActive] = useState<SentimentOverall | null>(null);
+      return (
+        <>
+          <button data-testid="external-button" onClick={() => setActive(null)}>fechar</button>
+          <SentimentDistributionChart
+            data={baseData}
+            activeBucket={active}
+            onSelectBucket={setActive}
+          />
+        </>
+      );
+    }
+
+    it("mantém o foco na fatia selecionada ao abrir o drawer via teclado", () => {
+      render(<ControlledChart />);
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      positive.focus();
+      fireEvent.keyDown(positive, { key: "Enter" });
+      expect(document.activeElement).toBe(positive);
+    });
+
+    it("restaura o foco no último bucket ativo ao fechar o drawer via teclado", () => {
+      render(<ControlledChart />);
+      const buttons = getLegendButtons();
+      const negative = buttons.find((b) => b.dataset.bucketKey === "negative")!;
+      negative.focus();
+      fireEvent.keyDown(negative, { key: " " });
+      expect(document.activeElement).toBe(negative);
+
+      // Simula foco saindo (ex.: usuário tabula até o drawer) e drawer fechando.
+      const externalBtn = screen.getByTestId("external-button");
+      externalBtn.focus();
+      expect(document.activeElement).toBe(externalBtn);
+
+      // Fecha o drawer (com teclado).
+      fireEvent.keyDown(externalBtn, { key: "Enter" });
+      fireEvent.click(externalBtn);
+      // Foco volta ao bucket previamente ativo.
+      expect(document.activeElement).toBe(negative);
+    });
+
+    it("não rouba o foco quando a seleção é feita por mouse (clique)", () => {
+      render(<ControlledChart />);
+      const externalBtn = screen.getByTestId("external-button");
+      externalBtn.focus();
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      // Mousedown registra interação por mouse antes do click.
+      fireEvent.mouseDown(positive);
+      fireEvent.click(positive);
+      // Como não foi teclado, o foco não é movido para o item.
+      expect(document.activeElement).toBe(externalBtn);
+    });
+  });
 });

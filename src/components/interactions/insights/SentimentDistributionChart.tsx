@@ -1,4 +1,4 @@
-import { memo, useRef, type KeyboardEvent } from "react";
+import { memo, useEffect, useRef, type KeyboardEvent } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type TooltipProps } from "recharts";
 import { CheckCircle2 } from "lucide-react";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
@@ -38,12 +38,48 @@ function isSentimentKey(k: string): k is SentimentOverall {
 }
 
 function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: Props) {
+  const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
+  // Último bucket aberto, para restaurar foco quando o drawer fechar (active → null).
+  const lastActiveRef = useRef<SentimentOverall | null>(null);
+  // Marca se o usuário interagiu via teclado, para evitar roubar foco em cliques de mouse.
+  const keyboardRef = useRef(false);
+
+  useEffect(() => {
+    const onKey = () => { keyboardRef.current = true; };
+    const onMouse = () => { keyboardRef.current = false; };
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("mousedown", onMouse, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("mousedown", onMouse, true);
+    };
+  }, []);
+
+  // Mantém / restaura o foco no item correspondente ao bucket ativo (ou no último,
+  // ao fechar o drawer) — somente se a interação corrente foi por teclado, para
+  // não roubar o foco quando o usuário clicou com o mouse.
+  useEffect(() => {
+    if (!keyboardRef.current) {
+      // Ainda assim atualiza a referência do último ativo, sem mover foco.
+      if (activeBucket) lastActiveRef.current = activeBucket;
+      return;
+    }
+    if (activeBucket) {
+      lastActiveRef.current = activeBucket;
+      const el = itemRefs.current.get(activeBucket);
+      if (el && document.activeElement !== el) el.focus();
+    } else if (lastActiveRef.current) {
+      // Drawer fechou: devolve foco ao último bucket ativo.
+      const el = itemRefs.current.get(lastActiveRef.current);
+      if (el) el.focus();
+    }
+  }, [activeBucket]);
+
   const filtered = data.filter((d) => d.count > 0);
   if (!filtered.length) {
     return <p className="text-sm text-muted-foreground text-center py-12">Sem dados de sentimento no período.</p>;
   }
 
-  const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
   const handleSelect = (key: string) => {
     if (!onSelectBucket || !isSentimentKey(key)) return;
