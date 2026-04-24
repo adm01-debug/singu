@@ -7,6 +7,13 @@ import { SentimentDistributionChart } from "../SentimentDistributionChart";
 beforeAll(() => {
   Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, value: 400 });
   Object.defineProperty(HTMLElement.prototype, "clientHeight", { configurable: true, value: 224 });
+  if (!(globalThis as { ResizeObserver?: unknown }).ResizeObserver) {
+    (globalThis as { ResizeObserver: unknown }).ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
 });
 
 const baseData = [
