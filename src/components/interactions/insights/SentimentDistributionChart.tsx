@@ -47,10 +47,18 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
   };
 
   const hasActive = !!activeBucket && filtered.some((d) => d.key === activeBucket);
+  const activeSlice = hasActive ? filtered.find((d) => d.key === activeBucket) : undefined;
+  const activeColor = activeSlice ? COLORS[activeSlice.key] ?? "hsl(var(--muted))" : undefined;
+
+  // Pie de "anel" externo: só renderiza arco da fatia ativa, deixando o resto transparente.
+  // Reforça visualmente a correspondência entre o bucket aberto na lista e sua fatia.
+  const ringData = hasActive
+    ? filtered.map((d) => ({ ...d, _ring: d.key === activeBucket ? 1 : 0 }))
+    : [];
 
   return (
     <div className="space-y-3">
-      <div className="h-56 sentiment-pie-focus">
+      <div className="h-56 sentiment-pie-focus relative">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -68,17 +76,19 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
                 const clickable = !!onSelectBucket && d.count > 0;
                 const isActive = hasActive && d.key === activeBucket;
                 const dim = hasActive && !isActive;
+                const sliceColor = COLORS[d.key] ?? "hsl(var(--muted))";
                 return (
                   <Cell
                     key={d.key}
-                    fill={COLORS[d.key] ?? "hsl(var(--muted))"}
-                    fillOpacity={dim ? 0.28 : 1}
-                    stroke={isActive ? "hsl(var(--foreground))" : "transparent"}
-                    strokeWidth={isActive ? 2.5 : 0}
+                    fill={sliceColor}
+                    fillOpacity={dim ? 0.22 : 1}
+                    stroke={isActive ? "hsl(var(--background))" : "transparent"}
+                    strokeWidth={isActive ? 2 : 0}
                     style={{
-                      transition: "fill-opacity 200ms ease, stroke-width 200ms ease, transform 200ms ease",
+                      transition: "fill-opacity 200ms ease, stroke-width 200ms ease, transform 200ms ease, filter 200ms ease",
                       transformOrigin: "center",
-                      transform: isActive ? "scale(1.04)" : "scale(1)",
+                      transform: isActive ? "scale(1.06)" : "scale(1)",
+                      filter: isActive ? `drop-shadow(0 0 6px ${sliceColor})` : "none",
                     }}
                     tabIndex={clickable ? 0 : -1}
                     role={clickable ? "button" : undefined}
@@ -94,12 +104,51 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
                 );
               })}
             </Pie>
+            {hasActive && (
+              <Pie
+                data={ringData}
+                dataKey="count"
+                nameKey="key"
+                innerRadius={84}
+                outerRadius={90}
+                paddingAngle={2}
+                isAnimationActive={false}
+                stroke="none"
+              >
+                {ringData.map((d) => (
+                  <Cell
+                    key={`ring-${d.key}`}
+                    fill={d._ring ? (COLORS[d.key] ?? "hsl(var(--muted))") : "transparent"}
+                    fillOpacity={d._ring ? 0.9 : 0}
+                  />
+                ))}
+              </Pie>
+            )}
             <Tooltip
               contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
               formatter={(v: number, _n, p) => [`${v} (${(p.payload as Slice).pct}%)`, LABELS[(p.payload as Slice).key]]}
             />
           </PieChart>
         </ResponsiveContainer>
+        {hasActive && activeSlice && (
+          <div
+            className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center"
+            aria-hidden="true"
+          >
+            <span
+              className="text-[10px] uppercase tracking-wide font-medium"
+              style={{ color: activeColor }}
+            >
+              {LABELS[activeSlice.key]}
+            </span>
+            <span className="text-lg font-semibold leading-none text-foreground">
+              {activeSlice.pct}%
+            </span>
+            <span className="text-[10px] text-muted-foreground mt-0.5">
+              {activeSlice.count} {activeSlice.count === 1 ? "conversa" : "conversas"}
+            </span>
+          </div>
+        )}
       </div>
       <ul className="grid grid-cols-2 gap-2 text-xs">
         {data.map((d) => {
