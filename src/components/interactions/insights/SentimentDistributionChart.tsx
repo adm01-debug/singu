@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type TooltipProps } from "recharts";
+import { CheckCircle2 } from "lucide-react";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
