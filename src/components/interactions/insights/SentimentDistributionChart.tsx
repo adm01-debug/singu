@@ -271,6 +271,17 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
           })}
         </ul>
       </TooltipProvider>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="sentiment-bucket-live"
+      >
+        {hasActive && activeSlice
+          ? `Bucket selecionado: ${LABELS[activeSlice.key].toLowerCase()}`
+          : ""}
+      </div>
     </div>
   );
 }
