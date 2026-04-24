@@ -183,19 +183,28 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
             const clickable = !!onSelectBucket && d.count > 0;
             const isActive = hasActive && d.key === activeBucket;
             const dim = hasActive && !isActive;
+            const sliceColor = COLORS[d.key] ?? "hsl(var(--muted))";
             const item = (
               <li
                 key={d.key}
-                className={`flex items-center gap-2 rounded px-1 py-0.5 transition-all ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60" : ""} ${dim ? "opacity-50" : ""}`}
+                className={`relative flex items-center gap-2 rounded pl-2 pr-1 py-0.5 transition-all border-l-2 ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60 shadow-sm" : ""} ${dim ? "opacity-50" : ""}`}
+                style={{ borderLeftColor: isActive ? sliceColor : "transparent" }}
                 onClick={clickable ? () => handleSelect(d.key) : undefined}
                 onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
                 role={clickable ? "button" : undefined}
                 tabIndex={clickable ? 0 : undefined}
                 aria-pressed={clickable ? isActive : undefined}
-                aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}` : undefined}
+                aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}${isActive ? " (selecionado)" : ""}` : undefined}
               >
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLORS[d.key] }} />
+                <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: sliceColor }} />
                 <span className={isActive ? "text-foreground font-medium" : "text-muted-foreground"}>{LABELS[d.key]}</span>
+                {isActive && (
+                  <CheckCircle2
+                    className="h-3.5 w-3.5 shrink-0"
+                    style={{ color: sliceColor }}
+                    aria-hidden="true"
+                  />
+                )}
                 <span className="ml-auto font-medium text-foreground">{d.pct}%</span>
               </li>
             );
