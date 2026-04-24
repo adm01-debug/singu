@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { useState } from "react";
 import { SentimentDistributionChart } from "../SentimentDistributionChart";
+import type { SentimentOverall } from "@/hooks/useConversationIntel";
 
 // Recharts ResponsiveContainer requires layout dimensions; jsdom doesn't provide them.
 // Stub a fixed size so the chart renders deterministically in tests.
