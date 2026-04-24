@@ -1,7 +1,10 @@
 import { memo } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type TooltipProps } from "recharts";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+const AFFORDANCE_HINT = "Clique para ver conversas";
 
 interface Slice {
   key: string;
@@ -125,8 +128,31 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
               </Pie>
             )}
             <Tooltip
-              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
-              formatter={(v: number, _n, p) => [`${v} (${(p.payload as Slice).pct}%)`, LABELS[(p.payload as Slice).key]]}
+              cursor={false}
+              content={(tp: TooltipProps<number, string>) => {
+                const item = tp.payload?.[0];
+                if (!item) return null;
+                const slice = item.payload as Slice;
+                const clickable = !!onSelectBucket && slice.count > 0;
+                return (
+                  <div
+                    style={{
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      fontSize: 12,
+                      padding: "6px 8px",
+                      boxShadow: "0 4px 12px hsl(var(--background) / 0.4)",
+                    }}
+                  >
+                    <div className="font-medium text-foreground">{LABELS[slice.key]}</div>
+                    <div className="text-muted-foreground">{slice.count} ({slice.pct}%)</div>
+                    {clickable && (
+                      <div className="mt-1 text-[10px] text-primary">{AFFORDANCE_HINT}</div>
+                    )}
+                  </div>
+                );
+              }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -150,29 +176,40 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
           </div>
         )}
       </div>
-      <ul className="grid grid-cols-2 gap-2 text-xs">
-        {data.map((d) => {
-          const clickable = !!onSelectBucket && d.count > 0;
-          const isActive = hasActive && d.key === activeBucket;
-          const dim = hasActive && !isActive;
-          return (
-            <li
-              key={d.key}
-              className={`flex items-center gap-2 rounded px-1 py-0.5 transition-all ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60" : ""} ${dim ? "opacity-50" : ""}`}
-              onClick={clickable ? () => handleSelect(d.key) : undefined}
-              onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
-              role={clickable ? "button" : undefined}
-              tabIndex={clickable ? 0 : undefined}
-              aria-pressed={clickable ? isActive : undefined}
-              aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}` : undefined}
-            >
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLORS[d.key] }} />
-              <span className={isActive ? "text-foreground font-medium" : "text-muted-foreground"}>{LABELS[d.key]}</span>
-              <span className="ml-auto font-medium text-foreground">{d.pct}%</span>
-            </li>
-          );
-        })}
-      </ul>
+      <TooltipProvider delayDuration={250}>
+        <ul className="grid grid-cols-2 gap-2 text-xs">
+          {data.map((d) => {
+            const clickable = !!onSelectBucket && d.count > 0;
+            const isActive = hasActive && d.key === activeBucket;
+            const dim = hasActive && !isActive;
+            const item = (
+              <li
+                key={d.key}
+                className={`flex items-center gap-2 rounded px-1 py-0.5 transition-all ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60" : ""} ${dim ? "opacity-50" : ""}`}
+                onClick={clickable ? () => handleSelect(d.key) : undefined}
+                onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
+                role={clickable ? "button" : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                aria-pressed={clickable ? isActive : undefined}
+                aria-label={clickable ? `Ver conversas com sentimento ${LABELS[d.key]}` : undefined}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: COLORS[d.key] }} />
+                <span className={isActive ? "text-foreground font-medium" : "text-muted-foreground"}>{LABELS[d.key]}</span>
+                <span className="ml-auto font-medium text-foreground">{d.pct}%</span>
+              </li>
+            );
+            if (!clickable) return item;
+            return (
+              <UITooltip key={d.key}>
+                <TooltipTrigger asChild>{item}</TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {AFFORDANCE_HINT}
+                </TooltipContent>
+              </UITooltip>
+            );
+          })}
+        </ul>
+      </TooltipProvider>
     </div>
   );
 }
