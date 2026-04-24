@@ -153,4 +153,72 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
     expect(buttons.find((b) => b.dataset.bucketKey === "neutral")).toBeUndefined();
     expect(onSelect).not.toHaveBeenCalled();
   });
+
+  describe("live region de seleção", () => {
+    function ControlledChart() {
+      const [active, setActive] = useState<SentimentOverall | null>(null);
+      return (
+        <SentimentDistributionChart
+          data={baseData}
+          activeBucket={active}
+          onSelectBucket={setActive}
+        />
+      );
+    }
+
+    it("renderiza uma região aria-live=polite vazia quando nada está selecionado", () => {
+      render(<SentimentDistributionChart data={baseData} onSelectBucket={vi.fn()} activeBucket={null} />);
+      const live = screen.getByTestId("sentiment-bucket-live");
+      expect(live).toHaveAttribute("aria-live", "polite");
+      expect(live).toHaveAttribute("aria-atomic", "true");
+      expect(live).toHaveAttribute("role", "status");
+      expect(live.textContent ?? "").toBe("");
+    });
+
+    it("anuncia o bucket ao selecionar via Enter pelo teclado", () => {
+      render(<ControlledChart />);
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      positive.focus();
+      fireEvent.keyDown(positive, { key: "Enter" });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
+        "Bucket selecionado: positivo",
+      );
+    });
+
+    it("anuncia o bucket ao selecionar via Espaço pelo teclado", () => {
+      render(<ControlledChart />);
+      const negative = getLegendButtons().find((b) => b.dataset.bucketKey === "negative")!;
+      negative.focus();
+      fireEvent.keyDown(negative, { key: " " });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
+        "Bucket selecionado: negativo",
+      );
+    });
+
+    it("atualiza o anúncio ao alternar entre buckets via teclado", () => {
+      render(<ControlledChart />);
+      const buttons = getLegendButtons();
+      const positive = buttons.find((b) => b.dataset.bucketKey === "positive")!;
+      positive.focus();
+      fireEvent.keyDown(positive, { key: "Enter" });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
+        "Bucket selecionado: positivo",
+      );
+      const mixed = buttons.find((b) => b.dataset.bucketKey === "mixed")!;
+      mixed.focus();
+      fireEvent.keyDown(mixed, { key: "Enter" });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
+        "Bucket selecionado: misto",
+      );
+    });
+
+    it("não anuncia ao apenas navegar com setas (sem ativar)", () => {
+      render(<ControlledChart />);
+      const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
+      positive.focus();
+      fireEvent.keyDown(positive, { key: "ArrowRight" });
+      fireEvent.keyDown(positive, { key: "ArrowDown" });
+      expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe("");
+    });
+  });
 });
