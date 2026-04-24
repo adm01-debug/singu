@@ -113,25 +113,33 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
     focusKey(next);
   }, [navigableKeys, activeBucket, focusKey]);
 
+  // Pula o atalho global quando o evento já está sendo tratado localmente
+  // (foco em um item da legenda) — evita "double step".
+  const isFromLegend = (e: KeyboardEvent | globalThis.KeyboardEvent) => {
+    const t = e.target as HTMLElement | null;
+    return !!t?.dataset?.bucketKey;
+  };
+
   // Atalhos globais (escopo "insights"): setas navegam, Enter seleciona.
   // O hook ignora automaticamente quando o foco está em input/textarea/select/contentEditable.
   useScopedShortcut({
     scope: "insights",
     keys: "ArrowRight",
     description: "Próxima fatia de sentimento",
-    handler: () => moveCursor(1),
+    handler: (e) => { if (!isFromLegend(e)) moveCursor(1); },
   });
   useScopedShortcut({
     scope: "insights",
     keys: "ArrowLeft",
     description: "Fatia de sentimento anterior",
-    handler: () => moveCursor(-1),
+    handler: (e) => { if (!isFromLegend(e)) moveCursor(-1); },
   });
   useScopedShortcut({
     scope: "insights",
     keys: "Enter",
     description: "Abrir conversas do sentimento focado",
-    handler: () => {
+    handler: (e) => {
+      if (isFromLegend(e)) return; // o handler da <li> já cuida via Enter/Espaço
       const key = cursorRef.current ?? activeBucket ?? navigableKeys[0];
       if (key) handleSelect(key);
     },
