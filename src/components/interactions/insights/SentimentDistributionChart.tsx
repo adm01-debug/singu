@@ -1,4 +1,4 @@
-import { memo, useRef, type KeyboardEvent } from "react";
+import { memo, useEffect, useRef, type KeyboardEvent } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, type TooltipProps } from "recharts";
 import { CheckCircle2 } from "lucide-react";
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
