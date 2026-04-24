@@ -115,7 +115,7 @@ export function InsightsPanel() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Distribuição de sentimento</CardTitle></CardHeader>
-              <CardContent><SentimentDistributionChart data={sentimentDistribution} onSelectBucket={setSelectedBucket} activeBucket={selectedBucket} /></CardContent>
+              <CardContent><SentimentDistributionChart data={sentimentDistribution} onSelectBucket={handleSelectBucket} activeBucket={selectedBucket} /></CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-3"><CardTitle className="text-sm">Tendência semanal</CardTitle></CardHeader>
