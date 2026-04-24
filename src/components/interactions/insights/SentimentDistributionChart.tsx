@@ -342,7 +342,7 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
                 style={{ borderLeftColor: isActive ? sliceColor : "transparent" }}
                 onClick={clickable ? () => handleSelect(d.key) : undefined}
                 onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSelect(d.key); } } : undefined}
-                role={clickable ? "button" : (d.count === 0 ? "button" : undefined)}
+                role={clickable ? "button" : undefined}
                 tabIndex={clickable ? 0 : -1}
                 aria-pressed={clickable ? isActive : undefined}
                 aria-disabled={d.count === 0 ? true : undefined}
