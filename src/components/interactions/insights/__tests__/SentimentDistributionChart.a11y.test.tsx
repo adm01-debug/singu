@@ -297,7 +297,7 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       render(<ControlledChart />);
       const externalBtn = screen.getByTestId("external");
       externalBtn.focus();
-      fireEvent.keyDown(window, { key: "ArrowRight" });
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" });
       const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
       expect(document.activeElement).toBe(positive);
     });
@@ -306,7 +306,7 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       render(<ControlledChart />);
       const externalBtn = screen.getByTestId("external");
       externalBtn.focus();
-      fireEvent.keyDown(window, { key: "ArrowRight" }); // → positive
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" }); // → positive
       const positive = getLegendButtons().find((b) => b.dataset.bucketKey === "positive")!;
       fireEvent.keyDown(positive, { key: "ArrowRight" }); // → neutral (handler local)
       const neutral = getLegendButtons().find((b) => b.dataset.bucketKey === "neutral")!;
@@ -321,7 +321,7 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       fireEvent.keyDown(positive, { key: "ArrowRight" }); // cursor → neutral
       const externalBtn = screen.getByTestId("external");
       externalBtn.focus();
-      fireEvent.keyDown(window, { key: "ArrowLeft" });
+      fireEvent.keyDown(externalBtn, { key: "ArrowLeft" });
       expect(document.activeElement).toBe(positive);
     });
 
@@ -329,9 +329,9 @@ describe("SentimentDistributionChart — acessibilidade da legenda", () => {
       render(<ControlledChart />);
       const externalBtn = screen.getByTestId("external");
       externalBtn.focus();
-      fireEvent.keyDown(window, { key: "ArrowRight" }); // cursor + foco → positive
+      fireEvent.keyDown(externalBtn, { key: "ArrowRight" }); // cursor + foco → positive
       externalBtn.focus(); // tira o foco
-      fireEvent.keyDown(window, { key: "Enter" });
+      fireEvent.keyDown(externalBtn, { key: "Enter" });
       expect(screen.getByTestId("sentiment-bucket-live").textContent).toBe(
         "Bucket selecionado: positivo",
       );
