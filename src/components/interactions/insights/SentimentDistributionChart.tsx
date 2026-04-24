@@ -99,15 +99,23 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
 
   // Move o cursor global em uma direção; usado pelos atalhos globais (setas).
   // Sincroniza foco no <li> correspondente para feedback visual + screen reader.
+  // Primeira ativação (sem cursor e sem activeBucket) apenas posiciona no primeiro/último,
+  // sem avançar — o usuário precisa "entrar" na navegação antes de movimentar.
   const moveCursor = useCallback((direction: -1 | 1 | "first" | "last") => {
     if (navigableKeys.length === 0) return;
-    const current = cursorRef.current ?? activeBucket ?? navigableKeys[0];
-    const currentIdx = navigableKeys.indexOf(current as SentimentOverall);
+    const seed = cursorRef.current ?? activeBucket ?? null;
     let nextIdx: number;
     if (direction === "first") nextIdx = 0;
     else if (direction === "last") nextIdx = navigableKeys.length - 1;
-    else if (currentIdx === -1) nextIdx = 0;
-    else nextIdx = (currentIdx + direction + navigableKeys.length) % navigableKeys.length;
+    else if (seed === null) {
+      // Bootstrap: primeira tecla → primeiro item se ArrowRight, último se ArrowLeft.
+      nextIdx = direction === 1 ? 0 : navigableKeys.length - 1;
+    } else {
+      const currentIdx = navigableKeys.indexOf(seed);
+      nextIdx = currentIdx === -1
+        ? 0
+        : (currentIdx + direction + navigableKeys.length) % navigableKeys.length;
+    }
     const next = navigableKeys[nextIdx];
     cursorRef.current = next;
     focusKey(next);
