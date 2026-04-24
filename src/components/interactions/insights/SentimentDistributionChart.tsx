@@ -219,7 +219,12 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
         )}
       </div>
       <TooltipProvider delayDuration={250}>
-        <ul className="grid grid-cols-2 gap-2 text-xs">
+        <ul
+          className="grid grid-cols-2 gap-2 text-xs"
+          role="group"
+          aria-label="Distribuição de sentimento — use as setas para navegar e Enter para abrir"
+          onKeyDown={handleListKeyDown}
+        >
           {data.map((d) => {
             const clickable = !!onSelectBucket && d.count > 0;
             const isActive = hasActive && d.key === activeBucket;
@@ -228,6 +233,11 @@ function SentimentDistributionChartImpl({ data, onSelectBucket, activeBucket }: 
             const item = (
               <li
                 key={d.key}
+                ref={(el) => {
+                  if (el) itemRefs.current.set(d.key, el);
+                  else itemRefs.current.delete(d.key);
+                }}
+                data-bucket-key={d.key}
                 className={`relative flex items-center gap-2 rounded pl-2 pr-1 py-0.5 transition-all border-l-2 ${clickable ? "cursor-pointer hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background" : ""} ${isActive ? "bg-muted ring-1 ring-ring/60 shadow-sm" : ""} ${dim ? "opacity-50" : ""}`}
                 style={{ borderLeftColor: isActive ? sliceColor : "transparent" }}
                 onClick={clickable ? () => handleSelect(d.key) : undefined}
