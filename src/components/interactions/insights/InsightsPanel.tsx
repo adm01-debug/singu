@@ -162,7 +162,7 @@ export function InsightsPanel() {
       <SentimentExamplesDrawer
         bucket={selectedBucket}
         interactionIds={selectedBucket ? sentimentBuckets[selectedBucket] ?? [] : []}
-        onClose={() => setSelectedBucket(null)}
+        onClose={() => handleSelectBucket(null)}
       />
     </div>
   );
