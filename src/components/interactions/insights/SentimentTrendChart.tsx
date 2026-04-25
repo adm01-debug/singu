@@ -148,7 +148,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
             <span className="ml-1 text-muted-foreground">positivo</span>
             {typeof point.positivePctMA === "number" && (
               <span className="ml-2 text-muted-foreground">
-                · MM3: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
+                · MM{point.maWindow ?? 3}: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
               </span>
             )}
           </div>
