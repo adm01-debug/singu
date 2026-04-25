@@ -621,7 +621,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 yAxisId="pct"
                 type="monotone"
                 dataKey="positivePctMA"
-                name="Tendência (MM3)"
+                name={`Tendência (MM${smoothWindow})`}
                 stroke="hsl(var(--success))"
                 strokeWidth={3}
                 strokeOpacity={0.45}
