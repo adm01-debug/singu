@@ -16,12 +16,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { ANNOTATION_CATEGORIES } from './annotationCategories';
-import type { SentimentAnnotation, useSentimentAnnotations } from '@/hooks/useSentimentAnnotations';
+import type { AnnotationCategory, SentimentAnnotation, useSentimentAnnotations } from '@/hooks/useSentimentAnnotations';
 import { cn } from '@/lib/utils';
 
 interface Props {
   api: ReturnType<typeof useSentimentAnnotations>;
   onEdit: (a: SentimentAnnotation) => void;
+  categoryFilter?: Set<AnnotationCategory>;
 }
 
 function formatWeekRange(iso: string): string {
