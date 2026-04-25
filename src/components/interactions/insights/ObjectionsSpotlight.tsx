@@ -70,6 +70,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
   const hasExamples = examplesCount > 0;
 
@@ -94,6 +95,35 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
       toast.error("Não foi possível copiar");
     }
   }, [suggested]);
+
+  const handleApplyFilter = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    // Aplica busca textual pela objeção (mais específica do que a categoria).
+    next.set("q", o.objection);
+    // Traduz o "periodo" (somente Insights) em range de datas (de/ate) usado pela Lista.
+    if (!next.get("de") && !next.get("ate")) {
+      const periodo = next.get("periodo");
+      const days = periodo ? PERIOD_TO_DAYS[periodo] : undefined;
+      if (days) {
+        const ate = new Date();
+        const de = new Date();
+        de.setDate(de.getDate() - days);
+        next.set("de", toIsoDate(de));
+        next.set("ate", toIsoDate(ate));
+      }
+    }
+    // Remove parâmetros exclusivos da aba Insights e troca para a Lista.
+    next.delete("periodo");
+    next.delete("sentimento");
+    next.delete("tab");
+    // Reset de paginação para garantir resultados visíveis.
+    next.delete("page");
+    setSearchParams(next, { replace: false });
+    toast.success("Filtro aplicado", {
+      description: `Mostrando interações com "${o.objection.slice(0, 60)}${o.objection.length > 60 ? "…" : ""}"`,
+    });
+  }, [o.objection, searchParams, setSearchParams]);
+
 
   return (
     <div className={cn("rounded-md border p-3 space-y-2.5", style.border)}>
