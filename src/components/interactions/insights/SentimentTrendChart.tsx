@@ -158,7 +158,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               const winVol = point.maWindowVolume ?? 0;
               return (
                 <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-[11px]">
+                  <div className="flex items-center flex-wrap gap-1.5 text-[11px]">
                     <span
                       className="h-2 w-2 rounded-sm shrink-0"
                       style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
@@ -172,6 +172,16 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
                       <ArrowIcon className="h-3 w-3" />
                       {sign}{Math.abs(delta)}pp
                     </span>
+                    {point.maWindowPartial && (
+                      <span className="inline-flex items-center rounded-sm bg-muted px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">
+                        janela parcial ({point.maWindowSize}/{point.maWindow})
+                      </span>
+                    )}
+                    {point.maWindowLowVolume && (
+                      <span className="inline-flex items-center rounded-sm bg-warning/15 text-warning px-1 py-0.5 text-[9px] uppercase tracking-wide">
+                        baixo volume
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground ml-3.5">
                     Ponderada por volume · janela: <span className="tabular-nums">{winVol}</span> {winVol === 1 ? "interação" : "interações"}
