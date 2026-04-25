@@ -701,7 +701,23 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 stroke="hsl(var(--success))"
                 strokeWidth={3}
                 strokeOpacity={0.45}
-                dot={false}
+                dot={(props: any) => {
+                  const { cx, cy, payload, index } = props;
+                  if (cx == null || cy == null) return null as any;
+                  const isPartial = !!payload?.maWindowPartial;
+                  const isLow = !!payload?.maWindowLowVolume;
+                  if (!isPartial && !isLow) return null as any;
+                  const fill = isLow ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))";
+                  const stroke = "hsl(var(--background))";
+                  return (
+                    <g key={`ma-dot-${index}`}>
+                      <circle cx={cx} cy={cy} r={4} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      {isPartial && (
+                        <circle cx={cx} cy={cy} r={6} fill="none" stroke={fill} strokeWidth={1} strokeDasharray="2 2" opacity={0.7} />
+                      )}
+                    </g>
+                  );
+                }}
                 activeDot={false}
                 isAnimationActive={false}
                 connectNulls
