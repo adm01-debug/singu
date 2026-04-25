@@ -1,10 +1,16 @@
 import type { Excerpt } from "./extractExcerpts";
 
 export interface PickOptions {
+  /** Limite total de passagens retornadas. Sempre clampado em [1, MAX_TOTAL_CAP]. */
   totalCap: number;
+  /** Máximo de passagens por fonte antes do round-robin. */
   maxPerSource: number;
+  /** Tamanho da janela (chars) ao recortar o trecho centrado na sentença. */
   window: number;
 }
+
+/** Limite máximo absoluto de passagens retornadas (requisito: até 5). */
+export const MAX_TOTAL_CAP = 5;
 
 interface ScoredSentence {
   text: string;
@@ -62,6 +68,10 @@ export function pickTopPassages(
   opts: PickOptions,
 ): Excerpt[] {
   if (!Array.isArray(sources) || sources.length === 0) return [];
+  // Clamp do totalCap: nunca retornamos mais que MAX_TOTAL_CAP (5), nem menos que 0.
+  const totalCap = Math.max(0, Math.min(opts.totalCap | 0, MAX_TOTAL_CAP));
+  if (totalCap === 0) return [];
+  const maxPerSource = Math.max(1, opts.maxPerSource | 0);
   const half = Math.max(40, Math.floor(opts.window / 2));
   const perSource = new Map<string, Excerpt[]>();
   const order: string[] = [];
@@ -72,8 +82,9 @@ export function pickTopPassages(
     const scored: ScoredSentence[] = sentences
       .map((s) => ({ ...s, score: scoreSentence(s.text) }))
       .filter((s) => s.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, opts.maxPerSource);
+      // Tiebreaker por posição (start asc) garante determinismo entre execuções.
+      .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.start - b.start))
+      .slice(0, maxPerSource);
 
     if (scored.length === 0) continue;
     // Re-sort by position to keep narrative order within source
@@ -101,10 +112,10 @@ export function pickTopPassages(
   const cursors = new Map<string, number>();
   for (const id of order) cursors.set(id, 0);
 
-  while (result.length < opts.totalCap) {
+  while (result.length < totalCap) {
     let added = false;
     for (const id of order) {
-      if (result.length >= opts.totalCap) break;
+      if (result.length >= totalCap) break;
       const list = perSource.get(id)!;
       const idx = cursors.get(id)!;
       if (idx < list.length) {
