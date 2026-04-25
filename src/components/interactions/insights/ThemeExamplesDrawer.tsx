@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Info, Loader2, Quote, RotateCcw, Eraser } from "lucide-react";
+import { ExternalLink, Info, Loader2, Quote, RotateCcw, Eraser, AlertTriangle, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
