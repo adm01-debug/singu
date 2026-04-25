@@ -330,12 +330,17 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [filtered]);
 
   const hasFilters =
-    !!dateFrom || !!dateTo || selectedTypes.size > 0 || selectedSentiments.size > 0;
+    !!dateFrom ||
+    !!dateTo ||
+    selectedTypes.size > 0 ||
+    selectedSentiments.size > 0 ||
+    !!normalizedSearch;
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
     setSelectedSentiments(new Set());
+    setSearchQuery("");
   };
 
   const toggleType = (key: TypeBucket) => {
