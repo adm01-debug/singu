@@ -38,13 +38,14 @@ export function isValidWeek(w: unknown): w is string {
 }
 
 /**
- * Timestamp para uso em comparators de sort. Devolve +Infinity para
- * semanas inválidas, garantindo ordem total (Array.prototype.sort exige
- * comparator que nunca retorne NaN) e empurrando lixo para o final.
+ * Timestamp para uso em comparators de sort. Devolve `Number.MAX_SAFE_INTEGER`
+ * para semanas inválidas — empurra lixo para o final mantendo ordem total
+ * (`Array.prototype.sort` exige comparator que nunca retorne `NaN`, e
+ * `Infinity - Infinity = NaN` quebraria comparações entre dois inválidos).
  */
 export function weekTimestamp(w: string): number {
   const ts = parseWeekLocal(w).getTime();
-  return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
+  return Number.isFinite(ts) ? ts : Number.MAX_SAFE_INTEGER;
 }
 
 export interface WeekPoint {
