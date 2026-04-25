@@ -165,8 +165,8 @@ const ExcerptItem = memo(function ExcerptItem({
       </div>
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
         <span className="text-[10px] text-muted-foreground truncate">
-          {interaction?.title ?? "Sem t\u00edtulo"} \u00b7 {interaction?.type ?? "\u2014"}
-          {interaction?.created_at ? ` \u00b7 ${new Date(interaction.created_at).toLocaleDateString("pt-BR")}` : ""}
+          {interaction?.title ?? "Sem título"} · {interaction?.type ?? "—"}
+          {interaction?.created_at ? ` · ${new Date(interaction.created_at).toLocaleDateString("pt-BR")}` : ""}
         </span>
         {interaction?.contact_id && (
           <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1 shrink-0">
