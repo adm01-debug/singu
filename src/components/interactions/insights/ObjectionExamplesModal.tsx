@@ -38,6 +38,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { cn } from "@/lib/utils";
 import { useObjectionExampleFeedback } from "@/hooks/useObjectionExampleFeedback";
+import { useDebounce } from "@/hooks/useDebounce";
+
+/** Lowercase + remove diacríticos para busca tolerante a acentuação. */
+function normalizeText(s: string | null | undefined): string {
+  return (s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
 interface Props {
   objection: ObjectionAggregate | null;
@@ -143,11 +152,14 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     category: objection?.category ?? null,
   });
 
-  // Filtros de busca por data, tipo e sentimento
+  // Filtros de busca por data, tipo, sentimento e texto
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [selectedSentiments, setSelectedSentiments] = useState<Set<SentimentBucket>>(new Set());
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const debouncedSearch = useDebounce(searchQuery, 200);
+  const normalizedSearch = useMemo(() => normalizeText(debouncedSearch.trim()), [debouncedSearch]);
 
   // Reseta filtros ao abrir nova objeção
   useEffect(() => {
@@ -155,6 +167,7 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     setDateTo("");
     setSelectedTypes(new Set());
     setSelectedSentiments(new Set());
+    setSearchQuery("");
   }, [objectionKey]);
 
   const totalIds = ids.length;
@@ -270,10 +283,19 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [typeFiltered]);
 
   // Aplica filtro de sentimento (multi-seleção) sobre o conjunto já filtrado por data + tipo.
-  const filtered = useMemo(() => {
+  const sentimentFiltered = useMemo(() => {
     if (selectedSentiments.size === 0) return typeFiltered;
     return typeFiltered.filter((ex) => selectedSentiments.has(sentimentBucketOf(ex.sentiment)));
   }, [typeFiltered, selectedSentiments]);
+
+  // Aplica busca textual (título + conteúdo) como último estágio do funil.
+  const filtered = useMemo(() => {
+    if (!normalizedSearch) return sentimentFiltered;
+    return sentimentFiltered.filter((ex) => {
+      const hay = `${normalizeText(ex.title)} ${normalizeText(ex.content)}`;
+      return hay.includes(normalizedSearch);
+    });
+  }, [sentimentFiltered, normalizedSearch]);
 
   // Itens renderizados = todos os carregados que passaram nos filtros.
   const pageItems = filtered;
@@ -308,12 +330,17 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [filtered]);
 
   const hasFilters =
-    !!dateFrom || !!dateTo || selectedTypes.size > 0 || selectedSentiments.size > 0;
+    !!dateFrom ||
+    !!dateTo ||
+    selectedTypes.size > 0 ||
+    selectedSentiments.size > 0 ||
+    !!normalizedSearch;
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
     setSelectedSentiments(new Set());
+    setSearchQuery("");
   };
 
   const toggleType = (key: TypeBucket) => {
@@ -394,6 +421,32 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
               onChange={(e) => setDateTo(e.target.value)}
               className="h-8 text-xs w-[150px]"
             />
+          </div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <Label htmlFor="objection-search" className="text-[11px] text-muted-foreground">
+              <Search className="h-3 w-3 inline mr-1" />
+              Buscar no título ou conteúdo
+            </Label>
+            <div className="relative">
+              <Input
+                id="objection-search"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Ex.: preço, prazo, decisor..."
+                className="h-8 text-xs pr-7"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
           {hasFilters && (
             <Button
