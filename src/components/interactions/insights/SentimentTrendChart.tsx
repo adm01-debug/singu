@@ -155,24 +155,35 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               const arrow = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
               const ArrowIcon = arrow;
               const deltaClass = delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground";
+              const winVol = point.maWindowVolume ?? 0;
               return (
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <span
-                    className="h-2 w-2 rounded-sm shrink-0"
-                    style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
-                    aria-hidden
-                  />
-                  <span className="text-muted-foreground">
-                    Tendência MM{point.maWindow ?? 3}:
-                  </span>
-                  <span className="font-medium tabular-nums text-foreground">{ma}%</span>
-                  <span className={cn("inline-flex items-center gap-0.5 tabular-nums", deltaClass)}>
-                    <ArrowIcon className="h-3 w-3" />
-                    {sign}{Math.abs(delta)}pp
-                  </span>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5 text-[11px]">
+                    <span
+                      className="h-2 w-2 rounded-sm shrink-0"
+                      style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
+                      aria-hidden
+                    />
+                    <span className="text-muted-foreground">
+                      Tendência MM{point.maWindow ?? 3}:
+                    </span>
+                    <span className="font-medium tabular-nums text-foreground">{ma}%</span>
+                    <span className={cn("inline-flex items-center gap-0.5 tabular-nums", deltaClass)}>
+                      <ArrowIcon className="h-3 w-3" />
+                      {sign}{Math.abs(delta)}pp
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground ml-3.5">
+                    Ponderada por volume · janela: <span className="tabular-nums">{winVol}</span> {winVol === 1 ? "interação" : "interações"}
+                  </p>
                 </div>
               );
             })()}
+            {point.smoothActive && point.positivePctMA === null && point.maWindowBelowThreshold && (
+              <p className="text-[10px] text-warning italic ml-3.5">
+                Volume insuficiente na janela MM{point.maWindow ?? 3} para tendência confiável.
+              </p>
+            )}
           </div>
 
           <div className="border-t border-border/60 pt-2 space-y-1.5">
