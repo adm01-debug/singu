@@ -337,14 +337,29 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [data]);
 
   const dataWithMA = useMemo(() => {
+    // Média móvel PONDERADA por volume: Σ positivos / Σ totais da janela.
+    // Semanas com mais interações influenciam mais o resultado, reduzindo o
+    // ruído de semanas com volume muito baixo. Se a janela inteira tiver
+    // volume abaixo do piso mínimo, omitimos o ponto (null) para evitar
+    // tendência baseada em amostra estatisticamente fraca.
+    const MIN_WINDOW_VOLUME = 3;
     return sortedData.map((p, i) => {
       const start = Math.max(0, i - (smoothWindow - 1));
-      const window = sortedData.slice(start, i + 1);
-      const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
-      const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
-      const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
+      const win = sortedData.slice(start, i + 1);
+      const sumPos = win.reduce((a, w) => a + (w.positive ?? 0), 0);
+      const sumTot = win.reduce((a, w) => a + (w.total ?? 0), 0);
+      const positivePctMA =
+        sumTot >= MIN_WINDOW_VOLUME ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
-      return { ...p, positivePctMA, maWindow: smoothWindow, smoothActive: smoothEnabled, annotations };
+      return {
+        ...p,
+        positivePctMA,
+        maWindow: smoothWindow,
+        maWindowVolume: sumTot,
+        maWindowBelowThreshold: sumTot > 0 && sumTot < MIN_WINDOW_VOLUME,
+        smoothActive: smoothEnabled,
+        annotations,
+      };
     });
   }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
 
