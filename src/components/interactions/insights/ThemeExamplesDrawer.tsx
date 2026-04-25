@@ -528,19 +528,16 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                 </div>
               )}
 
-              {displayItems.map((ex, i) => {
-                const key = `${ex.interactionId}-${ex.position}-${i}`;
-                return (
-                  <ExcerptItem
-                    key={key}
-                    excerpt={ex}
-                    interaction={interactionMap.get(ex.interactionId)}
-                    terms={isFallback ? [] : effectiveKeywords}
-                    matchCount={perExcerptCounts.get(key)}
-                    onClose={onClose}
-                  />
-                );
-              })}
+              {ranked.map((r) => (
+                <ExcerptItem
+                  key={r.originalKey}
+                  excerpt={r.ex}
+                  interaction={interactionMap.get(r.ex.interactionId)}
+                  terms={isFallback ? [] : effectiveKeywords}
+                  matchCount={perExcerptCounts.get(r.originalKey)}
+                  onClose={onClose}
+                />
+              ))}
             </>
           )}
 
