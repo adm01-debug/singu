@@ -36,25 +36,35 @@ interface Props {
   contactId?: string;
 }
 
+function normalizeWeek(w: string): string {
+  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada.
+  // Garante consistência entre dataKey do eixo X, anotações (week_start),
+  // ReferenceLines, tooltip label e weekOptions do dialog.
+  if (typeof w !== "string" || w.length === 0) return w;
+  return w.length >= 10 ? w.slice(0, 10) : w;
+}
+
+function parseWeekLocal(w: string): Date {
+  // Força parse em fuso local (evita shift de -1 dia em TZs negativos quando
+  // strings 'YYYY-MM-DD' são interpretadas como UTC pelo construtor Date).
+  const iso = normalizeWeek(w);
+  return new Date(`${iso}T00:00:00`);
+}
+
 function formatWeek(w: string): string {
-  const d = new Date(w);
+  const d = parseWeekLocal(w);
+  if (isNaN(d.getTime())) return w;
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
 function formatWeekRange(weekStartIso: string): string {
-  const iso = normalizeWeek(weekStartIso);
-  const start = new Date(iso);
+  const start = parseWeekLocal(weekStartIso);
   if (isNaN(start.getTime())) return formatWeek(weekStartIso);
   const end = new Date(start);
   end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
   return `${fmt(start)} – ${fmt(end)}`;
-}
-
-function normalizeWeek(w: string): string {
-  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada
-  if (typeof w !== "string" || w.length === 0) return w;
-  return w.length >= 10 ? w.slice(0, 10) : w;
 }
 
 function toIsoDate(w: string): string {
@@ -115,6 +125,11 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
   const point = payload[0]?.payload as (SentimentTrendPoint & TooltipExtra) | undefined;
   if (!point) return null;
 
+  // Defensivo: ainda que sortedData já normalize, garantimos aqui que o
+  // label da semana, a chave usada para anotações e qualquer leitura
+  // derivada usem sempre 'YYYY-MM-DD' — evita inconsistência caso o ponto
+  // chegue de uma fonte que não passou pelo pipeline (ex.: legend hover).
+  const weekKey = normalizeWeek(point.week);
   const total = point.total ?? 0;
   const positivePct =
     typeof point.positivePct === "number"
@@ -133,7 +148,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
     <div className="rounded-md border border-border bg-popover text-popover-foreground shadow-sm p-3 min-w-[220px] max-w-[280px] pointer-events-auto space-y-2">
       <div className="space-y-0.5">
         <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          Semana de {formatWeekRange(point.week)}
+          Semana de {formatWeekRange(weekKey)}
         </p>
         {total === 0 ? (
           <p className="text-xs text-muted-foreground">Volume: 0 interações</p>
