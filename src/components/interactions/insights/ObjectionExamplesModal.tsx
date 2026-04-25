@@ -143,16 +143,18 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     category: objection?.category ?? null,
   });
 
-  // Filtros de busca por data e tipo
+  // Filtros de busca por data, tipo e sentimento
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
+  const [selectedSentiments, setSelectedSentiments] = useState<Set<SentimentBucket>>(new Set());
 
   // Reseta filtros ao abrir nova objeção
   useEffect(() => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
+    setSelectedSentiments(new Set());
   }, [objectionKey]);
 
   const totalIds = ids.length;
