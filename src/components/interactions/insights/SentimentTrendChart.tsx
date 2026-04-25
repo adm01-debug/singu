@@ -442,17 +442,41 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
 
   const sortedData = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
-    const normalized = safe.map((p) => ({ ...p, week: normalizeWeek(p.week) }));
-    // Dedup defensivo por semana (mantém primeira ocorrência)
-    const seen = new Set<string>();
-    const unique: SentimentTrendPoint[] = [];
+    const normalized = safe
+      .filter((p): p is SentimentTrendPoint => !!p && typeof p.week === "string" && p.week.length > 0)
+      .map((p) => ({ ...p, week: normalizeWeek(p.week) }));
+
+    // Dedup defensivo por semana com MERGE (soma) dos contadores.
+    // Manter apenas a primeira ocorrência descartaria volume real e
+    // distorceria a média móvel ponderada e as estatísticas de evolução.
+    // Recalculamos positivePct a partir do total mesclado para manter
+    // coerência interna.
+    const merged = new Map<string, SentimentTrendPoint>();
     for (const p of normalized) {
-      if (seen.has(p.week)) continue;
-      seen.add(p.week);
-      unique.push(p);
+      const existing = merged.get(p.week);
+      if (!existing) {
+        merged.set(p.week, { ...p });
+        continue;
+      }
+      const positive = (existing.positive ?? 0) + (p.positive ?? 0);
+      const neutral = (existing.neutral ?? 0) + (p.neutral ?? 0);
+      const negative = (existing.negative ?? 0) + (p.negative ?? 0);
+      const mixed = (existing.mixed ?? 0) + (p.mixed ?? 0);
+      const total = (existing.total ?? 0) + (p.total ?? 0);
+      const positivePct = total > 0 ? Math.round((positive / total) * 100) : 0;
+      merged.set(p.week, {
+        week: existing.week,
+        positive,
+        neutral,
+        negative,
+        mixed,
+        total,
+        positivePct,
+      });
     }
+    const unique = Array.from(merged.values());
     // Ordena cronologicamente por timestamp real (não lexicográfico)
-    unique.sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime());
+    unique.sort((a, b) => parseWeekLocal(a.week).getTime() - parseWeekLocal(b.week).getTime());
     return unique;
   }, [data]);
 
