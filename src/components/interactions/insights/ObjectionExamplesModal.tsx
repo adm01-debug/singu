@@ -23,6 +23,11 @@ import {
   Mic,
   FileText,
   HelpCircle,
+  Building2,
+  Briefcase,
+  Smile,
+  Frown,
+  Meh,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -43,6 +48,20 @@ interface Example {
   content: string | null;
   contact_id: string | null;
   sentiment: string | null;
+}
+
+interface ContactRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  role_title: string | null;
+  company: { name: string | null; nome_fantasia: string | null } | null;
+}
+
+interface ContactSummary {
+  name: string | null;
+  role: string | null;
+  company: string | null;
 }
 
 const PAGE_SIZE = 10;
@@ -71,6 +90,16 @@ function bucketOf(rawType: string | null | undefined): TypeBucket {
   if (t.includes("call") || t.includes("ligaca") || t.includes("ligação") || t.includes("phone"))
     return "call";
   return "other";
+}
+
+/** Mapeia rótulos de sentimento para ícone + cor semântica. */
+function sentimentStyle(s: string): { Icon: typeof Smile; cls: string; label: string } {
+  const v = s.toLowerCase();
+  if (v.includes("posit") || v.includes("favor") || v === "good")
+    return { Icon: Smile, cls: "text-success", label: s };
+  if (v.includes("neg") || v.includes("ruim") || v.includes("bad"))
+    return { Icon: Frown, cls: "text-destructive", label: s };
+  return { Icon: Meh, cls: "text-muted-foreground", label: s };
 }
 
 function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
@@ -107,6 +136,34 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return Array.isArray(data) ? (data as Example[]) : [];
+    },
+  });
+
+  // IDs únicos de contatos presentes nos exemplos (para buscar mini-resumo).
+  const contactIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const ex of examples) if (ex.contact_id) set.add(ex.contact_id);
+    return Array.from(set);
+  }, [examples]);
+  const contactIdsKey = contactIds.join(",");
+
+  const { data: contactsMap = {} } = useQuery({
+    queryKey: ["objection-examples-contacts", contactIdsKey],
+    enabled: contactIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<Record<string, ContactSummary>> => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("id, first_name, last_name, role_title, company:companies(name, nome_fantasia)")
+        .in("id", contactIds);
+      if (error) throw error;
+      const map: Record<string, ContactSummary> = {};
+      for (const c of (data ?? []) as ContactRow[]) {
+        const name = [c.first_name, c.last_name].filter(Boolean).join(" ").trim() || null;
+        const company = c.company?.nome_fantasia || c.company?.name || null;
+        map[c.id] = { name, role: c.role_title ?? null, company };
+      }
+      return map;
     },
   });
 
@@ -152,6 +209,35 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     const start = (safePage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, safePage]);
+
+  /**
+   * Sentimento predominante por contato — calculado sobre o conjunto já filtrado
+   * por data + tipo, para refletir o que o usuário está vendo.
+   */
+  const sentimentByContact = useMemo(() => {
+    const tally: Record<string, Record<string, number>> = {};
+    for (const ex of filtered) {
+      if (!ex.contact_id || !ex.sentiment) continue;
+      const key = ex.sentiment.toLowerCase();
+      tally[ex.contact_id] ??= {};
+      tally[ex.contact_id][key] = (tally[ex.contact_id][key] ?? 0) + 1;
+    }
+    const result: Record<string, { sentiment: string; count: number; total: number }> = {};
+    for (const [cid, counts] of Object.entries(tally)) {
+      let top = "";
+      let topCount = 0;
+      let total = 0;
+      for (const [s, c] of Object.entries(counts)) {
+        total += c;
+        if (c > topCount) {
+          top = s;
+          topCount = c;
+        }
+      }
+      if (top) result[cid] = { sentiment: top, count: topCount, total };
+    }
+    return result;
+  }, [filtered]);
 
   const hasFilters = !!dateFrom || !!dateTo || selectedTypes.size > 0;
   const clearFilters = () => {
@@ -334,44 +420,83 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
 
           {!isLoading &&
             !isError &&
-            pageItems.map((ex) => (
-              <article
-                key={ex.id}
-                className="rounded-md border border-border/60 bg-card p-3 space-y-2"
-              >
-                <header className="flex items-center justify-between gap-2">
-                  <h4 className="text-sm font-medium text-foreground truncate">
-                    {ex.title ?? "Sem título"}
-                  </h4>
-                  {ex.sentiment && (
-                    <Badge variant="outline" className="text-[10px] capitalize">
-                      {ex.sentiment}
-                    </Badge>
-                  )}
-                </header>
-                {ex.content && (
-                  <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>
-                )}
-                <footer className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-muted-foreground">
-                    {ex.type}
-                    {ex.created_at && (
-                      <>
-                        {" · "}
-                        {new Date(ex.created_at).toLocaleDateString("pt-BR")}
-                      </>
+            pageItems.map((ex) => {
+              const contact = ex.contact_id ? contactsMap[ex.contact_id] : undefined;
+              const dom = ex.contact_id ? sentimentByContact[ex.contact_id] : undefined;
+              const sentStyle = dom ? sentimentStyle(dom.sentiment) : null;
+              const hasMiniSummary =
+                contact?.name || contact?.role || contact?.company || sentStyle;
+              return (
+                <article
+                  key={ex.id}
+                  className="rounded-md border border-border/60 bg-card p-3 space-y-2"
+                >
+                  <header className="flex items-center justify-between gap-2">
+                    <h4 className="text-sm font-medium text-foreground truncate">
+                      {ex.title ?? "Sem título"}
+                    </h4>
+                    {ex.sentiment && (
+                      <Badge variant="outline" className="text-[10px] capitalize">
+                        {ex.sentiment}
+                      </Badge>
                     )}
-                  </span>
-                  {ex.contact_id && (
-                    <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                      <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
-                        Ficha 360 <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </Button>
+                  </header>
+
+                  {hasMiniSummary && (
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                      {contact?.name && (
+                        <span className="font-medium text-foreground/90 truncate max-w-[180px]">
+                          {contact.name}
+                        </span>
+                      )}
+                      {contact?.role && (
+                        <span className="inline-flex items-center gap-1 truncate max-w-[200px]">
+                          <Briefcase className="h-3 w-3 shrink-0" />
+                          {contact.role}
+                        </span>
+                      )}
+                      {contact?.company && (
+                        <span className="inline-flex items-center gap-1 truncate max-w-[200px]">
+                          <Building2 className="h-3 w-3 shrink-0" />
+                          {contact.company}
+                        </span>
+                      )}
+                      {sentStyle && dom && (
+                        <span
+                          className={cn("inline-flex items-center gap-1 capitalize", sentStyle.cls)}
+                          title={`Sentimento predominante deste contato (${dom.count}/${dom.total} interações neste filtro)`}
+                        >
+                          <sentStyle.Icon className="h-3 w-3 shrink-0" />
+                          {sentStyle.label}
+                        </span>
+                      )}
+                    </div>
                   )}
-                </footer>
-              </article>
-            ))}
+
+                  {ex.content && (
+                    <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>
+                  )}
+                  <footer className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] text-muted-foreground">
+                      {ex.type}
+                      {ex.created_at && (
+                        <>
+                          {" · "}
+                          {new Date(ex.created_at).toLocaleDateString("pt-BR")}
+                        </>
+                      )}
+                    </span>
+                    {ex.contact_id && (
+                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                        <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
+                          Ficha 360 <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      </Button>
+                    )}
+                  </footer>
+                </article>
+              );
+            })}
         </div>
 
         {/* Paginação */}
