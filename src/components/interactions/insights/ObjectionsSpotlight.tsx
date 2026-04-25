@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
-import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
+import { ObjectionExamplesModal } from "./ObjectionExamplesModal";
 import { SuggestedResponseModal } from "./SuggestedResponseModal";
 import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
@@ -508,7 +508,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
         </div>
       )}
 
-      <ObjectionExamplesDrawer
+      <ObjectionExamplesModal
         objection={drawerOpen ? o : null}
         onClose={() => setDrawerOpen(false)}
       />
