@@ -407,7 +407,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       .sort((a, b) => b.count - a.count);
     const totalMatches = found.reduce((acc, f) => acc + f.count, 0);
     return { totals, found, totalMatches };
-  }, [ranked, effectiveKeywords, isFallback]);
+  }, [ranked, effectiveKeywords, isFallback, matchMode]);
 
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
