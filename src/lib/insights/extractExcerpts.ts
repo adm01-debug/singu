@@ -5,10 +5,14 @@ export interface Excerpt {
   position: number;
 }
 
+export type MatchMode = "exact" | "partial";
+
 export interface ExtractOptions {
   totalCap: number;
   maxPerSource: number;
   window: number;
+  /** "exact" (default) = whole-word; "partial" = substring. Sempre case/acento-insensitive. */
+  matchMode?: MatchMode;
 }
 
 function normalize(s: string): string {
