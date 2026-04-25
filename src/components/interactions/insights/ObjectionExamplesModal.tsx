@@ -66,7 +66,8 @@ interface ContactSummary {
   company: string | null;
 }
 
-const PAGE_SIZE = 10;
+/** Tamanho de cada lote incremental do "Carregar mais". */
+const PAGE_SIZE = 20;
 
 /** Buckets de tipo expostos como filtros no modal. */
 type TypeBucket = "whatsapp" | "call" | "audio" | "transcript" | "other";
