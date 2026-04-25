@@ -1002,7 +1002,17 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       )}
       {contactId && (
         <>
-          <AnnotationList api={annotationsApi} onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }} />
+          <AnnotationList
+            api={annotationsApi}
+            onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }}
+            categoryFilter={annCategoryFilter}
+          />
+          {!allCategoriesActive && totalAnnotations > 0 && (
+            <p className="text-[10px] text-muted-foreground italic flex items-center gap-1 px-1">
+              <EyeOff className="h-3 w-3" />
+              Filtro ativo: ocultando {totalAnnotations - visibleAnnotations} anotação(ões) de categorias desmarcadas.
+            </p>
+          )}
           <AnnotationDialog
             open={annDialogOpen}
             onOpenChange={setAnnDialogOpen}
