@@ -78,7 +78,8 @@ export function pickTopPassages(
     const scored: ScoredSentence[] = sentences
       .map((s) => ({ ...s, score: scoreSentence(s.text) }))
       .filter((s) => s.score > 0)
-      .sort((a, b) => b.score - a.score)
+      // Tiebreaker por posição (start asc) garante determinismo entre execuções.
+      .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.start - b.start))
       .slice(0, opts.maxPerSource);
 
     if (scored.length === 0) continue;
