@@ -6724,6 +6724,39 @@ export type Database = {
         }
         Relationships: []
       }
+      objection_example_feedback: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          interaction_id: string
+          is_useful: boolean
+          objection: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          interaction_id: string
+          is_useful?: boolean
+          objection: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          interaction_id?: string
+          is_useful?: boolean
+          objection?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       offer_suggestions: {
         Row: {
           confidence_score: number | null
