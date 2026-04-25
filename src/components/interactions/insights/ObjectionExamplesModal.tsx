@@ -279,6 +279,15 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                   <span className="text-xs">
                     {objection.count} {objection.count === 1 ? "menção" : "menções"} ·{" "}
                     {objection.handled}/{objection.count} tratadas
+                    {feedback.usefulCount > 0 && (
+                      <>
+                        {" · "}
+                        <span className="inline-flex items-center gap-1 text-success">
+                          <ThumbsUp className="h-3 w-3 fill-current" />
+                          {feedback.usefulCount} {feedback.usefulCount === 1 ? "útil" : "úteis"}
+                        </span>
+                      </>
+                    )}
                   </span>
                 </>
               )}
