@@ -176,6 +176,26 @@ function SuggestedResponseModalImpl({
           </Button>
           <Button
             type="button"
+            variant="outline"
+            onClick={handleMarkApplied}
+            disabled={!draft.trim() || markApplied.isPending}
+            className="gap-1.5"
+            title="Registrar que você usou esta resposta numa negociação"
+          >
+            {markApplied.isPending ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Marcando…
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                Marcar como aplicada
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
             onClick={handleSendToNote}
             disabled={!draft.trim()}
             className="gap-1.5"
