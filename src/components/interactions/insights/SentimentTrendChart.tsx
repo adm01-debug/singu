@@ -125,6 +125,11 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
   const point = payload[0]?.payload as (SentimentTrendPoint & TooltipExtra) | undefined;
   if (!point) return null;
 
+  // Defensivo: ainda que sortedData já normalize, garantimos aqui que o
+  // label da semana, a chave usada para anotações e qualquer leitura
+  // derivada usem sempre 'YYYY-MM-DD' — evita inconsistência caso o ponto
+  // chegue de uma fonte que não passou pelo pipeline (ex.: legend hover).
+  const weekKey = normalizeWeek(point.week);
   const total = point.total ?? 0;
   const positivePct =
     typeof point.positivePct === "number"
@@ -143,7 +148,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
     <div className="rounded-md border border-border bg-popover text-popover-foreground shadow-sm p-3 min-w-[220px] max-w-[280px] pointer-events-auto space-y-2">
       <div className="space-y-0.5">
         <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-          Semana de {formatWeekRange(point.week)}
+          Semana de {formatWeekRange(weekKey)}
         </p>
         {total === 0 ? (
           <p className="text-xs text-muted-foreground">Volume: 0 interações</p>
