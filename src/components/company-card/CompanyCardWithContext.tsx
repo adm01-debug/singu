@@ -109,7 +109,21 @@ function CompanyCardWithContextImpl({
               </DropdownMenu>
             </div>
 
-            <Link to={`/empresas/${company.id}`} className="block">
+            <div
+              role="link"
+              tabIndex={0}
+              aria-label={`Abrir detalhes de ${displayName}`}
+              onClick={handleCardActivate}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  const target = e.target as HTMLElement;
+                  if (target.closest('a, button, input, [data-no-card-nav]')) return;
+                  e.preventDefault();
+                  navigate(detailHref);
+                }
+              }}
+              className="block cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+            >
               <CardContent className={cn("p-4", compact && "p-3")}>
                 {compact ? (
                   <>
