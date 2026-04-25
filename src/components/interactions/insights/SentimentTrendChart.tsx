@@ -460,13 +460,15 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             </Badge>
             <Button
               type="button"
-              variant={smoothEnabled ? "secondary" : "ghost"}
+              variant={smoothEnabled ? "secondary" : "outline"}
               size="xs"
-              onClick={() => setSmoothEnabled((v) => !v)}
+              onClick={() => toggleSmooth(!smoothEnabled)}
               aria-pressed={smoothEnabled}
-              title="Suavizar com média móvel de 3 semanas"
+              title={smoothEnabled ? "Desativar média móvel de 3 semanas" : "Ativar média móvel de 3 semanas"}
+              className="gap-1"
             >
-              Suavizar {smoothEnabled ? "✓" : ""}
+              <Activity className="h-3 w-3" />
+              Média móvel: {smoothEnabled ? "ON" : "OFF"}
             </Button>
             {contactId && (
               <Button
