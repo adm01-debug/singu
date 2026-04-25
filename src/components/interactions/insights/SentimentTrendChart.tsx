@@ -408,9 +408,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     return dataWithMA
       .filter((p) => (p.annotations?.length ?? 0) > 0)
       .map((p) => {
-        const first = p.annotations![0];
+        const anns = p.annotations!;
+        const first = anns[0];
         const meta = ANNOTATION_CATEGORIES[first.category];
-        return { week: p.week, color: meta.color, count: p.annotations!.length };
+        return {
+          week: p.week,
+          color: meta.color,
+          count: anns.length,
+          category: first.category,
+          icon: meta.icon,
+          label: meta.label,
+          title: first.title,
+        };
       });
   }, [dataWithMA]);
 
