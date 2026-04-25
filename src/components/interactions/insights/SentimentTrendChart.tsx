@@ -566,8 +566,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
 
   const Icon = summary ? DIRECTION_ICON[summary.direction] : Minus;
   const deltaSign = summary && summary.deltaPct > 0 ? "+" : "";
+
+  // Normaliza as chaves de bestWeek/worstWeek para casar com o dataKey "week"
+  // do eixo X (que também é normalizado em sortedData). Sem isso, formatos
+  // como "2025-04-07T00:00:00" ou "2025-04-07Z" não casam com "2025-04-07"
+  // e o ReferenceLine fica posicionado fora da banda correspondente.
+  const validWeekSet = useMemo(() => new Set(sortedData.map((p) => p.week)), [sortedData]);
+  const bestWeekNorm = summary?.bestWeek ? normalizeWeek(summary.bestWeek.week) : undefined;
+  const worstWeekNorm = summary?.worstWeek ? normalizeWeek(summary.worstWeek.week) : undefined;
+  const bestWeekValid = !!bestWeekNorm && validWeekSet.has(bestWeekNorm);
+  const worstWeekValid = !!worstWeekNorm && validWeekSet.has(worstWeekNorm);
   const showRefLines =
-    summary?.bestWeek && summary?.worstWeek && summary.bestWeek.week !== summary.worstWeek.week;
+    bestWeekValid && worstWeekValid && bestWeekNorm !== worstWeekNorm;
 
   return (
     <div className="space-y-3">
@@ -798,13 +808,13 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-success">
-                {summary.bestWeek ? `${formatWeek(summary.bestWeek.week)} · ${summary.bestWeek.positivePct}%` : "—"}
+                {summary.bestWeek ? `${formatWeek(normalizeWeek(summary.bestWeek.week))} · ${summary.bestWeek.positivePct}%` : "—"}
               </p>
               <p className="text-muted-foreground">Melhor</p>
             </div>
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-destructive">
-                {summary.worstWeek ? `${formatWeek(summary.worstWeek.week)} · ${summary.worstWeek.positivePct}%` : "—"}
+                {summary.worstWeek ? `${formatWeek(normalizeWeek(summary.worstWeek.week))} · ${summary.worstWeek.positivePct}%` : "—"}
               </p>
               <p className="text-muted-foreground">Pior</p>
             </div>
@@ -854,23 +864,23 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 return <span className="text-foreground">{value}</span>;
               }}
             />
-            {showRefLines && summary?.bestWeek && (
+            {bestWeekValid && bestWeekNorm !== worstWeekNorm && (
               <ReferenceLine
                 yAxisId="pct"
-                x={normalizeWeek(summary.bestWeek.week)}
+                x={bestWeekNorm}
                 stroke="hsl(var(--success))"
                 strokeDasharray="2 2"
-                ifOverflow="extendDomain"
+                ifOverflow="hidden"
                 label={{ value: "Melhor", position: "top", fill: "hsl(var(--success))", fontSize: 10 }}
               />
             )}
-            {showRefLines && summary?.worstWeek && (
+            {worstWeekValid && bestWeekNorm !== worstWeekNorm && (
               <ReferenceLine
                 yAxisId="pct"
-                x={normalizeWeek(summary.worstWeek.week)}
+                x={worstWeekNorm}
                 stroke="hsl(var(--destructive))"
                 strokeDasharray="2 2"
-                ifOverflow="extendDomain"
+                ifOverflow="hidden"
                 label={{ value: "Pior", position: "top", fill: "hsl(var(--destructive))", fontSize: 10 }}
               />
             )}
