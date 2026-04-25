@@ -98,16 +98,18 @@ describe("weekTimestamp", () => {
     expect(Number.isFinite(ts)).toBe(true);
   });
 
-  it("retorna +Infinity para semana inválida", () => {
-    expect(weekTimestamp("invalid")).toBe(Number.POSITIVE_INFINITY);
+  it("retorna fallback para semana inválida (sentinela, não NaN)", () => {
+    const ts = weekTimestamp("invalid");
+    expect(Number.isFinite(ts)).toBe(true);
+    expect(ts).toBe(Number.MAX_SAFE_INTEGER);
   });
 
-  it("comparator nunca produz NaN mesmo com lixo", () => {
+  it("comparator nunca produz NaN mesmo com lixo (válido vs lixo, lixo vs lixo)", () => {
     const items = ["2025-04-07", "lixo", "2025-04-14", "outra-coisa"];
-    const result = (a: string, b: string) => weekTimestamp(a) - weekTimestamp(b);
+    const cmp = (a: string, b: string) => weekTimestamp(a) - weekTimestamp(b);
     for (const a of items) {
       for (const b of items) {
-        expect(Number.isNaN(result(a, b))).toBe(false);
+        expect(Number.isNaN(cmp(a, b))).toBe(false);
       }
     }
   });
