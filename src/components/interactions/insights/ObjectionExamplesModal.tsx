@@ -884,6 +884,27 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                           </Link>
                         </Button>
                       )}
+                      {ex.contact_id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs gap-1"
+                          title="Copiar link direto da Ficha 360 deste contato"
+                          onClick={() => handleCopyContactLink(ex.contact_id!, ex.id)}
+                        >
+                          {copiedId === ex.id ? (
+                            <>
+                              <Check className="h-3 w-3 text-success" />
+                              Copiado
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="h-3 w-3" />
+                              Copiar link
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </footer>
                 </article>
