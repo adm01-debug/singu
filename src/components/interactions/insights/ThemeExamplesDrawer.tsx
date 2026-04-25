@@ -158,12 +158,14 @@ const ExcerptItem = memo(function ExcerptItem({
   interaction,
   terms,
   matchCount,
+  matchMode,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
   terms: string[];
   matchCount?: number;
+  matchMode?: MatchMode;
   onClose: () => void;
 }) {
   return (
@@ -171,7 +173,7 @@ const ExcerptItem = memo(function ExcerptItem({
       <div className="flex gap-2">
         <Quote className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />
         <p className="text-sm text-foreground leading-relaxed">
-          <MarkExcerpt text={excerpt.text} terms={terms} />
+          <MarkExcerpt text={excerpt.text} terms={terms} matchMode={matchMode} />
         </p>
         {typeof matchCount === "number" && matchCount > 0 && (
           <Badge
