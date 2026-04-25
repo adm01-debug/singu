@@ -92,7 +92,15 @@ interface Segment {
   isMatch: boolean;
 }
 
-const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; terms: string[] }) {
+const MarkExcerpt = memo(function MarkExcerpt({
+  text,
+  terms,
+  matchMode = "exact",
+}: {
+  text: string;
+  terms: string[];
+  matchMode?: MatchMode;
+}) {
   const segments = useMemo<Segment[]>(() => {
     if (!text) return [];
     const cleaned = Array.from(
@@ -107,10 +115,11 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; t
     if (cleaned.length === 0) return [{ text, isMatch: false }];
 
     const escaped = cleaned.map((t) => escapeRegex(normalizeText(t)));
-    const re = new RegExp(
-      `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`,
-      "giu",
-    );
+    const pattern =
+      matchMode === "exact"
+        ? `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`
+        : `(${escaped.join("|")})`;
+    const re = new RegExp(pattern, "giu");
     const norm = normalizeText(text);
     const out: Segment[] = [];
     let cursor = 0;
@@ -122,6 +131,7 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; t
       if (start > cursor) out.push({ text: text.slice(cursor, start), isMatch: false });
       out.push({ text: text.slice(start, end), isMatch: true });
       cursor = end;
+      if (end === m.index) re.lastIndex += 1;
     }
     if (cursor < text.length) out.push({ text: text.slice(cursor), isMatch: false });
     return out;
