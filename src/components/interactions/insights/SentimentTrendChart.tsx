@@ -372,7 +372,56 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   };
 
   const annotationsApi = useSentimentAnnotations(contactId);
-  const annotationsByWeek = annotationsApi.byWeek;
+  const annotationsByWeekRaw = annotationsApi.byWeek;
+
+  const [annCategoryFilter, setAnnCategoryFilter] = useState<Set<AnnotationCategory>>(() =>
+    readAnnotationFilter()
+  );
+  const persistAnnFilter = (next: Set<AnnotationCategory>) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ANN_FILTER_KEY, JSON.stringify(Array.from(next)));
+    }
+  };
+  const toggleAnnCategory = (cat: AnnotationCategory) => {
+    setAnnCategoryFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      persistAnnFilter(next);
+      return next;
+    });
+  };
+  const setAllAnnCategories = (enable: boolean) => {
+    const next: Set<AnnotationCategory> = enable ? new Set(CATEGORY_KEYS) : new Set();
+    setAnnCategoryFilter(next);
+    persistAnnFilter(next);
+  };
+
+  const annotationCategoryCounts = useMemo(() => {
+    const counts = {} as Record<AnnotationCategory, number>;
+    for (const k of CATEGORY_KEYS) counts[k] = 0;
+    for (const list of annotationsByWeekRaw.values()) {
+      for (const a of list) counts[a.category] = (counts[a.category] ?? 0) + 1;
+    }
+    return counts;
+  }, [annotationsByWeekRaw]);
+
+  const annotationsByWeek = useMemo(() => {
+    const filtered = new Map<string, SentimentAnnotation[]>();
+    for (const [week, list] of annotationsByWeekRaw.entries()) {
+      const kept = list.filter((a) => annCategoryFilter.has(a.category));
+      if (kept.length > 0) filtered.set(week, kept);
+    }
+    return filtered;
+  }, [annotationsByWeekRaw, annCategoryFilter]);
+
+  const totalAnnotations = annotationsApi.list.data?.length ?? 0;
+  const visibleAnnotations = useMemo(() => {
+    let n = 0;
+    for (const list of annotationsByWeek.values()) n += list.length;
+    return n;
+  }, [annotationsByWeek]);
+  const allCategoriesActive = annCategoryFilter.size === CATEGORY_KEYS.length;
 
   const sortedData = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
