@@ -35,6 +35,9 @@ function SuggestedResponseModalImpl({
   const navigate = useNavigate();
   const [draft, setDraft] = useState<string>(suggestedResponse);
   const [copied, setCopied] = useState(false);
+  const { markApplied, getByObjection } = useAppliedResponses();
+  const previousApplications = getByObjection(objection);
+  const alreadyAppliedCount = previousApplications.length;
 
   // Sincroniza o draft quando o modal reabre com nova objeção.
   // useState com prop inicial não atualiza; reset via key no parent garante remontagem.
