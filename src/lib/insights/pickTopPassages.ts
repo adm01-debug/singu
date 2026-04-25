@@ -68,6 +68,10 @@ export function pickTopPassages(
   opts: PickOptions,
 ): Excerpt[] {
   if (!Array.isArray(sources) || sources.length === 0) return [];
+  // Clamp do totalCap: nunca retornamos mais que MAX_TOTAL_CAP (5), nem menos que 0.
+  const totalCap = Math.max(0, Math.min(opts.totalCap | 0, MAX_TOTAL_CAP));
+  if (totalCap === 0) return [];
+  const maxPerSource = Math.max(1, opts.maxPerSource | 0);
   const half = Math.max(40, Math.floor(opts.window / 2));
   const perSource = new Map<string, Excerpt[]>();
   const order: string[] = [];
