@@ -521,14 +521,15 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     return { sortedData: unique, invalidWeekCount: dropped };
   }, [data]);
 
-  const dataWithMA = useMemo(() => {
-    // Média móvel PONDERADA por volume: Σ positivos / Σ totais da janela.
-    // Semanas com mais interações influenciam mais o resultado, reduzindo o
-    // ruído de semanas com volume muito baixo. Se a janela inteira tiver
-    // volume abaixo do piso mínimo, omitimos o ponto (null) para evitar
-    // tendência baseada em amostra estatisticamente fraca.
-    const MIN_WINDOW_VOLUME = 3;
-    const LOW_WINDOW_VOLUME = 8;
+  // Pontos com média móvel calculados a partir EXATAMENTE do mesmo
+  // sortedData usado por evolutionStats e confidenceInfo. Isolar essa etapa
+  // garante que duplicatas mescladas/normalização afetem MA e evolução de
+  // forma consistente — mudanças em anotações ou filtros visuais nunca
+  // recalculam os números, evitando divergência entre o badge "Subiu/Desceu"
+  // e a linha de tendência.
+  const MIN_WINDOW_VOLUME = 3;
+  const LOW_WINDOW_VOLUME = 8;
+  const maPoints = useMemo(() => {
     return sortedData.map((p, i) => {
       const start = Math.max(0, i - (smoothWindow - 1));
       const win = sortedData.slice(start, i + 1);
@@ -536,23 +537,29 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const sumTot = win.reduce((a, w) => a + (w.total ?? 0), 0);
       const positivePctMA =
         sumTot >= MIN_WINDOW_VOLUME ? Math.round((sumPos / sumTot) * 100) : null;
-      const annotations = annotationsByWeek.get(p.week) ?? [];
-      const isPartialWindow = win.length < smoothWindow;
-      const isLowVolume = sumTot > 0 && sumTot < LOW_WINDOW_VOLUME;
       return {
         ...p,
         positivePctMA,
         maWindow: smoothWindow,
         maWindowSize: win.length,
         maWindowVolume: sumTot,
-        maWindowPartial: isPartialWindow,
-        maWindowLowVolume: isLowVolume,
+        maWindowPartial: win.length < smoothWindow,
+        maWindowLowVolume: sumTot > 0 && sumTot < LOW_WINDOW_VOLUME,
         maWindowBelowThreshold: sumTot > 0 && sumTot < MIN_WINDOW_VOLUME,
-        smoothActive: smoothEnabled,
-        annotations,
       };
     });
-  }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
+  }, [sortedData, smoothWindow]);
+
+  // Overlay puramente visual: injeta anotações filtradas e flag de smoothing
+  // sobre os pontos numéricos imutáveis acima. Recalcular este memo não
+  // muda nenhum valor de MA/evolução.
+  const dataWithMA = useMemo(() => {
+    return maPoints.map((p) => ({
+      ...p,
+      smoothActive: smoothEnabled,
+      annotations: annotationsByWeek.get(p.week) ?? [],
+    }));
+  }, [maPoints, annotationsByWeek, smoothEnabled]);
 
   const maQualityCounts = useMemo(() => {
     let partial = 0;
