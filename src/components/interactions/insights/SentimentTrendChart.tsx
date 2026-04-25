@@ -274,6 +274,13 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       window.localStorage.setItem(SMOOTH_ENABLED_KEY, next ? "1" : "0");
     }
   };
+  const [smoothWindow, setSmoothWindow] = useState<SmoothWindow>(() => readSmoothWindow());
+  const changeSmoothWindow = (next: SmoothWindow) => {
+    setSmoothWindow(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SMOOTH_WINDOW_KEY, String(next));
+    }
+  };
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
   const [showPositivePctLine, setShowPositivePctLine] = useState<boolean>(() => {
