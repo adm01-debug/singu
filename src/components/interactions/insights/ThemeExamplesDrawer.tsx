@@ -48,7 +48,7 @@ function normalizeText(s: string): string {
 }
 
 /**
- * Conta ocorr\u00eancias whole-word de cada termo dentro de `text` (acento-insens\u00edvel).
+ * Conta ocorrências whole-word de cada termo dentro de `text` (acento-insensível).
  * Retorna um Map<keywordOriginal, count> preservando o termo informado pelo chamador.
  */
 function countTermMatches(text: string, terms: string[]): Map<string, number> {
