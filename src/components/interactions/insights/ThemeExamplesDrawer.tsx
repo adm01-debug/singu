@@ -103,6 +103,8 @@ const MarkExcerpt = memo(function MarkExcerpt({
 }) {
   const segments = useMemo<Segment[]>(() => {
     if (!text) return [];
+    // Guarda defensiva: sem termos reais, n\u00e3o destacar nada (modo fallback / sem keywords).
+    if (!Array.isArray(terms) || terms.length === 0) return [{ text, isMatch: false }];
     const cleaned = Array.from(
       new Map(
         terms
@@ -624,9 +626,10 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   key={r.originalKey}
                   excerpt={r.ex}
                   interaction={interactionMap.get(r.ex.interactionId)}
+                  // Em fallback n\u00e3o h\u00e1 menções reais → desabilita destaque, contagem e match mode.
                   terms={isFallback ? [] : effectiveKeywords}
-                  matchCount={perExcerptCounts.get(r.originalKey)}
-                  matchMode={matchMode}
+                  matchCount={isFallback ? undefined : perExcerptCounts.get(r.originalKey)}
+                  matchMode={isFallback ? undefined : matchMode}
                   onClose={onClose}
                 />
               ))}
