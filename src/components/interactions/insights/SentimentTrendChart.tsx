@@ -89,7 +89,7 @@ function pctClass(pct: number): string {
   return "text-muted-foreground";
 }
 
-interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; smoothActive?: boolean; annotations?: SentimentAnnotation[] }
+interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; maWindowVolume?: number; maWindowBelowThreshold?: boolean; smoothActive?: boolean; annotations?: SentimentAnnotation[] }
 
 const SHOW_ALL_ROWS_KEY = "singu:sentiment-trend:tooltip-show-all-rows";
 
@@ -155,24 +155,35 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               const arrow = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
               const ArrowIcon = arrow;
               const deltaClass = delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground";
+              const winVol = point.maWindowVolume ?? 0;
               return (
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <span
-                    className="h-2 w-2 rounded-sm shrink-0"
-                    style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
-                    aria-hidden
-                  />
-                  <span className="text-muted-foreground">
-                    Tendência MM{point.maWindow ?? 3}:
-                  </span>
-                  <span className="font-medium tabular-nums text-foreground">{ma}%</span>
-                  <span className={cn("inline-flex items-center gap-0.5 tabular-nums", deltaClass)}>
-                    <ArrowIcon className="h-3 w-3" />
-                    {sign}{Math.abs(delta)}pp
-                  </span>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5 text-[11px]">
+                    <span
+                      className="h-2 w-2 rounded-sm shrink-0"
+                      style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
+                      aria-hidden
+                    />
+                    <span className="text-muted-foreground">
+                      Tendência MM{point.maWindow ?? 3}:
+                    </span>
+                    <span className="font-medium tabular-nums text-foreground">{ma}%</span>
+                    <span className={cn("inline-flex items-center gap-0.5 tabular-nums", deltaClass)}>
+                      <ArrowIcon className="h-3 w-3" />
+                      {sign}{Math.abs(delta)}pp
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground ml-3.5">
+                    Ponderada por volume · janela: <span className="tabular-nums">{winVol}</span> {winVol === 1 ? "interação" : "interações"}
+                  </p>
                 </div>
               );
             })()}
+            {point.smoothActive && point.positivePctMA === null && point.maWindowBelowThreshold && (
+              <p className="text-[10px] text-warning italic ml-3.5">
+                Volume insuficiente na janela MM{point.maWindow ?? 3} para tendência confiável.
+              </p>
+            )}
           </div>
 
           <div className="border-t border-border/60 pt-2 space-y-1.5">
@@ -337,14 +348,29 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [data]);
 
   const dataWithMA = useMemo(() => {
+    // Média móvel PONDERADA por volume: Σ positivos / Σ totais da janela.
+    // Semanas com mais interações influenciam mais o resultado, reduzindo o
+    // ruído de semanas com volume muito baixo. Se a janela inteira tiver
+    // volume abaixo do piso mínimo, omitimos o ponto (null) para evitar
+    // tendência baseada em amostra estatisticamente fraca.
+    const MIN_WINDOW_VOLUME = 3;
     return sortedData.map((p, i) => {
       const start = Math.max(0, i - (smoothWindow - 1));
-      const window = sortedData.slice(start, i + 1);
-      const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
-      const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
-      const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
+      const win = sortedData.slice(start, i + 1);
+      const sumPos = win.reduce((a, w) => a + (w.positive ?? 0), 0);
+      const sumTot = win.reduce((a, w) => a + (w.total ?? 0), 0);
+      const positivePctMA =
+        sumTot >= MIN_WINDOW_VOLUME ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
-      return { ...p, positivePctMA, maWindow: smoothWindow, smoothActive: smoothEnabled, annotations };
+      return {
+        ...p,
+        positivePctMA,
+        maWindow: smoothWindow,
+        maWindowVolume: sumTot,
+        maWindowBelowThreshold: sumTot > 0 && sumTot < MIN_WINDOW_VOLUME,
+        smoothActive: smoothEnabled,
+        annotations,
+      };
     });
   }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
 
