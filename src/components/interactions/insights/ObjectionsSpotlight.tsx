@@ -121,6 +121,16 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const isLong = suggested.length > 160 || suggested.includes("\n");
   const showToggle = isLong;
   const panelId = `objection-suggested-${o.objection.replace(/\s+/g, "-").slice(0, 40)}`;
+  const summaryPanelId = `${panelId}-summary`;
+
+  // Lazy: só dispara o resumo IA quando a aba "Resumo" estiver ativa
+  // (e houver exemplos de interações para alimentar o contexto).
+  const summaryQuery = useObjectionContextSummary({
+    objection: o.objection,
+    category: o.category,
+    interactionIds: Array.isArray(o.examples) ? o.examples : [],
+    enabled: summaryActive && hasExamples,
+  });
 
   const handleCopy = useCallback(async () => {
     if (!suggested) return;
