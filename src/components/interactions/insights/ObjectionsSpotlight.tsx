@@ -300,6 +300,15 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
         objection={drawerOpen ? o : null}
         onClose={() => setDrawerOpen(false)}
       />
+      {composerOpen && (
+        <SuggestedResponseModal
+          open={composerOpen}
+          onOpenChange={setComposerOpen}
+          objection={o.objection}
+          category={o.category}
+          suggestedResponse={suggested}
+        />
+      )}
     </div>
   );
 });
