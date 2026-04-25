@@ -113,6 +113,12 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const idsKey = ids.join(",");
   const objectionKey = objection?.objection ?? "";
 
+  // Feedback "Útil" — alimenta o ranqueamento das próximas respostas sugeridas.
+  const feedback = useObjectionExampleFeedback({
+    objection: objection?.objection ?? null,
+    category: objection?.category ?? null,
+  });
+
   // Filtros de busca por data, tipo e paginação
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
