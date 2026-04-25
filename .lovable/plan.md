@@ -1,53 +1,74 @@
+## Objetivo
 
+Cobrir com testes unitários a normalização de semanas e o sort cronológico (com merge de duplicatas) hoje embutidos no `SentimentTrendChart.tsx` — incluindo formatos heterogêneos (`YYYY-MM-DD`, `...T00:00:00`, `...Z`), duplicatas que precisam ser mescladas e entradas inválidas que não podem produzir `NaN` no comparator.
 
-## Assunto e corpo separados no "Copiar script" (e-mail)
+## Abordagem
 
-O `CopyScriptMenu` já exibe campo de assunto e botão "Copiar só o assunto" **quando** `s.subject` existe. O problema: o gerador atual (`generateScripts` em `src/lib/scriptGenerator.ts`) não está produzindo `subject` para o canal `email`, então o campo nunca aparece. Esta melhoria garante que todo script de e-mail tenha **assunto e corpo gerados automaticamente e separados**, com o botão de copiar só o assunto sempre disponível.
+As funções `normalizeWeek`, `parseWeekLocal`, `isValidWeek` e `weekTimestamp`, além da lógica de merge+sort do `sortedData`, vivem hoje como funções/locais privados dentro do componente. Para testá-las sem renderizar o chart inteiro, vou extraí-las para um módulo utilitário isolado e o componente passa a importá-las. Comportamento runtime fica idêntico.
 
-### O que será feito
+## Arquivos
 
-**1. Garantir geração de `subject` para todo script de e-mail**
+### 1. Novo: `src/components/interactions/insights/weekUtils.ts`
 
-Em `src/lib/scriptGenerator.ts`:
-- Adicionar helper `buildEmailSubject(passoId, firstName, sentiment)` que monta um assunto curto, contextual e personalizado por passo + sentimento.
-- Garantir que **todo** `GeneratedScript` com `channel: 'email'` retorne `subject` preenchido (nunca `undefined`).
-- Catálogo de assuntos por `passoId` (com fallback genérico):
-  - `whatsapp-followup` / `ligacao-checkin` → "Retomando nossa conversa, {firstName}"
-  - `email-nutricao` → "{firstName}, conteúdo que pode te interessar"
-  - `agendar-reuniao` → "Proposta de horário para conversarmos"
-  - `aniversario` → "Parabéns, {firstName}! 🎉"
-  - `reativacao` / contato frio → "Faz tempo, {firstName} — tudo bem?"
-  - fallback → "Olá, {firstName}"
-- Variação por sentimento (`positive` → tom mais direto; `negative` → tom mais cuidadoso; `neutral` → padrão).
+Move e exporta:
+- `ISO_WEEK_RE`
+- `normalizeWeek(w)`
+- `parseWeekLocal(w)`
+- `isValidWeek(w)` (type guard)
+- `weekTimestamp(w)` (fallback `+Infinity`)
+- `normalizeAndSortWeekPoints<P>(data)` — encapsula a lógica de filtragem, merge somando `positive/neutral/negative/mixed/total` e recalculando `positivePct`, e sort por timestamp normalizado. Retorna `{ sortedData, invalidWeekCount }`. Genérico em `P extends WeekPoint` para preservar campos extras.
 
-**2. Garantir corpo de e-mail próprio (não reaproveitar texto de WhatsApp)**
+### 2. Editado: `src/components/interactions/insights/SentimentTrendChart.tsx`
 
-- Para cada cenário, gerar um `body` em formato de e-mail (saudação + parágrafo + assinatura placeholder), distinto do script de WhatsApp.
-- Manter o limite de comprimento adequado (≤600 caracteres no corpo para legibilidade).
+- Remove as definições locais de `normalizeWeek`, `parseWeekLocal`, `isValidWeek`, `weekTimestamp`.
+- Importa-as de `./weekUtils`.
+- Substitui o `useMemo` que monta `sortedData` por uma chamada a `normalizeAndSortWeekPoints(data)`, mantendo a desestruturação `{ sortedData, invalidWeekCount }`.
 
-**3. Reforçar a UI do popover**
+### 3. Novo: `src/components/interactions/insights/__tests__/weekUtils.test.ts`
 
-Em `src/components/ficha-360/CopyScriptMenu.tsx`:
-- O bloco "Copiar só o assunto" já existe condicionado a `s.subject`. Como o gerador agora sempre devolve `subject` para e-mail, o botão fica **sempre visível** na aba E-mail.
-- Pequeno ajuste visual: deixar o botão "Copiar só o assunto" com ícone `Copy` (h-3 w-3) e mover o contador de caracteres do corpo para a linha do label, evitando ficar ao lado do botão.
-- Botão principal "Copiar" continua copiando `Assunto: ... \n\n {body}` (comportamento atual preservado).
+Casos cobertos:
 
-**4. Toasts diferenciados**
+**`normalizeWeek`**
+- Trunca `2025-04-07T00:00:00` → `2025-04-07`
+- Trunca `2025-04-07T03:30:00.000Z` → `2025-04-07`
+- Mantém `2025-04-07` inalterado
+- Devolve string vazia para `""`
+- Devolve o input cru se for menor que 10 caracteres
+- Devolve o input para tipos não-string (defensivo)
 
-- "Assunto copiado" ao usar o botão de assunto.
-- "E-mail copiado (assunto + corpo)" ao usar o botão principal na aba e-mail.
+**`isValidWeek`**
+- `true` para `2025-04-07` e `2025-04-07T00:00:00`
+- `false` para `''`, `'abc'`, `'2025-13-40'`, `null`, `undefined`, `123`
 
-### Arquivos afetados
+**`weekTimestamp`**
+- Retorna timestamp finito para semana válida
+- Retorna `Number.POSITIVE_INFINITY` para `'invalid'`
+- Comparator `(a,b) => weekTimestamp(a) - weekTimestamp(b)` nunca produz `NaN` mesmo com lixo
 
-- **Editado**: `src/lib/scriptGenerator.ts` — adicionar `buildEmailSubject`, garantir `subject` + `body` próprios para canal `email` em todos os passos.
-- **Editado**: `src/components/ficha-360/CopyScriptMenu.tsx` — pequeno polimento visual do bloco de assunto e toasts diferenciados.
+**`parseWeekLocal`**
+- Data parseada tem `getFullYear/getMonth/getDate` corretos no fuso local (sem shift de -1 dia), validado via `getFullYear()` etc. em vez de `toISOString()`.
 
-### Critérios de aceite
+**`normalizeAndSortWeekPoints` — sort cronológico**
+- Ordena entrada fora de ordem em ordem crescente
+- Ordena corretamente quando entradas têm formatos mistos (`'2025-04-07'` e `'2025-04-14T00:00:00'`)
+- Não usa ordenação lexicográfica: `'2025-12-29'` vem antes de `'2026-01-05'`
 
-1. Ao abrir "Copiar script" → aba **E-mail** em qualquer próximo passo, o campo **Assunto** aparece preenchido automaticamente.
-2. Botão **"Copiar só o assunto"** está sempre visível na aba E-mail e copia somente o texto do assunto.
-3. Botão **Copiar** principal copia `Assunto: ... \n\n {corpo}`.
-4. Assunto varia por `passoId` e por `sentiment` do contato.
-5. Corpo do e-mail é distinto do script de WhatsApp para o mesmo passo.
-6. Nenhuma regressão nos canais WhatsApp e Ligação.
+**`normalizeAndSortWeekPoints` — merge de duplicatas**
+- Duas entradas com mesma semana (formatos diferentes) são fundidas em uma só
+- `positive/neutral/negative/mixed/total` são somados
+- `positivePct` é recalculado a partir do total mesclado (não copiado de uma das duplicatas)
+- Resultado tem `length === 1` quando todas as entradas são da mesma semana
 
+**`normalizeAndSortWeekPoints` — entradas inválidas**
+- `null`/`undefined` no array são descartados e contam em `invalidWeekCount`
+- Pontos com `week: ''` ou `week: 'lixo'` são descartados
+- `invalidWeekCount` reflete o total descartado
+- Entradas inválidas nunca aparecem em `sortedData`
+- Quando `data` é `null`/`undefined`, retorna `{ sortedData: [], invalidWeekCount: 0 }`
+
+## Detalhes técnicos
+
+- Não há mudança de comportamento runtime — apenas extração para módulo separado.
+- O setup de testes (`vitest.config.ts` + `src/test/setup.ts`) já existe; o novo arquivo segue o padrão dos testes em `src/test/` e `src/components/.../__tests__/`.
+- Testes são puros (sem render), rodam rapidamente e não dependem de fuso horário do runner (validamos via `getFullYear/getMonth/getDate`, não `toISOString`).
+- Genérico `<P extends WeekPoint>` em `normalizeAndSortWeekPoints` preserva o tipo `SentimentTrendPoint` no chart sem cast.
