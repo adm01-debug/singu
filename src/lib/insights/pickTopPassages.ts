@@ -112,10 +112,10 @@ export function pickTopPassages(
   const cursors = new Map<string, number>();
   for (const id of order) cursors.set(id, 0);
 
-  while (result.length < opts.totalCap) {
+  while (result.length < totalCap) {
     let added = false;
     for (const id of order) {
-      if (result.length >= opts.totalCap) break;
+      if (result.length >= totalCap) break;
       const list = perSource.get(id)!;
       const idx = cursors.get(id)!;
       if (idx < list.length) {
