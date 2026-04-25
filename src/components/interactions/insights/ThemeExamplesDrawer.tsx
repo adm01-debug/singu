@@ -626,9 +626,10 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   key={r.originalKey}
                   excerpt={r.ex}
                   interaction={interactionMap.get(r.ex.interactionId)}
+                  // Em fallback n\u00e3o h\u00e1 menções reais → desabilita destaque, contagem e match mode.
                   terms={isFallback ? [] : effectiveKeywords}
-                  matchCount={perExcerptCounts.get(r.originalKey)}
-                  matchMode={matchMode}
+                  matchCount={isFallback ? undefined : perExcerptCounts.get(r.originalKey)}
+                  matchMode={isFallback ? undefined : matchMode}
                   onClose={onClose}
                 />
               ))}
