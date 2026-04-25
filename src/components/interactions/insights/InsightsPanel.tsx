@@ -9,6 +9,7 @@ import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hoo
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
+import { ObjectionsTrendChart } from "./ObjectionsTrendChart";
 import { ThemesRanking } from "./ThemesRanking";
 import { ObjectionsRanking } from "./ObjectionsRanking";
 import { ObjectionsSpotlight } from "./ObjectionsSpotlight";
@@ -47,7 +48,7 @@ export function InsightsPanel() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
+  const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, objectionsTrend, objectionsTrendSummary, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
 
   // Fechar drawer de temas ao trocar período (bucket é tratado via URL em handlePeriod).
@@ -122,6 +123,24 @@ export function InsightsPanel() {
               <CardContent><SentimentTrendChart data={sentimentTrend} summary={sentimentTrendSummary} /></CardContent>
             </Card>
           </div>
+
+          {/* Evolução semanal de objeções */}
+          {objectionsTrend.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                  Evolução semanal de objeções
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Quando o risco de bloqueio aumentou ou diminuiu — críticas (não tratadas) vs. atenções (tratadas).
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ObjectionsTrendChart data={objectionsTrend} summary={objectionsTrendSummary} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Themes & Objections */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">

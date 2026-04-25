@@ -47,6 +47,29 @@ export interface SentimentTrendSummary {
   totalInteractions: number;
 }
 
+export interface ObjectionsTrendPoint {
+  week: string;
+  /** Ocorrências de objeção com `handled === false` no período. */
+  critical: number;
+  /** Ocorrências de objeção com `handled === true` (mencionadas mas tratadas). */
+  attention: number;
+  /** Total de ocorrências (critical + attention). */
+  total: number;
+  /** % de objeções não tratadas (risco). */
+  riskPct: number;
+}
+
+export interface ObjectionsTrendSummary {
+  /** Variação em pp do riskPct entre 2ª e 1ª metade do período. */
+  deltaRiskPp: number;
+  direction: "up" | "stable" | "down";
+  peakWeek: { week: string; critical: number } | null;
+  lowWeek: { week: string; critical: number } | null;
+  totalCritical: number;
+  totalAttention: number;
+}
+
+
 const periodToDays: Record<Period, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
 function startOfWeekIso(d: Date): string {
@@ -198,6 +221,70 @@ export function useInteractionsInsights(period: Period = "30d") {
     }
     const topObjections = Array.from(objMap.values()).sort((a, b) => b.count - a.count).slice(0, 8);
 
+    // Objections trend by ISO week — separa "críticas" (não tratadas) de
+    // "atenções" (tratadas mas mencionadas). Usado para detectar quando o
+    // risco de bloqueio aumentou ou diminuiu.
+    const objTrendMap = new Map<string, ObjectionsTrendPoint>();
+    for (const a of list) {
+      if (!Array.isArray(a.objections) || a.objections.length === 0) continue;
+      const ts = a.analyzed_at ?? null;
+      if (!ts) continue;
+      const week = startOfWeekIso(new Date(ts));
+      const cur = objTrendMap.get(week) ?? { week, critical: 0, attention: 0, total: 0, riskPct: 0 };
+      for (const o of a.objections) {
+        if (!o?.objection) continue;
+        if (o.handled) cur.attention += 1;
+        else cur.critical += 1;
+        cur.total += 1;
+      }
+      objTrendMap.set(week, cur);
+    }
+    const objectionsTrend: ObjectionsTrendPoint[] = Array.from(objTrendMap.values())
+      .sort((a, b) => a.week.localeCompare(b.week))
+      .map((p) => ({ ...p, riskPct: p.total > 0 ? Math.round((p.critical / p.total) * 100) : 0 }));
+
+    // Summary do trend de objeções
+    let objectionsTrendSummary: ObjectionsTrendSummary = {
+      deltaRiskPp: 0,
+      direction: "stable",
+      peakWeek: null,
+      lowWeek: null,
+      totalCritical: 0,
+      totalAttention: 0,
+    };
+    if (objectionsTrend.length >= 1) {
+      let peak = objectionsTrend[0];
+      let low = objectionsTrend[0];
+      let totC = 0;
+      let totA = 0;
+      for (const p of objectionsTrend) {
+        if (p.critical > peak.critical) peak = p;
+        if (p.critical < low.critical) low = p;
+        totC += p.critical;
+        totA += p.attention;
+      }
+      let delta = 0;
+      let direction: "up" | "stable" | "down" = "stable";
+      if (objectionsTrend.length >= 2) {
+        const mid = Math.floor(objectionsTrend.length / 2);
+        const first = objectionsTrend.slice(0, mid);
+        const second = objectionsTrend.slice(mid);
+        const avg = (arr: ObjectionsTrendPoint[]) =>
+          arr.length ? arr.reduce((a, p) => a + p.riskPct, 0) / arr.length : 0;
+        delta = Math.round(avg(second) - avg(first));
+        // Para risco, "up" = piora (mais crítico), "down" = melhora.
+        direction = delta >= 5 ? "up" : delta <= -5 ? "down" : "stable";
+      }
+      objectionsTrendSummary = {
+        deltaRiskPp: delta,
+        direction,
+        peakWeek: { week: peak.week, critical: peak.critical },
+        lowWeek: { week: low.week, critical: low.critical },
+        totalCritical: totC,
+        totalAttention: totA,
+      };
+    }
+
     const kpis: InsightsKpis = {
       totalAnalyzed: total,
       dominantSentiment: dominant,
@@ -206,7 +293,7 @@ export function useInteractionsInsights(period: Period = "30d") {
       unhandledObjections: unhandled,
     };
 
-    return { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, list, sentimentBuckets: sentBuckets };
+    return { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, objectionsTrend, objectionsTrendSummary, list, sentimentBuckets: sentBuckets };
   }, [query.data]);
 
   return { ...insights, isLoading: query.isLoading, isError: query.isError };
