@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
-import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hooks/useInteractionsInsights";
+import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles, Flame, ListFilter } from "lucide-react";
+import { useInteractionsInsights, type Period, type ThemeAggregate, type ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
@@ -26,12 +26,38 @@ function isSentimentBucket(v: string | null): v is SentimentOverall {
   return v === "positive" || v === "neutral" || v === "negative" || v === "mixed";
 }
 
+type ObjectionFilter = "all" | "unhandled" | "critical";
+
+function isObjectionFilter(v: string | null): v is ObjectionFilter {
+  return v === "all" || v === "unhandled" || v === "critical";
+}
+
+/**
+ * Severidade alinhada com `ObjectionsSpotlight.getSeverity` para que o filtro
+ * "Críticas" daqui case com a marcação visual dos cards.
+ */
+function isCritical(o: ObjectionAggregate): boolean {
+  const rate = o.count ? (o.handled / o.count) * 100 : 0;
+  return o.unhandled >= 3 || rate <= 30;
+}
+
 export function InsightsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const periodParam = searchParams.get("periodo");
   const period: Period = isPeriod(periodParam) ? periodParam : "30d";
   const sentimentParam = searchParams.get("sentimento");
   const selectedBucket: SentimentOverall | null = isSentimentBucket(sentimentParam) ? sentimentParam : null;
+  const objectionFilterParam = searchParams.get("objecoes");
+  const objectionFilter: ObjectionFilter = isObjectionFilter(objectionFilterParam)
+    ? objectionFilterParam
+    : "all";
+
+  const handleObjectionFilter = useCallback((next: ObjectionFilter) => {
+    const params = new URLSearchParams(searchParams);
+    if (next === "all") params.delete("objecoes");
+    else params.set("objecoes", next);
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const handlePeriod = useCallback((p: string) => {
     const next = new URLSearchParams(searchParams);
@@ -53,6 +79,21 @@ export function InsightsPanel() {
 
   // Fechar drawer de temas ao trocar período (bucket é tratado via URL em handlePeriod).
   useEffect(() => { setSelectedTheme(null); }, [period]);
+
+  // Contagens por filtro (sempre sobre o set completo, para alimentar os
+  // badges do toggle independentemente do filtro selecionado).
+  const objectionCounts = useMemo(() => {
+    const all = topObjections.length;
+    const unhandled = topObjections.filter((o) => o.unhandled > 0).length;
+    const critical = topObjections.filter(isCritical).length;
+    return { all, unhandled, critical };
+  }, [topObjections]);
+
+  const filteredObjections = useMemo(() => {
+    if (objectionFilter === "unhandled") return topObjections.filter((o) => o.unhandled > 0);
+    if (objectionFilter === "critical") return topObjections.filter(isCritical);
+    return topObjections;
+  }, [topObjections, objectionFilter]);
 
   const isEmpty = !isLoading && kpis.totalAnalyzed === 0;
 
@@ -154,24 +195,100 @@ export function InsightsPanel() {
             </Card>
             <div className="space-y-3">
               {topObjections.length > 0 && (
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span>Filtrar objeções</span>
+                  </div>
+                  <Tabs
+                    value={objectionFilter}
+                    onValueChange={(v) => handleObjectionFilter(v as ObjectionFilter)}
+                  >
+                    <TabsList className="h-7 p-0.5">
+                      <TabsTrigger
+                        value="all"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Todas as objeções do período"
+                      >
+                        Todas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.all}
+                        </Badge>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="unhandled"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Objeções com pelo menos uma menção sem tratamento"
+                      >
+                        <AlertTriangle className="h-3 w-3" />
+                        Não tratadas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.unhandled}
+                        </Badge>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="critical"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Severidade alta: 3+ não tratadas ou taxa de tratamento ≤ 30%"
+                      >
+                        <Flame className="h-3 w-3" />
+                        Críticas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.critical}
+                        </Badge>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              )}
+
+              {topObjections.length > 0 && filteredObjections.length === 0 && (
                 <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
-                    <CardDescription className="text-xs">Top 3 com maior risco de bloqueio</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ObjectionsSpotlight objections={topObjections} />
+                  <CardContent className="py-6 text-center space-y-2">
+                    <p className="text-sm text-foreground">
+                      {objectionFilter === "unhandled"
+                        ? "Nenhuma objeção sem tratamento neste período. 🎉"
+                        : "Nenhuma objeção crítica neste período. 🎉"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleObjectionFilter("all")}
+                      className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      Ver todas as objeções
+                    </button>
                   </CardContent>
                 </Card>
               )}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ObjectionsRanking objections={topObjections} />
-                </CardContent>
-              </Card>
+
+              {filteredObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
+                    <CardDescription className="text-xs">
+                      {objectionFilter === "all"
+                        ? "Top 3 com maior risco de bloqueio"
+                        : objectionFilter === "unhandled"
+                          ? `Top com menções sem tratamento (${filteredObjections.length})`
+                          : `Top com severidade crítica (${filteredObjections.length})`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsSpotlight objections={filteredObjections} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {filteredObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsRanking objections={filteredObjections} />
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </>
