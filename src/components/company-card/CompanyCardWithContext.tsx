@@ -227,7 +227,7 @@ function CompanyCardWithContextImpl({
                   </>
                 )}
               </CardContent>
-            </Link>
+            </div>
           </Card>
         </ScorecardTooltip>
       </QuickActionsMenu>
