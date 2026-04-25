@@ -296,7 +296,39 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
   }, [excerpts, interactions, preset]);
 
   const isFallback = excerpts.length === 0 && fallbackPassages.length > 0;
-  const displayItems = excerpts.length > 0 ? excerpts : fallbackPassages;
+  const rawDisplayItems = excerpts.length > 0 ? excerpts : fallbackPassages;
+
+  // Computa, em uma \u00fanica passagem, contagens por excerto + ranking por relev\u00e2ncia.
+  // Relev\u00e2ncia = (qtde de keywords distintas encontradas, depois total de ocorr\u00eancias).
+  // Em fallback ou sem keywords ativas, mant\u00e9m a ordem original.
+  const ranked = useMemo(() => {
+    const enriched = rawDisplayItems.map((ex, i) => {
+      const originalKey = `${ex.interactionId}-${ex.position}-${i}`;
+      if (isFallback || effectiveKeywords.length === 0) {
+        return { ex, originalIndex: i, originalKey, total: 0, distinct: 0 };
+      }
+      const counts = countTermMatches(ex.text, effectiveKeywords);
+      let total = 0;
+      let distinct = 0;
+      counts.forEach((n) => {
+        if (n > 0) {
+          distinct += 1;
+          total += n;
+        }
+      });
+      return { ex, originalIndex: i, originalKey, total, distinct };
+    });
+
+    if (isFallback || effectiveKeywords.length === 0) return enriched;
+
+    return [...enriched].sort((a, b) => {
+      if (b.distinct !== a.distinct) return b.distinct - a.distinct;
+      if (b.total !== a.total) return b.total - a.total;
+      return a.originalIndex - b.originalIndex;
+    });
+  }, [rawDisplayItems, effectiveKeywords, isFallback]);
+
+  const displayItems = useMemo(() => ranked.map((r) => r.ex), [ranked]);
 
   const interactionMap = useMemo(() => {
     const m = new Map<string, InteractionRow>();
@@ -309,28 +341,22 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     [displayItems],
   );
 
-  // Contagem de matches de keywords por excerto exibido (chave = mesma usada no map JSX).
+  // Contagem de matches por excerto exibido (chave = originalKey, est\u00e1vel mesmo ap\u00f3s sort).
   const perExcerptCounts = useMemo(() => {
     const out = new Map<string, number>();
-    if (isFallback || effectiveKeywords.length === 0) return out;
-    displayItems.forEach((ex, i) => {
-      const counts = countTermMatches(ex.text, effectiveKeywords);
-      let total = 0;
-      counts.forEach((n) => (total += n));
-      out.set(`${ex.interactionId}-${ex.position}-${i}`, total);
-    });
+    for (const r of ranked) out.set(r.originalKey, r.total);
     return out;
-  }, [displayItems, effectiveKeywords, isFallback]);
+  }, [ranked]);
 
-  // Resumo agregado: quais keywords foram efetivamente encontradas e quantas vezes (somando excertos exibidos).
+  // Resumo agregado: quais keywords foram efetivamente encontradas e quantas vezes.
   const keywordSummary = useMemo(() => {
     const totals = new Map<string, number>();
     for (const kw of effectiveKeywords) totals.set(kw, 0);
     if (isFallback || effectiveKeywords.length === 0) {
       return { totals, found: [] as Array<{ term: string; count: number }>, totalMatches: 0 };
     }
-    for (const ex of displayItems) {
-      const counts = countTermMatches(ex.text, effectiveKeywords);
+    for (const r of ranked) {
+      const counts = countTermMatches(r.ex.text, effectiveKeywords);
       counts.forEach((n, term) => totals.set(term, (totals.get(term) ?? 0) + n));
     }
     const found = Array.from(totals.entries())
@@ -339,7 +365,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       .sort((a, b) => b.count - a.count);
     const totalMatches = found.reduce((acc, f) => acc + f.count, 0);
     return { totals, found, totalMatches };
-  }, [displayItems, effectiveKeywords, isFallback]);
+  }, [ranked, effectiveKeywords, isFallback]);
 
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
@@ -502,19 +528,16 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                 </div>
               )}
 
-              {displayItems.map((ex, i) => {
-                const key = `${ex.interactionId}-${ex.position}-${i}`;
-                return (
-                  <ExcerptItem
-                    key={key}
-                    excerpt={ex}
-                    interaction={interactionMap.get(ex.interactionId)}
-                    terms={isFallback ? [] : effectiveKeywords}
-                    matchCount={perExcerptCounts.get(key)}
-                    onClose={onClose}
-                  />
-                );
-              })}
+              {ranked.map((r) => (
+                <ExcerptItem
+                  key={r.originalKey}
+                  excerpt={r.ex}
+                  interaction={interactionMap.get(r.ex.interactionId)}
+                  terms={isFallback ? [] : effectiveKeywords}
+                  matchCount={perExcerptCounts.get(r.originalKey)}
+                  onClose={onClose}
+                />
+              ))}
             </>
           )}
 
