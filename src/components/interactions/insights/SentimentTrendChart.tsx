@@ -14,7 +14,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity, Filter, EyeOff } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity, Filter, EyeOff, CalendarRange, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -677,8 +677,59 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const showRefLines =
     bestWeekValid && worstWeekValid && bestWeekNorm !== worstWeekNorm;
 
+  const firstWeek = sortedData[0]?.week;
+  const lastWeek = sortedData[sortedData.length - 1]?.week;
+
   return (
     <div className="space-y-3">
+      {sortedData.length > 0 && (
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground px-1">
+          <span className="inline-flex items-center gap-1">
+            <CalendarRange className="h-3 w-3" />
+            <span>
+              Exibindo{" "}
+              <span className="font-medium tabular-nums text-foreground">{sortedData.length}</span>{" "}
+              {sortedData.length === 1 ? "semana" : "semanas"}
+              {firstWeek && lastWeek && (
+                <>
+                  {" "}·{" "}
+                  <span className="tabular-nums text-foreground">{formatWeek(firstWeek)}</span>
+                  {firstWeek !== lastWeek && (
+                    <>
+                      {" → "}
+                      <span className="tabular-nums text-foreground">{formatWeek(lastWeek)}</span>
+                    </>
+                  )}
+                </>
+              )}
+            </span>
+          </span>
+          <TooltipProvider delayDuration={200}>
+            <UITooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Como o intervalo é calculado"
+                >
+                  <Info className="h-3 w-3" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs text-[11px]">
+                Semanas ordenadas cronologicamente por data normalizada
+                (YYYY-MM-DD). Duplicatas são mescladas e semanas inválidas
+                são descartadas para manter a integridade da média móvel.
+              </TooltipContent>
+            </UITooltip>
+          </TooltipProvider>
+          {invalidWeekCount > 0 && (
+            <span className="inline-flex items-center gap-1 text-warning/90">
+              <ShieldAlert className="h-3 w-3" />
+              {invalidWeekCount} {invalidWeekCount === 1 ? "registro descartado" : "registros descartados"} por semana inválida
+            </span>
+          )}
+        </div>
+      )}
       {evolutionStats ? (() => {
         const EvIcon = DIRECTION_ICON[evolutionStats.direction];
         const evLabel = evolutionStats.direction === "up" ? "Subiu" : evolutionStats.direction === "down" ? "Desceu" : "Estável";
