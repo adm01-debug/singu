@@ -61,6 +61,7 @@ export function useObjectionContextSummary({
             objection,
             category,
             interactionIds: ids,
+            usefulInteractionIds: usefulInPayload,
           },
         },
       );
