@@ -14,7 +14,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -253,9 +253,20 @@ interface EvolutionStats {
 }
 
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
+const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
 
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
-  const [smoothEnabled, setSmoothEnabled] = useState(true);
+  const [smoothEnabled, setSmoothEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const v = window.localStorage.getItem(SMOOTH_ENABLED_KEY);
+    return v === null ? true : v === "1";
+  });
+  const toggleSmooth = (next: boolean) => {
+    setSmoothEnabled(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SMOOTH_ENABLED_KEY, next ? "1" : "0");
+    }
+  };
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
   const [showPositivePctLine, setShowPositivePctLine] = useState<boolean>(() => {
@@ -449,13 +460,15 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             </Badge>
             <Button
               type="button"
-              variant={smoothEnabled ? "secondary" : "ghost"}
+              variant={smoothEnabled ? "secondary" : "outline"}
               size="xs"
-              onClick={() => setSmoothEnabled((v) => !v)}
+              onClick={() => toggleSmooth(!smoothEnabled)}
               aria-pressed={smoothEnabled}
-              title="Suavizar com média móvel de 3 semanas"
+              title={smoothEnabled ? "Desativar média móvel de 3 semanas" : "Ativar média móvel de 3 semanas"}
+              className="gap-1"
             >
-              Suavizar {smoothEnabled ? "✓" : ""}
+              <Activity className="h-3 w-3" />
+              Média móvel: {smoothEnabled ? "ON" : "OFF"}
             </Button>
             {contactId && (
               <Button
