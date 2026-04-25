@@ -119,34 +119,57 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     category: objection?.category ?? null,
   });
 
-  // Filtros de busca por data, tipo e paginação
+  // Filtros de busca por data e tipo
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
-  const [page, setPage] = useState(1);
 
-  // Reseta filtros e página ao abrir nova objeção
+  // Reseta filtros ao abrir nova objeção
   useEffect(() => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
-    setPage(1);
   }, [objectionKey]);
 
-  const { data: examples = [], isLoading, isError, refetch } = useQuery({
+  const totalIds = ids.length;
+
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
     queryKey: ["objection-examples-full", objectionKey, idsKey],
-    enabled: !!objection && ids.length > 0,
+    enabled: !!objection && totalIds > 0,
     staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<Example[]> => {
+    initialPageParam: 0,
+    getNextPageParam: (_last, allPages) => {
+      const loaded = allPages.reduce((acc, p) => acc + p.length, 0);
+      return loaded < totalIds ? loaded : undefined;
+    },
+    queryFn: async ({ pageParam }): Promise<Example[]> => {
+      const offset = typeof pageParam === "number" ? pageParam : 0;
+      const slice = ids.slice(offset, offset + PAGE_SIZE);
+      if (slice.length === 0) return [];
       const { data, error } = await supabase
         .from("interactions")
         .select("id, title, type, created_at, content, contact_id, sentiment")
-        .in("id", ids)
+        .in("id", slice)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return Array.isArray(data) ? (data as Example[]) : [];
     },
   });
+
+  // Achata todas as páginas carregadas até o momento.
+  const examples = useMemo<Example[]>(
+    () => (data?.pages ?? []).flat(),
+    [data?.pages],
+  );
+  const loadedCount = examples.length;
 
   // IDs únicos de contatos presentes nos exemplos (para buscar mini-resumo).
   const contactIds = useMemo(() => {
