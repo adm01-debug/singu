@@ -155,7 +155,18 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
             )}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleApplyFilter}
+          aria-label={`Filtrar interações por "${o.objection}" mantendo o período atual`}
+          title="Aplicar este filtro na lista de interações"
+          className="inline-flex items-center gap-1 shrink-0 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1.5 py-0.5"
+        >
+          <Filter className="h-3 w-3" />
+          Filtrar interações
+        </button>
       </div>
+
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
