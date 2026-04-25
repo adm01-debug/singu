@@ -86,7 +86,10 @@ interface ObjectionCardProps {
 }
 
 const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePersistentBoolean(
+    objectionStorageKey("objection-suggested-expanded", o.objection),
+    false,
+  );
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
