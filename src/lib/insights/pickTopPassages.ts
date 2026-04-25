@@ -1,10 +1,16 @@
 import type { Excerpt } from "./extractExcerpts";
 
 export interface PickOptions {
+  /** Limite total de passagens retornadas. Sempre clampado em [1, MAX_TOTAL_CAP]. */
   totalCap: number;
+  /** Máximo de passagens por fonte antes do round-robin. */
   maxPerSource: number;
+  /** Tamanho da janela (chars) ao recortar o trecho centrado na sentença. */
   window: number;
 }
+
+/** Limite máximo absoluto de passagens retornadas (requisito: até 5). */
+export const MAX_TOTAL_CAP = 5;
 
 interface ScoredSentence {
   text: string;
