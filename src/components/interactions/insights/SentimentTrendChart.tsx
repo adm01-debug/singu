@@ -36,38 +36,13 @@ interface Props {
   contactId?: string;
 }
 
-function normalizeWeek(w: string): string {
-  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada.
-  // Garante consistência entre dataKey do eixo X, anotações (week_start),
-  // ReferenceLines, tooltip label e weekOptions do dialog.
-  if (typeof w !== "string" || w.length === 0) return w;
-  return w.length >= 10 ? w.slice(0, 10) : w;
-}
-
-function parseWeekLocal(w: string): Date {
-  // Força parse em fuso local (evita shift de -1 dia em TZs negativos quando
-  // strings 'YYYY-MM-DD' são interpretadas como UTC pelo construtor Date).
-  const iso = normalizeWeek(w);
-  return new Date(`${iso}T00:00:00`);
-}
-
-const ISO_WEEK_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function isValidWeek(w: unknown): w is string {
-  if (typeof w !== "string" || w.length === 0) return false;
-  const iso = normalizeWeek(w);
-  if (!ISO_WEEK_RE.test(iso)) return false;
-  const ts = parseWeekLocal(iso).getTime();
-  return Number.isFinite(ts);
-}
-
-function weekTimestamp(w: string): number {
-  const ts = parseWeekLocal(w).getTime();
-  // Fallback: semanas inválidas (NaN) vão para o final do sort em vez de
-  // colocar todo o array em estado indeterminado (NaN no comparator viola
-  // a ordem total exigida por Array.prototype.sort).
-  return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
-}
+import {
+  normalizeWeek,
+  parseWeekLocal,
+  isValidWeek,
+  weekTimestamp,
+  normalizeAndSortWeekPoints,
+} from "./weekUtils";
 
 function formatWeek(w: string): string {
   const d = parseWeekLocal(w);
@@ -466,60 +441,10 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [annotationsByWeek]);
   const allCategoriesActive = annCategoryFilter.size === CATEGORY_KEYS.length;
 
-  const { sortedData, invalidWeekCount } = useMemo(() => {
-    const safe = Array.isArray(data) ? data : [];
-    let dropped = 0;
-    const normalized: SentimentTrendPoint[] = [];
-    for (const p of safe) {
-      if (!p || typeof p.week !== "string" || p.week.length === 0) {
-        dropped++;
-        continue;
-      }
-      const week = normalizeWeek(p.week);
-      if (!isValidWeek(week)) {
-        // Fallback: descarta semanas inválidas em vez de propagar NaN
-        // pelo sort por timestamp (NaN viola ordenação total e poderia
-        // gerar saídas não-determinísticas no Array.prototype.sort).
-        dropped++;
-        continue;
-      }
-      normalized.push({ ...p, week });
-    }
-
-    // Dedup defensivo por semana com MERGE (soma) dos contadores.
-    const merged = new Map<string, SentimentTrendPoint>();
-    for (const p of normalized) {
-      const existing = merged.get(p.week);
-      if (!existing) {
-        merged.set(p.week, { ...p });
-        continue;
-      }
-      const positive = (existing.positive ?? 0) + (p.positive ?? 0);
-      const neutral = (existing.neutral ?? 0) + (p.neutral ?? 0);
-      const negative = (existing.negative ?? 0) + (p.negative ?? 0);
-      const mixed = (existing.mixed ?? 0) + (p.mixed ?? 0);
-      const total = (existing.total ?? 0) + (p.total ?? 0);
-      const positivePct = total > 0 ? Math.round((positive / total) * 100) : 0;
-      merged.set(p.week, {
-        week: existing.week,
-        positive,
-        neutral,
-        negative,
-        mixed,
-        total,
-        positivePct,
-      });
-    }
-    const unique = Array.from(merged.values());
-
-    // Pré-computa timestamps uma vez para evitar parsing repetido no
-    // comparator e para garantir comparação numérica estável.
-    const tsCache = new Map<string, number>();
-    for (const p of unique) tsCache.set(p.week, weekTimestamp(p.week));
-    unique.sort((a, b) => (tsCache.get(a.week) ?? 0) - (tsCache.get(b.week) ?? 0));
-
-    return { sortedData: unique, invalidWeekCount: dropped };
-  }, [data]);
+  const { sortedData, invalidWeekCount } = useMemo(
+    () => normalizeAndSortWeekPoints<SentimentTrendPoint>(data),
+    [data]
+  );
 
   // Pontos com média móvel calculados a partir EXATAMENTE do mesmo
   // sortedData usado por evolutionStats e confidenceInfo. Isolar essa etapa
