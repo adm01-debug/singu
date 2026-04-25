@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { Link } from 'react-router-dom';
+import { memo, useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MessageSquare, Phone, Mail, Calendar, FileText, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
