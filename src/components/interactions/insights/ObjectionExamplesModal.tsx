@@ -422,6 +422,31 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
               className="h-8 text-xs w-[150px]"
             />
           </div>
+          <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <Label htmlFor="objection-search" className="text-[11px] text-muted-foreground">
+              <Search className="h-3 w-3 inline mr-1" />
+              Buscar no título ou conteúdo
+            </Label>
+            <div className="relative">
+              <Input
+                id="objection-search"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Ex.: preço, prazo, decisor..."
+                className="h-8 text-xs pr-7"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           {hasFilters && (
             <Button
               type="button"
