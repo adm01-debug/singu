@@ -165,17 +165,53 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
             )}
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleApplyFilter}
-          aria-label={`Filtrar interações por "${o.objection}" mantendo o período atual`}
-          title="Aplicar este filtro na lista de interações"
-          className="inline-flex items-center gap-1 shrink-0 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1.5 py-0.5"
-        >
-          <Filter className="h-3 w-3" />
-          Filtrar interações
-        </button>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={handleApplyFilter}
+            aria-label={`Filtrar interações por "${o.objection}" mantendo o período atual`}
+            title="Aplicar este filtro na lista de interações"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1.5 py-0.5"
+          >
+            <Filter className="h-3 w-3" />
+            Filtrar interações
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleHandled}
+            disabled={markHandled.isPending}
+            aria-label={
+              allHandled
+                ? `Reabrir objeção "${o.objection}" como pendente`
+                : `Marcar objeção "${o.objection}" como tratada em todas as conversas do período`
+            }
+            aria-pressed={allHandled}
+            title={allHandled ? "Reabrir como pendente" : "Marcar como tratada"}
+            className={cn(
+              "inline-flex items-center gap-1 text-[11px] font-medium rounded-sm px-1.5 py-0.5 transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "disabled:opacity-60 disabled:cursor-progress",
+              allHandled
+                ? "text-muted-foreground hover:text-foreground hover:underline"
+                : "text-success hover:underline",
+            )}
+          >
+            {markHandled.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : allHandled ? (
+              <RotateCcw className="h-3 w-3" />
+            ) : (
+              <ShieldCheck className="h-3 w-3" />
+            )}
+            {markHandled.isPending
+              ? "Atualizando…"
+              : allHandled
+                ? "Reabrir"
+                : "Marcar como tratada"}
+          </button>
+        </div>
       </div>
+
 
 
       <div className="space-y-1.5">
