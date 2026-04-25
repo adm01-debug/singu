@@ -742,7 +742,13 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                 >
                   <header className="flex items-center justify-between gap-2">
                     <h4 className="text-sm font-medium text-foreground truncate">
-                      {ex.title ?? "Sem título"}
+                      {ex.title
+                        ? renderHighlighted(
+                            ex.title,
+                            highlightRegex,
+                            "bg-warning/30 text-foreground rounded px-0.5 py-px",
+                          )
+                        : "Sem título"}
                     </h4>
                     {ex.sentiment && (
                       <Badge variant="outline" className="text-[10px] capitalize">
