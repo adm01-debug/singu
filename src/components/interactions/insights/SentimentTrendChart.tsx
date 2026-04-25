@@ -765,6 +765,34 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
         </ResponsiveContainer>
       </div>
 
+      {smoothEnabled && showPositivePctLine && (maQualityCounts.partial > 0 || maQualityCounts.low > 0) && (
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground -mt-1 px-1">
+          <span className="font-medium">Tendência MM{smoothWindow}:</span>
+          {maQualityCounts.partial > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden>
+                <circle cx="7" cy="5" r="2.5" fill="hsl(var(--muted-foreground))" />
+                <circle cx="7" cy="5" r="4" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" strokeDasharray="2 2" />
+              </svg>
+              <span>
+                {maQualityCounts.partial} {maQualityCounts.partial === 1 ? "semana" : "semanas"} com janela parcial (início da série)
+              </span>
+            </span>
+          )}
+          {maQualityCounts.low > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: "hsl(var(--warning))" }}
+                aria-hidden
+              />
+              <span className="text-warning">
+                {maQualityCounts.low} {maQualityCounts.low === 1 ? "semana" : "semanas"} com baixo volume na janela
+              </span>
+            </span>
+          )}
+        </div>
+      )}
       {contactId && (
         <>
           <AnnotationList api={annotationsApi} onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }} />
