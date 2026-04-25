@@ -282,6 +282,19 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [selectedSentiments, setSelectedSentiments] = useState<Set<SentimentBucket>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyContactLink = async (contactId: string, interactionId: string) => {
+    try {
+      const url = `${window.location.origin}/contatos/${contactId}/ficha-360?focus=${interactionId}`;
+      await navigator.clipboard.writeText(url);
+      setCopiedId(interactionId);
+      toast.success("Link copiado para a área de transferência");
+      setTimeout(() => setCopiedId((prev) => (prev === interactionId ? null : prev)), 2000);
+    } catch {
+      toast.error("Não foi possível copiar o link");
+    }
+  };
   const debouncedSearch = useDebounce(searchQuery, 200);
   const normalizedSearch = useMemo(() => normalizeText(debouncedSearch.trim()), [debouncedSearch]);
 
