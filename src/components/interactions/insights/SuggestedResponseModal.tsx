@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Copy, Check, FileText, ExternalLink } from "lucide-react";
+import { Lightbulb, Copy, Check, FileText, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAppliedResponses } from "@/hooks/useAppliedResponses";
 
 interface Props {
   open: boolean;
