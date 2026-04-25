@@ -89,7 +89,7 @@ function pctClass(pct: number): string {
   return "text-muted-foreground";
 }
 
-interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; maWindowVolume?: number; maWindowBelowThreshold?: boolean; smoothActive?: boolean; annotations?: SentimentAnnotation[] }
+interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; maWindowSize?: number; maWindowVolume?: number; maWindowBelowThreshold?: boolean; maWindowPartial?: boolean; maWindowLowVolume?: boolean; smoothActive?: boolean; annotations?: SentimentAnnotation[] }
 
 const SHOW_ALL_ROWS_KEY = "singu:sentiment-trend:tooltip-show-all-rows";
 
@@ -158,7 +158,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
               const winVol = point.maWindowVolume ?? 0;
               return (
                 <div className="space-y-0.5">
-                  <div className="flex items-center gap-1.5 text-[11px]">
+                  <div className="flex items-center flex-wrap gap-1.5 text-[11px]">
                     <span
                       className="h-2 w-2 rounded-sm shrink-0"
                       style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
@@ -172,6 +172,16 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
                       <ArrowIcon className="h-3 w-3" />
                       {sign}{Math.abs(delta)}pp
                     </span>
+                    {point.maWindowPartial && (
+                      <span className="inline-flex items-center rounded-sm bg-muted px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">
+                        janela parcial ({point.maWindowSize}/{point.maWindow})
+                      </span>
+                    )}
+                    {point.maWindowLowVolume && (
+                      <span className="inline-flex items-center rounded-sm bg-warning/15 text-warning px-1 py-0.5 text-[9px] uppercase tracking-wide">
+                        baixo volume
+                      </span>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground ml-3.5">
                     Ponderada por volume · janela: <span className="tabular-nums">{winVol}</span> {winVol === 1 ? "interação" : "interações"}
@@ -354,6 +364,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     // volume abaixo do piso mínimo, omitimos o ponto (null) para evitar
     // tendência baseada em amostra estatisticamente fraca.
     const MIN_WINDOW_VOLUME = 3;
+    const LOW_WINDOW_VOLUME = 8;
     return sortedData.map((p, i) => {
       const start = Math.max(0, i - (smoothWindow - 1));
       const win = sortedData.slice(start, i + 1);
@@ -362,17 +373,34 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const positivePctMA =
         sumTot >= MIN_WINDOW_VOLUME ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
+      const isPartialWindow = win.length < smoothWindow;
+      const isLowVolume = sumTot > 0 && sumTot < LOW_WINDOW_VOLUME;
       return {
         ...p,
         positivePctMA,
         maWindow: smoothWindow,
+        maWindowSize: win.length,
         maWindowVolume: sumTot,
+        maWindowPartial: isPartialWindow,
+        maWindowLowVolume: isLowVolume,
         maWindowBelowThreshold: sumTot > 0 && sumTot < MIN_WINDOW_VOLUME,
         smoothActive: smoothEnabled,
         annotations,
       };
     });
   }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
+
+  const maQualityCounts = useMemo(() => {
+    let partial = 0;
+    let low = 0;
+    for (const p of dataWithMA) {
+      if (p.smoothActive && typeof p.positivePctMA === "number") {
+        if (p.maWindowPartial) partial++;
+        if (p.maWindowLowVolume) low++;
+      }
+    }
+    return { partial, low };
+  }, [dataWithMA]);
 
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
@@ -673,7 +701,23 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 stroke="hsl(var(--success))"
                 strokeWidth={3}
                 strokeOpacity={0.45}
-                dot={false}
+                dot={(props: any) => {
+                  const { cx, cy, payload, index } = props;
+                  if (cx == null || cy == null) return null as any;
+                  const isPartial = !!payload?.maWindowPartial;
+                  const isLow = !!payload?.maWindowLowVolume;
+                  if (!isPartial && !isLow) return null as any;
+                  const fill = isLow ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))";
+                  const stroke = "hsl(var(--background))";
+                  return (
+                    <g key={`ma-dot-${index}`}>
+                      <circle cx={cx} cy={cy} r={4} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      {isPartial && (
+                        <circle cx={cx} cy={cy} r={6} fill="none" stroke={fill} strokeWidth={1} strokeDasharray="2 2" opacity={0.7} />
+                      )}
+                    </g>
+                  );
+                }}
                 activeDot={false}
                 isAnimationActive={false}
                 connectNulls
@@ -721,6 +765,34 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
         </ResponsiveContainer>
       </div>
 
+      {smoothEnabled && showPositivePctLine && (maQualityCounts.partial > 0 || maQualityCounts.low > 0) && (
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground -mt-1 px-1">
+          <span className="font-medium">Tendência MM{smoothWindow}:</span>
+          {maQualityCounts.partial > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden>
+                <circle cx="7" cy="5" r="2.5" fill="hsl(var(--muted-foreground))" />
+                <circle cx="7" cy="5" r="4" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1" strokeDasharray="2 2" />
+              </svg>
+              <span>
+                {maQualityCounts.partial} {maQualityCounts.partial === 1 ? "semana" : "semanas"} com janela parcial (início da série)
+              </span>
+            </span>
+          )}
+          {maQualityCounts.low > 0 && (
+            <span className="inline-flex items-center gap-1.5">
+              <span
+                className="inline-block h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: "hsl(var(--warning))" }}
+                aria-hidden
+              />
+              <span className="text-warning">
+                {maQualityCounts.low} {maQualityCounts.low === 1 ? "semana" : "semanas"} com baixo volume na janela
+              </span>
+            </span>
+          )}
+        </div>
+      )}
       {contactId && (
         <>
           <AnnotationList api={annotationsApi} onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }} />
