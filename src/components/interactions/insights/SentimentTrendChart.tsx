@@ -315,7 +315,23 @@ interface EvolutionStats {
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
 const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
 const SMOOTH_WINDOW_KEY = "singu:sentiment-trend:smooth-window";
+const ANN_FILTER_KEY = "singu:sentiment-trend:annotation-categories";
 type SmoothWindow = 2 | 3;
+
+function readAnnotationFilter(): Set<AnnotationCategory> {
+  if (typeof window === "undefined") return new Set(CATEGORY_KEYS);
+  const raw = window.localStorage.getItem(ANN_FILTER_KEY);
+  if (!raw) return new Set(CATEGORY_KEYS);
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    const valid = parsed.filter((k): k is AnnotationCategory =>
+      (CATEGORY_KEYS as string[]).includes(k)
+    );
+    return valid.length > 0 ? new Set(valid) : new Set(CATEGORY_KEYS);
+  } catch {
+    return new Set(CATEGORY_KEYS);
+  }
+}
 function readSmoothWindow(): SmoothWindow {
   if (typeof window === "undefined") return 3;
   const v = window.localStorage.getItem(SMOOTH_WINDOW_KEY);
