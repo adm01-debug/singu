@@ -307,6 +307,66 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
               </button>
             ))}
           </div>
+
+          {keywords.length > 0 && (
+            <div className="pt-2 space-y-1.5" role="group" aria-label="Filtro de keywords destacadas">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-muted-foreground">
+                  Keywords destacadas{" "}
+                  <span className="text-muted-foreground/70">
+                    ({selectedKeywords.size}/{keywords.length})
+                  </span>
+                </span>
+                <div className="flex items-center gap-1">
+                  {!allSelected && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-[11px] gap-1"
+                      onClick={restoreKeywords}
+                      title="Restaurar todas as keywords"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Restaurar
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[11px] gap-1"
+                    onClick={clearKeywords}
+                    disabled={allCleared}
+                    title="Remover todas as keywords selecionadas"
+                  >
+                    <Eraser className="h-3 w-3" /> Limpar filtros
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {keywords.map((kw) => {
+                  const key = normalizeKey(kw);
+                  const active = selectedKeywords.has(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleKeyword(kw)}
+                      aria-pressed={active}
+                      className={cn(
+                        "h-6 px-2 rounded-full text-[11px] font-medium border transition-colors",
+                        active
+                          ? "bg-primary/10 border-primary/40 text-foreground"
+                          : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30 line-through opacity-70",
+                      )}
+                    >
+                      {kw}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </SheetHeader>
 
         <div className="mt-6 space-y-3">
