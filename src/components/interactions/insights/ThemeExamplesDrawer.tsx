@@ -449,6 +449,36 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
             ))}
           </div>
 
+          <div
+            className="flex items-center gap-1.5 pt-1"
+            role="group"
+            aria-label="Modo de correspondência das keywords"
+            title="Como as keywords são comparadas no destaque (sempre case e acento-insensível)"
+          >
+            <span className="text-[10px] text-muted-foreground mr-1">Match:</span>
+            {(["exact", "partial"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setMatchMode(mode)}
+                aria-pressed={matchMode === mode}
+                title={
+                  mode === "exact"
+                    ? "Apenas palavras inteiras (ex.: “preço” não casa com “preçoso”)"
+                    : "Substring livre (ex.: “preço” casa dentro de “precificação”)"
+                }
+                className={cn(
+                  "h-6 px-2 rounded text-[11px] font-medium border transition-colors",
+                  matchMode === mode
+                    ? "bg-primary/10 border-primary/40 text-foreground"
+                    : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
+                )}
+              >
+                {mode === "exact" ? "Exato" : "Parcial"}
+              </button>
+            ))}
+          </div>
+
           {keywords.length > 0 && (
             <div className="pt-2 space-y-1.5" role="group" aria-label="Filtro de keywords destacadas">
               <div className="flex items-center justify-between gap-2">
