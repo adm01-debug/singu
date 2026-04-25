@@ -22,7 +22,8 @@ import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider }
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentTrendPoint, SentimentTrendSummary } from "@/hooks/useInteractionsInsights";
 import { useSentimentAnnotations, type SentimentAnnotation } from "@/hooks/useSentimentAnnotations";
-import { ANNOTATION_CATEGORIES } from "./annotationCategories";
+import { ANNOTATION_CATEGORIES, CATEGORY_KEYS } from "./annotationCategories";
+import type { AnnotationCategory } from "@/hooks/useSentimentAnnotations";
 import { AnnotationDialog } from "./AnnotationDialog";
 import { AnnotationList } from "./AnnotationList";
 import { cn } from "@/lib/utils";
