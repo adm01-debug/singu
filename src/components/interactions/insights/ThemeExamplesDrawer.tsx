@@ -349,7 +349,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       if (isFallback || effectiveKeywords.length === 0) {
         return { ex, originalIndex: i, originalKey, total: 0, distinct: 0 };
       }
-      const counts = countTermMatches(ex.text, effectiveKeywords);
+      const counts = countTermMatches(ex.text, effectiveKeywords, matchMode);
       let total = 0;
       let distinct = 0;
       counts.forEach((n) => {
