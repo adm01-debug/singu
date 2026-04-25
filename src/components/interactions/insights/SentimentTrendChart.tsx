@@ -14,7 +14,9 @@ import {
   ReferenceDot,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity, Filter, EyeOff } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -22,7 +24,8 @@ import { Tooltip as UITooltip, TooltipContent, TooltipTrigger, TooltipProvider }
 import { CHART_COLORS } from "@/data/nlpAnalyticsConstants";
 import type { SentimentTrendPoint, SentimentTrendSummary } from "@/hooks/useInteractionsInsights";
 import { useSentimentAnnotations, type SentimentAnnotation } from "@/hooks/useSentimentAnnotations";
-import { ANNOTATION_CATEGORIES } from "./annotationCategories";
+import { ANNOTATION_CATEGORIES, CATEGORY_KEYS } from "./annotationCategories";
+import type { AnnotationCategory } from "@/hooks/useSentimentAnnotations";
 import { AnnotationDialog } from "./AnnotationDialog";
 import { AnnotationList } from "./AnnotationList";
 import { cn } from "@/lib/utils";
@@ -314,7 +317,23 @@ interface EvolutionStats {
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
 const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
 const SMOOTH_WINDOW_KEY = "singu:sentiment-trend:smooth-window";
+const ANN_FILTER_KEY = "singu:sentiment-trend:annotation-categories";
 type SmoothWindow = 2 | 3;
+
+function readAnnotationFilter(): Set<AnnotationCategory> {
+  if (typeof window === "undefined") return new Set(CATEGORY_KEYS);
+  const raw = window.localStorage.getItem(ANN_FILTER_KEY);
+  if (!raw) return new Set(CATEGORY_KEYS);
+  try {
+    const parsed = JSON.parse(raw) as string[];
+    const valid = parsed.filter((k): k is AnnotationCategory =>
+      (CATEGORY_KEYS as string[]).includes(k)
+    );
+    return valid.length > 0 ? new Set(valid) : new Set(CATEGORY_KEYS);
+  } catch {
+    return new Set(CATEGORY_KEYS);
+  }
+}
 function readSmoothWindow(): SmoothWindow {
   if (typeof window === "undefined") return 3;
   const v = window.localStorage.getItem(SMOOTH_WINDOW_KEY);
@@ -355,7 +374,56 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   };
 
   const annotationsApi = useSentimentAnnotations(contactId);
-  const annotationsByWeek = annotationsApi.byWeek;
+  const annotationsByWeekRaw = annotationsApi.byWeek;
+
+  const [annCategoryFilter, setAnnCategoryFilter] = useState<Set<AnnotationCategory>>(() =>
+    readAnnotationFilter()
+  );
+  const persistAnnFilter = (next: Set<AnnotationCategory>) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ANN_FILTER_KEY, JSON.stringify(Array.from(next)));
+    }
+  };
+  const toggleAnnCategory = (cat: AnnotationCategory) => {
+    setAnnCategoryFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat);
+      else next.add(cat);
+      persistAnnFilter(next);
+      return next;
+    });
+  };
+  const setAllAnnCategories = (enable: boolean) => {
+    const next: Set<AnnotationCategory> = enable ? new Set(CATEGORY_KEYS) : new Set();
+    setAnnCategoryFilter(next);
+    persistAnnFilter(next);
+  };
+
+  const annotationCategoryCounts = useMemo(() => {
+    const counts = {} as Record<AnnotationCategory, number>;
+    for (const k of CATEGORY_KEYS) counts[k] = 0;
+    for (const list of annotationsByWeekRaw.values()) {
+      for (const a of list) counts[a.category] = (counts[a.category] ?? 0) + 1;
+    }
+    return counts;
+  }, [annotationsByWeekRaw]);
+
+  const annotationsByWeek = useMemo(() => {
+    const filtered = new Map<string, SentimentAnnotation[]>();
+    for (const [week, list] of annotationsByWeekRaw.entries()) {
+      const kept = list.filter((a) => annCategoryFilter.has(a.category));
+      if (kept.length > 0) filtered.set(week, kept);
+    }
+    return filtered;
+  }, [annotationsByWeekRaw, annCategoryFilter]);
+
+  const totalAnnotations = annotationsApi.list.data?.length ?? 0;
+  const visibleAnnotations = useMemo(() => {
+    let n = 0;
+    for (const list of annotationsByWeek.values()) n += list.length;
+    return n;
+  }, [annotationsByWeek]);
+  const allCategoriesActive = annCategoryFilter.size === CATEGORY_KEYS.length;
 
   const sortedData = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
@@ -625,6 +693,96 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 <Pin className="h-3 w-3" /> Anotar
               </Button>
             )}
+            {contactId && totalAnnotations > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    title="Filtrar anotações por categoria"
+                    className={cn(!allCategoriesActive && "text-primary")}
+                  >
+                    <Filter className="h-3 w-3" />
+                    Filtrar
+                    {!allCategoriesActive && (
+                      <span className="ml-1 inline-flex items-center justify-center rounded-sm bg-primary/15 px-1 text-[9px] font-semibold tabular-nums text-primary">
+                        {annCategoryFilter.size}/{CATEGORY_KEYS.length}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64 p-2">
+                  <div className="flex items-center justify-between px-1 pb-1.5 border-b border-border">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Categorias visíveis
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setAllAnnCategories(true)}
+                        disabled={allCategoriesActive}
+                        className="text-[10px] text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
+                      >
+                        Todas
+                      </button>
+                      <span className="text-[10px] text-muted-foreground">·</span>
+                      <button
+                        type="button"
+                        onClick={() => setAllAnnCategories(false)}
+                        disabled={annCategoryFilter.size === 0}
+                        className="text-[10px] text-muted-foreground hover:underline disabled:opacity-50"
+                      >
+                        Nenhuma
+                      </button>
+                    </div>
+                  </div>
+                  <ul className="py-1 space-y-0.5">
+                    {CATEGORY_KEYS.map((k) => {
+                      const meta = ANNOTATION_CATEGORIES[k];
+                      const Icon = meta.icon;
+                      const checked = annCategoryFilter.has(k);
+                      const count = annotationCategoryCounts[k] ?? 0;
+                      return (
+                        <li key={k}>
+                          <label
+                            className={cn(
+                              "flex items-center gap-2 rounded-sm px-1.5 py-1 text-xs cursor-pointer hover:bg-muted/60",
+                              count === 0 && "opacity-60"
+                            )}
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={() => toggleAnnCategory(k)}
+                              aria-label={`Mostrar anotações de ${meta.label}`}
+                            />
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm"
+                              style={{ backgroundColor: meta.color }}
+                              aria-hidden
+                            >
+                              <Icon
+                                className="h-2.5 w-2.5"
+                                style={{ color: "hsl(var(--background))" }}
+                                strokeWidth={2.5}
+                              />
+                            </span>
+                            <span className="flex-1 text-foreground">{meta.label}</span>
+                            <span className="tabular-nums text-[10px] text-muted-foreground">
+                              {count}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="border-t border-border pt-1.5 px-1 text-[10px] text-muted-foreground">
+                    Exibindo <span className="font-medium tabular-nums text-foreground">{visibleAnnotations}</span> de{" "}
+                    <span className="tabular-nums">{totalAnnotations}</span> anotação(ões).
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
             <div className="flex items-center gap-2 pl-1">
               <Switch
                 id="toggle-pct-line"
@@ -844,7 +1002,17 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       )}
       {contactId && (
         <>
-          <AnnotationList api={annotationsApi} onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }} />
+          <AnnotationList
+            api={annotationsApi}
+            onEdit={(a) => { setEditingAnn(a); setAnnDialogOpen(true); }}
+            categoryFilter={annCategoryFilter}
+          />
+          {!allCategoriesActive && totalAnnotations > 0 && (
+            <p className="text-[10px] text-muted-foreground italic flex items-center gap-1 px-1">
+              <EyeOff className="h-3 w-3" />
+              Filtro ativo: ocultando {totalAnnotations - visibleAnnotations} anotação(ões) de categorias desmarcadas.
+            </p>
+          )}
           <AnnotationDialog
             open={annDialogOpen}
             onOpenChange={setAnnDialogOpen}
