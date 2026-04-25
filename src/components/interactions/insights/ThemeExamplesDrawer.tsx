@@ -2,7 +2,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Info, Loader2, Quote } from "lucide-react";
+import { ExternalLink, Info, Loader2, Quote, RotateCcw, Eraser } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
@@ -197,18 +197,48 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     return [theme.label];
   }, [theme, topics]);
 
+  const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
+
+  // Reset seleção sempre que o conjunto de keywords mudar (novo tema/cat\u00e1logo).
+  useEffect(() => {
+    setSelectedKeywords(new Set(keywords.map((k) => normalizeKey(k))));
+  }, [keywords]);
+
+  const effectiveKeywords = useMemo(
+    () => keywords.filter((k) => selectedKeywords.has(normalizeKey(k))),
+    [keywords, selectedKeywords],
+  );
+
+  const allCleared = selectedKeywords.size === 0;
+  const allSelected = selectedKeywords.size === keywords.length && keywords.length > 0;
+
+  const toggleKeyword = (kw: string) => {
+    const key = normalizeKey(kw);
+    setSelectedKeywords((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const clearKeywords = () => setSelectedKeywords(new Set());
+  const restoreKeywords = () =>
+    setSelectedKeywords(new Set(keywords.map((k) => normalizeKey(k))));
+
   const excerpts = useMemo(() => {
     if (!Array.isArray(interactions) || interactions.length === 0) return [];
+    if (effectiveKeywords.length === 0) return [];
     const sources = interactions.map((i) => ({
       id: i.id,
       text: (i.transcription && i.transcription.length > 0 ? i.transcription : i.content) ?? "",
     }));
-    return extractExcerpts(sources, keywords, {
+    return extractExcerpts(sources, effectiveKeywords, {
       totalCap: 5,
       maxPerSource: 2,
       window: getExcerptWindow(preset),
     });
-  }, [interactions, keywords, preset]);
+  }, [interactions, effectiveKeywords, preset]);
 
   const fallbackPassages = useMemo(() => {
     if (excerpts.length > 0) return [];
@@ -277,6 +307,66 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
               </button>
             ))}
           </div>
+
+          {keywords.length > 0 && (
+            <div className="pt-2 space-y-1.5" role="group" aria-label="Filtro de keywords destacadas">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-muted-foreground">
+                  Keywords destacadas{" "}
+                  <span className="text-muted-foreground/70">
+                    ({selectedKeywords.size}/{keywords.length})
+                  </span>
+                </span>
+                <div className="flex items-center gap-1">
+                  {!allSelected && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-[11px] gap-1"
+                      onClick={restoreKeywords}
+                      title="Restaurar todas as keywords"
+                    >
+                      <RotateCcw className="h-3 w-3" /> Restaurar
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-[11px] gap-1"
+                    onClick={clearKeywords}
+                    disabled={allCleared}
+                    title="Remover todas as keywords selecionadas"
+                  >
+                    <Eraser className="h-3 w-3" /> Limpar filtros
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {keywords.map((kw) => {
+                  const key = normalizeKey(kw);
+                  const active = selectedKeywords.has(key);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleKeyword(kw)}
+                      aria-pressed={active}
+                      className={cn(
+                        "h-6 px-2 rounded-full text-[11px] font-medium border transition-colors",
+                        active
+                          ? "bg-primary/10 border-primary/40 text-foreground"
+                          : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30 line-through opacity-70",
+                      )}
+                    >
+                      {kw}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </SheetHeader>
 
         <div className="mt-6 space-y-3">
@@ -308,7 +398,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   key={`${ex.interactionId}-${ex.position}-${i}`}
                   excerpt={ex}
                   interaction={interactionMap.get(ex.interactionId)}
-                  terms={isFallback ? [] : keywords}
+                  terms={isFallback ? [] : effectiveKeywords}
                   onClose={onClose}
                 />
               ))}
