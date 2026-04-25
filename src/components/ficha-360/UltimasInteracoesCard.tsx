@@ -166,11 +166,23 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
 
               {visible.map((it) => {
                 const Icon = channelIcon(it.channel);
+                const isHighlighted = highlightId === it.id;
                 return (
-                  <li key={it.id}>
+                  <li
+                    key={it.id}
+                    data-interaction-id={it.id}
+                    className={cn(
+                      'rounded-md transition-shadow',
+                      isHighlighted &&
+                        'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-md',
+                    )}
+                  >
                     <Link
                       to={`/interacoes?contact=${contactId}&open=${it.id}`}
-                      className="flex items-start gap-3 px-2 py-2 rounded-md hover:bg-muted/40 transition-colors"
+                      className={cn(
+                        'flex items-start gap-3 px-2 py-2 rounded-md transition-colors',
+                        isHighlighted ? 'bg-primary/10' : 'hover:bg-muted/40',
+                      )}
                     >
                       <div className="mt-0.5 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon className="h-3.5 w-3.5 text-primary" />
