@@ -47,6 +47,17 @@ export function InsightsPanel() {
   const period: Period = isPeriod(periodParam) ? periodParam : "30d";
   const sentimentParam = searchParams.get("sentimento");
   const selectedBucket: SentimentOverall | null = isSentimentBucket(sentimentParam) ? sentimentParam : null;
+  const objectionFilterParam = searchParams.get("objecoes");
+  const objectionFilter: ObjectionFilter = isObjectionFilter(objectionFilterParam)
+    ? objectionFilterParam
+    : "all";
+
+  const handleObjectionFilter = useCallback((next: ObjectionFilter) => {
+    const params = new URLSearchParams(searchParams);
+    if (next === "all") params.delete("objecoes");
+    else params.set("objecoes", next);
+    setSearchParams(params, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const handlePeriod = useCallback((p: string) => {
     const next = new URLSearchParams(searchParams);
