@@ -316,7 +316,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
 
   const dataWithMA = useMemo(() => {
     return sortedData.map((p, i) => {
-      const start = Math.max(0, i - 2);
+      const start = Math.max(0, i - (smoothWindow - 1));
       const window = sortedData.slice(start, i + 1);
       const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
       const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
@@ -324,7 +324,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const annotations = annotationsByWeek.get(p.week) ?? [];
       return { ...p, positivePctMA, annotations };
     });
-  }, [sortedData, annotationsByWeek]);
+  }, [sortedData, annotationsByWeek, smoothWindow]);
 
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
