@@ -18,11 +18,17 @@ import {
   RotateCcw,
   Calendar as CalendarIcon,
   Search,
+  MessageCircle,
+  Phone,
+  Mic,
+  FileText,
+  HelpCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
+import { cn } from "@/lib/utils";
 
 interface Props {
   objection: ObjectionAggregate | null;
@@ -41,6 +47,32 @@ interface Example {
 
 const PAGE_SIZE = 10;
 
+/** Buckets de tipo expostos como filtros no modal. */
+type TypeBucket = "whatsapp" | "call" | "audio" | "transcript" | "other";
+
+const TYPE_BUCKETS: { key: TypeBucket; label: string; Icon: typeof MessageCircle }[] = [
+  { key: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
+  { key: "call", label: "Ligação", Icon: Phone },
+  { key: "audio", label: "Áudio", Icon: Mic },
+  { key: "transcript", label: "Transcrição", Icon: FileText },
+  { key: "other", label: "Outros", Icon: HelpCircle },
+];
+
+/**
+ * Normaliza o `type` cru da interação para um bucket exibido nos filtros.
+ * Cobre variações comuns (ex.: `voice_call`, `audio_message`, `meeting_transcript`).
+ */
+function bucketOf(rawType: string | null | undefined): TypeBucket {
+  const t = (rawType ?? "").toLowerCase().trim();
+  if (!t) return "other";
+  if (t.includes("whatsapp") || t === "wa") return "whatsapp";
+  if (t.includes("transcri")) return "transcript";
+  if (t.includes("audio") || t.includes("áudio") || t.includes("voice")) return "audio";
+  if (t.includes("call") || t.includes("ligaca") || t.includes("ligação") || t.includes("phone"))
+    return "call";
+  return "other";
+}
+
 function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const ids = useMemo(
     () => (objection && Array.isArray(objection.examples) ? objection.examples : []),
@@ -49,15 +81,17 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const idsKey = ids.join(",");
   const objectionKey = objection?.objection ?? "";
 
-  // Filtros de busca por data e paginação
+  // Filtros de busca por data, tipo e paginação
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [page, setPage] = useState(1);
 
   // Reseta filtros e página ao abrir nova objeção
   useEffect(() => {
     setDateFrom("");
     setDateTo("");
+    setSelectedTypes(new Set());
     setPage(1);
   }, [objectionKey]);
 
@@ -76,8 +110,8 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     },
   });
 
-  // Filtro por intervalo de datas (inclusivo)
-  const filtered = useMemo(() => {
+  // Filtro por intervalo de datas (inclusivo) — base para os contadores de tipo.
+  const dateFiltered = useMemo(() => {
     if (!dateFrom && !dateTo) return examples;
     const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : -Infinity;
     const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : Infinity;
@@ -88,10 +122,29 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     });
   }, [examples, dateFrom, dateTo]);
 
+  // Contagens por bucket recalculadas dinamicamente sobre o intervalo de datas.
+  const typeCounts = useMemo(() => {
+    const counts: Record<TypeBucket, number> = {
+      whatsapp: 0,
+      call: 0,
+      audio: 0,
+      transcript: 0,
+      other: 0,
+    };
+    for (const ex of dateFiltered) counts[bucketOf(ex.type)] += 1;
+    return counts;
+  }, [dateFiltered]);
+
+  // Aplica filtro de tipo (multi-seleção) sobre o conjunto já filtrado por data.
+  const filtered = useMemo(() => {
+    if (selectedTypes.size === 0) return dateFiltered;
+    return dateFiltered.filter((ex) => selectedTypes.has(bucketOf(ex.type)));
+  }, [dateFiltered, selectedTypes]);
+
   // Reset de página quando filtros mudam ou resultado encolhe
   useEffect(() => {
     setPage(1);
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, selectedTypes]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -100,10 +153,20 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, safePage]);
 
-  const hasFilters = !!dateFrom || !!dateTo;
+  const hasFilters = !!dateFrom || !!dateTo || selectedTypes.size > 0;
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
+    setSelectedTypes(new Set());
+  };
+
+  const toggleType = (key: TypeBucket) => {
+    setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   };
 
   return (
@@ -183,6 +246,43 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
             )}
           </div>
         </div>
+
+        {/* Filtros por tipo de interação — contagens recalculadas no intervalo de datas */}
+        {!isLoading && dateFiltered.length > 0 && (
+          <div
+            className="flex flex-wrap items-center gap-1.5 pt-2"
+            role="group"
+            aria-label="Filtrar por tipo de interação"
+          >
+            <span className="text-[11px] text-muted-foreground mr-1">Tipo:</span>
+            {TYPE_BUCKETS.map(({ key, label, Icon }) => {
+              const count = typeCounts[key];
+              const active = selectedTypes.has(key);
+              const disabled = count === 0 && !active;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleType(key)}
+                  disabled={disabled}
+                  aria-pressed={active}
+                  className={cn(
+                    "inline-flex items-center gap-1 h-7 px-2 rounded-full border text-[11px] font-medium transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border/60 bg-background text-foreground/80 hover:bg-muted",
+                    disabled && "opacity-50 cursor-not-allowed hover:bg-background",
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                  <span className="tabular-nums opacity-80">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Lista paginada */}
         <div className="flex-1 overflow-y-auto -mx-6 px-6 pt-3 space-y-3 min-h-0">
