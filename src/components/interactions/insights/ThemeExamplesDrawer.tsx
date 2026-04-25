@@ -577,6 +577,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   interaction={interactionMap.get(r.ex.interactionId)}
                   terms={isFallback ? [] : effectiveKeywords}
                   matchCount={perExcerptCounts.get(r.originalKey)}
+                  matchMode={matchMode}
                   onClose={onClose}
                 />
               ))}
