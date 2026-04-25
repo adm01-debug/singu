@@ -253,9 +253,20 @@ interface EvolutionStats {
 }
 
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
+const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
 
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
-  const [smoothEnabled, setSmoothEnabled] = useState(true);
+  const [smoothEnabled, setSmoothEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const v = window.localStorage.getItem(SMOOTH_ENABLED_KEY);
+    return v === null ? true : v === "1";
+  });
+  const toggleSmooth = (next: boolean) => {
+    setSmoothEnabled(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SMOOTH_ENABLED_KEY, next ? "1" : "0");
+    }
+  };
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
   const [editingAnn, setEditingAnn] = useState<SentimentAnnotation | null>(null);
   const [showPositivePctLine, setShowPositivePctLine] = useState<boolean>(() => {
