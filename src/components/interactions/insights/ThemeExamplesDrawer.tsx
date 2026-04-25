@@ -21,6 +21,26 @@ import {
 } from "@/lib/insights/excerptWindow";
 import { cn } from "@/lib/utils";
 import type { ThemeAggregate } from "@/hooks/useInteractionsInsights";
+import { useUiPreferencesSync } from "@/hooks/useUiPreferencesSync";
+
+const THEME_DRAWER_PREFS_SCOPE = "insights:theme-drawer";
+interface ThemeDrawerPrefs extends Record<string, unknown> {
+  excerptPreset: ExcerptWindowPreset;
+  matchMode: MatchMode;
+}
+const THEME_DRAWER_DEFAULTS: ThemeDrawerPrefs = {
+  excerptPreset: DEFAULT_EXCERPT_PRESET,
+  matchMode: "exact",
+};
+function sanitizeThemeDrawerPrefs(raw: unknown): ThemeDrawerPrefs {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return {
+    excerptPreset: isExcerptWindowPreset(r.excerptPreset)
+      ? r.excerptPreset
+      : DEFAULT_EXCERPT_PRESET,
+    matchMode: isMatchMode(r.matchMode) ? r.matchMode : "exact",
+  };
+}
 
 interface Props {
   theme: ThemeAggregate | null;
