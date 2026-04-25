@@ -157,7 +157,7 @@ const ExcerptItem = memo(function ExcerptItem({
           <Badge
             variant="outline"
             className="h-5 shrink-0 text-[10px] bg-warning/10 border-warning/40"
-            title={`${matchCount} ocorr\u00eancia${matchCount === 1 ? "" : "s"} de keywords neste trecho`}
+            title={`${matchCount} ocorrência${matchCount === 1 ? "" : "s"} de keywords neste trecho`}
           >
             {matchCount}
           </Badge>
