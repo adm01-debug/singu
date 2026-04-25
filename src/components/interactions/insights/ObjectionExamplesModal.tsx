@@ -80,15 +80,17 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const idsKey = ids.join(",");
   const objectionKey = objection?.objection ?? "";
 
-  // Filtros de busca por data e paginação
+  // Filtros de busca por data, tipo e paginação
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [page, setPage] = useState(1);
 
   // Reseta filtros e página ao abrir nova objeção
   useEffect(() => {
     setDateFrom("");
     setDateTo("");
+    setSelectedTypes(new Set());
     setPage(1);
   }, [objectionKey]);
 
@@ -107,8 +109,8 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     },
   });
 
-  // Filtro por intervalo de datas (inclusivo)
-  const filtered = useMemo(() => {
+  // Filtro por intervalo de datas (inclusivo) — base para os contadores de tipo.
+  const dateFiltered = useMemo(() => {
     if (!dateFrom && !dateTo) return examples;
     const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : -Infinity;
     const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : Infinity;
@@ -119,10 +121,29 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     });
   }, [examples, dateFrom, dateTo]);
 
+  // Contagens por bucket recalculadas dinamicamente sobre o intervalo de datas.
+  const typeCounts = useMemo(() => {
+    const counts: Record<TypeBucket, number> = {
+      whatsapp: 0,
+      call: 0,
+      audio: 0,
+      transcript: 0,
+      other: 0,
+    };
+    for (const ex of dateFiltered) counts[bucketOf(ex.type)] += 1;
+    return counts;
+  }, [dateFiltered]);
+
+  // Aplica filtro de tipo (multi-seleção) sobre o conjunto já filtrado por data.
+  const filtered = useMemo(() => {
+    if (selectedTypes.size === 0) return dateFiltered;
+    return dateFiltered.filter((ex) => selectedTypes.has(bucketOf(ex.type)));
+  }, [dateFiltered, selectedTypes]);
+
   // Reset de página quando filtros mudam ou resultado encolhe
   useEffect(() => {
     setPage(1);
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, selectedTypes]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -131,10 +152,20 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, safePage]);
 
-  const hasFilters = !!dateFrom || !!dateTo;
+  const hasFilters = !!dateFrom || !!dateTo || selectedTypes.size > 0;
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
+    setSelectedTypes(new Set());
+  };
+
+  const toggleType = (key: TypeBucket) => {
+    setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   };
 
   return (
