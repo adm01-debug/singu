@@ -1,5 +1,5 @@
 import { memo, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Building2, Users, MoreVertical, MessageSquare } from 'lucide-react';
 import { CompanyInteractionsModal } from './CompanyInteractionsModal';
