@@ -22,6 +22,8 @@ const Input = z.object({
   objection: z.string().min(3).max(500),
   category: z.string().max(80).optional(),
   interactionIds: z.array(z.string().uuid()).min(1).max(8),
+  /** IDs marcados como "Útil" pelo usuário; recebem prioridade no contexto. */
+  usefulInteractionIds: z.array(z.string().uuid()).max(8).optional(),
 });
 
 const MAX_CONTENT_PER_INTERACTION = 1200;
@@ -50,7 +52,8 @@ Deno.serve(async (req) => {
         400,
       );
     }
-    const { objection, category, interactionIds } = parsed.data;
+    const { objection, category, interactionIds, usefulInteractionIds } = parsed.data;
+    const usefulSet = new Set(usefulInteractionIds ?? []);
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -76,13 +79,22 @@ Deno.serve(async (req) => {
       return jsonError("Falha ao carregar conversas relacionadas", 500);
     }
 
+    // Ordena: úteis primeiro (sinal explícito do vendedor), depois o restante.
+    const orderedRows = [...(rows ?? [])].sort((a, b) => {
+      const au = usefulSet.has(a.id) ? 1 : 0;
+      const bu = usefulSet.has(b.id) ? 1 : 0;
+      return bu - au;
+    });
+
     const snippets: string[] = [];
     let total = 0;
-    for (const r of rows ?? []) {
+    for (const r of orderedRows) {
       const content = (r.content ?? "").toString().trim();
       if (!content) continue;
       const truncated = content.slice(0, MAX_CONTENT_PER_INTERACTION);
-      const block = `• [${r.type ?? "interação"} · ${r.sentiment ?? "neutro"}] ${truncated}`;
+      const useful = usefulSet.has(r.id);
+      const flag = useful ? " · ÚTIL" : "";
+      const block = `• [${r.type ?? "interação"} · ${r.sentiment ?? "neutro"}${flag}] ${truncated}`;
       if (total + block.length > MAX_TOTAL_CONTEXT) break;
       snippets.push(block);
       total += block.length;
