@@ -455,6 +455,26 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
                     <Wand2 className="h-3 w-3" />
                     Criar resposta sugerida
                   </button>
+                  <button
+                    type="button"
+                    onClick={handleQuickMarkApplied}
+                    disabled={markApplied.isPending}
+                    aria-label="Marcar esta resposta como aplicada em uma negociação"
+                    title="Registrar que você usou esta resposta sugerida"
+                    className={cn(
+                      "inline-flex items-center gap-1 text-[11px] font-medium rounded-sm",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "disabled:opacity-60 disabled:cursor-progress",
+                      "text-success hover:underline",
+                    )}
+                  >
+                    {markApplied.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-3 w-3" />
+                    )}
+                    {markApplied.isPending ? "Marcando…" : "Marcar como aplicada"}
+                  </button>
                   {hasExamples && (
                     <button
                       type="button"
