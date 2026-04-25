@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles } from "lucide-react";
-import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hooks/useInteractionsInsights";
+import { Brain, MessageCircle, TrendingUp, AlertTriangle, Sparkles, Flame, ListFilter } from "lucide-react";
+import { useInteractionsInsights, type Period, type ThemeAggregate, type ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
