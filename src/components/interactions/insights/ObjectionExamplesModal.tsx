@@ -72,11 +72,12 @@ interface ContactSummary {
 const PAGE_SIZE = 20;
 
 /** Buckets de tipo expostos como filtros no modal. */
-type TypeBucket = "whatsapp" | "call" | "audio" | "transcript" | "other";
+type TypeBucket = "whatsapp" | "call" | "email" | "audio" | "transcript" | "other";
 
 const TYPE_BUCKETS: { key: TypeBucket; label: string; Icon: typeof MessageCircle }[] = [
   { key: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
   { key: "call", label: "Ligação", Icon: Phone },
+  { key: "email", label: "E-mail", Icon: Mail },
   { key: "audio", label: "Áudio", Icon: Mic },
   { key: "transcript", label: "Transcrição", Icon: FileText },
   { key: "other", label: "Outros", Icon: HelpCircle },
@@ -92,12 +93,33 @@ function bucketOf(rawType: string | null | undefined): TypeBucket {
   if (t.includes("whatsapp") || t === "wa") return "whatsapp";
   if (t.includes("transcri")) return "transcript";
   if (t.includes("audio") || t.includes("áudio") || t.includes("voice")) return "audio";
+  if (t.includes("email") || t.includes("e-mail") || t.includes("mail")) return "email";
   if (t.includes("call") || t.includes("ligaca") || t.includes("ligação") || t.includes("phone"))
     return "call";
   return "other";
 }
 
-/** Mapeia rótulos de sentimento para ícone + cor semântica. */
+/** Buckets de sentimento expostos como filtros no modal. */
+type SentimentBucket = "positive" | "neutral" | "negative" | "unknown";
+
+const SENTIMENT_BUCKETS: { key: SentimentBucket; label: string; Icon: typeof Smile; cls: string }[] = [
+  { key: "positive", label: "Positivo", Icon: Smile, cls: "text-success" },
+  { key: "neutral", label: "Neutro", Icon: Meh, cls: "text-muted-foreground" },
+  { key: "negative", label: "Negativo", Icon: Frown, cls: "text-destructive" },
+  { key: "unknown", label: "Sem análise", Icon: Sparkles, cls: "text-muted-foreground" },
+];
+
+/** Normaliza o `sentiment` cru para um dos buckets do filtro. */
+function sentimentBucketOf(raw: string | null | undefined): SentimentBucket {
+  const v = (raw ?? "").toLowerCase().trim();
+  if (!v) return "unknown";
+  if (v.includes("posit") || v.includes("favor") || v === "good" || v === "bom") return "positive";
+  if (v.includes("neg") || v.includes("ruim") || v.includes("bad") || v === "mau") return "negative";
+  if (v.includes("neutr") || v === "ok") return "neutral";
+  return "unknown";
+}
+
+/** Mapeia rótulos de sentimento para ícone + cor semântica (mini-resumo do contato). */
 function sentimentStyle(s: string): { Icon: typeof Smile; cls: string; label: string } {
   const v = s.toLowerCase();
   if (v.includes("posit") || v.includes("favor") || v === "good")
