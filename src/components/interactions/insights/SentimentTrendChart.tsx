@@ -254,6 +254,13 @@ interface EvolutionStats {
 
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
 const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
+const SMOOTH_WINDOW_KEY = "singu:sentiment-trend:smooth-window";
+type SmoothWindow = 2 | 3;
+function readSmoothWindow(): SmoothWindow {
+  if (typeof window === "undefined") return 3;
+  const v = window.localStorage.getItem(SMOOTH_WINDOW_KEY);
+  return v === "2" ? 2 : 3;
+}
 
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const [smoothEnabled, setSmoothEnabled] = useState<boolean>(() => {
