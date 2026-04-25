@@ -28,12 +28,15 @@ import {
   Smile,
   Frown,
   Meh,
+  ThumbsUp,
+  Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { cn } from "@/lib/utils";
+import { useObjectionExampleFeedback } from "@/hooks/useObjectionExampleFeedback";
 
 interface Props {
   objection: ObjectionAggregate | null;
@@ -109,6 +112,12 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   );
   const idsKey = ids.join(",");
   const objectionKey = objection?.objection ?? "";
+
+  // Feedback "Útil" — alimenta o ranqueamento das próximas respostas sugeridas.
+  const feedback = useObjectionExampleFeedback({
+    objection: objection?.objection ?? null,
+    category: objection?.category ?? null,
+  });
 
   // Filtros de busca por data, tipo e paginação
   const [dateFrom, setDateFrom] = useState<string>("");
@@ -270,6 +279,15 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                   <span className="text-xs">
                     {objection.count} {objection.count === 1 ? "menção" : "menções"} ·{" "}
                     {objection.handled}/{objection.count} tratadas
+                    {feedback.usefulCount > 0 && (
+                      <>
+                        {" · "}
+                        <span className="inline-flex items-center gap-1 text-success">
+                          <ThumbsUp className="h-3 w-3 fill-current" />
+                          {feedback.usefulCount} {feedback.usefulCount === 1 ? "útil" : "úteis"}
+                        </span>
+                      </>
+                    )}
                   </span>
                 </>
               )}
@@ -486,13 +504,54 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                         </>
                       )}
                     </span>
-                    {ex.contact_id && (
-                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                        <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
-                          Ficha 360 <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {(() => {
+                        const isUseful = feedback.usefulByInteraction.get(ex.id) === true;
+                        const pending =
+                          feedback.toggle.isPending &&
+                          feedback.toggle.variables?.interactionId === ex.id;
+                        return (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={pending}
+                            aria-pressed={isUseful}
+                            onClick={() =>
+                              feedback.toggle.mutate({
+                                interactionId: ex.id,
+                                isUseful: !isUseful,
+                              })
+                            }
+                            title={
+                              isUseful
+                                ? "Desmarcar como útil"
+                                : "Marcar como útil — vamos priorizar exemplos parecidos"
+                            }
+                            className={cn(
+                              "h-7 text-xs gap-1",
+                              isUseful && "text-success hover:text-success",
+                            )}
+                          >
+                            {pending ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <ThumbsUp
+                                className={cn("h-3 w-3", isUseful && "fill-current")}
+                              />
+                            )}
+                            {isUseful ? "Útil" : "Marcar útil"}
+                          </Button>
+                        );
+                      })()}
+                      {ex.contact_id && (
+                        <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                          <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
+                            Ficha 360 <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </footer>
                 </article>
               );

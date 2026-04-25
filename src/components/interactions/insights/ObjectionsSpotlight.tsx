@@ -12,6 +12,7 @@ import { SuggestedResponseModal } from "./SuggestedResponseModal";
 import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import { useObjectionContextSummary } from "@/hooks/useObjectionContextSummary";
+import { useObjectionExampleFeedback } from "@/hooks/useObjectionExampleFeedback";
 import { useAppliedResponses } from "@/hooks/useAppliedResponses";
 
 /**
@@ -136,12 +137,25 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const panelId = `objection-suggested-${o.objection.replace(/\s+/g, "-").slice(0, 40)}`;
   const summaryPanelId = `${panelId}-summary`;
 
+  // Carrega feedback "Útil" desta objeção para priorizar exemplos no resumo.
+  const exampleFeedback = useObjectionExampleFeedback({
+    objection: o.objection,
+    category: o.category,
+  });
+  const usefulIds = useMemo(
+    () => Array.from(exampleFeedback.usefulByInteraction.entries())
+      .filter(([, v]) => v)
+      .map(([k]) => k),
+    [exampleFeedback.usefulByInteraction],
+  );
+
   // Lazy: só dispara o resumo IA quando a aba "Resumo" estiver ativa
   // (e houver exemplos de interações para alimentar o contexto).
   const summaryQuery = useObjectionContextSummary({
     objection: o.objection,
     category: o.category,
     interactionIds: Array.isArray(o.examples) ? o.examples : [],
+    usefulInteractionIds: usefulIds,
     enabled: summaryActive && hasExamples,
   });
 
