@@ -152,11 +152,14 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     category: objection?.category ?? null,
   });
 
-  // Filtros de busca por data, tipo e sentimento
+  // Filtros de busca por data, tipo, sentimento e texto
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [selectedSentiments, setSelectedSentiments] = useState<Set<SentimentBucket>>(new Set());
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const debouncedSearch = useDebounce(searchQuery, 200);
+  const normalizedSearch = useMemo(() => normalizeText(debouncedSearch.trim()), [debouncedSearch]);
 
   // Reseta filtros ao abrir nova objeção
   useEffect(() => {
@@ -164,6 +167,7 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     setDateTo("");
     setSelectedTypes(new Set());
     setSelectedSentiments(new Set());
+    setSearchQuery("");
   }, [objectionKey]);
 
   const totalIds = ids.length;
