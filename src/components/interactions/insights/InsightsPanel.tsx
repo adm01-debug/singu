@@ -124,6 +124,24 @@ export function InsightsPanel() {
             </Card>
           </div>
 
+          {/* Evolução semanal de objeções */}
+          {objectionsTrend.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
+                  Evolução semanal de objeções
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Quando o risco de bloqueio aumentou ou diminuiu — críticas (não tratadas) vs. atenções (tratadas).
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ObjectionsTrendChart data={objectionsTrend} summary={objectionsTrendSummary} />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Themes & Objections */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <Card>
