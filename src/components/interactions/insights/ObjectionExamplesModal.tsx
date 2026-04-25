@@ -32,8 +32,11 @@ import {
   ThumbsUp,
   Loader2,
   ChevronDown,
+  Link2,
+  Check,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
@@ -279,6 +282,19 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
   const [selectedSentiments, setSelectedSentiments] = useState<Set<SentimentBucket>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyContactLink = async (contactId: string, interactionId: string) => {
+    try {
+      const url = `${window.location.origin}/contatos/${contactId}/ficha-360?focus=${interactionId}`;
+      await navigator.clipboard.writeText(url);
+      setCopiedId(interactionId);
+      toast.success("Link copiado para a área de transferência");
+      setTimeout(() => setCopiedId((prev) => (prev === interactionId ? null : prev)), 2000);
+    } catch {
+      toast.error("Não foi possível copiar o link");
+    }
+  };
   const debouncedSearch = useDebounce(searchQuery, 200);
   const normalizedSearch = useMemo(() => normalizeText(debouncedSearch.trim()), [debouncedSearch]);
 
@@ -866,6 +882,27 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                           >
                             Abrir na Ficha 360 <ExternalLink className="h-3 w-3" />
                           </Link>
+                        </Button>
+                      )}
+                      {ex.contact_id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs gap-1"
+                          title="Copiar link direto da Ficha 360 deste contato"
+                          onClick={() => handleCopyContactLink(ex.contact_id!, ex.id)}
+                        >
+                          {copiedId === ex.id ? (
+                            <>
+                              <Check className="h-3 w-3 text-success" />
+                              Copiado
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="h-3 w-3" />
+                              Copiar link
+                            </>
+                          )}
                         </Button>
                       )}
                     </div>
