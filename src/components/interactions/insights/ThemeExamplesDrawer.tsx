@@ -47,6 +47,36 @@ function normalizeText(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+/**
+ * Conta ocorrências whole-word de cada termo dentro de `text` (acento-insensível).
+ * Retorna um Map<keywordOriginal, count> preservando o termo informado pelo chamador.
+ */
+function countTermMatches(text: string, terms: string[]): Map<string, number> {
+  const result = new Map<string, number>();
+  if (!text) return result;
+  const norm = normalizeText(text);
+  for (const t of terms) {
+    const trimmed = typeof t === "string" ? t.trim() : "";
+    if (trimmed.length < 2) {
+      result.set(t, 0);
+      continue;
+    }
+    const re = new RegExp(
+      `(?:^|[^\\p{L}\\p{N}])(${escapeRegex(normalizeText(trimmed))})(?=$|[^\\p{L}\\p{N}])`,
+      "giu",
+    );
+    let count = 0;
+    let m: RegExpExecArray | null;
+    re.lastIndex = 0;
+    while ((m = re.exec(norm)) !== null) {
+      count += 1;
+      if (m.index === re.lastIndex) re.lastIndex += 1;
+    }
+    result.set(t, count);
+  }
+  return result;
+}
+
 interface Segment {
   text: string;
   isMatch: boolean;
@@ -107,11 +137,13 @@ const ExcerptItem = memo(function ExcerptItem({
   excerpt,
   interaction,
   terms,
+  matchCount,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
   terms: string[];
+  matchCount?: number;
   onClose: () => void;
 }) {
   return (
@@ -121,6 +153,15 @@ const ExcerptItem = memo(function ExcerptItem({
         <p className="text-sm text-foreground leading-relaxed">
           <MarkExcerpt text={excerpt.text} terms={terms} />
         </p>
+        {typeof matchCount === "number" && matchCount > 0 && (
+          <Badge
+            variant="outline"
+            className="h-5 shrink-0 text-[10px] bg-warning/10 border-warning/40"
+            title={`${matchCount} ocorrência${matchCount === 1 ? "" : "s"} de keywords neste trecho`}
+          >
+            {matchCount}
+          </Badge>
+        )}
       </div>
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
         <span className="text-[10px] text-muted-foreground truncate">
@@ -199,7 +240,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
 
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
 
-  // Reset seleção sempre que o conjunto de keywords mudar (novo tema/cat\u00e1logo).
+  // Reset seleção sempre que o conjunto de keywords mudar (novo tema/catálogo).
   useEffect(() => {
     setSelectedKeywords(new Set(keywords.map((k) => normalizeKey(k))));
   }, [keywords]);
@@ -267,6 +308,38 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     () => new Set(displayItems.map((e) => e.interactionId)).size,
     [displayItems],
   );
+
+  // Contagem de matches de keywords por excerto exibido (chave = mesma usada no map JSX).
+  const perExcerptCounts = useMemo(() => {
+    const out = new Map<string, number>();
+    if (isFallback || effectiveKeywords.length === 0) return out;
+    displayItems.forEach((ex, i) => {
+      const counts = countTermMatches(ex.text, effectiveKeywords);
+      let total = 0;
+      counts.forEach((n) => (total += n));
+      out.set(`${ex.interactionId}-${ex.position}-${i}`, total);
+    });
+    return out;
+  }, [displayItems, effectiveKeywords, isFallback]);
+
+  // Resumo agregado: quais keywords foram efetivamente encontradas e quantas vezes (somando excertos exibidos).
+  const keywordSummary = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const kw of effectiveKeywords) totals.set(kw, 0);
+    if (isFallback || effectiveKeywords.length === 0) {
+      return { totals, found: [] as Array<{ term: string; count: number }>, totalMatches: 0 };
+    }
+    for (const ex of displayItems) {
+      const counts = countTermMatches(ex.text, effectiveKeywords);
+      counts.forEach((n, term) => totals.set(term, (totals.get(term) ?? 0) + n));
+    }
+    const found = Array.from(totals.entries())
+      .filter(([, n]) => n > 0)
+      .map(([term, count]) => ({ term, count }))
+      .sort((a, b) => b.count - a.count);
+    const totalMatches = found.reduce((acc, f) => acc + f.count, 0);
+    return { totals, found, totalMatches };
+  }, [displayItems, effectiveKeywords, isFallback]);
 
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
@@ -393,15 +466,55 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   {sourcesCount === 1 ? "" : "s"}
                 </p>
               )}
-              {displayItems.map((ex, i) => (
-                <ExcerptItem
-                  key={`${ex.interactionId}-${ex.position}-${i}`}
-                  excerpt={ex}
-                  interaction={interactionMap.get(ex.interactionId)}
-                  terms={isFallback ? [] : effectiveKeywords}
-                  onClose={onClose}
-                />
-              ))}
+
+              {!isFallback && effectiveKeywords.length > 0 && (
+                <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-medium text-foreground">
+                      Resumo de keywords encontradas
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {keywordSummary.totalMatches} ocorrência
+                      {keywordSummary.totalMatches === 1 ? "" : "s"} ·{" "}
+                      {keywordSummary.found.length}/{effectiveKeywords.length} keyword
+                      {effectiveKeywords.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  {keywordSummary.found.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {keywordSummary.found.map(({ term, count }) => (
+                        <Badge
+                          key={term}
+                          variant="outline"
+                          className="text-[10px] gap-1 bg-warning/10 border-warning/40 text-foreground"
+                        >
+                          <span className="truncate max-w-[140px]">{term}</span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="tabular-nums">{count}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      Nenhuma ocorrência literal das keywords selecionadas nos excertos exibidos.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {displayItems.map((ex, i) => {
+                const key = `${ex.interactionId}-${ex.position}-${i}`;
+                return (
+                  <ExcerptItem
+                    key={key}
+                    excerpt={ex}
+                    interaction={interactionMap.get(ex.interactionId)}
+                    terms={isFallback ? [] : effectiveKeywords}
+                    matchCount={perExcerptCounts.get(key)}
+                    onClose={onClose}
+                  />
+                );
+              })}
             </>
           )}
 
