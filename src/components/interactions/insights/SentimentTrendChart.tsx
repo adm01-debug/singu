@@ -531,10 +531,24 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               }}
             />
             {showRefLines && summary?.bestWeek && (
-              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.bestWeek.week)} stroke="hsl(var(--success))" strokeDasharray="2 2" />
+              <ReferenceLine
+                yAxisId="pct"
+                x={normalizeWeek(summary.bestWeek.week)}
+                stroke="hsl(var(--success))"
+                strokeDasharray="2 2"
+                ifOverflow="extendDomain"
+                label={{ value: "Melhor", position: "top", fill: "hsl(var(--success))", fontSize: 10 }}
+              />
             )}
             {showRefLines && summary?.worstWeek && (
-              <ReferenceLine yAxisId="count" x={normalizeWeek(summary.worstWeek.week)} stroke="hsl(var(--destructive))" strokeDasharray="2 2" />
+              <ReferenceLine
+                yAxisId="pct"
+                x={normalizeWeek(summary.worstWeek.week)}
+                stroke="hsl(var(--destructive))"
+                strokeDasharray="2 2"
+                ifOverflow="extendDomain"
+                label={{ value: "Pior", position: "top", fill: "hsl(var(--destructive))", fontSize: 10 }}
+              />
             )}
             <Bar yAxisId="volume" dataKey="total" name="Volume" fill="hsl(var(--muted-foreground))" fillOpacity={0.18} radius={[2, 2, 0, 0]} barSize={18} />
             {smoothEnabled && showPositivePctLine && (
