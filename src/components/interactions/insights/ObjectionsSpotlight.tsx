@@ -1,7 +1,9 @@
 import { memo, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter, Wand2, ShieldCheck, RotateCcw, Loader2 } from "lucide-react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter, Wand2, ShieldCheck, RotateCcw, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
@@ -9,6 +11,7 @@ import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
 import { SuggestedResponseModal } from "./SuggestedResponseModal";
 import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+import { useObjectionContextSummary } from "@/hooks/useObjectionContextSummary";
 
 /**
  * Gera uma chave estável e curta para persistir preferências por objeção
