@@ -71,6 +71,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
   const hasExamples = examplesCount > 0;
