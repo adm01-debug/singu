@@ -47,6 +47,36 @@ function normalizeText(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+/**
+ * Conta ocorr\u00eancias whole-word de cada termo dentro de `text` (acento-insens\u00edvel).
+ * Retorna um Map<keywordOriginal, count> preservando o termo informado pelo chamador.
+ */
+function countTermMatches(text: string, terms: string[]): Map<string, number> {
+  const result = new Map<string, number>();
+  if (!text) return result;
+  const norm = normalizeText(text);
+  for (const t of terms) {
+    const trimmed = typeof t === "string" ? t.trim() : "";
+    if (trimmed.length < 2) {
+      result.set(t, 0);
+      continue;
+    }
+    const re = new RegExp(
+      `(?:^|[^\\p{L}\\p{N}])(${escapeRegex(normalizeText(trimmed))})(?=$|[^\\p{L}\\p{N}])`,
+      "giu",
+    );
+    let count = 0;
+    let m: RegExpExecArray | null;
+    re.lastIndex = 0;
+    while ((m = re.exec(norm)) !== null) {
+      count += 1;
+      if (m.index === re.lastIndex) re.lastIndex += 1;
+    }
+    result.set(t, count);
+  }
+  return result;
+}
+
 interface Segment {
   text: string;
   isMatch: boolean;
