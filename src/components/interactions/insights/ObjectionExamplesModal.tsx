@@ -307,15 +307,26 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return result;
   }, [filtered]);
 
-  const hasFilters = !!dateFrom || !!dateTo || selectedTypes.size > 0;
+  const hasFilters =
+    !!dateFrom || !!dateTo || selectedTypes.size > 0 || selectedSentiments.size > 0;
   const clearFilters = () => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
+    setSelectedSentiments(new Set());
   };
 
   const toggleType = (key: TypeBucket) => {
     setSelectedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleSentiment = (key: SentimentBucket) => {
+    setSelectedSentiments((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
