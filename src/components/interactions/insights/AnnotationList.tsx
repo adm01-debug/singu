@@ -45,14 +45,18 @@ function formatDateTime(iso: string): string {
   });
 }
 
-export function AnnotationList({ api, onEdit }: Props) {
+export function AnnotationList({ api, onEdit, categoryFilter }: Props) {
   const [open, setOpen] = useState(false);
   const [collapsedWeeks, setCollapsedWeeks] = useState<Set<string>>(new Set());
   const [pendingDelete, setPendingDelete] = useState<SentimentAnnotation | null>(null);
   const { user } = useAuth();
   const { isAdmin } = useIsAdmin();
   const { toast } = useToast();
-  const items = api.list.data ?? [];
+  const allItems = api.list.data ?? [];
+  const items = useMemo(
+    () => (categoryFilter ? allItems.filter((a) => categoryFilter.has(a.category)) : allItems),
+    [allItems, categoryFilter]
+  );
 
   const grouped = useMemo(() => {
     const map = new Map<string, SentimentAnnotation[]>();
