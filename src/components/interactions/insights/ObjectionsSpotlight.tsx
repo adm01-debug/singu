@@ -1,12 +1,13 @@
 import { memo, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter, Wand2 } from "lucide-react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter, Wand2, ShieldCheck, RotateCcw, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
 import { SuggestedResponseModal } from "./SuggestedResponseModal";
+import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
 
 const PERIOD_TO_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
