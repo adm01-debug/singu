@@ -6,7 +6,10 @@ import { ExternalLink, Info, Loader2, Quote, RotateCcw, Eraser } from "lucide-re
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
-import { extractExcerpts, type Excerpt } from "@/lib/insights/extractExcerpts";
+import { extractExcerpts, type Excerpt, type MatchMode } from "@/lib/insights/extractExcerpts";
+
+const MATCH_MODE_STORAGE_KEY = "themeDrawer.matchMode";
+const isMatchMode = (v: unknown): v is MatchMode => v === "exact" || v === "partial";
 import { pickTopPassages } from "@/lib/insights/pickTopPassages";
 import {
   DEFAULT_EXCERPT_PRESET,
