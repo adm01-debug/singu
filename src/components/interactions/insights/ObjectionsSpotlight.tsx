@@ -1,10 +1,21 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
+
+const PERIOD_TO_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
+
+function toIsoDate(d: Date): string {
+  // YYYY-MM-DD em horário local — formato esperado pelos parâmetros `de`/`ate`.
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 interface Props {
   objections: ObjectionAggregate[];
