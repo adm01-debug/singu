@@ -135,7 +135,7 @@ const MarkExcerpt = memo(function MarkExcerpt({
     }
     if (cursor < text.length) out.push({ text: text.slice(cursor), isMatch: false });
     return out;
-  }, [text, terms]);
+  }, [text, terms, matchMode]);
 
   if (segments.length === 0) return <>{text}</>;
   return (
