@@ -208,13 +208,12 @@ describe("normalizeAndSortWeekPoints — merge de duplicatas", () => {
 
 describe("normalizeAndSortWeekPoints — entradas inválidas", () => {
   it("descarta null/undefined no array e contabiliza", () => {
-    const out = normalizeAndSortWeekPoints([
-      // @ts-expect-error testando lixo runtime
-      null,
+    const input = [
+      null as unknown as WeekPoint,
       mkPoint("2025-04-07"),
-      // @ts-expect-error testando lixo runtime
-      undefined,
-    ]);
+      undefined as unknown as WeekPoint,
+    ];
+    const out = normalizeAndSortWeekPoints(input);
     expect(out.sortedData).toHaveLength(1);
     expect(out.invalidWeekCount).toBe(2);
   });
