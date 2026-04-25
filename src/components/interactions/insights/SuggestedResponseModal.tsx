@@ -83,6 +83,23 @@ function SuggestedResponseModalImpl({
     }
   }, [draft, objection, navigate, onOpenChange]);
 
+  const handleMarkApplied = useCallback(() => {
+    if (!draft.trim()) {
+      toast.error("Resposta vazia");
+      return;
+    }
+    markApplied.mutate(
+      {
+        objection,
+        category,
+        responseText: draft,
+      },
+      {
+        onSuccess: () => onOpenChange(false),
+      },
+    );
+  }, [draft, objection, category, markApplied, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
