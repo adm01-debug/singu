@@ -32,8 +32,11 @@ import {
   ThumbsUp,
   Loader2,
   ChevronDown,
+  Link2,
+  Check,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
