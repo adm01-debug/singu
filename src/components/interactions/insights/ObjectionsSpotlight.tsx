@@ -256,6 +256,15 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
                   </>
                 )}
               </button>
+              <button
+                type="button"
+                onClick={() => setComposerOpen(true)}
+                aria-label="Abrir modal para editar e enviar a resposta sugerida"
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              >
+                <Wand2 className="h-3 w-3" />
+                Criar resposta sugerida
+              </button>
               {hasExamples && (
                 <button
                   type="button"
