@@ -143,14 +143,36 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
 
       {total > 0 && (
         <>
-          <div className="text-xs border-t border-border/60 pt-2">
-            <span className={cn("font-semibold tabular-nums", pctClass(positivePct))}>{positivePct}%</span>
-            <span className="ml-1 text-muted-foreground">positivo</span>
-            {typeof point.positivePctMA === "number" && (
-              <span className="ml-2 text-muted-foreground">
-                · MM{point.maWindow ?? 3}: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
-              </span>
-            )}
+          <div className="text-xs border-t border-border/60 pt-2 space-y-1">
+            <div className="flex items-baseline gap-1">
+              <span className={cn("font-semibold tabular-nums", pctClass(positivePct))}>{positivePct}%</span>
+              <span className="text-muted-foreground">positivo</span>
+            </div>
+            {point.smoothActive && typeof point.positivePctMA === "number" && (() => {
+              const ma = point.positivePctMA as number;
+              const delta = positivePct - ma;
+              const sign = delta > 0 ? "+" : delta < 0 ? "−" : "±";
+              const arrow = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
+              const ArrowIcon = arrow;
+              const deltaClass = delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground";
+              return (
+                <div className="flex items-center gap-1.5 text-[11px]">
+                  <span
+                    className="h-2 w-2 rounded-sm shrink-0"
+                    style={{ backgroundColor: "hsl(var(--success))", opacity: 0.45 }}
+                    aria-hidden
+                  />
+                  <span className="text-muted-foreground">
+                    Tendência MM{point.maWindow ?? 3}:
+                  </span>
+                  <span className="font-medium tabular-nums text-foreground">{ma}%</span>
+                  <span className={cn("inline-flex items-center gap-0.5 tabular-nums", deltaClass)}>
+                    <ArrowIcon className="h-3 w-3" />
+                    {sign}{Math.abs(delta)}pp
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="border-t border-border/60 pt-2 space-y-1.5">
