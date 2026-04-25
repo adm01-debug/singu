@@ -43,6 +43,7 @@ function CompanyCardWithContextImpl({
 }: CompanyCardWithContextProps) {
   const IndustryIcon = industryIcons[company.industry || ''] || Building2;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
+  const [interactionsOpen, setInteractionsOpen] = useState(false);
   const { prefetchCompany } = usePrefetch();
   const prefetchFn = useCallback(() => { prefetchCompany(company.id); }, [company.id, prefetchCompany]);
   const hoverProps = usePrefetchOnHover(prefetchFn, 150);
@@ -50,6 +51,22 @@ function CompanyCardWithContextImpl({
   const handleInlineSave = async (field: string, value: string): Promise<boolean> => {
     try { if (field === 'name') { await onUpdate(company.id, { name: value }); } return true; } catch { return false; }
   };
+
+  const interactionsHref = `/interacoes?company=${encodeURIComponent(company.id)}`;
+
+  // Clique no nome / botão "Ver interações":
+  // - Ctrl/⌘/middle-click → deixa o navegador abrir em nova aba (target="_blank")
+  // - Clique normal → abre o modal e cancela a navegação
+  const handleInteractionsClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
+      // Permite o comportamento padrão do <a target="_blank"> (nova aba)
+      e.stopPropagation();
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    setInteractionsOpen(true);
+  }, []);
 
   const displayName = toTitleCase(company.name);
   const subtitle = company.ramo_atividade || company.nicho_cliente || company.industry
