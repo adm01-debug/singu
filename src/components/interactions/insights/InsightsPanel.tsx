@@ -9,6 +9,7 @@ import { useInteractionsInsights, type Period, type ThemeAggregate } from "@/hoo
 import type { SentimentOverall } from "@/hooks/useConversationIntel";
 import { SentimentDistributionChart } from "./SentimentDistributionChart";
 import { SentimentTrendChart } from "./SentimentTrendChart";
+import { ObjectionsTrendChart } from "./ObjectionsTrendChart";
 import { ThemesRanking } from "./ThemesRanking";
 import { ObjectionsRanking } from "./ObjectionsRanking";
 import { ObjectionsSpotlight } from "./ObjectionsSpotlight";
