@@ -46,6 +46,32 @@ interface Example {
 
 const PAGE_SIZE = 10;
 
+/** Buckets de tipo expostos como filtros no modal. */
+type TypeBucket = "whatsapp" | "call" | "audio" | "transcript" | "other";
+
+const TYPE_BUCKETS: { key: TypeBucket; label: string; Icon: typeof MessageCircle }[] = [
+  { key: "whatsapp", label: "WhatsApp", Icon: MessageCircle },
+  { key: "call", label: "Ligação", Icon: Phone },
+  { key: "audio", label: "Áudio", Icon: Mic },
+  { key: "transcript", label: "Transcrição", Icon: FileText },
+  { key: "other", label: "Outros", Icon: HelpCircle },
+];
+
+/**
+ * Normaliza o `type` cru da interação para um bucket exibido nos filtros.
+ * Cobre variações comuns (ex.: `voice_call`, `audio_message`, `meeting_transcript`).
+ */
+function bucketOf(rawType: string | null | undefined): TypeBucket {
+  const t = (rawType ?? "").toLowerCase().trim();
+  if (!t) return "other";
+  if (t.includes("whatsapp") || t === "wa") return "whatsapp";
+  if (t.includes("transcri")) return "transcript";
+  if (t.includes("audio") || t.includes("áudio") || t.includes("voice")) return "audio";
+  if (t.includes("call") || t.includes("ligaca") || t.includes("ligação") || t.includes("phone"))
+    return "call";
+  return "other";
+}
+
 function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const ids = useMemo(
     () => (objection && Array.isArray(objection.examples) ? objection.examples : []),
