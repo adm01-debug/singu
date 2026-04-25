@@ -1,10 +1,21 @@
 import { memo, useMemo, useState, useCallback } from "react";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
+
+const PERIOD_TO_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
+
+function toIsoDate(d: Date): string {
+  // YYYY-MM-DD em horário local — formato esperado pelos parâmetros `de`/`ate`.
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 interface Props {
   objections: ObjectionAggregate[];
@@ -59,6 +70,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
   const hasExamples = examplesCount > 0;
 
@@ -83,6 +95,35 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
       toast.error("Não foi possível copiar");
     }
   }, [suggested]);
+
+  const handleApplyFilter = useCallback(() => {
+    const next = new URLSearchParams(searchParams);
+    // Aplica busca textual pela objeção (mais específica do que a categoria).
+    next.set("q", o.objection);
+    // Traduz o "periodo" (somente Insights) em range de datas (de/ate) usado pela Lista.
+    if (!next.get("de") && !next.get("ate")) {
+      const periodo = next.get("periodo");
+      const days = periodo ? PERIOD_TO_DAYS[periodo] : undefined;
+      if (days) {
+        const ate = new Date();
+        const de = new Date();
+        de.setDate(de.getDate() - days);
+        next.set("de", toIsoDate(de));
+        next.set("ate", toIsoDate(ate));
+      }
+    }
+    // Remove parâmetros exclusivos da aba Insights e troca para a Lista.
+    next.delete("periodo");
+    next.delete("sentimento");
+    next.delete("tab");
+    // Reset de paginação para garantir resultados visíveis.
+    next.delete("page");
+    setSearchParams(next, { replace: false });
+    toast.success("Filtro aplicado", {
+      description: `Mostrando interações com "${o.objection.slice(0, 60)}${o.objection.length > 60 ? "…" : ""}"`,
+    });
+  }, [o.objection, searchParams, setSearchParams]);
+
 
   return (
     <div className={cn("rounded-md border p-3 space-y-2.5", style.border)}>
@@ -114,7 +155,18 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
             )}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleApplyFilter}
+          aria-label={`Filtrar interações por "${o.objection}" mantendo o período atual`}
+          title="Aplicar este filtro na lista de interações"
+          className="inline-flex items-center gap-1 shrink-0 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm px-1.5 py-0.5"
+        >
+          <Filter className="h-3 w-3" />
+          Filtrar interações
+        </button>
       </div>
+
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground tabular-nums">
