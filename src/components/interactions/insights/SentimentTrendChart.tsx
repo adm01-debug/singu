@@ -566,8 +566,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
 
   const Icon = summary ? DIRECTION_ICON[summary.direction] : Minus;
   const deltaSign = summary && summary.deltaPct > 0 ? "+" : "";
+
+  // Normaliza as chaves de bestWeek/worstWeek para casar com o dataKey "week"
+  // do eixo X (que também é normalizado em sortedData). Sem isso, formatos
+  // como "2025-04-07T00:00:00" ou "2025-04-07Z" não casam com "2025-04-07"
+  // e o ReferenceLine fica posicionado fora da banda correspondente.
+  const validWeekSet = useMemo(() => new Set(sortedData.map((p) => p.week)), [sortedData]);
+  const bestWeekNorm = summary?.bestWeek ? normalizeWeek(summary.bestWeek.week) : undefined;
+  const worstWeekNorm = summary?.worstWeek ? normalizeWeek(summary.worstWeek.week) : undefined;
+  const bestWeekValid = !!bestWeekNorm && validWeekSet.has(bestWeekNorm);
+  const worstWeekValid = !!worstWeekNorm && validWeekSet.has(worstWeekNorm);
   const showRefLines =
-    summary?.bestWeek && summary?.worstWeek && summary.bestWeek.week !== summary.worstWeek.week;
+    bestWeekValid && worstWeekValid && bestWeekNorm !== worstWeekNorm;
 
   return (
     <div className="space-y-3">
