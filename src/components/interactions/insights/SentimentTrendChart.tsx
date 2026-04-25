@@ -510,7 +510,16 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <Line yAxisId="count" type="monotone" dataKey="positive" name="Positivo" stroke={CHART_COLORS.positive} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="neutral" name="Neutro" stroke={CHART_COLORS.neutral} strokeWidth={2} dot={false} />
             <Line yAxisId="count" type="monotone" dataKey="negative" name="Negativo" stroke={CHART_COLORS.negative} strokeWidth={2} dot={false} />
-            <Line yAxisId="count" type="monotone" dataKey="mixed" name="Misto" stroke={CHART_COLORS.mixed} strokeWidth={2} dot={false} />
+            <Line
+              yAxisId="count"
+              type="monotone"
+              dataKey="mixed"
+              name="Misto"
+              stroke={CHART_COLORS.mixed}
+              strokeWidth={3.5}
+              dot={{ r: 3, fill: CHART_COLORS.mixed, stroke: CHART_COLORS.mixed, strokeWidth: 1 }}
+              activeDot={{ r: 5, fill: CHART_COLORS.mixed, stroke: "hsl(var(--background))", strokeWidth: 2 }}
+            />
             {showPositivePctLine && (
               <Line
                 yAxisId="pct"
