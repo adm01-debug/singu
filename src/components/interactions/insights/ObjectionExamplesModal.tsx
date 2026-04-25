@@ -141,7 +141,7 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Example[], Error, { pages: Example[][]; pageParams: number[] }, readonly unknown[], number>({
     queryKey: ["objection-examples-full", objectionKey, idsKey],
     enabled: !!objection && totalIds > 0,
     staleTime: 5 * 60 * 1000,
