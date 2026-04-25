@@ -479,8 +479,6 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     unique.sort((a, b) => parseWeekLocal(a.week).getTime() - parseWeekLocal(b.week).getTime());
     return unique;
   }, [data]);
-    return unique;
-  }, [data]);
 
   const dataWithMA = useMemo(() => {
     // Média móvel PONDERADA por volume: Σ positivos / Σ totais da janela.
