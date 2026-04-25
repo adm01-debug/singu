@@ -864,23 +864,23 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 return <span className="text-foreground">{value}</span>;
               }}
             />
-            {showRefLines && summary?.bestWeek && (
+            {bestWeekValid && bestWeekNorm !== worstWeekNorm && (
               <ReferenceLine
                 yAxisId="pct"
-                x={normalizeWeek(summary.bestWeek.week)}
+                x={bestWeekNorm}
                 stroke="hsl(var(--success))"
                 strokeDasharray="2 2"
-                ifOverflow="extendDomain"
+                ifOverflow="hidden"
                 label={{ value: "Melhor", position: "top", fill: "hsl(var(--success))", fontSize: 10 }}
               />
             )}
-            {showRefLines && summary?.worstWeek && (
+            {worstWeekValid && bestWeekNorm !== worstWeekNorm && (
               <ReferenceLine
                 yAxisId="pct"
-                x={normalizeWeek(summary.worstWeek.week)}
+                x={worstWeekNorm}
                 stroke="hsl(var(--destructive))"
                 strokeDasharray="2 2"
-                ifOverflow="extendDomain"
+                ifOverflow="hidden"
                 label={{ value: "Pior", position: "top", fill: "hsl(var(--destructive))", fontSize: 10 }}
               />
             )}
