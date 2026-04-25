@@ -195,6 +195,35 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, safePage]);
 
+  /**
+   * Sentimento predominante por contato — calculado sobre o conjunto já filtrado
+   * por data + tipo, para refletir o que o usuário está vendo.
+   */
+  const sentimentByContact = useMemo(() => {
+    const tally: Record<string, Record<string, number>> = {};
+    for (const ex of filtered) {
+      if (!ex.contact_id || !ex.sentiment) continue;
+      const key = ex.sentiment.toLowerCase();
+      tally[ex.contact_id] ??= {};
+      tally[ex.contact_id][key] = (tally[ex.contact_id][key] ?? 0) + 1;
+    }
+    const result: Record<string, { sentiment: string; count: number; total: number }> = {};
+    for (const [cid, counts] of Object.entries(tally)) {
+      let top = "";
+      let topCount = 0;
+      let total = 0;
+      for (const [s, c] of Object.entries(counts)) {
+        total += c;
+        if (c > topCount) {
+          top = s;
+          topCount = c;
+        }
+      }
+      if (top) result[cid] = { sentiment: top, count: topCount, total };
+    }
+    return result;
+  }, [filtered]);
+
   const hasFilters = !!dateFrom || !!dateTo || selectedTypes.size > 0;
   const clearFilters = () => {
     setDateFrom("");
