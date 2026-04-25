@@ -1088,6 +1088,12 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               Filtro ativo: ocultando {totalAnnotations - visibleAnnotations} anotação(ões) de categorias desmarcadas.
             </p>
           )}
+          {orphanAnnotations > 0 && (
+            <p className="text-[10px] text-warning/90 italic flex items-center gap-1 px-1">
+              <ShieldAlert className="h-3 w-3" />
+              {orphanAnnotations} anotação(ões) sem semana correspondente no gráfico — visíveis apenas na lista abaixo.
+            </p>
+          )}
           <AnnotationDialog
             open={annDialogOpen}
             onOpenChange={setAnnDialogOpen}
